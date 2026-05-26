@@ -1,0 +1,55 @@
+<!--
+  分类: vue2 / 路由与状态
+  主题: vue-router 路由懒加载
+  要点:
+    - 路由懒加载让页面组件在访问对应路由时再加载，降低首屏体积
+    - 工程项目常用 component: () => import('./views/About.vue')
+    - 当前仓库是无构建 HTML demo，使用 Promise.resolve 模拟异步组件加载
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>vue-router 路由懒加载</title>
+    <script src="../../libs/vue2.js"></script>
+    <script src="../../libs/vue-router.js"></script>
+</head>
+<body>
+
+<div id="app">
+    <router-link to="/">Home</router-link>
+    |
+    <router-link to="/about">About Lazy</router-link>
+    <router-view></router-view>
+</div>
+
+<script>
+    const Home = {
+        template: "<p>Home 组件同步加载</p>"
+    };
+
+    const AboutLazy = function () {
+        return new Promise(function (resolve) {
+            setTimeout(function () {
+                resolve({
+                    template: "<p>About 组件模拟异步加载完成</p>"
+                });
+            }, 500);
+        });
+    };
+
+    const router = new VueRouter({
+        routes: [
+            { path: "/", component: Home },
+            { path: "/about", component: AboutLazy }
+        ]
+    });
+
+    new Vue({
+        el: "#app",
+        router
+    });
+</script>
+
+</body>
+</html>

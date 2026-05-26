@@ -1,0 +1,63 @@
+<!--
+  分类: vue2 / 原理与性能
+  主题: 虚拟 DOM / diff / key
+  要点:
+    - 虚拟 DOM 是用普通 JS 对象描述真实 DOM，更新时先比较 vnode，再最小化操作真实 DOM
+    - Vue2 diff 以同层比较为主，不做跨层级移动比较
+    - key 用来标识节点身份；稳定且唯一的 key 能帮助 Vue 正确复用和移动节点
+    - 不推荐用数组 index 作为可变列表的 key，插入/删除时容易错误复用组件状态
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>虚拟 DOM / diff / key</title>
+    <script src="../../libs/vue2.js"></script>
+</head>
+<body>
+
+<div id="app">
+    <p>点击“头部插入”，观察使用稳定 id 作为 key 时，输入框状态会跟着对应数据走。</p>
+    <button @click="insertAtHead">头部插入</button>
+    <button @click="reverseList">反转列表</button>
+
+    <ul>
+        <li v-for="item in list" :key="item.id">
+            {{ item.name }} <input :placeholder="'输入 ' + item.name">
+        </li>
+    </ul>
+
+    <pre>{{ interviewAnswer }}</pre>
+</div>
+
+<script>
+    new Vue({
+        el: "#app",
+        data() {
+            return {
+                nextId: 4,
+                list: [
+                    { id: 1, name: "A" },
+                    { id: 2, name: "B" },
+                    { id: 3, name: "C" }
+                ],
+                interviewAnswer:
+                    "面试答法: Vue 更新时会生成新的 vnode tree，和旧 vnode tree 做 patch。\n" +
+                    "同层节点会根据 tag 和 key 判断是否是同一个节点。\n" +
+                    "key 稳定时可以复用真实 DOM 并移动位置；key 不稳定时可能错误复用输入框、组件内部状态。"
+            };
+        },
+        methods: {
+            insertAtHead() {
+                this.list.unshift({ id: this.nextId, name: "New-" + this.nextId });
+                this.nextId++;
+            },
+            reverseList() {
+                this.list.reverse();
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
