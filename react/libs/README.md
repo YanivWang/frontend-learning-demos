@@ -5,7 +5,7 @@ React 18 运行时（开发版，非压缩，含警告日志）。
 | 文件 | 版本 | 用途 | 官方地址 |
 |---|---|---|---|
 | `react.development.js` | React 18.3.1 development | React 核心库（`React.Component` / `createElement`） | https://unpkg.com/react@18.3.1/umd/react.development.js |
-| `react-dom.development.js` | React DOM 18.3.1 development | DOM 渲染（`ReactDOM.render` / `createRoot`） | https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js |
+| `react-dom.development.js` | React DOM 18.3.1 development | DOM 渲染（`createRoot`） | https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js |
 | `babel.min.js` | @babel/standalone 7.29.7 | 浏览器端 JSX → JS 转译（`<script type="text/babel">`） | https://unpkg.com/@babel/standalone@7.29.7/babel.min.js |
 
 ## 升级方式
