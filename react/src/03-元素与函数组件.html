@@ -1,8 +1,19 @@
+<!--
+  分类: react / 入门
+  主题: React 元素与 JSX 中嵌入表达式
+  要点:
+    - JSX 中 {expression} 内只能写「表达式」，函数引用 {fn} 不会执行，需写 {fn()}
+    - ReactDOM 渲染流程：构建虚拟 DOM → diff → 真实 DOM 渲染 → 事件绑定
+    - React 18 起统一用 createRoot(container).render(element)
+  修正:
+    - 原代码 {fun} 只是渲染函数引用（React 18 会抛出 "Objects/Functions are not valid as a React child"），改为 {fun()}
+    - ReactDOM.render 已废弃，替换为 createRoot
+-->
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Hello React!</title>
+    <title>React · JSX 中嵌入表达式</title>
 
     <!--    <script src="https://cdn.staticfile.org/react/16.4.0/umd/react.development.js"></script>-->
     <!--    <script src="https://cdn.staticfile.org/react-dom/16.4.0/umd/react-dom.development.js"></script>-->
@@ -45,7 +56,8 @@
             <span>我是span111</span>
             {console.log("在jsx中运行js表达式")}
             {abc}
-            {fun}
+            {/* 修正：原写法 {fun} 是函数引用，React 会抛错；需要执行函数才能拿到字符串 */}
+            {fun()}
           </span>
           <span>
             <i>我是222元素</i>
@@ -62,7 +74,8 @@
       //3.2 diff算法: diff算法会比对新旧虚拟dom,找出变更集合
       //3.3 真实dom渲染,根据diff算法找出的变更集合,React会将变更集合转换为真实的dom
       //3.4 事件绑定,创建真实dom时,react会为这些dom绑定事件
-      ReactDOM.render(element, document.getElementById("example"));
+      // 修正：React 18 推荐 createRoot 替代 ReactDOM.render（后者将被移除）
+      ReactDOM.createRoot(document.getElementById("example")).render(element);
     </script>
   </body>
 </html>

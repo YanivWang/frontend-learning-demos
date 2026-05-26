@@ -1,8 +1,18 @@
+<!--
+  分类: react / class 组件
+  主题: setState 异步合并（同步触发多次只会更新一次）
+  要点:
+    - setState 是异步的；连续多次同步调用，React 会做「合并优化」最终一次更新
+    - 因此 for(0~9) 内每次都基于「当前 state.count」自增，结果只会得到 1，不是 10
+    - 想要逐次叠加，需要用函数式 setState(prev => ({ count: prev.count + 1 }))
+  修正:
+    - ReactDOM.render 已废弃，改为 createRoot
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>React · setState 异步合并</title>
 
     <script src="../libs/react18.js"></script>
     <script src="../libs/react-dom18.js"></script>
@@ -48,7 +58,8 @@
         }
     }
 
-    ReactDOM.render(<Person/>, document.getElementById("app"));
+    // 修正：React 18 改用 createRoot 渲染
+    ReactDOM.createRoot(document.getElementById("app")).render(<Person/>);
 </script>
 
 </body>

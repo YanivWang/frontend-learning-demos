@@ -1,14 +1,56 @@
+<!--
+  分类: vue2 / 组件
+  主题: 插槽 slot（默认 / 具名 / 作用域）
+  要点:
+    - 默认插槽：<slot></slot>；父组件传入的模板内容会替换它
+    - 具名插槽：<slot name="header"></slot>，父用 <template v-slot:header>
+    - 作用域插槽：子组件 <slot :item="x" />，父用 <template v-slot="{ item }">
+  说明:
+    - 原文件为空壳，这里补全一个最小可运行示例，演示三种插槽形式
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>插槽 slot 三种用法</title>
     <script src="../../libs/vue2.js"></script>
 </head>
 <body>
 
+<div id="app">
+    <my-card>
+        <template v-slot:header>
+            <h3>我是 header 插槽</h3>
+        </template>
 
+        <p>默认插槽内容</p>
 
+        <template v-slot:item="{ item, index }">
+            <span>#{{ index }} - {{ item }}</span>
+        </template>
+    </my-card>
+</div>
+
+<script>
+    Vue.component('my-card', {
+        data() {
+            return { list: ['苹果', '香蕉', '梨'] };
+        },
+        template: `
+            <div class="card" style="border:1px solid #ccc;padding:8px;">
+                <slot name="header"></slot>
+                <slot></slot>
+                <ul>
+                    <li v-for="(item, idx) in list" :key="idx">
+                        <slot name="item" :item="item" :index="idx"></slot>
+                    </li>
+                </ul>
+            </div>
+        `
+    });
+
+    new Vue({ el: '#app' });
+</script>
 
 </body>
 </html>

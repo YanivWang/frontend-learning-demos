@@ -1,8 +1,16 @@
+<!--
+  分类: vue2 / 路由与状态
+  主题: Vuex 全家桶（state / mutations / actions / getters / mapState / mapGetters）
+  要点:
+    - state 必须先声明字段才会被响应式追踪；getters 的「函数式」用法可以接外部参数
+    - 易错点：doneTodos 是「返回函数的 getter」，doneTodos.length 会取到函数 arity(=1)，不是数组长度
+    - 修正：新增 doneTodosArr 直接返回 done:true 的数组，doneTodosCount 取其 length
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Vuex · state / mutations / actions / getters</title>
     <script src="../../libs/vue2.js"></script>
     <script src="../../libs/vue-router.js"></script>
     <script src="../../libs/vuex.js"></script>
@@ -74,9 +82,11 @@
             doneTodos: (state)=>(id)=>{
                return state.todos.find(todo => todo.id === id);
             },
-            //接受其它的getter
+            // 修正：纯数组形式的「已完成 todos」，便于其他 getter 直接取 length
+            doneTodosArr: (state)=> state.todos.filter(todo => todo.done),
+            //接受其它的getter（取数组 length 才是「已完成数」）
             doneTodosCount:(state,getters)=>{
-                return getters.doneTodos.length;
+                return getters.doneTodosArr.length;
             }
         }
     });

@@ -1,9 +1,20 @@
+<!--
+  分类: vue3 / 响应式状态
+  主题: ref / shallowRef / reactive 三种响应式 API 对比
+  要点:
+    - ref 返回 { value: ... } 包装；JS 中读写必须 .value，模板中自动解包
+    - reactive 返回的是「Proxy 响应式对象」，访问字段无 .value，但解构会丢响应
+    - shallowRef 只对 .value 的赋值「整体替换」做响应，内部嵌套字段不再追踪
+  修正:
+    - 原代码未从 Vue 解构 reactive，但下方使用了 reactive，会报 ReferenceError
+    - 注释中「.vue」是笔误，应为「.value」
+-->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Vue3 · ref / reactive / shallowRef</title>
     <script src="../libs/vue3.5.js"></script>
   </head>
   <body>
@@ -12,14 +23,15 @@
         <!-- test ref -->
         <div>======================</div>
 
-        <!-- 模版中不需要带 .vue 访问 -->
+        <!-- 模板中 ref 会自动解包，无需写 .value -->
         <div>{{ message }}</div>
         <button @click="changeMsgFn">clickMe</button>
       </div>
     </div>
 
     <script>
-      const { createApp, ref, shallowRef, computed } = Vue;
+      // 修正：补全 reactive 解构，否则下方使用 reactive 时会报 ReferenceError
+      const { createApp, ref, shallowRef, reactive, computed } = Vue;
 
       // createApp 函数创建一个新的 应用实例
       const app = createApp(
@@ -64,7 +76,7 @@
             console.log("shallowObjRef,", shallowObjRef);
 
 
-            // js代码中访问必须带 .vue
+            // 修正：JS 代码中访问 ref 必须带 .value（原注释拼成 .vue）
             const changeMsgFn = () => {
               message.value = "I am change to HI vue!";
 

@@ -1,8 +1,20 @@
+<!--
+  分类: react / class 组件
+  主题: class 组件完整生命周期与常用 API 大杂烩
+  要点:
+    - 创建：constructor → render → componentDidMount
+    - 更新：shouldComponentUpdate → render → componentDidUpdate
+    - 卸载：componentWillUnmount（清理 timer / 监听）
+    - 错误：componentDidCatch（捕获子组件抛错）
+  修正:
+    - componentWillMount / componentWillReceiveProps / componentWillUpdate 在 React 16.3+ 已废弃，使用必须前缀 UNSAFE_，否则会有警告并在未来移除
+    - ReactDOM.render 已废弃，改为 createRoot
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>React · class 完整生命周期与 API</title>
 
     <script src="../libs/react18.js"></script>
     <script src="../libs/react-dom18.js"></script>
@@ -88,8 +100,10 @@
 
         };
 
-        componentWillMount() {
-            console.log("componentWillMount###");
+        // 修正：React 16.3+ 已废弃 componentWillMount，使用必须改名为 UNSAFE_componentWillMount，
+        //       否则控制台会报「Using UNSAFE_ ...」警告，且未来主版本可能直接移除
+        UNSAFE_componentWillMount() {
+            console.log("UNSAFE_componentWillMount###");
         }
 
         componentDidMount() {
@@ -122,7 +136,9 @@
         }
 
         //当父组件传递下来的属性发生改变的时候，此钩子函数会被调用
-        componentWillReceiveProps() {
+        // 修正：componentWillReceiveProps 已废弃，使用必须改名 UNSAFE_componentWillReceiveProps，
+        //       新代码推荐用 static getDerivedStateFromProps 或 componentDidUpdate 替代
+        UNSAFE_componentWillReceiveProps() {
 
         }
 
@@ -134,7 +150,9 @@
             return true;
         }
 
-        componentWillUpdate() {
+        // 修正：componentWillUpdate 已废弃，使用必须改名 UNSAFE_componentWillUpdate，
+        //       新代码用 getSnapshotBeforeUpdate + componentDidUpdate 组合替代
+        UNSAFE_componentWillUpdate() {
 
         }
 
@@ -249,9 +267,12 @@
         name: "React App"
     };
 
-    ReactDOM.render(<Person>
-        <div>person子组件</div>
-    </Person>, document.getElementById("app"));
+    // 修正：React 18 改用 createRoot 渲染
+    ReactDOM.createRoot(document.getElementById("app")).render(
+        <Person>
+            <div>person子组件</div>
+        </Person>
+    );
 
 </script>
 

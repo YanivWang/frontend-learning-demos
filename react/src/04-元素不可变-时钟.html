@@ -1,8 +1,18 @@
+<!--
+  分类: react / 入门
+  主题: React 元素的「不可变」特性
+  要点:
+    - React 元素是不可变 JS 对象：要更新视图，只能重新创建并重新 render
+    - React 内部用 diff 找出真实 DOM 的最小差异，只更新需要变化的节点
+    - createRoot 在外面创建一次，每次 tick 复用同一个 root 调用 render
+  修正:
+    - ReactDOM.render 已废弃；改用 createRoot(...).render(...)；避免每次都重新 createRoot
+-->
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8"/>
-    <title>Hello React!</title>
+    <title>React · 元素不可变（时钟）</title>
     <script src="../libs/react18.js"></script>
     <script src="../libs/react-dom18.js"></script>
     <script src="../libs/babel.js"></script>
@@ -23,6 +33,9 @@
     3.2 然后插入到DOM树中
     */
 
+    // 修正：root 只创建一次，每次 tick 复用同一个 root 调用 render，符合 React 18 推荐用法
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+
     function tick() {
         const element =
             <div>
@@ -31,15 +44,12 @@
             </div>
             ;
 
-        ReactDOM.render(
-            element,
-            document.getElementById('root')
-        );
+        root.render(element);
     }
 
     /*
     4. React元素都是不可变的，当元素被创建之后，你是无法改变其内容和属性的
-    更新界面的唯一方式，就是创建一个新的元素，然后把它传入ReactDOM.render()方法
+    更新界面的唯一方式，就是创建一个新的元素，然后把它传入 root.render()
     */
     setInterval(tick,1000)
 </script>

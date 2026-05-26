@@ -1,9 +1,20 @@
+<!--
+  分类: demos / drag
+  主题: 原生 HTML5 拖拽 API（drag & drop）
+  要点:
+    - 拖动元素必须有 draggable="true"；通过 dragstart 写入 dataTransfer
+    - 目标区必须在 dragover 中 e.preventDefault()，否则不会触发 drop
+    - dataTransfer 只能存字符串，传对象需要 JSON.stringify / parse
+  修正:
+    - 在 drop 中给「目标区已有子元素」追加副本会让 appendChild 目标错位（ev.target 可能是子 p 而非容器）；
+      已改为始终 appendChild 到 currentTarget（绑定监听的容器）
+-->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>HTML5 原生拖拽</title>
 
     <style>
       /* 列表拖动去 */
@@ -150,8 +161,9 @@
         clonedItem.removeAttribute('draggable')
         clonedItem.removeAttribute('ondragstart')
         clonedItem.removeAttribute('ondragend')
-        //将克隆节点添加到文档树
-        ev.target.appendChild(clonedItem);
+        // 修正：ev.target 可能是放置区里的子元素（如 <p>），而非放置区容器本身；
+        //       使用 currentTarget（监听者）才能保证副本一定挂到容器
+        ev.currentTarget.appendChild(clonedItem);
       }
     </script>
 

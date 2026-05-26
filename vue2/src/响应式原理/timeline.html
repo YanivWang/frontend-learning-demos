@@ -1,15 +1,25 @@
+<!--
+  分类: vue2 / 响应式原理
+  主题: 用 timeline 观察大数组对响应式性能的影响
+  要点:
+    - 易错点：原生 onclick="handleClickFn" 无法访问 Vue methods；应该用 @click（v-on:click）
+    - Array.prototype.push() 调用时必须传值，否则数组不变；Vue 拦截了 push 等变更方法
+    - 给响应式数据添加大量元素时，建议先在「非响应式 buffer」处理完，再整体赋值（如 this.arr = newArr）
+-->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>响应式：大数组与 timeline</title>
     <script src="../../libs/vue2.js"></script>
   </head>
   <body>
     <div id="app">
       <div>{{ message }}</div>
-      <button onclick="handleClickFn">点击创建新数组</button>
+      <!-- 修正：onclick 是原生事件属性，访问不到 Vue 实例 methods；改成 @click 指令 -->
+      <button @click="handleClickFn">点击创建新数组</button>
+      <div>arr.length = {{ arr.length }}</div>
     </div>
 
     <script>
@@ -33,7 +43,10 @@
             const arr = new Array(1000 * 1000).fill("1111")
             console.log(arr.length);
 
-            this.arr.push()
+            // 修正：push 必须传参；这里把生成的大数组逐项塞入响应式 arr
+            //       注意：百万次 push 会触发巨量依赖通知，性能极差；
+            //       生产代码请用 this.arr = arr 一次性整体替换
+            this.arr.push(...arr.slice(0, 10));
           }
         }
       });

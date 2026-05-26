@@ -1,9 +1,19 @@
+<!--
+  分类: react / class 组件
+  主题: Clock 演示 setState 批处理（对象式 vs 函数式）
+  要点:
+    - counterOld：三次对象式 setState 都基于「当前 state」+1，合并后只 +1
+    - counterNew：三次函数式 setState 都拿到「最新合并 state」，最终 +3
+    - componentDidMount 启定时器，componentWillUnmount 必须清理，否则内存泄漏
+  修正:
+    - 原代码 componentWillUnMount 大小写错误，正确拼写是 componentWillUnmount，否则 React 不会调用
+-->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>React · Clock setState 批处理对比</title>
 
     <!-- 引入 react 和 react-dom，这两个是react核心包 -->
     <script src="../libs/react18.js"></script>
@@ -118,8 +128,9 @@
           //出于性能考虑，React会将多个setState()方法调用合并成一个调用
         }
 
-        //一旦Clock组件被从DOM中移除，React就会调用组价的componentWillUnMount方法
-        componentWillUnMount() {
+        // 修正：原写法 componentWillUnMount（M 大写错误）React 不会调用 → 定时器无法清理，造成内存泄漏
+        //       正确钩子是 componentWillUnmount（m 小写）
+        componentWillUnmount() {
           clearInterval(this.timer);
         }
 

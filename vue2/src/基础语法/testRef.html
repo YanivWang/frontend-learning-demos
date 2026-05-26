@@ -1,13 +1,50 @@
+<!--
+  分类: vue2 / 基础语法
+  主题: ref 引用 DOM / 子组件实例
+  要点:
+    - 在普通元素上加 ref="x"，this.$refs.x 拿到原生 DOM 节点
+    - 在自定义组件上加 ref，this.$refs.x 拿到组件实例（可直接调子组件方法）
+    - $refs 仅在「该组件实例 mounted 后」可用；首次 render 阶段还未挂载
+  说明:
+    - 原文件为空壳，这里补一个最小可运行示例
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>ref 引用 DOM / 子组件</title>
+    <script src="../../libs/vue2.js"></script>
 </head>
 <body>
 
-<script>
+<div id="app">
+    <input ref="myInput" placeholder="点按钮聚焦我" />
+    <button @click="focusInput">focus()</button>
 
+    <hello ref="hello"></hello>
+    <button @click="callChild">调用子组件方法</button>
+</div>
+
+<script>
+    Vue.component('hello', {
+        template: '<div>Hello {{ name }}</div>',
+        data() { return { name: 'world' }; },
+        methods: {
+            sayHi() { console.log('child sayHi'); }
+        }
+    });
+
+    new Vue({
+        el: '#app',
+        methods: {
+            focusInput() {
+                this.$refs.myInput.focus();
+            },
+            callChild() {
+                this.$refs.hello.sayHi();
+            }
+        }
+    });
 </script>
 
 </body>

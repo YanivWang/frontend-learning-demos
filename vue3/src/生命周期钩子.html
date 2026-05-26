@@ -1,16 +1,34 @@
+<!--
+  分类: vue3 / 生命周期钩子
+  主题: Composition API 中的全部生命周期钩子
+  要点:
+    - setup 替代 beforeCreate / created；钩子统一以 onXxx 形式注册
+    - 关键钩子：onBeforeMount / onMounted / onBeforeUpdate / onUpdated / onBeforeUnmount / onUnmounted
+    - keep-alive 专属：onActivated / onDeactivated
+  修正:
+    - 原代码 import 仅解构了 onMounted / onUnMounted / onBeforeUpdate，但下方使用了 onBeforeMount / onUpdated / onBeforeUnmount / onActivated / onDeactivated，会全部 ReferenceError
+    - onUnMounted 写法错误（M 与 U 大小写颠倒），正确是 onUnmounted
+-->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Vue3 · Composition API 生命周期钩子</title>
     <script src="../libs/vue3.5.js"></script>
   </head>
   <body>
     <div id="app"></div>
 
     <script>
-      const { createApp, ref, shallowRef, computed, onMounted, onUnMounted, onBeforeUpdate } = Vue;
+      // 修正：补全所有 onXxx 钩子解构；修正 onUnMounted → onUnmounted
+      const {
+        createApp, ref, shallowRef, computed,
+        onBeforeMount, onMounted,
+        onBeforeUpdate, onUpdated,
+        onBeforeUnmount, onUnmounted,
+        onActivated, onDeactivated
+      } = Vue;
 
       const app = createApp({
         //特别注意: setup函数替代了之前的beforeCreate和created
@@ -46,7 +64,8 @@
           组件被卸载后调用
           2.作用: 清理一些副作用(计时器，dom监听器，与服务器的连接)
           */
-          onUnMounted(() => {});
+          // 修正：原写法 onUnMounted 大小写错误，正确拼写是 onUnmounted
+          onUnmounted(() => {});
 
           //=========== DDDD keep-alive的组件激活 DDDD ===========
           // 调用时机为首次挂载

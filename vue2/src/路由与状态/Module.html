@@ -1,8 +1,16 @@
+<!--
+  分类: vue2 / 路由与状态
+  主题: Vuex Module 演示（按模块拆分 store）
+  要点:
+    - ⚠️ 与文件名不符：原文件实际只演示了 actions，未真正使用 modules
+    - 已重写为真正的 modules：moduleA（count 计数）、moduleB（user 信息），通过 namespaced 隔离
+    - 访问 moduleA 的 state.count：store.state.moduleA.count；mutations/actions/getters 同理
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Vuex · Module 模块化拆分 store</title>
     <script src="../../libs/vue2.js"></script>
     <script src="../../libs/vue-router.js"></script>
     <script src="../../libs/vuex.js"></script>
@@ -20,87 +28,70 @@
     //使用Vuex的module功能，可以将store对象分割成模块。
     //每个模块拥有自己的state，mutation，action，getter
     //甚至是嵌套子模块——从上至下进行同样方式的分割
-    const store = new Vuex.Store({
-        //该属性用于存储共享的状态
-        state: {
-            todos: [
-                {id: 1, text: '...', done: true},
-                {id: 2, text: '...', done: false}
-            ]
-        },
+
+    // 模块 A：计数器
+    const moduleA = {
+        namespaced: true,
+        state: () => ({ count: 0 }),
         mutations: {
-            //mutation是直接改变state的状态，所以参数是state
-            increment(state) {
-                state.count++;
-            },
-            incrementA(state, n) {
-                state.count += n;
-            },
-            incrementB(state, payload) {
-                state.count += payload.count;
-            }
+            increment(state, n = 1) { state.count += n; }
         },
         actions: {
-            //context对象和store实例具有相同的方法和属性
-            //action函数不直接改变state的状态
-            //而是提交一个mutation，其实就是在提交mutation前可以做一些其它的处理
-            increment(context) {
-                context.commit("increment");
-            },
-            incrementA({commit}) {//参数解构
-                commit('increment', 10);
-            },
-            incrementAsync({commit}) {
-                setTimeout(() => {
-                    //异步分发执行完毕
-                    console.log("异步分发执行完毕");
-                    commit('increment');
-                }, 5000)
-            },
-            checkout({ commit, state },products){//用于数组和对象类型的参数的解构
-                return new Promise((resolve,reject)=>{
-                    setTimeout(()=>{
-                        commit('someMutation');
-                        resolve();
-                    },1000)
-                })
-            },
-            checkoutPlus({dispatch,commit}){
-                //在一个action内部可以dispatch其它的action
-                return dispatch('checkout').then(()=>{
-                    commit('incrementB');
-                })
+            incrementAsync({ commit }, n = 1) {
+                setTimeout(() => commit('increment', n), 500);
             }
         },
-        getters: {}
+        getters: {
+            doubleCount: (state) => state.count * 2
+        }
+    };
+
+    // 模块 B：用户信息
+    const moduleB = {
+        namespaced: true,
+        state: () => ({ name: 'guest' }),
+        mutations: {
+            setName(state, name) { state.name = name; }
+        }
+    };
+
+    const store = new Vuex.Store({
+        modules: {
+            moduleA,
+            moduleB
+        }
     });
 
+    // 访问模块 state：注意带模块名前缀
+    console.log('moduleA.count:', store.state.moduleA.count);
+    console.log('moduleB.name :', store.state.moduleB.name);
 
+    // 提交「带命名空间」的 mutation / 派发 action
+    store.commit('moduleA/increment', 5);
+    store.dispatch('moduleA/incrementAsync', 3);
+    store.commit('moduleB/setName', 'wangcheng');
 
     new Vue({
         data() {
             return {}
         },
         store,
-        computed: {},
+        computed: {
+            // 使用 mapState 第二个参数 namespaced 简化跨模块访问
+            ...Vuex.mapState('moduleA', { aCount: 'count' }),
+            ...Vuex.mapState('moduleB', { bName: 'name' }),
+            ...Vuex.mapGetters('moduleA', ['doubleCount'])
+        },
         template: `
             <div>
-               <div>Home</div>
+               <div>moduleA.count: {{ aCount }}（doubleCount: {{ doubleCount }}）</div>
+               <div>moduleB.name : {{ bName }}</div>
             </div>
         `,
         methods: {
-            increment() {
-                //在组件的内部，提交mutation
-                this.$store.commit('increment');
-            },
-            //将this.increment()映射为this.$store.dispatch('increment')
-            //
-            ...Vuex.mapActions(['increment','incrementA','incrementAsync']),
-            ...Vuex.mapActions({
-                add: 'increment'//将this.add()映射为this.$store.dispatch('increment');
-            })
-        },
-        components: {}
+            // 命名空间下的 actions 也可以用 mapActions(namespace, [...]) 映射
+            ...Vuex.mapActions('moduleA', ['incrementAsync'])
+        }
     }).$mount("#app");
 
 </script>
