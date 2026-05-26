@@ -1,81 +1,96 @@
 # js-css-vue-react-learn
 
-前端语法与框架复习 Demo 库。每个 HTML 可直接在浏览器打开，无需构建。
+前端语法与框架复习 Demo 库。**每个 HTML 直接在浏览器打开，无需构建**。
+
+## 快速开始
+
+```bash
+# 用浏览器或 Live Server 打开入口
+open index.html
+```
+
+`index.html` 是总入口，由脚本 [`scripts/build-index.mjs`](scripts/build-index.mjs) 自动扫描生成。
 
 ## 目录结构
 
 ```text
 .
-├── index.html          # 总入口（链接到各 Demo）
-├── javascript/         # 纯 JavaScript（按学习顺序编号）
+├── index.html               # 总入口（自动生成，请勿手改）
+├── manifest.json            # demo 结构化清单（自动生成）
+├── README.md                # 本文件
+├── CONVENTIONS.md           # 目录与命名约定（每次想动结构前先读它）
+├── .gitignore .editorconfig
+│
+├── javascript/              # 纯 JavaScript（详见 javascript/README.md）
 │   ├── 01-基础/
 │   ├── 02-函数与作用域/
 │   ├── 03-对象与原型/
 │   ├── 04-ES6+/
-│   │   └── 异步/       # Promise、generator、async
 │   ├── 05-元编程/
 │   ├── 06-浏览器API/
 │   ├── 07-进阶/
 │   ├── 08-面试题/
-│   └── 09-Canvas/      # Canvas 2D 绘图
-├── css/                # CSS 练习（布局 / 动画 / 视觉效果 / 响应式）
+│   └── 09-Canvas/
+│
+├── css/                     # CSS（详见 css/README.md）
 │   ├── 01-布局/
 │   ├── 02-动画/
 │   ├── 03-视觉效果/
-│   └── 04-响应式/
-├── vue2/               # Vue 2（libs/ + src/）
-├── vue3/               # Vue 3（libs/ + src/）
-├── react/              # React 18（libs/ + src/，需 Babel 编译 JSX）
-└── demos/              # 交互/UI 小实验
-    ├── drag/
-    ├── svg/
-    └── viewpager/
+│   ├── 04-响应式/
+│   └── CSS选择器/
+│
+├── vue2/                    # Vue 2.7.16，详见 vue2/README.md
+│   ├── libs/                # 第三方运行时（libs/README.md 标注版本）
+│   └── src/
+│
+├── vue3/                    # Vue 3.5.13，详见 vue3/README.md
+│   ├── libs/
+│   └── src/
+│
+├── react/                   # React 18，详见 react/README.md
+│   ├── libs/                # react18 / react-dom18 / @babel/standalone
+│   └── src/                 # 11 个 demo，按 01–11 编号
+│
+├── demos/                   # 综合 Demo（drag / svg / viewpager）
+│
+└── scripts/
+    └── build-index.mjs      # 扫描生成 index.html / manifest.json
 ```
 
 ## 推荐学习顺序
 
 ### JavaScript
 
-1. **01-基础** — 变量（含 null/undefined）、函数、箭头函数、`arguments`、IIFE、严格模式、JSON、Symbol、typeof / 类型检测、运算符（`||`/`&&`/`??`）、`eval`/Global、字符串方法（含原始值 vs 包装对象、sort 打乱、replace 正则）、Unicode、Date、parseInt、encode/escape、正则（含全特性、去标点）
-2. **02-函数与作用域** — 作用域链、闭包、柯里化、this 指向
-3. **03-对象与原型** — 原型、原型链（组合继承）、创建对象（含 delete 删除属性）、访问器、构造函数、原型属性 vs 实例属性（hasOwnProperty / in）
-4. **04-ES6+** — Class、模块、Map/Set/WeakMap/WeakSet、Promise/async/generator
-5. **05-元编程** — `defineProperty`、`Proxy`
-6. **06-浏览器API** — BOM、Observer、事件循环、DOM 操作、Notification、剪贴板、Service Worker、Web Worker、localforage、拖曳、Tooltips
-7. **07-进阶** — 内存泄漏、深拷贝、手写 Promise、UMD 插件模式、资源预加载（ResLoader）
-8. **08-面试题** — 作用域经典题（var1-6）、防抖/节流、加权随机
-9. **09-Canvas** — 2D 基础绘图、动画（烟花 + requestAnimationFrame）
+`01-基础 → 02-函数与作用域 → 03-对象与原型 → 04-ES6+ → 05-元编程 → 06-浏览器API → 07-进阶 → 08-面试题 → 09-Canvas`
+
+详细知识点见 [`javascript/README.md`](javascript/README.md)。
 
 ### 框架
 
-1. **vue2** → `src/响应式原理/` → `src/基础语法/` → `src/组件/` → `src/路由与状态/`
-2. **vue3** → `src/`（响应式状态、生命周期）
-3. **react** → `src/`（从 `开始.html`、`jsx.html` 入门；脚本引用 `../libs/`）
+1. **Vue 2** → `src/响应式原理` → `src/基础语法` → `src/组件` → `src/路由与状态`
+2. **Vue 3** → `src/`
+3. **React** → `src/01-入门-元素与渲染.html` 起按编号读，11 个 demo 覆盖从 JSX 到完整生命周期
 
 ### CSS
 
-1. **01-布局** — Grid、rem 适配、瀑布流、滚动表格（thead 固定）
-2. **02-动画** — Loading、@keyframes、NProgress、光标闪烁、展开折叠、序列帧（精灵图）
-3. **03-视觉效果** — 百分比圆环、3D 按钮、阴影、混合模式、Tooltip
-4. **04-响应式** — Media Queries、vw/vh
-5. **CSS 选择器** — 优先级与各种选择器一览
+`01-布局 → 02-动画 → 03-视觉效果 → 04-响应式 → CSS选择器`
 
-### 交互 Demo
+## 工作流
 
-- **demos/drag** — 原生拖拽列表
-- **demos/svg** — SVG 基础
-- **demos/viewpager** — ViewPager 翻页（含多种缓动插值器）
+新增 / 改名 / 删除 demo 后，**必须运行**：
 
-## 使用方式
+```bash
+node scripts/build-index.mjs
+```
 
-- 用浏览器或 Live Server 打开 `index.html` 或任意 `.html`  
-- Vue Demo：引用 `../libs/vue2.js`；路由/Vuex 需 `vue-router.js`、`vuex.js`  
-- React Demo：需加载 `react18.js`、`react-dom18.js`、`babel.js`，`<script type="text/babel">` 内写 JSX  
+会重新生成根目录的 `index.html` 和 `manifest.json`。完整规范见 [`CONVENTIONS.md`](CONVENTIONS.md)。
 
-## 约定
+## 仓库约定
 
-- `libs/`：框架运行时，不修改
-- `src/`：学习用 Demo
-- `javascript/` 子目录按 `01`–`09` 编号，便于按序复习
-- 所有依赖统一改为本地 `libs/` 引用（`watch.html` 等少数 Demo 仍依赖 axios CDN）
-- 维护原则：以后新增内容直接在本目录下添加，保持目录树清晰
+- **文件命名**：`NN-中文/英文API名.html`，连字符 `-` 连接，**不**用下划线 / 拼音首字母 / 无意义编号
+- **目录命名**：中文短语，一级目录加 `NN-` 编号
+- **`libs/`**：第三方运行时，每个目录里有 `README.md` 标注版本与官方地址
+- **`lib/`**（单数）：demo 同级的小工具脚本
+- **不要手改 `index.html`**：它是脚本输出
+
+如果你打算批量改名或新增分类，先读 [`CONVENTIONS.md`](CONVENTIONS.md)。
