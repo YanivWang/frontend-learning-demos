@@ -1,0 +1,63 @@
+<!--
+  分类: react / 组件通信
+  主题: props 回调、状态提升与 children 组合
+  要点:
+    - 父传子: props
+    - 子传父: 父组件把回调函数传给子组件，子组件调用回调
+    - 兄弟通信: 状态提升到共同父组件
+    - children 适合做组合，不要把所有扩展点都设计成一堆布尔 props
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React · 组件通信与组合</title>
+  <script src="../libs/react.development.js"></script>
+  <script src="../libs/react-dom.development.js"></script>
+  <script src="../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    function Panel({ title, children, footer }) {
+      return (
+        <section style={{ border: "1px solid #ccc", padding: 12, marginBottom: 12 }}>
+          <h2>{title}</h2>
+          <div>{children}</div>
+          <footer>{footer}</footer>
+        </section>
+      );
+    }
+
+    function NameInput({ value, onChangeName }) {
+      return (
+        <input value={value} onChange={e => onChangeName(e.target.value)} />
+      );
+    }
+
+    function Preview({ name }) {
+      return <p>预览: Hello, {name || "匿名用户"}</p>;
+    }
+
+    function App() {
+      const [name, setName] = useState("React");
+
+      return (
+        <main>
+          <h1>组件通信与 children 组合</h1>
+          <Panel title="资料卡片" footer={<button onClick={() => setName("")}>清空</button>}>
+            <NameInput value={name} onChangeName={setName} />
+            <Preview name={name} />
+          </Panel>
+          <p>面试回答: 数据从父到子单向流动；子组件通过调用父组件传入的回调来请求父组件更新状态。</p>
+        </main>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!--
+  分类: react / 事件
+  主题: React 合成事件机制
+  要点:
+    - React 事件是 SyntheticEvent，屏蔽浏览器差异
+    - React 事件名使用小驼峰，如 onClick、onChange
+    - React 17+ 事件委托从 document 调整到 root 容器
+    - 阻止默认行为使用 event.preventDefault()，不要 return false
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React · 合成事件机制</title>
+  <script src="../libs/react.development.js"></script>
+  <script src="../libs/react-dom.development.js"></script>
+  <script src="../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    function App() {
+      function handleSubmit(event) {
+        event.preventDefault();
+        console.log("React SyntheticEvent:", event);
+        console.log("原生事件 nativeEvent:", event.nativeEvent);
+        alert("已阻止表单默认提交，请看控制台");
+      }
+
+      function handleParentClick() {
+        console.log("父元素 onClick");
+      }
+
+      function handleChildClick(event) {
+        event.stopPropagation();
+        console.log("子元素 onClick，已阻止冒泡");
+      }
+
+      return (
+        <section>
+          <h1>React 合成事件机制</h1>
+          <form onSubmit={handleSubmit}>
+            <button type="submit">提交表单</button>
+          </form>
+          <div onClick={handleParentClick} style={{ border: "1px solid #ccc", padding: 16, marginTop: 12 }}>
+            父元素
+            <button onClick={handleChildClick}>子按钮</button>
+          </div>
+          <p>面试回答: React 合成事件统一了事件接口，并通过事件委托提高管理效率。</p>
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

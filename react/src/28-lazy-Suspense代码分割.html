@@ -1,0 +1,55 @@
+<!--
+  分类: react / 工程化
+  主题: React.lazy 与 Suspense
+  要点:
+    - React.lazy 用于动态加载组件，常配合路由或大模块做代码分割
+    - Suspense 的 fallback 会在懒加载组件未就绪时展示
+    - 真实项目里 lazy 通常写成 lazy(() => import('./Page.jsx'))
+    - 本静态 HTML 无打包环境，用 Promise 模拟动态加载
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React · lazy Suspense</title>
+  <script src="../libs/react.development.js"></script>
+  <script src="../libs/react-dom.development.js"></script>
+  <script src="../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { Suspense, lazy, useState } = React;
+
+    const LazyReport = lazy(() => {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve({
+            default: function Report() {
+              return <p>报表组件加载完成。</p>;
+            }
+          });
+        }, 1000);
+      });
+    });
+
+    function App() {
+      const [showReport, setShowReport] = useState(false);
+
+      return (
+        <section>
+          <h1>lazy 与 Suspense</h1>
+          <button onClick={() => setShowReport(true)}>加载报表</button>
+          <Suspense fallback={<p>加载中...</p>}>
+            {showReport && <LazyReport />}
+          </Suspense>
+          <p>面试回答: lazy 负责按需加载组件，Suspense 负责声明加载等待期间的 UI。</p>
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

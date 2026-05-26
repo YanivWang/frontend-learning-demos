@@ -1,0 +1,83 @@
+<!--
+  分类: react / 面试综合
+  主题: Error Boundary 与常见优化清单
+  要点:
+    - Error Boundary 只能用 class 组件实现，捕获子组件渲染、生命周期、构造函数中的错误
+    - 它不能捕获事件处理、异步回调、服务端渲染、错误边界自身的错误
+    - 常见优化: 合理 key、memo、useMemo/useCallback、懒加载、虚拟列表、状态下沉或拆分 Context
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React · Error Boundary 与优化清单</title>
+  <script src="../libs/react.development.js"></script>
+  <script src="../libs/react-dom.development.js"></script>
+  <script src="../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    class ErrorBoundary extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = { hasError: false, message: "" };
+      }
+
+      static getDerivedStateFromError(error) {
+        return { hasError: true, message: error.message };
+      }
+
+      componentDidCatch(error, info) {
+        console.log("错误边界捕获:", error, info.componentStack);
+      }
+
+      render() {
+        if (this.state.hasError) {
+          return (
+            <div>
+              <h2>组件出错了</h2>
+              <p>{this.state.message}</p>
+            </div>
+          );
+        }
+        return this.props.children;
+      }
+    }
+
+    function BuggyCounter({ broken }) {
+      if (broken) {
+        throw new Error("BuggyCounter render error");
+      }
+      return <p>组件正常渲染。</p>;
+    }
+
+    function App() {
+      const [broken, setBroken] = useState(false);
+
+      return (
+        <section>
+          <h1>Error Boundary 与常见优化清单</h1>
+          <button onClick={() => setBroken(true)}>触发渲染错误</button>
+          <ErrorBoundary>
+            <BuggyCounter broken={broken} />
+          </ErrorBoundary>
+          <ul>
+            <li>先用 DevTools / 日志定位重复渲染原因。</li>
+            <li>列表使用稳定 key，避免状态错位。</li>
+            <li>昂贵计算用 useMemo，稳定函数引用用 useCallback。</li>
+            <li>大列表考虑虚拟滚动，大页面考虑 lazy + Suspense。</li>
+            <li>Context value 拆分或缓存，避免全局 Provider 频繁重渲染。</li>
+          </ul>
+          <p>面试回答: Error Boundary 是 React 的渲染错误兜底机制；性能优化要基于实际瓶颈。</p>
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

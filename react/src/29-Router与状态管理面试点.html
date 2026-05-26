@@ -1,0 +1,77 @@
+<!--
+  分类: react / 工程化
+  主题: Router 与状态管理常见面试点
+  要点:
+    - React Router 负责 URL 与页面组件的映射，常见概念有 BrowserRouter、Routes、Route、Link、useNavigate、useParams
+    - 状态管理要先区分本地状态、跨组件状态、服务端缓存状态
+    - Redux/Zustand/Context 不是互相完全替代，选择取决于规模、协作和调试需求
+    - 本文件不引入第三方库，用最小 demo 模拟路由与 store 思想
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React · Router 与状态管理</title>
+  <script src="../libs/react.development.js"></script>
+  <script src="../libs/react-dom.development.js"></script>
+  <script src="../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { createContext, useContext, useReducer, useState } = React;
+
+    const StoreContext = createContext(null);
+
+    function reducer(state, action) {
+      switch (action.type) {
+        case "login":
+          return { ...state, user: action.payload };
+        case "logout":
+          return { ...state, user: null };
+        default:
+          return state;
+      }
+    }
+
+    function Home() {
+      const store = useContext(StoreContext);
+      return <p>首页，当前用户: {store.state.user || "未登录"}</p>;
+    }
+
+    function Profile() {
+      const store = useContext(StoreContext);
+      return (
+        <div>
+          <p>个人中心</p>
+          <button onClick={() => store.dispatch({ type: "login", payload: "Alice" })}>模拟登录</button>
+          <button onClick={() => store.dispatch({ type: "logout" })}>退出</button>
+        </div>
+      );
+    }
+
+    function App() {
+      const [path, setPath] = useState("/home");
+      const [state, dispatch] = useReducer(reducer, { user: null });
+
+      return (
+        <StoreContext.Provider value={{ state, dispatch }}>
+          <section>
+            <h1>Router 与状态管理面试点</h1>
+            <nav>
+              <button onClick={() => setPath("/home")}>Home</button>
+              <button onClick={() => setPath("/profile")}>Profile</button>
+            </nav>
+            {path === "/home" && <Home />}
+            {path === "/profile" && <Profile />}
+            <p>面试回答: 路由管理页面位置；状态管理管理跨组件共享数据；服务端数据缓存通常还会用 React Query/SWR 这类工具。</p>
+          </section>
+        </StoreContext.Provider>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

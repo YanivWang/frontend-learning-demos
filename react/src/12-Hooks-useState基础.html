@@ -1,0 +1,66 @@
+<!--
+  分类: react / hooks
+  主题: useState 基础与函数式更新
+  要点:
+    - Hooks 只能在函数组件顶层调用，不能写在 if / for / 普通函数里
+    - useState 返回 [state, setState]，修改状态必须调用 setState
+    - 当下一次状态依赖上一次状态时，优先使用函数式更新 setCount(prev => prev + 1)
+    - React 状态更新是异步调度的，setState 后立刻读取旧值是常见面试坑
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React · useState 基础</title>
+  <script src="../libs/react.development.js"></script>
+  <script src="../libs/react-dom.development.js"></script>
+  <script src="../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    function Counter() {
+      // count 是当前渲染快照中的值；setCount 会请求 React 安排下一次渲染。
+      const [count, setCount] = useState(0);
+      const [name, setName] = useState("React");
+
+      function addWrongWay() {
+        // 三次都基于当前这一次 render 里的 count，因此最终通常只 +1。
+        setCount(count + 1);
+        setCount(count + 1);
+        setCount(count + 1);
+        console.log("这里读到的还是旧 count:", count);
+      }
+
+      function addRightWay() {
+        // 每次都基于 React 队列中的最新值，最终 +3。
+        setCount(prevCount => prevCount + 1);
+        setCount(prevCount => prevCount + 1);
+        setCount(prevCount => prevCount + 1);
+      }
+
+      return (
+        <section>
+          <h1>useState 基础</h1>
+          <p>计数: {count}</p>
+          <p>名称: {name}</p>
+          <button onClick={() => setCount(count + 1)}>普通 +1</button>
+          <button onClick={addWrongWay}>连续对象式 +3（实际多为 +1）</button>
+          <button onClick={addRightWay}>连续函数式 +3</button>
+          <button onClick={() => setName(name === "React" ? "Hooks" : "React")}>
+            切换名称
+          </button>
+          <p>
+            面试回答: useState 不会直接改变量，而是通知 React 重新渲染；依赖旧状态时用函数式更新。
+          </p>
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<Counter />);
+  </script>
+</body>
+</html>

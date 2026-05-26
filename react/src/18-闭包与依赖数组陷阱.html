@@ -1,0 +1,58 @@
+<!--
+  分类: react / hooks
+  主题: 闭包与依赖数组陷阱
+  要点:
+    - 函数组件每次渲染都有自己的 state 快照和函数闭包
+    - effect / callback 使用了外部变量，就应该放入依赖数组
+    - 故意不放依赖会产生 stale closure，也就是读到旧状态
+    - 如果只需要基于旧状态更新，函数式 setState 可以减少依赖
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React · 闭包与依赖数组</title>
+  <script src="../libs/react.development.js"></script>
+  <script src="../libs/react-dom.development.js"></script>
+  <script src="../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useEffect, useState } = React;
+
+    function App() {
+      const [count, setCount] = useState(0);
+      const [message, setMessage] = useState("");
+
+      useEffect(() => {
+        // 这个 effect 依赖 count；count 改变时重新执行，message 才能同步。
+        setMessage("当前 count 是 " + count);
+      }, [count]);
+
+      function alertLater() {
+        const capturedCount = count;
+        setTimeout(() => {
+          alert("点击按钮那一刻的 count 是: " + capturedCount);
+        }, 1000);
+      }
+
+      return (
+        <section>
+          <h1>闭包与依赖数组</h1>
+          <p>count: {count}</p>
+          <p>{message}</p>
+          <button onClick={() => setCount(prev => prev + 1)}>+1</button>
+          <button onClick={alertLater}>1 秒后弹出当前快照</button>
+          <p>
+            面试回答: 函数组件中的函数会捕获本次渲染的变量；依赖数组写错时，effect 可能一直使用旧闭包。
+          </p>
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

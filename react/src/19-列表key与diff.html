@@ -1,0 +1,73 @@
+<!--
+  分类: react / 原理
+  主题: 列表 key 与 diff
+  要点:
+    - key 帮助 React 在同级列表中识别元素身份
+    - key 不会作为 props 传给组件
+    - 稳定唯一的业务 id 通常优于 index
+    - 用 index 作为 key 时，列表插入、删除、排序可能导致状态错位
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React · 列表 key 与 diff</title>
+  <script src="../libs/react.development.js"></script>
+  <script src="../libs/react-dom.development.js"></script>
+  <script src="../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    function TodoItem({ todo }) {
+      const [checked, setChecked] = useState(false);
+
+      return (
+        <li>
+          <label>
+            <input type="checkbox" checked={checked} onChange={e => setChecked(e.target.checked)} />
+            {todo.text}（组件内部 checked: {String(checked)}）
+          </label>
+        </li>
+      );
+    }
+
+    function App() {
+      const [todos, setTodos] = useState([
+        { id: 1, text: "学习 JSX" },
+        { id: 2, text: "学习 state" },
+        { id: 3, text: "学习 Hooks" }
+      ]);
+
+      function addAtHead() {
+        const nextId = Date.now();
+        setTodos([{ id: nextId, text: "新任务 " + nextId }, ...todos]);
+      }
+
+      return (
+        <section>
+          <h1>列表 key 与 diff</h1>
+          <button onClick={addAtHead}>从头部插入</button>
+
+          <h2>正确: 使用稳定 id 作为 key</h2>
+          <ul>
+            {todos.map(todo => <TodoItem key={todo.id} todo={todo} />)}
+          </ul>
+
+          <h2>反例: index key 在插入时可能造成状态错位</h2>
+          <ul>
+            {todos.map((todo, index) => <TodoItem key={index} todo={todo} />)}
+          </ul>
+
+          <p>面试回答: key 是 diff 的身份标识；列表会增删排序时，不要用 index 当 key。</p>
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
