@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+
+<div id="app">
+    <template v-for="post in postList">
+        <load-page-b v-bind:post="post"></load-page-b>
+    </template>
+</div>
+
+<script>
+    //所有全局注册的行为，都必须发生在根Vue实例创建之前
+    //全局注册一个组件
+    //组件名称必须时：短横线连接，且全部小写
+    //1.当注册一个组件注册后，它可以用在其注册后的所有的Vue根实例中，包括在根实例中使用的子组件中
+    Vue.component('load-page-a', {
+        data: function () {
+            return {
+                msg: 0
+            }
+        },
+        props: ['post'],
+        template: `<div>
+                     <div>AAA</div>
+                     <div>{{post.title}}</div>
+                     <div>{{post.content}}</div>
+                  </div>`,
+        methods: {}
+    });
+
+    //传入组件名称和一个对象，组件名就是该组件的名称，对象是该组件的实体
+    Vue.component('load-page-b', {
+        data: function () {
+            return {
+                msg: 0
+            }
+        },
+        props: ['post'],
+        template: `<div>
+                     <div>BBB</div>
+                     <div>{{post.title}}</div>
+                     <div>{{post.content}}</div>
+                     <load-page-a v-bind:post="post"></load-page-a>
+                  </div>`,
+        methods: {}
+    });
+
+    //2.注册局部组件(局部注册的组件：在根实例的子组件中是不可用的，比如下面的 loadPageD不能用在loadPageC中)
+    var loadPageC = {
+        data: function () {
+            return {
+                msg: 0
+            }
+        },
+        props: ['post'],
+        template: `<div></div>`
+    };
+    var loadPageD = {
+        data: function () {
+            return {
+                msg: 0
+            }
+        },
+        props: ['post'],
+        template: `<div></div>`
+    };
+    //3.如果想让loadPageD中可以使用loadPageC，则需要，下面的写法
+    loadPageD = {
+        data: function () {
+            return {
+                msg: 0
+            }
+        },
+        props: ['post'],
+        template: `<div></div>`,
+        components:{
+            'load-page-c': loadPageC
+        }
+    };
+
+
+    //new Vue()中的el的表达式获取的dom元素：作为了根实例的template
+    var vm = new Vue({
+        el: "#app",
+        data: {
+            postList: [{"title": '标题1', "content": '我是内容1'},
+                {"title": '标题2', "content": '我是内容2'}]
+        },
+        components:{
+            'load-page-c': loadPageC,
+            'load-page-d': loadPageD
+        }
+    });
+</script>
+
+</body>
+</html>

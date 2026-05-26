@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../../lib/vue.js"></script>
+    <script src="../../lib/vue-router.js"></script>
+</head>
+<body>
+
+<div id="app">
+    <router-link to="/a">to a</router-link>
+    <router-link to="/b">to b</router-link>
+    <router-link to="/c">to c</router-link>
+    <router-link to="/d">to d</router-link>
+
+    <router-view></router-view>
+</div>
+
+<script>
+    //一个视图需要一个组件来渲染，一个页面上可以同时有多个view(视图)
+    const A = {
+        template: `<div>A</div>`
+    };
+
+    const B = {
+        template: `<div>B</div>`
+    };
+
+    const C = {
+        template: `<div>C</div>`
+    };
+
+    const D = {
+        template: `<div>D</div>`
+    };
+
+    const router = new VueRouter({
+        routes: [
+            {
+                path: '/a',
+                redirect: '/b',//路由重定向：当用户访问/a时，URL将会被替换成/b,然后匹配路由为/b，注意不会匹配路由/a
+                component: A
+            },
+            {
+                path: '/b',
+                component: B
+            },
+            {
+                name: "toC",
+                path: '/c',
+                component: C,
+                alias: '/我是'// /c的别名是/d,的意思是：当用户访问/d,URL会保持/d，但是实际上路由匹配的是/a，就和用户直接访问/a一样
+            },
+            {
+                path: '/d',
+                component: D
+            }
+        ]
+    });
+    //注意："别名"的功能让你能够自由的将UI结构映射到任意的URL，而不是受限于配置的嵌套路由结构，也隐藏了你项目的UI内部结构
+
+    new Vue({
+        el: '#app',
+        router,
+        components:{
+            A,
+            B,
+            C
+        }
+    })
+</script>
+
+</body>
+</html>

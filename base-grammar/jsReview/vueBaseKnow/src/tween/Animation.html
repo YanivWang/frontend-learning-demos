@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/17.1.1/Tween.min.js"></script>
+</head>
+<body>
+
+<img id="idImg" src="img/laba/laba1.png">
+
+<script>
+    let img = document.getElementById("idImg");
+    let array = ["img/laba/laba1.png", "img/laba/laba2.png", "img/laba/laba3.png"];
+
+
+    let count = 0;
+    function animate() {
+        if (count >= 3) {
+            count = count % 3;
+        }
+        img.src = array[count];
+        count++;
+    }
+
+    let animation = new Animation(animate);
+    animation.start();
+
+    setTimeout(function () {
+        animation.stop();
+
+        img.src = array[2];
+    }, 3000);
+
+
+    function Animation(aniFunc, fps) {
+        let that = this;
+        this.fps = fps || 4;
+        this.now = 0;
+        this.then = Date.now();
+        this.interval = 1000 / this.fps;
+        this.delta = 0;
+        this.pause = false;
+        this.aniFunc = aniFunc;
+        this.tick = function () {
+            if (that.pause) {
+                return;
+            }
+
+            if (window.requestAnimationFrame) {
+                requestAnimationFrame(that.tick);
+                that.now = Date.now();
+                that.delta = that.now - that.then;
+                if (that.delta > that.interval) {
+                    that.then = that.now - (that.delta % that.interval);
+                    that.aniFunc();
+                }
+            } else {
+                setTimeout(that.tick, that.interval);
+                that.aniFunc();
+            }
+        };
+        this.start = function () {
+            window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+
+            that.pause = false;
+            that.tick();
+        };
+        this.stop = function () {
+            that.pause = true;
+        }
+    }
+</script>
+
+</body>
+</html>

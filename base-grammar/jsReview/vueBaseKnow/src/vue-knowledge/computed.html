@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>vue first</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+
+<div id="app1">
+    <div>msg: {{msg}}</div>
+
+    <!--很神奇，多次使用computedMsg，不会重复计算，而是立即返回 -->
+    <div>computedMsg: {{computedMsg}}</div>
+    <div>computedMsg: {{computedMsg}}</div>
+    <div>computedMsg: {{computedMsg}}</div>
+    <div>computedMsg: {{computedMsg}}</div>
+    <div>computedMsg: {{computedMsg}}</div>
+    <div>computedMsg: {{computedMsg}}</div>
+
+    <!--Mustache中支持使用js表达式，可以调用函数，但是不能写js语句和控制逻辑，只能写一个简单的单行的js表达式-->
+    <div>reverseMsg: {{reverseMsg()}}</div>
+    <div>reverseMsg: {{reverseMsg()}}</div>
+    <div>reverseMsg: {{reverseMsg()}}</div>
+</div>
+
+
+<script>
+    //计算属性是基于他们的依赖进行数据缓存的，只有相关的依赖关系发生改变时，才会重新求值
+    var vm = new Vue({
+        el: '#app1',
+        data: {//声明一般属性
+            msg: '12345'
+        },
+        computed: {//声明计算属性：会对计算结果进行缓存
+            //可以很清楚看出来，这个计算属性的值是依赖于msg的值的
+            //声明一个计算属性：computedMsg,它的值是后面的函数计算出来的，后面的这个函数，将会作为该计算函数的getter函数
+            computedMsg: function () {
+                console.log("1111");
+                return this.msg.split("").reverse().join("");
+            }
+        },
+        methods: {
+            //调用方法将会始终触发函数的执行
+            reverseMsg: function () {
+                console.log("2222");
+                return this.msg.split("").reverse().join("");
+            }
+        }
+    });
+
+    console.log(vm.msg);
+    console.log(vm.computedMsg);
+
+    console.log(vm.reverseMsg());
+
+</script>
+
+</body>
+</html>

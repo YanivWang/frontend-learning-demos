@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <!-- 引入 react 和 react-dom，这两个是react核心包 -->
+    <script src="./jsLibrary/react18.js"></script>
+    <script src="./jsLibrary/react-dom18.js"></script>
+
+    <script src="./jsLibrary/babel.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      let appId = 1001111;
+
+      function changeAppid(){
+        appId = "appID 变化了"
+      }
+
+      class Header extends React.Component {
+        render() {
+          return <div>Header</div>;
+        }
+      }
+
+      class Footer extends React.Component {
+        render() {
+          return <div>Footer</div>;
+        }
+      }
+     
+      //定义一个React组件必须要继承 React.Component 类
+      class App extends React.Component {
+        //class类组件，被调用的时候，会自动调用类组件的constructor方法，来初始化组件
+        constructor(props) {
+          console.log("props>>>", props); // {id: 1001}
+
+          //将组件属性传递到父类的构造函数中
+          //Class组件应该始终使用props参数来调用父类的构造函数
+          super(props);
+         
+          //只能在 constructor 函数中初始化 组件的内部状态 state，也只能在这里直接对state进行赋值，
+          //其它地方修改state，必须通过setState方法
+          this.state = {
+            appName: "我是app组件",
+          };
+        }
+
+        //任何时候，组件都不能直接修改props
+        handleBtnClick(e){
+          console.log("点击修改props", e);
+          //通过父组件传递过来的 函数属性，回调这个函数属性，实现跟父组件的通信
+          this.props.changeAppidFn();
+        }
+
+        render(renderParams) {
+          console.log("renderParams", renderParams);
+
+          {
+            /* jsx使用小写驼峰定义属性名称 className  */
+          }
+          {
+            /* jsx中事件属性也是小写驼峰 */
+          }
+          return (
+            <div className="app">
+              <Header />
+              <div id={this.state.id}>state： {this.state.appName}</div>
+              <div>props： {this.props.id}</div>
+              <button
+                onClick={(e) => {
+                  console.log("点击修改state,", e);
+
+                  //状态改变，会触发render再次执行
+                  this.setState({
+                    appName: "爸爸",
+                  });
+                }}
+              >
+                点击修改state
+              </button>
+
+              <button
+                onClick={console.log(this)}
+              >
+                点击打印this
+              </button>
+
+              {/* 事件处理函数必须是一个函数不是字符串函数名称
+                函数名和变量名一样，都是一个引用，
+                this.handleBtnClick 这个并不是函数调用，而只是作为变量传递给jsx元素
+                最后是由react负责调用这个函数，而不是当前组件实例调用的这个函数，因此
+                函数内部的this，并不指向当前组件实例
+                */}
+              <button
+                onClick={this.handleBtnClick}
+              >
+                点击修改props
+              </button>
+
+              <Footer />
+            </div>
+          );
+        }
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App id={appId} changeAppidFn={changeAppid} />);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移动端图片懒加载</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(90deg, #3498db, #8e44ad);
+            color: white;
+            text-align: center;
+            padding: 25px 20px;
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .stats {
+            font-size: 14px;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .stats span {
+            background-color: #fff;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .settings {
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            background: #4e73df;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 3px 8px rgba(78, 115, 223, 0.3);
+        }
+        
+        button:hover {
+            background: #2e59d9;
+            transform: translateY(-2px);
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .instructions {
+            background-color: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #4e73df;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #2c5282;
+        }
+        
+        .instructions p {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .image-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .lazy-img {
+            width: 100%;
+            border-radius: 8px;
+            aspect-ratio: 4/3;
+            background-color: #f5f7fa;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .lazy-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+        }
+        
+        .lazy-img.loaded img {
+            opacity: 1;
+        }
+        
+        .placeholder {
+            position: absolute;
+            color: #a0aec0;
+            font-size: 16px;
+            z-index: 1;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading-animation {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 14px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .counter {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(78, 115, 223, 0.9);
+            color: white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        
+        @media (max-width: 480px) {
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .stats {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>移动端图片懒加载</h1>
+            <p class="subtitle">使用IntersectionObserver API实现</p>
+            <p>向下滚动查看延迟加载效果 →</p>
+        </header>
+        
+        <div class="controls">
+            <div class="stats">
+                <span id="total">加载图片: 0</span>
+                <span id="loaded">已加载: 0</span>
+                <span id="unloaded">未加载: 0</span>
+            </div>
+            <div class="settings">
+                <button id="resetBtn">重置图片</button>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="instructions">
+                <h3>工作原理说明</h3>
+                <p>• 所有图片初始状态仅显示占位符</p>
+                <p>• 当图片进入视口时，自动加载真实图片</p>
+                <p>• 底部标记显示懒加载触发过程</p>
+                <p>• 统计信息展示加载状态</p>
+            </div>
+            
+            <div class="image-container">
+                <!-- 图片会通过JS动态添加 -->
+            </div>
+            
+            <!-- 滚动底部标记 -->
+            <div class="lazy-img" style="height: 50px; margin-top: 50px; background: transparent;" id="sentinel">
+                <div style="background: #4e73df; color: white; padding: 10px; border-radius: 5px; font-weight: bold;">懒加载触发标记线</div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>仅当图片进入视口时才会加载真实图片</p>
+            <p>提高页面加载速度，优化移动端性能</p>
+        </footer>
+    </div>
+    
+    <div class="counter" id="counter">0</div>
+
+    <script>
+        // 图片库 - 模拟从服务器获取
+        const imageSources = [
+            "https://images.unsplash.com/photo-1682687219640-b3f11f4b7234?auto=format&fit=crop&q=80",
+            "https://ix-marketing.imgix.net/bg-remove_after.png?auto=format,compress&w=3524",
+            "https://ix-marketing.imgix.net/autocompress.png?auto=format,compress&w=3524",
+            "https://ix-marketing.imgix.net/focalpoint.png?auto=format,compress&w=3524",
+            "https://ix-marketing.imgix.net/autotagging.png?auto=format,compress&w=3524",
+            "https://ix-marketing.imgix.net/case-study_tile_swimply.png?auto=format,compress&w=3038",
+            "https://ix-marketing.imgix.net/case-study_tile_shinola.png?auto=format,compress&w=3038",
+            "https://ix-marketing.imgix.net/case-study_judge.me.png?auto=format,compress&w=3038",
+        ];
+        
+        // DOM元素
+        const imageContainer = document.querySelector('.image-container');
+        const totalCounter = document.getElementById('total');
+        const loadedCounter = document.getElementById('loaded');
+        const unloadedCounter = document.getElementById('unloaded');
+        const resetBtn = document.getElementById('resetBtn');
+        const counter = document.getElementById('counter');
+        
+        // 懒加载状态
+        let loadedImages = 0;
+        // 交叉观察器
+        let activeObserver = null;
+        
+        // 初始化图片
+        function initImages() {
+            // 清空容器
+            imageContainer.innerHTML = '';
+            loadedImages = 0;
+            
+            // 创建图片元素
+            imageSources.forEach((src, index) => {
+                const imgWrapper = document.createElement('div');
+                imgWrapper.className = 'lazy-img';
+                imgWrapper.dataset.index = index;
+                
+                // 图片占位符
+                const placeholder = document.createElement('div');
+                placeholder.className = 'placeholder';
+                placeholder.innerHTML = `
+                    <div class="loading-animation"></div>
+                    <div>图片 #${index + 1}<br><small>向下滚动加载</small></div>
+                `;
+                
+                // 真实图片（隐藏）
+                const img = document.createElement('img');
+                img.dataset.src = `${src}&w=600&dpr=2&id=${index}`; // 添加ID防止缓存
+                img.alt = `示例图片 ${index + 1}`;
+                
+                imgWrapper.appendChild(img);
+                imgWrapper.appendChild(placeholder);
+                imageContainer.appendChild(imgWrapper);
+            });
+            
+            updateCounters();
+            setupIntersectionObserver();
+        }
+        
+        // 设置IntersectionObserver
+        function setupIntersectionObserver() {
+            // 如果已有观察者，先停止
+            if (activeObserver) {
+                activeObserver.disconnect();
+            }
+            
+            // 创建新的观察者
+            activeObserver = new IntersectionObserver((entries, observer) => {
+                // 滚动计数器动画
+                counter.textContent = entries.length;
+                counter.animate([
+                    { transform: 'scale(1.2)' }, 
+                    { transform: 'scale(1)' }
+                ], { duration: 500 });
+                
+                debugger
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const imgElement = entry.target.querySelector('img');
+                        // 如果还没有加载
+                        if (!entry.target.classList.contains('loaded')) {
+                            // 延迟加载效果
+                            setTimeout(() => {
+                                // 添加加载类名
+                                entry.target.classList.add('loaded');
+                                // 加载真实图片
+                                imgElement.src = imgElement.dataset.src;
+                                
+                                // 更新计数器
+                                loadedImages++;
+                                updateCounters();
+                                
+                                // 图片加载完成后移除占位符
+                                imgElement.onload = () => {
+                                    setTimeout(() => {
+                                        entry.target.querySelector('.placeholder').remove();
+                                    }, 500);
+                                };
+                                
+                                // 停止观察该元素
+                                observer.unobserve(entry.target);
+                            }, 300);
+                        }
+                    }
+                });
+            }, {
+                root: null, // 相对于视口
+                threshold: 0.1, // 当10%可见时触发
+                rootMargin: '0px 0px 100px 0px' // 底部增加100px的预加载区域
+            });
+            
+            // 观察所有lazy-img元素
+            document.querySelectorAll('.lazy-img:not(#sentinel)').forEach(img => {
+                activeObserver.observe(img);
+            });
+            
+            // 观察底部标记用于日志
+            const sentinel = document.getElementById('sentinel');
+            new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        console.log('触底 - 所有图片已加载或将要加载');
+                    }
+                });
+            }).observe(sentinel);
+        }
+        
+        // 更新计数器
+        function updateCounters() {
+            const total = document.querySelectorAll('.lazy-img:not(#sentinel)').length;
+            const unloaded = total - loadedImages;
+            
+            totalCounter.textContent = `加载图片: ${total}`;
+            loadedCounter.textContent = `已加载: ${loadedImages}`;
+            unloadedCounter.textContent = `未加载: ${unloaded}`;
+        }
+        
+        // 重置所有图片
+        resetBtn.addEventListener('click', () => {
+            initImages();
+        });
+        
+        // 初始化
+        //DOMContentLoaded 它在浏览器html文档被完全加载并解析完成触发,此时DOM树已经构建完成，而不用等待样式表，图像等外部资源加载完毕
+        //这个时间特别适合用于执行需要操作DOM的脚本，因此此时DOM已经构建完毕，可以安全的访问和修改
+        window.addEventListener('DOMContentLoaded', () => {
+            initImages();
+        });
+    </script>
+</body>
+</html>

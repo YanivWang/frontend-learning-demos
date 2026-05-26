@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="./lib/html2canvas.min.js"></script>
+    <style>
+        body {
+            display: grid;
+            place-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        button {
+            min-width: 135px;
+            max-width: 200px;
+            min-height: 50px;
+            border: 0;
+            outline: 0;
+            color: white;
+            /* pink to orange */
+            background: #ee0979;
+            background: linear-gradient(to right, #ee0979, #ff6a00);
+
+            vertical-align: top;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <button>Button</button>
+    <div>
+        <span>color info:</span>
+        <span id="colorInfo"></span>
+    </div>
+</div>
+
+<script>
+    var btn = document.querySelector("button");
+    var container = document.querySelector(".container");
+    var ctx;
+    var colorInfoElem = document.querySelector("#colorInfo");
+
+    html2canvas(btn).then(canvas => {
+        //container.appendChild(canvas);
+        ctx = canvas.getContext("2d");
+        btn.addEventListener("click", getColorAtPointer)
+    });
+
+    function getColorAtPointer(e) {
+        let localX = e.offsetX;
+        let localY = e.offsetY;
+        let rebaColorArray = ctx.getImageData(x, y, 1, 1).data;
+        colorInfoElem.innerText = rebaColorArray;
+
+        //根据window位置获取按钮的位置
+        let bcr = btn.getBoundingClientRect();
+        let globalX = bcr.left + localX;
+        let globalY = bcr.top + localY;
+
+        //
+
+    }
+
+    var particleCanvas, particleCtx;
+
+    function createParticleCanvas() {
+        particleCanvas = document.createElement("canvas");
+        particleCtx = particleCanvas.getContext("2d");
+
+        //canvas的大小
+        particleCanvas.width = window.innerWidth;
+        particleCanvas.height = window.innerHeight;
+
+        //canvas的位置
+        particleCanvas.style.position = "absolute";
+        particleCanvas.style.top = "0";
+        particleCanvas.style.left = "0";
+
+        //设置canvas在元素的上面
+        particleCanvas.style.zIndex = "999999";
+
+        //确保它下面的其它元素时可点击的
+        particleCanvas.style.pointerEvents = "none";
+
+        //添加canvas到body
+        document.body.appendChild(particleCanvas);
+    }
+
+
+</script>
+
+</body>
+</html>

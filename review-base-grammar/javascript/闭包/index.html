@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      //AAA:直接在script脚本顶层使用 var 声明的变量具有全局作用域(global scope)，会作为 window 对象的属性
+      var globalVar = "globalVar1111";
+
+      //AAAA:直接在script脚本顶层使用 function 关键字声明的函数，具有全局作用域(global scope), 会作为 window 对象的属性
+      function outerFn(x, y) {
+        //函数内部声明的变量，具有局部(本地)作用域(local scope)
+
+        console.log("this,", this); //函数的内部对象 this 指向调用它的那个对象
+        console.log("arguments,", arguments); //函数的内部对象 arguments，包含传递给函数的实际的参数
+        console.log("arguments callee", arguments.callee === outerFn); //arguments callee 属性执行当前函数本身(指向正在执行的函数自身)
+        console.log("globalVar,", globalVar);
+
+        console.log(outerVar);//undefined (由于var声明的变量会有变量提升，所以在赋值之前，直接使用，值是undefined)
+       // console.log(outerLet);//<没有可用的值> 存在死区，不可访问，访问会报错：Uncaught ReferenceError: Cannot access 'outerLet' before initialization
+
+        var outerVar = 1000;
+        let outerLet = 2000;
+
+        return function innerFn() {
+          console.log(outerVar);//闭包(嵌套函数)中引用的外部函数的作用域中的变量，存放在闭包作用域中
+          console.log(outerLet);
+
+          var innerVar = 100;
+          let innerLet = 200;
+
+          console.log(innerVar);
+          console.log(innerLet);
+
+          console.log("innerFn", innerFn);
+
+          return function innnnerFn(){
+            console.log(innerLet);
+            console.log(innerVar);
+
+            var nnnerVar = 123;
+            let nnnerLet = 456;
+
+            console.log(nnnerVar);
+            console.log(nnnerLet);
+
+            console.log("innnnerFn,", innnnerFn);
+          }
+        };
+      }
+
+      //BBB：直接在script脚本顶层 使用 const 或者 let 声明的变量, 具有 脚本作用域(script scope)
+      const innnnerFn = outerFn(1, 2, 3)();
+      innnnerFn();
+
+      //BBB：直接在script脚本顶层使用 使用 const 或者 let 声明的变量，具有 脚本作用域(script scope)
+      let scriptLet = "I am let";
+    </script>
+  </body>
+</html>

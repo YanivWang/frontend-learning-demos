@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+
+
+    <style>
+        .title {
+            text-align: center;
+        }
+
+        .jsonEdit {
+            max-width: 900px;
+            margin: auto;
+            height: 500px;
+        }
+
+
+    </style>
+</head>
+
+<body>
+<h2 class="title">度小满科技（北京）有限公司</h2>
+
+<div id="app">
+    <div class="jsonEdit">
+        <div class="container">
+
+        </div>
+    </div>
+</div>
+
+<script>
+    var JSON_OBJ = Symbol.for("json_object");
+    var JSON_ARRAY = Symbol.for("json_array");
+    var JSON_OTHER = Symbol.for("json_other");
+
+    function getDataType(obj) {
+        var tempStr = Object.prototype.toString.call(obj);
+        if (tempStr === "[object Object]") {
+            return JSON_OBJ;
+        } else if (tempStr === "[object Array]") {
+            return JSON_ARRAY;
+        } else {
+            return JSON_OTHER;
+        }
+    }
+
+    //############################递归子组件############################
+
+    Vue.component('comp-item', {
+            data: function () {
+                return {
+                    space: " ",
+                    JSON_OBJ: JSON_OBJ,
+                    JSON_ARRAY: JSON_ARRAY,
+                    JSON_OTHER: JSON_OTHER
+                }
+            },
+            props: ['itemkey', 'itemvalue', 'type', 'ptype'],
+            methods: {
+                getDataType(obj) {
+                    return getDataType(obj);
+                },
+                expanBtnHandle() {
+
+                },
+            },
+            template: `
+                <div>
+                  <template v-if="ptype === JSON_OBJ">
+                     &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  </template>
+                  <template v-else-if="ptype === JSON_ARRAY">
+                     &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  </template>
+
+                  {{'"' + itemkey + '"'}}:
+
+                  <template v-if="type === JSON_OBJ">
+                     {{"{"}}
+                    <template v-for="(value, name) in itemvalue">
+                      <comp-item :itemkey="name" :itemvalue="value" :type="getDataType(value)" :ptype="getDataType(itemvalue)">
+                      </comp-item>
+                    </template>
+                     &nbsp;&nbsp; &nbsp;&nbsp;{{"}"}}
+                  </template>
+
+                  <template v-else-if="type === JSON_ARRAY">
+                     to do: {{itemvalue}}
+                  </template>
+
+                  <template v-else>
+                     {{'"' + itemvalue + '"'}}
+                  </template>
+                </div>
+             `
+        }
+    );
+
+
+    //############################ 根实例 ############################
+    //测试数据
+    let testJson = {
+        "name": "百度",
+        "age": 30,
+        "address": {
+            "province": "北京",
+            "city": "北京",
+            "country": "大兴"
+        }
+    };
+
+
+    var app = new Vue({
+        el: "#app",
+        data: function () {
+            return {
+                inputValue: JSON.stringify(testJson, null, 2),
+                formatJson: null,
+                JSON_OBJ: JSON_OBJ,
+                JSON_ARRAY: JSON_ARRAY,
+                JSON_OTHER: JSON_OTHER,
+                isClose: false
+            }
+        },
+        methods: {
+            getDataType(obj) {
+                return getDataType(obj);
+            },
+            expanBtnHandle(type) {
+                if (type === 'root') {
+                    this.isClose = !this.isClose;
+                }
+            },
+            transformToJson: function () {
+                if (!this.inputValue.trim()) return;
+                var tempJson;
+                try {
+                    tempJson = JSON.parse(this.inputValue)
+                } catch (e) {
+                    console.log(e);
+                    alert("json格式不合法");
+                    return;
+                }
+                //this.formatJson = JSON.stringify(tempContent, null, 4);
+                this.formatJson = tempJson;
+            }
+        }
+    })
+
+</script>
+</body>
+
+</html>

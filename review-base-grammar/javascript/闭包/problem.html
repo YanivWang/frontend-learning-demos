@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <script>
+    //问题: 闭包会引起内存泄漏，闭包引用的外层变量的在外层函数调用完毕之后，不会立即销毁
+    //修复: 
+    // 1) 调用闭包(闭包调用结束，就能销毁其引用的变量)
+    // 2)手动将闭包引用赋值为null
+    function outer(){
+      let arr = new Array(10000).fill("data") 
+
+      return function inner(){
+        console.log(arr.length);
+      }
+    }
+
+    const inner = outer();
+    console.log(inner);
+
+    inner = null;
+
+    //2.意外的全局变量，会导致内存泄漏
+    //没有声明的变量，直接赋值，这个变量会被添加到全局环境中作为全局变量
+    //全局变量的生命周期很长，除非网页卸载或者浏览器关闭才能销毁
+    //而意外的全局变量，在函数调用结束后，不会销毁
+
+    //解决: 使用 "use strict" 避免意外的全局变量
+    function memoryLeak(){
+      leakArra = new Array(10000).fill("11111")
+    }
+
+    //3.未清除的定时器
+    const timer = setInterval(()=>{
+      //长期运行的定时器未清除
+    },3000)
+    //框架中的清理: react 的 useEffect 中返回一个清理函数
+    //            vue 中beforeUnmount 生命周期移除监听 
+
+
+    //4.dom元素被删除，但是未及时移除的事件监听(同时事件监听引用了DOM元素本身,或者外部作用域数据)
+    const arrTest = new Array(300).fill(0) 
+
+    const myBtnEle = document.getElementById("myBtn")
+    //正向引用： DOM元素会持有其事件监听函数的引用
+    myBtnEle.addEventListener("click", handleClick, false)
+    //反向引用: handleClick 内部又引用了 DOM 元素本身
+    function handleClick(){
+      console.log(myBtnEle.id);
+      console.log(arrTest);
+    }
+
+    setTimeout(()=>{
+      myBtnEle.removeEventListener("click", handleClick)
+    },4000)
+    
+  </script>
+</body>
+</html>

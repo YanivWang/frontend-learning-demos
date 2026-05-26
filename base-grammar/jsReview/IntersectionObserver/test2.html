@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .imgList div {
+            margin-bottom: 400px;
+            width: 300px;
+            height: 250px
+        }
+
+        .imgList div img {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+
+<div class="imgList">
+    <!--
+    <img class="lazy" src="placeholder-image.jpg" data-src="image-to-lazy-load-1x.jpg" data-srcset="image-to-lazy-load-2x.jpg 2x, image-to-lazy-load-1x.jpg 1x" alt="I'm an image!">
+    -->
+
+    <div>
+        <img class="lazy" src="https://webjson.lingodeer.com/mediaSource/static/images/story/border.png"
+             data-srcset="https://d27hu3tsvatwlt.cloudfront.net/source/cn/main/cn-p-1-1.png 1x, https://d27hu3tsvatwlt.cloudfront.net/source/cn/main/cn-p-1-2.png 2x">
+    </div>
+    <div>
+        <img class="lazy" src="https://webjson.lingodeer.com/mediaSource/static/images/story/border.png"
+             data-srcset="https://d27hu3tsvatwlt.cloudfront.net/source/cn/main/cn-p-1-2.png">
+    </div>
+    <div>
+        <img class="lazy" src="https://webjson.lingodeer.com/mediaSource/static/images/story/border.png"
+             data-srcset="https://d27hu3tsvatwlt.cloudfront.net/source/cn/main/cn-p-1-3.png">
+    </div>
+    <div>
+        <img class="lazy" src="https://webjson.lingodeer.com/mediaSource/static/images/story/border.png"
+             data-srcset="https://d27hu3tsvatwlt.cloudfront.net/source/cn/main/cn-p-1-4.png">
+    </div>
+    <div>
+        <img class="lazy" src="https://webjson.lingodeer.com/mediaSource/static/images/story/border.png"
+             data-srcset="https://d27hu3tsvatwlt.cloudfront.net/source/cn/main/cn-p-1-5.png">
+    </div>
+</div>
+
+
+<script>
+    //callback是可见性发生变化时的回调函数，option是配置对象
+    //let lazyImageObserver = new IntersectionObserver(callback,option);
+
+    document.addEventListener("DOMContentLoaded", function () {
+        let lazyImgsDomObjs = document.querySelectorAll("img.lazy");
+        let lazyImgs = [].slice.call(lazyImgsDomObjs);
+
+        if ("IntersectionObserver" in window) {
+            //创建一个观察器实例
+            //回调函数的entries是一个数组，每个成员都是一个IntersectionObserverEntry对象
+            //如果同时有两个元素的可见性发生了变化，则entries中就包含两个元素
+            let lazyImageObserver = new IntersectionObserver(function (entries, observer) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        let lazyImage = entry.target;//被观察的目标元素
+                        // lazyImage.src = lazyImage.dataset.src;
+                        lazyImage.srcset = lazyImage.dataset.srcset;
+                        lazyImage.classList.remove("lazy");
+                        lazyImageObserver.unobserve(lazyImage);
+                    }
+                })
+            });
+
+            lazyImgs.forEach(function (lazyImage) {
+                //观察器实例的observe方法，指定观察那个dom节点
+                lazyImageObserver.observe(lazyImage);
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

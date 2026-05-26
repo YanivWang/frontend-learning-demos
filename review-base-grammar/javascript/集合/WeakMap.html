@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      //weakmap的键不属于正式的引用，不会阻止垃圾回收
+      //weakmap中值属于整数引用，只要键存在，键值对就存在
+      //弱映射的键必须是Object类型或者其子类型
+      const wm = new WeakMap();
+      // wm.set(1, 123)//Invalid value used as weak map key
+      // wm.set("2", {})
+      wm.set({}, { address: "北京奶东村" });
+
+      // wm.entries //weakmap不存在迭代方法
+
+      console.log(wm);
+
+      setTimeout(() => {
+        console.log(wm);
+      }, 3000);
+
+      //WeakMap 使用场景:
+      //1.实现类的私有变量
+      const privateData = new WeakMap();
+
+      class MyClass {
+        constructor() {
+          privateData.set(this, {
+            secret: "这是私有数据",
+          });
+        }
+
+        getSecret() {
+          return privateData.get(this).secret;
+        }
+      }
+
+      const instance = new MyClass();
+      console.log(instance.getSecret()); // 输出: 这是私有数据
+      // 无法直接访问私有数据
+      console.log(privateData.get({})); // 输出: undefined
+
+      //2.保存dom节点元数据
+      const elementStates = new WeakMap();
+      const button = document.getElementById("myButton");
+
+      // 为按钮关联状态
+      elementStates.set(button, {
+        clickCount: 0,
+      });
+
+      button.addEventListener("click", function () {
+        const state = elementStates.get(this);
+        state.clickCount++;
+        console.log(`按钮被点击了 ${state.clickCount} 次`);
+      });
+    </script>
+  </body>
+</html>

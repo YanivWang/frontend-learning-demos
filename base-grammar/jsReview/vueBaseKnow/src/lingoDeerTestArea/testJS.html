@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script>
+    //开放当前语种列表
+    let currentTargetLan_list = ["cn"];
+
+    //语言选择界面全部数据
+    let pLanToCLanSourceDataArray = [
+        {pLan: "fr", "childLans": ["cn", "jp", "kr", "en"]},
+        {pLan: "tch", "childLans": ["jp", "kr", "fr", "de", "es", "pt", "en"]},
+        {pLan: "en", "childLans": ["jp", "kr", "fr", "de", "es", "pt", "cn", "vt", "ru"]},
+        {pLan: "es", "childLans": ["cn", "jp", "kr", "en"]},
+        {pLan: "de", "childLans": ["cn", "jp", "kr"]},
+        {pLan: "jp", "childLans": ["cn", "kr", "en"]},
+        {pLan: "kr", "childLans": ["cn", "jp", "en"]},
+        {pLan: "vt", "childLans": ["cn", "jp", "kr", "en"]},
+        {pLan: "pt", "childLans": ["cn", "jp", "kr", "en", "es"]},
+        {pLan: "ru", "childLans": ["cn", "jp", "kr", "en"]},
+        {pLan: "id", "childLans": ["en"]},
+        {pLan: "po", "childLans": ["en"]},
+        {pLan: "it", "childLans": ["kr", "en"]}
+    ];
+
+    //1.当前学习的目标语列表对应的 pLanToCLanArray
+    //1.1 generate pLanToCLanMapkeys
+    let pLanToCLanMapkeys = {};
+    for (let i = 0; i < pLanToCLanSourceDataArray.length; i++) {
+        let tempObj = pLanToCLanSourceDataArray[i];
+        let pLan = tempObj["pLan"];
+        let childLans = tempObj["childLans"];
+
+        pLanToCLanMapkeys[pLan] = {};
+        for (let j = 0; j < childLans.length; j++) {
+            pLanToCLanMapkeys[pLan][childLans[j]] = 1;
+        }
+    }
+
+    //1.2 generate pLanToCLanMapkeysValue
+    let pLanToCLanMapkeysValue = {};
+    for (let i = 0; i < currentTargetLan_list.length; i++) {
+        let tempLan = currentTargetLan_list[i];
+
+        for (let key in pLanToCLanMapkeys) {
+            if (pLanToCLanMapkeys[key][tempLan]) {
+                if (!pLanToCLanMapkeysValue[key]) {
+
+                    pLanToCLanMapkeysValue[key] = [tempLan];
+                } else {
+                    pLanToCLanMapkeysValue[key].push(tempLan);
+                }
+            }
+        }
+    }
+
+    //1.3 generate pLanToCLanArray
+    let pLanToCLanArray = [];
+    for (let key in pLanToCLanMapkeysValue) {
+        pLanToCLanArray.push({
+            pLan: key,
+            "childLans": pLanToCLanMapkeysValue[key]
+        });
+    }
+
+    //2.当前母语下，可学的目标语映射map
+    let pLanToCLanMap = {};
+
+    //3.可用母语
+    let baseLan_List = [];
+
+    //4.可学目标语
+    let targetLan_List = [];
+
+    let targetLanMap = {};
+    for (let i = 0; i < pLanToCLanArray.length; i++) {
+        let tempObj = pLanToCLanArray[i];
+        let pLan = tempObj["pLan"];
+        let childLans = tempObj["childLans"];
+
+        //4.1.map
+        pLanToCLanMap[pLan] = childLans;
+
+        //4.2.baseLan_List
+        baseLan_List.push(pLan);
+
+        //4.3.targetLan_List
+        for (let j = 0; j < childLans.length; j++) {
+            let tempLan = childLans[j];
+            if (!targetLanMap[tempLan]) {
+                targetLanMap[tempLan] = 1;
+                targetLan_List.push(tempLan);
+            }
+        }
+    }
+
+    console.log("pLanToCLanArray: \n" + JSON.stringify(pLanToCLanArray));
+    console.log("pLanToCLanMap: \n" + JSON.stringify(pLanToCLanMap));
+    console.log("baseLan_List: \n" + JSON.stringify(baseLan_List));
+    console.log("targetLan_List: \n" + JSON.stringify(targetLan_List));
+
+</script>
+
+</body>
+</html>

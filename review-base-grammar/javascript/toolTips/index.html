@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue3 Tooltip Demo</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    body {
+      margin: 50px;
+      font-family: Arial, sans-serif;
+    }
+    
+    .app {
+      width: 200px;
+      height: 150px;
+      border: 2px solid #333;
+      background-color: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background-color 0.3s;
+    }
+    
+    .app:hover {
+      background-color: #e0e0e0;
+    }
+    
+    .tooltip-container {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #333;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 6px;
+      white-space: nowrap;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+      margin-bottom: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .tooltip.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: #333;
+    }
+    
+    .tooltip-content {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .tooltip-button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background-color 0.2s;
+    }
+    
+    .tooltip-button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h2>Vue3 可交互 Tooltip 示例</h2>
+    <p>将鼠标移入下方的灰色区域，会在上方显示可交互的tooltip</p>
+    
+    <div class="tooltip-container">
+      <div 
+        class="app" 
+        @mouseenter="showTooltip" 
+        @mouseleave="handleAppMouseLeave"
+      >
+        悬停显示 Tooltip
+      </div>
+      
+      <div 
+        ref="tooltip"
+        class="tooltip"
+        :class="{ show: isTooltipVisible }"
+        @mouseenter="handleTooltipMouseEnter"
+        @mouseleave="handleTooltipMouseLeave"
+      >
+        <div class="tooltip-content">
+          <div>这是一个可交互的 Tooltip</div>
+          <button class="tooltip-button" @click="handleButtonClick">点击我</button>
+          <div style="font-size: 12px; color: #ccc;">可以在这里进行交互</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref, nextTick } = Vue;
+
+    createApp({
+      setup() {
+        const isTooltipVisible = ref(false);
+        const tooltip = ref(null);
+        let hideTimeout = null;
+
+        const showTooltip = () => {
+          console.log("showTooltip11111111");
+          // 清除任何待执行的隐藏操作
+          if (hideTimeout) {
+            clearTimeout(hideTimeout);
+            hideTimeout = null;
+          }
+          isTooltipVisible.value = true;
+        };
+
+        const hideTooltip = () => {
+          isTooltipVisible.value = false;
+        };
+
+        const hideTooltipWithDelay = () => {
+          // 添加小延迟，允许鼠标移动到tooltip
+          hideTimeout = setTimeout(() => {
+            hideTooltip();
+          }, 100);
+        };
+
+        const handleAppMouseLeave = () => {
+          hideTooltipWithDelay();
+        };
+
+        const handleTooltipMouseEnter = () => {
+          // 鼠标移入tooltip时，取消隐藏操作
+          if (hideTimeout) {
+            clearTimeout(hideTimeout);
+            hideTimeout = null;
+          }
+        };
+
+        const handleTooltipMouseLeave = () => {
+          // 鼠标移出tooltip时，隐藏tooltip
+          hideTooltip();
+        };
+
+        const handleButtonClick = () => {
+          alert('Tooltip 按钮被点击了！');
+        };
+
+        return {
+          isTooltipVisible,
+          tooltip,
+          showTooltip,
+          handleAppMouseLeave,
+          handleTooltipMouseEnter,
+          handleTooltipMouseLeave,
+          handleButtonClick
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

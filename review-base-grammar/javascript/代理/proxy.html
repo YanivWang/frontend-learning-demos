@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+
+  <script>
+    //被代理的目标对象
+    const person = {
+      name: "wangcheng",
+      sayHello(){
+        console.log("我是", this.name);
+      }
+    }
+    
+    //处理器对象：有一些属性比如set get函数
+    const handler = {
+      //targetObj被代理的目标对象
+      //property 当前对访问的属性
+      //proxyInstance 创建的代理实例
+      get(targetObj,property,proxyInstance){
+        console.log(targetObj === person);
+        console.log(property === "name");
+        console.log(proxyInstance === proxy);
+
+        return targetObj[property]
+      },
+      set(targetObj, property, newValue, proxyInstance){
+        console.log("targetObj>>", targetObj)
+        console.log("property>>", property)
+        console.log("newValue>>", newValue)
+
+        console.log("proxyInstance>>", proxyInstance)
+        
+        //如果用户传入的新的属性值，跟原来的属性值不一样，则将新值赋值给原来的属性
+        if(newValue !== targetObj[property]){
+          targetObj[property] = newValue;
+
+          //触发dom跟新等一些列操作
+        }
+
+        //新值跟原来的值一样的话 do nothing
+      }
+    }
+    
+    //通过new Proxy创建的实例，代理实例中不包含__proto__属性，也就是无法判断proxy实例是Proxy类型的实例
+    const proxy = new Proxy(person, handler); 
+    console.log(proxy.name);
+
+    //Uncaught TypeError: Function has non-object prototype 'undefined' in instanceof check
+    //实例上没有 __proto__
+   // console.log(proxy instanceof Proxy);
+
+   console.log(Reflect);
+   console.log(typeof Reflect);//object
+
+
+   proxy.name = "我是高杰"
+
+   console.log(proxy.name)
+   console.log(person.name)
+
+  </script>
+  
+</body>
+</html>

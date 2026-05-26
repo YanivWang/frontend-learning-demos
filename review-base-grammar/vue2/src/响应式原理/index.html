@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      // 核心响应式类 Observer（简化）
+      //1.递归劫持 data 以及其嵌套子对象
+      class Observer {
+        constructor(data) {
+          this.walk(data);
+        }
+
+        walk(data) {
+          Object.keys(data).forEach((key) => {
+            this.defineReactive(data, key, data[key]);
+          });
+        }
+
+        defineReactive(obj, key, val) {
+          //每个对象或者子对象的属性都对应一个依赖管理器
+          //负责收集依赖，和属性变化的时候，通知所有的依赖
+          const dep = new Dep();
+
+          // 递归处理嵌套对象
+          if (typeof val === "object" && val !== null) {
+            new Observer(val);
+          }
+
+          //下面的get set是闭包，缓存了每个属性的 dep
+          Object.defineProperty(obj, key, {
+            enumerable: true,
+            configurable: true,
+            //2.get方法中收集当前属性相关的依赖 Watcher
+            get() {
+              //Dep.target 指向 当前正在计算的 Watcher（依赖）
+              if (Dep.target) {
+                dep.depend(); // 收集依赖到 Dep
+              }
+              return val;
+            },
+            set(newVal) {
+              if (newVal === val) return;
+              val = newVal;
+              // 新值如果是对象，继续劫持
+              if (typeof newVal === "object") {
+                new Observer(newVal);
+              }
+              // 通知所有依赖此属性的 Watcher 更新
+              dep.notify();
+            },
+          });
+        }
+      }
+
+      //使用发布-订阅模式管理依赖关系
+      // 依赖管理器 Dep（简化）
+      class Dep {
+        constructor() {
+          this.subs = [];
+        }
+
+        //收集依赖
+        depend() {
+          if (Dep.target) {
+            this.subs.push(Dep.target);
+          }
+        }
+        //通知所有收集的依赖(Watcher)
+        notify() {
+          this.subs.forEach((watcher) => watcher.update());
+        }
+      }
+      Dep.target = null; // 全局唯一 Watcher 标记（存储当前正在运行的 Watcher）
+
+      // Watcher 就是被收集的依赖
+      class Watcher {
+        constructor(getter, options = {}) {
+          const { callback, lazy } = options;
+
+          this.getter = getter;
+          this.callback = callback;
+
+          this.lazy = lazy; // 新增 lazy 模式标识
+          this.dirty = this.lazy; // 脏值检查标识（仅 lazy 模式有效）
+
+          // 1.非 lazy 模式立即执行 get()（通过 watch 定义的侦听器）=> 执行get()是为了在 Watcher 实例初始化的时候主动触发响应式属性的 getter
+          // 进行依赖收集
+
+          // 2.lazy 模式（通过 computed 定义的计算属性，创建的lazy watcher）
+          // 3.watcher内部会暂存上次的属性的value值
+          this.value = this.lazy ? undefined : this.get();
+        }
+
+        /*
+        1.将当前watcher实例赋值给 Dep.target
+        2.调用传递进行的 getter 函数，触发 data 上响应式属性的 get 函数，从而在 get 函数中
+          使用依赖收集器的 dep.depend()方法，将当前的 watcher 实例收集作为该响应式属性的依赖
+        3.Dep.target = null
+        4.返回 执行getter 函数的返回值，并存储在 watcher内部的 value 属性上
+        */
+        get() {
+          Dep.target = this;
+          const value = this.getter(); //watcher初始化的时候，读取对应的属性的值并存储到内部的 value 属性上
+          Dep.target = null;
+          return value;
+        }
+
+        evaluate() {
+          this.value = this.get();
+          this.dirty = false; // 标记为已计算
+        }
+
+        //1.普通用户watcher(通过watch选项定义的)
+
+        //2.lazy watcher（通过计算属性定义）
+        // 2.1 当依赖项变化时，通过 update() 方法 将 dirty 标记设为 true，只有在下次访问计算属性时才会重新计算
+        update() {
+          if (this.lazy) {
+            // lazy 模式只标记脏状态，不立即计算
+            this.dirty = true;
+          } else {
+            // 原有更新逻辑
+            const newValue = this.getter(); //读取最新的值
+            if (newValue !== this.value) {
+              this.value = newValue; //内部缓存最新的值
+              this.callback?.(newValue); //触发回调函数
+            }
+          }
+        }
+      }
+
+      // 计算属性类，在其内部也是通过Watcher实现，是带有一个 dirty 属性的 watcher
+      class Computed {
+        constructor(getter) {
+          // 创建 lazy Watcher(计算属性创建的watcher，内部顺哥 lazy = true)
+          this.watcher = new Watcher(getter, { lazy: true });
+
+          this.value = undefined;//用于存储计算属性的计算后的值
+          this.dirty = true;//计算属性默认是脏值
+        }
+
+        // 获取计算属性的值时触发
+        get() {
+          console.log("计算属性的get方法被触发...");
+          if (this.watcher.dirty) {
+            // 执行计算并更新值
+            this.watcher.evaluate();
+            this.value = this.watcher.value;
+          }
+          return this.value;
+        }
+      }
+
+      // 模拟 Vue 初始化时对 data 的劫持
+      function initData(vm) {
+        // debugger;
+        //一：处理data
+        let data = vm.$options.data;
+        data = typeof data === "function" ? data.call(vm) : data || {};
+        vm._data = data;
+        new Observer(data); // 开始劫持 data
+        // 代理 data 到 Vue 实例，支持 this.key 访问
+        Object.keys(data).forEach((key) => {
+          proxy(vm, "_data", key);
+        });
+
+        //二: 处理 watch
+        let _watch = vm.$options.watch;
+        Object.keys(_watch).forEach((ckey) => {
+          new Watcher(() => data[ckey], { callback: _watch[ckey] });
+        });
+
+        //三: 处理 computed
+        let _computed = vm.$options.computed;
+        Object.keys(_computed).forEach((ckey) => {
+          //将计算属性添加到 this.xx 上，以便于可以通过组件实例直接访问
+          this[ckey] = new Computed(_computed[ckey]).get(); //_computed[ckey]获取计算属性get
+        });
+      }
+
+      // 代理函数：将 this.key 代理到 this._data.key
+      function proxy(target, sourceKey, key) {
+        Object.defineProperty(target, key, {
+          get() {
+            return this[sourceKey][key];
+          },
+          set(val) {
+            this[sourceKey][key] = val;
+          },
+        });
+      }
+
+      // ---------- 使用示例 ----------
+      const vm = {
+        $options: {
+          data() {
+            return {
+              message: "Hello Vue2",
+              nested: { count: 0 },
+            };
+          },
+          watch: {
+            //适用场景: 当关心的数据发生变化了，执行一个异步或者开销较大的操作（api请求），有用
+            //通过watch选项声明一个用户watcher(自定义侦听器)，
+            //key: 响应式属性
+            //value: 是一个回调函数callback(当监听的响应式属性发生变化的时候，执行回调)
+            message: function (newValue, oldValue) {
+              console.log("执行watch回调，", newValue, oldValue);
+            },
+          },
+          computed: {
+            //适用场景:
+            // 1.读取响应式属性，并对其进行相关计算后，供程序其他地方使用（比如模版）
+            // 同时当响应式属性，发生变化的时候，再次访问该计算属性，才会重新计算结果
+            //声明了一个计算属性 messageLength，我们提供的函数作为 vm.messageLength 的 getter 函数
+            messageLength: function () {
+              console.log("计算属性触发");
+              return this.message.length;
+            },
+          },
+        },
+      };
+
+      initData(vm); // 初始化数据劫持
+
+      //1.访问普通响应式属性
+      console.log(vm.message); // 触发 getter
+      vm.message = "Changed"; // 触发 setter，Dep 通知 Watcher 更新
+      vm.nested.count = 5; // 嵌套对象的属性也会被劫持
+
+      //2.访问计算属性
+      console.log(vm.messageLength);
+    </script>
+  </body>
+</html>

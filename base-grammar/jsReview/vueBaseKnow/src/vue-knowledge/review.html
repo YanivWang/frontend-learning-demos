@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <!--cdn方式安装-->
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+</head>
+<body>
+
+<div id="app">
+    <h1>old:{{msg}}</h1>
+
+
+    <h1>new:{{reverseMsg}}</h1>
+    <h1>new:{{reverseMsg}}</h1>
+    <h1>new:{{reverseMsg}}</h1>
+
+
+    <h1>method:{{reversMsgMethod()}}</h1>
+    <h1>method:{{reversMsgMethod()}}</h1>
+    <h1>method:{{reversMsgMethod()}}</h1>
+
+
+    <h1>now:{{now}}</h1>
+    <h1>now:{{now}}</h1>
+
+    <h1>now:{{now()}}</h1>
+    <h1>now:{{now()}}</h1>
+
+
+    <componenta></componenta>
+    <componentb></componentb>
+
+    <input v-model="msg">
+
+
+
+</div>
+
+<script>
+    //通过 import(Es2015写法)/require(CommonJS的写法) 使用一个模块系统
+    //使用 require.context 全局注册基础组件，全局注册的行为，必须在根Vue实例创建之前，注册
+
+     var a = "wang";
+     var b = "cheng";
+
+     //ES2015+的写法
+     var c = {
+         a,
+         b
+     };
+
+     console.log(c);
+
+
+    //组件是可以复用的Vue实例，所以它们与 new Vue 接收相同的选项，仅有的例外是像 el 这样根实例特有的选项
+    //取而代之的是，一个组件的 data 选项必须是一个函数，因此每个实例可以维护一份被返回对象的独立的拷贝
+    //组件的注册，全局注册和局部注册
+    //父组件通过prop向子组件传递数据
+    //子组件通过事件向父组件发消息
+    //$watch 用来监听一个属性的变化
+    //创建一个实例没有el选项，不会立即进入构建过程，需要手动调用mount(el)来挂在vue实例到DOM上
+    //在底层的实现上，Vue将模板编译成虚拟DOM渲染函数，结合响应式系统，Vue能计算出，最少能渲染多少组件，并把
+    //DOM操作次数减少到最小
+    //{{}}用于绑定文本值，html属性的绑定需要使用 v-bind(:) 监听事件： v-on(@)
+    //模板中不仅可以绑定简单的属性键值，还可以绑定javascript表达式(Vue提供了完全的javascript表达式的支持)
+    //Vue指令的作用：将其绑定的表达式的值的改变，带来的影响，响应式的作用于DOM
+    //当使用Vue指令来绑定html的特性的时候，被绑定的这个html特性，被称作该指令的参数，特性的值，就是传入给该参数的值
+    //v-on的参数，是监听的事件名称
+    //对于任何的复杂逻辑都需要使用计算属性 computed
+    //data是用于接收正常的属性
+    //computed用于接收，需要一定逻辑处理的特性,计算属性会基于依赖关系进行数据的缓存，如果依赖关系没有发生改变，则不会重新求值
+    //多标签页面使用component来动态的切换
+    //组件命名规范：字母全小写，且必须包含一个连字符号（避免和当前以及未来的 HTML 元素相冲突）
+    //使用component组件，动态切换组件(做课程的题型的切换)
+
+    //组件的局部注册：通过一个javascipt对象来创建组件
+    var componenta = {
+        template:"<div>组件A</div>"
+    };
+
+    //局部注册的组件：在Vue的根实例的子组件中是不可用的，如果想让组价componenta在componnetb中可用，需要采用如下的写法
+    //在ES2015+中，在对象中放一个变量，其实是componenta:componenta的缩写
+    var componentb = {
+        template:"<div>组件B</div>",
+        components: {
+            componenta
+        }
+    };
+
+    new Vue({
+        el: "#app",
+        data:{
+            msg: "wang"
+        },
+        /*
+        //正常的写法
+        components:{
+            "componenta": componenta
+            "componentb":componentb
+        },
+        */
+        /*使用js对象可以有简略的写法*/
+        components:{
+            componenta,
+            componentb
+        },
+        computed:{
+            //声明一个计算属性，提供的函数，将作为计算属性的getter函数
+            reverseMsg: function () {
+                //在生命周期函数中，this指向当前调用的vue实例
+                console.log("reverseMsg");
+                return this.msg.split("").reverse().join("");
+            },
+
+            now: function () {
+                return Date.now();
+            }
+        },
+        methods:{
+            //计算属性vs方法
+            reversMsgMethod: function () {
+                console.log("method");
+                return this.msg.split("").reverse().join("");
+            },
+
+            now: function () {
+                return Date.now()
+            }
+        },
+        watch:{
+            //Vue提供了一种更通用的方式，来观察和响应的Vue实例上的属性的变化和更新：侦听属性
+            //但是侦听属性没有计算属性好
+            //它的应用场景，当需要在数据发生改变时，需要执行开销较大的操作或者异步时这个方式很有用。
+            msg:function () {
+                
+            }
+        }
+    });
+
+</script>
+
+</body>
+</html>

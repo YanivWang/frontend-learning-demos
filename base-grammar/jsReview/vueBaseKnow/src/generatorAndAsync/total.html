@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../localforage/lib/localforage.js"></script>
+</head>
+<body>
+
+<script>
+    function setStorage(key, value) {
+        return localforage.setItem(key, value);
+    }
+
+    function getStorage(key) {
+        return localforage.getItem(key);
+    }
+
+    //await 后面的表达式可以是任何类型
+    //也可以是Promise对象(使用Promise对象包装异步函数)
+    //await 表示，紧跟在后面的表达式需要等待返回结果
+
+    //async函数可以看成是由多个异步操作包装成的一个Promise对象，而await命令就是内部then命令的语法糖
+    //await可以看成是其后面的表达式(同步或者是异步的)执行完毕之后，执行的then回调
+    async function storeData(m1, m2) {
+        const r1 = await m1;
+        const r2 = await m2;
+
+        const r3 = await 123;
+
+        //async函数，内部的return语法返回的值，会成为then方法回调函数的参数
+        return [r1, r2, r3];
+    }
+
+    //async函数返回一个Promise对象
+    //async函数本身也是一个Promise对象，用来包装异步函数的
+    //所以只要调用了，就是立即执行，并立即返回，不会影响后面的程序的执行流程
+    //这里的返回并不是函数执行完毕的回调返回，而是函数调用的返回
+    //调用了async函数会立即返回一个Promise对象
+    let promise = storeData(setStorage("name", "Join"), setStorage("age", "30"));
+    promise.then(function (data) {
+        console.log(data);
+    }).catch(function (err) {
+        console.log(err);
+    });
+
+    console.log("1234");
+
+    function timeout(ms) {
+        return new Promise(function (resolve) {
+            setTimeout(resolve, ms)
+        })
+    }
+
+    //async函数返回的Promise对象，必须等到内部所有await命令后面的Promise对象执行完，才会完成
+    //才会执行 then回调
+    async function asyncPrint(value, ms) {
+        var v1 = await timeout(ms);
+        //await命令会返回一个值
+
+        console.log(value);
+
+        return "qwert";
+    }
+
+    //then的执行：必须等到async函数的函数体，全部执行完毕，或者中途出现错误或遇到return语句
+    asyncPrint("Hello World", 3000).then(function (data) {
+        console.log(data);
+    });
+</script>
+
+</body>
+</html>

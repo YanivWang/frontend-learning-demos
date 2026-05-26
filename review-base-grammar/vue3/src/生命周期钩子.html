@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="../libs/vue3.5.js"></script>
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <script>
+      const { createApp, ref, shallowRef, computed, onMounted, onUnMounted, onBeforeUpdate } = Vue;
+
+      const app = createApp({
+        //特别注意: setup函数替代了之前的beforeCreate和created
+        setup() {
+          /*
+          1.所有同步子组件都已经被挂载(不包含异步组件)
+          2.组件自身的DOM树已经创建完成并插入父容器
+          3.作用: 在这个钩子中可以访问组件所渲染的dom树
+          */
+          const elRef = ref();
+
+          //=========== AAAA挂载阶段AAAA ===========
+          //组件被挂载之前调用(此时已经完成了响应式状态的设置，但是还没有创建DOM节点，它即将首次执行 DOM 渲染过程。)
+          onBeforeMount(() => {});
+          //挂载后执行（自身DOM树已经插入到容器中）
+          //可以操作DOM
+          //接口请求
+          onMounted(() => {
+            console.log("组件挂载...");
+          });
+
+          //=========== BBBB更新阶段BBBB ===========
+          //因响应式状态变更而更新DOM树之前调用
+          onBeforeUpdate(() => {});
+          //在组件因为响应式状态变更而更新其DOM树之后调用，可以用 nextTick() 替代
+          //访问更新后的DOM
+          onUpdated(() => {});
+
+          //=========== CCCC卸载阶段CCCC ===========
+          //组件卸载前调用，此时组件实例依赖好保留全部功能
+          onBeforeUnmount(() => {});
+          /*
+          组件被卸载后调用
+          2.作用: 清理一些副作用(计时器，dom监听器，与服务器的连接)
+          */
+          onUnMounted(() => {});
+
+          //=========== DDDD keep-alive的组件激活 DDDD ===========
+          // 调用时机为首次挂载
+          // 以及每次从缓存中被重新插入时
+          onActivated(() => {});
+
+          //keep-alive的组件失去活性
+          // 在从 DOM 上移除、进入缓存
+          // 以及组件卸载时调用
+          onDeactivated(() => {});
+
+          //setup钩子的不便之处就是需要写大量返回的语句暴露api
+          return {
+            elRef,
+          };
+        },
+      });
+
+      //挂载应用到指定的dom节点
+      app.mount("#app");
+    </script>
+  </body>
+</html>

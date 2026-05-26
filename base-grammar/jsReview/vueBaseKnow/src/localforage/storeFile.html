@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="lib/localforage.js"></script>
+</head>
+<body>
+
+<input onchange="readFile(this)" type="file">
+
+<script>
+    function readFile(input) {
+        let file = input.files[0];
+        let reader = new FileReader();
+        reader.onloadend = function (e) {
+            let fileData = e.target.result;
+
+            _storeData(fileData);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function _storeData(fileData) {
+        localforage.clear().then(function () {
+            localforage.keys().then(function (keys) {
+                console.log("keys:" + keys);
+
+                console.log("file size: " + fileData.length * 2);
+                let b = fileData.length * 2;
+                let kb = b / 1024;
+                console.log("b: " + b);
+                console.log("kb: " + kb);
+
+                localforage.setItem("bigData", fileData);
+            });
+        }).catch(function (err) {
+            console.log(err);
+        });
+    }
+</script>
+
+</body>
+</html>

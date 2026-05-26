@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="../libs/vue3.5.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <div class="appContent">
+        <!-- test ref -->
+        <div>======================</div>
+
+        <!-- 模版中不需要带 .vue 访问 -->
+        <div>{{ message }}</div>
+        <button @click="changeMsgFn">clickMe</button>
+      </div>
+    </div>
+
+    <script>
+      const { createApp, ref, shallowRef, computed } = Vue;
+
+      // createApp 函数创建一个新的 应用实例
+      const app = createApp(
+        // 参数是 “根组件选项对象”(或者 一个App组件)，每个应用都需要一个根组件，其它组件都是其子组件
+        {
+          setup() {
+            //Ref 可以持有任何类型的值，嵌套对象或者数据具有深层响应性
+            //非原始值会通过 reactive() 转换为响应式代理
+            const objRef = ref({
+              form: {
+                name: "",
+                age: 0,
+                address: {}
+              },
+              array: [1,2,3,4]
+            })
+            console.log("objRef,", objRef);
+
+            //返回一个带有 .value 属性的 RefImpl 对象
+            const message = ref("Hello vue!");
+
+            //创建一个浅层响应式，对 .value 的访问是响应式的
+            const shallowObjRef = shallowRef({
+              form: {
+                name: "",
+                age: 0,
+                address: {}
+              },
+              array: [1,2,3,4]
+            })
+            console.log("shallowObjRef,", shallowObjRef);
+
+            //使用 reactive 创建响应式对象
+            const reactiveObj = reactive({
+              form: {
+                name: "",
+                age: 0,
+                address: {}
+              },
+              array: [1,2,3,4]
+            })
+            console.log("shallowObjRef,", shallowObjRef);
+
+
+            // js代码中访问必须带 .vue
+            const changeMsgFn = () => {
+              message.value = "I am change to HI vue!";
+
+              console.log("message,", message);
+            };
+            
+            //setup 钩子中通过 return 语句将 响应式变量 或者 事件处理函数暴露该组件模版
+            return {
+              message,
+
+              changeMsgFn,
+            };
+          },
+          //当组件没有设置 template 选项的时候，Vue 将自动使用容器的 innerHTML 作为模版
+          // template: `<div class="appContentTemplate">1111</div>`
+        }
+      );
+
+      //挂载应用到指定的dom节点
+      app.mount("#app")
+    </script>
+  </body>
+</html>

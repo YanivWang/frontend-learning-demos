@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/17.1.1/Tween.min.js"></script>
+</head>
+<body>
+
+<script>
+    //以平滑的方式更改对象的属性
+    let box = document.createElement('div');
+    box.style.setProperty('background-color', '#008800');
+    box.style.setProperty('width', '100px');
+    box.style.setProperty('height', '100px');
+    document.body.appendChild(box);
+
+    //1.根据参数对象创建补间
+    let position = {x: 0, y: 0};
+    let tween = new TWEEN.Tween(position);
+
+    //2.告诉补间动画，我们想在1s内以动画的形式改变position的属性值
+    tween.to({
+        x: 250,
+        y: 400
+    }, 1000);
+
+    //3.启动补间动画
+    tween.start();
+
+    //4.设置补间动画的动画函数
+    tween.easing(TWEEN.Easing.Quadratic.Out);
+
+    //5.设置更新操作
+    tween.onUpdate(function () {
+        box.style.setProperty('transform', 'translate(' + position.x + 'px, ' + position.y + 'px)');
+    });
+
+    //渲染第一帧的动画
+    animate();
+
+    function animate() {
+        //requestAnimationFrame 对比setTimeout的优势，是由系统来决定回调函数执行时机
+        //动画没结束前，递归渲染
+        //保证每次屏幕刷新，只执行一次回调函数
+        requestAnimationFrame(animate);
+
+        //tween.js不会自动的运行，需要显示的调用update方法来告诉它何时运行
+        TWEEN.update();
+    }
+</script>
+
+
+</body>
+</html>

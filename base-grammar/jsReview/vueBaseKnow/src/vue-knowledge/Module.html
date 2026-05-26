@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../../lib/vue.js"></script>
+    <script src="../../lib/vue-router.js"></script>
+    <script src="../../lib/vuex.js"></script>
+
+    <!--vuex依赖Promise。如果你支持的浏览器并没有实现Promise，那么你可以使用一个polyfill-->
+    <script src="../../lib/es6-promise.auto.js"></script>
+</head>
+<body>
+
+<div id="app">
+</div>
+
+<script>
+    //由于使用单一状态树，应用的所有状态都会被集中到一个对象中。当应用非常复杂的时候，store对象就可能变的非常臃肿
+    //使用Vuex的module功能，可以将store对象分割成模块。
+    //每个模块拥有自己的state，mutation，action，getter
+    //甚至是嵌套子模块——从上至下进行同样方式的分割
+    const store = new Vuex.Store({
+        //该属性用于存储共享的状态
+        state: {
+            todos: [
+                {id: 1, text: '...', done: true},
+                {id: 2, text: '...', done: false}
+            ]
+        },
+        mutations: {
+            //mutation是直接改变state的状态，所以参数是state
+            increment(state) {
+                state.count++;
+            },
+            incrementA(state, n) {
+                state.count += n;
+            },
+            incrementB(state, payload) {
+                state.count += payload.count;
+            }
+        },
+        actions: {
+            //context对象和store实例具有相同的方法和属性
+            //action函数不直接改变state的状态
+            //而是提交一个mutation，其实就是在提交mutation前可以做一些其它的处理
+            increment(context) {
+                context.commit("increment");
+            },
+            incrementA({commit}) {//参数解构
+                commit('increment', 10);
+            },
+            incrementAsync({commit}) {
+                setTimeout(() => {
+                    //异步分发执行完毕
+                    console.log("异步分发执行完毕");
+                    commit('increment');
+                }, 5000)
+            },
+            checkout({ commit, state },products){//用于数组和对象类型的参数的解构
+                return new Promise((resolve,reject)=>{
+                    setTimeout(()=>{
+                        commit('someMutation');
+                        resolve();
+                    },1000)
+                })
+            },
+            checkoutPlus({dispatch,commit}){
+                //在一个action内部可以dispatch其它的action
+                return dispatch('checkout').then(()=>{
+                    commit('incrementB');
+                })
+            }
+        },
+        getters: {}
+    });
+
+
+
+    new Vue({
+        data() {
+            return {}
+        },
+        store,
+        computed: {},
+        template: `
+            <div>
+               <div>Home</div>
+            </div>
+        `,
+        methods: {
+            increment() {
+                //在组件的内部，提交mutation
+                this.$store.commit('increment');
+            },
+            //将this.increment()映射为this.$store.dispatch('increment')
+            //
+            ...Vuex.mapActions(['increment','incrementA','incrementAsync']),
+            ...Vuex.mapActions({
+                add: 'increment'//将this.add()映射为this.$store.dispatch('increment');
+            })
+        },
+        components: {}
+    }).$mount("#app");
+
+</script>
+
+</body>
+</html>

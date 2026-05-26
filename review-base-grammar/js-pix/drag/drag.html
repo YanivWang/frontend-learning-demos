@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML5拖放复制示例</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        neutral: '#9CA3AF',
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .draggable-item {
+                @apply bg-primary text-white p-4 rounded-lg cursor-move transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105;
+            }
+            .drop-area {
+                @apply border-2 border-dashed border-neutral rounded-xl min-h-[250px] p-6 transition-all duration-300;
+            }
+            .drop-area-active {
+                @apply border-primary bg-indigo-50;
+            }
+            .dragging {
+                @apply opacity-70 scale-95;
+            }
+            .cloned-item {
+                @apply bg-secondary text-white p-4 rounded-lg shadow-md transition-all duration-300;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-6 md:p-10">
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-10 text-center">
+            <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-gray-800 mb-3">HTML5 拖放复制示例</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto">将左侧的元素拖动到右侧的放置区域，原始元素会保留，放置区域会创建一个副本</p>
+        </header>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- 可拖动元素区域 -->
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <h2 class="text-xl font-semibold text-gray-700 mb-5 flex items-center">
+                    <i class="fa fa-arrows mr-2 text-primary"></i>可拖动元素
+                </h2>
+                <div id="draggables-container" class="space-y-4">
+                    <div class="draggable-item" draggable="true" data-item-id="1">
+                        <h3 class="font-medium">元素 1</h3>
+                        <p class="text-sm opacity-90 mt-1">这是可拖动的元素</p>
+                    </div>
+                    <div class="draggable-item" draggable="true" data-item-id="2">
+                        <h3 class="font-medium">元素 2</h3>
+                        <p class="text-sm opacity-90 mt-1">拖到右侧区域复制</p>
+                    </div>
+                    <div class="draggable-item" draggable="true" data-item-id="3">
+                        <h3 class="font-medium">元素 3</h3>
+                        <p class="text-sm opacity-90 mt-1">释放即可创建副本</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 放置区域 -->
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <h2 class="text-xl font-semibold text-gray-700 mb-5 flex items-center">
+                    <i class="fa fa-download mr-2 text-secondary"></i>放置区域
+                </h2>
+                <div id="drop-target" class="drop-area">
+                    <div class="drop-hint text-center text-neutral">
+                        <i class="fa fa-long-arrow-down text-3xl mb-3"></i>
+                        <p>将元素拖放到这里</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const draggableItems = document.querySelectorAll('.draggable-item');
+        const dropTarget = document.getElementById('drop-target');
+        const dropHint = document.querySelector('.drop-hint');
+        
+        // 为每个可拖动元素添加事件监听
+        draggableItems.forEach(item => {
+            // 开始拖动
+            item.addEventListener('dragstart', (e) => {
+                // 存储被拖动元素的ID
+                e.dataTransfer.setData('text/plain', item.getAttribute('data-item-id'));
+                // 设置拖动效果为复制
+                e.dataTransfer.effectAllowed = 'copy';
+                
+                // 添加拖动中的视觉效果
+                setTimeout(() => {
+                    item.classList.add('dragging');
+                }, 0);
+            });
+            
+            // 结束拖动
+            item.addEventListener('dragend', () => {
+                // 移除拖动视觉效果
+                item.classList.remove('dragging');
+            });
+        });
+        
+        // 为放置区域添加事件监听
+        // 阻止默认行为，允许放置
+        dropTarget.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            // 设置放置效果为复制
+            e.dataTransfer.dropEffect = 'copy';
+            // 添加放置区域激活状态
+            dropTarget.classList.add('drop-area-active');
+        });
+        
+        // 离开放置区域时移除激活状态
+        dropTarget.addEventListener('dragleave', () => {
+            dropTarget.classList.remove('drop-area-active');
+        });
+        
+        // 处理放置事件
+        dropTarget.addEventListener('drop', (e) => {
+            e.preventDefault();
+            // 移除放置区域激活状态
+            dropTarget.classList.remove('drop-area-active');
+            
+            // 获取被拖动元素的ID
+            const itemId = e.dataTransfer.getData('text/plain');
+            const originalItem = document.querySelector(`[data-item-id="${itemId}"]`);
+            
+            if (originalItem) {
+                // 隐藏提示信息
+                dropHint.classList.add('hidden');
+                
+                // 创建原始元素的副本
+                const clonedItem = originalItem.cloneNode(true);
+                // 修改副本的样式和属性
+                clonedItem.classList.remove('draggable-item');
+                clonedItem.classList.add('cloned-item');
+                clonedItem.removeAttribute('draggable');
+                clonedItem.setAttribute('data-cloned', 'true');
+                
+                // 为副本添加删除按钮
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'mt-3 text-xs bg-white text-secondary px-2 py-1 rounded hover:bg-gray-100 transition-colors';
+                deleteBtn.innerHTML = '<i class="fa fa-trash-o mr-1"></i>删除副本';
+                deleteBtn.addEventListener('click', () => {
+                    clonedItem.remove();
+                    // 检查放置区域是否为空，为空则显示提示
+                    if (dropTarget.querySelectorAll('[data-cloned="true"]').length === 0) {
+                        dropHint.classList.remove('hidden');
+                    }
+                });
+                clonedItem.appendChild(deleteBtn);
+                
+                // 添加到放置区域并添加动画效果
+                dropTarget.appendChild(clonedItem);
+                clonedItem.style.opacity = '0';
+                clonedItem.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    clonedItem.style.opacity = '1';
+                    clonedItem.style.transform = 'translateY(0)';
+                }, 50);
+            }
+        });
+    </script>
+</body>
+</html>
