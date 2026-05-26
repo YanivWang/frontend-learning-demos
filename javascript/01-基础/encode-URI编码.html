@@ -1,52 +1,42 @@
 <!--
   分类: javascript / 01-基础
-  主题: 看似一致的字符可能是不同 Unicode 序列
+  主题: URI 编码 API（encodeURI / encodeURIComponent / decode）
   要点:
-    - HTML 实体 / 全角半角 / Unicode 多重表示导致 "看起来相同" 的字符串实际不相等
-    - 对用户输入清洗：trim + 折叠空白后再做比较
-    - 真正语义比较请用 String.prototype.normalize('NFC') 统一规范化形式
+    - encodeURI：编码整个 URI，保留 : / ? # 等结构字符
+    - encodeURIComponent：编码查询参数等片段，会编码 : / ? 等
+    - decodeURI / decodeURIComponent：对应解码
+    - 与 escape 不同：escape 已废弃，且编码规则不一致
 -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Unicode 字符等价性</title>
+    <title>URI 编码</title>
 </head>
 <body>
 
-<div>ぎ</div>
-<div>ぎ</div>
-
-<textarea></textarea>
-
-<button onclick="submitHandle()">提交</button>
-
 <script>
-    // 字面上一样的 "ぎ"，可能由不同 Unicode 码点序列构成（组合形 vs 预组合形）
-    var code1 = "ぎ";
-    var code2 = "ぎ";
+    const path = "https://example.com/搜索/文档.html";
+    const query = "name=王成&city=北京";
 
-    if (code1 === code2) {
-        console.log("相等...");
-    } else {
-        console.log("不相等，需要 normalize 规范化");
-        console.log(code1.normalize('NFC') === code2.normalize('NFC')); // 规范化后通常相等
-    }
+    // encodeURI：用于编码完整 URI，不破坏协议与路径分隔符
+    const encodedPath = encodeURI(path);
+    console.log("encodeURI:", encodedPath);
+    console.log("decodeURI:", decodeURI(encodedPath));
 
-    function submitHandle() {
-        var textarea = document.getElementsByTagName("textarea")[0];
-        var value = textarea.value;
+    // encodeURIComponent：用于编码 URI 组件（查询串、参数值等）
+    const encodedQuery = encodeURIComponent(query);
+    console.log("encodeURIComponent:", encodedQuery);
+    console.log("decodeURIComponent:", decodeURIComponent(encodedQuery));
 
-        // 折叠多余空白：trim 去首尾、再把连续空白替换为单空格
-        value = value.trim();
-        var reg = /\s+/g;
-        value = value.replace(reg, " ");
+    // 拼 URL 时常见写法
+    const base = "https://example.com/api";
+    const url = `${base}?q=${encodeURIComponent("hello world")}&lang=${encodeURIComponent("中文")}`;
+    console.log("拼接 URL:", url);
 
-        var array = value.split(reg);
-        if (array[0] === array[1]) {
-            console.log("相等...");
-        }
-    }
+    // 对比：encodeURI 不会编码 & =，encodeURIComponent 会
+    console.log("encodeURI('&='):", encodeURI("&="));
+    console.log("encodeURIComponent('&='):", encodeURIComponent("&="));
 </script>
 
 </body>

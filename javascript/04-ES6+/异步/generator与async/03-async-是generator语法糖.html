@@ -2,7 +2,7 @@
   分类: javascript / 04-ES6+ / 异步 / generator与async
   主题: async 是 generator + 自动执行器的语法糖
   要点:
-    - generator + co/自执行器即可模拟 async/await
+    - generator + 自写执行器即可模拟 async/await
     - await 等价于 yield 后跟一个 Promise；async 函数自带「驱动器」
     - 函数体内多个 await 串行执行；并发应该用 Promise.all
 -->
@@ -15,47 +15,49 @@
 <body>
 
 <script>
-    let timeStamp = Math.round(Date.parse(new Date) / 1000);
-    console.log("timeStamp:" + timeStamp);
-
-    function timeOut() {
+    function timeOut(ms = 300) {
         return new Promise(function (resolve) {
-            setTimeout(resolve, 1000)
+            setTimeout(resolve, ms);
         });
     }
 
-    async function getData() {
-        await timeOut();
-        console.log(111);
-        if (true) {
-            await timeOut();
-
-            console.log(222);
-
-            return "444";
-        } else {
-            return "333";
+    // 简易执行器：把 yield 的值当作 Promise，resolve 后再 next
+    function runGenerator(genFn) {
+        const gen = genFn();
+        function step(prev) {
+            const { value, done } = gen.next(prev);
+            if (done) return Promise.resolve(value);
+            return Promise.resolve(value).then(function (result) {
+                return step(result);
+            });
         }
+        return step();
     }
 
-    async function setData() {
-        let data = await getData();
-        console.log(data);
-
-        await timeOut();
-        console.log(555);
-        if (true) {
-            await timeOut();
-
-            console.log(666);
-
-            return "777";
-        } else {
-            return "888";
-        }
+    function* flowGen() {
+        yield timeOut();
+        console.log("[generator] step1");
+        yield timeOut();
+        console.log("[generator] step2");
+        return "done-gen";
     }
 
-    setData();
+    async function flowAsync() {
+        await timeOut();
+        console.log("[async] step1");
+        await timeOut();
+        console.log("[async] step2");
+        return "done-async";
+    }
+
+    console.log("--- generator + 执行器（等价于手写 co）---");
+    runGenerator(flowGen).then(function (result) {
+        console.log("[generator] return:", result);
+        console.log("--- async/await（语言内置执行器）---");
+        return flowAsync();
+    }).then(function (result) {
+        console.log("[async] return:", result);
+    });
 </script>
 
 </body>

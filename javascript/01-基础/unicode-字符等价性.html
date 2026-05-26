@@ -1,0 +1,57 @@
+<!--
+  分类: javascript / 01-基础
+  主题: Unicode 字符等价性（NFC / NFD）
+  要点:
+    - 视觉上相同的字符可能由不同 Unicode 码点序列构成
+    - 直接用 === 比较可能为 false
+    - 语义比较前用 String.prototype.normalize('NFC') 统一规范化
+    - 用户输入清洗：trim + 折叠空白后再比较
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Unicode 字符等价性</title>
+</head>
+<body>
+
+<div>ぎ</div>
+<div>ぎ</div>
+
+<textarea placeholder="输入两段文本，用空格分隔"></textarea>
+<button onclick="submitHandle()">比较</button>
+
+<script>
+    // 字面上一样的 "ぎ"，可能由不同 Unicode 码点序列构成（组合形 vs 预组合形）
+    var code1 = "ぎ";
+    var code2 = "ぎ";
+
+    if (code1 === code2) {
+        console.log("ぎ: 相等");
+    } else {
+        console.log("ぎ: 不相等，normalize 后:", code1.normalize("NFC") === code2.normalize("NFC"));
+    }
+
+    // 两个看上去一模一样的「郵便番号」，可能由不同 Unicode 序列构成
+    var foo = "郵便番号";
+    var bar = "郵便番号";
+
+    if (foo === bar) {
+        console.log("郵便番号: 相等");
+    } else {
+        console.log("郵便番号: 看起来一样实际不等，normalize 后:", foo.normalize("NFC") === bar.normalize("NFC"));
+    }
+
+    function submitHandle() {
+        var textarea = document.getElementsByTagName("textarea")[0];
+        var value = textarea.value.trim().replace(/\s+/g, " ");
+        var parts = value.split(" ");
+        if (parts.length >= 2) {
+            console.log("原始比较:", parts[0] === parts[1]);
+            console.log("normalize 后:", parts[0].normalize("NFC") === parts[1].normalize("NFC"));
+        }
+    }
+</script>
+
+</body>
+</html>

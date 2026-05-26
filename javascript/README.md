@@ -6,7 +6,7 @@
 
 | 目录 | 知识点 |
 |---|---|
-| `01-基础/` | 变量（含 null/undefined）、函数、箭头函数、`arguments`、IIFE、严格模式、JSON、Symbol、`typeof` / 类型检测、类型转换、运算符（`\|\|` `&&` `??`）、`eval` / Global、字符串方法、数组方法（迭代、查找、是否改变原数组、去重、扁平化）、Unicode、Date、parseInt、encode / escape、正则（含全特性、去标点） |
+| `01-基础/` | 变量（含 null/undefined）、函数、箭头函数、`arguments`、IIFE、严格模式、JSON、Symbol、`typeof` / 类型检测、类型转换、运算符（`\|\|` `&&` `??`）、`eval` / Global、字符串方法、数组方法（迭代、查找、是否改变原数组、去重、扁平化）、Unicode（码点互转、字符等价性 NFC）、Date、parseInt、`encodeURI` / `encodeURIComponent`、escape、正则（含全特性、去标点） |
 | `02-函数与作用域/` | 作用域链、柯里化、闭包（基础、内存泄漏与修复）、this 指向（动态绑定、call/apply/bind、new 构造、对象方法脱离） |
 | `03-对象与原型/` | 原型、原型链、创建对象（含 delete）、访问器、构造函数、原型属性 vs 实例属性（`hasOwnProperty` / `in`）|
 | `04-ES6+/` | 解构、rest/spread、模板字符串、可选链、空值合并、Class（声明、表达式、extends、抽象基类、私有构造函数、静态初始化块）、ES6 模块、CommonJS vs ESM、集合（Map / Set / WeakMap / WeakSet）、异步（Promise、generator、async/await） |
