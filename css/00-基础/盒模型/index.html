@@ -1,0 +1,70 @@
+<!--
+  分类: css / 00-基础 / 盒模型
+  主题: 标准盒模型、IE 盒模型、margin 折叠
+  要点:
+    - content-box: width/height 只包含内容区，padding 和 border 会额外撑大元素
+    - border-box: width/height 包含 content + padding + border，更适合工程化布局
+    - 垂直 margin 会在普通文档流中折叠；BFC、padding、border、inline-block 等可阻止折叠
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CSS 盒模型</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
+    h1 { font-size: 1.3rem; }
+    h2 { font-size: 1rem; margin-top: 2rem; }
+    .row { display: flex; gap: 24px; flex-wrap: wrap; }
+    .box {
+      width: 180px;
+      padding: 24px;
+      border: 8px solid #2f80ed;
+      background: #dff0ff;
+    }
+    .content-box { box-sizing: content-box; }
+    .border-box { box-sizing: border-box; }
+    .tip { margin: 0.5rem 0 1rem; color: #666; }
+
+    .collapse-demo {
+      background: #f5f5f5;
+      border: 1px dashed #bbb;
+      max-width: 520px;
+    }
+    .collapse-demo p {
+      margin: 28px 0;
+      padding: 8px 12px;
+      background: #fff0d6;
+    }
+    .bfc {
+      display: flow-root;
+      background: #eef9f0;
+    }
+  </style>
+</head>
+<body>
+  <h1>盒模型：content-box vs border-box</h1>
+  <p class="tip">两个盒子都写了 <code>width: 180px; padding: 24px; border: 8px</code>。</p>
+
+  <div class="row">
+    <div>
+      <h2>content-box</h2>
+      <div class="box content-box">实际占宽 = 180 + 48 + 16 = 244px</div>
+    </div>
+    <div>
+      <h2>border-box</h2>
+      <div class="box border-box">实际占宽 = 180px，内容区被压缩</div>
+    </div>
+  </div>
+
+  <h2>margin 折叠</h2>
+  <p class="tip">普通父子块中，子元素的垂直 margin 可能和父元素外边距折叠；创建 BFC 后就不会折叠。</p>
+  <div class="collapse-demo">
+    <p>普通容器：上下 margin 可能折叠到父级外面</p>
+  </div>
+  <div class="collapse-demo bfc">
+    <p>BFC 容器：display: flow-root 阻止 margin 折叠</p>
+  </div>
+</body>
+</html>

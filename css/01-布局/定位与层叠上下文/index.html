@@ -1,0 +1,86 @@
+<!--
+  分类: css / 01-布局 / 定位与层叠上下文
+  主题: position、包含块、z-index、层叠上下文
+  要点:
+    - absolute 相对最近的非 static 定位祖先定位；没有则相对初始包含块
+    - fixed 相对视口；sticky 在滚动祖先中达到阈值后吸附
+    - z-index 只在定位元素或层叠上下文中比较；transform、opacity 等会创建新的层叠上下文
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>定位与层叠上下文</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
+    h1 { font-size: 1.3rem; }
+    h2 { font-size: 1rem; margin-top: 2rem; }
+    .relative {
+      position: relative;
+      width: 360px;
+      height: 160px;
+      border: 2px dashed #999;
+      background: #f8f8f8;
+    }
+    .absolute {
+      position: absolute;
+      right: 16px;
+      bottom: 16px;
+      padding: 12px;
+      color: #fff;
+      background: #2f80ed;
+    }
+    .scroll {
+      width: 360px;
+      height: 160px;
+      overflow: auto;
+      border: 1px solid #ddd;
+    }
+    .sticky {
+      position: sticky;
+      top: 0;
+      padding: 8px;
+      background: #ffe3d1;
+    }
+    .stack {
+      position: relative;
+      width: 260px;
+      height: 140px;
+      background: #f5f5f5;
+    }
+    .card {
+      position: absolute;
+      width: 140px;
+      height: 80px;
+      color: #fff;
+      display: grid;
+      place-items: center;
+    }
+    .a { left: 20px; top: 20px; z-index: 2; background: #2f80ed; }
+    .b { left: 80px; top: 50px; z-index: 1; background: #eb5757; transform: translateZ(0); }
+  </style>
+</head>
+<body>
+  <h1>定位与层叠上下文</h1>
+
+  <h2>absolute 的包含块</h2>
+  <div class="relative">
+    父级 position: relative
+    <div class="absolute">absolute 相对父级</div>
+  </div>
+
+  <h2>sticky 依赖滚动祖先</h2>
+  <div class="scroll">
+    <div class="sticky">sticky top: 0</div>
+    <p>向下滚动，标题会吸附在滚动容器顶部。</p>
+    <p style="height:180px;">占位内容</p>
+  </div>
+
+  <h2>z-index 与层叠</h2>
+  <div class="stack">
+    <div class="card a">z-index: 2</div>
+    <div class="card b">z-index: 1</div>
+  </div>
+</body>
+</html>

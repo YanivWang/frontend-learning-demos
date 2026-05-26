@@ -1,0 +1,63 @@
+<!--
+  分类: css / 05-性能 / 渲染性能
+  主题: 重排、重绘、合成层与动画性能
+  要点:
+    - 改 width/height/top/left 通常会触发布局重排
+    - 改 color/background 通常触发重绘
+    - transform/opacity 常可走合成层，适合动画；will-change 要少量、短期使用
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CSS 渲染性能</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
+    h1 { font-size: 1.3rem; }
+    h2 { font-size: 1rem; margin-top: 2rem; }
+    .track {
+      width: 360px;
+      padding: 12px;
+      border: 1px solid #ddd;
+      background: #f8f8f8;
+    }
+    .ball {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #2f80ed;
+      animation: move 1.6s ease-in-out infinite alternate;
+    }
+    @keyframes move {
+      from { transform: translateX(0); opacity: 0.7; }
+      to { transform: translateX(280px); opacity: 1; }
+    }
+    .bad, .good { margin: 10px 0; padding: 10px; color: #fff; }
+    .bad { background: #eb5757; }
+    .good { background: #27ae60; }
+    .contain {
+      contain: layout paint;
+      padding: 10px;
+      border: 1px dashed #999;
+      max-width: 360px;
+    }
+  </style>
+</head>
+<body>
+  <h1>CSS 渲染性能</h1>
+
+  <h2>动画优先 transform / opacity</h2>
+  <div class="track">
+    <div class="ball"></div>
+  </div>
+
+  <h2>面试回答框架</h2>
+  <div class="bad">容易重排：width、height、margin、padding、top、left、font-size</div>
+  <div class="bad">容易重绘：color、background、box-shadow</div>
+  <div class="good">常用于高性能动画：transform、opacity</div>
+
+  <h2>隔离影响范围</h2>
+  <div class="contain">contain: layout paint 可把布局和绘制影响限制在局部，适合复杂组件谨慎使用。</div>
+</body>
+</html>
