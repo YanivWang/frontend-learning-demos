@@ -1,0 +1,99 @@
+<!--
+  分类: react / class 组件
+  主题: 高阶组件 HOC（Higher-Order Component）
+  要点:
+    - HOC 是函数：接收组件，返回增强后的新组件（不修改原组件）
+    - 常见用途: 注入 props、权限校验、日志、复用生命周期逻辑
+    - 注意: 不要在内层 HOC 使用 render 里的箭头函数包装，以免破坏 ref 与 reconciliation
+    - Hooks 时代很多 HOC 场景可用自定义 Hook 替代，但面试仍常问 HOC 原理
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React · class 高阶组件 HOC</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    function withLoading(WrappedComponent) {
+      class WithLoading extends React.Component {
+        render() {
+          const { loading, ...rest } = this.props;
+          if (loading) {
+            return <p>加载中...</p>;
+          }
+          return <WrappedComponent {...rest} />;
+        }
+      }
+      WithLoading.displayName = `WithLoading(${WrappedComponent.displayName || WrappedComponent.name || "Component"})`;
+      return WithLoading;
+    }
+
+    function withLogger(WrappedComponent) {
+      class WithLogger extends React.Component {
+        componentDidMount() {
+          console.log("[HOC] mounted:", WrappedComponent.name);
+        }
+
+        componentDidUpdate(prevProps) {
+          console.log("[HOC] updated:", WrappedComponent.name, prevProps, "->", this.props);
+        }
+
+        render() {
+          return <WrappedComponent {...this.props} />;
+        }
+      }
+      return WithLogger;
+    }
+
+    class UserProfile extends React.Component {
+      render() {
+        return (
+          <div>
+            <strong>{this.props.user.name}</strong>
+            <span> — {this.props.user.email}</span>
+          </div>
+        );
+      }
+    }
+
+    const EnhancedProfile = withLogger(withLoading(UserProfile));
+
+    class App extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          loading: true,
+          user: null
+        };
+      }
+
+      componentDidMount() {
+        setTimeout(() => {
+          this.setState({
+            loading: false,
+            user: { name: "Alice", email: "alice@example.com" }
+          });
+        }, 1500);
+      }
+
+      render() {
+        return (
+          <section>
+            <h1>高阶组件 HOC</h1>
+            <EnhancedProfile loading={this.state.loading} user={this.state.user} />
+            <p>面试回答: HOC 是组件逻辑复用模式，返回新组件；与 render props、Hook 是不同抽象层次。</p>
+          </section>
+        );
+      }
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

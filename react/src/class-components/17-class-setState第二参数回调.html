@@ -1,0 +1,66 @@
+<!--
+  分类: react / class 组件
+  主题: setState 第二参数回调与 state 读取时机
+  要点:
+    - setState(updater, callback) 的 callback 在 state 提交且 DOM 更新后执行
+    - setState 后立即读 this.state 仍是旧值（异步批处理）
+    - callback 里可读最新 DOM；需要基于新 state 做副作用时用 callback 或 componentDidUpdate
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React · setState 第二参数回调</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    class Counter extends React.Component {
+      constructor(props) {
+        super(props);
+        this.outputRef = React.createRef();
+        this.state = { count: 0 };
+      }
+
+      increment = () => {
+        console.log("setState 前 count:", this.state.count);
+
+        this.setState({ count: this.state.count + 1 }, () => {
+          console.log("callback 里 count:", this.state.count);
+          if (this.outputRef.current) {
+            this.outputRef.current.textContent = "DOM 已更新，count = " + this.state.count;
+          }
+        });
+
+        console.log("setState 后同步读 count:", this.state.count);
+      };
+
+      incrementFunctional = () => {
+        this.setState(
+          (prev) => ({ count: prev.count + 1 }),
+          () => console.log("函数式更新 callback:", this.state.count)
+        );
+      };
+
+      render() {
+        return (
+          <section>
+            <h1>setState 第二参数回调</h1>
+            <p>count: {this.state.count}</p>
+            <p ref={this.outputRef}>DOM 更新提示区</p>
+            <button onClick={this.increment}>对象式 +1（看控制台）</button>
+            <button onClick={this.incrementFunctional}>函数式 +1</button>
+            <p>面试回答: setState 异步合并；第二参数 callback 在 commit 后执行，可安全读最新 state/DOM。</p>
+          </section>
+        );
+      }
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<Counter />);
+  </script>
+</body>
+</html>

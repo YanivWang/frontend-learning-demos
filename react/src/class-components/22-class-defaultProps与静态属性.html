@@ -1,0 +1,59 @@
+<!--
+  分类: react / class 组件
+  主题: defaultProps、静态属性与 displayName
+  要点:
+    - Component.defaultProps 为未传 props 提供默认值（React 18 仍可用，新代码更推荐参数默认值）
+    - static 静态属性挂在类上，实例通过 constructor 访问不到
+    - displayName 便于 DevTools 调试；HOC 包装时尤其有用
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React · class defaultProps 与静态属性</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    class Greeting extends React.Component {
+      static species = "ReactComponent";
+      static version = "1.0";
+
+      render() {
+        const { name, level } = this.props;
+        return (
+          <p>
+            Hello, {name}! 等级: {level}
+            {" · 静态属性 species: " + Greeting.species}
+          </p>
+        );
+      }
+    }
+
+    Greeting.defaultProps = {
+      name: "访客",
+      level: 1
+    };
+    Greeting.displayName = "GreetingCard";
+
+    class App extends React.Component {
+      render() {
+        return (
+          <section>
+            <h1>defaultProps 与静态属性</h1>
+            <Greeting />
+            <Greeting name="Alice" level={5} />
+            <p>面试回答: defaultProps 补全未传 props；static 属于类本身，不在实例上。</p>
+          </section>
+        );
+      }
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

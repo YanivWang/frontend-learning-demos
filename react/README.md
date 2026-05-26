@@ -23,7 +23,19 @@
 | 08 | `src/class-components/08-setState-异步合并.html` | `setState` 异步，10 次 `+1` 仍然只 +1（合并） |
 | 09 | `src/class-components/09-setState-函数式更新.html` | `setState(prev => ...)` 函数式更新解决合并问题 |
 | 10 | `src/class-components/10-Clock-setState-批处理对比.html` | 同一回调内多次 `setState` 对比对象式 vs 函数式 |
-| 11 | `src/class-components/11-class-完整生命周期与API.html` | 完整生命周期钩子、`forceUpdate`、`defaultProps`、refs |
+| 11 | `src/class-components/11-class-完整生命周期与API.html` | 完整生命周期钩子、`forceUpdate`、`defaultProps` |
+| 12 | `src/class-components/12-class-refs与DOM.html` | `createRef`、回调 ref、访问 DOM 与子组件实例 |
+| 13 | `src/class-components/13-class-PureComponent性能优化.html` | `PureComponent`、`shouldComponentUpdate` 浅比较 |
+| 14 | `src/class-components/14-class-getDerivedStateFromProps与getSnapshotBeforeUpdate.html` | 派生 state、DOM 更新前快照 |
+| 15 | `src/class-components/15-class-Context上下文.html` | `contextType`、`Context.Consumer` |
+| 16 | `src/class-components/16-class-受控与非受控表单.html` | class 组件中的受控/非受控表单 |
+| 17 | `src/class-components/17-class-setState第二参数回调.html` | `setState` 回调、state 读取时机 |
+| 18 | `src/class-components/18-class-事件绑定三种方式.html` | bind、JSX 箭头、类字段箭头 |
+| 19 | `src/class-components/19-class-列表key与diff.html` | 列表 `key`、index key 状态错位 |
+| 20 | `src/class-components/20-class-组件通信与children.html` | props 回调、状态提升、`children` 组合 |
+| 21 | `src/class-components/21-class-合成事件机制.html` | SyntheticEvent、阻止默认与冒泡 |
+| 22 | `src/class-components/22-class-defaultProps与静态属性.html` | `defaultProps`、`static`、`displayName` |
+| 23 | `src/class-components/23-class-高阶组件HOC.html` | 高阶组件模式、逻辑复用 |
 | 12 | `src/function-components/12-Hooks-useState基础.html` | `useState` 基础、状态快照、函数式更新 |
 | 13 | `src/function-components/13-Hooks-useEffect副作用.html` | `useEffect` 副作用、依赖数组、清理函数 |
 | 14 | `src/function-components/14-Hooks-useRef与DOM.html` | `useRef` 访问 DOM、保存不触发渲染的可变值 |
@@ -49,7 +61,7 @@
 当前 `react/src` 已覆盖 React 基础面试中的常见主干：
 
 - 基础渲染：JSX、React 元素、`createRoot`、元素不可变、条件渲染
-- 组件基础：函数组件、class 组件、`props`、`state`、生命周期
+- 组件基础：函数组件、class 组件、`props`、`state`、生命周期、refs、PureComponent、HOC
 - 状态更新：`setState` 异步合并、函数式更新、React 18 自动批处理
 - Hooks：`useState`、`useEffect`、`useRef`、`useMemo`、`useCallback`、`useReducer`、自定义 Hook
 - 高频陷阱：闭包与依赖数组、列表 `key`、index key、受控/非受控表单
