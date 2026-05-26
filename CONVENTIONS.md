@@ -2,22 +2,24 @@
 
 本仓库是「前端语法 / 框架学习 Demo 库」，每个 `.html` 都可以直接在浏览器打开。本文规定目录与命名规范，保持仓库长期清爽。
 
+当前仓库共 **304** 个可索引 demo（`javascript` 120 · `css` 33 · `vue2` 57 · `vue3` 37 · `react` 53 · `demos` 4），统计以 `node scripts/build-index.mjs` 输出为准。
+
 ## 1. 顶层目录
 
 | 目录 | 用途 | 说明 |
 |---|---|---|
 | `javascript/` | 纯 JavaScript 知识点 demo | 按 `01-` ~ `09-` 编号分类 |
-| `css/` | CSS 布局 / 动画 / 视觉 / 响应式 | 按 `01-` ~ `04-` 编号分类 |
+| `css/` | CSS 布局 / 动画 / 视觉 / 响应式 / 性能 | 按 `00-` ~ `05-` 编号分类，外加 `CSS选择器/` |
 | `vue2/` `vue3/` | Vue 框架 demo | 内含 `libs/`（运行时）与 `src/`（demo） |
-| `react/` | React 18 demo | 内含 `libs/`（运行时）与 `src/`（demo） |
+| `react/` | React 18 demo | 内含 `libs/`（运行时）与 `src/`（`function-components` + `class-components`） |
 | `demos/` | 综合性 / 交互小项目 | `drag`、`svg`、`viewpager` 等 |
-| `scripts/` | 仓库工具脚本 | 如 `build-index.mjs` 生成总入口 |
+| `scripts/` | 仓库工具脚本 | `build-index.mjs`、`sync-readmes.mjs` 等 |
 
 ## 2. 目录命名规则
 
-- **一级分类目录**：保留中文短语，加 `NN-` 编号前缀（`01-基础`、`02-动画`）。
+- **一级分类目录**：保留中文短语，加 `NN-` 编号前缀（`01-基础`、`02-动画`；CSS 从 `00-基础` 起）。
 - **二级专题子目录**：纯中文（`正则/`、`闭包/`、`异步/`）；编号可省略。
-- **每个分类目录都应有一份 `README.md`** 作为目录索引（由脚本生成或手写）。
+- **每个分类目录都应有一份 `README.md`** 作为目录索引；`javascript` / `css` / `vue2` / `vue3` / `react` 的 README 内含由 `sync-readmes.mjs` 维护的完整 demo 清单表。
 
 ## 3. 文件命名规则
 
@@ -34,9 +36,9 @@
 4. **不使用拼音首字母**（`FZ` `ZJ`）；要么写全中文，要么写英文全称
 5. **同主题多个 demo** 用「主题-子点」格式：`Promise-基础.html` `Promise-并发.html` `Promise-串行.html`，而不是 `test1.html` `test2.html`
 
-## 4. 元数据头注释（可选但推荐）
+## 4. 元数据头注释（推荐，当前 304 个 demo 均已具备）
 
-新增 demo 时，可在 `<!DOCTYPE html>` 之前加入注释，方便日后检索：
+每个 demo 在 `<!DOCTYPE html>` 之前加入注释，方便检索与生成 README 清单：
 
 ```html
 <!--
@@ -45,15 +47,20 @@
   要点:
     - Promise.all 并发执行，时长 = max(任务时长)
     - Promise.resolve().then(f1).then(f2) 串行执行
+    - then 回调若传 Promise，须返回函数或链式调用，避免把 Promise 对象当返回值
 -->
 <!DOCTYPE html>
 ```
+
+- **`分类`**：顶层模块 + 子路径，如 `react / function-components`、`vue3 / 02-响应式与副作用`
+- **`主题`**：一句话概括，会同步到对应 `README.md` 的 demo 清单表
+- **`要点`**：3～5 条 bullet，写面试常问点或易错点；反面教材 demo 在要点中标注「易错点 / 反面教材」
 
 ## 5. libs 目录
 
 每个框架 / 第三方运行时统一放在所属目录下的 `libs/`：
 
-- `react/libs/`、`vue2/libs/`、`vue3/libs/`
+- `react/libs/`、`vue2/libs/`、`vue3/libs/`、`demos/libs/`、`css/04-响应式/libs/`
 - demo 内嵌的小库放在 demo 同级的 `lib/`（注意是单数）
 - **每个第三方文件**首行必须有注释，写明：**名称 + 版本号 + 官方下载地址 + 下载日期**
 - 自己写的工具脚本不要放在 `libs/`，统一放在 `src/utils/` 或 demo 同级目录
@@ -61,8 +68,13 @@
 ## 6. 入口 / 索引
 
 - 根目录 `index.html` 是总入口，**由 `scripts/build-index.mjs` 自动生成**，不要手动编辑
-- 想新增 demo：直接放到对应目录，运行 `node scripts/build-index.mjs` 重新生成 `index.html`
-- `README.md` 是仓库说明与学习顺序，可以手动维护
+- `manifest.json` 与 `index.html` 同步生成，记录路径、标题、分组
+- 想新增 demo：直接放到对应目录，运行：
+  ```bash
+  node scripts/build-index.mjs
+  node scripts/sync-readmes.mjs
+  ```
+- 各模块 `README.md` 的学习顺序、面试覆盖范围可手写维护；`<!-- DEMO_TABLE_START -->` … `<!-- DEMO_TABLE_END -->` 之间的表格由脚本生成，**勿手改表格正文**
 
 ## 7. Git 提交
 

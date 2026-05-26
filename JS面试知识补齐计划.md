@@ -1,5 +1,7 @@
 # JavaScript 面试知识点补齐计划
 
+> 仓库当前 `javascript/` 共 **120** 个 demo，完整清单见 [`javascript/README.md`](javascript/README.md)（由 `node scripts/sync-readmes.mjs` 根据头注释同步）。
+
 ## 目标
 
 结合当前 `javascript/` 目录，优先补齐 JS 基础面试中最常见、最容易被追问的空缺：类型转换、数组 API、DOM 事件、存储对比、ES6 语法糖、模块化对比、fetch/CORS、GC 原理、浏览器渲染，以及高频手写题。

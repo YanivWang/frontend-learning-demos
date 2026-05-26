@@ -10,6 +10,8 @@
 node scripts/build-index.mjs
 ```
 
+**扫描范围**：`javascript/`、`css/`、`vue2/`、`vue3/`、`react/`、`demos/` 下的 `.html`；跳过 `libs/`、`lib/`、根 `index.html`。
+
 **什么时候运行**：
 
 - 新增 demo
@@ -18,3 +20,36 @@ node scripts/build-index.mjs
 - 调整目录结构
 
 详细约定见 [`../CONVENTIONS.md`](../CONVENTIONS.md)。
+
+## `sync-readmes.mjs`
+
+读取各 demo 头注释中的 **主题** 行，更新以下 README 中 `<!-- DEMO_TABLE_START -->` … `<!-- DEMO_TABLE_END -->` 之间的完整 demo 清单表：
+
+- `javascript/README.md`
+- `css/README.md`
+- `vue2/README.md`
+- `vue3/README.md`
+- `react/README.md`
+
+```bash
+node scripts/sync-readmes.mjs
+```
+
+**什么时候运行**：新增/改名/删除 demo 后，或与 `build-index.mjs` 一并执行；修改 demo **主题** 头注释后也应运行，以保持 README 与代码一致。
+
+## `gen-readme-tables.mjs`
+
+仅输出某一模块的 Markdown 表格到 stdout（调试用），不写入文件。
+
+```bash
+node scripts/gen-readme-tables.mjs javascript
+node scripts/gen-readme-tables.mjs react
+```
+
+## 推荐工作流
+
+```bash
+# 改 demo 后
+node scripts/build-index.mjs
+node scripts/sync-readmes.mjs
+```

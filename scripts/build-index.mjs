@@ -25,7 +25,7 @@ const SECTIONS = [
   { dir: "css",        title: "CSS",         desc: "布局 / 动画 / 视觉效果 / 响应式" },
   { dir: "vue2",       title: "Vue 2",       desc: "响应式原理、基础语法、组件、路由与状态" },
   { dir: "vue3",       title: "Vue 3",       desc: "基础语法、响应式、组件通信、内置组件、路由状态、原理性能" },
-  { dir: "react",      title: "React 18",    desc: "JSX、元素、函数组件、类组件、生命周期" },
+  { dir: "react",      title: "React 18",    desc: "函数组件 33 + 类组件 19：JSX、Hooks、setState、生命周期、面试考点" },
   { dir: "demos",      title: "综合 Demo",    desc: "拖拽 / SVG / ViewPager 等小项目" },
 ];
 
