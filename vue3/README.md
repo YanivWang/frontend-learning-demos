@@ -22,8 +22,8 @@ Vue 3.5.x 时代的 demo（`libs/vue.global.js` 是 3.5.34 版本，全局构建
 
 | 文件 | 主题 |
 |---|---|
-| `src/响应式状态.html` | `ref` / `reactive` / `shallowRef` 基础 |
-| `src/生命周期钩子.html` | Composition API 生命周期钩子 |
+| `src/响应式状态.html` | `ref` / `reactive` / `shallowRef` 对比 demo（含嵌套与 shallow 替换） |
+| `src/生命周期钩子.html` | Composition API 全部生命周期 + KeepAlive 激活/失活 |
 
 ## 依赖
 

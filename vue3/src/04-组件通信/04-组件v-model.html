@@ -15,7 +15,7 @@
     <script src="../../libs/vue.global.js"></script>
     <style>
       body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      input { padding: 6px 10px; }
+      input { padding: 6px 10px; display: block; margin: 8px 0; }
       code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
       .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
     </style>
@@ -24,13 +24,15 @@
     <div id="app">
       <h1>组件 v-model</h1>
       <div class="box">
-        <smart-input v-model="title"></smart-input>
+        <smart-form v-model="title" v-model:subtitle="subtitle"></smart-form>
         <p>父组件 title：{{ title }}</p>
+        <p>父组件 subtitle：{{ subtitle }}</p>
       </div>
 
       <h2>面试回答</h2>
       <ul>
         <li><code>&lt;Child v-model="x" /&gt;</code> 等价于传入 <code>modelValue</code> 并监听 <code>update:modelValue</code>。</li>
+        <li><code>v-model:subtitle</code> 等价于 <code>subtitle</code> prop + <code>update:subtitle</code> 事件。</li>
         <li>Vue3 支持多个 v-model 参数，适合复杂表单组件。</li>
         <li>本质仍是 props + emit，只是语法更简洁。</li>
       </ul>
@@ -39,25 +41,38 @@
     <script>
       const { createApp, ref } = Vue;
 
-      const SmartInput = {
-        props: { modelValue: String },
-        emits: ["update:modelValue"],
+      const SmartForm = {
+        props: {
+          modelValue: String,
+          subtitle: String,
+        },
+        emits: ["update:modelValue", "update:subtitle"],
         template: `
-          <label>
-            子组件输入：
-            <input
-              :value="modelValue"
-              @input="$emit('update:modelValue', $event.target.value)"
-            />
-          </label>
+          <div>
+            <label>
+              标题（默认 v-model）：
+              <input
+                :value="modelValue"
+                @input="$emit('update:modelValue', $event.target.value)"
+              />
+            </label>
+            <label>
+              副标题（v-model:subtitle）：
+              <input
+                :value="subtitle"
+                @input="$emit('update:subtitle', $event.target.value)"
+              />
+            </label>
+          </div>
         `,
       };
 
       createApp({
-        components: { SmartInput },
+        components: { SmartForm },
         setup() {
           const title = ref("Vue3 面试");
-          return { title };
+          const subtitle = ref("组合式 API");
+          return { title, subtitle };
         },
       }).mount("#app");
     </script>

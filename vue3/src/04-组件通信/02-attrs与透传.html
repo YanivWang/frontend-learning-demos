@@ -15,25 +15,35 @@
     <script src="../../libs/vue.global.js"></script>
     <style>
       body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { padding: 6px 12px; }
+      button { padding: 6px 12px; margin-right: 8px; }
       code, pre { background: #f6f8fa; border-radius: 6px; }
       code { padding: 2px 5px; }
       pre { padding: 12px; overflow: auto; }
       .primary { color: #fff; background: #1a73e8; border: 0; border-radius: 6px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+      .ghost { color: #1a73e8; background: #fff; border: 1px solid #1a73e8; border-radius: 6px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; margin-bottom: 16px; }
     </style>
   </head>
   <body>
     <div id="app">
       <h1>attrs 与属性透传</h1>
+
       <div class="box">
-        <base-button class="primary" data-id="save" @click="message = '已点击保存'">保存</base-button>
-        <p>{{ message }}</p>
+        <h2>默认透传（单根组件自动落到根元素）</h2>
+        <default-button class="primary" data-id="save" @click="message = '默认透传：已点击保存'">保存</default-button>
       </div>
+
+      <div class="box">
+        <h2>inheritAttrs: false + 手动 v-bind="$attrs"</h2>
+        <base-button class="ghost" data-id="cancel" @click="message = '手动透传：已点击取消'">取消</base-button>
+      </div>
+
+      <p>{{ message }}</p>
 
       <h2>面试回答</h2>
       <ul>
         <li><code>attrs</code> 适合做二次封装组件，比如按钮、输入框、表格组件。</li>
+        <li>单根组件默认会把未声明为 props 的属性透传到根元素；关闭后需手动 <code>v-bind="$attrs"</code>。</li>
         <li>Vue3 中 <code>class</code>、<code>style</code>、普通属性和事件监听都可作为透传属性处理。</li>
         <li>多根组件不会自动决定透传到哪里，需要显式 <code>v-bind="$attrs"</code>。</li>
       </ul>
@@ -42,13 +52,17 @@
     <script>
       const { createApp, ref } = Vue;
 
+      const DefaultButton = {
+        template: `<button><slot></slot></button>`,
+      };
+
       const BaseButton = {
         inheritAttrs: false,
         template: `<button v-bind="$attrs"><slot></slot></button>`,
       };
 
       createApp({
-        components: { BaseButton },
+        components: { DefaultButton, BaseButton },
         setup() {
           const message = ref("等待点击");
           return { message };

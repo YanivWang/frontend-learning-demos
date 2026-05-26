@@ -28,7 +28,11 @@
       <div class="box">
         <button @click="current = 'ProfilePanel'">资料</button>
         <button @click="current = 'SettingPanel'">设置</button>
-        <component :is="current"></component>
+        <button @click="current = 'AsyncPanel'">异步面板</button>
+        <p>异步加载状态：{{ asyncStatus }}</p>
+        <keep-alive>
+          <component :is="current"></component>
+        </keep-alive>
       </div>
 
       <h2>面试回答</h2>
@@ -41,17 +45,64 @@
     </div>
 
     <script>
-      const { createApp, ref } = Vue;
+      const { createApp, ref, watch, defineAsyncComponent } = Vue;
 
-      const ProfilePanel = { template: `<p>资料面板：这里可以有个人信息。</p>` };
-      const SettingPanel = { template: `<p>设置面板：这里可以有偏好设置。</p>` };
+      const ProfilePanel = {
+        setup() {
+          const visits = ref(0);
+          return { visits };
+        },
+        template: `
+          <p>资料面板 visits：{{ visits }}
+            <button @click="visits++">+1</button>
+            （切走后 KeepAlive 会保留 count）
+          </p>
+        `,
+      };
+
+      const SettingPanel = {
+        setup() {
+          const theme = ref("light");
+          return { theme };
+        },
+        template: `
+          <p>设置面板 theme：{{ theme }}
+            <button @click="theme = theme === 'light' ? 'dark' : 'light'">切换</button>
+          </p>
+        `,
+      };
+
+      const AsyncPanel = defineAsyncComponent({
+        loader: () =>
+          new Promise((resolve) => {
+            setTimeout(() => {
+              resolve({
+                setup() {
+                  const loadedAt = ref(new Date().toLocaleTimeString());
+                  return { loadedAt };
+                },
+                template: `<p>异步组件已加载，时间 {{ loadedAt }}</p>`,
+              });
+            }, 800);
+          }),
+        loadingComponent: {
+          template: `<p>异步组件加载中...</p>`,
+        },
+      });
 
       createApp({
-        components: { ProfilePanel, SettingPanel },
+        components: { ProfilePanel, SettingPanel, AsyncPanel },
         setup() {
           const current = ref("ProfilePanel");
-          const asyncSnippet = "const AsyncComp = defineAsyncComponent(() => import('./HeavyComp.vue'))";
-          return { current, asyncSnippet };
+          const asyncStatus = ref("未请求");
+          const asyncSnippet =
+            "const AsyncComp = defineAsyncComponent(() => import('./HeavyComp.vue'))";
+
+          watch(current, (value) => {
+            if (value === "AsyncPanel") asyncStatus.value = "已触发 defineAsyncComponent";
+          });
+
+          return { current, asyncStatus, asyncSnippet };
         },
       }).mount("#app");
     </script>

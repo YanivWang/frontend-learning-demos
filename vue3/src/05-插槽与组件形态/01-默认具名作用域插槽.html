@@ -29,7 +29,7 @@
         <template #default="{ item }">
           <strong>{{ item.title }}</strong>：{{ item.summary }}
         </template>
-        <template #footer>共 {{ articles.length }} 篇</template>
+        <template #footer="{ total }">共 {{ total }} 篇</template>
       </base-card>
 
       <h2>面试回答</h2>
@@ -37,6 +37,7 @@
         <li>插槽是组件内容分发机制，子组件定义出口，父组件提供内容。</li>
         <li><code>#header</code> 是 <code>v-slot:header</code> 的缩写。</li>
         <li>作用域插槽常用于表格列、列表项、弹窗内容等需要父组件自定义渲染的场景。</li>
+        <li>footer 通过子组件传入的 <code>total</code> 统计真实列表长度，避免父组件误用本地 dummy 数据。</li>
       </ul>
     </div>
 
@@ -57,17 +58,15 @@
             <div v-for="item in articles" :key="item.title">
               <slot :item="item"></slot>
             </div>
-            <div class="foot"><slot name="footer"></slot></div>
+            <div class="foot">
+              <slot name="footer" :total="articles.length"></slot>
+            </div>
           </section>
         `,
       };
 
       createApp({
         components: { BaseCard },
-        setup() {
-          const articles = ref([{ title: "x" }, { title: "y" }]);
-          return { articles };
-        },
       }).mount("#app");
     </script>
   </body>

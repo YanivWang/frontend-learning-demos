@@ -14,75 +14,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vue3 · Composition API 生命周期钩子</title>
     <script src="../libs/vue.global.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin-right: 8px; padding: 6px 12px; }
+      pre { background: #f6f8fa; border-radius: 8px; padding: 12px; overflow: auto; max-height: 280px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+      .dom-target { padding: 8px; background: #eef5ff; border-radius: 6px; margin: 8px 0; }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <h1>Composition API 生命周期钩子</h1>
+      <div class="box">
+        <button @click="showChild = !showChild">显示/隐藏 KeepAlive 区域</button>
+        <button @click="currentTab = currentTab === 'A' ? 'B' : 'A'" :disabled="!showChild">切换缓存页</button>
+        <p ref="elRef" class="dom-target">根组件 DOM 节点（onMounted 后可访问）</p>
+        <keep-alive v-if="showChild">
+          <cached-panel :key="currentTab" :tab="currentTab"></cached-panel>
+        </keep-alive>
+        <pre>{{ logs.join("\n") }}</pre>
+      </div>
+    </div>
 
     <script>
-      // 从 Vue 解构本 demo 用到的全部 Composition API 钩子
       const {
-        createApp, ref, shallowRef, computed,
+        createApp, ref,
         onBeforeMount, onMounted,
         onBeforeUpdate, onUpdated,
         onBeforeUnmount, onUnmounted,
-        onActivated, onDeactivated
+        onActivated, onDeactivated,
       } = Vue;
 
+      const CachedPanel = {
+        props: { tab: String },
+        template: `
+          <div>
+            <p>KeepAlive 缓存页 {{ tab }}，count：{{ count }}
+              <button @click="count++">+1</button>
+            </p>
+          </div>
+        `,
+        setup(props) {
+          const count = ref(0);
+          const logs = window.__lifecycleLogs;
+
+          onBeforeMount(() => logs.value.push(`[${props.tab}] onBeforeMount`));
+          onMounted(() => logs.value.push(`[${props.tab}] onMounted`));
+          onBeforeUpdate(() => logs.value.push(`[${props.tab}] onBeforeUpdate`));
+          onUpdated(() => logs.value.push(`[${props.tab}] onUpdated`));
+          onBeforeUnmount(() => logs.value.push(`[${props.tab}] onBeforeUnmount`));
+          onUnmounted(() => logs.value.push(`[${props.tab}] onUnmounted`));
+          onActivated(() => logs.value.push(`[${props.tab}] onActivated（从缓存恢复）`));
+          onDeactivated(() => logs.value.push(`[${props.tab}] onDeactivated（进入缓存）`));
+
+          return { count };
+        },
+      };
+
       const app = createApp({
-        //特别注意: setup函数替代了之前的beforeCreate和created
+        components: { CachedPanel },
         setup() {
-          /*
-          1.所有同步子组件都已经被挂载(不包含异步组件)
-          2.组件自身的DOM树已经创建完成并插入父容器
-          3.作用: 在这个钩子中可以访问组件所渲染的dom树
-          */
-          const elRef = ref();
+          const logs = ref([]);
+          const showChild = ref(true);
+          const currentTab = ref("A");
+          const elRef = ref(null);
+          window.__lifecycleLogs = logs;
 
-          //=========== AAAA挂载阶段AAAA ===========
-          //组件被挂载之前调用(此时已经完成了响应式状态的设置，但是还没有创建DOM节点，它即将首次执行 DOM 渲染过程。)
-          onBeforeMount(() => {});
-          //挂载后执行（自身DOM树已经插入到容器中）
-          //可以操作DOM
-          //接口请求
+          onBeforeMount(() => logs.value.push("根组件 onBeforeMount"));
           onMounted(() => {
-            console.log("组件挂载...");
+            logs.value.push(`根组件 onMounted，elRef 已挂载：${!!elRef.value}`);
           });
+          onBeforeUpdate(() => logs.value.push("根组件 onBeforeUpdate"));
+          onUpdated(() => logs.value.push("根组件 onUpdated"));
+          onBeforeUnmount(() => logs.value.push("根组件 onBeforeUnmount"));
+          onUnmounted(() => logs.value.push("根组件 onUnmounted"));
 
-          //=========== BBBB更新阶段BBBB ===========
-          //因响应式状态变更而更新DOM树之前调用
-          onBeforeUpdate(() => {});
-          //在组件因为响应式状态变更而更新其DOM树之后调用，可以用 nextTick() 替代
-          //访问更新后的DOM
-          onUpdated(() => {});
-
-          //=========== CCCC卸载阶段CCCC ===========
-          //组件卸载前调用，此时组件实例依赖还保留全部功能
-          onBeforeUnmount(() => {});
-          /*
-          1.调用时机: 组件被卸载后调用
-          2.作用: 清理一些副作用(计时器，dom监听器，与服务器的连接)
-          */
-          // 正确拼写是 onUnmounted（非 onUnMounted）
-          onUnmounted(() => {});
-
-          //=========== DDDD keep-alive的组件激活 DDDD ===========
-          // 调用时机为首次挂载
-          // 以及每次从缓存中被重新插入时
-          onActivated(() => {});
-
-          //keep-alive的组件失去活性
-          // 在从 DOM 上移除、进入缓存
-          // 以及组件卸载时调用
-          onDeactivated(() => {});
-
-          //setup钩子的不便之处就是需要写大量返回的语句暴露api
-          return {
-            elRef,
-          };
+          return { logs, showChild, currentTab, elRef };
         },
       });
 
-      //挂载应用到指定的dom节点
       app.mount("#app");
     </script>
   </body>

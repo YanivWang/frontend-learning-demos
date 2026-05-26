@@ -26,8 +26,12 @@
     <div id="app">
       <h1>Proxy 响应式原理</h1>
       <div class="box">
+        <p>count：{{ state.count }}，extra：{{ state.extra || "无" }}</p>
+        <p>数组：{{ state.list.join(", ") }}</p>
         <button @click="state.count++">count +1</button>
         <button @click="state.extra = '新增属性也能触发'">新增属性</button>
+        <button @click="state.list[0] = state.list[0] + 10">改数组索引 list[0]</button>
+        <button @click="state.list.push(state.list.length + 1)">push 新元素</button>
         <pre>{{ logs.join("\n") }}</pre>
       </div>
 
@@ -44,11 +48,13 @@
 
       createApp({
         setup() {
-          const state = reactive({ count: 0 });
+          const state = reactive({ count: 0, list: [1, 2, 3] });
           const logs = ref([]);
 
           watchEffect(() => {
-            logs.value.push(`effect 重新执行：count=${state.count} extra=${state.extra || ""}`);
+            logs.value.push(
+              `effect 重新执行：count=${state.count} extra=${state.extra || ""} list=${state.list.join(",")}`
+            );
           });
 
           return { state, logs };

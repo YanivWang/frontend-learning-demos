@@ -18,7 +18,7 @@
       button { margin-right: 8px; padding: 6px 12px; }
       code, pre { background: #f6f8fa; border-radius: 6px; }
       code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; }
+      pre { padding: 12px; overflow: auto; max-height: 160px; }
       .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
     </style>
   </head>
@@ -28,6 +28,7 @@
       <div class="box">
         <p>鼠标位置：x={{ x }}，y={{ y }}</p>
         <p>是否在左上角：{{ isNearOrigin ? "是" : "否" }}</p>
+        <pre>{{ watchLogs.join("\n") }}</pre>
       </div>
 
       <h2>面试回答</h2>
@@ -35,26 +36,32 @@
         <li>Vue3 用组合式函数复用有状态逻辑，替代 Vue2 中 mixin 容易命名冲突和来源不清的问题。</li>
         <li>组合式函数不是 Vue 专属语法，本质就是普通函数，只是内部使用了响应式 API。</li>
         <li>返回值通常用 <code>ref</code> 或 <code>toRefs</code>，方便调用方解构后仍保持响应。</li>
+        <li>composable 内可组合 <code>watch</code>，在状态变化时执行副作用或记录日志。</li>
       </ul>
     </div>
 
     <script>
-      const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
+      const { createApp, ref, computed, watch, onMounted, onUnmounted } = Vue;
 
       function useMousePosition() {
         const x = ref(0);
         const y = ref(0);
         const isNearOrigin = computed(() => x.value < 200 && y.value < 200);
+        const watchLogs = ref([]);
 
         function update(event) {
           x.value = event.clientX;
           y.value = event.clientY;
         }
 
+        watch(isNearOrigin, (near) => {
+          watchLogs.value.push(`isNearOrigin 变为 ${near ? "true" : "false"}（x=${x.value}, y=${y.value}）`);
+        });
+
         onMounted(() => window.addEventListener("mousemove", update));
         onUnmounted(() => window.removeEventListener("mousemove", update));
 
-        return { x, y, isNearOrigin };
+        return { x, y, isNearOrigin, watchLogs };
       }
 
       createApp({

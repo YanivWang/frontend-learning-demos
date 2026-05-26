@@ -14,87 +14,104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vue3 · ref / reactive / shallowRef</title>
     <script src="../libs/vue.global.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin: 4px 8px 4px 0; padding: 6px 12px; }
+      .panel { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 16px; max-width: 760px; }
+      h2 { margin-top: 0; font-size: 1.1rem; }
+    </style>
   </head>
   <body>
     <div id="app">
-      <div class="appContent">
-        <!-- test ref -->
-        <div>======================</div>
+      <h1>ref / shallowRef / reactive 对比</h1>
 
-        <!-- 模板中 ref 会自动解包，无需写 .value -->
-        <div>{{ message }}</div>
-        <button @click="changeMsgFn">clickMe</button>
-      </div>
+      <section class="panel">
+        <h2>ref（模板自动解包，JS 需 .value）</h2>
+        <p>message：{{ message }}</p>
+        <button @click="changeMsgFn">修改 message</button>
+      </section>
+
+      <section class="panel">
+        <h2>ref 嵌套对象（深层响应）</h2>
+        <p>objRef.form.name：{{ objRef.form.name }}</p>
+        <button @click="objRef.form.name = objRef.form.name ? '' : 'Alice'">切换 name</button>
+      </section>
+
+      <section class="panel">
+        <h2>shallowRef（只追踪 .value 整体替换）</h2>
+        <p>shallowObjRef.form.name：{{ shallowObjRef.form.name }}</p>
+        <button @click="mutateShallowNested">改嵌套字段（通常不更新视图）</button>
+        <button @click="replaceShallowObjRef">整体替换 .value（会更新视图）</button>
+        <p>{{ shallowNote }}</p>
+      </section>
+
+      <section class="panel">
+        <h2>reactive（Proxy 对象，无 .value）</h2>
+        <p>reactiveObj.form.name：{{ reactiveObj.form.name }}</p>
+        <button @click="reactiveObj.form.name = reactiveObj.form.name ? '' : 'Bob'">切换 name</button>
+      </section>
     </div>
 
     <script>
-      // 从 Vue 解构 createApp、ref、shallowRef、reactive 等 API
-      const { createApp, ref, shallowRef, reactive, computed } = Vue;
+      const { createApp, ref, shallowRef, reactive } = Vue;
 
-      // createApp 函数创建一个新的 应用实例
-      const app = createApp(
-        // 参数是 “根组件选项对象”(或者 一个App组件)，每个应用都需要一个根组件，其它组件都是其子组件
-        {
-          setup() {
-            //Ref 可以持有任何类型的值，嵌套对象或者数据具有深层响应性
-            //非原始值会通过 reactive() 转换为响应式代理
-            const objRef = ref({
-              form: {
-                name: "",
-                age: 0,
-                address: {}
-              },
-              array: [1,2,3,4]
-            })
-            console.log("objRef,", objRef);
+      const app = createApp({
+        setup() {
+          const objRef = ref({
+            form: { name: "", age: 0, address: {} },
+            array: [1, 2, 3, 4],
+          });
+          console.log("objRef,", objRef);
 
-            //返回一个带有 .value 属性的 RefImpl 对象
-            const message = ref("Hello vue!");
+          const message = ref("Hello vue!");
+          console.log("message,", message);
 
-            //创建一个浅层响应式，对 .value 的访问是响应式的
-            const shallowObjRef = shallowRef({
-              form: {
-                name: "",
-                age: 0,
-                address: {}
-              },
-              array: [1,2,3,4]
-            })
-            console.log("shallowObjRef,", shallowObjRef);
+          const shallowObjRef = shallowRef({
+            form: { name: "", age: 0, address: {} },
+            array: [1, 2, 3, 4],
+          });
+          console.log("shallowObjRef,", shallowObjRef);
 
-            //使用 reactive 创建响应式对象
-            const reactiveObj = reactive({
-              form: {
-                name: "",
-                age: 0,
-                address: {}
-              },
-              array: [1,2,3,4]
-            })
-            console.log("shallowObjRef,", shallowObjRef);
+          const reactiveObj = reactive({
+            form: { name: "", age: 0, address: {} },
+            array: [1, 2, 3, 4],
+          });
+          console.log("reactiveObj,", reactiveObj);
 
+          const shallowNote = ref("改嵌套字段不会触发 shallowRef 视图更新；整体替换 .value 才会。");
 
-            // JS 代码中访问 ref 必须带 .value（模板中自动解包，无需 .value）
-            const changeMsgFn = () => {
-              message.value = "I am change to HI vue!";
+          const changeMsgFn = () => {
+            message.value = "I am change to HI vue!";
+            console.log("message,", message);
+          };
 
-              console.log("message,", message);
+          function mutateShallowNested() {
+            shallowObjRef.value.form.name = shallowObjRef.value.form.name ? "" : "Charlie";
+            shallowNote.value = "已改嵌套字段，若视图未变，说明 shallowRef 未追踪内部变更。";
+          }
+
+          function replaceShallowObjRef() {
+            shallowObjRef.value = {
+              form: { name: "整体替换", age: 0, address: {} },
+              array: [1, 2, 3, 4],
             };
-            
-            //setup 钩子中通过 return 语句，将响应式变量或事件处理函数暴露给组件模板
-            return {
-              message,
+            shallowNote.value = "已整体替换 .value，视图应同步更新。";
+          }
 
-              changeMsgFn,
-            };
-          },
-          //当组件没有设置 template 选项的时候，Vue 将自动使用容器的 innerHTML 作为模板
-          // template: `<div class="appContentTemplate">1111</div>`
-        }
-      );
+          return {
+            message,
+            objRef,
+            shallowObjRef,
+            reactiveObj,
+            shallowNote,
+            changeMsgFn,
+            mutateShallowNested,
+            replaceShallowObjRef,
+          };
+        },
+      });
 
-      //挂载应用到指定的dom节点
-      app.mount("#app")
+      app.mount("#app");
     </script>
   </body>
 </html>

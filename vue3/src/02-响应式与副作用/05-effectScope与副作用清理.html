@@ -18,24 +18,35 @@
       button { margin-right: 8px; padding: 6px 12px; }
       code, pre { background: #f6f8fa; border-radius: 6px; }
       code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; max-height: 220px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+      pre { padding: 12px; overflow: auto; max-height: 280px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; margin-bottom: 16px; }
     </style>
   </head>
   <body>
     <div id="app">
       <h1>effectScope 与副作用清理</h1>
+
       <div class="box">
+        <h2>watch 返回停止函数</h2>
         <p>count：{{ count }}</p>
         <button @click="count++">count +1</button>
+        <button @click="startWatch">开启 watch</button>
+        <button @click="stopWatch">调用 watch 停止函数</button>
+        <p>watch 状态：{{ watchActive ? "运行中" : "已停止" }}</p>
+      </div>
+
+      <div class="box">
+        <h2>effectScope 统一停止</h2>
         <button @click="startScope">开启 scope</button>
         <button @click="stopScope">停止 scope</button>
-        <pre>{{ logs.join("\n") }}</pre>
+        <p>scope 状态：{{ scopeActive ? "运行中" : "已停止" }}</p>
       </div>
+
+      <pre>{{ logs.join("\n") }}</pre>
 
       <h2>面试回答</h2>
       <ul>
-        <li><code>watch</code>、<code>watchEffect</code> 这类副作用需要在不再使用时停止。</li>
+        <li><code>watch</code>、<code>watchEffect</code> 会返回停止函数，可单独停止某个副作用。</li>
         <li><code>effectScope</code> 可以把一组副作用放进同一个作用域，统一停止。</li>
         <li>组件内创建的副作用通常会随组件卸载自动停止；组件外或手动创建的副作用要格外注意清理。</li>
       </ul>
@@ -48,7 +59,27 @@
         setup() {
           const count = ref(0);
           const logs = ref([]);
+          const watchActive = ref(false);
+          const scopeActive = ref(false);
+          let stopWatchFn = null;
           let scope = null;
+
+          function startWatch() {
+            if (watchActive.value) return;
+            stopWatchFn = watch(count, (value) => {
+              logs.value.push(`独立 watch：count = ${value}`);
+            });
+            watchActive.value = true;
+            logs.value.push("已开启独立 watch");
+          }
+
+          function stopWatch() {
+            if (!stopWatchFn) return;
+            stopWatchFn();
+            stopWatchFn = null;
+            watchActive.value = false;
+            logs.value.push("已调用 watch 停止函数");
+          }
 
           function startScope() {
             if (scope) return;
@@ -58,6 +89,7 @@
                 logs.value.push(`scope 内 watch：count = ${value}`);
               });
             });
+            scopeActive.value = true;
             logs.value.push("已开启 effectScope");
           }
 
@@ -65,10 +97,14 @@
             if (!scope) return;
             scope.stop();
             scope = null;
+            scopeActive.value = false;
             logs.value.push("已停止 effectScope");
           }
 
-          return { count, logs, startScope, stopScope };
+          return {
+            count, logs, watchActive, scopeActive,
+            startWatch, stopWatch, startScope, stopScope,
+          };
         },
       }).mount("#app");
     </script>
