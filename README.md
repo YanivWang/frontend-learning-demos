@@ -1,4 +1,4 @@
-# js-css-vue-react-grammar
+# js-css-vue-react-learn
 
 前端语法与框架复习 Demo 库。每个 HTML 可直接在浏览器打开，无需构建。
 
