@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>vue first</title>
+    <script src="../../libs/vue2.js"></script>
+</head>
+<body>
+
+<div id="app">
+    <div>{{msg}}</div>
+    <button @click="onClick()">Click</button>
+
+    <div class="person">
+        <div>{{person.name}}</div>
+        <div>{{person.age}}</div>
+        <div>Extend attr:</div>
+        <div>
+            {{person.height}}
+        </div>
+        <div>
+            {{person.weight}}
+        </div>
+        <div v-if="person.address">
+            <div>
+                {{person.address.city}}
+            </div>
+            <div>
+                {{person.address.province}}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            msg: 'response',
+            person: {
+                name: "wc"
+            },
+            dog: {
+                name: "laifu"
+            }
+        },
+        mounted: function () {
+            this._refreshPage();
+        },
+        methods: {
+            _refreshPage: function () {
+                let deerObj = {
+                    name: "deer"
+                };
+                //存储描述符: 一对set get 构成
+                Object.defineProperty(deerObj, "weight", {
+                    set: function () {
+                        console.log("set deerObj...");
+                    },
+                    get: function () {
+                        console.log("get deerObj...");
+                    }
+                });
+
+                console.log(deerObj.weight);
+                deerObj.weight = 40;
+                console.log(deerObj.weight);
+            },
+
+            onClick: function () {
+                console.log("onClick...");
+
+                //this.person.age = 18;
+                this.$set(this.person, "age", 18);
+
+                //Object.assign 方法只会从源对象中拷贝其自身的并且是可枚举的属性
+                //Object.assign 拷贝不会跳过值为null或者undefined
+                //let target = Object.assign(target, ...source);
+                let newObj = Object.assign(this.person, {
+                    "height": 172, "weight": "50kg", address: {
+                        "city": "beijing",
+                        "province": "hubei"
+                    }
+                });
+                console.log(JSON.stringify(this.person));
+
+                //将需要添加属性的模型和新增的属性对象，一起合并成一个新的对象，并且返回这个对象
+                this.dog = Object.assign({}, this.dog, {
+                    "city": "beijing",
+                    "province": "hubei"
+                })
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

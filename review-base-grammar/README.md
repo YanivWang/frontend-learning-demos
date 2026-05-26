@@ -12,9 +12,17 @@ review-base-grammar/
 │   ├── 02-函数与作用域/
 │   ├── 03-对象与原型/
 │   ├── 04-ES6+/
+│   │   └── 异步/       # Promise、generator、async
 │   ├── 05-元编程/
 │   ├── 06-浏览器API/
-│   └── 07-进阶/
+│   ├── 07-进阶/
+│   ├── 08-面试题/
+│   └── 09-Canvas/      # Canvas 2D 绘图
+├── css/                # CSS 练习（布局 / 动画 / 视觉效果 / 响应式）
+│   ├── 01-布局/
+│   ├── 02-动画/
+│   ├── 03-视觉效果/
+│   └── 04-响应式/
 ├── vue2/               # Vue 2（libs/ + src/）
 ├── vue3/               # Vue 3（libs/ + src/）
 ├── react/              # React 18（libs/ + src/，需 Babel 编译 JSX）
@@ -27,19 +35,28 @@ review-base-grammar/
 
 ### JavaScript
 
-1. **01-基础** — 变量、函数、箭头函数、JSON、Symbol  
-2. **02-函数与作用域** — 作用域链、闭包  
-3. **03-对象与原型** — 原型、原型链、创建对象、访问器  
-4. **04-ES6+** — Class、模块、Map/Set/WeakMap/WeakSet  
+1. **01-基础** — 变量、函数、箭头函数、JSON、Symbol、typeof、正则、encode/escape  
+2. **02-函数与作用域** — 作用域链、闭包、柯里化、this 指向  
+3. **03-对象与原型** — 原型、原型链、创建对象、访问器、构造函数  
+4. **04-ES6+** — Class、模块、Map/Set/WeakMap/WeakSet、Promise/async/generator  
 5. **05-元编程** — `defineProperty`、`Proxy`  
-6. **06-浏览器API** — BOM、Observer、拖曳、Tooltips  
-7. **07-进阶** — 内存泄漏排查  
+6. **06-浏览器API** — BOM、Observer、事件、Web Worker、localforage、拖曳、Tooltips  
+7. **07-进阶** — 内存泄漏、深拷贝、手写 Promise  
+8. **08-面试题** — 作用域经典题  
+9. **09-Canvas** — 2D 基础绘图、动画（烟花 + requestAnimationFrame）  
 
 ### 框架
 
-1. **vue2** → `src/响应式原理/`（手写 Observer + defineProperty）  
+1. **vue2** → `src/响应式原理/` → `src/基础语法/` → `src/组件/` → `src/路由与状态/`  
 2. **vue3** → `src/`（响应式状态、生命周期）  
 3. **react** → `src/`（从 `开始.html`、`jsx.html` 入门；脚本引用 `../libs/`）
+
+### CSS
+
+1. **01-布局** — Grid、rem 适配、瀑布流  
+2. **02-动画** — Loading、@keyframes、NProgress  
+3. **03-视觉效果** — 百分比圆环、3D 按钮、阴影、混合模式、Tooltip  
+4. **04-响应式** — Media Queries、vw/vh  
 
 ### 交互 Demo
 
@@ -49,11 +66,12 @@ review-base-grammar/
 ## 使用方式
 
 - 用浏览器或 Live Server 打开 `index.html` 或任意 `.html`  
-- Vue Demo：引用 `../libs/vue2.js` 或 `vue3.5.js`  
+- Vue Demo：引用 `../libs/vue2.js`；路由/Vuex 需 `vue-router.js`、`vuex.js`  
 - React Demo：需加载 `react18.js`、`react-dom18.js`、`babel.js`，`<script type="text/babel">` 内写 JSX  
 
 ## 约定
 
 - `libs/`：框架运行时，不修改  
 - `src/`：学习用 Demo  
-- `javascript/` 子目录按 `01`–`07` 编号，便于按序复习  
+- `javascript/` 子目录按 `01`–`09` 编号，便于按序复习  
+- 已从 `base-grammar` 合并的内容统一改为本地 `libs/` 引用（`watch.html` 等少数 Demo 仍依赖 axios CDN）

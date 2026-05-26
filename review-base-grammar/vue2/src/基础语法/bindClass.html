@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>vue first</title>
+    <script src="../../libs/vue2.js"></script>
+
+    <style>
+        div.active {
+            background-color: red;
+        }
+
+        div.text-danger {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div>
+    <!--指令和基础的语法，今天把它的模块化，打包，编译，发布的流程弄清楚-->
+    <div id="app1">
+        <!--给v-bind:class指令传递一个对象-->
+        <!-- 对象的key是类名：最终被编译到 div元素的 class 属性中，这个key是否被编译到元素的class属性中，取决于它的值的真假性 -->
+        <div v-bind:class="{active: isActive}">
+            测试文本
+        </div>
+
+        <div @click="clickHandle">点击</div>
+
+        <!--注意这里的： { active: isActive, 'text-danger': hasError } 这个绑定的参数是个对象，但是这个对象不需要在data
+        中，预先定义-->
+        <div class="yellowBg" :class="{ active: isActive, 'text-danger': hasError }">
+            error
+        </div>
+    </div>
+
+
+    <div id="app2">
+        <div>更加优秀的做法obj</div>
+        <div :class="classObj">
+            测试文本
+        </div>
+
+        <div @click="clickHandle">点击</div>
+    </div>
+
+
+    <div id="app3">
+        <div>更加优秀的做法array:应用一个class列表</div>
+        <div :class="[activeClass, errorClass]">
+            测试文本
+        </div>
+
+        <!--数组中每个元素可以是一个js表达式-->
+        <div :class="[isActive ? activeClass: '', errorClass]">
+            测试文本
+        </div>
+
+
+        <!--数组中的元素也可以是一个对象-->
+        <div :class="[{ activeClass : isActive}, errorClass]">
+            测试文本
+        </div>
+
+        <div @click="clickHandle">点击</div>
+    </div>
+</div>
+
+<script>
+    var vm3 = new Vue({
+        el: "#app3",
+        data: {
+            isActive: false,
+            activeClass: 'active',
+            errorClass: 'text-danger'
+        },
+        computed: {
+            //因为这里这个classObj值的变化，是和属性isActive和hasError一致的
+            classObj: function () {
+                return {
+                    active: this.isActive,
+                    'text-danger': this.hasError
+                }
+            }
+        },
+        methods: {
+            clickHandle: function () {
+                if (this.isActive) {
+                    this.hasError = false;
+                    this.isActive = false;
+                } else {
+                    this.hasError = true;
+                    this.isActive = true;
+                }
+            }
+        },
+        watch: {}
+    });
+
+    var vm1 = new Vue({
+        el: "#app1",
+        data: {
+            msg: {},
+            isActive: true,
+            hasError: true
+        },
+        computed: {},
+        methods: {
+            clickHandle: function () {
+                if (this.isActive) {
+                    this.hasError = false;
+                    this.isActive = false;
+                } else {
+                    this.hasError = true;
+                    this.isActive = true;
+                }
+            }
+        },
+        watch: {}
+    });
+
+    var vm2 = new Vue({
+        el: "#app2",
+        data: {
+            msg: {},
+            isActive: true,
+            hasError: null
+        },
+        computed: {
+            //因为这里这个classObj值的变化，是和属性isActive和hasError一致的
+            classObj: function () {
+                return {
+                    active: this.isActive,
+                    'text-danger': this.hasError
+                }
+            }
+        },
+        methods: {
+            clickHandle: function () {
+                if (this.isActive) {
+                    this.hasError = false;
+                    this.isActive = false;
+                } else {
+                    this.hasError = true;
+                    this.isActive = true;
+                }
+            }
+        },
+        watch: {}
+    });
+
+</script>
+
+</body>
+</html>

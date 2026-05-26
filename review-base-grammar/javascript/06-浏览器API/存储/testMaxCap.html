@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="lib/localforage.js"></script>
+</head>
+<body>
+
+<script>
+    //50M 可保证出错概率很低
+    localforage.clear().then(function () {
+        localforage.keys().then(function (keys) {
+            console.log("keys:" + keys);
+
+            //纯净版测试
+            var startTime = new Date().getTime();
+            var array = [];
+            var testStr = "ABCDEFGEFG";
+            for (var i = 0; i < 10000 * 100 * 5.5; i++) {
+                array.push(testStr);
+            }
+            localforage.setItem("bigData", array).then(function (value) {
+                console.log(value.length * 10 / 1024 / 1024 + "m");
+
+                var endTime = new Date().getTime();
+                console.log("用时：" + (endTime - startTime) / 1000 + " s");
+            }).catch(function (err) {
+                console.log("存储错误：" + err);
+            });
+        });
+    }).catch(function (err) {
+        console.log("清空错误：" + err);
+    });
+
+
+    var promise = localforage.setItem("bigData", "wangcheng");
+
+    promise.then(function (value) {
+        console.log("1111");
+    })
+
+
+</script>
+
+</body>
+</html>

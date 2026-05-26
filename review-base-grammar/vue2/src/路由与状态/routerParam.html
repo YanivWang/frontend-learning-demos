@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../../libs/vue2.js"></script>
+    <script src="../../libs/vue-router.js"></script>
+</head>
+<body>
+
+<div id="app">
+    <p>
+        <!-- 使用 router-link 组件来导航. -->
+        <!-- 通过传入 `to` 属性指定链接. -->
+        <!-- <router-link> 默认会被渲染成一个 `<a>` 标签 -->
+        <router-link to="/">home</router-link>
+
+        <!--使用动态路径参数-->
+        <router-link to="/user/wangcheng/post/123">userA</router-link>
+        <router-link to="/user/wangcheng/post/456">userB</router-link>
+    </p>
+    <!-- 路由出口 -->
+    <!-- 路由匹配到的组件将渲染在这里 -->
+    <router-view></router-view>
+
+</div>
+
+<script>
+    console.log("111");
+
+    const home = {
+        template: "<div>home</div>"
+    };
+
+    //在组件中使用$route会使之与对应的路由形成高度耦合，从而使组件只能在某些特定的URL上使用，限制了灵活性
+    //使用prop将组件和路由解耦
+    const user = {
+        watch: {
+            $route: function (to, from) {
+                console.log("111");
+            }
+        },
+        template: `<div>
+                      <span>user</span>
+                      <span>id:{{$route.params.id}}</span>
+                   </div>`
+    };
+
+    //2.定义路由
+    //component: 1.一个组件  2.Vue.extend()创建的组件构造器
+    const routes = [
+        {
+            path: "/", component: home
+        },
+        {
+            path: "/user/:id/post/:postid", component: user//使用:标记一个路径参数，当匹配到一个路由，参数值，将会被设置到this.$route.params
+        }
+    ];
+
+    //3.创建router实例，然后传入"router"配置
+    const router = new VueRouter({
+        routes
+    });
+
+    //4.创建和挂在根实例
+    //通过为根实例注入路由器：我们可以在任何组件内通过this.$router访问路由器  this.$route访问当前的路由
+    var wm = new Vue({
+        router
+    }).$mount('#app');
+
+
+    //5.注意：当使用的路由参数，从/user/wangcheng/post/123  /user/wangcheng/post/456，匹配到的是同一个组件的话，
+    //原来的组件会被复用，意味着组件的生命周期钩子不会再被调用，可以使用watch来监控路由的变化
+
+    console.log(wm);
+</script>
+
+</body>
+</html>

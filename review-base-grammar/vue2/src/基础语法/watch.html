@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>vue first</title>
+    <script src="../../libs/vue2.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>
+</head>
+<body>
+
+
+<div>监听：</div>
+<div id="app1">
+    <!--使用watch来监听某个属性的变化-->
+    <div>name: {{fullName}}</div>
+    <input v-model="firstName">
+    <input v-model="lastName">
+</div>
+
+
+<div>计算属性：</div>
+<div id="app2">
+    <!--使用计算属性来监听某个元素的变化-->
+    <div>name: {{fullName}}</div>
+
+    <input v-model="firstName">
+    <input v-model="lastName">
+</div>
+
+
+<div>计算属性的set和get：</div>
+<div id="app3">
+    <!--使用计算属性来监听某个元素的变化-->
+    <div>name: {{fullName}}</div>
+
+    <input v-model="firstName">
+    <input v-model="lastName">
+</div>
+
+<div id="app4">
+    <div>当需要在数据变化时，执行异步或者开销较大的操作时，使用watch身份有效</div>
+
+    ask a question and get answer from server!!!
+    <input v-model="question">
+    <p>{{answer}}</p>
+</div>
+
+<script>
+    //使用watch进行数据变化引起的异步操作
+    var vm4 = new Vue({
+        el: '#app4',
+        data: {
+            question: "问我一个问题?",
+            answer: ""
+        },
+        watch: {
+            question: function (newValue, oldValue) {
+                this.answer = "Waiting for you to stop typing...";
+
+                this.debouncedGetAnswer();
+            }
+        },
+        //生命周期钩子函数
+        created: function () {
+            //_.debounce 限制函数被调用的频率
+            this.debouncedGetAnswer = _.debounce(this.getAnswer, 500);
+        },
+
+        methods: {
+            //go to server to get answer
+            getAnswer: function () {
+                if (this.question.indexOf('?') === -1) {
+                    this.answer = "一个问题，通常包含一个结束标志符号'?'";
+                    return;
+                }
+
+                console.log("aaaaaaaaaa");
+
+                this.answer = 'Thinking...';
+
+                var that = this;
+                axios.get('https://yesno.wtf/api')
+                    .then(function (response) {
+                        that.answer = _.capitalize(response.data.answer);
+                    })
+                    .catch(function (error) {
+                        that.answer = 'Error ' + error;
+                    })
+
+            }
+        }
+    });
+
+
+    var vm1 = new Vue({
+        el: '#app1',
+        data: {
+            firstName: "cheng",
+            lastName: "wang",
+            fullName: "cheng wang"
+        },
+        watch: {
+            firstName: function (newValue, oldValue) {
+                this.fullName = newValue + this.lastName;
+            },
+            lastName: function (newValue, oldValue) {
+                this.fullName = this.firstName + newValue
+            }
+        }
+    });
+
+
+    var vm2 = new Vue({
+        el: '#app2',
+        data: {
+            firstName: "cheng",
+            lastName: "wang"
+        },
+        computed: {
+            //计算属性的结尾语句必须是return，因为计算属性的值，是定义值提供的函数的计算结果
+            //getter
+            fullName: function () {
+                return this.firstName + this.lastName;
+            },
+        }
+    });
+
+    var vm3 = new Vue({
+        el: '#app3',
+        data: {
+            firstName: "cheng",
+            lastName: "wang"
+        },
+        computed: {
+            //计算属性的结尾语句必须是return，因为计算属性的值，是定义值提供的函数的计算结果
+            //getter
+            fullName: {
+                get: function () {
+                    return this.firstName + this.lastName;
+                },
+                //setter
+                set: function (newVal) {
+                    console.log("set函数被调用");
+                    var reg = /\s+/;
+                    var nameArray = newVal.split(reg);
+
+                    this.firstName = nameArray[0];
+                    this.lastName = nameArray[1];
+                }
+            }
+        }
+    });
+
+    vm3.fullName = "xiao  guang";
+</script>
+
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>vue first</title>
+    <script src="../../libs/vue2.js"></script>
+</head>
+<body>
+
+
+<ol id="app_1">
+    <todo-item
+            v-for="item in peoples"
+            v-bind:todo="item"
+            v-bind:key="item.id"
+    >
+    </todo-item>
+</ol>
+
+<!--所谓的双向数据绑定：(1)逻辑层数据的修改会反映到视图层  (2)视图层的数据的修改会反映到逻辑层 -->
+<div id="app_2">
+    <div v-on:click="msg = 'clicked'" v-on:click="clickHandle">{{msg}}</div>
+    <div v-on:click="clickHandle">查看</div>
+</div>
+
+
+<div onclick="hand1();">点击我</div>
+
+<script>
+    function hand1() {
+        console.log("1111");
+    }
+
+    //Vue组件系统:任意类型的应用界面都是可以抽象成一个组件树
+    //Vue组件类似于web自定义组件，是web组件规范的一部分吧，实现了web组件规范的slot api和is特性
+    //v-bind:(web组件属性title,id,width,height...其它自定义组件的属性)
+
+    //父元素可以通过自定义组件的prop给子组件传递值
+    //一个Vue应用是从 new Vue()开始的，所有的Vue组件都是Vue的实例
+    Vue.component('todo-item', {
+        props: ['todo'],//props用于定义组件的属性
+        template: "<li>{{todo.name}}:{{todo.age}}</li>"//template用于定义组件的模板html代码
+    });
+
+    var app_1 = new Vue({
+        el: "#app_1",
+        data: {
+            peoples: [
+                {id: "1", "name": "张三", "age": 20},
+                {id: "2", "name": "李四", "age": 25},
+                {id: "3", "name": "王五", "age": 27}
+            ]
+        }
+    });
+
+    //只有创建Vue实例时：data字段中的key，才是响应式的，当这些数据改变的时候，视图会重新渲染
+    //通过 this.xx 和 app.xx 动态添加的都不是响应式的
+
+
+    //data 和 method
+    var data = {
+        a: 1,
+        msg: "点击我"
+    };
+
+    //使用freeze，之后，data对象的所有属性变成只读的
+    //Object.freeze(data);
+
+    var app_2 = new Vue({
+        el: '#app_2',
+        data: data,
+        created: function(){
+          console.log("创建le");
+        },
+
+        methods: {
+            //同一个组件绑定多个 v-on:click 只有第一个会执行
+            clickHandle: function () {
+                console.log(this.msg);
+            }
+        }
+    });
+
+    //原始的数据对象 data会和vue实例app_2的data保持同步变化
+    console.log(data.a);
+    console.log(app_2.a);
+
+    app_2.a = 4;
+
+    console.log(data.a);
+    console.log(app_2.a);
+
+    data.a = 16;
+    console.log(data.a);
+    console.log(app_2.a);
+
+    data.a = 123;
+    console.log(data.a);
+    console.log(app_2.a);
+
+    //Vue的实例属性和方法
+    console.log(app_2.$data === data);
+
+    console.log(app_2._data === data);
+
+    console.log(app_2.$el === document.getElementById('app_2'));
+
+    //$watch函数，可以用来监听用户自定义属性的值的变化
+    app_2.$watch('msg', function (newValue, oldValue) {
+        console.log("newValue:" + newValue);
+        console.log("oldValue:" + oldValue);
+    });
+
+
+    //一个Vue实例在被创建时，要经过一系列的初始化过程，比如：设置数据监听，编译模板，将实例挂在到DOM，并在数据变化
+    //时更新DOM。在创建的过程中，也会运行一系列的生命周期的钩子函数。
+
+</script>
+
+
+</body>
+</html>
