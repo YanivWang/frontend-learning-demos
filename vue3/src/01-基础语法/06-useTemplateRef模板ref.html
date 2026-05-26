@@ -1,0 +1,85 @@
+<!--
+  分类: vue3 / 01-基础语法
+  主题: useTemplateRef（Vue 3.5+）
+  要点:
+    - useTemplateRef('key') 替代 ref(null) + 模板 ref="key" 的手动配对
+    - 必须在 setup 同步执行期间调用，模板 ref 属性名需与参数一致
+    - 返回只读 ref，赋值由模板绑定完成；挂载后 .value 才是 DOM
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · useTemplateRef</title>
+    <script src="../../libs/vue.global.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin-right: 8px; padding: 6px 12px; }
+      input { padding: 6px 10px; width: 240px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; max-height: 220px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>useTemplateRef（Vue 3.5+）</h1>
+      <ref-panel></ref-panel>
+    </div>
+
+    <script>
+      const { createApp, ref, useTemplateRef, onMounted } = Vue;
+
+      const RefPanel = {
+        template: `
+          <div class="box">
+            <p>旧写法：ref(null) 与模板 ref 字符串手动对齐</p>
+            <input ref="legacyInput" v-model="text" />
+            <button @click="focusLegacy">聚焦 legacyInput</button>
+
+            <p>新写法：useTemplateRef('myInput') 与 ref="myInput" 同名绑定</p>
+            <input ref="myInput" v-model="text" />
+            <button @click="focusTemplateRef">聚焦 myInput</button>
+
+            <pre>{{ logs.join("\\n") }}</pre>
+          </div>
+
+          <h2>面试回答</h2>
+          <ul>
+            <li><code>useTemplateRef('myInput')</code> 在 setup 里声明，模板写 <code>ref="myInput"</code>，避免字符串拼写不一致。</li>
+            <li>TypeScript 工程里配合泛型可得到更准确的 DOM 类型；全局构建 demo 重点理解绑定机制。</li>
+            <li>挂载前 <code>.value</code> 为 null；需要操作 DOM 时在 <code>onMounted</code> 或事件回调里访问。</li>
+          </ul>
+        `,
+        setup() {
+          const text = ref("试试 focus");
+          const logs = ref([]);
+
+          const legacyInput = ref(null);
+          const myInput = useTemplateRef("myInput");
+
+          onMounted(() => {
+            logs.value.push(`onMounted：legacyInput=${legacyInput.value?.tagName}`);
+            logs.value.push(`onMounted：myInput=${myInput.value?.tagName}`);
+          });
+
+          function focusLegacy() {
+            legacyInput.value?.focus();
+            logs.value.push(`legacyInput 当前值：${legacyInput.value?.value}`);
+          }
+
+          function focusTemplateRef() {
+            myInput.value?.focus();
+            logs.value.push(`myInput 当前值：${myInput.value?.value}`);
+          }
+
+          return { text, logs, legacyInput, focusLegacy, focusTemplateRef };
+        },
+      };
+
+      createApp({ components: { RefPanel } }).mount("#app");
+    </script>
+  </body>
+</html>

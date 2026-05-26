@@ -1,0 +1,106 @@
+<!--
+  分类: vue3 / 04-组件通信
+  主题: props 解构保持响应式（Vue 3.5+）
+  要点:
+    - Vue 3.5 在 <script setup> 中对 defineProps 解构会编译为保持响应式的引用
+    - 普通 setup(props) 里直接解构 props 仍会丢响应（基本类型变成快照）
+    - 全局构建可运行对比：直接解构 vs toRefs(props) vs 模板直接用 props.xxx
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · props 解构保持响应式</title>
+    <script src="../../libs/vue.global.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin-right: 8px; padding: 6px 12px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 860px; }
+      .grid { display: grid; gap: 10px; }
+      .panel { padding: 10px; background: #fafafa; border-radius: 6px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>props 解构保持响应式（Vue 3.5+）</h1>
+      <div class="box grid">
+        <p>父组件 label：{{ label }}</p>
+        <button @click="label = '父组件已更新 ' + Date.now()">父组件改 label</button>
+
+        <bad-destructure :label="label"></bad-destructure>
+        <good-torefs :label="label"></good-torefs>
+        <direct-props :label="label"></direct-props>
+
+        <pre>{{ sfcSnippet }}</pre>
+      </div>
+
+      <h2>面试回答</h2>
+      <ul>
+        <li>Vue 3.5 之前：<code>&lt;script setup&gt;</code> 里 <code>const { x } = defineProps()</code> 也会丢响应，需 <code>toRefs</code> 或直接用 <code>props.x</code>。</li>
+        <li>Vue 3.5+：编译器会把 props 解构转成响应式引用，工程里可以直接解构使用。</li>
+        <li>普通 <code>setup(props)</code>（本仓库全局构建）仍不能直接解构；可用 <code>toRefs(props)</code> 达到同样效果。</li>
+      </ul>
+    </div>
+
+    <script>
+      const { createApp, ref, toRefs } = Vue;
+
+      const BadDestructure = {
+        props: { label: String },
+        setup(props) {
+          const { label } = props;
+          return { label };
+        },
+        template: `
+          <div class="panel">
+            直接解构 props（会丢响应）：{{ label }}
+          </div>
+        `,
+      };
+
+      const GoodToRefs = {
+        props: { label: String },
+        setup(props) {
+          const { label } = toRefs(props);
+          return { label };
+        },
+        template: `
+          <div class="panel">
+            toRefs(props)（保持响应）：{{ label }}
+          </div>
+        `,
+      };
+
+      const DirectProps = {
+        props: { label: String },
+        setup(props) {
+          return { props };
+        },
+        template: `
+          <div class="panel">
+            模板直接用 props.label（保持响应）：{{ props.label }}
+          </div>
+        `,
+      };
+
+      createApp({
+        components: { BadDestructure, GoodToRefs, DirectProps },
+        setup() {
+          const label = ref("初始 label");
+          const sfcSnippet = [
+            "<!-- Vue 3.5+ script setup：解构后仍响应 -->",
+            "&lt;script setup&gt;",
+            "const { label } = defineProps({ label: String })",
+            "&lt;/script&gt;",
+            "<p>{{ label }}</p>",
+          ].join("\n");
+          return { label, sfcSnippet };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

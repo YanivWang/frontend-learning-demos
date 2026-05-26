@@ -1,0 +1,70 @@
+<!--
+  分类: vue3 / 02-响应式与副作用
+  主题: onWatcherCleanup（Vue 3.5+）
+  要点:
+    - 在 watch 回调内注册清理函数，下次触发或停止 watch 时自动执行
+    - 适合在 watch 里开定时器、订阅、AbortController 等副作用
+    - watchEffect 仍可用第一个参数 onCleanup；onWatcherCleanup 主要补 watch 场景
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · onWatcherCleanup</title>
+    <script src="../../libs/vue.global.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin-right: 8px; padding: 6px 12px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; max-height: 280px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 820px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>onWatcherCleanup（Vue 3.5+）</h1>
+      <div class="box">
+        <p>当前 id：{{ activeId }}</p>
+        <button @click="activeId = 'A'">切到 A</button>
+        <button @click="activeId = 'B'">切到 B</button>
+        <button @click="activeId = 'C'">切到 C</button>
+        <pre>{{ logs.join("\n") }}</pre>
+      </div>
+
+      <h2>面试回答</h2>
+      <ul>
+        <li><code>watch(source, cb)</code> 的回调里若创建了副作用，应在下次执行前清理，否则旧副作用会泄漏。</li>
+        <li>Vue 3.5 提供 <code>onWatcherCleanup(fn)</code>，在 watch 回调同步调用即可注册清理；比手动保存 stop 函数更直观。</li>
+        <li><code>watchEffect</code> 仍推荐用 effect 函数第一个参数 <code>onCleanup</code>；两者语义类似，适用场景不同。</li>
+      </ul>
+    </div>
+
+    <script>
+      const { createApp, ref, watch, onWatcherCleanup } = Vue;
+
+      createApp({
+        setup() {
+          const activeId = ref("A");
+          const logs = ref([]);
+
+          watch(activeId, (id) => {
+            logs.value.push(`watch 开始：id=${id}`);
+
+            const timer = setInterval(() => {
+              logs.value.push(`  定时 tick：id=${id}`);
+            }, 400);
+
+            onWatcherCleanup(() => {
+              clearInterval(timer);
+              logs.value.push(`  cleanup：停止 id=${id} 的 timer`);
+            });
+          });
+
+          return { activeId, logs };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

@@ -9,10 +9,10 @@ Vue 3.5.x 时代的 demo（`libs/vue.global.js` 是 3.5.34 版本，全局构建
 
 | 顺序 | 目录 | 知识点 |
 |---|---|---|
-| 01 | `src/01-基础语法/` | `createApp`、模板语法、`v-if` / `v-show`、`v-for` / `key`、事件、表单 `v-model`、`class` / `style`、模板 `ref`、`nextTick` |
-| 02 | `src/02-响应式与副作用/` | `ref`、`reactive`、解构丢响应、`computed`、`watch`、`watchEffect`、`toRef`、`toRefs`、`readonly`、浅层响应式、`markRaw`、`effectScope` |
+| 01 | `src/01-基础语法/` | `createApp`、模板语法、`v-if` / `v-show`、`v-for` / `key`、事件、表单 `v-model`、`class` / `style`、模板 `ref`、`nextTick`、**`useTemplateRef`（3.5+）** |
+| 02 | `src/02-响应式与副作用/` | `ref`、`reactive`、解构丢响应、`computed`、`watch`、`watchEffect`、`toRef`、`toRefs`、`readonly`、浅层响应式、`markRaw`、`effectScope`、**`onWatcherCleanup`（3.5+）** |
 | 03 | `src/03-生命周期与组合式/` | Composition API 生命周期、`composable` 组合式函数、`setup` 与 `<script setup>` |
-| 04 | `src/04-组件通信/` | `props`、`emit`、`attrs` 透传、`provide/inject`、组件 `v-model` |
+| 04 | `src/04-组件通信/` | `props`、`emit`、`attrs` 透传、`provide/inject`、组件 `v-model`、**`defineModel`（3.4+）**、**props 解构保持响应式（3.5+）** |
 | 05 | `src/05-插槽与组件形态/` | 默认插槽、具名插槽、作用域插槽、动态组件、异步组件 |
 | 06 | `src/06-内置组件/` | `KeepAlive`、`Teleport`、`Suspense`、`Transition` |
 | 07 | `src/07-路由状态工程化/` | Vue Router 4、Pinia、工程目录组织、组合式逻辑拆分 |
