@@ -8,10 +8,10 @@
 |---|---|
 | `00-基础/` | 盒模型、`display` 与文档流、常用单位、`calc()`、`clamp()`、CSS 变量 |
 | `01-布局/` | Flex、Grid、BFC、清除浮动、定位、层叠上下文、常见布局题、rem 适配、瀑布流、滚动表格（`thead` 固定） |
-| `02-动画/` | Loading 四种、`@keyframes`、NProgress、光标闪烁、展开折叠、序列帧（精灵图）|
+| `02-动画/` | Loading 四种、`@keyframes`、NProgress、光标闪烁、展开折叠（height / max-height / grid）、序列帧（精灵图）|
 | `03-视觉效果/` | 文本省略、图片处理、百分比圆环、3D 按钮、`drop-shadow`、`background-blend-mode`、Tooltip |
-| `04-响应式/` | Media Queries（含 step1 → final 演进对比）、vw / vh |
-| `05-性能/` | 重排、重绘、合成层、`transform` / `opacity` 动画性能 |
+| `04-响应式/` | Media Queries（含 step1 → final 演进对比）、rem + @media + vw / vh 综合适配 |
+| `05-性能/` | 重排、重绘、合成层、`transform` / `opacity` 动画性能、`will-change`、`contain` |
 | `CSS选择器/` | 优先级与各种选择器一览 |
 
 ## CSS 面试基础覆盖
@@ -27,7 +27,7 @@
 | BFC、清除浮动、阻止 margin 折叠 | `01-布局/BFC与清除浮动/` |
 | 定位、包含块、`z-index`、层叠上下文 | `01-布局/定位与层叠上下文/` |
 | 居中、两栏、三栏、粘性 footer、等比例盒子 | `01-布局/常见布局题/` |
-| 响应式、媒体查询、rem、vw/vh | `01-布局/rem/`、`04-响应式/` |
+| 响应式、媒体查询、rem、vw/vh | `01-布局/rem/`、`04-响应式/media-queries/`、`04-响应式/vw-vh/` |
 | 动画、过渡、`transform` | `02-动画/` |
 | 文本省略、图片适配、基线空隙 | `03-视觉效果/文本与图片处理/` |
 | CSS 渲染性能 | `05-性能/渲染性能/` |
