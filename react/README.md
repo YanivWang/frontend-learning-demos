@@ -22,7 +22,7 @@
 | 05 | `05-函数组件-props.html` | 函数组件接收 props、`setInterval` 驱动重渲染 |
 | 06 | `06-函数组件-事件处理与参数传递.html` | 事件处理、传参、无 this 绑定 |
 | 07 | `07-函数组件-state与props.html` | state / props 综合、父子通信 |
-| 08 | `08-useState-异步合并与连续更新.html` | `useState` 异步合并、对象式 vs 函数式连续更新 |
+| 08 | `08-useState-异步合并与连续更新.html` | `useState` 异步合并、快照式 vs 函数式连续更新 |
 | 09 | `09-状态更新后读取-flushSync与useEffect.html` | 更新后读 state/DOM、`flushSync` 与 `useEffect` |
 | 10 | `10-React18-自动批处理对比.html` | React 18 自动批处理、`flushSync` 对比 |
 | 11 | `11-useEffect-生命周期对照.html` | `useEffect` 与 class 生命周期对照 |

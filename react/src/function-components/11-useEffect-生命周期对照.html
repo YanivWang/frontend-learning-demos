@@ -3,7 +3,7 @@
   主题: useEffect 与 class 生命周期对照
   要点:
     - componentDidMount ≈ useEffect(fn, [])
-    - componentDidUpdate ≈ useEffect(fn, [deps])（deps 变化时）
+    - componentDidUpdate ≈ useEffect(fn, [deps]) 在 deps 变化时的行为（注意：带 deps 的 effect 在 mount 时也会执行，与 componentDidUpdate 不同）
     - componentWillUnmount ≈ useEffect 返回的 cleanup
     - 没有一一对应关系：一个 useEffect 可组合多种时机，应按「副作用语义」拆分
     - StrictMode 下（见 26）开发环境会 mount → unmount → mount，effect 与 cleanup 各执行两次；生产环境不受影响
@@ -21,10 +21,11 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useEffect, useState } = React;
+    const { useEffect, useRef, useState } = React;
 
     function LifecycleDemo({ userId }) {
       const [logs, setLogs] = useState([]);
+      const isFirstUserIdEffect = useRef(true);
 
       function pushLog(msg) {
         setLogs(prev => [...prev, msg]);
@@ -39,8 +40,12 @@
         };
       }, []);
 
-      // userId 变化时更新
+      // 仅 userId 变化时（跳过 mount），更接近 componentDidUpdate 语义
       useEffect(() => {
+        if (isFirstUserIdEffect.current) {
+          isFirstUserIdEffect.current = false;
+          return;
+        }
         pushLog("update: userId 变为 " + userId + "，类似 componentDidUpdate");
       }, [userId]);
 
@@ -67,14 +72,14 @@
             </thead>
             <tbody>
               <tr><td>componentDidMount</td><td>useEffect(fn, [])</td></tr>
-              <tr><td>componentDidUpdate</td><td>useEffect(fn, [deps])</td></tr>
+              <tr><td>componentDidUpdate</td><td>useEffect(fn, [deps])（mount 也会跑；可用 ref 跳过首次以贴近 update）</td></tr>
               <tr><td>componentWillUnmount</td><td>useEffect 返回 cleanup</td></tr>
             </tbody>
           </table>
           <button onClick={() => setUserId(prev => prev + 1)}>切换 userId</button>
           <button onClick={() => setVisible(!visible)}>挂载/卸载 Demo</button>
           {visible && <LifecycleDemo userId={userId} />}
-          <p>面试回答: useEffect 按副作用语义组织，不是生命周期的机械替换。</p>
+          <p>面试回答: useEffect 按副作用语义组织，不是生命周期的机械替换；带 deps 的 effect 默认 mount 也会执行。</p>
         </section>
       );
     }

@@ -25,12 +25,6 @@
     <div id="root"></div>
 
     <script type="text/babel">
-      let appId = 1001111;
-
-      function changeAppid(){
-        appId = "appID 变化了"
-      }
-
       class Header extends React.Component {
         render() {
           return <div>Header</div>;
@@ -47,7 +41,7 @@
       class App extends React.Component {
         //class类组件，被调用的时候，会自动调用类组件的constructor方法，来初始化组件
         constructor(props) {
-          console.log("props>>>", props); // {id: 1001}
+          console.log("props>>>", props); // { id: 1001111 }
 
           //将组件属性传递到父类的构造函数中
           //Class组件应该始终使用props参数来调用父类的构造函数
@@ -62,7 +56,7 @@
 
         //任何时候，组件都不能直接修改props
         handleBtnClick(e){
-          console.log("点击修改props", e);
+          console.log("通知父组件修改 props", e);
           //通过父组件传递过来的 函数属性，回调这个函数属性，实现跟父组件的通信
           this.props.changeAppidFn();
         }
@@ -110,7 +104,7 @@
               <button
                 onClick={this.handleBtnClick}
               >
-                点击修改props
+                通知父组件修改 props
               </button>
 
               <Footer />
@@ -119,7 +113,24 @@
         }
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<App id={appId} changeAppidFn={changeAppid} />);
+      // 父组件持有 appId，通过 setState 更新后 props 才会变化
+      class Root extends React.Component {
+        state = {
+          appId: 1001111,
+        };
+
+        changeAppid = () => {
+          this.setState({ appId: "appID 变化了" });
+        };
+
+        render() {
+          return (
+            <App id={this.state.appId} changeAppidFn={this.changeAppid} />
+          );
+        }
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<Root />);
     </script>
   </body>
 </html>
