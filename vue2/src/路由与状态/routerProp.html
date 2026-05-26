@@ -18,105 +18,86 @@
 
 <div id="app">
     <p>
-        <!-- 使用 router-link 组件来导航. -->
-        <!-- 通过传入 `to` 属性指定链接. -->
-        <!-- <router-link> 默认会被渲染成一个 `<a>` 标签 -->
         <router-link to="/">home</router-link>
-
-        <!--使用动态路径参数-->
-        <router-link to="/user/wangcheng/post/123">userA</router-link>
-        <router-link to="/user/wangcheng/post/456">userB</router-link>
-        <router-link to="/user/wangcheng/post/456?q=vue">userC</router-link>
+        |
+        <router-link to="/props-true/wangcheng/post/123">props: true</router-link>
+        |
+        <router-link to="/props-static/wangcheng/post/123">props: 静态对象</router-link>
+        |
+        <router-link to="/props-fn/wangcheng/post/456?q=vue">props: 函数式</router-link>
+        |
+        <router-link to="/props-named/wangcheng/post/789">props: 命名视图</router-link>
     </p>
-    <!-- 路由出口 -->
-    <!-- 路由匹配到的组件将渲染在这里 -->
     <router-view></router-view>
-
     <router-view name="sideBar"></router-view>
-
 </div>
 
 <script>
-    console.log("111");
+    const home = { template: "<div>home</div>" };
 
-    const home = {
-        template: "<div>home</div>"
-    };
-
-    //在组件中使用$route会使之与对应的路由形成高度耦合，从而使组件只能在某些特定的URL上使用，限制了灵活性
-    //使用prop将组件和路由解耦
-    //$props：存放当前组件接收到的父组件传递过来的props对象，vue实例代理了对其对象属性的访问
-    //$attr (当组件没有设置props属性时)包含了父作用域中不作为prop被识别(且获取)的特性绑定
-    const user = {
+    const userPropsTrue = {
         props: ['id', 'postid'],
         watch: {
-            $route: function (to, from) {
-                console.log("数据change");
-                console.log(this.$route);
+            $route: function () {
+                console.log('[props: true] 路由变化', this.$route.fullPath);
             }
         },
         template: `<div>
-                      <div>user</div>
-                      <div>路由参数 id:{{$route.params.id}}</div>
-                      <div>路由参数 postid:{{$route.params.postid}}</div>
-                      <div>props id:{{id}}</div>
-                      <div>props postid:{{postid}}</div>
-                   </div>`
+            <div><strong>props: true</strong></div>
+            <div>$route.params.id: {{ $route.params.id }}</div>
+            <div>props id: {{ id }}</div>
+            <div>props postid: {{ postid }}</div>
+        </div>`
+    };
+
+    const userStaticProps = {
+        props: ['newsletterPopup'],
+        template: `<div>
+            <div><strong>props: 静态对象</strong></div>
+            <div>newsletterPopup（固定 false）: {{ newsletterPopup }}</div>
+            <div>$route.params（静态 props 不会注入）: id={{ $route.params.id }}, postid={{ $route.params.postid }}</div>
+        </div>`
+    };
+
+    const userQueryProps = {
+        props: ['id', 'postid', 'keyword'],
+        template: `<div>
+            <div><strong>props: 函数式</strong></div>
+            <div>props id: {{ id }}</div>
+            <div>props postid: {{ postid }}</div>
+            <div>keyword（来自 query.q）: {{ keyword }}</div>
+        </div>`
     };
 
     const sideBar = {
-        template: "<div>sideBar</div>"
+        props: ['sidebarLabel'],
+        template: "<div>sideBar — label: {{ sidebarLabel || 'default' }}</div>"
     };
 
     function calProps(route) {
         return {
-            query: route.query.q
-        }
+            id: route.params.id,
+            postid: route.params.postid,
+            keyword: route.query.q
+        };
     }
 
-    //2.定义路由
-    //component: 1.一个组件  2.Vue.extend()创建的组件构造器
     const routes = [
+        { path: "/", component: home },
+        { path: "/props-true/:id/post/:postid", component: userPropsTrue, props: true },
+        { path: "/props-static/:id/post/:postid", component: userStaticProps, props: { newsletterPopup: false } },
+        { path: "/props-fn/:id/post/:postid", component: userQueryProps, props: calProps },
         {
-            path: "/", component: home
-        },
-        {
-            path: "/user/:id/post/:postid", component: user, props: true//如果props被设置为true，则route.params将会被设置为组件的属性
-        },
-        {
-            path: "/user/:id/post/:postid", component: user, props: {newsletterPopup: false}//当props是一个对象，它会按照原样设置为组件的属性。仅当props是静态的时候有用
-        },
-        {
-            path: "/user/:id/post/:postid", component: user, props: calProps//直接传一个函数的参数就行
-        },
-        {
-            path: "/user/:id/post/:postid",
-            components: {//映射到命名视图
-                default: user,
-                sideBar: sideBar
-            },
-            props: {
-                default: true,
-                sideBar: false
-            }
+            path: "/props-named/:id/post/:postid",
+            components: { default: userPropsTrue, sideBar: sideBar },
+            props: { default: true, sideBar: { sidebarLabel: '命名视图 sidebar' } }
         }
     ];
 
-    //3.创建router实例，然后传入"router"配置
-    const router = new VueRouter({
-        routes
-    });
+    const router = new VueRouter({ routes });
+    var wm = new Vue({ router }).$mount('#app');
 
-    //4.创建和挂载根实例
-    //通过为根实例注入路由器：我们可以在任何组件内通过this.$router访问路由器  this.$route访问当前的路由
-    var wm = new Vue({
-        router
-    }).$mount('#app');
-
-
-    //5.注意：当使用的路由参数，从/user/wangcheng/post/123  /user/wangcheng/post/456，匹配到的是同一个组件的话，
-    //原来的组件会被复用，意味着组件的生命周期钩子不会再被调用，可以使用watch来监控路由的变化
-
+    // 同一路由不同 params 会复用组件，应 watch $route 或使用 beforeRouteUpdate
     console.log(wm);
 </script>
 

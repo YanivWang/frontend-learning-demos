@@ -1,115 +1,123 @@
-<!--
-  分类: vue2 / 基础语法
-  主题: key 复用控制 + v-for 遍历数组/对象
-  要点:
-    - Vue 复用 input 等元素会保留旧值；给元素加 :key 可强制让其被「视为不同元素」
-    - v-for 既能遍历数组 (item, index)，也能遍历对象 (value, key, index)
-    - v-for 遍历数组/对象时建议写 :key（稳定 id）；本页部分 demo 故意省略 key 以演示复用行为
--->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>v-for + key 复用控制</title>
-    <script src="../../libs/vue.js"></script>
-</head>
-<body>
-
-<div id="main">
-
-    <!-- v-if 可以用在元素上，或者是用在template元素上，一个空的包含元素 -->
-    <div>
-        <div v-if="showFlag">你能看见我111</div>
-        <template v-if="showFlag">
-            <div>你能看见我222</div>
-        </template>
-        <template v-else>
-            <div>你不能看见我222</div>
-        </template>
-        <button @click="triggleShowHandle">切换</button>
-    </div>
-
-    <!--用key管理可复用的元素：Vue通常会复用已有元素，尽可能少的渲染新元素，达到高效的重新绘制界面
-    -->
-    <template v-if="loginType === 'username'">
-        <div>
-            <label>username</label>
-            <input placeholder="input you username...">
-        </div>
-    </template>
-    <template v-else>
-        <div>
-            <label>email</label>
-            <input placeholder="input you email...">
-        </div>
-    </template>
-
-    <button @click="triggleLoginTypeHandle">切换</button>
-
-    <!--遍历数组 of or in-->
-    <template v-for="(people, index) of peoples">
-        <div>
-            <div>{{index + 1}}
-                <span>{{people.name}}</span>
-                <span>{{people.age}}</span>
-            </div>
-        </div>
-    </template>
-
-
-    <!--遍历对象 of or in-->
-    <template v-for="(unit, key, index) of unitList">
-        <div  v-bind:key="index">
-            <div>
-                <span>{{index}}</span>
-                <span>{{key}}</span>
-                <span>{{unit}}</span>
-            </div>
-        </div>
-    </template>
-
-
-</div>
-
-<script>
-    // MVVM 双向数据绑定：只有 data 字段的数据发生变化，vue 框架会立即重绘视图上与之有关的视图元素
-    var vm = new Vue({
-        el: "#main",
-        data: {
-            loginType: 'username',
-            showFlag: true,
-            peoples: [
-                {name: "张三", age: 20},
-                {name: "join", age: 20},
-                {name: "kaka", age: 20}
-            ],
-            unitList: {
-                0: "基础一",
-                8: "基础二",
-                9: "基础三"
-            }
-        },
-        methods: {
-            triggleShowHandle: function () {
-                if (this.showFlag) {
-                    this.showFlag = false;
-                } else {
-                    this.showFlag = true;
-                }
-            },
-
-            triggleLoginTypeHandle: function () {
-                if (this.loginType === 'username') {
-                    this.loginType = "email";
-                } else {
-                    this.loginType = 'username';
-                }
-            }
-        }
-    });
-
-</script>
-
-
-</body>
-</html>
+<!--
+  分类: vue2 / 基础语法
+  主题: key 复用控制 + v-for 遍历数组/对象
+  要点:
+    - Vue 复用 input 等元素会保留旧值；给元素加 :key 可强制让其被「视为不同元素」
+    - v-for 既能遍历数组 (item, index)，也能遍历对象 (value, key, index)
+    - v-for 遍历数组/对象时建议写 :key（稳定 id）；本页同时演示「无 key 复用」与「有 key 强制重建」
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>v-for + key 复用控制</title>
+    <script src="../../libs/vue.js"></script>
+</head>
+<body>
+
+<div id="main">
+
+    <div>
+        <div v-if="showFlag">你能看见我111</div>
+        <template v-if="showFlag">
+            <div>你能看见我222</div>
+        </template>
+        <template v-else>
+            <div>你不能看见我222</div>
+        </template>
+        <button @click="triggleShowHandle">切换 v-if</button>
+    </div>
+
+    <hr>
+
+    <h3>无 :key — 切换 loginType 时 input 会被复用，输入内容会保留</h3>
+    <template v-if="loginType === 'username'">
+        <div>
+            <label>username</label>
+            <input placeholder="input your username...">
+        </div>
+    </template>
+    <template v-else>
+        <div>
+            <label>email</label>
+            <input placeholder="input your email...">
+        </div>
+    </template>
+    <button @click="triggleLoginTypeHandle">切换 loginType（无 key）</button>
+
+    <hr>
+
+    <h3>有 :key="loginTypeWithKey" — 切换时强制销毁旧 input，输入不会保留</h3>
+    <template v-if="loginTypeWithKey === 'username'">
+        <div>
+            <label>username</label>
+            <input :key="loginTypeWithKey" placeholder="input your username...">
+        </div>
+    </template>
+    <template v-else>
+        <div>
+            <label>email</label>
+            <input :key="loginTypeWithKey" placeholder="input your email...">
+        </div>
+    </template>
+    <button @click="triggleLoginTypeWithKeyHandle">切换 loginType（有 key）</button>
+
+    <hr>
+
+    <h3>v-for 遍历数组</h3>
+    <template v-for="(people, index) of peoples">
+        <div :key="people.name">
+            <div>{{ index + 1 }}
+                <span>{{ people.name }}</span>
+                <span>{{ people.age }}</span>
+            </div>
+        </div>
+    </template>
+
+    <h3>v-for 遍历对象</h3>
+    <template v-for="(unit, key, index) of unitList">
+        <div v-bind:key="key">
+            <div>
+                <span>{{ index }}</span>
+                <span>{{ key }}</span>
+                <span>{{ unit }}</span>
+            </div>
+        </div>
+    </template>
+
+</div>
+
+<script>
+    var vm = new Vue({
+        el: "#main",
+        data: {
+            loginType: 'username',
+            loginTypeWithKey: 'username',
+            showFlag: true,
+            peoples: [
+                {name: "张三", age: 20},
+                {name: "join", age: 20},
+                {name: "kaka", age: 20}
+            ],
+            unitList: {
+                0: "基础一",
+                8: "基础二",
+                9: "基础三"
+            }
+        },
+        methods: {
+            triggleShowHandle: function () {
+                this.showFlag = !this.showFlag;
+            },
+            triggleLoginTypeHandle: function () {
+                this.loginType = this.loginType === 'username' ? 'email' : 'username';
+            },
+            triggleLoginTypeWithKeyHandle: function () {
+                this.loginTypeWithKey = this.loginTypeWithKey === 'username' ? 'email' : 'username';
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
