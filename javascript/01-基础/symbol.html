@@ -1,47 +1,54 @@
+<!--
+  分类: javascript / 01-基础
+  主题: Symbol 原始类型与典型用法
+  要点:
+    - Symbol 不是构造函数，不能 new；只能用 Symbol(desc) 创建
+    - 每个 Symbol 都是唯一的，可用作对象「不会冲突的属性键」
+    - 常用场景：私有/独占属性、模拟枚举、内置协议键（Symbol.iterator 等）
+-->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Symbol</title>
   </head>
   <body>
     <script>
-      //Symbol不是构造函数
-      // const sym1 = new Symbol();//Uncaught TypeError: Symbol is not a constructor
-      // console.log(sym1);
+      // 易错点：Symbol 不是构造函数
+      // const sym1 = new Symbol(); // TypeError: Symbol is not a constructor
 
-      //Symbol只是一个普通函数，创建Symbol类型实例，需要通过Symbol()函数实现
+      // 只能作为普通函数调用来创建 Symbol 实例
       const sym2 = Symbol();
-      console.log("typeof Symbol>>>", typeof Symbol); //function
+      console.log("typeof Symbol>>>", typeof Symbol); // function
 
-      //symbol,其他构造函数创建的实例，Object，Array或者自定义的构造函数实例，typeof 实例 是 object
-      //而typeof Symbol类型实例，获取的类型是 symbol，因为symbol是原始数据类型
+      // 与对象/数组/类实例 typeof 为 'object' 不同，Symbol 是原始类型 → 'symbol'
       console.log("typeof sym2>>>", typeof sym2);
 
       console.log("sym2.description", sym2.description);
       console.log("sym2.toString", sym2.toString());
       console.log("sym2.valueOf", sym2.valueOf());
 
-      //仅仅用于调试的时候，标识 Symbol 是那个Symbol
+      // description 仅用于调试，标识 Symbol 是谁，不参与「相等性」
       const sym3 = Symbol("AffressId");
-      console.log("sym3.description", sym3.description); //AffressId
+      console.log("sym3.description", sym3.description);
       console.log("sym3.toString", sym3.toString());
       console.log("sym3.valueOf", sym3.valueOf());
 
+      // 场景 1：把 Symbol 当对象属性键，避免与其他键冲突
       const privateProp = Symbol("privateProp");
       let dog = {
         [privateProp]: "我是私有属性",
       };
       console.log(dog[privateProp]);
-      
-      //使用symbol模拟ts中的枚举
+
+      // 场景 2：用 Symbol 模拟 TypeScript 枚举（每个值唯一不可仿造）
       const Direction = {
         UP: Symbol(),
         DOWN: Symbol(),
         LEFT: Symbol(),
         RIGHT: Symbol(),
-      }
+      };
       console.log(Direction);
       console.log(Direction.UP);
     </script>

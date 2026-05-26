@@ -1,9 +1,17 @@
+<!--
+  分类: javascript / 01-基础
+  主题: JSON.stringify 进阶用法
+  要点:
+    - 第二个参数 replacer 既能传数组（白名单），也能传函数（按 key 变换 value）
+    - 第三个参数控制缩进，便于调试输出
+    - 易错点：function/undefined/Symbol/Date/RegExp/NaN/Infinity 等序列化时会丢失或被处理为 null
+-->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>JSON.stringify</title>
   </head>
   <body>
     <script>
@@ -14,6 +22,7 @@
         year: 2017,
       };
 
+      // replacer 是函数：可以改写或丢弃属性（return undefined 即丢弃该字段）
       let jsonText111 = JSON.stringify(
         book,
         (key, value) => {
@@ -35,19 +44,20 @@
       console.log("jsonText111 \n>>>", jsonText111);
       console.log("jsonText222 \n>>>", jsonText222);
 
+      // 各种特殊值在 stringify 时的行为
       let jsObj = {
-        sum: (a, b) => a + b,
+        sum: (a, b) => a + b,   // 函数：被忽略（对象属性）/ 数组中变 null
         name: "calcutor",
-        wc: undefined,
+        wc: undefined,           // undefined：被忽略
         address: "",
-        date: new Date(),
-        reg: new RegExp("abc", "g"),
-        symbol: Symbol(),
-        nan: NaN,
+        date: new Date(),        // Date：调用 toJSON()，输出 ISO 字符串
+        reg: new RegExp("abc", "g"), // RegExp：序列化为 {} 空对象
+        symbol: Symbol(),        // Symbol：被忽略
+        nan: NaN,                // NaN/Infinity：输出 null
         infinity: Infinity
       };
 
-      let jsonText333 = JSON.stringify(jsObj,null, 3);
+      let jsonText333 = JSON.stringify(jsObj, null, 3);
       console.log("jsonText333 \n>>>", jsonText333);
     </script>
   </body>

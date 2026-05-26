@@ -1,8 +1,16 @@
+<!--
+  分类: javascript / 04-ES6+ / class详解
+  主题: 用静态私有标志位模拟「私有构造函数」
+  要点:
+    - JS 没有真正的 private constructor，借助静态私有字段 + 工厂方法模拟
+    - 直接 new PrivateConstructor() 会抛错；只能通过 PrivateConstructor.create()
+    - 私有静态字段不能在类外部访问
+-->
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Hello Class</title>
+    <title>私有构造函数</title>
   </head>
   <body>
     <script>
@@ -14,29 +22,28 @@
             throw new TypeError("PrivateConstructor is not constructable");
           }
           PrivateConstructor.#isInternalConstructing = false;
-          // 添加更多的初始化逻辑
+          // 这里继续做实例初始化
 
           console.log("使用内部构造器，构造成功!");
         }
 
+        // 工厂方法：唯一的合法构造入口
         static create() {
           PrivateConstructor.#isInternalConstructing = true;
           const instance = new PrivateConstructor();
-          console.log("使用构造函数构造成功!");
+          console.log("使用工厂方法构造成功!");
           return instance;
         }
       }
 
-    //  new PrivateConstructor(); // TypeError: PrivateConstructor is not constructable
-      PrivateConstructor.create(); // PrivateConstructor {}
+      // 合法：走工厂方法
+      PrivateConstructor.create();
 
-      new PrivateConstructor(); 
+      // 反面教材 / 易错点：直接 new 会抛 TypeError，这里注释掉避免页面报错中断后续脚本
+      // new PrivateConstructor();
 
-      //Property '#isInternalConstructing' is not accessible outside class 'PrivateConstructor' because it has a private identifier.
-      //类的私有属性，不能在类的外部访问
-      //console.log(PrivateConstructor.#isInternalConstructing);
-
-
+      // 类外部不能访问私有静态字段
+      // console.log(PrivateConstructor.#isInternalConstructing);
     </script>
   </body>
 </html>

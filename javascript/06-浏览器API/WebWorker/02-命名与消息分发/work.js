@@ -1,3 +1,10 @@
+// 分类: javascript / 06-浏览器API / WebWorker / 02-命名与消息分发
+// 主题: 子线程：按 task 字段分发到不同处理函数
+// 要点:
+//   - state 字段标识进度（0 = 开始，1 = 结束），便于主线程做 UI 反馈
+//   - 通过返回结构化消息让主线程做状态机驱动
+//   - 多次 postMessage 不会复用同一对象，每次都是独立的结构化克隆
+
 self.onmessage = function (e) {
     let msg = e.data;
     let task = msg.task;

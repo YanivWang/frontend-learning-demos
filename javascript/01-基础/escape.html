@@ -1,12 +1,21 @@
+<!--
+  分类: javascript / 01-基础
+  主题: 字符串中反斜杠转义与 JSON 序列化
+  要点:
+    - JSON 字符串里的特殊字符需要被反斜杠转义；解析后会还原为单层字符
+    - JSON.stringify 后再次序列化或写入到 HTML/属性中，需要再次转义反斜杠
+    - 给 String.prototype 加方法会污染原型，仅作演示，正式项目慎用
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>转义字符与 JSON</title>
 </head>
 <body>
 
 <script>
+    // 给原型加方法仅作演示，实际生产应避免污染原生原型
     String.prototype.escapeSpecialChars = function() {
         return this.replace(/\\n/g, "\\n")
             .replace(/\\'/g, "\\'")
@@ -22,23 +31,17 @@
     console.log("str:" + str);
 
     let a = JSON.parse(str);
-
     console.log(a);
 
     let str2 = JSON.stringify(a);
     console.log("str2:" + str2);
 
+    // 演示二次转义：当结果还要嵌入到另一段 JSON 字符串时，需要把 \" 再变成 \\\"
     let str3 = JSON.stringify(a);
     let reg = /\\"/g;
-
-    if(reg.test(str3)){
-        console.log(11);
-
-        str3 = str3.replace(reg,'\\\\"');
+    if (reg.test(str3)) {
+        str3 = str3.replace(reg, '\\\\"');
     }
-
-
-
     console.log("str3:" + str3);
 </script>
 

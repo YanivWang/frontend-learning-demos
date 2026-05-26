@@ -1,61 +1,66 @@
+<!--
+  分类: javascript / 07-进阶 / 手写Promise
+  主题: 手写 Promise.all
+  要点:
+    - 全部 resolve 才整体 resolve；任一 reject 立刻整体 reject
+    - 易错点：用 retArray.length 判断完成数会失败（稀疏数组的 length 是「最大索引+1」）
+    - 修正：用独立计数器，只有 fulfilled 才递增
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>fuck</title>
+    <title>手写 Promise.all</title>
 </head>
 <body>
 
 <script>
-    let p1 = new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve("p1 ok!");
-        }, 1500)
+    let p1 = new Promise((resolve) => {
+        setTimeout(() => resolve("p1 ok!"), 1500);
     });
 
-    let p2 = new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve("p2 ok!");
-        }, 2000)
+    let p2 = new Promise((resolve) => {
+        setTimeout(() => resolve("p2 ok!"), 2000);
     });
 
-    let p3 = new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve("p3 ok!");
-        }, 2000)
+    let p3 = new Promise((resolve) => {
+        setTimeout(() => resolve("p3 ok!"), 2000);
     });
 
-    //1.有一个失败就返回
-    //2.全部成功才叫成功
+    // 规则:
+    //   1.有一个失败就 reject
+    //   2.全部成功才 resolve
     Promise.myAll = function (...args) {
         return new Promise((resolve, reject) => {
-            //记录返回得结果
-            let retArray = [];
+            const retArray = new Array(args.length);
 
-            for (let index in args) {
-                let tempPromise = args[index];
-                tempPromise.then((res) => {
+            // 边界：传空数组应立即 resolve([])
+            if (args.length === 0) {
+                resolve(retArray);
+                return;
+            }
+
+            // 修正：用计数器代替 retArray.length，避免「稀疏数组 length 判断」陷阱
+            let doneCount = 0;
+            args.forEach((tempPromise, index) => {
+                // 包一层 Promise.resolve，容忍非 thenable 输入
+                Promise.resolve(tempPromise).then((res) => {
                     retArray[index] = res;
-
-                    //全部得结果返回了才resolve
-                    if (retArray.length >= args.length) {
+                    doneCount++;
+                    if (doneCount === args.length) {
                         resolve(retArray);
                     }
-                }).catch(err => {
-                    reject(err);
-                })
-            }
-        })
+                }).catch(reject);
+            });
+        });
     };
 
 
-    Promise.myAll(p1, p2, p3).then(err => {
-        console.log(err);
+    Promise.myAll(p1, p2, p3).then(res => {
+        console.log("all resolved:", res);
     }).catch(err => {
-        console.log(err);
-    })
-
-
+        console.log("any rejected:", err);
+    });
 </script>
 
 </body>

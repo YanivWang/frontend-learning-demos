@@ -1,8 +1,16 @@
+<!--
+  分类: javascript / 01-基础
+  主题: 看似一致的字符可能是不同 Unicode 序列
+  要点:
+    - HTML 实体 / 全角半角 / Unicode 多重表示导致 "看起来相同" 的字符串实际不相等
+    - 对用户输入清洗：trim + 折叠空白后再做比较
+    - 真正语义比较请用 String.prototype.normalize('NFC') 统一规范化形式
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>encode-URI 编码</title>
 </head>
 <body>
 
@@ -14,18 +22,22 @@
 <button onclick="submitHandle()">提交</button>
 
 <script>
+    // 字面上一样的 "ぎ"，可能由不同 Unicode 码点序列构成（组合形 vs 预组合形）
     var code1 = "ぎ";
-
     var code2 = "ぎ";
 
     if (code1 === code2) {
         console.log("相等...");
+    } else {
+        console.log("不相等，需要 normalize 规范化");
+        console.log(code1.normalize('NFC') === code2.normalize('NFC')); // 规范化后通常相等
     }
 
     function submitHandle() {
         var textarea = document.getElementsByTagName("textarea")[0];
         var value = textarea.value;
 
+        // 折叠多余空白：trim 去首尾、再把连续空白替换为单空格
         value = value.trim();
         var reg = /\s+/g;
         value = value.replace(reg, " ");
@@ -35,8 +47,6 @@
             console.log("相等...");
         }
     }
-
-
 </script>
 
 </body>

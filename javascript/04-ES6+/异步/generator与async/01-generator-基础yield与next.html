@@ -1,48 +1,65 @@
+<!--
+  分类: javascript / 04-ES6+ / 异步 / generator与async
+  主题: generator 基础：yield 与 next
+  要点:
+    - function* 定义生成器，调用后返回「迭代器对象」，函数体不会立即执行
+    - 每次 .next() 推进到下一个 yield，返回 { value, done }
+    - 普通对象没有默认迭代器；Array / Map / Set / String 等内置可迭代对象有 Symbol.iterator
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>generator 基础 yield 与 next</title>
 </head>
 <body>
 
 
 <script>
-    //定义一个generate函数
+    // function* 声明一个 generator 函数
     function* generator1() {
-        //yield定义不同的内部状态
+        // yield 定义不同的内部状态
         yield 'wang';
         yield 'cheng';
         return 'ending';
     }
 
-    //调用该函数后，函数并不会执行，返回的也不是函数运行结果，而是一个执行内部状态的指针对象
-    //就是遍历器对象（代表generate函数的内部指针）
-    //下一步调用遍历器对象的next方法，使得指针移向下一个状态
-
-
+    // 调用 generator 函数返回「迭代器对象」，并不会立即执行函数体
+    // 每次调用 .next() 推进到下一个 yield，返回 { value, done }
     var hw = generator1();
 
-    console.log(hw.next());
+    console.log(hw.next()); // { value: 'wang',  done: false }
+    console.log(hw.next()); // { value: 'cheng', done: false }
+    console.log(hw.next()); // { value: 'ending',done: true }
+    console.log(hw.next()); // { value: undefined, done: true }
 
-    console.log(hw.next());
-
-    console.log(hw.next());
-
-    console.log(hw.next());
-
-    //遍历器为js中不同的数据结构提供了一种统一的访问方式
+    // 修正：普通对象没有迭代器协议，a.iterate 不存在
+    //   用 Symbol.iterator 演示如何手动实现可迭代对象
     let a = {
-        "key1": "nm1",
-        "key2": "nm2"
+        from: 1,
+        to: 3,
+        [Symbol.iterator]() {
+            let current = this.from;
+            const last = this.to;
+            return {
+                next() {
+                    return current <= last
+                        ? { value: current++, done: false }
+                        : { value: undefined, done: true };
+                }
+            };
+        }
     };
 
-    var it = a.iterate;
+    const it = a[Symbol.iterator]();
+    console.log(it.next()); // { value: 1, done: false }
+    console.log(it.next()); // { value: 2, done: false }
+    console.log(it.next()); // { value: 3, done: false }
+    console.log(it.next()); // { value: undefined, done: true }
 
-    console.log(it.next());
-    console.log(it.next());
-
-
+    // 实现 Symbol.iterator 后可以直接用 for..of / 展开运算
+    for (const n of a) console.log('for..of', n);
+    console.log('spread', [...a]);
 </script>
 
 

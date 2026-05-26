@@ -1,8 +1,16 @@
+<!--
+  分类: javascript / 02-函数与作用域 / this指向
+  主题: 方法被「赋值出去」后 this 的脱离
+  要点:
+    - 通过 obj.fn() 调用，this 指向 obj
+    - 将方法引用赋给变量后再调用（funA()），this 退化为 window/undefined
+    - 解决：调用前 .bind(obj) 或使用箭头函数 () => obj.fn()
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>this · 对象方法与脱离</title>
 </head>
 <body>
 <script>
@@ -12,17 +20,23 @@
             console.log("this: " + this);
             console.log("user: " + this.user1);
         },
-        user2:{
+        user2: {
            "a": 30,
-
         }
     };
 
+    // 正常对象方法调用：this 指向 obj
     obj.fn();
 
+    // 脱离后：this 不再是 obj，user1 取不到（变成 undefined）
     let funA = obj.fn;
     funA();
 
+    // 保留 this 的两种现代写法
+    const funBound = obj.fn.bind(obj);
+    funBound();
+    const funArrow = () => obj.fn();
+    funArrow();
 </script>
 </body>
 </html>

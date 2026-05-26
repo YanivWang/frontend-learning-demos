@@ -1,52 +1,58 @@
+<!--
+  分类: javascript / 01-基础
+  主题: 函数声明、函数表达式、Function 构造器、严格模式 this
+  要点:
+    - 三种函数定义：函数声明 / 函数表达式 / new Function 动态构造
+    - 函数即对象，函数名只是指向函数对象的指针；置 null 不影响已复制的指针
+    - 严格模式下，独立调用的函数中 this 为 undefined
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>函数进阶</title>
 </head>
 <body>
 
 <script>
-    //只在特定的作用域中使用严格模式(且严格模式声明语句必须方法第一行)
+    // 严格模式必须写在脚本/函数第一行才会生效
     'use strict';
 
-    //1.定义函数(函数声明)
+    // 1.函数声明
     function sum(a, b) {
         return a + b;
     }
 
-    //2.函数表达式
+    // 2.函数表达式
     let mins = function (a, b) {
         return a - b;
     };
 
-    //3.使用函数构造器Function(函数本身也是对象，函数名只是指向函数对象的指针)
-    let devide = new Function("num1", "num2", "return num1 * num2");
-    console.log("old fn: " + devide(2, 3));
+    // 3.Function 构造器：把字符串当函数体（基本不用，仅作演示）
+    //    修正：变量名是 devide，实现也应是除法
+    let devide = new Function("num1", "num2", "return num1 / num2");
+    console.log("old fn: " + devide(6, 3));
 
-    //4.测试函数是对象，函数名是指针
-    let devideNem = devide;
-    console.log("new fn: " + devideNem(5, 6));
+    // 4.函数也是对象，函数名只是指针，可以赋值给其他变量
+    let devideNew = devide;
+    console.log("new fn: " + devideNew(10, 5));
 
-    //5.clear old fn
+    // 5.将原指针置 null，devideNew 依旧持有函数对象引用
     devide = null;
-    console.log("new fn2: " + devideNem(10, 10));
+    console.log("new fn2: " + devideNew(20, 4));
 
-    //6.函数内部的特殊对象 arguments对象和this对象
-    //6.1 arguments：是一个类数组对象，其用于存储传入该函数的所有参数
-    //它有一个属相callee,指向包含该arguments对象的函数对象
-    //6.2 函数中的另一个对象this,在函数定义的时候this的指向并不确定，this是动态绑定的，可能在函数
-    //的执行过程中，不同时机执行不同的对象
+    // 6.函数内部的特殊对象：arguments（类数组）与 this（动态绑定）
+    //   arguments.callee 指向函数对象本身（严格模式禁用）
 
-    //7.函数的属性和方法：
-    //7.1 length 表示函数期望接收到的命名参数的个数
-    console.log(devideNem.length);
+    // 7.函数的属性：length 表示形参个数
+    console.log(devideNew.length);
 
-    //8.使用严格模式
+    // 8.严格模式下独立调用的函数 this 是 undefined
     window.color = 'red';
     let fun1 = function () {
-        //这里的this，指向undefined
-        console.log(this.color);
+        // 易错点：严格模式 this 为 undefined，访问属性会报错
+        // 这里只打印 this 本身，避免直接抛 TypeError
+        console.log('strict this =', this);
     };
     fun1();
 </script>

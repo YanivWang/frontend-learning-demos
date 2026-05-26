@@ -1,17 +1,41 @@
+<!--
+  分类: javascript / 02-函数与作用域
+  主题: 函数柯里化基础
+  要点:
+    - Array.prototype.slice.call(arguments, 1) 取除第一个外的所有实参
+    - 柯里化：把多参函数转为「接收一个参数 + 返回新函数」的链式调用
+    - 常用于固定部分参数（partial application），提升复用性
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>柯里化</title>
 </head>
 <body>
 
 <script>
-    function add(x,y,z) {
-        const args = Array.prototype.slice.call(arguments, 1)
+    // 取 arguments 除第一个外的剩余参数（class 时代更推荐 ...rest）
+    function add(x, y, z) {
+        const args = Array.prototype.slice.call(arguments, 1);
         console.log(args);
     }
-    add(1,2,3);
+    add(1, 2, 3);
+
+    // 通用柯里化：接收一个 fn，返回逐步累计参数的函数
+    function curry(fn) {
+        return function curried(...args) {
+            if (args.length >= fn.length) {
+                return fn(...args);
+            }
+            return (...rest) => curried(...args, ...rest);
+        };
+    }
+    const sum3 = (a, b, c) => a + b + c;
+    const curried = curry(sum3);
+    console.log(curried(1)(2)(3)); // 6
+    console.log(curried(1, 2)(3)); // 6
+    console.log(curried(1, 2, 3)); // 6
 </script>
 
 </body>

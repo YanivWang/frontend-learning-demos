@@ -1,30 +1,36 @@
+<!--
+  分类: javascript / 04-ES6+ / 集合
+  主题: WeakMap 弱引用映射
+  要点:
+    - 键必须是对象，且 WeakMap 对键是弱引用，不会阻止垃圾回收
+    - 没有 keys/values/entries/forEach 等迭代方法，无法枚举
+    - 典型场景：给已有对象关联私有数据，且对象被回收时数据自动清理
+-->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>WeakMap</title>
   </head>
   <body>
+    <button id="myButton">click me</button>
     <script>
-      //weakmap的键不属于正式的引用，不会阻止垃圾回收
-      //weakmap中值属于整数引用，只要键存在，键值对就存在
-      //弱映射的键必须是Object类型或者其子类型
+      // WeakMap 键不属于「强引用」，不会阻止 GC
+      // 只要键被回收，对应键值对就一起消失
       const wm = new WeakMap();
-      // wm.set(1, 123)//Invalid value used as weak map key
-      // wm.set("2", {})
+      // wm.set(1, 123);        // 报错：Invalid value used as weak map key
+      // wm.set("2", {});       // 报错：原始类型也不行
       wm.set({}, { address: "北京奶东村" });
 
-      // wm.entries //weakmap不存在迭代方法
-
+      // wm.entries           // WeakMap 不存在迭代方法
       console.log(wm);
 
       setTimeout(() => {
         console.log(wm);
       }, 3000);
 
-      //WeakMap 使用场景:
-      //1.实现类的私有变量
+      // 场景 1：实现类的私有变量
       const privateData = new WeakMap();
 
       class MyClass {
@@ -33,22 +39,20 @@
             secret: "这是私有数据",
           });
         }
-
         getSecret() {
           return privateData.get(this).secret;
         }
       }
 
       const instance = new MyClass();
-      console.log(instance.getSecret()); // 输出: 这是私有数据
-      // 无法直接访问私有数据
-      console.log(privateData.get({})); // 输出: undefined
+      console.log(instance.getSecret());
+      // 通过外部 key 取不到，但只要类内部能拿到 this 这个键，就能访问
+      console.log(privateData.get({})); // undefined
 
-      //2.保存dom节点元数据
+      // 场景 2：给 DOM 节点关联元数据；节点被移除时元数据可自动回收
       const elementStates = new WeakMap();
       const button = document.getElementById("myButton");
 
-      // 为按钮关联状态
       elementStates.set(button, {
         clickCount: 0,
       });

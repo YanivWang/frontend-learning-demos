@@ -1,41 +1,48 @@
+<!--
+  分类: javascript / 01-基础
+  主题: 箭头函数与普通函数差异
+  要点:
+    - 箭头函数没有自己的 this/arguments/prototype，不能作为构造函数
+    - 箭头函数的 this 由最外层「非箭头函数」作用域决定（词法 this）
+    - 普通函数有 prototype，构造函数可以被 new
+-->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>箭头函数</title>
   </head>
   <body>
     <script>
-      //箭头函数只能是匿名函数表达式
-      //箭头函数
-      const ArrowFunc = (x,y) => {
-        //console.log(arguments);//Uncaught ReferenceError: arguments is not defined
+      // 箭头函数只能写成匿名函数表达式，不能像 function 那样具名声明
+      const ArrowFunc = (x, y) => {
+        // 箭头函数内部没有 arguments；如需收集实参用剩余参数 ...args
+        // console.log(arguments); // Uncaught ReferenceError: arguments is not defined
 
-        console.log(x,y);
+        console.log(x, y);
 
-        console.log(this);//箭头函数内部的this，是由其最近的紧包裹的那层this指向决定的
+        // 词法 this：由最近一层非箭头作用域决定，这里指向 window
+        console.log(this);
       };
 
-      ArrowFunc(1,2);//可以传递参数
+      ArrowFunc(1, 2);
 
-      console.log(ArrowFunc.prototype); //undefined 箭头函数作为函数没有原型对象prototype
+      // 箭头函数没有 prototype 属性
+      console.log(ArrowFunc.prototype); // undefined
 
-     // console.log(ArrowFunc.prototype.constructor);//没有构造器
+      // console.log(ArrowFunc.prototype.constructor); // 报错：无法读取 undefined 的属性
 
-      const af1 = new ArrowFunc()//ArrowFunc is not a constructor
+      // 易错点：箭头函数不能 new，否则 TypeError: ArrowFunc is not a constructor
+      // const af1 = new ArrowFunc();
 
-
-
-     
-
-      //普通函数
+      // 对比：普通函数声明既能调用也能 new
       function Person() {}
       console.log(Person.prototype);
 
       console.log(Person.prototype.constructor === Person);
 
-      //Person 作为函数实例
+      // Person 作为函数对象，其本身的构造器是 Function
       console.log(Person.constructor === Person.__proto__.constructor);
 
       console.log(Person.constructor === Function);

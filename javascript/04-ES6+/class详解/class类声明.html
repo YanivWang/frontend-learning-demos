@@ -1,55 +1,61 @@
+<!--
+  分类: javascript / 04-ES6+ / class详解
+  主题: class 声明的关键特性
+  要点:
+    - 类声明不提升，存在暂时性死区；class 主体默认严格模式
+    - 静态字段在类初始化时执行，实例字段仅在 new 时初始化
+    - 易错点：无 extends 的构造器不能调用 super()；class 名标识符不能重新声明
+-->
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Hello Class</title>
+    <title>class 类声明</title>
   </head>
   <body>
     <script>
-      //1.类声明不会提升(函数声明会提升)
-      //Uncaught ReferenceError: Cannot access 'Person' before initialization
-      //const p = new Person(); 
+      // 1.类声明不会提升（函数声明会提升）
+      // Uncaught ReferenceError: Cannot access 'Person' before initialization
+      // const p = new Person();
 
-      //使用Class关键字声明一个Person类
-      //类声明不会提升
-      //类的主体部分需要被{}包裹
-      //类的主体会在严格模式下执行
-      //空的类声明也是有效的
+      // 空的类声明也是有效的
       class Person {
 
       }
 
-
-      //class 声明和let非常类似，不具有提升，有暂时性死区
+      // class 声明的语义和 let 类似：不具有提升，有暂时性死区
       class WhitePerson {
-        //{} 包裹的是类声明的主体，在严格模式下运行
+        // 静态字段：类初始化时即执行
+        static userType = "whitePerson";
 
-        static userType = "whitePerson"//类的静态属性，类初始化的时候会执行
+        // 实例字段：每个 new 出来的实例各有一份
+        userAge = 18;
 
-        //使用类字段(类的静态属性,类的实例属性)声明语法，定义一个类字段
-        userAge = 18;//类的实例属性，类初始化的时候，不会执行
-
-        //类字段和对象属性相似，不属于变量，不需要使用const一类的关键字去声明它们
+        // 类字段是属性，无需 const/let
         userHeight;
 
-        //私有属性使用 #+类字段名称
+        // 私有字段：必须在类声明体中预先声明
         #privateField;
         #privateId = 10001;
 
-        //类的构造器，构造函数，用于构造类实例并初始化类实例
         constructor(userName){
-          super()//使用super访问父类构造函数
-          this.userName = userName;//构造函数中创建 类 实例 的属性并初始化赋值
+          // 易错点：没有 extends 的类不能调用 super()
+          //   SyntaxError: 'super' keyword unexpected here
+          // super();
+          this.userName = userName;
         }
       }
 
-      WhitePerson = "new Class";
+      // 类名标识符不可重新声明（Uncaught SyntaxError: Identifier 'WhitePerson' has already been declared）
+      // const WhitePerson = 123;
+      //
+      // 但可以重新赋值（类名其实是 let 绑定，不是 const）
+      // 这里仅作演示，不推荐这样污染类引用
+      // WhitePerson = "new value";
 
-      console.log(1111111111);
-
-      //Uncaught SyntaxError: Identifier 'WhitePerson' has already been declared
-      //const WhitePerson = 123;
-
+      const wp = new WhitePerson("trump");
+      console.log(wp);
+      console.log(WhitePerson.userType);
     </script>
   </body>
 </html>

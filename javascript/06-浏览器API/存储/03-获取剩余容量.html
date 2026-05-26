@@ -1,8 +1,16 @@
+<!--
+  分类: javascript / 06-浏览器API / 存储
+  主题: 用 localforage.iterate 估算剩余容量
+  要点:
+    - localforage.iterate 遍历所有键值对，每条调用回调
+    - 单条占用 ≈ key.length + JSON.stringify(value).length 字节
+    - iterate 返回 Promise，配合 await 写成顺序代码，便于读
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>获取剩余容量</title>
     <script src="lib/localforage.js"></script>
 </head>
 <body>
@@ -10,7 +18,8 @@
 <script>
     console.log("获取剩余空间..");
 
-    /*async function testRemainCap() {
+    /* 测试用：往本地写一堆数据，注释掉避免每次打开都写盘
+    async function testRemainCap() {
         await localforage.setItem("name", "Join");
         for (let i = 0; i < 10000; i++) {
             await localforage.setItem("key_" + i, {["key_" + i] : Math.random().toFixed(5)});
@@ -18,21 +27,24 @@
     }
     testRemainCap().then(function () {
         console.log("写入完毕..");
-    });*/
+    });
+    */
 
-    const MAX_SIZE = 50;
-    let currentSize = 0;
-    let remainSize =
-        localforage.iterate(function (value, key) {
-            currentSize = currentSize + key.length + JSON.stringify(value).length;
-        }).then(function () {
-            remainSize = MAX_SIZE - currentSize / 1024 / 1024;
-        }).catch(function (err) {
-
-        });
-
-    function getLocalStore() {
-    }
+    // 修正：原代码用 Promise 链 + 外层变量赋值，可读性差，改为 async/await
+    const MAX_SIZE_MB = 50;
+    (async function getRemainSize(){
+        let currentBytes = 0;
+        try {
+            await localforage.iterate(function (value, key) {
+                currentBytes += key.length + JSON.stringify(value).length;
+            });
+            const remainMB = MAX_SIZE_MB - currentBytes / 1024 / 1024;
+            console.log("currentMB:", (currentBytes / 1024 / 1024).toFixed(4));
+            console.log("remainMB:", remainMB.toFixed(4));
+        } catch (err) {
+            console.error("iterate error:", err);
+        }
+    })();
 </script>
 
 </body>

@@ -1,29 +1,39 @@
+<!--
+  分类: javascript / 01-基础 / 正则
+  主题: 用正则匹配 URL 中的语言段与路径段
+  要点:
+    - 易错点：[course|unit] 是字符类「c o u r s e | n i t」，与「course 或 unit」无关
+    - 多选必须用分组：(?:course|unit) 表示「course 或 unit」
+    - g 修饰的正则在多次 test 时会推进 lastIndex，单次匹配请避免复用同一个正则对象
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>正则 - URL 路径匹配</title>
 </head>
 <body>
 
 <script>
-    //http://localhost:8080/#/languages/learn-french-online/course/12/2/6/4/0
-    //http://localhost:8080/#/languages/learn-french-online/unit/6&31
-
+    // 期望匹配：/languages/learn-<lang>-online/course/.. 或 /unit/..
+    // 反面案例：/.../ala/.. 不应匹配
     let path = "http://localhost:8080/#/languages/learn-french-online/course/12/2/6/4/0";
     path = "http://localhost:8080/#/languages/learn-french-online/unit/6&31";
 
     path = "http://localhost:8080/#/languages/learn-french-online/ala/6&31";
 
-    let regPath2 = /\/languages\/learn-\w+-online\/[course|unit].*/g;
+    // 修正：用非捕获分组 (?:course|unit) 表达「二选一」
+    let regPath2 = /\/languages\/learn-\w+-online\/(?:course|unit).*/;
     if (regPath2.test(path)) {
+        // 提取 -<lang>- 中的语言部分并首字母大写
         let regC = /-\w+-/;
         let targetLan = path.match(regC)[0];
         targetLan = targetLan.slice(1, targetLan.length - 1).toLowerCase();
         targetLan = targetLan.slice(0, 1).toUpperCase() + targetLan.slice(1);
         console.log("targetLan: " + targetLan);
+    } else {
+        console.log("not match:", path);
     }
-
 </script>
 
 </body>

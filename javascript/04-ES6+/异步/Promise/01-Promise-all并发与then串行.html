@@ -1,71 +1,68 @@
+<!--
+  分类: javascript / 04-ES6+ / 异步 / Promise
+  主题: Promise.all 并发 与 then 串行
+  要点:
+    - Promise.all：并发执行，总耗时 ≈ max(各任务耗时)；任一失败立刻 reject
+    - 串行：.then(() => taskFn()) 返回新 Promise；不能直接 .then(promiseInstance)
+    - new Promise(executor) 的 executor 是同步执行的
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Promise.all 并发 与 then 串行</title>
 </head>
 <body>
 
 <script>
-    //new Promise 传入的函数会立即执行
-    //resolve and reject 是两个回调函数(resolve表示异步操作执行成功的回调，reject表示异步操作执行失败的回调)
-    let p1 = new Promise((resolve, reject) => {
+    // 把任务封装为「返回 Promise 的函数」，方便串行 then 调用
+    const taskP1 = () => new Promise((resolve) => {
         setTimeout(function (param) {
-            resolve(param);
-
             console.log("p1");
-        }, 5000, 'one', 'one222');
-    });
-    let p2 = new Promise((resolve, reject) => {
-        setTimeout(function (param) {
             resolve(param);
-
+        }, 1500, 'one');
+    });
+    const taskP2 = () => new Promise((resolve) => {
+        setTimeout(function (param) {
             console.log("p2");
-        }, 4000, "two");
-    });
-    let p3 = new Promise((resolve, reject) => {
-        setTimeout(function (param) {
             resolve(param);
-
+        }, 1000, 'two');
+    });
+    const taskP3 = () => new Promise((resolve) => {
+        setTimeout(function (param) {
             console.log("p3");
-        }, 7000, "three");
-    });
-    let p4 = new Promise((resolve, reject) => {
-        setTimeout(function (param) {
             resolve(param);
-
+        }, 2000, 'three');
+    });
+    const taskP4 = () => new Promise((resolve) => {
+        setTimeout(function (param) {
             console.log("p4");
-        }, 4000, "four");
-    });
-    let p5 = new Promise((resolve, reject) => {
-        reject('reject');//该方法返回一个带有拒绝reason参数的Promise对象
+            resolve(param);
+        }, 1000, 'four');
     });
 
-    //一: 并发执行
-    //(并行执行异步异步任务)这些异步操作中，只要有一个返回失败，则全部失败
-    //并发执行异步函数，总时长是用户最常的异步函数的时长
-    /*
-    console.log("start...");
-    Promise.all([p1, p2, p3, p4]).then(values => {
-        console.log("values: " + values);
-
-        console.log("finish...");
+    // 一：并发执行（Promise.all）
+    //    总耗时 ≈ max(各任务时长)，任一失败立刻 reject
+    console.log("all start...");
+    Promise.all([taskP1(), taskP2(), taskP3(), taskP4()]).then(values => {
+        console.log("values:", values);
+        console.log("all finish...");
     }).catch(reason => {
-        console.log("reason: " + reason);
-
-        console.log("ending...");
+        console.log("reason:", reason);
     });
-    */
 
-    //二: 顺序执行
-    new Promise((resolve, reject) => {
-        console.log("start promise...");
-
+    // 二：串行执行
+    //    易错点：.then(p1) 期望传函数，传入 Promise 实例会被当成「忽略上一步返回值的函数」
+    //    解决：.then(() => p1Fn())，确保下一个任务是「返回新 Promise 的函数」
+    new Promise((resolve) => {
+        console.log("serial start...");
         resolve();
-    }).then(p1).then(p2);
+    })
+    .then(() => taskP1())
+    .then(() => taskP2())
+    .then(() => console.log("serial end..."));
 
-    console.log("end promise...");
-
+    console.log("script end...");
 </script>
 
 </body>
