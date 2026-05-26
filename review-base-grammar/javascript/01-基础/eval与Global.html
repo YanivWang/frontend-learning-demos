@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>eval / Global 对象</title>
+</head>
+<body>
+  <h1>eval 与 Global 对象（window）</h1>
+  <p>所有不属于其它对象的属性和函数，在浏览器环境下都挂在 <code>window</code> 上（即 Global 对象）。</p>
+
+  <script>
+    // ============ 1. window 上的全局工具 ============
+    console.log(window.Math.random());
+    console.log(window.Object === Object);  // true
+
+    // 数组的 Object.keys 返回下标字符串
+    const arr = ["name", "age", "address"];
+    console.log(Object.keys(arr)); // ['0', '1', '2']
+
+    // ============ 2. eval：把字符串当 JS 代码执行 ============
+    var a = 1, b = 2;
+    const c = eval("a + b");
+    console.log("eval('a+b') =", c); // 3
+
+    // eval 共享调用处的作用域链 —— 非严格模式下可以创建局部变量
+    eval("var p = { name: 'eval-created', age: 19 }");
+    console.log("eval 创建的 p:", p);
+
+    // ⚠️ 严格模式下，eval 中创建的变量外部访问不到
+    (function () {
+      "use strict";
+      eval("var inner = 42");
+      try {
+        console.log(inner); // ReferenceError
+      } catch (e) {
+        console.log("严格模式下 eval 内变量隔离:", e.message);
+      }
+    })();
+
+    // ⚠️ 性能与安全：现代代码应避免 eval / new Function(...)
+    //    XSS 风险高、JIT 优化失效
+
+    // ============ 3. String() vs toString() ============
+    let u = undefined;
+    console.log(String(u));   // 'undefined'   —— String() 能处理 null/undefined
+    // u.toString();           // TypeError    —— null/undefined 没有 toString
+  </script>
+</body>
+</html>

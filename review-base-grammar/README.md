@@ -35,33 +35,35 @@ review-base-grammar/
 
 ### JavaScript
 
-1. **01-基础** — 变量、函数、箭头函数、JSON、Symbol、typeof、正则、encode/escape  
-2. **02-函数与作用域** — 作用域链、闭包、柯里化、this 指向  
-3. **03-对象与原型** — 原型、原型链、创建对象、访问器、构造函数  
-4. **04-ES6+** — Class、模块、Map/Set/WeakMap/WeakSet、Promise/async/generator  
-5. **05-元编程** — `defineProperty`、`Proxy`  
-6. **06-浏览器API** — BOM、Observer、事件、Web Worker、localforage、拖曳、Tooltips  
-7. **07-进阶** — 内存泄漏、深拷贝、手写 Promise  
-8. **08-面试题** — 作用域经典题  
-9. **09-Canvas** — 2D 基础绘图、动画（烟花 + requestAnimationFrame）  
+1. **01-基础** — 变量（含 null/undefined）、函数、箭头函数、`arguments`、IIFE、严格模式、JSON、Symbol、typeof / 类型检测、运算符（`||`/`&&`/`??`）、`eval`/Global、字符串方法（含原始值 vs 包装对象、sort 打乱、replace 正则）、Unicode、Date、parseInt、encode/escape、正则（含全特性、去标点）
+2. **02-函数与作用域** — 作用域链、闭包、柯里化、this 指向
+3. **03-对象与原型** — 原型、原型链（组合继承）、创建对象（含 delete 删除属性）、访问器、构造函数、原型属性 vs 实例属性（hasOwnProperty / in）
+4. **04-ES6+** — Class、模块、Map/Set/WeakMap/WeakSet、Promise/async/generator
+5. **05-元编程** — `defineProperty`、`Proxy`
+6. **06-浏览器API** — BOM、Observer、事件循环、DOM 操作、Notification、剪贴板、Service Worker、Web Worker、localforage、拖曳、Tooltips
+7. **07-进阶** — 内存泄漏、深拷贝、手写 Promise、UMD 插件模式、资源预加载（ResLoader）
+8. **08-面试题** — 作用域经典题（var1-6）、防抖/节流、加权随机
+9. **09-Canvas** — 2D 基础绘图、动画（烟花 + requestAnimationFrame）
 
 ### 框架
 
-1. **vue2** → `src/响应式原理/` → `src/基础语法/` → `src/组件/` → `src/路由与状态/`  
-2. **vue3** → `src/`（响应式状态、生命周期）  
+1. **vue2** → `src/响应式原理/` → `src/基础语法/` → `src/组件/` → `src/路由与状态/`
+2. **vue3** → `src/`（响应式状态、生命周期）
 3. **react** → `src/`（从 `开始.html`、`jsx.html` 入门；脚本引用 `../libs/`）
 
 ### CSS
 
-1. **01-布局** — Grid、rem 适配、瀑布流  
-2. **02-动画** — Loading、@keyframes、NProgress  
-3. **03-视觉效果** — 百分比圆环、3D 按钮、阴影、混合模式、Tooltip  
-4. **04-响应式** — Media Queries、vw/vh  
+1. **01-布局** — Grid、rem 适配、瀑布流、滚动表格（thead 固定）
+2. **02-动画** — Loading、@keyframes、NProgress、光标闪烁、展开折叠、序列帧（精灵图）
+3. **03-视觉效果** — 百分比圆环、3D 按钮、阴影、混合模式、Tooltip
+4. **04-响应式** — Media Queries、vw/vh
+5. **CSS 选择器** — 优先级与各种选择器一览
 
 ### 交互 Demo
 
-- **demos/drag** — 原生拖拽列表  
-- **demos/svg** — SVG 基础  
+- **demos/drag** — 原生拖拽列表
+- **demos/svg** — SVG 基础
+- **demos/viewpager** — ViewPager 翻页（含多种缓动插值器）
 
 ## 使用方式
 
@@ -71,7 +73,8 @@ review-base-grammar/
 
 ## 约定
 
-- `libs/`：框架运行时，不修改  
-- `src/`：学习用 Demo  
-- `javascript/` 子目录按 `01`–`09` 编号，便于按序复习  
+- `libs/`：框架运行时，不修改
+- `src/`：学习用 Demo
+- `javascript/` 子目录按 `01`–`09` 编号，便于按序复习
 - 已从 `base-grammar` 合并的内容统一改为本地 `libs/` 引用（`watch.html` 等少数 Demo 仍依赖 axios CDN）
+- 维护原则：以后新增内容直接在 `review-base-grammar/` 下添加；`base-grammar/` 不再维护，仅作历史归档

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Service Worker 基础</title>
+</head>
+<body>
+  <h1>Service Worker 注册</h1>
+  <p>SW 是一个独立线程脚本，可以拦截网络请求、做离线缓存（PWA 的核心）。
+     <br/>注意：必须运行在 <strong>HTTPS</strong> 或 <strong>localhost</strong> 环境下，并且要单独提供一个 <code>sw.js</code> 文件。</p>
+
+  <pre id="log" style="background:#f5f5f5;padding:1rem;border-radius:4px;"></pre>
+
+  <script>
+    const log = document.getElementById("log");
+    function append(s) { log.textContent += s + "\n"; }
+
+    // 1) 特性检测：in 操作符会沿原型链查找
+    if ("serviceWorker" in navigator) {
+      // 2) 等页面 load 后再注册，避免争抢首屏资源
+      window.addEventListener("load", () => {
+        navigator.serviceWorker
+          .register("./sw.js", { scope: "/" })
+          .then((registration) => {
+            append("✅ 注册成功，作用域：" + registration.scope);
+          })
+          .catch((err) => {
+            append("❌ 注册失败：" + err.message);
+          });
+      });
+    } else {
+      append("当前浏览器不支持 Service Worker");
+    }
+
+    /*
+      一个最小的 sw.js 示例：
+
+        const CACHE = 'v1';
+        self.addEventListener('install', (e) => {
+          e.waitUntil(
+            caches.open(CACHE).then((c) => c.addAll(['/', '/index.html']))
+          );
+        });
+        self.addEventListener('fetch', (e) => {
+          e.respondWith(
+            caches.match(e.request).then((r) => r || fetch(e.request))
+          );
+        });
+    */
+  </script>
+</body>
+</html>

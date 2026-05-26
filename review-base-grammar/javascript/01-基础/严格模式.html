@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>严格模式 · use strict</title>
+</head>
+<body>
+  <h1>严格模式综合</h1>
+  <p>
+    严格模式通过 <code>"use strict";</code> 启用，
+    可声明在<strong>整个脚本</strong>顶部，或<strong>函数内部</strong>第一行（局部生效）。
+  </p>
+  <pre><code>"use strict"; // 必须是脚本/函数体的第一条语句，前面只能有注释</code></pre>
+
+  <h2>1. 不允许使用未声明的变量（防止意外创建全局变量）</h2>
+  <pre><code>"use strict";
+// testStr = "abc";   // ❌ ReferenceError: testStr is not defined
+let testStr = "abc";  // ✅</code></pre>
+
+  <h2>2. 禁用八进制字面量（避免 010 被误以为是 8）</h2>
+  <pre><code>"use strict";
+// var x = 010;       // ❌ SyntaxError
+var y = 0x10;         // ✅ 十六进制依旧可用
+console.log(y);       // 16</code></pre>
+
+  <h2>3. 不能 delete 变量 / 函数（只允许 delete 对象属性）</h2>
+  <pre><code>"use strict";
+var a = 1;
+// delete a;          // ❌ SyntaxError
+
+const person = { name: "fighting!", age: 20 };
+delete person.name;   // ✅
+console.log(person);  // { age: 20 }</code></pre>
+
+  <h2>4. 函数形参不允许重名</h2>
+  <pre><code>"use strict";
+// function fn(a, a) { return a; } // ❌ SyntaxError</code></pre>
+
+  <h2>5. 函数内独立的 <code>this</code> 指向 <code>undefined</code></h2>
+  <p>非严格模式下，独立调用的函数 <code>this</code> 指向全局对象（window）；严格模式下变成 <code>undefined</code>。</p>
+  <pre><code>"use strict";
+function fa() {
+  return this;        // undefined
+}
+console.log(fa());    // undefined（非严格下是 Window）
+
+function fb() {
+  return !this;       // !undefined === true
+}
+console.log(fb());    // true</code></pre>
+
+  <h2>6. 部分参数对象（arguments）不再随形参联动</h2>
+  <p>严格模式下修改 <code>arguments[0]</code> 不会改变形参 <code>a</code>，反之亦然。</p>
+
+  <h2>7. 实战：可执行的演示</h2>
+  <script>
+    'use strict';
+
+    // 字符串转义（与严格模式无关，复习一下）
+    const x = "i am \"history\" ant";
+    console.log(x);
+
+    // 16 进制可用
+    const y = 0x10;
+    console.log("0x10 =", y); // 16
+
+    // 删除对象属性
+    const person = { name: "fighting!", age: 20 };
+    delete person.name;
+    console.log("delete 后:", person);
+
+    // 严格模式下函数内 this === undefined
+    function fa() {
+      'use strict';
+      return !this;
+    }
+    console.log("独立调用 fa() 时 !this =", fa()); // true
+
+    // 但通过对象/call/bind 调用时，this 不会被自动包装为 Object
+    const obj = { name: "obj" };
+    function showThis() {
+      'use strict';
+      return this;
+    }
+    console.log("showThis.call(42):", showThis.call(42));    // 42（严格）/ Number(42)（非严格）
+    console.log("showThis.call(obj):", showThis.call(obj));  // { name: 'obj' }
+  </script>
+
+  <h2>常见踩坑</h2>
+  <ul>
+    <li><code>'use strict'</code> 必须放在<strong>第一条语句</strong>，否则被当作普通字符串忽略</li>
+    <li>ES6 模块（<code>type="module"</code>）和 <code>class</code> 内部默认就是严格模式</li>
+    <li>用 IIFE 包裹的 <code>'use strict'</code> 只在该 IIFE 内生效，不会污染外部</li>
+  </ul>
+
+  <p>相关：<a href="IIFE.html">IIFE 立即执行函数</a> · <a href="函数高级.html">函数高级</a></p>
+</body>
+</html>

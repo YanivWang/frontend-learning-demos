@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>正则去标点</title>
+</head>
+<body>
+  <h1>用正则批量去除中英文 / 特殊语言标点</h1>
+  <p>常见的多语言场景需要同时处理：中文标点、ASCII 标点、西文重音/感叹/问号、连续空格归并等。</p>
+
+  <script>
+    // 中文常见标点 Unicode 范围（手工列举更可控；也可直接用 \p{P} 但需 u 修饰符）
+    const RE_CN = /(\u3002|\uff1f|\uff01|\uff0c|\u3001|\uff1b|\uff1a|\u201c|\u201d|\u2018|\u2019|\uff08|\uff09|\u300a|\u300b|\u3008|\u3009|\u3010|\u3011|\u300e|\u300f|\u300c|\u300d|\ufe43|\ufe44|\u3014|\u3015|\u2026|\u2014|\uff5e|\ufe4f|\uffe5)/g;
+    // ASCII 常见标点（注意 - _ + 等需要根据语义决定是否清理）
+    const RE_EN = /(\~|\`|\!|\@|\#|\$|\%|\^|\&|\*|\(|\)|\-|\_|\+|\=|\||\\|\[|\]|\{|\}|\;|\:|\"|\'|\,|\<|\.|\>|\/|\?)/g;
+    // 西文/重音/特殊（西班牙语 ¡¿、法语重音附加符号等）
+    const RE_OTHER = /(¡|¿|!|!!!|《|》|́)/g;
+    // 连续空白合并为单空格
+    const RE_BLANK = /\s+/g;
+
+    function removeBD(str) {
+      return str
+        .replace(RE_CN, "")
+        .replace(RE_EN, "")
+        .replace(RE_OTHER, "")
+        .replace(RE_BLANK, " ")
+        .trim();
+    }
+
+    const raw = "# I have a cat! is $ @  ́  《chinese》¿ ¡ 。、| ？ / \\ + =";
+    console.log("原始:", raw);
+    console.log("去标点:", removeBD(raw));
+
+    // ===== 单独判断「是否是标点」/「是否以标点结尾」 =====
+    function isPunctuation(ch) {
+      return /^(\u3002|\uff1f|\uff01|\uff0c|\u3001|\uff1b|\uff1a|\u201c|\u201d|\u2018|\u2019|\uff08|\uff09|\u300a|\u300b|\u3008|\u3009|\u3010|\u3011|\u300e|\u300f|\u300c|\u300d|\ufe43|\ufe44|\u3014|\u3015|\u2026|\u2014|\uff5e|\ufe4f|\uffe5|\~|\`|\!|\@|\#|\$|\%|\^|\&|\*|\(|\)|\-|\_|\+|\=|\||\\|\[|\]|\{|\}|\;|\:|\"|\'|\,|\<|\.|\>|\/|\?|¡|¿|!|!!!|《|》|́)$/.test(ch);
+    }
+    console.log("'.' 是标点:", isPunctuation("."));
+    console.log("'a' 是标点:", isPunctuation("a"));
+
+    // 现代写法：用 Unicode 属性 \p{P}（需 u 修饰符）
+    const modernRE = /\p{P}/gu;
+    console.log("ES2018 \\p{P} 去标点:", raw.replace(modernRE, "").replace(/\s+/g, " ").trim());
+  </script>
+</body>
+</html>

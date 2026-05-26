@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Date / 时间工具</title>
+</head>
+<body>
+  <h1>Date 常用工具函数</h1>
+  <p>JavaScript 原生 Date 用法简单但容易踩坑（月份从 0 开始；getDate 是日不是星期…）。</p>
+
+  <script>
+    // ============ 1. 基础获取 ============
+    const now = new Date();
+    console.log("getFullYear:", now.getFullYear());
+    console.log("getMonth:", now.getMonth(), "（0 表示一月，要 +1）");
+    console.log("getDate:", now.getDate(), "（号）");
+    console.log("getDay:", now.getDay(), "（星期，0 表示周日）");
+    console.log("getHours:", now.getHours());
+
+    // ============ 2. 月初 / 月末 ============
+    function padZero(n) {
+      n = String(n);
+      return n.length < 2 ? "0" + n : n;
+    }
+
+    function getFirstDayOfMonth(year, month) {
+      return `${year}-${padZero(month)}-01 00:00:00`;
+    }
+
+    function getLastDayOfMonth(year, month) {
+      // 关键：new Date(year, month, 0) → 上个月的最后一天
+      // 因为 month 在 Date 构造函数里是 0~11，传入 12 即是「明年 1 月之前一天」
+      const d = new Date(year, month, 0);
+      return `${year}-${padZero(month)}-${padZero(d.getDate())} 00:00:00`;
+    }
+
+    console.log("2019-12 首日:", getFirstDayOfMonth(2019, 12));
+    console.log("2019-12 末日:", getLastDayOfMonth(2019, 12));
+    console.log("2020-02 末日:", getLastDayOfMonth(2020, 2)); // 闰年 29 日
+    console.log("2021-02 末日:", getLastDayOfMonth(2021, 2)); // 平年 28 日
+
+    // ============ 3. 格式化（手写 vs Intl）============
+    function formatDate(d, fmt = "yyyy-MM-dd HH:mm:ss") {
+      const map = {
+        yyyy: d.getFullYear(),
+        MM: padZero(d.getMonth() + 1),
+        dd: padZero(d.getDate()),
+        HH: padZero(d.getHours()),
+        mm: padZero(d.getMinutes()),
+        ss: padZero(d.getSeconds()),
+      };
+      return fmt.replace(/yyyy|MM|dd|HH|mm|ss/g, (k) => map[k]);
+    }
+    console.log("formatDate:", formatDate(now));
+
+    // 现代 API：Intl.DateTimeFormat
+    console.log(
+      "Intl 格式化:",
+      new Intl.DateTimeFormat("zh-CN", { dateStyle: "long", timeStyle: "medium" }).format(now)
+    );
+
+    // ============ 4. 时间差 ============
+    const t1 = new Date("2025-01-01").getTime();
+    const t2 = new Date("2026-01-01").getTime();
+    const days = (t2 - t1) / (1000 * 60 * 60 * 24);
+    console.log("相差天数:", days);
+  </script>
+</body>
+</html>

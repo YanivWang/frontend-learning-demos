@@ -1,20 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>typeof / 精准类型检测</title>
 </head>
 <body>
-
+<h1>类型检测三板斧</h1>
 <script>
-    console.log(typeof  undefined);//undefined
+    // ============ 1. typeof：粗粒度，只区分原始类型与对象/函数 ============
+    console.log(typeof undefined); // 'undefined'
+    console.log(typeof null);      // 'object'  ⚠️ 历史遗留 bug
+    console.log(typeof 0);         // 'number'
+    console.log(typeof NaN);       // 'number'
+    console.log(typeof "abc");     // 'string'
+    console.log(typeof true);      // 'boolean'
+    console.log(typeof Symbol());  // 'symbol'
+    console.log(typeof 1n);        // 'bigint'
+    console.log(typeof []);        // 'object'  数组也是 object
+    console.log(typeof {});        // 'object'
+    console.log(typeof /a/);       // 'object'
+    console.log(typeof function () {}); // 'function'
 
-    console.log(typeof null);//object
+    // ============ 2. instanceof：基于原型链，不能跨 iframe ============
+    console.log([] instanceof Array);     // true
+    console.log([] instanceof Object);    // true（数组也是对象）
+    console.log("abc" instanceof String); // false（字面量不是 String 实例）
 
-    console.log(typeof 0);//number
+    // ============ 3. Object.prototype.toString.call —— 万能精准检测 ============
+    const getType = Object.prototype.toString;
+    console.log(getType.call("aaa"));        // '[object String]'
+    console.log(getType.call(111));          // '[object Number]'
+    console.log(getType.call(true));         // '[object Boolean]'
+    console.log(getType.call([]));           // '[object Array]'
+    console.log(getType.call({}));           // '[object Object]'
+    console.log(getType.call(null));         // '[object Null]'
+    console.log(getType.call(undefined));    // '[object Undefined]'
+    console.log(getType.call(function () {})); // '[object Function]'
+    console.log(getType.call(new Date()));   // '[object Date]'
+    console.log(getType.call(/a/));          // '[object RegExp]'
 
-     console.log(typeof NaN);//number
-
+    // 工具函数：返回类型字符串小写
+    function type(value) {
+      return Object.prototype.toString.call(value).slice(8, -1).toLowerCase();
+    }
+    console.log(type([])); // 'array'
+    console.log(type(/a/)); // 'regexp'
+    console.log(type(null)); // 'null'
 </script>
 
 </body>

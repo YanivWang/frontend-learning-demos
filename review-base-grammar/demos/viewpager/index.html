@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0" />
+  <title>ViewPager 翻页 · 插值器</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 1.5rem; }
+    .pager { width: 320px; height: 320px; overflow: hidden; user-select: none; border: 1px solid #ddd; border-radius: 8px; }
+    .pager_items { display: flex; width: max-content; }
+    .pager_items > div {
+      width: 320px; height: 320px; display: flex; align-items: center; justify-content: center;
+      font-size: 32px; font-weight: 700; color: #fff;
+      flex-shrink: 0;
+    }
+    .pager_items > div:nth-child(1) { background: #4facfe; }
+    .pager_items > div:nth-child(2) { background: #fa709a; }
+    .pager_items > div:nth-child(3) { background: #43e97b; }
+    .pager_items > div:nth-child(4) { background: #f093fb; }
+    .pager_items > div:nth-child(5) { background: #667eea; }
+    .pager_items > div:nth-child(6) { background: #f7b733; }
+    .buttons { margin-top: 12px; }
+    button { padding: 6px 14px; margin-right: 8px; }
+  </style>
+</head>
+<body>
+  <h1>ViewPager · 内置多种插值器（缓动函数）</h1>
+
+  <div class="pager">
+    <div class="pager_items">
+      <div>1 / 6</div><div>2 / 6</div><div>3 / 6</div>
+      <div>4 / 6</div><div>5 / 6</div><div>6 / 6</div>
+    </div>
+  </div>
+
+  <div class="buttons">
+    <button id="btn-prev">← prev (bounceOut)</button>
+    <button id="btn-next">next (elasticOut) →</button>
+    <button id="btn-go">goTo 第 5 页 (backOut)</button>
+  </div>
+
+  <p style="color:#666;margin-top:1rem;">插值器（interpolator）：把 0→1 的线性进度映射成不同曲线，模拟弹性/回弹/超调等手感。</p>
+
+  <script src="lib/viewpager.js"></script>
+  <script>
+    const interpolators = {
+      overshoot(k) { const t = 0.95; k -= 1; return k * k * ((t + 1) * k + t) + 1; },
+      backout(k) { const s = 1.70158; return --k * k * ((s + 1) * k + s) + 1; },
+      bounceout(k) {
+        if (k < 1 / 2.75) return 7.5625 * k * k;
+        if (k < 2 / 2.75) return 7.5625 * (k -= 1.5 / 2.75) * k + 0.75;
+        if (k < 2.5 / 2.75) return 7.5625 * (k -= 2.25 / 2.75) * k + 0.9375;
+        return 7.5625 * (k -= 2.625 / 2.75) * k + 0.984375;
+      },
+      elasticout(k) {
+        if (k === 0) return 0;
+        if (k === 1) return 1;
+        const a = 1, p = 0.4;
+        const s = (p * Math.asin(1 / a)) / (2 * Math.PI);
+        return a * Math.pow(2, -10 * k) * Math.sin(((k - s) * (2 * Math.PI)) / p) + 1;
+      },
+    };
+
+    const items = document.querySelector(".pager_items");
+    const pager = document.querySelector(".pager");
+    const w = pager.offsetWidth;
+
+    const vp = new ViewPager(pager, {
+      pages: items.children.length,
+      anim_duration: 300,
+      interpolator: interpolators.overshoot,
+      vertical: false,
+      onPageScroll(info) {
+        items.style.transform = `translate3d(${-info.totalOffset * w}px, 0, 0)`;
+      },
+      onPageChange(page) {
+        console.log("当前页:", page);
+      },
+    });
+
+    document.getElementById("btn-prev").onclick = () => vp.previous(500, interpolators.bounceout);
+    document.getElementById("btn-next").onclick = () => vp.next(1000, interpolators.elasticout);
+    document.getElementById("btn-go").onclick   = () => vp.goToIndex(4, 2000, interpolators.backout);
+  </script>
+</body>
+</html>
