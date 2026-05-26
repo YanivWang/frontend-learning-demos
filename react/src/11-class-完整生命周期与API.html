@@ -6,9 +6,8 @@
     - 更新：shouldComponentUpdate → render → componentDidUpdate
     - 卸载：componentWillUnmount（清理 timer / 监听）
     - 错误：componentDidCatch（捕获子组件抛错）
-  修正:
-    - componentWillMount / componentWillReceiveProps / componentWillUpdate 在 React 16.3+ 已废弃，使用必须前缀 UNSAFE_，否则会有警告并在未来移除
-    - ReactDOM.render 已废弃，改为 createRoot
+    - componentWillMount / componentWillReceiveProps / componentWillUpdate 在 React 16.3+ 已废弃，须前缀 UNSAFE_
+    - React 18 使用 createRoot 渲染，ReactDOM.render 已废弃
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -86,7 +85,7 @@
             }
         }
 
-        //会在调用render方法之前被调用，并且在初始挂在及后续更新时都会被调用。
+        //会在调用 render 方法之前被调用，并且在初始挂载及后续更新时都会被调用。
         //它应返回一个对象来更新state，如果返回null则不更新任何内容
         //根据属性props获取派生的state
         //此方法无权访问组件实例
@@ -100,8 +99,7 @@
 
         };
 
-        // 修正：React 16.3+ 已废弃 componentWillMount，使用必须改名为 UNSAFE_componentWillMount，
-        //       否则控制台会报「Using UNSAFE_ ...」警告，且未来主版本可能直接移除
+        // React 16.3+ 已废弃 componentWillMount，使用须改名为 UNSAFE_componentWillMount
         UNSAFE_componentWillMount() {
             console.log("UNSAFE_componentWillMount###");
         }
@@ -136,13 +134,12 @@
         }
 
         //当父组件传递下来的属性发生改变的时候，此钩子函数会被调用
-        // 修正：componentWillReceiveProps 已废弃，使用必须改名 UNSAFE_componentWillReceiveProps，
-        //       新代码推荐用 static getDerivedStateFromProps 或 componentDidUpdate 替代
+        // componentWillReceiveProps 已废弃，使用须改名 UNSAFE_componentWillReceiveProps
         UNSAFE_componentWillReceiveProps() {
 
         }
 
-        //首次渲染，不会出发整个钩子 state or props的改变
+        //首次渲染，不会触发这个钩子；state 或 props 的改变才会触发
         //首次渲染或使用 forceUpdate() 时不会调用该方法
         //可用于性能优化，手动决定是否需要重新渲染页面
         shouldComponentUpdate(nextProps, nextState) {
@@ -150,8 +147,7 @@
             return true;
         }
 
-        // 修正：componentWillUpdate 已废弃，使用必须改名 UNSAFE_componentWillUpdate，
-        //       新代码用 getSnapshotBeforeUpdate + componentDidUpdate 组合替代
+        // componentWillUpdate 已废弃，使用须改名 UNSAFE_componentWillUpdate
         UNSAFE_componentWillUpdate() {
 
         }
@@ -162,7 +158,7 @@
         }
 
 
-        //此钩子函数，会在后待组件抛出错误后，被调用
+        //此钩子函数，会在后代组件抛出错误后，被调用
         componentDidCatch(error, info) {
 
         }
@@ -172,11 +168,11 @@
         }
 
         startCountHandle(e) {
-            console.log("被点击", this);//你会发生this的值是undefined，是因为这个函数是由window对象调用的
+            console.log("被点击", this);//你会发现 this 的值是 undefined，是因为这个函数是由 window 对象调用的
         }
 
         name = "Person 组件";//实例变量
-        age = 30;//和
+        age = 30;//实例变量
         forceUpdateContent = "非state数据";
         static species = "智人";
 
@@ -201,7 +197,7 @@
             this.forceUpdateContent = this.forceUpdateContent + Date.now();
             //什么时候需要使用这个api,当render依赖的变量是非state和非props的时候，你改变了这个变量，react
             //是不会触发render的，你需要主动的去调用 this.forceUpdate()
-            //调用这个api后，会跳过当前组件的shouldComponentUpdate钩子(但是其子组件的声明周期钩子会正常的调用)
+            //调用这个 api 后，会跳过当前组件的 shouldComponentUpdate 钩子（但是其子组件的生命周期钩子会正常调用）
             //你应该避免在组件中给调用 this.forceUpdate方法，应该尽可能在render方法中使用state和props
             this.forceUpdate();
         };
@@ -267,7 +263,7 @@
         name: "React App"
     };
 
-    // 修正：React 18 改用 createRoot 渲染
+    // React 18 使用 createRoot 渲染
     ReactDOM.createRoot(document.getElementById("app")).render(
         <Person>
             <div>person子组件</div>

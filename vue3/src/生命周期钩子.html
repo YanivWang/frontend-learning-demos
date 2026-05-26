@@ -5,9 +5,7 @@
     - setup 替代 beforeCreate / created；钩子统一以 onXxx 形式注册
     - 关键钩子：onBeforeMount / onMounted / onBeforeUpdate / onUpdated / onBeforeUnmount / onUnmounted
     - keep-alive 专属：onActivated / onDeactivated
-  修正:
-    - 原代码 import 仅解构了 onMounted / onUnMounted / onBeforeUpdate，但下方使用了 onBeforeMount / onUpdated / onBeforeUnmount / onActivated / onDeactivated，会全部 ReferenceError
-    - onUnMounted 写法错误（M 与 U 大小写颠倒），正确是 onUnmounted
+    - 须从 Vue 解构全部用到的 onXxx 钩子；正确拼写是 onUnmounted（非 onUnMounted）
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -21,7 +19,7 @@
     <div id="app"></div>
 
     <script>
-      // 修正：补全所有 onXxx 钩子解构；修正 onUnMounted → onUnmounted
+      // 从 Vue 解构本 demo 用到的全部 Composition API 钩子
       const {
         createApp, ref, shallowRef, computed,
         onBeforeMount, onMounted,
@@ -58,13 +56,13 @@
           onUpdated(() => {});
 
           //=========== CCCC卸载阶段CCCC ===========
-          //组件卸载前调用，此时组件实例依赖好保留全部功能
+          //组件卸载前调用，此时组件实例依赖还保留全部功能
           onBeforeUnmount(() => {});
           /*
-          组件被卸载后调用
+          1.调用时机: 组件被卸载后调用
           2.作用: 清理一些副作用(计时器，dom监听器，与服务器的连接)
           */
-          // 修正：原写法 onUnMounted 大小写错误，正确拼写是 onUnmounted
+          // 正确拼写是 onUnmounted（非 onUnMounted）
           onUnmounted(() => {});
 
           //=========== DDDD keep-alive的组件激活 DDDD ===========

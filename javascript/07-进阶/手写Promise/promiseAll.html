@@ -4,7 +4,7 @@
   要点:
     - 全部 resolve 才整体 resolve；任一 reject 立刻整体 reject
     - 易错点：用 retArray.length 判断完成数会失败（稀疏数组的 length 是「最大索引+1」）
-    - 修正：用独立计数器，只有 fulfilled 才递增
+    - 用独立计数器 doneCount 判断完成数，避免稀疏数组 length 陷阱
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -40,7 +40,7 @@
                 return;
             }
 
-            // 修正：用计数器代替 retArray.length，避免「稀疏数组 length 判断」陷阱
+            // 用计数器 doneCount 代替 retArray.length，避免稀疏数组 length 判断陷阱
             let doneCount = 0;
             args.forEach((tempPromise, index) => {
                 // 包一层 Promise.resolve，容忍非 thenable 输入

@@ -5,10 +5,8 @@
     - state 只能在 constructor 里直接赋值，其他地方必须用 setState
     - props 是只读的；想通知父组件改值需通过父级传入的回调
     - 事件函数若想拿到组件实例 this，可在 JSX 用箭头函数 onClick={() => this.fn(e)}，或在 constructor 里 this.fn = this.fn.bind(this)
-  修正:
-    - 原代码 onClick={console.log(this)} 在 render 阶段就会立即执行 console.log；应包成箭头函数
-    - render(renderParams) 多余参数：React 调用 render 时不会传参，去掉
-    - this.state 中没有 id 字段，<div id={this.state.id}> 永远 undefined，加注释提醒
+    - onClick={console.log(this)} 会在 render 阶段立即执行，应包成箭头函数
+    - render 无参数；this.state 中无 id 字段时 <div id={this.state.id}> 为 undefined
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -69,7 +67,7 @@
           this.props.changeAppidFn();
         }
 
-        // 修正：去掉多余参数；React 调用 render() 不会传入任何参数
+        // React 调用 render() 时不传参，无需声明参数
         render() {
           {
             /* jsx使用小写驼峰定义属性名称 className  */
@@ -96,8 +94,7 @@
                 点击修改state
               </button>
 
-              {/* 修正：原写法 onClick={console.log(this)} 在 render 阶段就会立即执行；
-                  需要包成函数（箭头函数）才能等到点击时再执行 */}
+              {/* onClick 须用箭头函数包装，否则 render 阶段就会执行 console.log */}
               <button
                 onClick={() => console.log(this)}
               >

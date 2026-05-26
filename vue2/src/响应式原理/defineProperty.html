@@ -3,7 +3,6 @@
   主题: Object.defineProperty 实现访问器属性（Vue2 响应式核心）
   要点:
     - 把同名属性改成 getter/setter，必须用「闭包私有变量」做真正存储，否则 set/get 内部访问 this.name 会再次触发自身，形成栈溢出
-    - 修正：原代码在 setter 里 this.name = name 会无限递归（且 name 是未定义变量）
     - Vue2 数据响应式正是借此对每个字段挂上 getter/setter 并通知 Dep
 -->
 <!DOCTYPE html>
@@ -19,8 +18,7 @@
         name: "wangcheng",
       };
 
-      // 修正：必须用闭包私有变量 _name 真正存值；
-      //       否则 setter 中 this.name = xxx 又会触发自身 setter，导致栈溢出
+      // 用闭包私有变量 _name 存值；setter 中若写 this.name = xxx 会再次触发自身 setter，导致栈溢出
       let _name = person.name;
       Object.defineProperty(person, "name", {
         configurable: true,

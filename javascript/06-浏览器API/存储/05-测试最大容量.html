@@ -16,7 +16,7 @@
 <body>
 
 <script>
-    //50M 可保证出错概率很低
+    // 压测：约 550 万次 push，每条 testStr 为 10 个字符，用于探测 IndexedDB 配额上限
     localforage.clear().then(function () {
         localforage.keys().then(function (keys) {
             console.log("keys:" + keys);
@@ -29,7 +29,8 @@
                 array.push(testStr);
             }
             localforage.setItem("bigData", array).then(function (value) {
-                console.log(value.length * 10 / 1024 / 1024 + "m");
+                // 粗估字符数：元素个数 × 每条字符串长度，再换算为 MB（非精确字节数）
+                console.log(value.length * testStr.length / 1024 / 1024 + "m");
 
                 var endTime = new Date().getTime();
                 console.log("用时：" + (endTime - startTime) / 1000 + " s");
@@ -40,13 +41,6 @@
     }).catch(function (err) {
         console.log("清空错误：" + err);
     });
-
-
-    var promise = localforage.setItem("bigData", "wangcheng");
-
-    promise.then(function (value) {
-        console.log("1111");
-    })
 
 
 </script>

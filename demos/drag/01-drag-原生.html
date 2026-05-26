@@ -4,10 +4,7 @@
   要点:
     - 拖动元素必须有 draggable="true"；通过 dragstart 写入 dataTransfer
     - 目标区必须在 dragover 中 e.preventDefault()，否则不会触发 drop
-    - dataTransfer 只能存字符串，传对象需要 JSON.stringify / parse
-  修正:
-    - 在 drop 中给「目标区已有子元素」追加副本会让 appendChild 目标错位（ev.target 可能是子 p 而非容器）；
-      已改为始终 appendChild 到 currentTarget（绑定监听的容器）
+    - drop 时用 currentTarget 作为 appendChild 目标（ev.target 可能是容器内的子元素如 <p>）
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -17,7 +14,7 @@
     <title>HTML5 原生拖拽</title>
 
     <style>
-      /* 列表拖动去 */
+      /* 列表拖动区 */
       .drag-list {
         border: 1px solid #ddd;
         min-height: 200px;
@@ -103,7 +100,7 @@
       //dragend 事件在拖放操作结束时触发（通过释放鼠标按钮或单击 escape 键）
       function dragEnd_handler(ev) {
         console.log("dragend....");
-        //拖动结束: 清楚视觉效果
+        //拖动结束: 清除视觉效果
         ev.target.classList.remove("draging");
       }
 
@@ -161,7 +158,7 @@
         clonedItem.removeAttribute('draggable')
         clonedItem.removeAttribute('ondragstart')
         clonedItem.removeAttribute('ondragend')
-        // 修正：ev.target 可能是放置区里的子元素（如 <p>），而非放置区容器本身；
+        // ev.target 可能是放置区里的子元素（如 <p>），用 currentTarget 确保 append 到容器
         //       使用 currentTarget（监听者）才能保证副本一定挂到容器
         ev.currentTarget.appendChild(clonedItem);
       }

@@ -4,9 +4,7 @@
   要点:
     - 函数组件唯一参数是 props 对象；从父级传入的所有 attribute 都被打包进 props
     - props 是只读的；要更新视图需重新调用 render（或者使用 state / hooks）
-  修正:
-    - 清理多个空 @Description 注释；标题改为可读
-    - ReactDOM.render 已废弃；改为复用一次性创建的 createRoot
+    - createRoot 只创建一次后复用；ReactDOM.render 已废弃
 -->
 <!DOCTYPE html>
 <html>
@@ -30,10 +28,10 @@
   <script type="text/babel">
 
     const container = document.getElementById("root");
-    // 修正：React 18 推荐 createRoot；root 只创建一次后复用
+    // createRoot 只创建一次，setInterval 内复用 root.render 更新视图
     const root = ReactDOM.createRoot(container);
 
-    //返回一个更新后得组件，组件内容可以通过这个props对象，访问从父组件传递过来得属性
+    //返回一个更新后的组件，组件内容可以通过这个 props 对象，访问从父组件传递过来的属性
     function Counter(props) {
       const element = <div>{props.count}</div>;
       return element;
@@ -47,7 +45,7 @@
       root.render(<Counter count={count} />);
     }
 
-    //没隔一秒创建一个新元素，并将其传入到ReactDOM.render方法中，实现界面得更新
+    //每隔一秒创建一个新元素，并将其传入 root.render()，实现界面的更新
     setInterval(tick, 1000)
   </script>
 

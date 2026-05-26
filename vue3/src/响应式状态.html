@@ -5,9 +5,7 @@
     - ref 返回 { value: ... } 包装；JS 中读写必须 .value，模板中自动解包
     - reactive 返回的是「Proxy 响应式对象」，访问字段无 .value，但解构会丢响应
     - shallowRef 只对 .value 的赋值「整体替换」做响应，内部嵌套字段不再追踪
-  修正:
-    - 原代码未从 Vue 解构 reactive，但下方使用了 reactive，会报 ReferenceError
-    - 注释中「.vue」是笔误，应为「.value」
+    - 须从 Vue 解构 reactive；JS 中访问 ref 必须 .value（模板中自动解包）
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -30,7 +28,7 @@
     </div>
 
     <script>
-      // 修正：补全 reactive 解构，否则下方使用 reactive 时会报 ReferenceError
+      // 从 Vue 解构 createApp、ref、shallowRef、reactive 等 API
       const { createApp, ref, shallowRef, reactive, computed } = Vue;
 
       // createApp 函数创建一个新的 应用实例
@@ -76,21 +74,21 @@
             console.log("shallowObjRef,", shallowObjRef);
 
 
-            // 修正：JS 代码中访问 ref 必须带 .value（原注释拼成 .vue）
+            // JS 代码中访问 ref 必须带 .value（模板中自动解包，无需 .value）
             const changeMsgFn = () => {
               message.value = "I am change to HI vue!";
 
               console.log("message,", message);
             };
             
-            //setup 钩子中通过 return 语句将 响应式变量 或者 事件处理函数暴露该组件模版
+            //setup 钩子中通过 return 语句，将响应式变量或事件处理函数暴露给组件模板
             return {
               message,
 
               changeMsgFn,
             };
           },
-          //当组件没有设置 template 选项的时候，Vue 将自动使用容器的 innerHTML 作为模版
+          //当组件没有设置 template 选项的时候，Vue 将自动使用容器的 innerHTML 作为模板
           // template: `<div class="appContentTemplate">1111</div>`
         }
       );

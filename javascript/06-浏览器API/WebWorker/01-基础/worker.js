@@ -16,7 +16,7 @@ self.addEventListener('message', function (e) {
     // 子线程中调用通过 importScripts 引入的子脚本
     sayHello();
 
-    // 修正：原值 100000000000（1e11）耗时过长，改为 1e7 演示足够直观
+    // 循环 1e7 次累加，演示 worker 计算（数值过大会阻塞过久）
     let sum = 0;
     for (let i = 0; i < 1e7; i++) {
         sum = sum + i;

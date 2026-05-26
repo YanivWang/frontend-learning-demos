@@ -4,9 +4,7 @@
   要点:
     - counterOld：三次对象式 setState 都基于「当前 state」+1，合并后只 +1
     - counterNew：三次函数式 setState 都拿到「最新合并 state」，最终 +3
-    - componentDidMount 启定时器，componentWillUnmount 必须清理，否则内存泄漏
-  修正:
-    - 原代码 componentWillUnMount 大小写错误，正确拼写是 componentWillUnmount，否则 React 不会调用
+    - componentWillUnmount 拼写必须正确，否则 React 不会调用，定时器无法清理
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -76,7 +74,7 @@
           console.log("count2更新前>>>", this.state.count2);
 
           //如果你想依赖前一个值，更新当前值，需要提供给 this.setState(()=>{})提供一个函数
-          //该函数的第一个参数是前一个state,第二个参数是props，且回调函数函数内容是异步执行的
+          //该函数的第一个参数是前一个 state，第二个参数是 props，且回调函数的内容是异步执行的
           this.setState((preState, props) => {
             console.log("preState", preState.count2);
             console.log("props", props);
@@ -117,7 +115,7 @@
 
           console.log("id更新前>>>", this.state.id);
 
-          //调用 setState更新id后，this.state.id的值并没有立即更新为最新的值 id：1002
+          //调用 setState 更新 id 后，this.state.id 的值并没有立即更新为最新的值 id：2
           //而是下次渲染的时候
           this.setState({
             id: this.state.id + 1,
@@ -128,7 +126,7 @@
           //出于性能考虑，React会将多个setState()方法调用合并成一个调用
         }
 
-        // 修正：原写法 componentWillUnMount（M 大写错误）React 不会调用 → 定时器无法清理，造成内存泄漏
+        // componentWillUnmount 拼写必须正确，否则定时器无法清理
         //       正确钩子是 componentWillUnmount（m 小写）
         componentWillUnmount() {
           clearInterval(this.timer);

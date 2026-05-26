@@ -144,7 +144,7 @@
       // 计算属性类，在其内部也是通过Watcher实现，是带有一个 dirty 属性的 watcher
       class Computed {
         constructor(getter) {
-          // 创建 lazy Watcher(计算属性创建的watcher，内部顺哥 lazy = true)
+          // 创建 lazy Watcher(计算属性创建的 watcher，内部设置 lazy = true)
           this.watcher = new Watcher(getter, { lazy: true });
 
           this.value = undefined;//用于存储计算属性的计算后的值
@@ -185,8 +185,8 @@
         //三: 处理 computed
         let _computed = vm.$options.computed;
         Object.keys(_computed).forEach((ckey) => {
-          //将计算属性添加到 this.xx 上，以便于可以通过组件实例直接访问
-          this[ckey] = new Computed(_computed[ckey]).get(); //_computed[ckey]获取计算属性get
+          // 将计算属性挂到 vm.xx 上，便于通过组件实例直接访问
+          vm[ckey] = new Computed(_computed[ckey].bind(vm)).get();
         });
       }
 
@@ -222,7 +222,7 @@
           },
           computed: {
             //适用场景:
-            // 1.读取响应式属性，并对其进行相关计算后，供程序其他地方使用（比如模版）
+            // 1.读取响应式属性，并对其进行相关计算后，供程序其他地方使用（比如模板）
             // 同时当响应式属性，发生变化的时候，再次访问该计算属性，才会重新计算结果
             //声明了一个计算属性 messageLength，我们提供的函数作为 vm.messageLength 的 getter 函数
             messageLength: function () {
