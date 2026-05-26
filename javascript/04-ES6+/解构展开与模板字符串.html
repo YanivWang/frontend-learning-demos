@@ -1,0 +1,76 @@
+<!--
+  分类: javascript / 04-ES6+
+  主题: 解构、rest/spread、模板字符串、可选链与空值合并
+  要点:
+    - 解构用于从数组/对象中按结构取值，支持默认值、重命名、嵌套
+    - rest 是收集剩余项，spread 是展开已有数据
+    - ?. 与 ?? 经常一起用于安全读取和默认值
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>解构展开与模板字符串</title>
+</head>
+<body>
+  <h1>解构、展开与模板字符串</h1>
+  <p>打开控制台查看输出。</p>
+
+  <script>
+    // ============ 1. 数组解构 ============
+    const point = [10, 20, 30];
+    const [x, y, z = 0] = point;
+    console.log("array destructuring:", x, y, z);
+
+    // ============ 2. 对象解构 ============
+    const user = {
+      id: 1,
+      profile: {
+        name: "Ada",
+        city: "Hangzhou"
+      }
+    };
+    const {
+      id: userId,
+      profile: { name, city },
+      role = "guest"
+    } = user;
+    console.log("object destructuring:", userId, name, city, role);
+
+    // ============ 3. rest：收集剩余 ============
+    const [first, ...others] = [1, 2, 3, 4];
+    const { id, ...restUser } = user;
+    console.log("array rest:", first, others);
+    console.log("object rest:", id, restUser);
+
+    // ============ 4. spread：展开已有数据 ============
+    const a = [1, 2];
+    const b = [3, 4];
+    console.log("merge arrays:", [...a, ...b]);
+    console.log("copy object:", { ...user, active: true });
+    console.log("Math.max:", Math.max(...[3, 8, 5]));
+
+    // spread 是浅拷贝：嵌套对象仍共享引用
+    const copied = { ...user };
+    copied.profile.name = "Grace";
+    console.log("shallow copy source changed:", user.profile.name);
+
+    // ============ 5. 模板字符串 ============
+    const message = `${name} lives in ${city}`;
+    console.log("template:", message);
+
+    function highlight(strings, ...values) {
+      return strings.reduce((result, part, index) => {
+        return result + part + (values[index] === undefined ? "" : "[" + values[index] + "]");
+      }, "");
+    }
+    console.log(highlight`user=${name}, city=${city}`);
+
+    // ============ 6. 可选链与空值合并 ============
+    const response = { data: { list: [] } };
+    console.log("safe read:", response.data?.list?.[0]?.title ?? "暂无标题");
+    console.log("0 ?? 100:", 0 ?? 100);
+    console.log("0 || 100:", 0 || 100);
+  </script>
+</body>
+</html>

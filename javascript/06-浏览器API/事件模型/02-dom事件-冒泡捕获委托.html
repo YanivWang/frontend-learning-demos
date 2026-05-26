@@ -1,0 +1,123 @@
+<!--
+  分类: javascript / 06-浏览器API / 事件模型
+  主题: DOM 事件流：捕获、目标、冒泡与事件委托
+  要点:
+    - addEventListener 第三个参数 true 表示捕获阶段监听
+    - stopPropagation 阻止事件继续传播；stopImmediatePropagation 还会阻止同元素后续监听器
+    - 事件委托把子元素点击统一交给父元素处理，适合动态列表
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DOM 事件冒泡捕获委托</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
+    .panel { display: grid; grid-template-columns: minmax(260px, 420px) 1fr; gap: 16px; align-items: start; }
+    .outer, .middle, .inner { padding: 20px; border: 2px solid #777; border-radius: 4px; }
+    .outer { background: #f5f8ff; }
+    .middle { background: #fff7e8; }
+    .inner { background: #effaf1; cursor: pointer; text-align: center; }
+    button { margin: 4px 6px 4px 0; padding: 6px 10px; }
+    li { cursor: pointer; margin: 4px 0; }
+    #log { min-height: 180px; padding: 10px; border: 1px solid #ddd; background: #fafafa; white-space: pre-line; }
+  </style>
+</head>
+<body>
+  <h1>DOM 事件流：捕获、冒泡、委托</h1>
+
+  <div class="panel">
+    <section>
+      <div class="outer" data-name="outer">
+        outer
+        <div class="middle" data-name="middle">
+          middle
+          <div class="inner" data-name="inner">点击 inner</div>
+        </div>
+      </div>
+
+      <button id="normalBtn">正常传播</button>
+      <button id="stopBtn">middle 阻止传播</button>
+      <button id="immediateBtn">inner 阻止同元素后续监听</button>
+
+      <h2>事件委托</h2>
+      <ul id="todoList">
+        <li data-id="1">学习 capture</li>
+        <li data-id="2">学习 bubble</li>
+        <li data-id="3">学习 delegation</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>输出顺序</h2>
+      <div id="log">点击 inner 查看事件触发顺序。</div>
+    </section>
+  </div>
+
+  <script>
+    const logBox = document.getElementById("log");
+    const nodes = document.querySelectorAll(".outer, .middle, .inner");
+    let mode = "normal";
+
+    function log(text) {
+      logBox.textContent += "\n" + text;
+    }
+
+    function resetLog(title) {
+      logBox.textContent = title;
+    }
+
+    function bindEventFlow() {
+      nodes.forEach(node => {
+        const name = node.dataset.name;
+
+        node.addEventListener("click", function () {
+          log("capture: " + name);
+        }, true);
+
+        node.addEventListener("click", function (event) {
+          log("bubble-1: " + name);
+
+          if (mode === "stop" && name === "middle") {
+            log("middle 执行 stopPropagation");
+            event.stopPropagation();
+          }
+
+          if (mode === "immediate" && name === "inner") {
+            log("inner 执行 stopImmediatePropagation");
+            event.stopImmediatePropagation();
+          }
+        });
+
+        node.addEventListener("click", function () {
+          log("bubble-2: " + name);
+        });
+      });
+    }
+
+    bindEventFlow();
+
+    document.getElementById("normalBtn").addEventListener("click", () => {
+      mode = "normal";
+      resetLog("已切换：正常传播。点击 inner。");
+    });
+
+    document.getElementById("stopBtn").addEventListener("click", () => {
+      mode = "stop";
+      resetLog("已切换：middle 冒泡阶段 stopPropagation。点击 inner。");
+    });
+
+    document.getElementById("immediateBtn").addEventListener("click", () => {
+      mode = "immediate";
+      resetLog("已切换：inner 冒泡阶段 stopImmediatePropagation。点击 inner。");
+    });
+
+    document.getElementById("todoList").addEventListener("click", event => {
+      const item = event.target.closest("li");
+      if (!item) return;
+      resetLog("事件委托：父级 ul 捕获到 li 点击，id=" + item.dataset.id + "，文本=" + item.textContent);
+    });
+  </script>
+</body>
+</html>

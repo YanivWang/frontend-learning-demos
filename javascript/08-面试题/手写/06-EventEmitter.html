@@ -1,0 +1,73 @@
+<!--
+  分类: javascript / 08-面试题 / 手写
+  主题: 手写 EventEmitter
+  要点:
+    - on 注册监听，emit 触发监听
+    - off 移除监听，once 注册一次性监听
+    - emit 时复制监听数组，避免执行过程中增删监听影响本轮派发
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>手写 EventEmitter</title>
+</head>
+<body>
+  <h1>手写 EventEmitter</h1>
+  <p>打开控制台查看断言结果。</p>
+
+  <script>
+    class EventEmitter {
+      constructor() {
+        this.events = Object.create(null);
+      }
+
+      on(type, listener) {
+        if (!this.events[type]) this.events[type] = [];
+        this.events[type].push(listener);
+        return this;
+      }
+
+      off(type, listener) {
+        const listeners = this.events[type];
+        if (!listeners) return this;
+        this.events[type] = listeners.filter(fn => fn !== listener && fn._origin !== listener);
+        return this;
+      }
+
+      once(type, listener) {
+        const wrapper = (...args) => {
+          this.off(type, wrapper);
+          listener.apply(this, args);
+        };
+        wrapper._origin = listener;
+        return this.on(type, wrapper);
+      }
+
+      emit(type, ...args) {
+        const listeners = this.events[type];
+        if (!listeners || listeners.length === 0) return false;
+        listeners.slice().forEach(listener => listener.apply(this, args));
+        return true;
+      }
+    }
+
+    const bus = new EventEmitter();
+    const result = [];
+    function onMessage(value) {
+      result.push("on:" + value);
+    }
+
+    bus.on("message", onMessage);
+    bus.once("message", value => result.push("once:" + value));
+
+    console.assert(bus.emit("message", 1) === true, "emit returns true when listeners exist");
+    console.assert(bus.emit("message", 2) === true, "second emit still has on listener");
+    bus.off("message", onMessage);
+    console.assert(bus.emit("message", 3) === false, "off removes listener");
+    console.assert(result.join("|") === "on:1|once:1|on:2", "on once off work");
+
+    console.log("result:", result);
+  </script>
+</body>
+</html>

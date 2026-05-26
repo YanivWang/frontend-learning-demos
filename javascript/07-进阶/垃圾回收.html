@@ -1,0 +1,62 @@
+<!--
+  分类: javascript / 07-进阶
+  主题: 垃圾回收、可达性、标记清除与分代回收
+  要点:
+    - JS 引擎主要根据对象是否从根对象可达来判断能否回收
+    - 标记清除能处理循环引用；单纯引用计数会被循环引用困住
+    - WeakMap / WeakSet 不会阻止键对象被 GC，适合存对象关联元数据
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>垃圾回收</title>
+</head>
+<body>
+  <h1>垃圾回收：可达性与常见泄漏</h1>
+  <p>打开控制台查看输出。内存回收由 JS 引擎决定，无法手动强制稳定触发。</p>
+
+  <script>
+    // ============ 1. 可达性 ============
+    let user = { name: "Ada" };
+    let admin = user;
+    user = null;
+    console.log("仍然可达:", admin.name); // admin 还引用着对象，所以对象不能回收
+    admin = null; // 没有可达引用后，对象才有机会被 GC 回收
+
+    // ============ 2. 标记清除能处理循环引用 ============
+    function makeCycle() {
+      const a = {};
+      const b = {};
+      a.friend = b;
+      b.friend = a;
+      return "函数执行完后，如果外部没有引用 a/b，它们整体不可达，可以被回收";
+    }
+    console.log(makeCycle());
+
+    // ============ 3. 闭包引用导致对象保活 ============
+    function createCacheReader() {
+      const bigData = new Array(10000).fill("data");
+      return function read(index) {
+        return bigData[index];
+      };
+    }
+    let reader = createCacheReader();
+    console.log("closure keeps data:", reader(0));
+    reader = null; // 解除对闭包的引用，bigData 才有机会被回收
+
+    // ============ 4. WeakMap 不阻止键对象回收 ============
+    let domLike = { id: "node-1" };
+    const meta = new WeakMap();
+    meta.set(domLike, { clicked: 1 });
+    console.log("weak meta:", meta.get(domLike));
+    domLike = null; // WeakMap 中的键是弱引用，不会因为 meta 存在而强行保活
+
+    // ============ 5. 开发实践 ============
+    const timer = setInterval(() => {}, 1000);
+    clearInterval(timer);
+    console.log("实践：不用的定时器、事件监听、大对象引用要及时释放。");
+    console.log("继续实验可查看 07-进阶/内存泄漏/ 目录。");
+  </script>
+</body>
+</html>

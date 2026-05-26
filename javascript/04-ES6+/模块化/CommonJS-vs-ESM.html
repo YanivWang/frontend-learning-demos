@@ -1,0 +1,76 @@
+<!--
+  分类: javascript / 04-ES6+ / 模块化
+  主题: CommonJS 与 ES Module 对比
+  要点:
+    - CommonJS 主要用于 Node.js 早期生态，运行时 require，同步加载
+    - ES Module 是语言标准，静态 import/export，支持 tree-shaking
+    - 面试重点是语法、加载时机、值拷贝/实时绑定、浏览器支持差异
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>CommonJS vs ES Module</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
+    table { border-collapse: collapse; max-width: 900px; }
+    th, td { border: 1px solid #ddd; padding: 8px 10px; vertical-align: top; }
+    th { background: #f5f5f5; }
+    pre { background: #f7f7f7; padding: 12px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <h1>CommonJS 与 ES Module 对比</h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th>维度</th>
+        <th>CommonJS</th>
+        <th>ES Module</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>语法</td>
+        <td><code>const mod = require("./mod")</code><br><code>module.exports = value</code></td>
+        <td><code>import mod from "./mod.js"</code><br><code>export default value</code></td>
+      </tr>
+      <tr>
+        <td>加载时机</td>
+        <td>运行时加载，可以写在条件语句里</td>
+        <td>静态解析，顶层 import 会先于模块代码建立依赖关系</td>
+      </tr>
+      <tr>
+        <td>加载方式</td>
+        <td>同步加载为主</td>
+        <td>浏览器中异步加载，天然适合静态分析</td>
+      </tr>
+      <tr>
+        <td>导出值</td>
+        <td>导出对象的值拷贝/引用组合，取决于导出内容</td>
+        <td>实时绑定，导出变量变化后 import 方能观察到新值</td>
+      </tr>
+      <tr>
+        <td>优化</td>
+        <td>动态性强，静态优化较难</td>
+        <td>支持 tree-shaking，现代前端默认选择</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>代码形态</h2>
+  <pre><code>// CommonJS
+const math = require("./math");
+module.exports = { add };
+
+// ES Module
+import { add } from "./math.js";
+export { add };</code></pre>
+
+  <script>
+    console.log("面试记忆点：CJS 是运行时 require，ESM 是静态 import/export。");
+    console.log("浏览器原生 ESM 需要 <script type=\"module\">。");
+  </script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!--
+  分类: javascript / 08-面试题 / 手写
+  主题: 手写 new
+  要点:
+    - 创建一个新对象，并把它的原型指向构造函数 prototype
+    - 用新对象作为 this 执行构造函数
+    - 构造函数如果显式返回对象/函数，则 new 表达式返回该对象；否则返回新对象
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>手写 new</title>
+</head>
+<body>
+  <h1>手写 new</h1>
+  <p>打开控制台查看断言结果。</p>
+
+  <script>
+    function myNew(Constructor, ...args) {
+      if (typeof Constructor !== "function") {
+        throw new TypeError("Constructor must be a function");
+      }
+
+      const instance = Object.create(Constructor.prototype);
+      const result = Constructor.apply(instance, args);
+      const isObject = result !== null && (typeof result === "object" || typeof result === "function");
+      return isObject ? result : instance;
+    }
+
+    function Person(name) {
+      this.name = name;
+    }
+    Person.prototype.say = function () {
+      return "I am " + this.name;
+    };
+
+    const p = myNew(Person, "Ada");
+    console.assert(p.name === "Ada", "assigns instance fields");
+    console.assert(p instanceof Person, "links prototype");
+    console.assert(p.say() === "I am Ada", "can access prototype methods");
+
+    function Factory() {
+      this.name = "inner";
+      return { name: "returned object" };
+    }
+    console.assert(myNew(Factory).name === "returned object", "constructor object return wins");
+
+    console.log("myNew Person:", p.say());
+    console.log("myNew Factory:", myNew(Factory));
+  </script>
+</body>
+</html>

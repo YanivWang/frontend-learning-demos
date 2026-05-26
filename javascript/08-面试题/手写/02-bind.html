@@ -1,0 +1,65 @@
+<!--
+  分类: javascript / 08-面试题 / 手写
+  主题: 手写 bind
+  要点:
+    - bind 返回新函数，不会立即执行
+    - 普通调用时 this 指向绑定对象；new 调用时 this 指向新实例，忽略绑定对象
+    - 支持预置参数，并维护原函数 prototype 原型链
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>手写 bind</title>
+</head>
+<body>
+  <h1>手写 bind</h1>
+  <p>打开控制台查看断言结果。</p>
+
+  <script>
+    Function.prototype.myBind = function (thisArg, ...presetArgs) {
+      if (typeof this !== "function") {
+        throw new TypeError("myBind must be called on a function");
+      }
+
+      const fn = this;
+      function bound(...laterArgs) {
+        const isNewCall = this instanceof bound;
+        const context = isNewCall ? this : thisArg;
+        return fn.apply(context, presetArgs.concat(laterArgs));
+      }
+
+      // new bound() 创建的实例应能访问原函数 prototype 上的方法。
+      if (fn.prototype) {
+        bound.prototype = Object.create(fn.prototype);
+        bound.prototype.constructor = bound;
+      }
+
+      return bound;
+    };
+
+    function say(prefix, suffix) {
+      return prefix + this.name + suffix;
+    }
+    const user = { name: "Ada" };
+    const boundSay = say.myBind(user, "Hi, ");
+    console.assert(boundSay("!") === "Hi, Ada!", "normal bind call");
+
+    function Person(name) {
+      this.name = name;
+    }
+    Person.prototype.getName = function () {
+      return this.name;
+    };
+
+    const BoundPerson = Person.myBind({ name: "Ignored" });
+    const p = new BoundPerson("Grace");
+    console.assert(p.name === "Grace", "new call ignores bound thisArg");
+    console.assert(p instanceof Person, "instance keeps original prototype chain");
+    console.assert(p.getName() === "Grace", "prototype method works");
+
+    console.log("boundSay:", boundSay("!"));
+    console.log("new BoundPerson:", p.getName(), p instanceof Person);
+  </script>
+</body>
+</html>

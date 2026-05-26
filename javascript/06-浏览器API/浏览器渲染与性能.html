@@ -1,0 +1,95 @@
+<!--
+  分类: javascript / 06-浏览器API
+  主题: 浏览器渲染流程、重排、重绘与性能优化
+  要点:
+    - 关键渲染路径：HTML -> DOM，CSS -> CSSOM，然后生成 Render Tree
+    - Layout 计算位置尺寸，Paint 绘制像素，Composite 合成图层
+    - 批量 DOM 操作、读写分离、transform/opacity 动画可以减少性能压力
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>浏览器渲染与性能</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
+    .stage { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+    .stage span { padding: 8px 10px; border: 1px solid #ddd; background: #f8f8f8; border-radius: 4px; }
+    button { margin: 4px 6px 4px 0; padding: 6px 10px; }
+    #list { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 6px; max-width: 600px; }
+    .item { padding: 8px; background: #eef7ff; border: 1px solid #cddfed; }
+    .box { width: 80px; height: 80px; margin-top: 12px; background: #3d8bfd; transition: transform 240ms ease, opacity 240ms ease; }
+    .box.move { transform: translateX(160px); opacity: 0.65; }
+  </style>
+</head>
+<body>
+  <h1>浏览器渲染与性能</h1>
+
+  <div class="stage">
+    <span>HTML</span>
+    <span>DOM</span>
+    <span>CSSOM</span>
+    <span>Render Tree</span>
+    <span>Layout</span>
+    <span>Paint</span>
+    <span>Composite</span>
+  </div>
+
+  <h2>重排 / 重绘 / 合成</h2>
+  <ul>
+    <li>重排 reflow：元素几何信息变化，例如宽高、位置、字体大小、DOM 增删。</li>
+    <li>重绘 repaint：视觉样式变化但布局不变，例如颜色、背景。</li>
+    <li>合成 composite：图层合成变化，例如 transform、opacity 动画，通常更适合动画。</li>
+  </ul>
+
+  <button id="badBtn">逐个插入 100 个节点</button>
+  <button id="goodBtn">DocumentFragment 批量插入</button>
+  <button id="animateBtn">transform 动画</button>
+  <p id="result">等待操作...</p>
+  <div id="list"></div>
+  <div id="box" class="box"></div>
+
+  <script>
+    const list = document.getElementById("list");
+    const result = document.getElementById("result");
+    const box = document.getElementById("box");
+
+    function createItem(index) {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.textContent = "item " + index;
+      return div;
+    }
+
+    document.getElementById("badBtn").addEventListener("click", () => {
+      list.innerHTML = "";
+      const start = performance.now();
+      for (let i = 0; i < 100; i++) {
+        list.appendChild(createItem(i));
+        // 读布局属性会强制浏览器把前面的写入同步计算出来，频繁读写混合容易触发性能问题。
+        list.offsetHeight;
+      }
+      result.textContent = "逐个插入耗时：" + (performance.now() - start).toFixed(2) + "ms";
+    });
+
+    document.getElementById("goodBtn").addEventListener("click", () => {
+      list.innerHTML = "";
+      const start = performance.now();
+      const fragment = document.createDocumentFragment();
+      for (let i = 0; i < 100; i++) {
+        fragment.appendChild(createItem(i));
+      }
+      list.appendChild(fragment);
+      result.textContent = "批量插入耗时：" + (performance.now() - start).toFixed(2) + "ms";
+    });
+
+    document.getElementById("animateBtn").addEventListener("click", () => {
+      box.classList.toggle("move");
+      result.textContent = "transform/opacity 通常走合成阶段，比频繁改 left/top 更适合动画。";
+    });
+
+    console.log("动画节流可以继续看 requestAnimation.html。");
+  </script>
+</body>
+</html>
