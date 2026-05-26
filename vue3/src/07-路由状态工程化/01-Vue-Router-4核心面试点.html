@@ -1,0 +1,63 @@
+<!--
+  分类: vue3 / 07-路由状态工程化
+  主题: Vue Router 4 核心面试点
+  要点:
+    - Vue Router 4 是 Vue3 常用路由方案
+    - 常问 createRouter、history 模式、动态路由、导航守卫、懒加载
+    - 本仓库未引入 vue-router 运行时，因此本页以面试代码片段和概念演示为主
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · Vue Router 4 面试点</title>
+    <script src="../../libs/vue3.5.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 860px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>Vue Router 4 核心面试点</h1>
+      <div class="box">
+        <pre>{{ snippet }}</pre>
+      </div>
+
+      <h2>面试回答</h2>
+      <ul>
+        <li><code>createWebHistory</code> 使用浏览器 history API，需要服务端配置 fallback；<code>createWebHashHistory</code> 用 hash，不依赖服务端。</li>
+        <li>动态路由用 <code>/users/:id</code>，组件内可通过 <code>useRoute()</code> 读取参数。</li>
+        <li>导航守卫分全局守卫、路由独享守卫、组件内守卫，常用于登录校验和权限控制。</li>
+        <li>路由懒加载通常写成 <code>component: () =&gt; import('./views/Home.vue')</code>，降低首屏包体积。</li>
+      </ul>
+    </div>
+
+    <script>
+      const { createApp, ref } = Vue;
+
+      createApp({
+        setup() {
+          const snippet = ref([
+            "const router = createRouter({",
+            "  history: createWebHistory(),",
+            "  routes: [",
+            "    { path: '/', component: () => import('./views/Home.vue') },",
+            "    { path: '/users/:id', component: UserDetail, meta: { requiresAuth: true } },",
+            "  ],",
+            "})",
+            "",
+            "router.beforeEach((to) => {",
+            "  if (to.meta.requiresAuth && !isLogin()) return '/login'",
+            "})",
+          ].join("\n"));
+          return { snippet };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

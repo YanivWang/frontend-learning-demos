@@ -1,0 +1,65 @@
+<!--
+  分类: vue3 / 08-原理与性能面试
+  主题: 虚拟 DOM / diff / key
+  要点:
+    - 虚拟 DOM 是用 JS 对象描述真实 DOM
+    - diff 比较新旧 vnode，尽量复用节点
+    - key 决定列表节点身份，是 diff 的重要提示
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · 虚拟 DOM / diff / key</title>
+    <script src="../../libs/vue3.5.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin-right: 8px; padding: 6px 12px; }
+      li { margin: 6px 0; }
+      code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>虚拟 DOM / diff / key</h1>
+      <div class="box">
+        <button @click="shuffle">调换顺序</button>
+        <ul>
+          <li v-for="item in list" :key="item.id">
+            {{ item.name }} <input placeholder="输入后再调换顺序观察" />
+          </li>
+        </ul>
+      </div>
+
+      <h2>面试回答</h2>
+      <ul>
+        <li>虚拟 DOM 是跨平台和声明式渲染的中间表示，更新时先生成新 vnode，再和旧 vnode 做 diff。</li>
+        <li><code>key</code> 是列表节点身份标识，稳定 key 可以帮助 Vue 复用正确节点。</li>
+        <li>没有 key 或使用不稳定 key，输入框、动画、组件状态可能发生错误复用。</li>
+        <li>Vue3 编译器还会生成 patch flag，帮助运行时跳过不需要比较的静态部分。</li>
+      </ul>
+    </div>
+
+    <script>
+      const { createApp, ref } = Vue;
+
+      createApp({
+        setup() {
+          const list = ref([
+            { id: "a", name: "A" },
+            { id: "b", name: "B" },
+            { id: "c", name: "C" },
+          ]);
+
+          function shuffle() {
+            list.value = [list.value[2], list.value[0], list.value[1]];
+          }
+
+          return { list, shuffle };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

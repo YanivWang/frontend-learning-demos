@@ -1,0 +1,66 @@
+<!--
+  分类: vue3 / 04-组件通信
+  主题: provide / inject
+  要点:
+    - provide/inject 适合跨层级传递依赖
+    - 注入 ref 时仍保持响应式连接
+    - 修改逻辑最好也由 provider 提供，避免数据来源混乱
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · provide / inject</title>
+    <script src="../../libs/vue3.5.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { padding: 6px 12px; }
+      code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>provide / inject</h1>
+      <div class="box">
+        <parent-panel></parent-panel>
+      </div>
+
+      <h2>面试回答</h2>
+      <ul>
+        <li><code>provide/inject</code> 解决跨层级传参，不适合替代所有状态管理。</li>
+        <li>常见用途：主题、表单上下文、组件库上下文、局部服务对象。</li>
+        <li>为了可维护，推荐 provide 数据和修改方法，而不是让任意子孙直接改源数据。</li>
+      </ul>
+    </div>
+
+    <script>
+      const { createApp, ref, provide, inject } = Vue;
+
+      const DeepChild = {
+        template: `<p>深层子组件主题：{{ theme }} <button @click="toggleTheme">切换主题</button></p>`,
+        setup() {
+          const theme = inject("theme");
+          const toggleTheme = inject("toggleTheme");
+          return { theme, toggleTheme };
+        },
+      };
+
+      const ParentPanel = {
+        components: { DeepChild },
+        template: `<section><p>父组件提供主题</p><deep-child /></section>`,
+        setup() {
+          const theme = ref("light");
+          function toggleTheme() {
+            theme.value = theme.value === "light" ? "dark" : "light";
+          }
+          provide("theme", theme);
+          provide("toggleTheme", toggleTheme);
+        },
+      };
+
+      createApp({ components: { ParentPanel } }).mount("#app");
+    </script>
+  </body>
+</html>

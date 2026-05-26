@@ -1,0 +1,59 @@
+<!--
+  分类: vue3 / 05-插槽与组件形态
+  主题: 动态组件 / 异步组件
+  要点:
+    - component :is 可动态切换组件
+    - defineAsyncComponent 用于异步加载组件
+    - keep-alive 常和动态组件配合缓存状态
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · 动态组件与异步组件</title>
+    <script src="../../libs/vue3.5.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin-right: 8px; padding: 6px 12px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>动态组件与异步组件</h1>
+      <div class="box">
+        <button @click="current = 'ProfilePanel'">资料</button>
+        <button @click="current = 'SettingPanel'">设置</button>
+        <component :is="current"></component>
+      </div>
+
+      <h2>面试回答</h2>
+      <ul>
+        <li><code>&lt;component :is="xxx"&gt;</code> 可以根据状态切换组件类型。</li>
+        <li><code>defineAsyncComponent</code> 用来延迟加载组件，工程里常和路由懒加载一起降低首屏体积。</li>
+        <li>如果希望切走后保留组件内部状态，可以配合 <code>&lt;KeepAlive&gt;</code>。</li>
+      </ul>
+      <pre>{{ asyncSnippet }}</pre>
+    </div>
+
+    <script>
+      const { createApp, ref } = Vue;
+
+      const ProfilePanel = { template: `<p>资料面板：这里可以有个人信息。</p>` };
+      const SettingPanel = { template: `<p>设置面板：这里可以有偏好设置。</p>` };
+
+      createApp({
+        components: { ProfilePanel, SettingPanel },
+        setup() {
+          const current = ref("ProfilePanel");
+          const asyncSnippet = "const AsyncComp = defineAsyncComponent(() => import('./HeavyComp.vue'))";
+          return { current, asyncSnippet };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

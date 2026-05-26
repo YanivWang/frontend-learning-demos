@@ -1,0 +1,66 @@
+<!--
+  分类: vue3 / 02-响应式与副作用
+  主题: readonly / shallowReactive / markRaw
+  要点:
+    - readonly 用于暴露只读状态，避免外部误改
+    - shallowReactive 只代理第一层
+    - markRaw 标记对象不需要转成响应式
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · readonly/shallow/markRaw</title>
+    <script src="../../libs/vue3.5.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin-right: 8px; padding: 6px 12px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>readonly / shallowReactive / markRaw</h1>
+      <div class="box">
+        <p>深层 reactive：{{ deep.nested.count }}</p>
+        <p>浅层 shallowReactive：{{ shallow.nested.count }}</p>
+        <p>第三方实例是否原始对象：{{ rawWidget.name }}</p>
+        <button @click="deep.nested.count++">改 deep 嵌套字段</button>
+        <button @click="shallow.nested.count++">改 shallow 嵌套字段</button>
+        <button @click="replaceShallow">替换 shallow 第一层</button>
+        <pre>{{ note }}</pre>
+      </div>
+
+      <h2>面试回答</h2>
+      <ul>
+        <li><code>readonly</code> 常用于给外部暴露不可直接修改的状态。</li>
+        <li><code>shallowReactive</code> 只让第一层响应，嵌套对象不会继续深层代理。</li>
+        <li><code>markRaw</code> 常用于第三方类实例、大对象、无需响应式的数据。</li>
+      </ul>
+    </div>
+
+    <script>
+      const { createApp, reactive, shallowReactive, readonly, markRaw, ref } = Vue;
+
+      createApp({
+        setup() {
+          const deep = reactive({ nested: { count: 0 } });
+          const shallow = shallowReactive({ nested: { count: 0 } });
+          const readonlyDeep = readonly(deep);
+          const rawWidget = markRaw({ name: "第三方图表实例" });
+          const note = ref("点击 shallow 嵌套字段时，通常不会触发视图更新；替换第一层对象才会触发。");
+
+          function replaceShallow() {
+            shallow.nested = { count: shallow.nested.count + 1 };
+          }
+
+          return { deep, shallow, readonlyDeep, rawWidget, note, replaceShallow };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

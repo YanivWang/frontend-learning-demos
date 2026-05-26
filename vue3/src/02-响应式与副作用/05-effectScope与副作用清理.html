@@ -1,0 +1,76 @@
+<!--
+  分类: vue3 / 02-响应式与副作用
+  主题: effectScope / 副作用清理
+  要点:
+    - watch 会返回停止函数
+    - effectScope 可以统一收集和停止多个响应式副作用
+    - 组件卸载时要清理定时器、监听器、订阅、请求等副作用
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · effectScope 与副作用清理</title>
+    <script src="../../libs/vue3.5.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin-right: 8px; padding: 6px 12px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; max-height: 220px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>effectScope 与副作用清理</h1>
+      <div class="box">
+        <p>count：{{ count }}</p>
+        <button @click="count++">count +1</button>
+        <button @click="startScope">开启 scope</button>
+        <button @click="stopScope">停止 scope</button>
+        <pre>{{ logs.join("\n") }}</pre>
+      </div>
+
+      <h2>面试回答</h2>
+      <ul>
+        <li><code>watch</code>、<code>watchEffect</code> 这类副作用需要在不再使用时停止。</li>
+        <li><code>effectScope</code> 可以把一组副作用放进同一个作用域，统一停止。</li>
+        <li>组件内创建的副作用通常会随组件卸载自动停止；组件外或手动创建的副作用要格外注意清理。</li>
+      </ul>
+    </div>
+
+    <script>
+      const { createApp, ref, watch, effectScope } = Vue;
+
+      createApp({
+        setup() {
+          const count = ref(0);
+          const logs = ref([]);
+          let scope = null;
+
+          function startScope() {
+            if (scope) return;
+            scope = effectScope();
+            scope.run(() => {
+              watch(count, (value) => {
+                logs.value.push(`scope 内 watch：count = ${value}`);
+              });
+            });
+            logs.value.push("已开启 effectScope");
+          }
+
+          function stopScope() {
+            if (!scope) return;
+            scope.stop();
+            scope = null;
+            logs.value.push("已停止 effectScope");
+          }
+
+          return { count, logs, startScope, stopScope };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

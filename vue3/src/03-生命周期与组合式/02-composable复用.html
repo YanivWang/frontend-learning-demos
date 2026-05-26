@@ -1,0 +1,67 @@
+<!--
+  分类: vue3 / 03-生命周期与组合式
+  主题: composable 组合式函数
+  要点:
+    - composable 是以 useXxx 命名的状态逻辑复用函数
+    - 可以组合 ref、computed、watch、生命周期钩子
+    - 每次调用默认创建独立状态，共享状态要显式设计
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · composable 组合式函数</title>
+    <script src="../../libs/vue3.5.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin-right: 8px; padding: 6px 12px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>composable 组合式函数</h1>
+      <div class="box">
+        <p>鼠标位置：x={{ x }}，y={{ y }}</p>
+        <p>是否在左上角：{{ isNearOrigin ? "是" : "否" }}</p>
+      </div>
+
+      <h2>面试回答</h2>
+      <ul>
+        <li>Vue3 用组合式函数复用有状态逻辑，替代 Vue2 中 mixin 容易命名冲突和来源不清的问题。</li>
+        <li>组合式函数不是 Vue 专属语法，本质就是普通函数，只是内部使用了响应式 API。</li>
+        <li>返回值通常用 <code>ref</code> 或 <code>toRefs</code>，方便调用方解构后仍保持响应。</li>
+      </ul>
+    </div>
+
+    <script>
+      const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
+
+      function useMousePosition() {
+        const x = ref(0);
+        const y = ref(0);
+        const isNearOrigin = computed(() => x.value < 200 && y.value < 200);
+
+        function update(event) {
+          x.value = event.clientX;
+          y.value = event.clientY;
+        }
+
+        onMounted(() => window.addEventListener("mousemove", update));
+        onUnmounted(() => window.removeEventListener("mousemove", update));
+
+        return { x, y, isNearOrigin };
+      }
+
+      createApp({
+        setup() {
+          return useMousePosition();
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

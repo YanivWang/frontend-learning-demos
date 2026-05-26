@@ -1,0 +1,64 @@
+<!--
+  分类: vue3 / 02-响应式与副作用
+  主题: computed / watch / watchEffect
+  要点:
+    - computed 适合从状态派生值，有缓存
+    - watch 适合明确监听某个源，处理异步或副作用
+    - watchEffect 自动收集依赖，适合依赖简单的副作用
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · computed/watch/watchEffect</title>
+    <script src="../../libs/vue3.5.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      input, button { padding: 6px 10px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; max-height: 220px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>computed / watch / watchEffect</h1>
+      <div class="box">
+        <label>关键词：<input v-model="keyword" /></label>
+        <p>computed 派生：{{ normalizedKeyword }}</p>
+        <pre>{{ logs.join("\n") }}</pre>
+      </div>
+
+      <h2>面试回答</h2>
+      <ul>
+        <li><code>computed</code> 用来声明派生状态，依赖不变时会复用缓存。</li>
+        <li><code>watch</code> 源明确，可以拿到新旧值，常用于请求、缓存、日志等副作用。</li>
+        <li><code>watchEffect</code> 不写监听源，回调里用到什么响应式数据就自动追踪什么。</li>
+      </ul>
+    </div>
+
+    <script>
+      const { createApp, ref, computed, watch, watchEffect } = Vue;
+
+      createApp({
+        setup() {
+          const keyword = ref(" Vue3 ");
+          const logs = ref([]);
+          const normalizedKeyword = computed(() => keyword.value.trim().toLowerCase());
+
+          watch(keyword, (newValue, oldValue) => {
+            logs.value.push(`watch：${oldValue} -> ${newValue}`);
+          });
+
+          watchEffect(() => {
+            logs.value.push(`watchEffect：当前规范化关键词是 ${normalizedKeyword.value}`);
+          });
+
+          return { keyword, normalizedKeyword, logs };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

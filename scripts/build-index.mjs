@@ -24,7 +24,7 @@ const SECTIONS = [
   { dir: "javascript", title: "JavaScript", desc: "纯 JS 知识点 demo（按 01–09 编号分类）" },
   { dir: "css",        title: "CSS",         desc: "布局 / 动画 / 视觉效果 / 响应式" },
   { dir: "vue2",       title: "Vue 2",       desc: "响应式原理、基础语法、组件、路由与状态" },
-  { dir: "vue3",       title: "Vue 3",       desc: "响应式状态、生命周期钩子" },
+  { dir: "vue3",       title: "Vue 3",       desc: "基础语法、响应式、组件通信、内置组件、路由状态、原理性能" },
   { dir: "react",      title: "React 18",    desc: "JSX、元素、函数组件、类组件、生命周期" },
   { dir: "demos",      title: "综合 Demo",    desc: "拖拽 / SVG / ViewPager 等小项目" },
 ];

@@ -1,0 +1,63 @@
+<!--
+  分类: vue3 / 01-基础语法
+  主题: createApp / mount / 模板语法
+  要点:
+    - Vue3 通过 createApp 创建应用实例，再 mount 到容器
+    - 模板中支持文本插值、表达式、指令、事件绑定
+    - ref 在模板中会自动解包，JS 中需要 .value
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · 应用实例与模板语法</title>
+    <script src="../../libs/vue3.5.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin-right: 8px; padding: 6px 12px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; }
+      .box { border: 1px solid #ddd; padding: 16px; border-radius: 8px; max-width: 720px; }
+      .tip { color: #666; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>{{ title }}</h1>
+      <div class="box">
+        <p>姓名：{{ user.name }}</p>
+        <p>年龄 + 1：{{ user.age + 1 }}</p>
+        <p>是否成年：{{ user.age >= 18 ? "是" : "否" }}</p>
+        <p v-text="message"></p>
+        <p v-html="htmlText"></p>
+        <button @click="user.age++">年龄 +1</button>
+        <button @click="message = '模板支持表达式和指令'">改文案</button>
+      </div>
+
+      <h2>面试回答</h2>
+      <ul>
+        <li>Vue3 用 <code>createApp(rootComponent)</code> 创建应用，一个页面可以有多个应用实例。</li>
+        <li><code>mount('#app')</code> 后，容器内部会作为根组件模板，或者使用组件的 <code>template</code>。</li>
+        <li>模板表达式只能写单个表达式，不适合写复杂业务逻辑，复杂逻辑应放到方法或计算属性中。</li>
+      </ul>
+      <p class="tip">注意：<code>v-html</code> 会插入 HTML，真实项目里不要渲染不可信内容。</p>
+    </div>
+
+    <script>
+      const { createApp, reactive, ref } = Vue;
+
+      createApp({
+        setup() {
+          const title = ref("Vue3 应用实例与模板语法");
+          const message = ref("模板中 ref 会自动解包");
+          const htmlText = ref("<strong>v-html 会按 HTML 渲染</strong>");
+          const user = reactive({ name: "Ada", age: 18 });
+
+          return { title, message, htmlText, user };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

@@ -1,0 +1,78 @@
+<!--
+  分类: vue3 / 01-基础语法
+  主题: v-if / v-show / v-for / key
+  要点:
+    - v-if 是条件渲染，会创建和销毁 DOM
+    - v-show 是 display 切换，适合频繁显示隐藏
+    - v-for 必须给稳定 key，避免复用错误
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · 条件列表与 key</title>
+    <script src="../../libs/vue3.5.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin-right: 8px; padding: 6px 12px; }
+      li { margin: 6px 0; }
+      code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
+      .panel { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+      .tag { color: #666; font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>v-if / v-show / v-for / key</h1>
+      <div class="panel">
+        <button @click="visible = !visible">切换显示</button>
+        <button @click="addItem">新增一项</button>
+        <button @click="reverseList">反转列表</button>
+
+        <p v-if="visible">v-if：条件为 false 时，节点会被销毁。</p>
+        <p v-show="visible">v-show：节点一直存在，只切换 display。</p>
+
+        <ul>
+          <li v-for="item in list" :key="item.id">
+            {{ item.name }} <span class="tag">稳定 key: {{ item.id }}</span>
+          </li>
+        </ul>
+      </div>
+
+      <h2>面试回答</h2>
+      <ul>
+        <li><code>v-if</code> 有更高切换成本，适合不频繁切换。</li>
+        <li><code>v-show</code> 有更高初始渲染成本，适合频繁切换。</li>
+        <li><code>key</code> 用来帮助 diff 识别节点身份，不能随便用数组下标代替业务唯一值。</li>
+      </ul>
+    </div>
+
+    <script>
+      const { createApp, ref } = Vue;
+
+      createApp({
+        setup() {
+          const visible = ref(true);
+          const nextId = ref(4);
+          const list = ref([
+            { id: 1, name: "理解条件渲染" },
+            { id: 2, name: "理解列表渲染" },
+            { id: 3, name: "理解 key 的意义" },
+          ]);
+
+          function addItem() {
+            list.value.unshift({ id: nextId.value, name: `新增任务 ${nextId.value}` });
+            nextId.value++;
+          }
+
+          function reverseList() {
+            list.value = [...list.value].reverse();
+          }
+
+          return { visible, list, addItem, reverseList };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

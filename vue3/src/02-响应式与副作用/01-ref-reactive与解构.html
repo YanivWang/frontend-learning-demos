@@ -1,0 +1,67 @@
+<!--
+  分类: vue3 / 02-响应式与副作用
+  主题: ref / reactive / 解构丢响应
+  要点:
+    - ref 适合基本类型，也可以包对象
+    - reactive 只能代理对象类型
+    - reactive 直接解构会丢响应，需要 toRefs
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · ref/reactive 与解构</title>
+    <script src="../../libs/vue3.5.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin-right: 8px; padding: 6px 12px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; }
+      .grid { display: grid; gap: 12px; max-width: 760px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 14px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>ref / reactive 与解构丢响应</h1>
+      <div class="grid">
+        <div class="box">
+          <p>ref count：{{ count }}</p>
+          <p>reactive user.name：{{ user.name }}</p>
+          <p>错误解构 nameSnapshot：{{ nameSnapshot }}</p>
+          <p>toRefs name：{{ name }}</p>
+          <button @click="change">修改状态</button>
+        </div>
+      </div>
+
+      <h2>面试回答</h2>
+      <ul>
+        <li><code>ref</code> 返回带 <code>.value</code> 的包装对象，模板中自动解包。</li>
+        <li><code>reactive</code> 返回 Proxy 代理对象，直接解构普通属性会失去响应式连接。</li>
+        <li>需要解构时，用 <code>toRef</code> 或 <code>toRefs</code> 保持响应式。</li>
+      </ul>
+    </div>
+
+    <script>
+      const { createApp, ref, reactive, toRefs } = Vue;
+
+      createApp({
+        setup() {
+          const count = ref(0);
+          const user = reactive({ name: "Ada", age: 18 });
+          const { name: nameSnapshot } = user;
+          const { name } = toRefs(user);
+
+          function change() {
+            count.value++;
+            user.name = `Ada ${count.value}`;
+          }
+
+          return { count, user, nameSnapshot, name, change };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

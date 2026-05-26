@@ -1,0 +1,74 @@
+<!--
+  分类: vue3 / 03-生命周期与组合式
+  主题: Composition API 生命周期钩子
+  要点:
+    - setup 阶段等价覆盖 beforeCreate / created 的能力
+    - 常用钩子：onMounted / onUpdated / onUnmounted
+    - keep-alive 组件会额外触发 onActivated / onDeactivated
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · 生命周期钩子</title>
+    <script src="../../libs/vue3.5.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin-right: 8px; padding: 6px 12px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; max-height: 240px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>Composition API 生命周期</h1>
+      <div class="box">
+        <button @click="show = !show">挂载/卸载子组件</button>
+        <child-demo v-if="show"></child-demo>
+        <pre>{{ logs.join("\n") }}</pre>
+      </div>
+
+      <h2>面试回答</h2>
+      <ul>
+        <li><code>setup</code> 执行时组件实例还没完全创建，不能用 Options API 的 <code>this</code>。</li>
+        <li><code>onMounted</code> 后可以访问 DOM，<code>onUnmounted</code> 里做资源清理。</li>
+        <li><code>onUpdated</code> 可能频繁触发，不要在里面无条件修改响应式状态。</li>
+      </ul>
+    </div>
+
+    <script>
+      const {
+        createApp, ref,
+        onBeforeMount, onMounted, onBeforeUpdate, onUpdated, onBeforeUnmount, onUnmounted
+      } = Vue;
+
+      const ChildDemo = {
+        template: `<p>子组件 count：{{ count }} <button @click="count++">+1</button></p>`,
+        setup() {
+          const count = ref(0);
+          const logs = window.__logs;
+          onBeforeMount(() => logs.value.push("子组件 onBeforeMount"));
+          onMounted(() => logs.value.push("子组件 onMounted"));
+          onBeforeUpdate(() => logs.value.push("子组件 onBeforeUpdate"));
+          onUpdated(() => logs.value.push("子组件 onUpdated"));
+          onBeforeUnmount(() => logs.value.push("子组件 onBeforeUnmount"));
+          onUnmounted(() => logs.value.push("子组件 onUnmounted"));
+          return { count };
+        },
+      };
+
+      createApp({
+        components: { ChildDemo },
+        setup() {
+          const show = ref(true);
+          const logs = ref([]);
+          window.__logs = logs;
+          return { show, logs };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

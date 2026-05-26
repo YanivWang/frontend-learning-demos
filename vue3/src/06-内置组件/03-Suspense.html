@@ -1,0 +1,59 @@
+<!--
+  分类: vue3 / 06-内置组件
+  主题: Suspense
+  要点:
+    - Suspense 用于协调异步依赖和 loading fallback
+    - async setup 或异步组件可触发等待
+    - 真实项目中常配合异步组件、数据预取使用
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · Suspense</title>
+    <script src="../../libs/vue3.5.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>Suspense</h1>
+      <div class="box">
+        <suspense>
+          <template #default>
+            <async-panel></async-panel>
+          </template>
+          <template #fallback>
+            <p>加载中...</p>
+          </template>
+        </suspense>
+      </div>
+
+      <h2>面试回答</h2>
+      <ul>
+        <li><code>Suspense</code> 提供异步组件树的等待和 fallback 展示能力。</li>
+        <li>它不是请求库，核心价值是把异步依赖和 loading UI 组织在组件树里。</li>
+        <li>工程中要注意错误边界、超时策略和服务端渲染配合。</li>
+      </ul>
+    </div>
+
+    <script>
+      const { createApp, ref } = Vue;
+
+      const AsyncPanel = {
+        async setup() {
+          const text = ref("异步内容已加载");
+          await new Promise((resolve) => setTimeout(resolve, 800));
+          return { text };
+        },
+        template: `<p>{{ text }}</p>`,
+      };
+
+      createApp({ components: { AsyncPanel } }).mount("#app");
+    </script>
+  </body>
+</html>

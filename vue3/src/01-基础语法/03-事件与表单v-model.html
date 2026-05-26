@@ -1,0 +1,69 @@
+<!--
+  分类: vue3 / 01-基础语法
+  主题: 事件绑定 / 表单 v-model
+  要点:
+    - @click 是 v-on:click 的缩写
+    - v-model 本质是值绑定 + 事件更新
+    - 表单修饰符常见有 .trim / .number / .lazy
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · 事件与表单 v-model</title>
+    <script src="../../libs/vue3.5.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      label { display: block; margin: 10px 0; }
+      input, select, button { padding: 6px 10px; }
+      code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
+      .panel { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>事件绑定与表单 v-model</h1>
+      <div class="panel">
+        <label>用户名：<input v-model.trim="form.name" /></label>
+        <label>年龄：<input v-model.number="form.age" type="number" /></label>
+        <label>
+          岗位：
+          <select v-model="form.role">
+            <option>前端</option>
+            <option>后端</option>
+            <option>全栈</option>
+          </select>
+        </label>
+        <label><input type="checkbox" v-model="form.agree" /> 同意协议</label>
+        <button @click="submit">提交</button>
+        <pre>{{ form }}</pre>
+        <p>{{ result }}</p>
+      </div>
+
+      <h2>面试回答</h2>
+      <ul>
+        <li>原生表单上的 <code>v-model</code> 会根据元素类型自动绑定值和监听事件。</li>
+        <li>组件上的 <code>v-model</code> 默认等价于 <code>modelValue</code> + <code>update:modelValue</code>。</li>
+        <li>事件修饰符如 <code>.stop</code>、<code>.prevent</code> 是为了减少模板中的 DOM 细节代码。</li>
+      </ul>
+    </div>
+
+    <script>
+      const { createApp, reactive, ref } = Vue;
+
+      createApp({
+        setup() {
+          const form = reactive({ name: "Ada", age: 20, role: "前端", agree: true });
+          const result = ref("");
+
+          function submit() {
+            result.value = form.agree ? `${form.name} 已提交` : "请先同意协议";
+          }
+
+          return { form, result, submit };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

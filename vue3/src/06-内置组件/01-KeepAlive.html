@@ -1,0 +1,72 @@
+<!--
+  分类: vue3 / 06-内置组件
+  主题: KeepAlive
+  要点:
+    - KeepAlive 缓存动态组件实例
+    - 被缓存组件切换时触发 activated / deactivated
+    - 适合 tab、详情页返回保留状态等场景
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · KeepAlive</title>
+    <script src="../../libs/vue3.5.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin-right: 8px; padding: 6px 12px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; max-height: 220px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>KeepAlive</h1>
+      <div class="box">
+        <button @click="current = 'TabA'">Tab A</button>
+        <button @click="current = 'TabB'">Tab B</button>
+        <keep-alive>
+          <component :is="current"></component>
+        </keep-alive>
+        <pre>{{ logs.join("\n") }}</pre>
+      </div>
+
+      <h2>面试回答</h2>
+      <ul>
+        <li><code>KeepAlive</code> 缓存的是组件实例，不是简单缓存 DOM。</li>
+        <li>缓存组件再次出现时触发 <code>onActivated</code>，离开缓存时触发 <code>onDeactivated</code>。</li>
+        <li>可以用 <code>include</code>、<code>exclude</code>、<code>max</code> 控制缓存范围。</li>
+      </ul>
+    </div>
+
+    <script>
+      const { createApp, ref, onActivated, onDeactivated } = Vue;
+
+      function makeTab(name) {
+        return {
+          template: `<p>${name} 输入：<input v-model="text" /></p>`,
+          setup() {
+            const text = ref("");
+            const logs = window.__keepAliveLogs;
+            onActivated(() => logs.value.push(`${name} activated`));
+            onDeactivated(() => logs.value.push(`${name} deactivated`));
+            return { text };
+          },
+        };
+      }
+
+      createApp({
+        components: { TabA: makeTab("TabA"), TabB: makeTab("TabB") },
+        setup() {
+          const current = ref("TabA");
+          const logs = ref([]);
+          window.__keepAliveLogs = logs;
+          return { current, logs };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

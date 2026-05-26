@@ -1,0 +1,60 @@
+<!--
+  分类: vue3 / 02-响应式与副作用
+  主题: toRef / toRefs
+  要点:
+    - toRef 可以把响应式对象的某个属性转成 ref
+    - toRefs 可以把整个响应式对象的属性批量转成 ref
+    - 常用于 composable 返回值和 props 解构
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · toRef 与 toRefs</title>
+    <script src="../../libs/vue3.5.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin-right: 8px; padding: 6px 12px; }
+      code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>toRef / toRefs</h1>
+      <div class="box">
+        <p>state.count：{{ state.count }}</p>
+        <p>countRef：{{ countRef }}</p>
+        <p>name：{{ name }}</p>
+        <button @click="countRef++">通过 countRef 修改</button>
+        <button @click="state.user.name = 'Grace'">通过原对象修改 name</button>
+      </div>
+
+      <h2>面试回答</h2>
+      <ul>
+        <li><code>toRef(obj, 'key')</code> 创建的是指向原属性的 ref，不是复制值。</li>
+        <li><code>toRefs(obj)</code> 适合把 reactive 状态从组合式函数中展开返回。</li>
+        <li>面试里要能说清：直接解构拿到的是普通值，<code>toRefs</code> 拿到的是响应式引用。</li>
+      </ul>
+    </div>
+
+    <script>
+      const { createApp, reactive, toRef, toRefs } = Vue;
+
+      createApp({
+        setup() {
+          const state = reactive({
+            count: 1,
+            user: { name: "Ada" },
+          });
+
+          const countRef = toRef(state, "count");
+          const { user } = toRefs(state);
+
+          return { state, countRef, name: toRef(user.value, "name") };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

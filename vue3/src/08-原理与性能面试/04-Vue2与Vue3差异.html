@@ -1,0 +1,66 @@
+<!--
+  分类: vue3 / 08-原理与性能面试
+  主题: Vue2 与 Vue3 差异
+  要点:
+    - 响应式从 defineProperty 变为 Proxy
+    - API 风格从 Options API 扩展到 Composition API
+    - createApp、Fragment、Teleport、Suspense、多个 v-model 等能力变化
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · Vue2 与 Vue3 差异</title>
+    <script src="../../libs/vue3.5.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      table { border-collapse: collapse; width: min(900px, 100%); }
+      th, td { border: 1px solid #ddd; padding: 10px; text-align: left; vertical-align: top; }
+      th { background: #f6f8fa; }
+      code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>Vue2 与 Vue3 差异</h1>
+      <table>
+        <thead>
+          <tr><th>问题</th><th>Vue2</th><th>Vue3</th></tr>
+        </thead>
+        <tbody>
+          <tr v-for="row in rows" :key="row.topic">
+            <td>{{ row.topic }}</td>
+            <td>{{ row.vue2 }}</td>
+            <td>{{ row.vue3 }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>面试回答</h2>
+      <ul>
+        <li>不要只背 API，要能说明为什么 Vue3 更适合大型逻辑复用：Composition API 能按业务能力聚合代码。</li>
+        <li>Vue3 响应式基于 Proxy，解决了 Vue2 对新增属性、删除属性、数组索引监听不自然的问题。</li>
+        <li>Vue3 应用实例通过 <code>createApp</code> 创建，全局配置不会像 Vue2 构造器那样容易互相污染。</li>
+      </ul>
+    </div>
+
+    <script>
+      const { createApp, ref } = Vue;
+
+      createApp({
+        setup() {
+          const rows = ref([
+            { topic: "响应式", vue2: "Object.defineProperty", vue3: "Proxy + Reflect" },
+            { topic: "API 风格", vue2: "Options API 为主", vue3: "Composition API + Options API" },
+            { topic: "应用创建", vue2: "new Vue()", vue3: "createApp()" },
+            { topic: "根节点", vue2: "组件模板通常单根", vue3: "支持 Fragment 多根" },
+            { topic: "内置能力", vue2: "keep-alive / transition", vue3: "新增 Teleport / Suspense 等" },
+            { topic: "v-model", vue2: "组件默认 value/input", vue3: "modelValue/update:modelValue，支持多个 v-model" },
+          ]);
+          return { rows };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

@@ -1,0 +1,63 @@
+<!--
+  分类: vue3 / 01-基础语法
+  主题: 模板 ref / nextTick
+  要点:
+    - 模板 ref 常用于访问 DOM 或子组件暴露的方法
+    - DOM 更新不是同步完成，读取更新后的 DOM 要等 nextTick
+    - 面试常问：数据改了为什么马上拿不到最新 DOM
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · 模板 ref 与 nextTick</title>
+    <script src="../../libs/vue3.5.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin-right: 8px; padding: 6px 12px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>模板 ref 与 nextTick</h1>
+      <div class="box">
+        <p ref="textEl">{{ text }}</p>
+        <button @click="changeAndRead">修改后读取 DOM</button>
+        <pre>{{ log.join("\n") }}</pre>
+      </div>
+
+      <h2>面试回答</h2>
+      <ul>
+        <li>Vue 会把同一轮数据变化合并，异步刷新 DOM，避免重复渲染。</li>
+        <li><code>nextTick</code> 用来等待本轮 DOM 更新完成，再读取最新 DOM。</li>
+        <li>模板 ref 在 <code>onMounted</code> 后才稳定可用。</li>
+      </ul>
+    </div>
+
+    <script>
+      const { createApp, ref, nextTick } = Vue;
+
+      createApp({
+        setup() {
+          const text = ref("旧文本");
+          const textEl = ref(null);
+          const log = ref([]);
+
+          async function changeAndRead() {
+            text.value = `新文本 ${Date.now()}`;
+            log.value.push(`同步读取 DOM：${textEl.value.textContent}`);
+            await nextTick();
+            log.value.push(`nextTick 后读取 DOM：${textEl.value.textContent}`);
+          }
+
+          return { text, textEl, log, changeAndRead };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>
