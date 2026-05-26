@@ -1,11 +1,11 @@
-# review-base-grammar
+# js-base-grammar
 
 前端语法与框架复习 Demo 库。每个 HTML 可直接在浏览器打开，无需构建。
 
 ## 目录结构
 
 ```text
-review-base-grammar/
+.
 ├── index.html          # 总入口（链接到各 Demo）
 ├── javascript/         # 纯 JavaScript（按学习顺序编号）
 │   ├── 01-基础/
@@ -28,7 +28,8 @@ review-base-grammar/
 ├── react/              # React 18（libs/ + src/，需 Babel 编译 JSX）
 └── demos/              # 交互/UI 小实验
     ├── drag/
-    └── svg/
+    ├── svg/
+    └── viewpager/
 ```
 
 ## 推荐学习顺序
@@ -76,5 +77,5 @@ review-base-grammar/
 - `libs/`：框架运行时，不修改
 - `src/`：学习用 Demo
 - `javascript/` 子目录按 `01`–`09` 编号，便于按序复习
-- 已从 `base-grammar` 合并的内容统一改为本地 `libs/` 引用（`watch.html` 等少数 Demo 仍依赖 axios CDN）
-- 维护原则：以后新增内容直接在 `review-base-grammar/` 下添加；`base-grammar/` 不再维护，仅作历史归档
+- 所有依赖统一改为本地 `libs/` 引用（`watch.html` 等少数 Demo 仍依赖 axios CDN）
+- 维护原则：以后新增内容直接在本目录下添加，保持目录树清晰
