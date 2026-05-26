@@ -1,6 +1,6 @@
 # Vue 2
 
-Vue 2.7 时代的 demo（`libs/vue2.js` 是 2.7.16 版本）。
+Vue 2.7 时代的 demo（`libs/vue.js` 是 2.7.16 版本）。
 
 ## 目录
 
@@ -28,4 +28,4 @@ Vue 2.7 时代的 demo（`libs/vue2.js` 是 2.7.16 版本）。
 
 ## 依赖
 
-`libs/vue2.js` `libs/vue-router.js` `libs/vuex.js` `libs/es6-promise.auto.js`，版本见 [`libs/README.md`](libs/README.md)。
+`libs/vue.js` `libs/vue-router.js` `libs/vuex.js` `libs/es6-promise.auto.js` `libs/axios.min.js` `libs/lodash.min.js` `libs/js.cookie.min.js`，版本见 [`libs/README.md`](libs/README.md)。
