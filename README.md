@@ -49,7 +49,7 @@ open index.html
 │
 ├── react/                   # React 18，详见 react/README.md
 │   ├── libs/                # react18 / react-dom18 / @babel/standalone
-│   └── src/                 # 30 个 demo，分为 class-components / function-components
+│   └── src/                 # 52 个 demo，分为 class-components / function-components
 │
 ├── demos/                   # 综合 Demo（drag / svg / viewpager）
 │
@@ -69,7 +69,7 @@ open index.html
 
 1. **Vue 2** → `src/响应式原理` → `src/基础语法` → `src/组件` → `src/路由与状态`
 2. **Vue 3** → `src/01-基础语法` → `src/02-响应式与副作用` → `src/03-生命周期与组合式` → `src/04-组件通信` → `src/05-插槽与组件形态` → `src/06-内置组件` → `src/07-路由状态工程化` → `src/08-原理与性能面试`
-3. **React** → `src/function-components/01-入门-元素与渲染.html` 起按编号读，30 个 demo 覆盖从 JSX 到完整生命周期
+3. **React** → `src/function-components/01-入门-元素与渲染.html` 起按编号读，函数组件 33 个 + 类组件 19 个 demo 覆盖 JSX 到生命周期与面试考点
 
 ### CSS
 

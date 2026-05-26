@@ -1,0 +1,73 @@
+<!--
+  分类: react / 函数组件
+  主题: 函数组件事件处理与参数传递
+  要点:
+    - 函数组件没有 this，事件处理函数直接定义即可，无需 bind
+    - 需要传参时用箭头函数包装: onClick={() => handle(id)}，不要写 handle(id) 立即执行
+    - 事件对象 e 作为第一个参数传入；需要同时传参时写 (e) => handle(e, id)
+    - 子组件传回调给父组件是 props 函数，不是 DOM 事件（对比 class 18 的 this 绑定）
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React · 函数组件事件处理</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    function TodoItem({ id, text, onRemove }) {
+      return (
+        <li>
+          {text}
+          <button onClick={() => onRemove(id)}>删除</button>
+        </li>
+      );
+    }
+
+    function App() {
+      const [items, setItems] = useState([
+        { id: 1, text: "学习 JSX" },
+        { id: 2, text: "学习 Hooks" }
+      ]);
+      const [lastEvent, setLastEvent] = useState("");
+
+      function handleRemove(id) {
+        setItems(prev => prev.filter(item => item.id !== id));
+      }
+
+      function handleClick(event) {
+        setLastEvent("type=" + event.type + ", target=" + event.target.tagName);
+      }
+
+      function handleClickWithArg(event, label) {
+        setLastEvent(label + " · " + event.type);
+      }
+
+      return (
+        <section>
+          <h1>函数组件事件处理</h1>
+          <ul>
+            {items.map(item => (
+              <TodoItem key={item.id} id={item.id} text={item.text} onRemove={handleRemove} />
+            ))}
+          </ul>
+          <button onClick={handleClick}>直接绑定函数引用</button>
+          <button onClick={(e) => handleClickWithArg(e, "带参按钮")}>箭头包装传参</button>
+          {/* 反例：onClick={handleClick()} 会在 render 时立刻执行 */}
+          <p>最近一次事件: {lastEvent || "暂无"}</p>
+          <p>面试回答: 函数组件无 this 绑定问题；传参用箭头包装，事件对象始终是第一个参数。</p>
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

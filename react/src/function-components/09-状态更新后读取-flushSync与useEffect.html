@@ -1,0 +1,70 @@
+<!--
+  分类: react / hooks
+  主题: 状态更新后读取 DOM — flushSync 与 useEffect
+  要点:
+    - setState 后立即读 state 仍是旧值；class 组件可用 setState 第二参数 callback
+    - 函数组件等价方案: useEffect 监听 state 变化后执行副作用
+    - 需要同步刷 DOM 时用 ReactDOM.flushSync（慎用，会打断批处理）
+    - 大多数场景优先 useEffect，flushSync 仅用于必须同步读 DOM 的少数情况
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React · 更新后读取 state/DOM</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useEffect, useRef, useState } = React;
+    const { flushSync } = ReactDOM;
+
+    function Counter() {
+      const [count, setCount] = useState(0);
+      const outputRef = useRef(null);
+      const [hint, setHint] = useState("");
+
+      useEffect(() => {
+        if (count === 0) return;
+        setHint("useEffect: count 已变为 " + count + "，DOM 已提交");
+      }, [count]);
+
+      function incrementNormal() {
+        console.log("setCount 前:", count);
+        setCount(count + 1);
+        console.log("setCount 后同步读:", count);
+        if (outputRef.current) {
+          outputRef.current.textContent = "同步读 DOM 文本仍是旧值: " + outputRef.current.dataset.value;
+        }
+      }
+
+      function incrementFlushSync() {
+        flushSync(() => {
+          setCount(prev => prev + 1);
+        });
+        if (outputRef.current) {
+          outputRef.current.textContent = "flushSync 后 DOM 已同步更新";
+        }
+      }
+
+      return (
+        <section>
+          <h1>更新后读取 state / DOM</h1>
+          <p>count: {count}</p>
+          <p ref={outputRef} data-value={count}>DOM 提示区</p>
+          <p>{hint}</p>
+          <button onClick={incrementNormal}>普通 +1（看控制台）</button>
+          <button onClick={incrementFlushSync}>flushSync +1</button>
+          <p>面试回答: 函数组件用 useEffect 做 commit 后副作用；flushSync 强制同步渲染，一般少用。</p>
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<Counter />);
+  </script>
+</body>
+</html>

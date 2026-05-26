@@ -1,0 +1,84 @@
+<!--
+  分类: react / hooks
+  主题: useEffect 与 class 生命周期对照
+  要点:
+    - componentDidMount ≈ useEffect(fn, [])
+    - componentDidUpdate ≈ useEffect(fn, [deps])（deps 变化时）
+    - componentWillUnmount ≈ useEffect 返回的 cleanup
+    - 没有一一对应关系：一个 useEffect 可组合多种时机，应按「副作用语义」拆分
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React · useEffect 生命周期对照</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useEffect, useState } = React;
+
+    function LifecycleDemo({ userId }) {
+      const [logs, setLogs] = useState([]);
+
+      function pushLog(msg) {
+        setLogs(prev => [...prev, msg]);
+        console.log(msg);
+      }
+
+      // 挂载 + 卸载
+      useEffect(() => {
+        pushLog("mount: 类似 componentDidMount");
+        return () => {
+          console.log("unmount: 类似 componentWillUnmount");
+        };
+      }, []);
+
+      // userId 变化时更新
+      useEffect(() => {
+        pushLog("update: userId 变为 " + userId + "，类似 componentDidUpdate");
+      }, [userId]);
+
+      return (
+        <div style={{ border: "1px dashed #999", padding: 12, marginTop: 8 }}>
+          <p>当前 userId: {userId}</p>
+          <ul>
+            {logs.map((log, i) => <li key={i}>{log}</li>)}
+          </ul>
+        </div>
+      );
+    }
+
+    function App() {
+      const [userId, setUserId] = useState(1);
+      const [visible, setVisible] = useState(true);
+
+      return (
+        <section>
+          <h1>useEffect 与生命周期对照</h1>
+          <table border="1" cellPadding="6" style={{ borderCollapse: "collapse", marginBottom: 12 }}>
+            <thead>
+              <tr><th>class 生命周期</th><th>Hooks 近似写法</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>componentDidMount</td><td>useEffect(fn, [])</td></tr>
+              <tr><td>componentDidUpdate</td><td>useEffect(fn, [deps])</td></tr>
+              <tr><td>componentWillUnmount</td><td>useEffect 返回 cleanup</td></tr>
+            </tbody>
+          </table>
+          <button onClick={() => setUserId(prev => prev + 1)}>切换 userId</button>
+          <button onClick={() => setVisible(!visible)}>挂载/卸载 Demo</button>
+          {visible && <LifecycleDemo userId={userId} />}
+          <p>面试回答: useEffect 按副作用语义组织，不是生命周期的机械替换。</p>
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!--
+  分类: react / hooks
+  主题: useState 异步合并与连续更新
+  要点:
+    - setState 不会立刻改变当前 render 中的 state 变量，而是请求下一次渲染
+    - 同一事件回调里多次对象式 setState 会基于同一快照合并，连续 +1 三次通常只 +1
+    - 函数式更新 setState(prev => ...) 每次基于队列最新值，可正确累加
+    - 对比 class 08：原理相同，只是 API 从 this.setState 换成 useState 返回的 setter
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React · useState 异步合并</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    function Counter() {
+      const [count, setCount] = useState(0);
+
+      function addThreeWrong() {
+        console.log("点击瞬间 count:", count);
+        setCount(count + 1);
+        setCount(count + 1);
+        setCount(count + 1);
+        console.log("三次 setCount 后同步读 count:", count);
+      }
+
+      function addThreeRight() {
+        setCount(prev => prev + 1);
+        setCount(prev => prev + 1);
+        setCount(prev => prev + 1);
+      }
+
+      function reset() {
+        setCount(0);
+      }
+
+      return (
+        <section>
+          <h1>useState 异步合并</h1>
+          <p>count: {count}</p>
+          <button onClick={addThreeWrong}>对象式连续 +3（实际 +1）</button>
+          <button onClick={addThreeRight}>函数式连续 +3（正确 +3）</button>
+          <button onClick={reset}>重置</button>
+          <p>面试回答: React 会批处理更新；依赖当前快照时用函数式更新。</p>
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<Counter />);
+  </script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!--
+  分类: react / 函数组件
+  主题: defaultProps、参数默认值与 displayName
+  要点:
+    - 函数组件推荐 ES6 参数默认值: function Greeting({ name = "访客" })
+    - 仍可用 Component.defaultProps，但新代码更推荐解构默认值
+    - displayName 便于 React DevTools 调试；HOC 包装后尤其需要设置
+    - 对比 class 22：函数组件没有 static，displayName 直接挂函数名上
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React · defaultProps 与 displayName</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    function Greeting({ name = "访客", level = 1 }) {
+      return <p>Hello, {name}! 等级: {level}</p>;
+    }
+    Greeting.displayName = "GreetingCard";
+
+    function LegacyGreeting(props) {
+      const { name, level } = props;
+      return <p>Legacy: {name}, Lv.{level}</p>;
+    }
+    LegacyGreeting.defaultProps = {
+      name: "访客",
+      level: 1
+    };
+
+    function App() {
+      return (
+        <section>
+          <h1>defaultProps 与 displayName</h1>
+          <Greeting />
+          <Greeting name="Alice" level={5} />
+          <LegacyGreeting />
+          <LegacyGreeting name="Bob" level={3} />
+          <p>面试回答: 函数组件优先参数默认值；defaultProps 仍兼容但逐渐让位于解构默认值。</p>
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
