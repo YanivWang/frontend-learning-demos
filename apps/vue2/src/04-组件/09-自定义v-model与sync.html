@@ -2,15 +2,15 @@
   分类: vue2 / 04-组件
   主题: 自定义组件 v-model 与 .sync
   要点:
-    - Vue2 自定义组件 v-model 默认使用 prop: value 与 event: input
-    - 组件可用 model 选项改成其它 prop/event，比如 checked/change
-    - .sync 是 :prop + @update:prop 的语法糖，适合子组件请求父组件更新某个 prop
+    - Vue 2 自定义组件 v-model 默认展开为 :value + @input
+    - model 选项可把 v-model 改成 checked/change 等自定义 prop 与事件
+    - .sync 展开为 :prop + @update:prop，表示子组件请求父组件更新某个 prop
+    - 二者都不是让子组件直接改 prop，状态仍由父组件拥有
   面试:
-    - 自定义组件 v-model 与 .sync的核心概念是什么
-    - 自定义组件 v-model 与 .sync在实际项目里怎么用
-    - 自定义组件 v-model 与 .sync有哪些常见坑或易错点
-    - 自定义组件 v-model 与 .sync和相近 API 如何区分选型
-    - 面试中如何简洁讲清 自定义组件 v-model 与 .sync
+    - Vue 2 自定义组件 v-model 默认等价于什么？
+    - model 选项适合解决什么冲突？
+    - .sync 和 v-model 的语义差别是什么？
+    - 为什么不能在子组件里直接修改 prop？
 -->
 
 <!doctype html>
@@ -31,16 +31,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue2 自定义组件 <code>v-model</code> 默认使用 prop: value 与 event: input。</li>
-          <li>组件可用 model 选项改成其它 prop/event，比如 checked/change。</li>
-          <li>.sync 是 :prop + @update:prop 的语法糖，适合子组件请求父组件更新某个 prop。</li>
-          <li>Vue2 自定义组件 <code>v-model</code> 默认使用 prop: value 与 event: input（补充）。</li>
+          <li>Vue 2 自定义组件上的 <code>v-model</code> 默认等价于父组件传入 <code>:value</code>，并监听子组件触发的 <code>input</code> 事件。</li>
+          <li>本页 <code>text-editor</code> 把输入框的 <code>value</code> 绑定到 prop，再在原生 input 事件中 <code>$emit('input', value)</code>，父组件的 <code>title</code> 因此更新。</li>
+          <li><code>model</code> 选项可以改写默认 prop/event。本页 <code>switch-button</code> 使用 <code>checked/change</code>，避免把 <code>value</code> 占用在复选、开关等组件语义中。</li>
+          <li><code>.sync</code> 是 <code>:visible</code> 加 <code>@update:visible</code> 的语法糖，表达“子组件请求父组件同步某个 prop”。本页弹窗点击关闭时发出 <code>update:visible</code>。</li>
+          <li><code>v-model</code> 和 <code>.sync</code> 都不代表子组件可以直接修改 prop；它们只是约定事件名，让父组件仍然拥有最终状态。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue2 自定义组件 v-model 默认使用 prop？</strong> Vue2 自定义组件 <code>v-model</code> 默认使用 prop: value 与 event: input</li>
-          <li><strong>组件可用 model 选项改成其它 prop/event？</strong> 组件可用 model 选项改成其它 prop/event，比如 checked/change</li>
-          <li><strong>自定义组件 v-model 与 .sync的核心概念是什么？</strong> Vue2 自定义组件 <code>v-model</code> 默认使用 prop: value 与 event: input</li>
+          <li><strong>Vue 2 自定义组件 v-model 默认等价于什么？</strong> 结论：等价于 <code>:value</code> 加 <code>@input</code>。原因是 Vue 2 用固定 prop 和事件名约定双向绑定语法糖。项目里封装输入组件时必须接收 value 并 emit input。</li>
+          <li><strong>model 选项解决什么问题？</strong> 结论：解决组件不想使用 <code>value/input</code> 作为 v-model 通道的问题。原因是 checkbox、switch 等组件的 value 可能已有其他语义。边界是团队要统一文档，否则使用方不容易猜到事件名。</li>
+          <li><strong>.sync 和 v-model 有什么区别？</strong> 结论：<code>v-model</code> 通常表达组件的主值，<code>.sync</code> 表达某个 prop 的同步请求。原因是 <code>.sync</code> 展开为 <code>@update:prop</code>。项目里弹窗 visible、分页 pageNo 这类单个 prop 同步常见。</li>
+          <li><strong>为什么不能直接改 prop？</strong> 结论：prop 属于父组件传入的数据，子组件直接改会破坏单向数据流。原因是父组件重新渲染时会覆盖子组件修改，也会让数据来源不清晰。正确做法是 emit 事件让父组件更新。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/components-custom-events.html" target="_blank" rel="noopener">Vue 2 Guide: Custom Events</a></li>
+          <li><a href="https://v2.vuejs.org/v2/api/#model" target="_blank" rel="noopener">Vue 2 API: model</a></li>
+          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 2 EOL Notice</a></li>
         </ul>
       </div>
     </section>

@@ -1,16 +1,16 @@
 <!--
   分类: vue2 / 04-组件
-  主题: 全局组件 vs 局部组件 + 子组件嵌套使用
-  要点:
-    - Vue.component 全局注册，所有 Vue 实例和子组件都能直接用
-    - 局部注册的组件不会向「子组件树」自动透传，需要在子组件内再次声明 components
-    - 全局注册必须在 new Vue() 之前，否则模板编译阶段还找不到组件
+  主题: 全局组件 vs 局部组件 + 子组件嵌套使用
+  要点:
+    - Vue.component 做全局注册，注册后创建的根实例及其子组件树都可解析
+    - 局部 components 只对声明它的组件模板可见，不会自动传给更深层子组件
+    - 子组件嵌套另一个局部组件时，必须在当前子组件自己的 components 中再次声明
+    - 全局注册适合基础组件，业务组件优先局部注册以降低隐式依赖
   面试:
-    - 全局组件 vs 局部组件 + 子组件嵌套使用的核心概念是什么
-    - 全局组件 vs 局部组件 + 子组件嵌套使用在实际项目里怎么用
-    - 全局组件 vs 局部组件 + 子组件嵌套使用有哪些常见坑或易错点
-    - 全局组件 vs 局部组件 + 子组件嵌套使用和相近 API 如何区分选型
-    - 面试中如何简洁讲清 全局组件 vs 局部组件 + 子组件嵌套使用
+    - 全局注册和局部注册的可见范围有什么区别？
+    - 为什么局部组件不会自动透传给子组件树？
+    - 组件嵌套时在哪里注册被嵌套组件？
+    - 大型项目里为什么不建议把所有业务组件都全局注册？
 -->
 
 <!doctype html>
@@ -34,15 +34,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue.component 全局注册，所有 Vue 实例和子组件都能直接用。</li>
-          <li>局部注册的组件不会向「子组件树」自动透传，需要在子组件内再次声明 components。</li>
-          <li>全局注册必须在 new Vue() 之前，否则模板编译阶段还找不到组件。</li>
+          <li><code>Vue.component</code> 是全局注册。本页的 <code>load-page-a</code> 与 <code>load-page-b</code> 在根实例创建前注册，所以 <code>load-page-b</code> 的模板里可以直接使用 <code>load-page-a</code>。</li>
+          <li>局部注册写在某个组件或根实例的 <code>components</code> 选项里，只对当前模板可见。本页根实例注册了 <code>load-page-d</code>，因此根模板能用它。</li>
+          <li>局部组件不会自动向子组件树透传。<code>loadPageD</code> 想在自己的模板中使用 <code>load-page-c</code>，必须在 <code>loadPageD.components</code> 中声明。</li>
+          <li>全局注册必须早于模板编译，否则 Vue 在解析自定义标签时找不到组件定义。实际项目里基础按钮、图标可全局注册，业务组件建议就近局部注册。</li>
+          <li>Vue 2 的 DOM 模板会受 HTML 大小写规则影响，组件名推荐 kebab-case；在构建型 SFC 中也要保持命名清晰，避免注册名和使用名不一致。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue.component 全局注册？</strong> Vue.component 全局注册，所有 Vue 实例和子组件都能直接用；全局注册必须在 new Vue() 之前，否则模板编译阶段还找不到组件</li>
-          <li><strong>局部注册的组件不会向「子组件树」自动透传？</strong> 局部注册的组件不会向「子组件树」自动透传，需要在子组件内再次声明 components</li>
-          <li><strong>全局注册必须在 new Vue() 之前？</strong> Vue.component 全局注册，所有 Vue 实例和子组件都能直接用；全局注册必须在 new Vue() 之前，否则模板编译阶段还找不到组件</li>
+          <li><strong>全局注册和局部注册的可见范围怎么区分？</strong> 结论：全局注册对之后创建的根实例和子组件树可见，局部注册只对声明它的当前组件模板可见。原因是两者进入的是不同注册表。项目里全局注册适合基础组件，局部注册适合业务组件。</li>
+          <li><strong>为什么局部组件不会自动给孙组件用？</strong> 结论：局部注册不是依赖注入，它只声明当前模板可解析哪些标签。原因是每个组件都有自己的组件选项和模板编译上下文。嵌套使用时，应在真正使用该标签的组件里注册。</li>
+          <li><strong>组件嵌套时常见报错怎么排查？</strong> 结论：先检查注册位置、注册顺序和模板中的标签名。原因是 Vue 只有在编译当前模板时能查到注册名，才会把自定义标签当组件。边界是 DOM 模板建议使用 kebab-case，避免大小写被浏览器改写。</li>
+          <li><strong>为什么不把所有组件都全局注册？</strong> 结论：会让依赖关系隐式化。原因是任意模板都能用全局组件，读代码时很难判断来源，也不利于按需拆分。旧 Vue 2 项目可保留基础组件全局注册，新代码应偏向显式局部依赖。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/components-registration.html" target="_blank" rel="noopener">Vue 2 Guide: Component Registration</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/components.html" target="_blank" rel="noopener">Vue 2 Guide: Components Basics</a></li>
+          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 2 EOL Notice</a></li>
         </ul>
       </div>
     </section>

@@ -2,15 +2,15 @@
   分类: vue2 / 05-路由与状态
   主题: vue-router 路由懒加载
   要点:
-    - 路由懒加载让页面组件在访问对应路由时再加载，降低首屏体积
-    - 工程项目常用 component: () => import('./views/About.vue')
-    - 当前仓库是无构建 HTML demo，使用 Promise.resolve 模拟异步组件加载
+    - 路由懒加载把页面组件拆成按需加载的异步组件，减少首屏 bundle 压力
+    - Vue Router 3 常与 webpack 动态 import 配合：component: () => import('./views/About.vue')
+    - 无构建 HTML demo 用 Promise + setTimeout 模拟异步组件解析过程
+    - 懒加载要补 loading、error、timeout 和重试策略，不能只考虑成功路径
   面试:
-    - vue-router 路由懒加载的核心概念是什么
-    - vue-router 路由懒加载在实际项目里怎么用
-    - vue-router 路由懒加载有哪些常见坑或易错点
-    - vue-router 路由懒加载和相近 API 如何区分选型
-    - 面试中如何简洁讲清 vue-router 路由懒加载
+    - 路由懒加载解决的性能问题是什么？
+    - Vue Router 3 中异步组件和动态 import 如何配合？
+    - 懒加载失败、超时或重复点击时页面应该如何兜底？
+    - 懒加载和 keep-alive、预加载分别解决什么问题？
 -->
 
 <!doctype html>
@@ -32,15 +32,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>路由懒加载让页面组件在访问对应路由时再加载，降低首屏体积。</li>
-          <li>工程项目常用 component: () =&gt; <code>import</code>('./views/About.vue')。</li>
-          <li>当前仓库是无构建 HTML demo，使用 <code>Promise</code>.resolve 模拟异步组件加载。</li>
+          <li>路由懒加载把不同页面组件拆成独立异步块，用户访问对应路由时才加载，常用于降低首屏 JavaScript 体积和解析成本。</li>
+          <li>Vue Router 3 的工程写法通常是 <code>component: () =&gt; import('./views/About.vue')</code>；构建工具会把动态 import 识别为代码分割点。</li>
+          <li>当前仓库是可直接打开的 HTML，没有构建步骤，所以示例用返回 <code>Promise</code> 的异步组件工厂和 <code>setTimeout</code> 模拟加载延迟。</li>
+          <li>懒加载不是“让页面一定更快”：首次进入懒加载路由会多一次 chunk 请求，弱网下应提供 loading、error、timeout 或重试提示，关键首屏路由不一定适合懒加载。</li>
+          <li><code>keep-alive</code> 缓存已加载组件，懒加载减少尚未访问页面的初始下载量；二者可以配合，但分别解决“重复渲染”和“首屏体积”两个问题。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>路由懒加载让页面组件在访问对应路由时再加载？</strong> 路由懒加载让页面组件在访问对应路由时再加载，降低首屏体积</li>
-          <li><strong>工程项目常用 component？</strong> 工程项目常用 component: () =&gt; <code>import</code>('./views/About.vue')</li>
-          <li><strong>当前仓库是无构建 HTML demo？</strong> 当前仓库是无构建 HTML demo，使用 <code>Promise</code>.resolve 模拟异步组件加载</li>
+          <li><strong>路由懒加载解决什么问题？</strong> 结论是把非首屏页面延后加载，减少初始包体积。原因是大型 SPA 如果一次加载所有页面组件，会拖慢首屏下载、解析和执行。边界是用户首次进入懒加载页面会等待 chunk 下载，不能把所有性能问题都归结为懒加载。</li>
+          <li><strong>Vue Router 3 里怎么写懒加载？</strong> 结论是路由的 <code>component</code> 可以是返回 Promise 的异步组件工厂，工程中常写 <code>() =&gt; import(...)</code>。原因是 Vue Router 会在导航解析阶段等待异步组件 resolved。项目里还可用 webpack chunk name 把相关页面打进同一块。</li>
+          <li><strong>懒加载失败要怎么兜底？</strong> 结论是要给用户 loading、失败提示、超时和重试入口。原因是 chunk 请求可能 404、网络超时或版本发布后缓存不一致。项目里常配合全局错误监控、刷新提示和路由级错误页。</li>
+          <li><strong>懒加载、预加载、keep-alive 怎么区分？</strong> 结论是懒加载延后下载，预加载提前下载未来可能需要的资源，<code>keep-alive</code> 缓存已创建组件。原因是三者优化阶段不同。边界是移动端弱网下预加载可能浪费流量，应按路由热度和业务优先级取舍。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v3.router.vuejs.org/guide/advanced/lazy-loading.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Lazy Loading Routes</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/components-dynamic-async.html#Async-Components" target="_blank" rel="noopener">Vue 2 官方文档：Async Components</a></li>
+          <li><a href="https://webpack.js.org/guides/code-splitting/" target="_blank" rel="noopener">webpack 官方文档：Code Splitting</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import" target="_blank" rel="noopener">MDN：dynamic import()</a></li>
         </ul>
       </div>
     </section>

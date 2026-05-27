@@ -1,16 +1,17 @@
 <!--
   分类: vue2 / 05-路由与状态
   主题: 嵌套路由 + 默认子路由 + 编程式导航 push / replace
-  要点:
-    - 嵌套路由：父组件内部放 <router-view>，children 配置子路由
-    - path: '' 表示父路由的默认子路由，访问 /user/:id 时渲染默认内容
-    - $router.push 入栈历史；$router.replace 替换当前条目，不入栈（勿在同一函数里连续调用两者）
+  要点:
+    - 父路由组件内部放 router-view，children 决定子路由渲染位置
+    - 子路由 path 不以 / 开头时会相对父路径拼接
+    - path: '' 表示默认子路由，访问父路径时直接渲染
+    - push 会新增历史记录，replace 会替换当前记录
   面试:
-    - 嵌套路由 + 默认子路由 + 编程式导航 push / replace的核心概念是什么
-    - 嵌套路由 + 默认子路由 + 编程式导航 push / replace在实际项目里怎么用
-    - 嵌套路由 + 默认子路由 + 编程式导航 push / replace有哪些常见坑或易错点
-    - 嵌套路由 + 默认子路由 + 编程式导航 push / replace和相近 API 如何区分选型
-    - 面试中如何简洁讲清 嵌套路由 + 默认子路由 + 编程式导航 push / replace
+    - 嵌套路由为什么必须在父组件里放 router-view？
+    - 子路由 path 什么时候写相对路径，什么时候写绝对路径？
+    - 默认子路由 path: '' 解决什么问题？
+    - push 和 replace 对浏览器历史记录有什么区别？
+    - 嵌套路由页面如何处理未知子路径？
 -->
 
 <!doctype html>
@@ -32,15 +33,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>嵌套路由：父组件内部放 &lt;router-view&gt;，children 配置子路由。</li>
-          <li>path: '' 表示父路由的默认子路由，访问 /user/:id 时渲染默认内容。</li>
-          <li>$router.push 入栈历史；$router.replace 替换当前条目，不入栈（勿在同一函数里连续调用两者）。</li>
+          <li>嵌套路由由两部分组成：父路由配置 <code>children</code>，父组件模板内部提供一个 <code>&lt;router-view&gt;</code> 作为子路由出口。</li>
+          <li>子路由 <code>path</code> 默认相对父路径拼接，例如父路径 <code>/user/:id</code> 下的 <code>profile</code> 会匹配 <code>/user/foo/profile</code>。</li>
+          <li><code>path: ''</code> 是默认子路由，访问父路径 <code>/user/foo</code> 时也能显示一个明确的子页面，避免父页面下方空白。</li>
+          <li><code>$router.push</code> 会新增一条历史记录，用户点击后退能回到上一个页面；<code>$router.replace</code> 会替换当前记录，更适合登录后跳转、默认页修正等不希望回退的场景。</li>
+          <li>真实项目要补未知子路径兜底，例如在子路由末尾配置 404/空状态；否则用户输入不存在的嵌套路径时，父组件可能渲染但内容区为空。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>$router.push 入栈历史？</strong> $router.push 入栈历史；$router.replace 替换当前条目，不入栈（勿在同一函数里连续调用两者）</li>
-          <li><strong>嵌套路由 + 默认子路由 + 编程式导航 push / replace的核心概念是什么？</strong> 嵌套路由：父组件内部放 &lt;router-view&gt;，children 配置子路由</li>
-          <li><strong>嵌套路由 + 默认子路由 + 编程式导航 push / replace在实际项目里怎么用？</strong> 嵌套路由：父组件内部放 &lt;router-view&gt;，children 配置子路由</li>
+          <li><strong>嵌套路由为什么必须在父组件里放 router-view？</strong> 结论是 children 只声明匹配关系，真正渲染位置由父组件里的 <code>&lt;router-view&gt;</code> 决定。原因是嵌套路由本质是布局组件内部再放一个出口。项目里常用它实现用户中心、设置页、后台菜单内容区。</li>
+          <li><strong>子路由 path 什么时候写相对路径，什么时候写绝对路径？</strong> 结论是大多数嵌套页面写相对路径，不以斜杠开头。原因是相对路径会拼接父路径，能体现层级关系。边界是子路由以 <code>/</code> 开头会作为根路径匹配，适合少数需要共享父布局但 URL 不体现层级的场景。</li>
+          <li><strong>默认子路由 path: '' 解决什么问题？</strong> 结论是它让访问父路径时也能渲染一个默认子页面。原因是没有默认子路由时，父组件中的子出口没有匹配内容。项目里常把概览页、欢迎页、默认 tab 写成 <code>path: ''</code>。</li>
+          <li><strong>push 和 replace 对浏览器历史记录有什么区别？</strong> 结论是 push 入栈，replace 替换当前条目。原因是它们分别对应浏览器 history 的新增和替换语义。比如列表到详情用 push，登录成功后从登录页去首页常用 replace，避免后退回登录页。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v3.router.vuejs.org/guide/essentials/nested-routes.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Nested Routes</a></li>
+          <li><a href="https://v3.router.vuejs.org/guide/essentials/navigation.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Programmatic Navigation</a></li>
+          <li><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/History_API" target="_blank" rel="noopener">MDN：History API</a></li>
         </ul>
       </div>
     </section>

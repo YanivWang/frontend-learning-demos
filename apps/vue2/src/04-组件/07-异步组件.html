@@ -2,15 +2,15 @@
   分类: vue2 / 04-组件
   主题: 同步组件 vs 异步组件（工厂函数形式）
   要点:
-    - Vue.component(name, options) 注册同步组件，立即可用
-    - Vue.component(name, fn) 注册异步组件：fn(resolve, reject)，按需触发解析
-    - 异步组件解析结果会被 Vue 缓存，下一次渲染直接复用
+    - 同步组件注册时直接提供 options，异步组件在首次渲染需要时才解析
+    - 工厂函数形式接收 resolve/reject，也可以返回带 loading/error/timeout 的高级异步组件配置
+    - 异步组件解析成功后会缓存定义，后续渲染不再重复加载同一个组件定义
+    - 真实项目必须处理加载中、失败、超时和重复触发等边界
   面试:
-    - 同步组件 vs 异步组件（工厂函数形式）的核心概念是什么
-    - 同步组件 vs 异步组件（工厂函数形式）在实际项目里怎么用
-    - 同步组件 vs 异步组件（工厂函数形式）有哪些常见坑或易错点
-    - 同步组件 vs 异步组件（工厂函数形式）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 同步组件 vs 异步组件（工厂函数形式）
+    - Vue 2 异步组件什么时候会触发加载？
+    - resolve、reject、loadingComponent、errorComponent 各自负责什么？
+    - 异步组件和路由懒加载是什么关系？
+    - 异步组件失败或超时时项目里应该怎么兜底？
 -->
 
 <!doctype html>
@@ -31,15 +31,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue.component(name, options) 注册同步组件，立即可用。</li>
-          <li>Vue.component(name, fn) 注册异步组件：fn(resolve, reject)，按需触发解析。</li>
-          <li>异步组件解析结果会被 Vue 缓存，下一次渲染直接复用。</li>
+          <li>同步组件注册时直接传组件选项对象，模板编译后可以立即渲染；异步组件传工厂函数，只有组件第一次真正需要渲染时才触发解析。</li>
+          <li>基础工厂函数接收 <code>resolve</code> 与 <code>reject</code>：成功时把组件定义交给 <code>resolve</code>，失败时调用 <code>reject</code> 让 Vue 走失败处理。</li>
+          <li>Vue 2.3+ 支持高级异步组件对象，可配置 <code>component</code>、<code>loading</code>、<code>error</code>、<code>delay</code> 和 <code>timeout</code>。本页同时演示成功加载和失败兜底。</li>
+          <li>异步组件解析成功后会缓存组件定义，后续重新渲染同一个异步组件不会重复执行完整加载流程；这适合大组件、低频面板和路由级代码分割。</li>
+          <li>涉及异步加载必须补失败路径：网络失败、超时、重复点击和加载中空白都要处理。旧 Vue 2 项目常配合 webpack 动态导入；新项目应优先 Vue 3 与现代构建工具。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue.component(name？</strong> Vue.component(name, options) 注册同步组件，立即可用；Vue.component(name, fn) 注册异步组件：fn(resolve, reject)，按需触发解析</li>
-          <li><strong>Vue.component(name？</strong> Vue.component(name, options) 注册同步组件，立即可用；Vue.component(name, fn) 注册异步组件：fn(resolve, reject)，按需触发解析</li>
-          <li><strong>异步组件解析结果会被 Vue 缓存？</strong> Vue.component(name, fn) 注册异步组件：fn(resolve, reject)，按需触发解析；异步组件解析结果会被 Vue 缓存，下一次渲染直接复用</li>
+          <li><strong>Vue 2 异步组件什么时候加载？</strong> 结论：第一次渲染到该组件时才调用工厂函数。原因是异步组件的目标是按需拆分和延迟加载。边界是已经解析成功的结果会被缓存，再次渲染不会重新下载同一组件定义。</li>
+          <li><strong>resolve 和 reject 分别做什么？</strong> 结论：<code>resolve</code> 交付组件定义，<code>reject</code> 表示加载失败。原因是 Vue 需要根据异步结果决定渲染真实组件还是错误组件。项目里不要只写成功路径，应给失败状态和重试入口。</li>
+          <li><strong>高级异步组件配置有什么价值？</strong> 结论：可以声明 loading、error、delay、timeout 等状态。原因是真实网络加载会有等待、失败和超时。边界是简单 demo 可用工厂函数，生产项目更常用动态 import 与路由懒加载。</li>
+          <li><strong>异步组件和路由懒加载是什么关系？</strong> 结论：路由懒加载通常就是把路由组件写成异步组件工厂或动态导入。原因是路由页天然是按访问路径拆分的代码块。边界是首屏关键组件不宜过度异步化，否则会增加等待和错误兜底成本。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/components-dynamic-async.html" target="_blank" rel="noopener">Vue 2 Guide: Dynamic & Async Components</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/components.html" target="_blank" rel="noopener">Vue 2 Guide: Components Basics</a></li>
+          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 2 EOL Notice</a></li>
         </ul>
       </div>
     </section>
@@ -48,32 +57,52 @@
     <!-- PAGE_DOM_START -->
     <div id="app">
       <p>同步组件（立即可见）：</p>
-      <asyn-com></asyn-com>
-      <p>异步组件（约 2 秒后加载）：</p>
-      <async-com></async-com>
+      <sync-com></sync-com>
+      <p>异步组件成功路径（约 1.2 秒后加载）：</p>
+      <async-success></async-success>
+      <p>异步组件失败路径（约 1.2 秒后显示错误组件）：</p>
+      <async-fail></async-fail>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      //1.定义同步组件（组件名 asyn-com 易与 async 混淆，此处为同步注册）
+      //1.定义同步组件
       //参数：组件名称 组件选项对象
-      Vue.component('asyn-com', {
+      Vue.component('sync-com', {
         template: `<div>同步组件</div>`
       });
 
-      //参数：组件名称 一个工厂函数
-      //这个工厂函数会异步的解析你的组件定义。Vue只有在这个组件需要被渲染的时候才会触发该工厂函数，且会把结果缓存起来
-      //供未来重新渲染
-      Vue.component('async-com', function (resolve, reject) {
+      Vue.component('loading-view', {
+        template: `<div>加载中...</div>`
+      });
+
+      Vue.component('error-view', {
+        template: `<div style="color:#c00;">异步组件加载失败，请稍后重试。</div>`
+      });
+
+      //基础工厂函数：只有组件需要渲染时才触发，成功结果会被缓存。
+      Vue.component('async-success', function (resolve, reject) {
         setTimeout(function () {
-          //向'resolve'回调传递组件定义(组件选项对象)
-          //这个回调函数，会在你从服务器得到组件定义的时候被调用
-          //使用reject(reason)来表示加载失败。
           resolve({
-            template: `<div>I am async!</div>`
-          })
-        }, 2000)
+            template: `<div>I am async success!</div>`
+          });
+        }, 1200);
+      });
+
+      //高级异步组件配置：显式演示 loading、error 和 timeout 边界。
+      Vue.component('async-fail', function () {
+        return {
+          component: new Promise(function (resolve, reject) {
+            setTimeout(function () {
+              reject(new Error('mock async component load failed'));
+            }, 1200);
+          }),
+          loading: Vue.component('loading-view'),
+          error: Vue.component('error-view'),
+          delay: 200,
+          timeout: 2000
+        };
       });
 
       new Vue({ el: '#app' });

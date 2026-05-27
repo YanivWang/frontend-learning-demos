@@ -2,15 +2,15 @@
   分类: vue2 / 05-路由与状态
   主题: 路由 props 解耦组件与 $route
   要点:
-    - props: true → 把 route.params 注入组件 props，让组件不依赖 $route
-    - props: { ... } → 静态对象方式，组件得到固定 props
-    - props: (route) => ({ ... }) → 函数式，可计算/重命名 query / params
+    - props: true 只把 route.params 注入同名组件 props，适合详情页 id 等路径参数
+    - props: { ... } 传静态值；props: route => ({ ... }) 可转换 params/query 并重命名字段
+    - 命名视图要给每个 view 单独配置 props，避免默认视图和 sidebar 混用
+    - 组件仍可 watch $route 或使用 beforeRouteUpdate 处理同组件复用后的重新请求
   面试:
-    - 路由 props 解耦组件与 $route的核心概念是什么
-    - 路由 props 解耦组件与 $route在实际项目里怎么用
-    - 路由 props 解耦组件与 $route有哪些常见坑或易错点
-    - 路由 props 解耦组件与 $route和相近 API 如何区分选型
-    - 面试中如何简洁讲清 路由 props 解耦组件与 $route
+    - 为什么路由组件推荐用 props 接收 params，而不是到处读 $route？
+    - props: true、对象模式、函数模式分别适合什么参数来源？
+    - 命名视图配置 props 时为什么要按 view 名称分别声明？
+    - 同一路由组件只变 params 时，为什么还要 watch $route 或 beforeRouteUpdate？
 -->
 
 <!doctype html>
@@ -32,15 +32,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>props: true → 把 route.params 注入组件 props，让组件不依赖 $route。</li>
-          <li>props: { ... } → 静态对象方式，组件得到固定 props。</li>
-          <li>props: (route) =&gt; ({ ... }) → 函数式，可计算/重命名 query / params。</li>
+          <li><code>props: true</code> 会把 <code>route.params</code> 按字段名传给组件 props，组件可以像普通业务组件一样声明 <code>props: ['id']</code>，减少对 <code>$route</code> 的硬依赖。</li>
+          <li><code>props: { ... }</code> 是静态对象模式，适合传固定开关或常量；它不会自动注入 params，所以示例中的 <code>newsletterPopup</code> 和 <code>$route.params.id</code> 是两个来源。</li>
+          <li><code>props: route =&gt; ({ ... })</code> 是函数模式，适合把 <code>params</code>、<code>query</code> 做类型转换、重命名或组合；函数应尽量保持无状态，因为它只在路由变化时求值。</li>
+          <li>命名视图要写成 <code>props: { default: true, sideBar: { ... } }</code>，每个 <code>router-view</code> 独立接收 props，避免默认视图和侧栏组件拿错字段。</li>
+          <li>props 只解决“参数如何传进组件”；同一个路由记录只变 params 时组件实例会复用，详情页仍应 <code>watch $route</code>、watch prop，或用 <code>beforeRouteUpdate</code> 重新拉取数据。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>路由 props 解耦组件与 $route的核心概念是什么？</strong> props: true → 把 route.params 注入组件 props，让组件不依赖 $route；props: { ... } → 静态对象方式，组件得到固定 props</li>
-          <li><strong>路由 props 解耦组件与 $route在实际项目里怎么用？</strong> props: true → 把 route.params 注入组件 props，让组件不依赖 $route；props: { ... } → 静态对象方式，组件得到固定 props</li>
-          <li><strong>路由 props 解耦组件与 $route有哪些常见坑或易错点？</strong> props: true → 把 route.params 注入组件 props，让组件不依赖 $route；props: { ... } → 静态对象方式，组件得到固定 props</li>
+          <li><strong>为什么路由组件推荐用 props 接收参数？</strong> 结论是用 props 能把组件从 <code>$route</code> 上解耦出来。原因是组件只关心 <code>id</code>、<code>postid</code> 这类业务输入，复用和单测时不必伪造完整路由对象。边界是需要读取导航来源、完整 query 或 meta 时，仍可以在页面容器层使用 <code>$route</code>。</li>
+          <li><strong><code>props: true</code>、对象模式、函数模式怎么选？</strong> 结论是 params 同名直传用 <code>true</code>，固定配置用对象，query/params 转换用函数。原因是三种模式对应不同数据来源。项目里常用函数模式把字符串 id 转成数字，或把 <code>query.q</code> 重命名为组件更清晰的 <code>keyword</code>。</li>
+          <li><strong>命名视图的 props 为什么不能只写一个 <code>true</code>？</strong> 结论是多视图应按 <code>default</code>、<code>sideBar</code> 等 view 名称分别配置。原因是一个路由记录可能同时渲染多个组件，每个组件的入参不同。边界是只有默认视图时才可以直接写布尔、对象或函数。</li>
+          <li><strong>props 解耦后还要处理 params 变化吗？</strong> 结论是要处理。原因是 <code>/user/1</code> 到 <code>/user/2</code> 可能复用同一个组件实例，不会重新走 created。项目里详情页应 watch prop 或 <code>$route</code>，也可以用 <code>beforeRouteUpdate</code> 发起新请求和处理失败态。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v3.router.vuejs.org/guide/essentials/passing-props.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Passing Props to Route Components</a></li>
+          <li><a href="https://v3.router.vuejs.org/guide/essentials/dynamic-matching.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Dynamic Route Matching</a></li>
+          <li><a href="https://v3.router.vuejs.org/guide/essentials/named-views.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Named Views</a></li>
         </ul>
       </div>
     </section>

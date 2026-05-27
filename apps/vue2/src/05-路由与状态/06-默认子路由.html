@@ -2,15 +2,16 @@
   分类: vue2 / 05-路由与状态
   主题: 嵌套路由与默认子路由（path: ''）
   要点:
-    - 嵌套路由：父路由组件中放 <router-view>，并通过 children 配置子路由
-    - path: '' 表示「父路由的默认子路由」，匹配 /user/:id 时直接显示默认内容
-    - 同路径多路由按定义顺序匹配，先到先得
+    - 父组件中的 router-view 是默认子路由的渲染位置
+    - children 里的 path: '' 会在父路径精确命中时渲染
+    - 默认子路由适合概览页、默认 tab、用户中心首页
+    - 子路由顺序和 fallback 会影响未知路径的显示结果
   面试:
-    - 嵌套路由与默认子路由（path: ''）的核心概念是什么
-    - 嵌套路由与默认子路由（path: ''）在实际项目里怎么用
-    - 嵌套路由与默认子路由（path: ''）有哪些常见坑或易错点
-    - 嵌套路由与默认子路由（path: ''）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 嵌套路由与默认子路由（path: ''）
+    - 默认子路由 path: '' 的匹配时机是什么？
+    - 为什么访问 /user/foo 时还能显示子页面？
+    - 默认子路由和 redirect 到某个子路径怎么选？
+    - 嵌套路由缺少 router-view 会发生什么？
+    - 默认子路由页面如何处理参数变化？
 -->
 
 <!doctype html>
@@ -32,15 +33,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>嵌套路由：父路由组件中放 &lt;router-view&gt;，并通过 children 配置子路由。</li>
-          <li>path: '' 表示「父路由的默认子路由」，匹配 /user/:id 时直接显示默认内容。</li>
-          <li>同路径多路由按定义顺序匹配，先到先得。</li>
+          <li>默认子路由依赖嵌套路由结构：父路由组件先渲染，再由父组件中的 <code>&lt;router-view&gt;</code> 渲染默认子组件。</li>
+          <li><code>children</code> 中的 <code>path: ''</code> 表示父路径本身命中时显示的子页面，所以访问 <code>/user/foo</code> 会显示本页的 Hello 默认内容。</li>
+          <li>默认子路由适合概览页、默认 tab、用户中心首页；它保留父路径不变，不会把用户强制改到另一个 URL。</li>
+          <li>如果希望地址栏明确显示某个子路径，例如 <code>/user/foo/profile</code>，可以用 redirect；如果希望父路径本身就是有效页面，使用 <code>path: ''</code> 更自然。</li>
+          <li>父路由参数变化时父组件仍可能复用，默认子组件中的数据请求也要关注 <code>$route</code> 变化或组件内守卫，避免展示旧用户的数据。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>同路径多路由按定义顺序匹配？</strong> 同路径多路由按定义顺序匹配，先到先得</li>
-          <li><strong>嵌套路由与默认子路由（path: ''）的核心概念是什么？</strong> 嵌套路由：父路由组件中放 &lt;router-view&gt;，并通过 children 配置子路由</li>
-          <li><strong>嵌套路由与默认子路由（path: ''）在实际项目里怎么用？</strong> 嵌套路由：父路由组件中放 &lt;router-view&gt;，并通过 children 配置子路由</li>
+          <li><strong>默认子路由 path: '' 的匹配时机是什么？</strong> 结论是当父路径命中但没有额外子路径时匹配。原因是空字符串子路径相对父路径不会追加新片段。项目里用户中心访问 <code>/user/:id</code> 显示概览页，就是典型默认子路由。</li>
+          <li><strong>为什么访问 /user/foo 时还能显示子页面？</strong> 结论是父路由渲染 User，User 内部的子出口再渲染 <code>path: ''</code> 对应组件。原因是嵌套路由匹配会沿父子记录逐层渲染。边界是父组件缺少 <code>router-view</code> 时，子组件不会显示。</li>
+          <li><strong>默认子路由和 redirect 到某个子路径怎么选？</strong> 结论是父路径本身有业务含义时用默认子路由，只想规范 URL 时用 redirect。原因是默认子路由不改变地址栏，redirect 会把导航改到目标路径。项目里 tab 首页常用默认子路由，旧路径兼容常用 redirect。</li>
+          <li><strong>默认子路由页面如何处理参数变化？</strong> 结论是不能只依赖首次创建钩子。原因是父路由参数变化时组件可能被复用。需要 watch <code>$route.params</code>、使用 <code>beforeRouteUpdate</code>，或给 <code>router-view</code> 设置合适的 key 来强制重建。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v3.router.vuejs.org/guide/essentials/nested-routes.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Nested Routes</a></li>
+          <li><a href="https://v3.router.vuejs.org/guide/essentials/redirect-and-alias.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Redirect and Alias</a></li>
+          <li><a href="https://v3.router.vuejs.org/guide/advanced/navigation-guards.html#in-component-guards" target="_blank" rel="noopener">Vue Router 3 官方文档：In-Component Guards</a></li>
         </ul>
       </div>
     </section>

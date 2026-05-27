@@ -2,15 +2,16 @@
   分类: vue2 / 05-路由与状态
   主题: 动态路径参数 :id 与 $route.params
   要点:
-    - path: "/user/:id" 中冒号声明参数，匹配后填入 this.$route.params.id
-    - 同路由不同参数复用组件时，生命周期钩子不会重新执行；用 watch $route 监听
-    - 解耦建议：通过 props: true 把 params 注入 props，组件就不依赖 $route
+    - path: "/user/:id/post/:postid" 用冒号声明动态片段
+    - 匹配成功后参数进入 $route.params，query 仍属于 $route.query
+    - 同一路由记录参数变化时组件会复用，需 watch $route 或 beforeRouteUpdate
+    - 业务组件更推荐用 props: true 接收参数，降低对 $route 的耦合
   面试:
-    - 动态路径参数 :id 与 $route.params的核心概念是什么
-    - 动态路径参数 :id 与 $route.params在实际项目里怎么用
-    - 动态路径参数 :id 与 $route.params有哪些常见坑或易错点
-    - 动态路径参数 :id 与 $route.params和相近 API 如何区分选型
-    - 面试中如何简洁讲清 动态路径参数 :id 与 $route.params
+    - vue-router 3 动态路径参数如何声明和读取？
+    - params 变化为什么不会重新触发 created？
+    - params 和 query 应该如何区分？
+    - 为什么推荐用 props: true 解耦路由组件？
+    - 动态路由参数缺失或格式错误时怎么兜底？
 -->
 
 <!doctype html>
@@ -32,15 +33,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>path: &quot;/user/:id&quot; 中冒号声明参数，匹配后填入 <code>this</code>.$route.params.id。</li>
-          <li>同路由不同参数复用组件时，生命周期钩子不会重新执行；用 <code>watch</code> $route 监听。</li>
-          <li>解耦建议：通过 props: true 把 params 注入 props，组件就不依赖 $route。</li>
+          <li>vue-router 3 在 <code>path</code> 中用冒号声明动态片段，例如 <code>/user/:id/post/:postid</code>，匹配后可以通过 <code>this.$route.params.id</code> 读取。</li>
+          <li><code>params</code> 是路径结构的一部分，适合资源标识；<code>query</code> 是问号后的附加参数，适合筛选、分页、来源标记等可选信息。</li>
+          <li>从 <code>/user/wangcheng/post/123</code> 切到 <code>/user/wangcheng/post/456</code> 时，匹配的是同一个路由记录，组件实例会复用，<code>created</code> 不会再次执行。</li>
+          <li>参数变化后的数据刷新应放在 <code>watch: { $route() {} }</code> 或组件内守卫 <code>beforeRouteUpdate</code> 中，避免只在初始化钩子里请求一次数据。</li>
+          <li>真实项目还要校验参数是否存在、是否符合格式、资源是否可访问；失败时显示空状态、错误提示或跳转 404，不能假设 URL 永远正确。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>同路由不同参数复用组件时？</strong> 同路由不同参数复用组件时，生命周期钩子不会重新执行；用 <code>watch</code> $route 监听</li>
-          <li><strong>动态路径参数 :id 与 $route.params的核心概念是什么？</strong> path: &quot;/user/:id&quot; 中冒号声明参数，匹配后填入 <code>this</code>.$route.params.id；同路由不同参数复用组件时，生命周期钩子不会重新执行；用 <code>watch</code> $route 监听</li>
-          <li><strong>动态路径参数 :id 与 $route.params在实际项目里怎么用？</strong> path: &quot;/user/:id&quot; 中冒号声明参数，匹配后填入 <code>this</code>.$route.params.id；同路由不同参数复用组件时，生命周期钩子不会重新执行；用 <code>watch</code> $route 监听</li>
+          <li><strong>vue-router 3 动态路径参数如何声明和读取？</strong> 结论是在路由 <code>path</code> 中用 <code>:name</code> 声明，在组件中通过 <code>$route.params.name</code> 读取。原因是路由匹配器会把动态片段解析成 params。边界是 query 不会进入 params，二者不能混用。</li>
+          <li><strong>params 变化为什么不会重新触发 created？</strong> 结论是同一个路由记录只是参数变化时，Vue Router 会复用原组件实例。原因是复用比销毁重建更高效，也能保留局部状态。项目里如果要重新请求详情，需要 watch <code>$route</code> 或使用 <code>beforeRouteUpdate</code>。</li>
+          <li><strong>params 和 query 应该如何区分？</strong> 结论是资源身份用 params，可选条件用 query。原因是 params 通常是路径模式的一部分，query 可以增删而不改变路由层级。比如 <code>/users/42</code> 表示用户 42，<code>?tab=orders</code> 表示当前展示订单页签。</li>
+          <li><strong>动态路由参数缺失或格式错误时怎么兜底？</strong> 结论是要校验并处理失败路径。原因是用户可以手动改 URL，参数也可能过期或没有权限。项目里常做格式判断、接口 404 展示、路由守卫拦截或跳转统一错误页。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v3.router.vuejs.org/guide/essentials/dynamic-matching.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Dynamic Route Matching</a></li>
+          <li><a href="https://v3.router.vuejs.org/guide/essentials/passing-props.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Passing Props to Route Components</a></li>
+          <li><a href="https://v3.router.vuejs.org/guide/advanced/navigation-guards.html#in-component-guards" target="_blank" rel="noopener">Vue Router 3 官方文档：In-Component Guards</a></li>
         </ul>
       </div>
     </section>
@@ -76,7 +86,7 @@
       const user = {
         watch: {
           $route: function (to, from) {
-            console.log("111");
+            console.log("route params changed:", from.params, "=>", to.params);
           }
         },
         template: `<div>

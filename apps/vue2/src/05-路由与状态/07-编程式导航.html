@@ -1,17 +1,17 @@
 <!--
   分类: vue2 / 05-路由与状态
   主题: 编程式导航（push / replace / go / 命名路由）
-  要点:
-    - $router.push 向 history 栈追加记录，浏览器后退可返回
-    - $router.replace 替换当前记录，不入栈
-    - $router.go(n) / back() / forward() 在历史栈中移动
-    - 命名路由：router.push({ name: 'user', params: { id: '1' }, query: { tab: 'profile' } })
+  要点:
+    - $router.push 新增历史记录，replace 替换当前记录
+    - back / forward / go 只是沿浏览器历史栈移动
+    - 对象写法可用 name + params 或 path + query 表达跳转意图
+    - 导航可能失败或重复，真实项目要处理冗余导航和权限拦截
   面试:
-    - 编程式导航（push / replace / go / 命名路由）的核心概念是什么
-    - 编程式导航（push / replace / go / 命名路由）在实际项目里怎么用
-    - 编程式导航（push / replace / go / 命名路由）有哪些常见坑或易错点
-    - 编程式导航（push / replace / go / 命名路由）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 编程式导航（push / replace / go / 命名路由）
+    - push、replace、go 的历史记录语义分别是什么？
+    - 什么时候用命名路由对象而不是 path 字符串？
+    - path + query 和 name + params 应该如何搭配？
+    - 重复导航或导航守卫拦截时要怎么处理？
+    - 编程式导航和 router-link 各适合什么场景？
 -->
 
 <!doctype html>
@@ -33,16 +33,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>$router.push 向 history 栈追加记录，浏览器后退可返回。</li>
-          <li>$router.replace 替换当前记录，不入栈。</li>
-          <li>$router.go(n) / back() / forward() 在历史栈中移动。</li>
-          <li>命名路由：router.push({ name: 'user', params: { id: '1' }, query: { tab: 'profile' } })。</li>
+          <li><code>$router.push</code> 会导航到新地址并新增历史记录，适合用户主动进入详情、编辑、下一步等可回退流程。</li>
+          <li><code>$router.replace</code> 会导航但替换当前历史记录，适合登录成功、无效地址修正、默认页跳转等不希望用户后退回来的场景。</li>
+          <li><code>$router.go(n)</code>、<code>back()</code>、<code>forward()</code> 只是沿浏览器历史栈移动，不保证一定有可用记录；在移动端或新开页面中要准备无历史记录的兜底按钮。</li>
+          <li>对象写法更适合复杂跳转：动态路由用 <code>{ name, params }</code>，可选条件用 <code>{ path, query }</code> 或命名路由加 query。</li>
+          <li>真实项目中导航可能被守卫取消、重定向，或因为跳转到当前地址产生冗余导航；Vue Router 3.1+ 的 <code>push</code> / <code>replace</code> 会返回 Promise，必要时应捕获失败。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>$router.push 向 history 栈追加记录？</strong> $router.push 向 history 栈追加记录，浏览器后退可返回；$router.replace 替换当前记录，不入栈</li>
-          <li><strong>$router.replace 替换当前记录？</strong> $router.push 向 history 栈追加记录，浏览器后退可返回；$router.replace 替换当前记录，不入栈</li>
-          <li><strong>$router.go(n) / back() / forward() 在历史栈中？</strong> $router.push 向 history 栈追加记录，浏览器后退可返回；$router.replace 替换当前记录，不入栈</li>
+          <li><strong>push、replace、go 的历史记录语义分别是什么？</strong> 结论是 push 新增记录，replace 替换当前记录，go 按偏移量移动历史栈。原因是它们分别对应浏览器导航的三类行为。项目里列表到详情用 push，登录后跳首页用 replace，返回上一页可用 back 或 go(-1)。</li>
+          <li><strong>什么时候用命名路由对象而不是 path 字符串？</strong> 结论是有动态参数、路径可能重构、跳转语义重要时用命名路由。原因是 name 比 path 更稳定，params 也能按路由记录自动填充。简单静态地址或外部拼好的路径用 path 字符串即可。</li>
+          <li><strong>path + query 和 name + params 应该如何搭配？</strong> 结论是 params 通常配 name，query 可以配 path 或 name。原因是 params 需要动态路径片段承接，query 是 URL 查询串。边界是写了 path 再传 params 通常不会自动拼接，应避免这种混搭。</li>
+          <li><strong>重复导航或导航守卫拦截时要怎么处理？</strong> 结论是要把导航当成可能失败的异步动作处理。原因是守卫可以取消或重定向导航，重复跳当前地址也可能产生失败结果。项目里常在按钮点击后捕获 Promise，或统一封装安全跳转函数。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v3.router.vuejs.org/guide/essentials/navigation.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Programmatic Navigation</a></li>
+          <li><a href="https://v3.router.vuejs.org/guide/advanced/navigation-failures.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Navigation Failures</a></li>
+          <li><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/History_API" target="_blank" rel="noopener">MDN：History API</a></li>
         </ul>
       </div>
     </section>

@@ -2,15 +2,16 @@
   分类: vue2 / 05-路由与状态
   主题: 命名路由（router-link :to="{ name: 'xxx' }"）
   要点:
-    - 给 route 加 name 后，可用 { name } 跳转，无需硬编码 path
-    - 同样适用于编程式：router.push({ name: 'user', params: { id: 1 } })
-    - 顺带演示 js-cookie 读取浏览器 Cookie
+    - 给 route 配置 name 后，可用 { name, params } 生成链接和跳转
+    - 命名路由减少硬编码 path，路径调整时调用方更稳定
+    - params 只会自动填入命名路由或含动态片段的 path
+    - Cookie 读取只是辅助展示浏览器状态，不是命名路由的核心能力
   面试:
-    - 命名路由（router-link :to="{ name: 'xxx' }"）的核心概念是什么
-    - 命名路由（router-link :to="{ name: 'xxx' }"）在实际项目里怎么用
-    - 命名路由（router-link :to="{ name: 'xxx' }"）有哪些常见坑或易错点
-    - 命名路由（router-link :to="{ name: 'xxx' }"）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 命名路由（router-link :to="{ name: 'xxx' }"）
+    - 命名路由相比 path 字符串有什么优势？
+    - router-link 的对象写法如何传 params？
+    - params 和 path 同时写时为什么容易失效？
+    - 命名路由在重构路由路径时有什么价值？
+    - Cookie 这类浏览器状态和路由状态要如何区分？
 -->
 
 <!doctype html>
@@ -33,15 +34,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>给 route 加 name 后，可用 { name } 跳转，无需硬编码 path。</li>
-          <li>同样适用于编程式：router.push({ name: 'user', params: { id: 1 } })。</li>
-          <li>顺带演示 js-cookie 读取浏览器 Cookie。</li>
+          <li>命名路由是在路由记录上配置 <code>name</code>，之后 <code>&lt;router-link&gt;</code> 和 <code>router.push</code> 都可以使用 <code>{ name: 'user', params: { id: 'foo' } }</code>。</li>
+          <li>命名路由的主要价值是降低路径硬编码：当 <code>/user/:id</code> 改成 <code>/members/:id</code> 时，调用方只要仍然使用同一个 <code>name</code>，改动面就更小。</li>
+          <li>传动态参数时，推荐使用 <code>name + params</code>。如果写 <code>path</code>，Vue Router 不会自动把 <code>params</code> 拼进 path，应自己拼完整路径或改用命名路由。</li>
+          <li>本页读取 Cookie 只是演示浏览器状态可以和路由同时展示。Cookie 属于客户端存储/请求状态，不应被当作路由匹配规则的一部分。</li>
+          <li>Vue 2 对应 vue-router 3，仍适合维护旧项目；新项目通常选择 Vue 3 + vue-router 4，但命名路由的选型思想基本一致。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>给 route 加 name 后？</strong> 给 route 加 name 后，可用 { name } 跳转，无需硬编码 path</li>
-          <li><strong>顺带演示 js-cookie 读取浏览器 Cookie？</strong> 顺带演示 js-cookie 读取浏览器 Cookie</li>
-          <li><strong>命名路由（router-link :to=&quot;{ name: 'xxx' }&quot;）的核心概念是什么？</strong> 给 route 加 name 后，可用 { name } 跳转，无需硬编码 path；同样适用于编程式：router.push({ name: 'user', params: { id: 1 } })</li>
+          <li><strong>命名路由相比 path 字符串有什么优势？</strong> 结论是命名路由更抗重构。原因是调用方依赖稳定的语义名称，而不是散落各处的路径字符串。项目里详情页、编辑页、权限跳转等常用 <code>name</code>，避免路径调整时漏改。</li>
+          <li><strong>router-link 的对象写法如何传 params？</strong> 结论是写成 <code>:to="{ name: 'user', params: { id: 'foo' } }"</code>。原因是 Vue Router 根据 name 找到带动态片段的路由记录，再把 params 填入路径。边界是 params 字段名必须和 path 中的 <code>:id</code> 对上。</li>
+          <li><strong>params 和 path 同时写时为什么容易失效？</strong> 结论是不要期待 <code>{ path: '/user', params: { id: 1 } }</code> 自动生成 <code>/user/1</code>。原因是 path 已经是完整路径入口，params 不会再参与动态片段填充。需要动态片段时用命名路由，或自己拼出完整 path。</li>
+          <li><strong>Cookie 这类浏览器状态和路由状态要如何区分？</strong> 结论是 Cookie 表示客户端持久化/请求携带状态，路由表示当前页面位置。原因是 Cookie 会参与跨请求存储，路由只描述 UI 导航。项目里认证 token、偏好设置可在 Cookie 或存储中，当前页签、资源 ID 更适合路由。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v3.router.vuejs.org/guide/essentials/named-routes.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Named Routes</a></li>
+          <li><a href="https://v3.router.vuejs.org/guide/essentials/navigation.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Programmatic Navigation</a></li>
+          <li><a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Guides/Cookies" target="_blank" rel="noopener">MDN：HTTP cookies</a></li>
         </ul>
       </div>
     </section>

@@ -2,17 +2,17 @@
   分类: vue2 / 04-组件
   主题: 动态组件 <component :is="...">
   要点:
-    - :is 绑定到「组件名」字符串或组件选项对象，运行时切换
-    - 配合 <keep-alive> 可让被切换走的组件保留状态，不必重新渲染
-    - 常见用法：tab 页签切换、不同步骤的表单页
+    - <component :is="current"> 根据 current 指向的组件名或组件对象渲染不同组件
+    - 默认切换会销毁旧组件实例，包裹 keep-alive 后可缓存内部状态
+    - 本页输入框用于验证 keep-alive：切换 tab 后输入内容仍然保留
+    - 适合 tab、步骤页、可插拔面板；简单显隐仍优先 v-if / v-show
   说明:
     - 原文件为空壳，这里补一个最小可运行的 tab 切换示例
   面试:
-    - 动态组件 <component :is="...">的核心概念是什么
-    - 动态组件 <component :is="...">在实际项目里怎么用
-    - 动态组件 <component :is="...">有哪些常见坑或易错点
-    - 动态组件 <component :is="...">和相近 API 如何区分选型
-    - 面试中如何简洁讲清 动态组件 <component :is="...">
+    - component 的 is 属性可以接收哪些值？
+    - 动态组件切换时组件实例默认会怎样变化？
+    - keep-alive 为什么能保留 tab 内输入状态？
+    - 动态组件、v-if 和路由切换如何取舍？
 -->
 
 <!doctype html>
@@ -28,21 +28,29 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>动态组件 <component :is="..."></h1>
+      <h1>动态组件 &lt;component :is=&quot;...&quot;&gt;</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>:is 绑定到「组件名」字符串或组件选项对象，运行时切换。</li>
-          <li>配合 &lt;keep-alive&gt; 可让被切换走的组件保留状态，不必重新渲染。</li>
-          <li>常见用法：tab 页签切换、不同步骤的表单页。</li>
-          <li>原文件为空壳，这里补一个最小可运行的 tab 切换示例。</li>
+          <li><code>&lt;component&gt;</code> 是 Vue 的动态组件占位符，<code>:is</code> 可以绑定组件名字符串，也可以绑定组件选项对象。</li>
+          <li>本页通过 <code>currentTab</code> 在 <code>Home/About/User</code> 之间切换，按钮只改变状态，渲染组件由 <code>:is</code> 决定。</li>
+          <li>动态组件默认切换会卸载旧实例并创建新实例；放入 <code>&lt;keep-alive&gt;</code> 后，切走的组件实例被缓存，输入框内容可以保留。</li>
+          <li>适合 tab、步骤页、插件面板这类“同一位置切换组件类型”的场景；如果只是控制同一个组件是否显示，<code>v-if</code> 或 <code>v-show</code> 更直接。</li>
+          <li>被切换的组件必须可解析：要么已全局注册，要么在当前实例局部注册，要么直接把组件对象赋给 <code>is</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>配合 &lt;keep-alive&gt; 可让被切换走的组件保留状态？</strong> 配合 &lt;keep-alive&gt; 可让被切换走的组件保留状态，不必重新渲染</li>
-          <li><strong>动态组件 &lt;component :is=&quot;...&quot;&gt;的核心概念是什么？</strong> :is 绑定到「组件名」字符串或组件选项对象，运行时切换；配合 &lt;keep-alive&gt; 可让被切换走的组件保留状态，不必重新渲染</li>
-          <li><strong>动态组件 &lt;component :is=&quot;...&quot;&gt;在实际项目里怎么用？</strong> :is 绑定到「组件名」字符串或组件选项对象，运行时切换；配合 &lt;keep-alive&gt; 可让被切换走的组件保留状态，不必重新渲染</li>
+          <li><strong><code>:is</code> 可以接收什么？</strong> 结论：可以接收已注册组件名字符串，也可以接收组件选项对象。原因是 Vue 在渲染动态组件时会根据该值解析出要渲染的组件定义。边界是 DOM 模板里组件名要注意大小写和注册名匹配。</li>
+          <li><strong>动态组件切换时实例会怎样？</strong> 结论：默认旧组件会被销毁，新组件会被创建。原因是当前渲染的组件类型变了，Vue 需要替换对应组件实例。需要保留表单、滚动或缓存数据时，用 <code>keep-alive</code> 包住动态组件。</li>
+          <li><strong>keep-alive 为什么能保留输入框？</strong> 结论：它缓存的是组件实例，不只是 DOM。原因是被切走的组件不会走销毁流程，再次进入时复用原实例。边界是缓存过多会占内存，复杂场景要配置 include、exclude 或 max。</li>
+          <li><strong>动态组件和 v-if 怎么选？</strong> 结论：多种组件类型在同一位置互斥切换时用动态组件，单个组件或少量 DOM 显隐用 <code>v-if</code>/<code>v-show</code>。原因是动态组件把组件类型变成数据，更适合配置化切换。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/components-dynamic-async.html" target="_blank" rel="noopener">Vue 2 Guide: Dynamic & Async Components</a></li>
+          <li><a href="https://v2.vuejs.org/v2/api/#keep-alive" target="_blank" rel="noopener">Vue 2 API: keep-alive</a></li>
+          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 2 EOL Notice</a></li>
         </ul>
       </div>
     </section>

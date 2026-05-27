@@ -459,7 +459,7 @@
 - [Vuex核心](/apps/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/12-Vuex%E6%A0%B8%E5%BF%83.html) — Vuex 全家桶（state / mutations / actions / getters / mapState / mapGetters）
 - [Vuex-actions](/apps/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/13-Vuex-actions.html) — Vuex actions 详解（载荷 / 异步 / Promise / 嵌套 dispatch）
 - [Vuex-Module](/apps/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/14-Vuex-Module.html) — Vuex Module 演示（按模块拆分 store）
-- [Promise前置回顾](/apps/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/15-Promise%E5%89%8D%E7%BD%AE%E5%9B%9E%E9%A1%BE.html) — Promise 基础（与本目录主题关系不强，仅作前置回顾）
+- [Promise前置回顾](/apps/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/15-Promise%E5%89%8D%E7%BD%AE%E5%9B%9E%E9%A1%BE.html) — Promise 基础与 Vue 异步流程前置
 
 ### 06-原理与性能
 

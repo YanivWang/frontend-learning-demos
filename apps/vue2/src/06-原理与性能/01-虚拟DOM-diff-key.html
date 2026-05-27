@@ -2,16 +2,15 @@
   分类: vue2 / 06-原理与性能
   主题: 虚拟 DOM / diff / key
   要点:
-    - 虚拟 DOM 是用普通 JS 对象描述真实 DOM，更新时先比较 vnode，再最小化操作真实 DOM
-    - Vue2 diff 以同层比较为主，不做跨层级移动比较
-    - key 用来标识节点身份；稳定且唯一的 key 能帮助 Vue 正确复用和移动节点
-    - 不推荐用数组 index 作为可变列表的 key，插入/删除时容易错误复用组件状态
+    - render 产生 vnode tree，patch 比较新旧 vnode 后更新真实 DOM
+    - Vue 2 diff 以同层 children 比较为主，通过 key 判断节点身份和移动关系
+    - 稳定唯一 key 能让输入框、组件实例等状态跟随数据项移动
+    - 可变列表不推荐用 index key，插入、删除、排序时容易错误复用状态
   面试:
-    - 虚拟 DOM / diff / key的核心概念是什么
-    - 虚拟 DOM / diff / key在实际项目里怎么用
-    - 虚拟 DOM / diff / key有哪些常见坑或易错点
-    - 虚拟 DOM / diff / key和相近 API 如何区分选型
-    - 面试中如何简洁讲清 虚拟 DOM / diff / key
+    - Vue 2 更新时 template、render、vnode、patch 的关系是什么？
+    - key 在 diff 中解决的是性能问题还是节点身份问题？
+    - 为什么可变列表不能用 index 作为 key？
+    - 什么时候可以不写 key，什么时候必须写稳定 key？
 -->
 
 <!doctype html>
@@ -32,17 +31,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>虚拟 DOM 是用普通 JS 对象描述真实 DOM，更新时先比较 vnode，再最小化操作真实 DOM。</li>
-          <li>Vue2 <code>diff</code> 以同层比较为主，不做跨层级移动比较。</li>
-          <li><code>key</code> 用来标识节点身份；稳定且唯一的 <code>key</code> 能帮助 Vue 正确复用和移动节点。</li>
-          <li>不推荐用数组 index 作为可变列表的 <code>key</code>，插入/删除时容易错误复用组件状态。</li>
+          <li>Vue 2 模板最终会进入 render 流程，render 产生 vnode tree；响应式数据变化后 watcher 触发重新 render，再由 patch 比较新旧 vnode 并更新真实 DOM。</li>
+          <li>虚拟 DOM 的价值不是“比 DOM 一定快”，而是用 JavaScript 对象描述 UI，让 Vue 可以跨平台组织更新、批量调度，并避免开发者手写大量命令式 DOM 操作。</li>
+          <li>Vue 2 的 children diff 主要在同一层级内比较节点，不把跨层移动当作同一个节点优化；跨层结构变化通常会销毁并重建相关子树。</li>
+          <li><code>key</code> 的核心是节点身份。稳定唯一的 key 能帮助 Vue 判断哪个 vnode 对应哪个真实 DOM 或组件实例，从而在插入、删除、排序时正确复用和移动。</li>
+          <li>可变列表不推荐用数组 index 做 key，因为头部插入或排序后 index 会变化，输入框值、组件局部状态可能跟错数据；静态、永不重排的展示列表才勉强可接受。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>虚拟 DOM 是用普通 JS 对象描述真实 DOM？</strong> 虚拟 DOM 是用普通 JS 对象描述真实 DOM，更新时先比较 vnode，再最小化操作真实 DOM</li>
-          <li><strong>Vue2 diff 以同层比较为主？</strong> Vue2 <code>diff</code> 以同层比较为主，不做跨层级移动比较；<code>key</code> 用来标识节点身份；稳定且唯一的 <code>key</code> 能帮助 Vue 正确复用和移动节点</li>
-          <li><strong>key 用来标识节点身份？</strong> <code>key</code> 用来标识节点身份；稳定且唯一的 <code>key</code> 能帮助 Vue 正确复用和移动节点；不推荐用数组 index 作为可变列表的 <code>key</code>，插入/删除时容易错误复用组件状态</li>
-          <li><strong>不推荐用数组 index 作为可变列表的 key？</strong> 不推荐用数组 index 作为可变列表的 <code>key</code>，插入/删除时容易错误复用组件状态</li>
+          <li><strong>Vue 2 更新链路怎么讲？</strong> 结论是数据变化触发 watcher，重新执行 render 生成新 vnode，再和旧 vnode patch 到真实 DOM。原因是 Vue 不直接用模板字符串操作 DOM，而是把 UI 表达成 vnode。项目里性能分析应关注数据变更规模、render 成本和 patch 后真实 DOM 成本。</li>
+          <li><strong>key 主要解决性能还是身份？</strong> 结论是先解决节点身份，性能收益是副作用。原因是 key 让 Vue 能确认两个 vnode 是否代表同一项数据，再决定复用、移动或销毁。边界是乱用随机 key 会让每次更新都像全量重建，反而更慢。</li>
+          <li><strong>为什么可变列表不能用 index key？</strong> 结论是 index 会随插入、删除、排序改变，不能稳定代表数据项。原因是 Vue 会把同一个位置的 DOM 当作同一个节点复用。项目里带输入框、动画、组件状态的列表必须用数据库 id 或前端生成的稳定 id。</li>
+          <li><strong>什么时候可以不写 key？</strong> 结论是简单静态列表或只追加且没有局部状态的列表风险较低，但动态组件、表单项、可重排列表应写稳定 key。原因是无 key 时 Vue 会尽量就地复用。边界是为了强制重建组件，也可以主动改变 key。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/list.html#Maintaining-State" target="_blank" rel="noopener">Vue 2 官方文档：Maintaining State</a></li>
+          <li><a href="https://v2.vuejs.org/v2/api/#key" target="_blank" rel="noopener">Vue 2 API：key</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/render-function.html#The-Virtual-DOM" target="_blank" rel="noopener">Vue 2 官方文档：The Virtual DOM</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/reactivity.html#Async-Update-Queue" target="_blank" rel="noopener">Vue 2 官方文档：Async Update Queue</a></li>
         </ul>
       </div>
     </section>

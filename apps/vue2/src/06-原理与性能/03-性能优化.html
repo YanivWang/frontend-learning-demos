@@ -2,17 +2,16 @@
   分类: vue2 / 06-原理与性能
   主题: Vue2 常见性能优化
   要点:
-    - 列表渲染使用稳定 key，避免 index key 导致错误复用
-    - 大列表可分页、虚拟滚动，或先在非响应式临时变量中处理后整体赋值
-    - computed 适合有缓存的派生数据，methods 每次渲染都会重新执行
-    - keep-alive 可缓存频繁切换的组件，但缓存过多也会占内存
-    - 路由组件可懒加载，减少首屏加载体积
+    - 性能优化先定位瓶颈，再从渲染次数、响应式数据量、包体积和缓存四类入手
+    - 大列表优先分页或虚拟滚动；批量生成数据时可先用普通数组处理后整体赋值
+    - computed 有依赖缓存，methods 每次渲染都会执行，适合不同计算场景
+    - keep-alive 和路由懒加载分别优化重复切换和首屏体积，但都有缓存/加载失败边界
+    - Vue 2 是维护/历史版本语境，新项目性能选型通常优先 Vue 3 生态
   面试:
-    - Vue2 常见性能优化的核心概念是什么
-    - Vue2 常见性能优化在实际项目里怎么用
-    - Vue2 常见性能优化有哪些常见坑或易错点
-    - Vue2 常见性能优化和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Vue2 常见性能优化
+    - Vue 2 页面卡顿时应该按什么顺序排查？
+    - 大列表为什么不能只靠 v-for 硬渲染？
+    - computed 和 methods 的性能差别是什么？
+    - keep-alive、路由懒加载和稳定 key 分别解决什么性能问题？
 -->
 
 <!doctype html>
@@ -33,18 +32,27 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>列表渲染使用稳定 <code>key</code>，避免 index <code>key</code> 导致错误复用。</li>
-          <li>大列表可分页、虚拟滚动，或先在非响应式临时变量中处理后整体赋值。</li>
-          <li><code>computed</code> 适合有缓存的派生数据，methods 每次渲染都会重新执行。</li>
-          <li>keep-alive 可缓存频繁切换的组件，但缓存过多也会占内存。</li>
-          <li>路由组件可懒加载，减少首屏加载体积。</li>
+          <li>Vue 2 性能优化应先定位瓶颈：是首屏包体积、响应式数据过大、频繁重渲染、真实 DOM 太多，还是缓存策略不当；不要一上来泛泛加优化。</li>
+          <li>大列表优先分页、虚拟滚动或只渲染可视区域；示例中的整体赋值减少了循环期间对响应式数组的逐项变更，但真实项目仍要控制 DOM 节点数量。</li>
+          <li><code>computed</code> 基于响应式依赖缓存，依赖没变时复用结果；methods 每次渲染都会重新执行，适合便宜计算或需要每次执行的逻辑。</li>
+          <li>稳定 <code>key</code> 能减少错误复用和不必要销毁，尤其是带输入框、组件状态、过渡动画的列表；随机 key 或 index key 都可能制造额外成本。</li>
+          <li><code>keep-alive</code> 适合缓存频繁切换且创建成本高的组件，但缓存过多会占内存，需要 <code>include</code>、<code>exclude</code>、<code>max</code> 控制范围。</li>
+          <li>路由懒加载减少首屏下载和解析压力，但首次进入懒加载页面可能变慢；弱网、chunk 404、版本缓存不一致时要有 loading 和失败兜底。Vue 2 已处于维护/历史版本语境，新项目通常优先 Vue 3 生态。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>列表渲染使用稳定 key？</strong> 列表渲染使用稳定 <code>key</code>，避免 index <code>key</code> 导致错误复用</li>
-          <li><strong>大列表可分页、虚拟滚动？</strong> 大列表可分页、虚拟滚动，或先在非响应式临时变量中处理后整体赋值</li>
-          <li><strong>computed 适合有缓存的派生数据？</strong> <code>computed</code> 适合有缓存的派生数据，methods 每次渲染都会重新执行</li>
-          <li><strong>keep-alive 可缓存频繁切换的组件？</strong> keep-alive 可缓存频繁切换的组件，但缓存过多也会占内存</li>
+          <li><strong>Vue 2 页面卡顿怎么排查？</strong> 结论是先用性能工具和日志定位瓶颈，再分别处理数据量、渲染次数、DOM 数量和资源体积。原因是不同瓶颈对应不同方案。项目里可先看首屏 bundle、接口返回量、列表节点数、computed 是否重复计算。</li>
+          <li><strong>大列表怎么优化？</strong> 结论是分页或虚拟滚动优先，批量数据先在普通数组里处理后整体赋值只是辅助。原因是真正贵的通常是大量 DOM 创建和更新。边界是 1000 条简单文本可能还能跑，复杂行组件、输入框、图片列表就必须控制可见范围。</li>
+          <li><strong>computed 和 methods 性能差别是什么？</strong> 结论是 computed 有依赖缓存，methods 每次 render 都执行。原因是 computed 由响应式依赖驱动重新求值。项目里昂贵派生数据用 computed，事件处理或无缓存需求的即时逻辑用 methods。</li>
+          <li><strong>keep-alive、懒加载、key 分别优化什么？</strong> 结论是 keep-alive 减少重复创建，懒加载减少初始包体积，稳定 key 帮助正确复用节点。原因是它们作用在缓存、网络加载、diff 身份三个不同阶段。边界是缓存过多会占内存，懒加载失败要兜底，错误 key 会造成状态错乱。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/computed.html" target="_blank" rel="noopener">Vue 2 官方文档：Computed Properties and Watchers</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/components-dynamic-async.html#keep-alive-with-Dynamic-Components" target="_blank" rel="noopener">Vue 2 官方文档：keep-alive with Dynamic Components</a></li>
+          <li><a href="https://v3.router.vuejs.org/guide/advanced/lazy-loading.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Lazy Loading Routes</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/list.html#Maintaining-State" target="_blank" rel="noopener">Vue 2 官方文档：Maintaining State</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/Performance" target="_blank" rel="noopener">MDN：Web performance</a></li>
         </ul>
       </div>
     </section>
@@ -88,7 +96,7 @@
             for (let i = 0; i < 1000; i++) {
               this.list.push({ id: i, text: "item-" + i });
             }
-            this.logs.push("逐个 push 会触发大量响应式通知，真实项目大数据量要谨慎");
+            this.logs.push("逐个 push 会产生多次数组变更观测和依赖通知，真实项目大数据量要谨慎");
           },
           createListGood() {
             const next = [];

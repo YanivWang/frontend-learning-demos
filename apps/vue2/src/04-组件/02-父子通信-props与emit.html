@@ -2,15 +2,15 @@
   分类: vue2 / 04-组件
   主题: 父子组件通讯（props 下传 + $emit 上抛）
   要点:
-    - 组件的 data 必须是函数，确保「每个实例一份独立拷贝」
-    - 父 → 子：v-bind:propName 传值；子 → 父：this.$emit('eventName', payload)
-    - 在 Vue 实例作用域外（如直接挂在 body 上）使用 my-comp1 会失效
+    - 组件 data 必须是函数，重复渲染同一组件时每个实例各自持有状态
+    - 父组件通过 props 下传 article，子组件通过 $emit 把 extend/small 事件交给父组件处理
+    - $emit 的事件负载由子组件定义，父组件监听器负责更新自己的状态
+    - Vue 组件只在挂载实例管理的模板作用域内生效，脱离根实例会退化成普通自定义元素
   面试:
-    - 父子组件通讯（props 下传 + $emit 上抛）的核心概念是什么
-    - 父子组件通讯（props 下传 + $emit 上抛）在实际项目里怎么用
-    - 父子组件通讯（props 下传 + $emit 上抛）有哪些常见坑或易错点
-    - 父子组件通讯（props 下传 + $emit 上抛）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 父子组件通讯（props 下传 + $emit 上抛）
+    - Vue 2 父子组件通信为什么强调单向数据流？
+    - 组件 data 为什么必须写成函数？
+    - $emit 适合传什么，什么时候该改用状态管理或 provide/inject？
+    - 为什么根实例外的组件标签不会被 Vue 接管？
 -->
 
 <!doctype html>
@@ -31,15 +31,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>组件的 data 必须是函数，确保「每个实例一份独立拷贝」。</li>
-          <li>父 → 子：v-<code>bind</code>:propName 传值；子 → 父：<code>this</code>.$emit('eventName', payload)。</li>
-          <li>在 Vue 实例作用域外（如直接挂在 body 上）使用 my-comp1 会失效。</li>
+          <li>父子通信的主线是单向数据流：父组件用 <code>v-bind:article</code> 把文章对象传给子组件，子组件只读取 prop，不直接改父组件状态。</li>
+          <li>子组件需要影响父组件时，通过 <code>this.$emit('extend')</code> 或 <code>this.$emit('small', payload)</code> 发出自定义事件；父组件用 <code>v-on</code> 监听并决定如何修改 <code>fontSize</code>。</li>
+          <li>组件的 <code>data</code> 必须是函数。每次创建组件实例都会调用该函数返回新对象，否则多个 <code>my-comp1</code> 会共享同一个 <code>count</code>，点击一个会影响全部。</li>
+          <li>事件负载应保持清晰且可预测：本页 <code>small</code> 传出对象负载，父组件拿到后先处理边界，再更新字号，避免让子组件直接控制父组件内部数据。</li>
+          <li>Vue 只编译挂载点内部的模板；挂在 <code>body</code> 里的 <code>&lt;my-comp1&gt;</code> 不属于 <code>#my-comp1-demo</code>，因此不会获得 props、指令或事件能力。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>组件的 data 必须是函数？</strong> 组件的 data 必须是函数，确保「每个实例一份独立拷贝」</li>
-          <li><strong>在 Vue 实例作用域外（如直接挂在 body 上）使用 my-comp1 会失？</strong> 在 Vue 实例作用域外（如直接挂在 body 上）使用 my-comp1 会失效</li>
-          <li><strong>父子组件通讯（props 下传 + $emit 上抛）的核心概念是什么？</strong> 组件的 data 必须是函数，确保「每个实例一份独立拷贝」；父 → 子：v-<code>bind</code>:propName 传值；子 → 父：<code>this</code>.$emit('eventName', payload)</li>
+          <li><strong>Vue 2 父子通信怎么答？</strong> 结论：父传子用 props，子通知父用 <code>$emit</code>。原因是 Vue 2 组件提倡单向数据流，状态拥有者负责更新状态。边界是兄弟、跨层或全局状态不适合层层转发，应该考虑事件总线、Vuex 或更明确的组合关系。</li>
+          <li><strong>组件 data 为什么必须是函数？</strong> 结论：为了让每个组件实例拿到独立状态。原因是组件会被复用多次，如果 data 是同一个对象引用，状态会串在一起。项目里凡是可复用组件都要把内部状态写成返回对象的函数。</li>
+          <li><strong>$emit 的 payload 应该怎么设计？</strong> 结论：payload 应该表达“发生了什么”和必要数据，而不是暴露父组件内部实现。原因是父组件才是状态更新的决策者。边界是高频事件或复杂表单要注意命名、节流和校验。</li>
+          <li><strong>为什么挂载点外的组件标签失效？</strong> 结论：Vue 只接管 <code>el</code> 对应 DOM 树内部的模板。原因是编译和响应式绑定都从根实例挂载点开始。项目里不要把需要 Vue 管理的组件散落在根节点外。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/components.html" target="_blank" rel="noopener">Vue 2 Guide: Components Basics</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/components-props.html" target="_blank" rel="noopener">Vue 2 Guide: Props</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/components-custom-events.html" target="_blank" rel="noopener">Vue 2 Guide: Custom Events</a></li>
+          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 2 EOL Notice</a></li>
         </ul>
       </div>
     </section>

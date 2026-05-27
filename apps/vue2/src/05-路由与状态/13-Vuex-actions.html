@@ -2,15 +2,15 @@
   分类: vue2 / 05-路由与状态
   主题: Vuex actions 详解（载荷 / 异步 / Promise / 嵌套 dispatch）
   要点:
-    - mutation 必须同步；action 可以包含异步逻辑，最后 commit 一个 mutation
-    - dispatch 也返回 Promise，可在组件里用 await 等异步流程
-    - state 需先声明 count 等字段，否则 mutation 自增会得到 NaN
+    - mutation 保持同步；action 承接异步、副作用和业务流程，最后 commit mutation
+    - dispatch 返回 action 的返回值；返回 Promise 时组件可以 await、then 或 catch
+    - action 支持载荷对象和对象风格 dispatch，团队项目应统一约定参数结构
+    - 异步 action 要处理失败、重复点击和竞态，不能只写成功 commit
   面试:
-    - Vuex actions 详解（载荷 / 异步 / Promise / 嵌套 dispatch）的核心概念是什么
-    - Vuex actions 详解（载荷 / 异步 / Promise / 嵌套 dispatch）在实际项目里怎么用
-    - Vuex actions 详解（载荷 / 异步 / Promise / 嵌套 dispatch）有哪些常见坑或易错点
-    - Vuex actions 详解（载荷 / 异步 / Promise / 嵌套 dispatch）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Vuex actions 详解（载荷 / 异步 / Promise / 嵌套 dispatch）
+    - 为什么 Vuex mutation 要同步，而 action 可以异步？
+    - dispatch 返回 Promise 后组件应该如何串联后续 UI 流程？
+    - action 的载荷写法和对象风格 dispatch 有什么区别？
+    - 异步 action 在接口失败或重复点击时要怎么设计？
 -->
 
 <!doctype html>
@@ -33,15 +33,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>mutation 必须同步；action 可以包含异步逻辑，最后 commit 一个 mutation。</li>
-          <li>dispatch 也返回 <code>Promise</code>，可在组件里用 <code>await</code> 等异步流程。</li>
-          <li>state 需先声明 count 等字段，否则 mutation 自增会得到 NaN。</li>
+          <li><code>mutation</code> 应保持同步，专注记录一次可追踪的 state 变更；<code>action</code> 负责接口请求、定时器、组合多个 mutation 等异步或副作用流程。</li>
+          <li><code>dispatch</code> 会返回 action handler 的返回值；当 action 返回 <code>Promise</code> 时，组件可以 <code>await dispatch(...)</code> 后更新按钮状态、跳转页面或展示错误。</li>
+          <li>载荷可以写成 <code>dispatch('incrementAsync', { amount: 3 })</code>，也可以对象风格 <code>dispatch({ type: 'incrementAsync', amount: 5 })</code>；团队项目应统一一种形态，避免 action 内部解析混乱。</li>
+          <li>异步 action 要考虑失败路径、重复点击和竞态。示例新增 <code>checkoutFail</code>，组件用 <code>try/catch</code> 接住失败，真实项目还会配合 loading、禁用按钮和请求取消。</li>
+          <li>state 字段仍应提前声明，例如 <code>count: 0</code>；否则 mutation 中做自增可能遇到 <code>undefined + 1</code> 得到 <code>NaN</code>，也不利于 Vue 2 响应式追踪。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>mutation 必须同步？</strong> mutation 必须同步；action 可以包含异步逻辑，最后 commit 一个 mutation；state 需先声明 count 等字段，否则 mutation 自增会得到 NaN</li>
-          <li><strong>dispatch 也返回 Promise？</strong> dispatch 也返回 <code>Promise</code>，可在组件里用 <code>await</code> 等异步流程</li>
-          <li><strong>state 需先声明 count 等字段？</strong> state 需先声明 count 等字段，否则 mutation 自增会得到 NaN</li>
+          <li><strong>为什么 mutation 同步、action 异步？</strong> 结论是 mutation 用来记录确定的状态变更，action 用来承接异步过程。原因是 devtools 需要同步记录 mutation 前后的状态快照。项目里请求接口、组合多个提交、失败重试都放 action，最终再 commit。</li>
+          <li><strong>组件如何等待 Vuex action 完成？</strong> 结论是让 action 返回 Promise，然后组件 <code>await this.$store.dispatch(...)</code>。原因是 <code>dispatch</code> 会透传 handler 的返回值。项目里常用它控制提交按钮 loading、成功后跳转、失败后展示错误提示。</li>
+          <li><strong>载荷写法怎么选？</strong> 结论是简单参数可用第二个参数，对象风格适合统一事件形态。原因是对象风格把 <code>type</code> 和 payload 放在同一个对象里，更接近事件描述。边界是 action 内部要按团队约定解析，别同时混用多个字段名。</li>
+          <li><strong>异步 action 的风险点是什么？</strong> 结论是要处理接口失败、重复点击和后返回请求覆盖先返回请求。原因是 action 只是组织流程，不会自动保证幂等或取消。项目里通常加 loading 锁、请求 id、AbortController 或最后一次请求 wins 的策略。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v3.vuex.vuejs.org/guide/actions.html" target="_blank" rel="noopener">Vuex 3 官方文档：Actions</a></li>
+          <li><a href="https://v3.vuex.vuejs.org/guide/mutations.html" target="_blank" rel="noopener">Vuex 3 官方文档：Mutations</a></li>
+          <li><a href="https://v3.vuex.vuejs.org/guide/forms.html" target="_blank" rel="noopener">Vuex 3 官方文档：Form Handling</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function" target="_blank" rel="noopener">MDN：async function</a></li>
         </ul>
       </div>
     </section>
@@ -101,6 +111,13 @@
             return dispatch('checkout').then(function () {
               commit('incrementB', { count: 1 });
             });
+          },
+          checkoutFail() {
+            return new Promise(function (resolve, reject) {
+              setTimeout(function () {
+                reject(new Error('模拟接口失败：库存不足'));
+              }, 500);
+            });
           }
         },
         getters: {}
@@ -134,6 +151,7 @@
           <button @click="$store.commit('increment')">commit increment</button>
           <button @click="dispatchAsync">dispatch incrementAsync({ amount: 3 })</button>
           <button @click="runCheckout">await checkoutPlus</button>
+          <button @click="runCheckoutFail">模拟失败 action</button>
         </div>
         `,
         methods: {
@@ -144,6 +162,14 @@
             this.status = 'checkoutPlus 进行中…';
             await this.$store.dispatch('checkoutPlus');
             this.status = 'checkoutPlus 完成，count = ' + this.$store.state.count;
+          },
+          runCheckoutFail: async function () {
+            this.status = 'checkoutFail 进行中…';
+            try {
+              await this.$store.dispatch('checkoutFail');
+            } catch (error) {
+              this.status = error.message;
+            }
           },
           ...Vuex.mapActions(['increment', 'incrementA', 'incrementAsync']),
           ...Vuex.mapActions({ add: 'increment' })

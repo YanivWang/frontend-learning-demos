@@ -2,15 +2,15 @@
   分类: vue2 / 04-组件
   主题: Vue.component 全局组件 + data 与 vm 代理同步
   要点:
-    - props 用于声明组件外部传入的属性；template 是组件的渲染模板
-    - 传入 Vue 的 data 对象与 vm 字段双向同步：vm.a === data.a，互改互见
-    - 易错点：同一元素绑定多个相同 v-on:click，会按声明顺序依次执行
+    - Vue.component 必须先注册再被当前根实例模板编译，组件名在 DOM 模板中推荐 kebab-case
+    - props 是父组件传入子组件的只读入口，template 必须提供单一根节点
+    - new Vue 的 data 会被代理到 vm 实例，vm.$data === 原始 data 对象
+    - 动态新增根级字段不会自动响应式，Vue 2 新项目选型应优先迁移 Vue 3
   面试:
-    - Vue.component 全局组件 + data 与 vm 代理同步的核心概念是什么
-    - Vue.component 全局组件 + data 与 vm 代理同步在实际项目里怎么用
-    - Vue.component 全局组件 + data 与 vm 代理同步有哪些常见坑或易错点
-    - Vue.component 全局组件 + data 与 vm 代理同步和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Vue.component 全局组件 + data 与 vm 代理同步
+    - Vue.component 注册的组件什么时候能在模板里使用？
+    - props、data 代理和 vm.$data 的关系怎么解释？
+    - Vue 2 里为什么不建议运行时给根 data 动态加新字段？
+    - 全局组件适合什么场景，什么时候应该改为局部组件？
 -->
 
 <!doctype html>
@@ -31,15 +31,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>props 用于声明组件外部传入的属性；template 是组件的渲染模板。</li>
-          <li>传入 Vue 的 data 对象与 vm 字段双向同步：vm.a === data.a，互改互见。</li>
-          <li>易错点：同一元素绑定多个相同 v-on:click，会按声明顺序依次执行。</li>
+          <li>Vue 2 组件是可复用的 Vue 实例。<code>Vue.component('todo-item', options)</code> 会做全局注册，当前根实例及其子组件树在注册之后编译模板时都能识别这个组件。</li>
+          <li><code>props</code> 是父组件向子组件传值的声明入口；本页的 <code>todo-item</code> 接收 <code>todo</code>，并在模板里读取 <code>todo.name</code> 与 <code>todo.age</code>。子组件不应直接修改 prop，而应通过事件请求父组件更新。</li>
+          <li><code>new Vue({ data })</code> 会把 data 对象上的既有字段代理到实例上，所以示例里 <code>app_2.a</code> 与 <code>data.a</code> 互相同步，且 <code>app_2.$data === data</code>。</li>
+          <li>Vue 2 响应式初始化发生在实例创建阶段；创建后给根级 <code>data</code> 或实例动态添加新字段，不会自动变成响应式。维护旧项目时用 <code>Vue.set</code> 或预声明字段，新项目应优先使用 Vue 3。</li>
+          <li>同一元素上重复写同名事件监听没有教学价值且容易误导维护者；实际项目应合并处理逻辑或拆成语义明确的方法。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>props 用于声明组件外部传入的属性？</strong> props 用于声明组件外部传入的属性；template 是组件的渲染模板</li>
-          <li><strong>传入 Vue 的 data 对象与 vm 字段双向同步？</strong> 传入 Vue 的 data 对象与 vm 字段双向同步：vm.a === data.a，互改互见</li>
-          <li><strong>Vue.component 全局组件 + data 与 vm 代理同步的核心概念是什么？</strong> 传入 Vue 的 data 对象与 vm 字段双向同步：vm.a === data.a，互改互见</li>
+          <li><strong>Vue.component 注册后为什么所有子组件都能用？</strong> 结论：全局注册会把组件挂到 Vue 构造器的全局注册表，之后创建的根实例及其子组件模板都能解析到它。原因是模板编译需要先知道标签对应的组件定义。边界是注册顺序要早于实例模板编译，过多全局组件也会让依赖关系变得不清晰。</li>
+          <li><strong>props 和 data 代理分别解决什么问题？</strong> 结论：props 解决父到子的外部输入，data 代理解决实例内部状态访问。原因是 Vue 会把 data 中已有字段代理到 vm，同时把 props 暴露给组件模板。项目里应避免子组件直接改 prop，状态来源放在拥有它的父组件或状态层。</li>
+          <li><strong>为什么 Vue 2 里动态新增根级 data 字段不推荐？</strong> 结论：实例创建后新增的根级字段不会自动具备响应式能力。原因是 Vue 2 基于 <code>Object.defineProperty</code> 初始化拦截已有属性。边界是嵌套对象可用 <code>Vue.set</code>，但根级字段最好提前声明。</li>
+          <li><strong>全局组件和局部组件怎么选？</strong> 结论：跨很多页面复用的基础组件可以全局注册，业务组件优先局部注册。原因是局部注册让依赖更显式，也更利于维护和按需加载。Vue 2 已是历史版本语境，新项目通常应直接使用 Vue 3 的组件组织方式。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/components.html" target="_blank" rel="noopener">Vue 2 Guide: Components Basics</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/instance.html" target="_blank" rel="noopener">Vue 2 Guide: The Vue Instance</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/reactivity.html" target="_blank" rel="noopener">Vue 2 Guide: Reactivity in Depth</a></li>
+          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 2 EOL Notice</a></li>
         </ul>
       </div>
     </section>

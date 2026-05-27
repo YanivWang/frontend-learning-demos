@@ -2,15 +2,15 @@
   分类: vue2 / 05-路由与状态
   主题: Vuex 全家桶（state / mutations / actions / getters / mapState / mapGetters）
   要点:
-    - state 必须先声明字段才会被响应式追踪；getters 的「函数式」用法可以接外部参数
-    - 易错点：doneTodos 是「返回函数的 getter」，doneTodos.length 会取到函数 arity(=1)，不是数组长度
-    - doneTodosArr 直接返回 done:true 的数组，doneTodosCount 取其 length
+    - Vuex 3 是 Vue 2 常见集中式状态管理方案，新项目通常优先 Vue 3 + Pinia
+    - state 是单一状态树；mutation 同步修改 state；action 负责异步后 commit mutation
+    - getter 类似 store 级 computed；返回函数的 getter 适合按参数查询，但不等同数组 getter
+    - mapState / mapGetters 把 store 字段映射成组件 computed，避免模板里反复写 $store
   面试:
-    - Vuex 全家桶（state / mutations / actions / getters / mapState / mapGetters）的核心概念是什么
-    - Vuex 全家桶（state / mutations / actions / getters / mapState / mapGetters）在实际项目里怎么用
-    - Vuex 全家桶（state / mutations / actions / getters / mapState / mapGetters）有哪些常见坑或易错点
-    - Vuex 全家桶（state / mutations / actions / getters / mapState / mapGetters）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Vuex 全家桶（state / mutations / actions / getters / mapState / mapGetters）
+    - Vuex 的 state、mutation、action、getter 分别负责什么？
+    - 为什么 Vuex 要求通过 mutation 修改状态，而不是组件直接改 state？
+    - getter 返回函数时和普通数组 getter 有什么区别？
+    - mapState 访问组件局部状态时为什么要用普通函数而不是箭头函数？
 -->
 
 <!doctype html>
@@ -34,15 +34,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>state 必须先声明字段才会被响应式追踪；getters 的「函数式」用法可以接外部参数。</li>
-          <li>易错点：doneTodos 是「返回函数的 getter」，doneTodos.length 会取到函数 arity(=1)，不是数组长度。</li>
-          <li>doneTodosArr 直接返回 done:true 的数组，doneTodosCount 取其 length。</li>
+          <li>Vuex 是 Vue 2 时代常见的集中式状态管理库，适合多个组件共享登录用户、权限、购物车等状态；新项目选型通常把 Vue 3 + Pinia 作为主线，Vuex 多用于 Vue 2 或存量项目维护。</li>
+          <li><code>state</code> 是单一状态树，字段最好在初始化时声明；Vue 2 响应式基于 <code>Object.defineProperty</code>，后加根级字段不会自动具备完整响应式能力。</li>
+          <li><code>mutation</code> 是同步修改 state 的唯一推荐入口，便于调试工具记录每一次状态变更；<code>action</code> 可以做异步，最终通过 <code>commit</code> 提交 mutation。</li>
+          <li><code>getter</code> 类似 store 级 computed。普通 getter 返回派生值；返回函数的 getter 可接外部参数，例如 <code>doneTodos(2)</code>，但 <code>doneTodos.length</code> 取到的是函数参数个数，不是结果数组长度。</li>
+          <li><code>mapState</code>、<code>mapGetters</code> 会生成 computed 配置；如果映射函数里要访问组件局部状态 <code>this.localCount</code>，应使用普通函数，箭头函数没有组件实例的 <code>this</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>state 必须先声明字段才会被响应式追踪？</strong> state 必须先声明字段才会被响应式追踪；getters 的「函数式」用法可以接外部参数</li>
-          <li><strong>doneTodosArr 直接返回 done？</strong> 易错点：doneTodos 是「返回函数的 getter」，doneTodos.length 会取到函数 arity(=1)，不是数组长度；doneTodosArr 直接返回 done:true 的数组，doneTodosCount 取其 length</li>
-          <li><strong>Vuex 全家桶（state / mutations / actions / getters / mapState / mapGetters）的核心概念是什么？</strong> state 必须先声明字段才会被响应式追踪；getters 的「函数式」用法可以接外部参数；易错点：doneTodos 是「返回函数的 getter」，doneTodos.length 会取到函数 arity(=1)，不是数组长度</li>
+          <li><strong>Vuex 的核心角色怎么分工？</strong> 结论是 state 存共享数据，mutation 同步改数据，action 处理异步流程，getter 做派生读取。原因是 Vuex 希望状态变化可预测、可追踪。项目里组件读取 state/getter，用户操作 dispatch action 或 commit mutation。</li>
+          <li><strong>为什么不能随意直接改 Vuex state？</strong> 结论是应该通过 mutation 修改。原因是 mutation 是同步、可记录的状态变更入口，调试工具才能追踪变更来源。边界是技术上能直接改对象属性，但会破坏团队约定和调试体验，不适合作为项目写法。</li>
+          <li><strong>getter 返回函数有什么坑？</strong> 结论是返回函数的 getter 是“先取 getter，再调用函数”，不是一个数组结果。原因是它用于按参数查询，例如 <code>doneTodos(2)</code>。项目里如果要显示已完成数量，应另写返回数组或数量的 getter，不能读函数的 <code>length</code> 当数组长度。</li>
+          <li><strong><code>mapState</code> 里什么时候不能用箭头函数？</strong> 结论是需要访问组件实例时不能用箭头函数。原因是箭头函数不会绑定 Vue 组件的 <code>this</code>。项目里像 <code>countPlusLocalState(state) { return state.count + this.localCount }</code> 应写普通函数。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v3.vuex.vuejs.org/guide/state.html" target="_blank" rel="noopener">Vuex 3 官方文档：State</a></li>
+          <li><a href="https://v3.vuex.vuejs.org/guide/mutations.html" target="_blank" rel="noopener">Vuex 3 官方文档：Mutations</a></li>
+          <li><a href="https://v3.vuex.vuejs.org/guide/actions.html" target="_blank" rel="noopener">Vuex 3 官方文档：Actions</a></li>
+          <li><a href="https://v3.vuex.vuejs.org/guide/getters.html" target="_blank" rel="noopener">Vuex 3 官方文档：Getters</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/reactivity.html" target="_blank" rel="noopener">Vue 2 官方文档：Reactivity in Depth</a></li>
         </ul>
       </div>
     </section>

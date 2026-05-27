@@ -197,3 +197,6 @@ npm run validate:smoke
 - 2026-05-27：完成 `apps/vue2/src/01-基础语法/04-bindClass.html`、`05-bindStyle.html`、`06-computed.html` 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `180/357` 提升到 `183/357`，下一处失败为 `apps/vue2/src/01-基础语法/07-watch.html`。
 - 2026-05-27：完成 `apps/vue2/src/01-基础语法/07-watch.html` 至 `16-自定义指令-过滤器-mixin-插件.html` 共 10 个 demo 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `183/357` 提升到 `193/357`，下一处失败为 `apps/vue2/src/01-基础语法/17-综合复习.html`。
 - 2026-05-27：完成 `apps/vue2/src/01-基础语法/17-综合复习.html` 至 `apps/vue2/src/03-生命周期/01-八个钩子速记.html` 共 10 个 demo 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `193/357` 提升到 `203/357`，下一处失败为 `apps/vue2/src/04-组件/01-全局与局部组件.html`。
+- 2026-05-27：完成 `apps/vue2/src/04-组件/01-全局与局部组件.html` 至 `10-bindComponent-class.html` 共 10 个 demo 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `203/357` 提升到 `213/357`，下一处失败为 `apps/vue2/src/04-组件/11-组件通信汇总.html`。
+- 2026-05-27：完成 `apps/vue2/src/04-组件/11-组件通信汇总.html` 至 `apps/vue2/src/05-路由与状态/08-路由重定向与alias.html` 共 10 个 demo 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `213/357` 提升到 `223/357`，下一处失败为 `apps/vue2/src/05-路由与状态/09-路由props解耦.html`。
+- 2026-05-27：完成 `apps/vue2/src/05-路由与状态/09-路由props解耦.html` 至 `apps/vue2/src/06-原理与性能/03-性能优化.html` 共 10 个 demo 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `223/357` 提升到 `233/357`，下一处失败为 `apps/vue2/src/07-源码简读/01-源码阅读前置-Symbol.html`。

@@ -2,15 +2,15 @@
   分类: vue2 / 04-组件
   主题: props 传值 + 自定义事件 + 动态组件
   要点:
-    - DOM 模板里事件名会全部小写，必须用 kebab-case：@blow-event 对应 $emit('blow-event')
-    - @click.native 是 Vue2 专属修饰符：监听组件根元素的原生事件
-    - <component :is="..."> 切换不同组件，注意被切换组件需提前注册
+    - props 负责父到子输入，自定义事件负责子到父通知，二者共同维护单向数据流
+    - DOM 模板里的事件名会被浏览器大小写归一，Vue 2 自定义事件推荐 kebab-case
+    - .native 是 Vue 2 监听组件根元素原生事件的修饰符，Vue 3 已移除该写法
+    - <component :is="..."> 可按组件名或组件对象动态切换，目标组件必须已注册或可解析
   面试:
-    - props 传值 + 自定义事件 + 动态组件的核心概念是什么
-    - props 传值 + 自定义事件 + 动态组件在实际项目里怎么用
-    - props 传值 + 自定义事件 + 动态组件有哪些常见坑或易错点
-    - props 传值 + 自定义事件 + 动态组件和相近 API 如何区分选型
-    - 面试中如何简洁讲清 props 传值 + 自定义事件 + 动态组件
+    - props 和 $emit 为什么常被放在一起考？
+    - DOM 模板里自定义事件为什么推荐 kebab-case？
+    - Vue 2 的 .native 解决什么问题，迁移 Vue 3 时怎么处理？
+    - 动态组件 :is 和 v-if 切换组件有什么取舍？
 -->
 
 <!doctype html>
@@ -31,15 +31,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>DOM 模板里事件名会全部小写，必须用 kebab-case：@blow-event 对应 $emit('blow-event')。</li>
-          <li>@click.native 是 Vue2 专属修饰符：监听组件根元素的原生事件。</li>
-          <li>&lt;component :is=&quot;...&quot;&gt; 切换不同组件，注意被切换组件需提前注册。</li>
+          <li>本页同时演示三件事：父组件通过 <code>title/content</code> props 下传数据，子组件通过 <code>$emit('blow-event', payload)</code> 通知父组件，父组件用监听器处理结果。</li>
+          <li>在 DOM 模板中，浏览器会把特性名大小写归一；Vue 2 自定义事件不会自动大小写转换，所以事件名推荐写成 <code>blow-event</code> 这类 kebab-case。</li>
+          <li><code>@click.native</code> 是 Vue 2 的组件事件修饰符，用来监听子组件根节点的原生点击。Vue 3 已移除该修饰符，迁移时通常改为显式 <code>emits</code> 或透传监听器。</li>
+          <li><code>&lt;component :is=&quot;currentComp&quot;&gt;</code> 根据字符串或组件对象决定渲染哪个组件。切换目标必须已经全局注册、局部注册，或直接传入组件选项对象。</li>
+          <li>动态组件适合一组互斥的组件视图，例如 tab 或步骤页；如果只是条件显示少量 DOM，<code>v-if</code> 更直观。需要保留被切走组件状态时再配合 <code>keep-alive</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>DOM 模板里事件名会全部小写？</strong> DOM 模板里事件名会全部小写，必须用 kebab-case：@blow-event 对应 $emit('blow-event')</li>
-          <li><strong>@click.native 是 Vue2 专属修饰符？</strong> @click.native 是 Vue2 专属修饰符：监听组件根元素的原生事件</li>
-          <li><strong>&lt;component？</strong> &lt;component :is=&quot;...&quot;&gt; 切换不同组件，注意被切换组件需提前注册</li>
+          <li><strong>props 和 $emit 为什么常一起讲？</strong> 结论：它们组成 Vue 2 父子通信的基本闭环。原因是 props 只负责父到子输入，子组件不能直接改父状态，只能 emit 事件请求父组件处理。项目里这样能保持状态来源清晰。</li>
+          <li><strong>自定义事件为什么推荐 kebab-case？</strong> 结论：在 DOM 模板中最稳妥。原因是 HTML 特性大小写会被浏览器处理，camelCase 事件名可能监听不到。边界是在单文件组件字符串模板里限制较少，但团队仍应统一命名。</li>
+          <li><strong>.native 是什么，迁移时注意什么？</strong> 结论：Vue 2 的 <code>.native</code> 监听组件根元素上的原生事件。原因是普通 <code>@click</code> 监听的是子组件 emit 的自定义事件。迁移 Vue 3 时该修饰符已移除，应由子组件显式声明并触发事件，或通过 attrs 透传。</li>
+          <li><strong>动态组件和 v-if 怎么选？</strong> 结论：一组同位置互斥组件用动态组件更清晰，简单条件块用 <code>v-if</code>。原因是 <code>:is</code> 把“当前组件类型”抽成状态。边界是动态组件默认切换会销毁旧实例，需要缓存状态时使用 <code>keep-alive</code>。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/components-props.html" target="_blank" rel="noopener">Vue 2 Guide: Props</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/components-custom-events.html" target="_blank" rel="noopener">Vue 2 Guide: Custom Events</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/components-dynamic-async.html" target="_blank" rel="noopener">Vue 2 Guide: Dynamic & Async Components</a></li>
+          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 2 EOL Notice</a></li>
         </ul>
       </div>
     </section>

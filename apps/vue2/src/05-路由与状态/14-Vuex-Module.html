@@ -2,14 +2,15 @@
   分类: vue2 / 05-路由与状态
   主题: Vuex Module 演示（按模块拆分 store）
   要点:
-    - moduleA（count 计数）、moduleB（user 信息），通过 namespaced 隔离
-    - 访问 moduleA 的 state.count：store.state.moduleA.count；mutations/actions/getters 同理
+    - module 把大型单一 store 按业务域拆分，仍挂在同一棵状态树下
+    - namespaced: true 会给 mutation/action/getter 加模块路径，避免命名冲突
+    - 模块 state 推荐写成函数，避免复用模块对象时状态相互污染
+    - mapState / mapGetters / mapActions 可接 namespace 简化组件访问
   面试:
-    - Vuex Module 演示（按模块拆分 store）的核心概念是什么
-    - Vuex Module 演示（按模块拆分 store）在实际项目里怎么用
-    - Vuex Module 演示（按模块拆分 store）有哪些常见坑或易错点
-    - Vuex Module 演示（按模块拆分 store）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Vuex Module 演示（按模块拆分 store）
+    - Vuex 为什么要用 module 拆分 store？
+    - namespaced: true 改变了 commit、dispatch、getter 的哪些访问方式？
+    - module state 为什么常写成函数？
+    - 模块化 store 在大型项目中有哪些命名和复用边界？
 -->
 
 <!doctype html>
@@ -33,16 +34,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>moduleA（count 计数）、moduleB（user 信息），通过 namespaced 隔离。</li>
-          <li>访问 moduleA 的 state.count：store.state.moduleA.count；mutations/actions/getters 同理。</li>
-          <li>moduleA（count 计数）、moduleB（user 信息），通过 namespaced 隔离。</li>
-          <li>访问 moduleA 的 state.count：store.state.moduleA.count；mutations/actions/getters 同理。</li>
+          <li>Vuex 使用单一状态树，但大型应用把所有 state、mutation、action 放在一个文件会变臃肿；module 允许按用户、商品、计数器等业务域拆分。</li>
+          <li>模块 state 挂在根 state 的模块名下面，示例中是 <code>store.state.moduleA.count</code> 和 <code>store.state.moduleB.name</code>。</li>
+          <li><code>namespaced: true</code> 会让 mutation、action、getter 带上模块路径，例如 <code>commit('moduleA/increment')</code>，避免不同模块都叫 <code>increment</code> 时冲突。</li>
+          <li>模块 <code>state</code> 推荐写成函数返回对象，尤其是模块会被复用或动态注册时，可以避免多个实例共享同一个 state 对象。</li>
+          <li><code>mapState('moduleA', ...)</code>、<code>mapGetters('moduleA', ...)</code>、<code>mapActions('moduleA', ...)</code> 能把命名空间访问收敛到组件 computed / methods 中。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>moduleA（count 计数）、moduleB（user 信息）？</strong> moduleA（count 计数）、moduleB（user 信息），通过 namespaced 隔离；访问 moduleA 的 state.count：store.state.moduleA.count；mutations/actions/getters 同理</li>
-          <li><strong>访问 moduleA 的 state.count？</strong> 访问 moduleA 的 state.count：store.state.moduleA.count；mutations/actions/getters 同理</li>
-          <li><strong>Vuex Module 演示（按模块拆分 store）的核心概念是什么？</strong> moduleA（count 计数）、moduleB（user 信息），通过 namespaced 隔离；访问 moduleA 的 state.count：store.state.moduleA.count；mutations/actions/getters 同理</li>
+          <li><strong>Vuex 为什么需要 module？</strong> 结论是 module 用来把大型 store 按业务域拆分。原因是 Vuex 仍是单一状态树，但代码组织可以分模块维护。项目里用户、权限、购物车、订单通常各自一个模块。</li>
+          <li><strong><code>namespaced: true</code> 有什么影响？</strong> 结论是 mutation、action、getter 访问要带模块路径。原因是命名空间把局部类型注册到 <code>moduleName/type</code> 下。边界是模块内部 action 默认拿到局部 context，访问根状态要用 <code>rootState</code> 或根路径选项。</li>
+          <li><strong>module state 为什么建议写函数？</strong> 结论是为了每次创建模块状态时返回新对象。原因是模块对象可能被复用，直接写对象会共享引用。项目里动态注册模块或多实例模块尤其要注意这个边界。</li>
+          <li><strong>模块化 store 有哪些坑？</strong> 结论是命名空间路径、根模块访问和辅助函数参数最容易写错。原因是 state 访问路径、commit/dispatch 类型、getter key 三者规则不同。项目里应约定模块名常量或封装 action 名，减少字符串散落。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v3.vuex.vuejs.org/guide/modules.html" target="_blank" rel="noopener">Vuex 3 官方文档：Modules</a></li>
+          <li><a href="https://v3.vuex.vuejs.org/guide/state.html" target="_blank" rel="noopener">Vuex 3 官方文档：State</a></li>
+          <li><a href="https://v3.vuex.vuejs.org/guide/actions.html" target="_blank" rel="noopener">Vuex 3 官方文档：Actions</a></li>
         </ul>
       </div>
     </section>

@@ -1,16 +1,16 @@
 <!--
   分类: vue2 / 05-路由与状态
-  主题: vue-router 全套导航守卫 + 受保护路由（meta.requiresAuth）
-  要点:
-    - 守卫顺序（简化）：beforeRouteLeave → 全局 beforeEach → beforeRouteUpdate → beforeEnter → beforeRouteEnter → beforeResolve → afterEach
-    - meta.requiresAuth + 全局 beforeEach 实现登录拦截
-    - 组件内 beforeRouteUpdate / beforeRouteEnter 必须正确调用 next()
+  主题: vue-router 全套导航守卫 + 受保护路由（meta.requiresAuth）
+  要点:
+    - 导航守卫可全局、路由独享、组件内声明，用来放行、重定向或取消导航
+    - meta.requiresAuth + router.beforeEach 是登录拦截的常见入口，但登录态要考虑刷新和过期
+    - beforeRouteEnter 不能访问 this，只能通过 next(vm => ...) 拿到组件实例
+    - afterEach 没有 next，适合埋点和收尾；不要在守卫中漏调或多调 next
   面试:
-    - vue-router 全套导航守卫 + 受保护路由（meta.requiresAuth）的核心概念是什么
-    - vue-router 全套导航守卫 + 受保护路由（meta.requiresAuth）在实际项目里怎么用
-    - vue-router 全套导航守卫 + 受保护路由（meta.requiresAuth）有哪些常见坑或易错点
-    - vue-router 全套导航守卫 + 受保护路由（meta.requiresAuth）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 vue-router 全套导航守卫 + 受保护路由（meta.requiresAuth）
+    - Vue Router 3 的完整导航解析流程大致是什么？
+    - 全局 beforeEach、beforeEnter、组件内守卫分别放什么逻辑？
+    - beforeRouteEnter 为什么不能直接访问 this？
+    - 登录拦截用 meta.requiresAuth 时要注意哪些刷新、重定向和存储边界？
 -->
 
 <!doctype html>
@@ -32,15 +32,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>守卫顺序（简化）：beforeRouteLeave → 全局 beforeEach → beforeRouteUpdate → beforeEnter → beforeRouteEnter → beforeResolve → afterEach。</li>
-          <li>meta.requiresAuth + 全局 beforeEach 实现登录拦截。</li>
-          <li>组件内 beforeRouteUpdate / beforeRouteEnter 必须正确调用 next()。</li>
+          <li>Vue Router 3 的守卫用于控制一次导航：可以放行、重定向到登录页，或用 <code>next(false)</code> 取消离开；示例中的 About 离开确认就是取消导航的边界。</li>
+          <li>典型顺序是离开组件的 <code>beforeRouteLeave</code>、全局 <code>beforeEach</code>、复用组件的 <code>beforeRouteUpdate</code>、路由独享 <code>beforeEnter</code>、进入组件 <code>beforeRouteEnter</code>、全局 <code>beforeResolve</code>、确认导航、<code>afterEach</code>。</li>
+          <li><code>meta.requiresAuth</code> 本身只是路由记录上的自定义字段，真正的拦截逻辑要在全局守卫中读取 <code>to.matched</code>；嵌套路由时用 <code>matched.some</code> 比只看 <code>to.meta</code> 更稳。</li>
+          <li><code>beforeRouteEnter</code> 发生在组件实例创建前，不能访问 <code>this</code>，只有它支持 <code>next(vm =&gt; ...)</code>；<code>beforeRouteUpdate</code> 和 <code>beforeRouteLeave</code> 已有实例，不支持这种回调。</li>
+          <li>本 demo 用 <code>sessionStorage</code> 模拟登录态，刷新同标签页仍在，关闭标签页会丢失；真实项目还要处理 token 过期、后端 401、redirect 白名单和重复跳转失败。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>meta.requiresAuth + 全局 beforeEach 实现登录拦截？</strong> meta.requiresAuth + 全局 beforeEach 实现登录拦截</li>
-          <li><strong>组件内 beforeRouteUpdate / beforeRouteEnter？</strong> 组件内 beforeRouteUpdate / beforeRouteEnter 必须正确调用 next()</li>
-          <li><strong>vue-router 全套导航守卫 + 受保护路由（meta.requiresAuth）的核心概念是什么？</strong> 守卫顺序（简化）：beforeRouteLeave → 全局 beforeEach → beforeRouteUpdate → beforeEnter → beforeRouteEnter → beforeResolve → afterEach；meta.requiresAuth + 全局 beforeEach 实现登录拦截</li>
+          <li><strong>导航守卫的完整流程怎么讲？</strong> 结论是先处理离开和全局前置，再处理复用、路由独享、进入组件、resolve，最后确认导航并触发 afterEach。原因是 Router 要先确认旧组件能否离开，再解析新路由和异步组件。项目里排查“为什么页面没进来”时，应按这个顺序看日志。</li>
+          <li><strong>全局守卫、路由独享守卫、组件内守卫怎么分工？</strong> 结论是全局守卫放登录、权限、埋点前置，<code>beforeEnter</code> 放单路由策略，组件内守卫放未保存表单、同组件参数更新。原因是它们的触发范围不同。边界是不要把业务请求都堆进全局守卫，否则路由层会过重。</li>
+          <li><strong><code>beforeRouteEnter</code> 为什么不能直接用 <code>this</code>？</strong> 结论是此时组件实例还没创建。原因是进入守卫运行在导航确认前，Vue 还没有挂载新组件。项目里如果要访问实例，应使用 <code>next(vm =&gt; ...)</code>，或者把数据请求放在组件 created / watch 中。</li>
+          <li><strong>登录拦截有哪些坑？</strong> 结论是要处理刷新、过期、重定向回跳和重复导航。原因是前端存储只代表本地状态，后端 401 才是最终认证结果。项目里通常用 <code>meta.requiresAuth</code> 做第一层拦截，请求拦截器统一处理 token 失效。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v3.router.vuejs.org/guide/advanced/navigation-guards.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Navigation Guards</a></li>
+          <li><a href="https://v3.router.vuejs.org/guide/advanced/meta.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Route Meta Fields</a></li>
+          <li><a href="https://v3.router.vuejs.org/guide/advanced/navigation-failures.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Navigation Failures</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage" target="_blank" rel="noopener">MDN：Window.sessionStorage</a></li>
         </ul>
       </div>
     </section>
