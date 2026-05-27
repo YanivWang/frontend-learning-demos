@@ -2,16 +2,15 @@
 分类: typescript / 02-进阶
   主题: 手写 Utility Types 练习
   要点:
-    - Partial&lt;T&gt;：所有属性可选
-    - Pick&lt;T, K&gt; / Omit&lt;T, K&gt;：挑选或排除键
-    - 实现思路：映射类型 + keyof + in
-    - 面试：理解内置工具类型比背 API 更重要
+    - MyPartial 通过映射类型给每个属性加 ?，是浅层可选
+    - MyPick 约束 K extends keyof T，只允许挑选真实存在的键
+    - MyOmit 通常组合 Pick、Exclude 和 keyof 排除指定键
+    - 手写题考察 keyof、in、T[K]、Exclude 的组合，而不是背答案
   面试:
-    - 手写 Utility Types 练习的核心概念是什么
-    - 手写 Utility Types 练习在实际项目里怎么用
-    - 手写 Utility Types 练习有哪些常见坑或易错点
-    - 手写 Utility Types 练习和相近 API 如何区分选型
-    - 面试中如何简洁讲清 手写 Utility Types 练习
+    - 如何手写 MyPartial、MyPick 和 MyOmit？
+    - K extends keyof T 在 MyPick 里为什么必要？
+    - Omit 为什么常用 Pick 和 Exclude 组合实现？
+    - 运行时 pick/omit 和类型层 Pick/Omit 有什么区别？
 -->
 
 <!doctype html>
@@ -36,16 +35,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Partial&amp;lt;T&amp;gt;：所有属性可选。</li>
-          <li>Pick&amp;lt;T, K&amp;gt; / Omit&amp;lt;T, K&amp;gt;：挑选或排除键。</li>
-          <li>实现思路：映射类型 + keyof + in。</li>
-          <li>面试：理解内置工具类型比背 API 更重要。</li>
+          <li><code>MyPartial&lt;T&gt;</code> 的核心是 <code>{ [K in keyof T]?: T[K] }</code>：遍历所有键，保留原值类型，并给属性加上可选修饰符。</li>
+          <li><code>MyPick&lt;T, K extends keyof T&gt;</code> 的核心是限制 <code>K</code> 必须来自 <code>T</code> 的键集合，再用 <code>[P in K]: T[P]</code> 只保留这些字段。</li>
+          <li><code>MyOmit&lt;T, K&gt;</code> 常组合 <code>Pick&lt;T, Exclude&lt;keyof T, K&gt;&gt;</code> 实现：先从键集合里排除 K，再挑剩余键。</li>
+          <li>本页按钮演示的是运行时 <code>myPick</code> / <code>myOmit</code> 对对象做拷贝过滤；类型层 <code>Pick</code> / <code>Omit</code> 只负责静态约束，两者需要同时理解。</li>
+          <li>常见坑是忘记 <code>K extends keyof T</code> 导致可以挑不存在的键，或误以为 <code>Partial</code> 会递归处理嵌套对象；面试答题要说清“浅层”和“编译期”。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Partial&amp;lt？</strong> Partial&amp;lt;T&amp;gt;：所有属性可选</li>
-          <li><strong>手写 Utility Types 练习的核心概念是什么？</strong> Partial&amp;lt;T&amp;gt;：所有属性可选；Pick&amp;lt;T, K&amp;gt; / Omit&amp;lt;T, K&amp;gt;：挑选或排除键</li>
-          <li><strong>手写 Utility Types 练习在实际项目里怎么用？</strong> Partial&amp;lt;T&amp;gt;：所有属性可选；Pick&amp;lt;T, K&amp;gt; / Omit&amp;lt;T, K&amp;gt;：挑选或排除键</li>
+          <li><strong>如何手写 MyPartial？</strong> 结论是用映射类型遍历 <code>keyof T</code>，并给每个属性加 <code>?</code>。原因是 <code>T[K]</code> 能保留原字段值类型，<code>?</code> 改变属性是否必填。边界是这是浅层变换，嵌套对象不会自动变成可选字段。</li>
+          <li><strong>MyPick 里为什么要写 K extends keyof T？</strong> 结论是为了限制只能挑选真实存在的字段。原因是没有这个约束时，<code>T[P]</code> 无法保证 P 是 T 的键，也失去了字段名拼错时报错的价值。项目里这能保护 DTO 和表单字段白名单。</li>
+          <li><strong>Omit 为什么能由 Pick 和 Exclude 组合出来？</strong> 结论是 <code>Omit</code> 本质是“先排除键，再挑剩余键”。原因是 <code>Exclude&lt;keyof T, K&gt;</code> 先在联合键里移除 K，<code>Pick</code> 再按剩余键重建对象类型。这个思路比死背源码更重要。</li>
+          <li><strong>运行时 pick/omit 和类型层 Pick/Omit 有什么区别？</strong> 结论是运行时函数真的创建新对象，类型工具只改变编译期视角。原因是 TypeScript 类型会被擦除，不能自动删除对象属性。涉及脱敏、接口返回和安全边界时，必须写运行时代码真正移除敏感字段。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#partialtype" target="_blank" rel="noreferrer">TypeScript Handbook: Partial</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#picktype-keys" target="_blank" rel="noreferrer">TypeScript Handbook: Pick</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#omittype-keys" target="_blank" rel="noreferrer">TypeScript Handbook: Omit</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#excludeuniontype-excludedmembers" target="_blank" rel="noreferrer">TypeScript Handbook: Exclude</a></li>
         </ul>
       </div>
     </section>

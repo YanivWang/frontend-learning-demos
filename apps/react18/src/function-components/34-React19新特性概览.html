@@ -2,16 +2,16 @@
   分类: react18 / function-components
   主题: React 19 新特性概览
   要点:
-    - React 19：Actions（useTransition 内 async）、useActionState、useOptimistic
+    - React 19：Actions、useActionState、useOptimistic
     - use() 读取 Promise / Context，可在条件分支中调用（规则变化）
-    - ref 作为 prop 传递，不再需要 forwardRef（逐步迁移）
-    - 本页使用 React 18.3.1 模拟 Action 思路；可运行 React 19 demo 见 apps/react19/
+    - ref 作为 prop 传递，函数组件逐步减少 forwardRef 样板
+    - 本页运行在 React 18.3.1，只做能力边界概览；可运行 React 19 demo 见 apps/react19/
   面试:
-    - React 19 新特性概览的核心概念是什么
-    - React 19 新特性概览在实际项目里怎么用
-    - React 19 新特性概览有哪些常见坑或易错点
-    - React 19 新特性概览和相近 API 如何区分选型
-    - 面试中如何简洁讲清 React 19 新特性概览
+    - React 18 项目面试中如何介绍 React 19 新能力？
+    - Actions 与 useActionState 解决了哪类表单状态问题？
+    - useOptimistic 和手写乐观 UI 有什么差别？
+    - use() 与 useEffect 请求数据的适用边界是什么？
+    - React 19 ref as prop 对 forwardRef 迁移有什么影响？
 -->
 
 <!doctype html>
@@ -39,16 +39,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>React 19：Actions（useTransition 内 <code>async</code>）、useActionState、useOptimistic。</li>
-          <li>use() 读取 <code>Promise</code> / Context，可在条件分支中调用（规则变化）。</li>
-          <li><code>ref</code> 作为 prop 传递，不再需要 forwardRef（逐步迁移）。</li>
-          <li>本页使用 React 18.3.1 模拟 Action 思路；可运行 React 19 demo 见 apps/react19/。</li>
+          <li>本页属于 React 18 模块，运行时仍是 React 18.3.1；它只做 React 19 能力边界概览，真实 API 演示请看 <code>apps/react19/</code>。</li>
+          <li>React 19 把异步提交流程抽象为 Actions，并提供 <code>useActionState</code> 处理表单提交状态、返回值和 pending 状态。</li>
+          <li><code>useOptimistic</code> 用于在异步 Action 完成前展示乐观 UI，真实结果返回后再与权威 state 对齐。</li>
+          <li><code>use()</code> 可以在渲染中读取 <code>Promise</code> 或 Context，读取 Promise 时依赖 <code>Suspense</code> 处理挂起；这不是 React 18 的数据请求写法。</li>
+          <li>React 19 支持函数组件直接接收 <code>ref</code> prop，<code>forwardRef</code> 进入逐步迁移语境；维护 React 18 项目时仍要继续使用 <code>forwardRef</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>use() 读取 Promise / Context？</strong> React 19：Actions（useTransition 内 <code>async</code>）、useActionState、useOptimistic；use() 读取 <code>Promise</code> / Context，可在条件分支中调用（规则变化）</li>
-          <li><strong>ref 作为 prop 传递？</strong> <code>ref</code> 作为 prop 传递，不再需要 forwardRef（逐步迁移）</li>
-          <li><strong>本页使用 React 18.3.1 模拟 Action 思路？</strong> 本页使用 React 18.3.1 模拟 Action 思路；可运行 React 19 demo 见 apps/react19/</li>
+          <li><strong>React 18 项目里怎么介绍 React 19？</strong> 结论是先讲版本边界：React 18 仍用现有 Hooks，React 19 新增 Actions、<code>useActionState</code>、<code>useOptimistic</code>、<code>use()</code> 和 ref as prop。原因是这些能力改变了表单、乐观 UI、数据读取和 ref 传递的写法。项目中要等依赖链、测试和框架支持确认后再升级。</li>
+          <li><strong>Actions 与 <code>useActionState</code> 主要解决什么？</strong> 结论是把异步表单提交的状态管理标准化。原因是过去常用 <code>useState</code> 手写 pending、error、result，容易遗漏重复提交和失败路径。边界是复杂表单校验、缓存和路由刷新仍可能交给框架或表单库处理。</li>
+          <li><strong><code>useOptimistic</code> 和手写乐观 UI 有什么区别？</strong> 结论是它把临时乐观层和真实 state 的对齐交给 React 模型。原因是发送消息、点赞等交互需要先反馈，再等待服务端确认。边界是失败回滚、冲突合并和重试文案仍要由业务明确设计。</li>
+          <li><strong><code>use()</code> 是否替代 <code>useEffect</code> 请求数据？</strong> 结论是不是简单替代。原因是 <code>use()</code> 读取 Promise 会挂起并依赖 <code>Suspense</code>，更适合与框架数据层、缓存和 Server Components 配合；客户端事件后的请求仍常用事件处理或 effect。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/blog/2024/12/05/react-19" target="_blank" rel="noreferrer">React Blog: React 19</a></li>
+          <li><a href="https://react.dev/reference/react/useActionState" target="_blank" rel="noreferrer">React Docs: <code>useActionState</code></a></li>
+          <li><a href="https://react.dev/reference/react/useOptimistic" target="_blank" rel="noreferrer">React Docs: <code>useOptimistic</code></a></li>
+          <li><a href="https://react.dev/reference/react/use" target="_blank" rel="noreferrer">React Docs: <code>use</code></a></li>
+          <li><a href="https://react.dev/reference/react/forwardRef" target="_blank" rel="noreferrer">React Docs: <code>forwardRef</code></a></li>
         </ul>
       </div>
     </section>
@@ -67,27 +77,27 @@
 
     <!-- SCRIPT_START -->
     <script type="text/babel">
-      const { useState, useTransition } = React;
+      const { useState } = React;
       const { createRoot } = ReactDOM;
 
       function Demo() {
-        const [pending, startTransition] = useTransition();
+        const [isSubmitting, setIsSubmitting] = useState(false);
         const [result, setResult] = useState("idle");
 
-        const runAction = () => {
-          startTransition(async () => {
-            setResult("loading…");
-            await new Promise((r) => setTimeout(r, 600));
-            setResult("done @ " + new Date().toLocaleTimeString());
-          });
+        const runAction = async () => {
+          setIsSubmitting(true);
+          setResult("loading…");
+          await new Promise((r) => setTimeout(r, 600));
+          setResult("done @ " + new Date().toLocaleTimeString());
+          setIsSubmitting(false);
         };
 
         return (
         <div className="box">
-          <h2>React 18 中的 Action 思路（useTransition + async）</h2>
-          <p>React 19 的 <code>useActionState</code> 将此类模式标准化；此处用 18 API 模拟。完整可运行示例：<a href="../../../react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/03-Actions%E4%B8%8EuseActionState.html">react19 → useActionState</a>。</p>
-          <button type="button" onClick={runAction} disabled={pending}>
-            {pending ? "提交中…" : "模拟 Action 提交"}
+          <h2>React 18 中手写异步提交状态</h2>
+          <p>React 19 的 <code>useActionState</code> 将此类 pending / result 模式标准化；此处用 React 18 state 展示升级前写法。完整可运行示例：<a href="../../../react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/03-Actions%E4%B8%8EuseActionState.html">react19 → useActionState</a>。</p>
+          <button type="button" onClick={runAction} disabled={isSubmitting}>
+            {isSubmitting ? "提交中…" : "模拟异步提交"}
           </button>
           <p>状态：{result}</p>
         </div>

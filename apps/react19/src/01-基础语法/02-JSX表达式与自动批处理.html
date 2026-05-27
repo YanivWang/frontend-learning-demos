@@ -3,15 +3,15 @@
   主题: JSX 表达式与 React 19 自动批处理
   要点:
     - JSX 花括号内可写任意 JavaScript 表达式（变量、三元、函数调用）
-    - 注意 && 短路：0、空字符串可能被渲染到 DOM
-    - React 19 在 createRoot 下对 setTimeout、Promise 等中的 setState 默认批处理
-    - 需要同步读 DOM 时仍可用 flushSync 退出批处理
+    - 注意 && 短路：0 会被渲染到 DOM，false/null/undefined 不渲染
+    - React 18+ createRoot 下对 setTimeout、Promise 等中的 setState 默认批处理
+    - 需要同步读取更新后的 DOM 时可用 flushSync 退出批处理
   面试:
-    - JSX 表达式与 React 19 自动批处理的核心概念是什么
-    - JSX 表达式与 React 19 自动批处理在实际项目里怎么用
-    - JSX 表达式与 React 19 自动批处理有哪些常见坑或易错点
-    - JSX 表达式与 React 19 自动批处理和相近 API 如何区分选型
-    - 面试中如何简洁讲清 JSX 表达式与 React 19 自动批处理
+    - JSX 花括号里为什么只能放表达式不能放语句？
+    - && 条件渲染为什么可能把 0 渲染出来？
+    - React 18+ 自动批处理覆盖哪些异步边界？
+    - flushSync 适合解决什么同步 DOM 读取问题？
+    - 自动批处理与函数式 setState 有什么关系？
 -->
 
 <!doctype html>
@@ -39,16 +39,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>JSX</code> 花括号内可写任意 JavaScript 表达式（变量、三元、函数调用）。</li>
-          <li>注意 &amp;&amp; 短路：0、空字符串可能被渲染到 DOM。</li>
-          <li>React 19 在 <code>createRoot</code> 下对 <code>setTimeout</code>、<code>Promise</code> 等中的 setState 默认批处理。</li>
-          <li>需要同步读 DOM 时仍可用 flushSync 退出批处理。</li>
+          <li><code>JSX</code> 花括号内放的是 JavaScript 表达式，例如变量、三元表达式、数组 <code>map</code> 或函数调用；<code>if</code>、<code>for</code> 这类语句要提前写在 JSX 外。</li>
+          <li><code>&amp;&amp;</code> 条件渲染要小心数字 <code>0</code>：React 会渲染数字和字符串，只有 <code>false</code>、<code>null</code>、<code>undefined</code> 等不会生成节点。</li>
+          <li>自动批处理从 React 18 的 <code>createRoot</code> 开始成为默认行为，React 19 继续沿用；事件、<code>setTimeout</code>、Promise 回调里的多次 state 更新通常合并成一次渲染。</li>
+          <li>多次基于旧值递增时要使用函数式更新，例如 <code>setCount(c =&gt; c + 1)</code>，否则批处理会放大闭包旧值问题。</li>
+          <li><code>flushSync</code> 可以强制 React 立即提交更新，适合少量需要同步读取 DOM 的集成场景；滥用会破坏批处理收益并影响性能。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>JSX 花括号内可写任意 JavaScript 表达式（变量、三元、函数调用）？</strong> <code>JSX</code> 花括号内可写任意 JavaScript 表达式（变量、三元、函数调用）</li>
-          <li><strong>React 19 在 createRoot 下对 setTimeout、Prom？</strong> React 19 在 <code>createRoot</code> 下对 <code>setTimeout</code>、<code>Promise</code> 等中的 setState 默认批处理</li>
-          <li><strong>需要同步读 DOM 时仍可用 flushSync 退出批处理？</strong> 需要同步读 DOM 时仍可用 flushSync 退出批处理</li>
+          <li><strong>JSX 中为什么常用三元表达式而不是 <code>if</code>？</strong> 结论是 JSX 花括号需要表达式，<code>if</code> 是语句。原因是 JSX 最终会被编译为函数调用参数。项目里复杂条件应先在组件体内算出变量，避免把 JSX 写成难读的嵌套表达式。</li>
+          <li><strong><code>&amp;&amp;</code> 条件渲染有什么坑？</strong> 结论是左侧为 <code>0</code> 时会把 <code>0</code> 渲染出来。原因是 <code>0 &amp;&amp; expr</code> 的结果就是数字 <code>0</code>，React 会渲染数字。边界是布尔判断应写成 <code>items.length &gt; 0 &amp;&amp; ...</code> 或使用三元表达式。</li>
+          <li><strong>自动批处理解决了什么问题？</strong> 结论是把同一轮任务中的多次 state 更新合并为一次渲染。原因是 React 可以减少重复协调和 DOM 提交。React 18+ 的 <code>createRoot</code> 已覆盖 Promise、定时器等异步边界，React 19 延续这一行为。</li>
+          <li><strong>什么时候使用 <code>flushSync</code>？</strong> 结论是只在必须立即读到更新后的 DOM 时使用。原因是它会打断自动批处理并强制同步提交。典型场景是与第三方 DOM 库集成、马上测量尺寸或滚动位置，普通业务状态更新不需要它。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/learn/javascript-in-jsx-with-curly-braces" target="_blank" rel="noreferrer">React Docs: JavaScript in JSX with Curly Braces</a></li>
+          <li><a href="https://react.dev/learn/conditional-rendering" target="_blank" rel="noreferrer">React Docs: Conditional Rendering</a></li>
+          <li><a href="https://react.dev/learn/queueing-a-series-of-state-updates" target="_blank" rel="noreferrer">React Docs: Queueing a Series of State Updates</a></li>
+          <li><a href="https://react.dev/reference/react-dom/flushSync" target="_blank" rel="noreferrer">React DOM Docs: <code>flushSync</code></a></li>
         </ul>
       </div>
     </section>
@@ -82,7 +91,7 @@
         };
 
         const items = ["A", "B"];
-        const empty = 0;
+        const hiddenCount = 0;
 
         return (
         <section>
@@ -90,8 +99,8 @@
 
           <p>列表长度展示：{items.length} 项</p>
           <p className="warn">
-            陷阱演示：{empty && <span>不会显示</span>}
-            {empty} ← 上面 length 为 0 时，&& 左侧为 0 会渲染数字 0
+            陷阱演示：{hiddenCount && <span>不会显示</span>}
+            ← 左侧为 0 时，&amp;&amp; 表达式本身会渲染数字 0
           </p>
           <p>三元安全写法：{items.length ? items.join("、") : "暂无"}</p>
 

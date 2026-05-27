@@ -2,16 +2,15 @@
 分类: typescript / 02-进阶
   主题: 条件类型、infer、ReturnType 与 Awaited
   要点:
-    - 条件类型写法类似 T extends U ? X : Y，用于根据类型关系做分支
-    - infer 只能在条件类型中声明待推断类型变量
-    - ReturnType / Parameters / Awaited 都可以用条件类型理解
-    - 面试常让手写 MyReturnType、MyParameters 或提取 Promise 内部类型
+    - 条件类型用 T extends U ? X : Y 在类型层做分支判断
+    - infer 只能出现在条件类型的 extends 子句中，用来捕获待推断部分
+    - 泛型条件类型遇到联合类型会分发，必要时可用元组包裹关闭分发
+    - ReturnType、Parameters、Awaited 都可以用条件类型和 infer 理解
   面试:
-    - 条件类型、infer、ReturnType 与 Awaited的核心概念是什么
-    - 条件类型、infer、ReturnType 与 Awaited在实际项目里怎么用
-    - 条件类型、infer、ReturnType 与 Awaited有哪些常见坑或易错点
-    - 条件类型、infer、ReturnType 与 Awaited和相近 API 如何区分选型
-    - 面试中如何简洁讲清 条件类型、infer、ReturnType 与 Awaited
+    - 条件类型和普通三元表达式有什么相同点和差异？
+    - infer 为什么只能在条件类型中使用？
+    - 如何手写 ReturnType、Parameters 或 Awaited 的简化版？
+    - 分发式条件类型什么时候会产生意外结果？
 -->
 
 <!doctype html>
@@ -36,17 +35,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>条件类型写法类似 T <code>extends</code> U ? X : Y，用于根据类型关系做分支。</li>
-          <li><code>infer</code> 只能在条件类型中声明待推断类型变量。</li>
-          <li>ReturnType / Parameters / Awaited 都可以用条件类型理解。</li>
-          <li>面试常让手写 MyReturnType、MyParameters 或提取 <code>Promise</code> 内部类型。</li>
+          <li>条件类型写作 <code>T extends U ? X : Y</code>，是在类型层根据可赋值关系选择结果，不是运行时三元表达式，编译后不会留下分支代码。</li>
+          <li><code>infer</code> 只能在条件类型的 <code>extends</code> 子句中声明临时类型变量，用来从函数返回值、参数元组、数组元素或 Promise 结果中提取类型。</li>
+          <li><code>ReturnType</code>、<code>Parameters</code>、<code>Awaited</code> 都能用条件类型理解：先判断是否匹配某种结构，再用 <code>infer</code> 捕获内部部分。</li>
+          <li>泛型条件类型默认会对联合类型分发，例如 <code>T extends string ? ...</code> 遇到 <code>"a" | 1</code> 会分别计算后再合并；如果不想分发，可写成 <code>[T] extends [string] ? ...</code>。</li>
+          <li>常见坑是递归条件类型过深导致类型实例化复杂，或用 <code>any</code> 让结果失真；公共工具类型要控制复杂度，并给关键类型加测试样例。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>条件类型写法类似 T extends U ? X？</strong> 条件类型写法类似 T <code>extends</code> U ? X : Y，用于根据类型关系做分支；<code>infer</code> 只能在条件类型中声明待推断类型变量</li>
-          <li><strong>infer 只能在条件类型中声明待推断类型变量？</strong> <code>infer</code> 只能在条件类型中声明待推断类型变量</li>
-          <li><strong>ReturnType / Parameters / Awaited 都可以用条件？</strong> ReturnType / Parameters / Awaited 都可以用条件类型理解；面试常让手写 MyReturnType、MyParameters 或提取 <code>Promise</code> 内部类型</li>
-          <li><strong>面试常让手写 MyReturnType、MyParameters 或提取 Pro？</strong> 面试常让手写 MyReturnType、MyParameters 或提取 <code>Promise</code> 内部类型</li>
+          <li><strong>条件类型和运行时三元表达式有什么区别？</strong> 结论是语法相似，但条件类型只在编译期计算类型。原因是 <code>extends</code> 判断的是类型可赋值关系，不会读取运行时值。项目里它适合写类型工具，不适合替代表单校验或接口数据判断。</li>
+          <li><strong>infer 的作用是什么？</strong> 结论是 <code>infer</code> 在匹配结构时临时捕获一个内部类型。原因是很多类型工具并不知道函数返回值、参数列表或 Promise 内部值叫什么，只能在条件类型匹配时推断出来。边界是 <code>infer</code> 不能脱离条件类型单独声明。</li>
+          <li><strong>如何手写 ReturnType 或 Awaited？</strong> 结论是先匹配函数或 Promise 结构，再用 <code>infer</code> 提取目标部分。原因是 <code>ReturnType&lt;T&gt;</code> 可写成 <code>T extends (...args: any[]) =&gt; infer R ? R : never</code>，<code>Awaited</code> 则递归展开 thenable/Promise 的结果。真实项目优先使用内置工具类型，手写主要用于面试和理解。</li>
+          <li><strong>分发式条件类型什么时候要小心？</strong> 结论是泛型参数直接作为条件左侧时，联合类型会逐项分发。原因是 TS 这样设计便于过滤和转换联合类型，但也可能让整体判断变成逐成员判断。需要整体判断时用元组包裹两侧关闭分发。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/conditional-types.html" target="_blank" rel="noreferrer">TypeScript Handbook: Conditional Types</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#returntypetype" target="_blank" rel="noreferrer">TypeScript Handbook: ReturnType</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#awaitedtype" target="_blank" rel="noreferrer">TypeScript Handbook: Awaited</a></li>
         </ul>
       </div>
     </section>

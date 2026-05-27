@@ -2,16 +2,15 @@
 分类: typescript / 02-进阶
   主题: Utility Types：Partial、Pick、Omit、Record、Readonly、Required
   要点:
-    - Utility Types 是 TS 内置类型工具，面试常要求说明用途并手写简化版
-    - Partial 把属性变可选，Required 把属性变必填，Readonly 把属性变只读
-    - Pick / Omit 用于从对象类型中选择或排除字段
-    - Record 常用于字典表、枚举映射和权限配置
+    - Utility Types 是内置泛型类型工具，主要复用和变换已有对象类型
+    - Partial、Required、Readonly 改变属性修饰符，不会改变运行时对象
+    - Pick、Omit、Record 常用于 DTO、表单补丁、配置表和权限映射
+    - 工具类型底层依赖 keyof、映射类型、条件类型和索引访问类型
   面试:
-    - Utility Types：Partial、Pick、Omit、Record、Readonly、Required的核心概念是什么
-    - Utility Types：Partial、Pick、Omit、Record、Readonly、Required在实际项目里怎么用
-    - Utility Types：Partial、Pick、Omit、Record、Readonly、Required有哪些常见坑或易错点
-    - Utility Types：Partial、Pick、Omit、Record、Readonly、Required和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Utility Types：Partial、Pick、Omit、Record、Readonly、Required
+    - Partial、Required、Readonly 分别解决什么类型变换问题？
+    - Pick、Omit 和 Record 在接口模型里怎么用？
+    - Utility Types 为什么不会改变运行时数据？
+    - 什么时候应该复用工具类型，什么时候应该显式声明新类型？
 -->
 
 <!doctype html>
@@ -36,17 +35,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Utility Types 是 TS 内置类型工具，面试常要求说明用途并手写简化版。</li>
-          <li>Partial 把属性变可选，Required 把属性变必填，Readonly 把属性变只读。</li>
-          <li>Pick / Omit 用于从对象类型中选择或排除字段。</li>
-          <li>Record 常用于字典表、枚举映射和权限配置。</li>
+          <li>Utility Types 是 TypeScript 标准库提供的内置泛型类型工具，用来基于已有类型派生新类型，避免手写重复的 DTO、表单补丁和展示模型。</li>
+          <li><code>Partial&lt;T&gt;</code> 把属性变可选，<code>Required&lt;T&gt;</code> 把属性变必填，<code>Readonly&lt;T&gt;</code> 把属性变只读；它们只影响类型检查，不会冻结运行时对象。</li>
+          <li><code>Pick&lt;T, K&gt;</code> 从对象类型中挑字段，<code>Omit&lt;T, K&gt;</code> 排除字段，本页示例用它们表达“更新入参”和“对外展示用户”的差异。</li>
+          <li><code>Record&lt;K, V&gt;</code> 适合把联合键映射到同一种值，例如角色文案、权限配置、状态到渲染组件的查表。</li>
+          <li>常见坑是过度叠加工具类型导致类型难读，或把 <code>Partial</code> 用在深层对象后误以为嵌套字段也会递归可选；需要深层变换时要单独定义递归工具或显式建模。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Utility Types 是 TS 内置类型工具？</strong> Utility Types 是 TS 内置类型工具，面试常要求说明用途并手写简化版</li>
-          <li><strong>Partial 把属性变可选？</strong> Partial 把属性变可选，Required 把属性变必填，Readonly 把属性变只读</li>
-          <li><strong>Pick / Omit 用于从对象类型中选择或排除字段？</strong> Pick / Omit 用于从对象类型中选择或排除字段</li>
-          <li><strong>Record 常用于字典表、枚举映射和权限配置？</strong> Record 常用于字典表、枚举映射和权限配置</li>
+          <li><strong>Partial、Required、Readonly 分别解决什么问题？</strong> 结论是它们分别把属性改成可选、必填和只读。原因是底层通过映射类型遍历 <code>keyof T</code> 并调整属性修饰符。边界是这些都是浅层类型变换，不会在运行时补字段或冻结对象。</li>
+          <li><strong>Pick、Omit 和 Record 在业务里怎么用？</strong> 结论是 <code>Pick</code> 表达白名单字段，<code>Omit</code> 表达排除敏感字段，<code>Record</code> 表达完整映射表。原因是它们能把业务模型和派生模型绑定起来，字段改名时让编译器提醒。项目里常用于 API DTO、列表展示和权限配置。</li>
+          <li><strong>Utility Types 为什么不会改变运行时数据？</strong> 结论是它们只存在于类型系统。原因是 TypeScript 类型会在编译后擦除，真正的数据拷贝、过滤或冻结仍要写 JavaScript 逻辑。示例里的 <code>publicUser</code> 是手动创建的运行时对象，不是 <code>Omit</code> 自动生成的。</li>
+          <li><strong>什么时候不该继续堆工具类型？</strong> 结论是当类型表达已经影响阅读或包含业务语义时，应显式命名新类型。原因是 <code>Partial&lt;Pick&lt;...&gt;&gt;</code> 适合短派生，复杂组合会隐藏意图。团队项目里可以把常用派生命名为 <code>UserPatch</code>、<code>PublicUser</code> 这类稳定边界。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html" target="_blank" rel="noreferrer">TypeScript Handbook: Utility Types</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/mapped-types.html" target="_blank" rel="noreferrer">TypeScript Handbook: Mapped Types</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/keyof-types.html" target="_blank" rel="noreferrer">TypeScript Handbook: keyof Type Operator</a></li>
         </ul>
       </div>
     </section>

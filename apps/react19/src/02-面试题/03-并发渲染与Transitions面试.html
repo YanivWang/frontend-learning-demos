@@ -2,16 +2,15 @@
   分类: react19 / 02-面试题
   主题: 并发渲染与 Transitions 面试
   要点:
-    - 并发：可中断渲染，优先响应用户输入（时间切片 + 优先级）
-    - useTransition：isPending + startTransition 包裹低优先级更新
-    - React 19 Actions 常在 startTransition 内执行，isPending 与 useActionState 的 pending 呼应
-    - 面试区分：紧急更新（输入）vs 过渡更新（筛选、路由、提交反馈）
+    - 并发渲染允许 React 暂停、恢复或丢弃非紧急渲染，优先响应输入
+    - startTransition 标记低优先级更新；useTransition 额外提供 isPending 反馈
+    - React 18 已引入并发能力；React 19 在 Actions、表单和乐观更新上继续复用 transition 语义
+    - Transition 不会让计算变快，重 CPU 任务仍要拆分、缓存或放到 Worker
   面试:
-    - 并发渲染与 Transitions 面试的核心概念是什么
-    - 并发渲染与 Transitions 面试在实际项目里怎么用
-    - 并发渲染与 Transitions 面试有哪些常见坑或易错点
-    - 并发渲染与 Transitions 面试和相近 API 如何区分选型
-    - 面试中如何简洁讲清 并发渲染与 Transitions 面试
+    - 并发渲染是不是多线程？它真正改变了什么？
+    - startTransition 与普通 setState 的优先级差异是什么？
+    - useTransition、useDeferredValue 和防抖分别适合什么场景？
+    - 为什么 transition 不能包住受控输入本身？
 -->
 
 <!doctype html>
@@ -40,16 +39,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>并发：可中断渲染，优先响应用户输入（时间切片 + 优先级）。</li>
-          <li>useTransition：isPending + startTransition 包裹低优先级更新。</li>
-          <li>React 19 Actions 常在 startTransition 内执行，isPending 与 useActionState 的 pending 呼应。</li>
-          <li>面试区分：紧急更新（输入）vs 过渡更新（筛选、路由、提交反馈）。</li>
+          <li>并发渲染不是把 React 变成多线程，而是让渲染工作可被中断、恢复或丢弃；用户输入这类紧急更新可以先提交，列表筛选、路由切换这类过渡更新可延后。</li>
+          <li><code>startTransition</code> 标记低优先级更新，<code>useTransition</code> 在此基础上返回 <code>isPending</code>；本页把输入框的 <code>query</code> 作为紧急更新，把慢列表的 <code>deferredQuery</code> 放入 transition。</li>
+          <li>版本边界：React 18 已提供并发根和 <code>useTransition</code>；React 19 的 Actions、表单 Action、<code>useOptimistic</code> 等常和 transition 一起解释异步交互状态。</li>
+          <li>Transition 不会减少慢计算本身的耗时，也不会替代防抖、虚拟列表、缓存或 Web Worker；如果渲染或计算太重，仍要降低工作量。</li>
+          <li>受控输入的 value 更新必须保持紧急，不能只放进 transition；否则输入会滞后，甚至出现用户输入和 UI 回显不一致的体验问题。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>useTransition？</strong> useTransition：isPending + startTransition 包裹低优先级更新；React 19 Actions 常在 startTransition 内执行，isPending 与 useActionState 的 pending 呼应</li>
-          <li><strong>React 19 Actions 常在 startTransition 内执行？</strong> React 19 Actions 常在 startTransition 内执行，isPending 与 useActionState 的 pending 呼应</li>
-          <li><strong>并发渲染与 Transitions 面试的核心概念是什么？</strong> 并发：可中断渲染，优先响应用户输入（时间切片 + 优先级）；useTransition：isPending + startTransition 包裹低优先级更新</li>
+          <li><strong>并发渲染是不是多线程？它真正改变了什么？</strong> 结论是不是多线程，主要改变的是 React 调度渲染工作的方式。原因是 React 可以把非紧急渲染拆开、暂停并让更高优先级输入先更新。边界是业务代码仍运行在 JS 主线程，重计算仍会阻塞，需要单独优化。</li>
+          <li><strong><code>startTransition</code> 与普通 <code>setState</code> 的优先级差异是什么？</strong> 结论是普通更新默认紧急，transition 更新可被打断。原因是 React 认为输入回显、点击反馈应优先，列表筛选或路由内容可以稍后显示。项目中常把搜索关键字立刻更新，把结果列表、图表或路由内容放进 transition。</li>
+          <li><strong><code>useTransition</code>、<code>useDeferredValue</code> 和防抖分别适合什么场景？</strong> 结论是 <code>useTransition</code> 用在你能控制更新发起点时，<code>useDeferredValue</code> 用在延后消费某个值时，防抖用于减少事件或请求次数。原因是前两者是 React 调度语义，防抖是业务频率控制。输入联想通常会结合防抖请求和 transition 渲染结果。</li>
+          <li><strong>为什么 transition 不能包住受控输入本身？</strong> 结论是输入框的 <code>value</code> 更新必须保持同步响应。原因是用户输入属于紧急交互，延迟回显会破坏受控组件体验。正确做法是立刻更新输入值，再把昂贵的派生列表或页面内容放进 transition。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/useTransition" target="_blank" rel="noopener">React Reference: useTransition</a></li>
+          <li><a href="https://react.dev/reference/react/startTransition" target="_blank" rel="noopener">React Reference: startTransition</a></li>
+          <li><a href="https://react.dev/reference/react/useDeferredValue" target="_blank" rel="noopener">React Reference: useDeferredValue</a></li>
+          <li><a href="https://react.dev/blog/2022/03/29/react-v18#what-is-concurrent-react" target="_blank" rel="noopener">React 18 Blog: What is Concurrent React?</a></li>
         </ul>
       </div>
     </section>
@@ -101,7 +109,7 @@
             <li key={item}>{item}</li>
           ))}
         </ul>
-        <p><strong>面试答法：</strong>startTransition 标记低优先级；Actions 默认在 transition 中运行，避免阻塞输入。</p>
+        <p><strong>面试答法：</strong>startTransition 标记低优先级更新；它让 React 优先提交输入反馈，但不会减少慢计算本身的耗时。</p>
       </section>
       );
       }

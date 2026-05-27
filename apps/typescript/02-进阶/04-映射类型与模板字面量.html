@@ -2,16 +2,15 @@
 分类: typescript / 02-进阶
   主题: 映射类型、索引访问与模板字面量类型
   要点:
-    - 映射类型遍历 keyof T，可以批量改变属性可选、只读或值类型
-    - 索引访问 T[K] 可根据字段名取得字段类型，是 Pick、Record 等工具的基础
-    - 模板字面量类型可拼接字符串字面量，适合事件名、接口路径、CSS 变量名
-    - as 重映射键名可把对象字段转换成 onXxx / getXxx 这类 API
+    - 映射类型用 keyof 和 in 遍历属性键，可批量改造属性修饰符和值类型
+    - 索引访问 T[K] 能根据键取得值类型，是类型安全 getter 和工具类型基础
+    - 模板字面量类型能组合字符串字面量，适合事件名、路径和 CSS 变量名
+    - TS 4.1 起支持 as 重映射键名，可生成 getXxx、onXxx 这类 API
   面试:
-    - 映射类型、索引访问与模板字面量类型的核心概念是什么
-    - 映射类型、索引访问与模板字面量类型在实际项目里怎么用
-    - 映射类型、索引访问与模板字面量类型有哪些常见坑或易错点
-    - 映射类型、索引访问与模板字面量类型和相近 API 如何区分选型
-    - 面试中如何简洁讲清 映射类型、索引访问与模板字面量类型
+    - 映射类型为什么是 Pick、Readonly 等工具类型的基础？
+    - keyof、T[K] 和模板字面量类型如何配合生成事件名？
+    - as 键名重映射适合解决什么 API 设计问题？
+    - 复杂模板字面量类型有哪些可维护性边界？
 -->
 
 <!doctype html>
@@ -36,17 +35,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>映射类型遍历 keyof T，可以批量改变属性可选、只读或值类型。</li>
-          <li>索引访问 T[K] 可根据字段名取得字段类型，是 Pick、Record 等工具的基础。</li>
-          <li>模板字面量类型可拼接字符串字面量，适合事件名、接口路径、CSS 变量名。</li>
-          <li>as 重映射键名可把对象字段转换成 onXxx / getXxx 这类 API。</li>
+          <li>映射类型通过 <code>[K in keyof T]</code> 遍历对象键，能批量改变属性的可选、只读和值类型，是 <code>Partial</code>、<code>Readonly</code>、<code>Pick</code> 等工具类型的基础。</li>
+          <li>索引访问类型 <code>T[K]</code> 根据键取得对应值类型，本页的 <code>FieldGetter</code> 保证 <code>getName</code> 返回 <code>User["name"]</code>，不会和字段类型脱节。</li>
+          <li>模板字面量类型可以把字符串字面量组合成新类型，例如 <code>${keyof User &amp; string}Changed</code> 生成字段变化事件名。</li>
+          <li>TypeScript 4.1 起映射类型支持 <code>as</code> 键名重映射，配合 <code>Capitalize</code> 等内置字符串工具类型，可以从数据模型派生 getter、setter 或事件 API。</li>
+          <li>常见坑是模板字面量类型过度嵌套后难以阅读，或让类型层 API 和真实运行时对象不一致；示例中运行时 <code>getters</code> 和 <code>events</code> 仍需要手动实现或由代码生成保证同步。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>映射类型遍历 keyof T？</strong> 映射类型遍历 keyof T，可以批量改变属性可选、只读或值类型</li>
-          <li><strong>索引访问 T[K] 可根据字段名取得字段类型？</strong> 索引访问 T[K] 可根据字段名取得字段类型，是 Pick、Record 等工具的基础</li>
-          <li><strong>模板字面量类型可拼接字符串字面量？</strong> 模板字面量类型可拼接字符串字面量，适合事件名、接口路径、CSS 变量名</li>
-          <li><strong>as 重映射键名可把对象字段转换成 onXxx / getXxx 这类 API？</strong> as 重映射键名可把对象字段转换成 onXxx / getXxx 这类 API</li>
+          <li><strong>映射类型为什么重要？</strong> 结论是它能把“逐字段重复声明”变成“按键批量变换”。原因是 <code>keyof</code> 提供键集合，<code>in</code> 遍历键，<code>T[K]</code> 保留每个字段原本的值类型。项目里它适合派生表单补丁、只读模型和接口 DTO。</li>
+          <li><strong>keyof、T[K] 和模板字面量类型如何配合？</strong> 结论是 <code>keyof</code> 取字段名，<code>T[K]</code> 取字段值类型，模板字面量类型生成受字段名约束的新字符串。原因是这样能把事件名、getter 名和原模型绑定起来。示例里的 <code>idChanged</code>、<code>nameChanged</code> 就来自 <code>User</code> 的键。</li>
+          <li><strong>as 键名重映射适合什么场景？</strong> 结论是适合从已有模型派生一套有规则的新 API。原因是它能在映射时重命名、过滤或格式化键名。边界是重映射只改变类型，运行时对象仍要按同样规则创建，否则类型和实现会脱节。</li>
+          <li><strong>复杂模板字面量类型有什么风险？</strong> 结论是过度组合会降低可读性并拖慢类型检查。原因是多个联合字符串会产生笛卡尔积式组合。项目里只应把它用于稳定、规则清晰的命名体系，例如事件名、路由名和设计系统 token。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/mapped-types.html" target="_blank" rel="noreferrer">TypeScript Handbook: Mapped Types</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/indexed-access-types.html" target="_blank" rel="noreferrer">TypeScript Handbook: Indexed Access Types</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html" target="_blank" rel="noreferrer">TypeScript Handbook: Template Literal Types</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-1.html" target="_blank" rel="noreferrer">TypeScript 4.1 Release Notes</a></li>
         </ul>
       </div>
     </section>

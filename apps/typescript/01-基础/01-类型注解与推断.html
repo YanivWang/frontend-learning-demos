@@ -1,17 +1,16 @@
 <!--
-分类: typescript / 01-基础
+  分类: typescript / 01-基础
   主题: 类型注解、推断与基本类型
   要点:
-    - TS 在 JS 上增加静态类型；变量可显式注解 let n: number = 1
-    - 未注解时编译器会推断类型；推断结果在 IDE / tsc 中生效，浏览器运行仍是 JS
-    - 基本类型：string / number / boolean / null / undefined / bigint / symbol
-    - 面试常问：any 放弃检查；unknown 更安全，使用前须收窄
+    - TypeScript 在编译期为 JavaScript 增加静态类型检查，运行时代码仍是 JS
+    - 优先依赖局部类型推断，公共 API、函数参数和复杂返回值再显式注解
+    - string、number、boolean、null、undefined、bigint、symbol 是常见基本类型
+    - any 会绕过检查；unknown 保留安全性，使用前必须先收窄
   面试:
-    - 类型注解、推断与基本类型的核心概念是什么
-    - 类型注解、推断与基本类型在实际项目里怎么用
-    - 类型注解、推断与基本类型有哪些常见坑或易错点
-    - 类型注解、推断与基本类型和相近 API 如何区分选型
-    - 面试中如何简洁讲清 类型注解、推断与基本类型
+    - 类型注解和类型推断应该如何取舍？
+    - TypeScript 的类型检查为什么不能改变 JavaScript 运行时？
+    - any 和 unknown 的核心区别是什么？
+    - strictNullChecks 打开后 null 和 undefined 有什么影响？
 -->
 
 <!doctype html>
@@ -40,16 +39,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>TS 在 JS 上增加静态类型；变量可显式注解 <code>let</code> n: number = 1。</li>
-          <li>未注解时编译器会推断类型；推断结果在 IDE / tsc 中生效，浏览器运行仍是 JS。</li>
-          <li>基本类型：string / number / boolean / <code>null</code> / <code>undefined</code> / bigint / symbol。</li>
-          <li>面试常问：any 放弃检查；unknown 更安全，使用前须收窄。</li>
+          <li>TypeScript 是 JavaScript 的静态类型层：IDE 和 <code>tsc</code> 在编译期发现类型问题，但浏览器执行的仍是擦除类型后的 JavaScript；本页故意展示 <code>add("1", 2)</code> 在 JS 中会拼接。</li>
+          <li>现代写法是让简单局部变量依赖推断，给函数参数、公共返回值、对象边界和难推断泛型补显式注解；过度注解会增加噪声，缺少边界注解会让 API 变得不稳定。</li>
+          <li>基本类型包括 <code>string</code>、<code>number</code>、<code>boolean</code>、<code>null</code>、<code>undefined</code>、<code>bigint</code>、<code>symbol</code>；启用 <code>strictNullChecks</code> 后，<code>null</code> 和 <code>undefined</code> 不再默认可赋给所有类型。</li>
+          <li><code>any</code> 会关闭后续类型检查，适合极少数迁移逃生口；<code>unknown</code> 表示“目前不知道”，使用前必须通过 <code>typeof</code>、判空、用户自定义类型守卫等方式收窄。</li>
+          <li>常见坑是把 TypeScript 当运行时校验：外部接口、表单输入和本地存储读出的数据仍需要运行时验证，否则类型声明只能让调用处“看起来安全”。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>TS 在 JS 上增加静态类型？</strong> TS 在 JS 上增加静态类型；变量可显式注解 <code>let</code> n: number = 1</li>
-          <li><strong>未注解时编译器会推断类型？</strong> 未注解时编译器会推断类型；推断结果在 IDE / tsc 中生效，浏览器运行仍是 JS</li>
-          <li><strong>类型注解、推断与基本类型的核心概念是什么？</strong> TS 在 JS 上增加静态类型；变量可显式注解 <code>let</code> n: number = 1；未注解时编译器会推断类型；推断结果在 IDE / tsc 中生效，浏览器运行仍是 JS</li>
+          <li><strong>类型注解和类型推断应该如何取舍？</strong> 结论是局部简单值依赖推断，函数参数、公共 API 和复杂对象边界显式注解。原因是推断能减少重复，边界注解能稳定契约。项目中导出的函数、组件 props、接口返回值通常要写清，临时变量不必处处标注。</li>
+          <li><strong>TypeScript 的类型检查为什么不能改变 JavaScript 运行时？</strong> 结论是 TypeScript 类型在编译后会被擦除。原因是 TS 设计目标是给 JS 加静态检查，而不是改变 JS 语义；所以本页的 <code>add("1", 2)</code> 运行时仍按 JS 拼接。边界是外部数据必须做运行时校验。</li>
+          <li><strong><code>any</code> 和 <code>unknown</code> 的核心区别是什么？</strong> 结论是 <code>any</code> 放弃检查，<code>unknown</code> 保留检查。原因是 <code>any</code> 可以任意访问属性和调用方法，<code>unknown</code> 必须先收窄。迁移旧代码可短期用 <code>any</code>，新边界更推荐 <code>unknown</code> 加解析逻辑。</li>
+          <li><strong><code>strictNullChecks</code> 打开后 <code>null</code> 和 <code>undefined</code> 有什么影响？</strong> 结论是它们只属于各自类型，不能随意赋给普通 <code>string</code>、<code>number</code> 等类型。原因是这能把空值风险提前到编译期。项目里接口可空字段要写成联合类型，并在使用前判空。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html" target="_blank" rel="noopener">TypeScript Handbook: Everyday Types</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/basic-types.html" target="_blank" rel="noopener">TypeScript Handbook: The Basics</a></li>
+          <li><a href="https://www.typescriptlang.org/tsconfig/#strictNullChecks" target="_blank" rel="noopener">TSConfig Reference: strictNullChecks</a></li>
         </ul>
       </div>
     </section>

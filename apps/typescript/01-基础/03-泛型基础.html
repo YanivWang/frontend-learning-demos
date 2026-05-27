@@ -1,17 +1,16 @@
 <!--
-分类: typescript / 01-基础
+  分类: typescript / 01-基础
   主题: 泛型函数与约束
   要点:
-    - 泛型 &lt;T&gt; 让类型参数化：function identity&lt;T&gt;(x: T): T
-    - extends 约束：&lt;T extends { id: number }&gt; 限制 T 必须有 id
-    - 常考：泛型默认值、多个类型参数、keyof 与索引访问
-    - 运行时泛型会被擦除，本 demo 用 JSDoc 模拟 TS 检查意图
+    - 泛型把类型作为参数传入函数、接口或类，让输入和输出保持类型关系
+    - extends 约束限制类型参数必须满足某种结构，避免在泛型里访问不存在的属性
+    - keyof 与索引访问类型常用于安全读取对象字段，如 pluck<T, K extends keyof T>
+    - 泛型只存在于编译期，运行时会被擦除，不能用 T 做运行时分支
   面试:
-    - 泛型函数与约束的核心概念是什么
-    - 泛型函数与约束在实际项目里怎么用
-    - 泛型函数与约束有哪些常见坑或易错点
-    - 泛型函数与约束和相近 API 如何区分选型
-    - 面试中如何简洁讲清 泛型函数与约束
+    - 泛型解决的核心问题是什么？
+    - extends 约束和继承有什么区别？
+    - keyof 与 T[K] 为什么能保证 pluck 的返回类型？
+    - 泛型在运行时是否存在，为什么不能根据 T 做判断？
 -->
 
 <!doctype html>
@@ -35,16 +34,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>泛型 &amp;lt;T&amp;gt; 让类型参数化：function identity&amp;lt;T&amp;gt;(x: T): T。</li>
-          <li><code>extends</code> 约束：&amp;lt;T <code>extends</code> { id: number }&amp;gt; 限制 T 必须有 id。</li>
-          <li>常考：泛型默认值、多个类型参数、keyof 与索引访问。</li>
-          <li>运行时泛型会被擦除，本 demo 用 JSDoc 模拟 TS 检查意图。</li>
+          <li>泛型把类型作为参数传入函数、接口或类，用来表达“输入是什么类型，输出仍和它有关”；本页的 <code>first&lt;T&gt;</code> 能保留数组元素类型。</li>
+          <li><code>extends</code> 在泛型里表示类型约束，不等同于 class 继承；它要求类型参数至少满足某种结构，编译器才允许安全访问相关属性。</li>
+          <li><code>keyof T</code> 取对象键名联合，<code>T[K]</code> 取对应属性类型；<code>pluck&lt;T, K extends keyof T&gt;</code> 因此能限制 key 必须存在，并返回精确字段类型。</li>
+          <li>泛型默认值、多个类型参数和约束组合常用于组件 props、API 响应、表格列配置等场景；类型参数太多会降低可读性，应优先让编译器从参数推断。</li>
+          <li>泛型在编译后会被擦除，运行时没有 <code>T</code> 这个值；需要运行时分支时必须传入真实值、构造函数、标签字段或校验函数。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>extends 约束？</strong> <code>extends</code> 约束：&amp;lt;T <code>extends</code> { id: number }&amp;gt; 限制 T 必须有 id</li>
-          <li><strong>运行时泛型会被擦除？</strong> 运行时泛型会被擦除，本 demo 用 JSDoc 模拟 TS 检查意图</li>
-          <li><strong>泛型函数与约束的核心概念是什么？</strong> 泛型 &amp;lt;T&amp;gt; 让类型参数化：function identity&amp;lt;T&amp;gt;(x: T): T；<code>extends</code> 约束：&amp;lt;T <code>extends</code> { id: number }&amp;gt; 限制 T 必须有 id</li>
+          <li><strong>泛型解决的核心问题是什么？</strong> 结论是泛型让类型关系可复用，而不是把参数都写成 <code>any</code>。原因是它能保留输入和输出之间的关联，例如数组元素类型、接口响应数据类型。项目中封装请求、表格、表单和工具函数时非常常见。</li>
+          <li><strong><code>extends</code> 约束和继承有什么区别？</strong> 结论是泛型约束只发生在类型检查阶段，class 继承会产生运行时原型关系。原因是 <code>T extends { id: number }</code> 只是要求传入类型具备 <code>id</code>。边界是它不会给对象自动添加字段，也不会改变运行时代码。</li>
+          <li><strong><code>keyof</code> 与 <code>T[K]</code> 为什么能保证 <code>pluck</code> 的返回类型？</strong> 结论是 <code>K extends keyof T</code> 限定 key 必须来自对象，<code>T[K]</code> 精确取出该 key 对应的值类型。原因是 TypeScript 在类型层面建立了 key 与 value 的映射。项目中读取配置、表格列字段和表单字段时常用这种写法。</li>
+          <li><strong>泛型在运行时是否存在，为什么不能根据 <code>T</code> 做判断？</strong> 结论是不存在，泛型会被编译擦除。原因是 TypeScript 不携带运行时类型元数据。需要运行时判断时应显式传入类型标签、构造函数或解析器，而不是写不存在的 <code>if (T === ...)</code>。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/generics.html" target="_blank" rel="noopener">TypeScript Handbook: Generics</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/keyof-types.html" target="_blank" rel="noopener">TypeScript Handbook: keyof Type Operator</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/indexed-access-types.html" target="_blank" rel="noopener">TypeScript Handbook: Indexed Access Types</a></li>
         </ul>
       </div>
     </section>

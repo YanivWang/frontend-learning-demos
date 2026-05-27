@@ -4,14 +4,14 @@
   要点:
     - React 19 中函数组件可直接接收名为 ref 的 prop，无需 forwardRef 包裹
     - 父组件 useRef() 后把 ref 传给子组件，子组件绑定到原生 DOM
-    - 类组件、第三方库迁移可逐步去掉 forwardRef 样板代码
+    - React 18 及更早版本仍需要 forwardRef，迁移要看消费者版本
     - 命令式 API 仍推荐优先声明式；ref 用于聚焦、滚动、测量等
   面试:
-    - ref 作为 prop 传递（React 19）的核心概念是什么
-    - ref 作为 prop 传递（React 19）在实际项目里怎么用
-    - ref 作为 prop 传递（React 19）有哪些常见坑或易错点
-    - ref 作为 prop 传递（React 19）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 ref 作为 prop 传递（React 19）
+    - React 19 为什么函数组件可以直接接收 ref？
+    - ref as prop 与 forwardRef 的版本边界是什么？
+    - ref 应该用于哪些 DOM 命令式场景？
+    - 组件库迁移 ref as prop 时如何兼容 React 18 用户？
+    - 为什么不要用 ref 绕过声明式状态？
 -->
 
 <!doctype html>
@@ -39,17 +39,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>React 19 中函数组件可直接接收名为 <code>ref</code> 的 prop，无需 forwardRef 包裹。</li>
-          <li>父组件 useRef() 后把 <code>ref</code> 传给子组件，子组件绑定到原生 DOM。</li>
-          <li>类组件、第三方库迁移可逐步去掉 forwardRef 样板代码。</li>
-          <li>命令式 API 仍推荐优先声明式；<code>ref</code> 用于聚焦、滚动、测量等。</li>
+          <li>React 19 允许函数组件直接接收名为 <code>ref</code> 的 prop，本页 <code>TextField</code> 把父组件传入的 ref 绑定到内部 <code>input</code>。</li>
+          <li>React 18 及更早版本中，函数组件不能直接接收特殊 <code>ref</code>，需要 <code>forwardRef</code>；所以该写法有明确 React 19 版本边界。</li>
+          <li><code>ref</code> 适合聚焦、选中文本、滚动、测量尺寸、整合第三方 DOM 库等命令式场景；普通表单值仍应优先使用受控或非受控表单模式。</li>
+          <li>组件库迁移时要看消费者支持的 React 版本：若还支持 React 18，就不能直接移除 <code>forwardRef</code> 入口。</li>
+          <li>不要把 <code>ref</code> 当成状态管理替代品；用 ref 改 DOM 不会触发 React 重新渲染，容易和声明式 UI 脱节。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>React 19 中函数组件可直接接收名为 ref 的 prop？</strong> React 19 中函数组件可直接接收名为 <code>ref</code> 的 prop，无需 forwardRef 包裹</li>
-          <li><strong>父组件 useRef() 后把 ref 传给子组件？</strong> 父组件 useRef() 后把 <code>ref</code> 传给子组件，子组件绑定到原生 DOM</li>
-          <li><strong>类组件、第三方库迁移可逐步去掉 forwardRef 样板代码？</strong> 类组件、第三方库迁移可逐步去掉 forwardRef 样板代码</li>
-          <li><strong>命令式 API 仍推荐优先声明式？</strong> 命令式 API 仍推荐优先声明式；<code>ref</code> 用于聚焦、滚动、测量等</li>
+          <li><strong>React 19 的 ref as prop 改了什么？</strong> 结论是函数组件可以直接从 props 接收 <code>ref</code>。原因是 React 19 放宽了之前需要 <code>forwardRef</code> 才能透传 ref 的限制。边界是 React 18 项目仍不能用这个写法，必须保留 <code>forwardRef</code>。</li>
+          <li><strong>什么时候应该用 <code>ref</code>？</strong> 结论是只在需要命令式访问 DOM 或组件实例能力时使用。原因是聚焦、选中、滚动、测量不是纯 props 能表达的状态。本页两个按钮分别演示 <code>focus()</code> 和 <code>select()</code>。</li>
+          <li><strong>组件库如何迁移到 ref as prop？</strong> 结论是先确认最低 React 版本。原因是直接把 <code>forwardRef</code> 改成 <code>ref</code> prop 会破坏 React 18 消费者。项目里可在主版本升级时切换，或继续保留兼容层直到不再支持 React 18。</li>
+          <li><strong>为什么不要滥用 <code>ref</code>？</strong> 结论是 ref 不是声明式状态。原因是修改 ref 或直接改 DOM 不会自动驱动 React 渲染，容易产生 UI 与数据不一致。表单值、显示隐藏、列表数据仍应优先由 state / props 管理。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/useRef" target="_blank" rel="noreferrer">React Docs: <code>useRef</code></a></li>
+          <li><a href="https://react.dev/learn/manipulating-the-dom-with-refs" target="_blank" rel="noreferrer">React Docs: Manipulating the DOM with Refs</a></li>
+          <li><a href="https://react.dev/reference/react/forwardRef" target="_blank" rel="noreferrer">React Docs: <code>forwardRef</code></a></li>
+          <li><a href="https://react.dev/blog/2024/12/05/react-19#ref-as-a-prop" target="_blank" rel="noreferrer">React 19 Blog: ref as a prop</a></li>
         </ul>
       </div>
     </section>

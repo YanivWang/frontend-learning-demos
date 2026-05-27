@@ -2,16 +2,15 @@
   分类: react19 / 02-面试题
   主题: 错误边界与 Action 状态边界
   要点:
-    - Error Boundary 仍是 class 组件 getDerivedStateFromError + componentDidCatch
-    - 函数组件不能充当错误边界；事件处理器内错误需 try/catch
-    - useActionState 的 action 抛错会反映到 state；应用层需返回可展示的错误信息
-    - 面试：区分渲染错误、事件错误、异步 Action 错误三种处理位置
+    - Error Boundary 捕获子树渲染、生命周期和构造阶段错误，React 19 仍依赖 class 边界
+    - 事件处理器、异步回调和服务端错误不由 Error Boundary 自动捕获
+    - useActionState 适合把表单业务失败建模成状态，而不是让可预期错误进入兜底 UI
+    - 状态边界和错误边界要分层：业务失败就地展示，未知渲染错误由边界隔离
   面试:
-    - 错误边界与 Action 状态边界的核心概念是什么
-    - 错误边界与 Action 状态边界在实际项目里怎么用
-    - 错误边界与 Action 状态边界有哪些常见坑或易错点
-    - 错误边界与 Action 状态边界和相近 API 如何区分选型
-    - 面试中如何简洁讲清 错误边界与 Action 状态边界
+    - Error Boundary 能捕获哪些错误，不能捕获哪些错误？
+    - React 19 中函数组件能不能直接写错误边界？
+    - 表单 Action 的业务失败为什么应该返回 state？
+    - 错误边界和状态边界在项目里如何分层？
 -->
 
 <!doctype html>
@@ -39,16 +38,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Error Boundary 仍是 class 组件 getDerivedStateFromError + componentDidCatch。</li>
-          <li>函数组件不能充当错误边界；事件处理器内错误需 try/catch。</li>
-          <li>useActionState 的 action 抛错会反映到 state；应用层需返回可展示的错误信息。</li>
-          <li>面试：区分渲染错误、事件错误、异步 Action 错误三种处理位置。</li>
+          <li>Error Boundary 捕获子组件渲染、生命周期方法和构造函数中的错误；React 19 仍使用 class 组件的 <code>static getDerivedStateFromError</code> 与 <code>componentDidCatch</code> 实现边界。</li>
+          <li>边界不会自动捕获事件处理器、定时器、Promise 回调、服务端渲染阶段或边界自身抛出的错误；这些位置需要 <code>try/catch</code>、状态建模或框架级错误处理。</li>
+          <li><code>useActionState</code> 适合把表单 Action 的可预期业务失败返回为状态，例如本页的“库存不足”；它不会代替错误边界，也不应该把用户可修正错误都变成兜底异常页。</li>
+          <li>状态边界处理“还能继续交互”的失败，错误边界隔离“子树无法继续渲染”的未知错误；项目里常按路由、卡片或高风险组件设置边界，避免整页白屏。</li>
+          <li>重置错误边界时要同步修复触发错误的状态；本页按钮同时清掉边界内部错误和外层 <code>throwRender</code>，真实项目也可通过重置 key 重新挂载子树。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Error Boundary 仍是 class 组件 getDerivedSta？</strong> Error Boundary 仍是 class 组件 getDerivedStateFromError + componentDidCatch</li>
-          <li><strong>函数组件不能充当错误边界？</strong> 函数组件不能充当错误边界；事件处理器内错误需 try/catch</li>
-          <li><strong>useActionState 的 action 抛错会反映到 state？</strong> useActionState 的 action 抛错会反映到 state；应用层需返回可展示的错误信息</li>
+          <li><strong>Error Boundary 能捕获哪些错误，不能捕获哪些错误？</strong> 结论是它捕获子树渲染、生命周期和构造阶段错误，不捕获事件处理器、异步回调、服务端渲染和自身错误。原因是边界参与的是 React 渲染提交链路，事件和异步任务已经离开该链路。项目里事件错误要本地处理，渲染风险点才用边界隔离。</li>
+          <li><strong>React 19 中函数组件能不能直接写错误边界？</strong> 结论是不能，官方错误边界仍要求 class 组件生命周期。原因是 <code>getDerivedStateFromError</code> 和 <code>componentDidCatch</code> 目前没有等价的内置函数组件 Hook。实际项目可封装 class 边界供函数组件树使用，或使用框架提供的路由错误边界。</li>
+          <li><strong>表单 Action 的业务失败为什么应该返回 state？</strong> 结论是可预期失败应返回页面可展示状态。原因是用户需要看到错误并继续修正输入，进入错误边界会丢失上下文且体验过重。比如库存不足、校验失败、权限不足通常显示在表单旁；未知异常才交给边界或监控。</li>
+          <li><strong>错误边界和状态边界在项目里如何分层？</strong> 结论是业务状态靠组件局部或 Action state，渲染崩溃靠 Error Boundary。原因是二者恢复方式不同：业务失败可重试，渲染错误需要隔离和重置子树。大型页面可按路由、微前端、数据面板设置边界，避免单点崩溃拖垮整页。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary" target="_blank" rel="noopener">React Reference: Catching rendering errors with an Error Boundary</a></li>
+          <li><a href="https://react.dev/reference/react/Component#static-getderivedstatefromerror" target="_blank" rel="noopener">React Reference: static getDerivedStateFromError</a></li>
+          <li><a href="https://react.dev/reference/react/Component#componentdidcatch" target="_blank" rel="noopener">React Reference: componentDidCatch</a></li>
+          <li><a href="https://react.dev/reference/react/useActionState" target="_blank" rel="noopener">React Reference: useActionState</a></li>
         </ul>
       </div>
     </section>
@@ -76,7 +84,13 @@
             <div className="err-ui">
               <h3>错误边界兜底</h3>
               <p>{String(this.state.error.message)}</p>
-              <button type="button" onClick={() => this.setState({ error: null })}>
+              <button
+                type="button"
+                onClick={() => {
+                  this.props.onReset?.();
+                  this.setState({ error: null });
+                }}
+              >
                 重置
               </button>
             </div>
@@ -123,7 +137,7 @@
           <button type="button" onClick={() => setThrowRender(true)}>
             触发渲染错误（由边界捕获）
           </button>
-          <ErrorBoundary>
+          <ErrorBoundary onReset={() => setThrowRender(false)}>
             <Buggy shouldThrow={throwRender} />
           </ErrorBoundary>
           <ActionDemo />

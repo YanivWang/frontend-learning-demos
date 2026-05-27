@@ -2,16 +2,15 @@
 分类: typescript / 03-工程与框架
   主题: tsconfig、strict、noImplicitAny 与常用工程配置
   要点:
-    - tsconfig.json 决定 TS 如何检查和输出代码，是项目级 TS 的入口
-    - strict 是一组严格检查开关，面试常问为什么建议新项目开启
-    - noImplicitAny 禁止隐式 any，避免参数和回调类型悄悄失控
-    - 前端项目常配 noEmit 或交给 Vite 构建，类型检查可单独跑 tsc --noEmit
+    - tsconfig.json 是项目级编译配置入口，决定文件范围、模块解析和检查强度
+    - strict 会开启一组严格检查，建议新项目默认开启并逐步治理旧项目
+    - noImplicitAny 和 noUncheckedIndexedAccess 能暴露隐式 any 与索引读取风险
+    - Vite 等前端项目常用 noEmit，把类型检查和打包输出拆开执行
   面试:
-    - tsconfig、strict、noImplicitAny 与常用工程配置的核心概念是什么
-    - tsconfig、strict、noImplicitAny 与常用工程配置在实际项目里怎么用
-    - tsconfig、strict、noImplicitAny 与常用工程配置有哪些常见坑或易错点
-    - tsconfig、strict、noImplicitAny 与常用工程配置和相近 API 如何区分选型
-    - 面试中如何简洁讲清 tsconfig、strict、noImplicitAny 与常用工程配置
+    - strict 为什么是新 TypeScript 项目的默认建议？
+    - noImplicitAny 和 noUncheckedIndexedAccess 分别防什么问题？
+    - 前端项目为什么常用 tsc --noEmit 做类型检查？
+    - moduleResolution: Bundler 适合什么构建场景？
 -->
 
 <!doctype html>
@@ -36,17 +35,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>tsconfig.json 决定 TS 如何检查和输出代码，是项目级 TS 的入口。</li>
-          <li>strict 是一组严格检查开关，面试常问为什么建议新项目开启。</li>
-          <li>noImplicitAny 禁止隐式 any，避免参数和回调类型悄悄失控。</li>
-          <li>前端项目常配 noEmit 或交给 Vite 构建，类型检查可单独跑 tsc --noEmit。</li>
+          <li><code>tsconfig.json</code> 是项目级 TypeScript 配置入口，决定哪些文件参与检查、目标语法、模块系统、模块解析策略和严格程度。</li>
+          <li><code>strict</code> 是一组严格检查开关的总开关，会启用 <code>strictNullChecks</code>、<code>strictFunctionTypes</code> 等能力；新项目建议默认开启，旧项目可分目录逐步治理。</li>
+          <li><code>noImplicitAny</code> 禁止参数和变量悄悄退化成隐式 <code>any</code>，能尽早暴露回调、事件参数和第三方数据建模缺口。</li>
+          <li><code>noUncheckedIndexedAccess</code> 会把索引读取结果标成可能为 <code>undefined</code>，适合暴露数组越界、字典缺 key 这类运行时风险，但可能增加必要的空值处理。</li>
+          <li>Vite、Webpack、esbuild 等前端项目通常让构建工具输出代码，TypeScript 只跑 <code>tsc --noEmit</code> 做类型检查；<code>moduleResolution: "Bundler"</code> 适合现代打包器解析 ESM、exports/imports 的场景。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>tsconfig.json 决定 TS 如何检查和输出代码？</strong> tsconfig.json 决定 TS 如何检查和输出代码，是项目级 TS 的入口；前端项目常配 noEmit 或交给 Vite 构建，类型检查可单独跑 tsc --noEmit</li>
-          <li><strong>strict 是一组严格检查开关？</strong> strict 是一组严格检查开关，面试常问为什么建议新项目开启</li>
-          <li><strong>noImplicitAny 禁止隐式 any？</strong> noImplicitAny 禁止隐式 any，避免参数和回调类型悄悄失控</li>
-          <li><strong>前端项目常配 noEmit 或交给 Vite 构建？</strong> 前端项目常配 noEmit 或交给 Vite 构建，类型检查可单独跑 tsc --noEmit</li>
+          <li><strong>strict 为什么建议新项目默认开启？</strong> 结论是它能把空值、函数参数兼容性、隐式 any 等高风险问题前移到编译期。原因是 TypeScript 的收益来自约束边界，而不是只写几个注解。旧项目迁移时可以先开启局部配置或逐项打开，避免一次性产生过多错误。</li>
+          <li><strong>noImplicitAny 和 noUncheckedIndexedAccess 分别防什么？</strong> 结论是前者防类型缺失，后者防索引读取不存在。原因是隐式 <code>any</code> 会让类型检查断链，索引读取在 JS 里天然可能得到 <code>undefined</code>。项目里常见于事件回调、字典表、数组查找和接口缓存。</li>
+          <li><strong>为什么前端项目常用 tsc --noEmit？</strong> 结论是把类型检查和代码转译分工给不同工具。原因是 Vite/esbuild/SWC 更适合快速打包，而 <code>tsc --noEmit</code> 专注类型正确性。边界是如果项目需要生成声明文件，就不能只依赖 <code>noEmit</code>。</li>
+          <li><strong>moduleResolution: Bundler 适合什么场景？</strong> 结论是适合由现代打包器处理模块解析的前端应用。原因是它更贴近 bundler 对 package.json <code>exports</code>/<code>imports</code> 和扩展名的处理方式。库项目、Node 运行时代码或老构建链路仍要按目标环境选择 <code>NodeNext</code>、<code>Node16</code> 等策略。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://www.typescriptlang.org/tsconfig/" target="_blank" rel="noreferrer">TypeScript: TSConfig Reference</a></li>
+          <li><a href="https://www.typescriptlang.org/tsconfig/#strict" target="_blank" rel="noreferrer">TSConfig Reference: strict</a></li>
+          <li><a href="https://www.typescriptlang.org/tsconfig/#noImplicitAny" target="_blank" rel="noreferrer">TSConfig Reference: noImplicitAny</a></li>
+          <li><a href="https://www.typescriptlang.org/tsconfig/#noUncheckedIndexedAccess" target="_blank" rel="noreferrer">TSConfig Reference: noUncheckedIndexedAccess</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-0.html#--moduleresolution-bundler" target="_blank" rel="noreferrer">TypeScript 5.0 Release Notes: moduleResolution bundler</a></li>
         </ul>
       </div>
     </section>

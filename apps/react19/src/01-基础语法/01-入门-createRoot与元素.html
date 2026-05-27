@@ -7,11 +7,11 @@
     - React 19 仍基于元素不可变：更新界面需 render 新元素树
     - 本模块使用 React 19 运行时（umd-react），与 apps/react18 的 18.3.1 分离
   面试:
-    - React 19 元素与 createRoot 渲染的核心概念是什么
-    - React 19 元素与 createRoot 渲染在实际项目里怎么用
-    - React 19 元素与 createRoot 渲染有哪些常见坑或易错点
-    - React 19 元素与 createRoot 渲染和相近 API 如何区分选型
-    - 面试中如何简洁讲清 React 19 元素与 createRoot 渲染
+    - React 元素为什么说是不可变描述对象？
+    - createRoot(container).render(element) 做了哪两件事？
+    - 为什么 React 19 项目仍从根节点重新 render 新元素树？
+    - JSX 与 React.createElement 在运行结果上是什么关系？
+    - React 19 官方不再提供 UMD 时本仓库运行时边界是什么？
 -->
 
 <!doctype html>
@@ -39,17 +39,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>JSX</code> 经 Babel 转译为 React.createElement，得到 React 元素（普通对象）。</li>
-          <li>ReactDOM.createRoot(container).render(element) 为唯一推荐挂载方式。</li>
-          <li>React 19 仍基于元素不可变：更新界面需 <code>render</code> 新元素树。</li>
-          <li>本模块使用 React 19 运行时（umd-react），与 apps/react18 的 18.3.1 分离。</li>
+          <li><code>JSX</code> 是 JavaScript 的语法扩展，本页用 Babel 在浏览器中转译；转译后会创建 React 元素，元素本质上是描述 UI 的不可变对象。</li>
+          <li><code>ReactDOM.createRoot(container)</code> 创建并管理一个 React 根，<code>root.render(element)</code> 把元素树交给 React 协调并提交到容器。</li>
+          <li>更新界面不是修改已有元素对象，而是根据新 state / props 重新返回一棵元素树；React 再比较前后树并更新必要 DOM。</li>
+          <li>本页同时展示 <code>React.createElement</code> 与 JSX，说明两者最终都表达同一类 React 元素；项目代码通常使用 JSX 可读性更好。</li>
+          <li>React 19 官方移除了 UMD 构建，本仓库通过本地 React 19 运行时文件教学演示；真实项目应优先使用构建工具或 ESM CDN，并和 React 18 demo 区分版本。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>JSX 经 Babel 转译为 React.createElement？</strong> <code>JSX</code> 经 Babel 转译为 React.createElement，得到 React 元素（普通对象）</li>
-          <li><strong>ReactDOM.createRoot(container).render(el？</strong> <code>JSX</code> 经 Babel 转译为 React.createElement，得到 React 元素（普通对象）；ReactDOM.createRoot(container).render(element) 为唯一推荐挂载方式</li>
-          <li><strong>React 19 仍基于元素不可变？</strong> <code>JSX</code> 经 Babel 转译为 React.createElement，得到 React 元素（普通对象）；ReactDOM.createRoot(container).render(element) 为唯一推荐挂载方式</li>
-          <li><strong>本模块使用 React 19 运行时（umd-react）？</strong> 本模块使用 React 19 运行时（umd-react），与 apps/react18 的 18.3.1 分离</li>
+          <li><strong>React 元素是什么？</strong> 结论是 React 元素是描述 UI 的不可变对象，不是真实 DOM。原因是 React 需要用元素树表达“此刻 UI 应该长什么样”，再由协调过程决定 DOM 更新。项目里通常用 JSX 创建元素，而不是手写大量 <code>React.createElement</code>。</li>
+          <li><strong><code>createRoot</code> 和 <code>render</code> 分别做什么？</strong> 结论是 <code>createRoot</code> 创建 React 根，<code>render</code> 提交元素树。原因是根对象负责后续调度、协调和卸载。边界是一个 DOM 容器通常只创建一个 root，不要在每次状态变化时重复 <code>createRoot</code>。</li>
+          <li><strong>为什么更新时要返回新元素树？</strong> 结论是 React 不修改旧元素，而是根据最新 state / props 重新描述 UI。原因是不可变描述能让 React 比较前后结果并最小化 DOM 操作。本页点击“改名”就是通过 state 触发新 props 和新元素树。</li>
+          <li><strong>React 19 的浏览器脚本引入有什么版本边界？</strong> 结论是官方不再发布 UMD 构建，真实项目应使用构建工具或 ESM CDN。原因是 React 19 发布策略转向现代模块生态。本仓库为教学保留本地运行时文件，不代表生产项目推荐继续用 script 标签直连。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/createElement" target="_blank" rel="noreferrer">React Docs: <code>createElement</code></a></li>
+          <li><a href="https://react.dev/reference/react-dom/client/createRoot" target="_blank" rel="noreferrer">React DOM Docs: <code>createRoot</code></a></li>
+          <li><a href="https://react.dev/learn/writing-markup-with-jsx" target="_blank" rel="noreferrer">React Docs: Writing Markup with JSX</a></li>
+          <li><a href="https://react.dev/blog/2024/04/25/react-19-upgrade-guide#umd-builds-removed" target="_blank" rel="noreferrer">React 19 Upgrade Guide: UMD builds removed</a></li>
         </ul>
       </div>
     </section>

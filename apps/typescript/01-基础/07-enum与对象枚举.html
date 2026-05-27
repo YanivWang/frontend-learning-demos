@@ -3,15 +3,14 @@
   主题: enum、const enum 与对象枚举
   要点:
     - enum 会生成运行时代码，数字 enum 还会生成反向映射
-    - const enum 通常会在编译期内联，但受 isolatedModules 等配置限制
-    - 前端项目更常用 as const 对象枚举，运行时直观且 tree-shaking 友好
-    - 面试常问 enum 和联合字面量 / 对象枚举如何取舍
+    - const enum 会被内联，发布库和 isolatedModules 场景要谨慎使用
+    - as const 对象配合联合类型能保留运行时对象，也更贴近前端构建工具
+    - 只有需要运行时命名空间或兼容既有 API 时，才优先考虑 enum
   面试:
-    - enum、const enum 与对象枚举的核心概念是什么
-    - enum、const enum 与对象枚举在实际项目里怎么用
-    - enum、const enum 与对象枚举有哪些常见坑或易错点
-    - enum、const enum 与对象枚举和相近 API 如何区分选型
-    - 面试中如何简洁讲清 enum、const enum 与对象枚举
+    - enum 和 as const 对象枚举在运行时代码上有什么差异？
+    - 为什么 const enum 不适合直接暴露在公共声明文件里？
+    - 数字 enum 的反向映射会带来哪些调试和体积影响？
+    - 前端业务状态枚举为什么常用字面量联合类型？
 -->
 
 <!doctype html>
@@ -36,17 +35,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>enum</code> 会生成运行时代码，数字 <code>enum</code> 还会生成反向映射。</li>
-          <li><code>const</code> <code>enum</code> 通常会在编译期内联，但受 isolatedModules 等配置限制。</li>
-          <li>前端项目更常用 as <code>const</code> 对象枚举，运行时直观且 tree-shaking 友好。</li>
-          <li>面试常问 <code>enum</code> 和联合字面量 / 对象枚举如何取舍。</li>
+          <li><code>enum</code> 是 TypeScript 少数会生成 JavaScript 的类型语法；字符串 enum 保留键到值的对象，数字 enum 还会生成值到键的反向映射。</li>
+          <li><code>const enum</code> 默认在编译期内联为字面量，运行时代码更少，但跨包发布、<code>isolatedModules</code>、Babel/SWC 单文件转译时容易遇到不一致或无法内联的问题。</li>
+          <li><code>as const</code> 对象枚举保留普通 JavaScript 对象，再用 <code>typeof Obj[keyof typeof Obj]</code> 得到联合类型，调试、序列化和 tree-shaking 都更符合现代前端工程习惯。</li>
+          <li>如果后端协议、URL 参数或埋点值本身就是字符串，优先用字符串字面量联合或 <code>as const</code> 对象；只有需要运行时命名空间、兼容历史代码或与第三方 enum API 对齐时再选 <code>enum</code>。</li>
+          <li>常见坑是把 <code>enum</code> 当成纯类型使用，导致输出多余运行时代码；另一个坑是把 <code>const enum</code> 暴露给库消费者，消费者的编译方式可能和发布方不一致。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>enum 会生成运行时代码？</strong> <code>enum</code> 会生成运行时代码，数字 <code>enum</code> 还会生成反向映射；<code>const</code> <code>enum</code> 通常会在编译期内联，但受 isolatedModules 等配置限制</li>
-          <li><strong>const enum 通常会在编译期内联？</strong> <code>const</code> <code>enum</code> 通常会在编译期内联，但受 isolatedModules 等配置限制；前端项目更常用 as <code>const</code> 对象枚举，运行时直观且 tree-shaking 友好</li>
-          <li><strong>前端项目更常用 as const 对象枚举？</strong> 前端项目更常用 as <code>const</code> 对象枚举，运行时直观且 tree-shaking 友好</li>
-          <li><strong>面试常问 enum 和联合字面量 / 对象枚举如何取舍？</strong> 面试常问 <code>enum</code> 和联合字面量 / 对象枚举如何取舍</li>
+          <li><strong>enum 和 as const 对象枚举怎么选？</strong> 结论是业务前端状态值通常优先用 <code>as const</code> 对象加联合类型，已有运行时 enum API 再用 <code>enum</code>。原因是对象枚举是普通 JS，输出直观、可 tree-shaking，也不会引入数字 enum 反向映射。边界是需要在运行时按枚举名访问、或维护历史 TS enum 代码时，保留 <code>enum</code> 更稳。</li>
+          <li><strong>const enum 为什么有争议？</strong> 结论是应用内部可谨慎使用，公共库声明里不建议暴露。原因是它依赖编译期内联，消费者若使用 <code>isolatedModules</code> 或不同转译链路，可能无法安全解析或出现版本错配。项目里更常见的替代是字符串字面量联合和 <code>as const</code> 对象。</li>
+          <li><strong>数字 enum 的反向映射有什么影响？</strong> 结论是它会让运行时对象同时包含名称和数字键。原因是 TS 为数字 enum 生成双向映射，方便从值查名，但也带来额外体积和遍历时的意外键。项目里如果值要落库、传接口或展示，字符串 enum 或对象枚举通常更清晰。</li>
+          <li><strong>为什么联合字面量常能替代 enum？</strong> 结论是联合字面量能在类型层约束可选值，不生成额外运行时代码。原因是很多状态只需要编译期检查，不需要一个真实枚举对象。边界是需要集中维护值表、渲染下拉选项或做运行时校验时，要配合 <code>as const</code> 对象或数组保存值。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/enums.html" target="_blank" rel="noreferrer">TypeScript Handbook: Enums</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#literal-types" target="_blank" rel="noreferrer">TypeScript Handbook: Literal Types</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-4.html#const-assertions" target="_blank" rel="noreferrer">TypeScript 3.4 Release Notes: const assertions</a></li>
         </ul>
       </div>
     </section>

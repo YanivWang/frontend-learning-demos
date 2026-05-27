@@ -7,11 +7,11 @@
     - 需要同步读/写 DOM 布局（测量尺寸、避免闪烁）时用 useLayoutEffect
     - 大多数数据请求、订阅等副作用用 useEffect 即可
   面试:
-    - useLayoutEffect 与 useEffect 对比的核心概念是什么
-    - useLayoutEffect 与 useEffect 对比在实际项目里怎么用
-    - useLayoutEffect 与 useEffect 对比有哪些常见坑或易错点
-    - useLayoutEffect 与 useEffect 对比和相近 API 如何区分选型
-    - 面试中如何简洁讲清 useLayoutEffect 与 useEffect 对比
+    - useLayoutEffect 为什么会阻塞浏览器绘制？
+    - 哪些 DOM 测量场景必须用 useLayoutEffect？
+    - 为什么数据请求和订阅不应该默认放进 useLayoutEffect？
+    - SSR 或同构渲染中 useLayoutEffect 有什么限制？
+    - 如何用依赖数组避免布局副作用重复执行？
 -->
 
 <!doctype html>
@@ -34,17 +34,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>useEffect</code> 在浏览器绘制后异步执行，不阻塞视觉更新。</li>
-          <li>useLayoutEffect 在 DOM 变更后、浏览器绘制前同步执行。</li>
-          <li>需要同步读/写 DOM 布局（测量尺寸、避免闪烁）时用 useLayoutEffect。</li>
-          <li>大多数数据请求、订阅等副作用用 <code>useEffect</code> 即可。</li>
+          <li><code>useEffect</code> 会在浏览器完成绘制后运行，适合网络请求、订阅、日志等不需要卡住首帧的副作用。</li>
+          <li><code>useLayoutEffect</code> 会在 React 把 DOM 更新提交后、浏览器绘制前同步运行；如果在里面读布局并立刻写 state，用户通常看不到中间错误位置。</li>
+          <li>本页 tooltip 先渲染到 DOM，再用 <code>getBoundingClientRect()</code> 判断是否需要上移，正是 <code>useLayoutEffect</code> 的典型场景。</li>
+          <li>常见坑是把请求、计时器或昂贵计算放进 <code>useLayoutEffect</code>，它会延迟绘制并让页面显得卡顿；能用 <code>useEffect</code> 就不要升级为布局副作用。</li>
+          <li>同构渲染中服务端没有布局信息，<code>useLayoutEffect</code> 只在客户端有意义；需要 SSR 的组件应避免依赖首屏同步测量，或延后到客户端交互后再显示。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>useEffect 在浏览器绘制后异步执行？</strong> <code>useEffect</code> 在浏览器绘制后异步执行，不阻塞视觉更新；useLayoutEffect 在 DOM 变更后、浏览器绘制前同步执行</li>
-          <li><strong>useLayoutEffect 在 DOM 变更后、浏览器绘制前同步执行？</strong> <code>useEffect</code> 在浏览器绘制后异步执行，不阻塞视觉更新；useLayoutEffect 在 DOM 变更后、浏览器绘制前同步执行</li>
-          <li><strong>需要同步读/写 DOM 布局（测量尺寸、避免闪烁）时用 useLayoutEff？</strong> 需要同步读/写 DOM 布局（测量尺寸、避免闪烁）时用 useLayoutEffect</li>
-          <li><strong>大多数数据请求、订阅等副作用用 useEffect 即可？</strong> 大多数数据请求、订阅等副作用用 <code>useEffect</code> 即可</li>
+          <li><strong><code>useLayoutEffect</code> 和 <code>useEffect</code> 的核心区别是什么？</strong> 结论是执行时机不同：前者在绘制前同步执行，后者在绘制后异步执行。原因是 React 需要给布局副作用一个修正 DOM 的窗口。边界是只有测量尺寸、滚动位置、避免闪烁这类视觉同步问题才用 <code>useLayoutEffect</code>。</li>
+          <li><strong>为什么数据请求不要默认放进 <code>useLayoutEffect</code>？</strong> 结论是请求、订阅、日志应优先放进 <code>useEffect</code>。原因是这些工作不需要阻塞首帧，放进布局副作用会拖慢绘制。项目里只有请求结果会立即决定布局且无法接受闪烁时，才考虑重构交互或拆出占位 UI。</li>
+          <li><strong>tooltip 测量为什么适合 <code>useLayoutEffect</code>？</strong> 结论是因为它要在用户看到页面前完成位置修正。原因是先提交 DOM 才能读取真实尺寸，再同步更新 <code>top</code> 可避免 tooltip 从错误位置跳动。边界是测量逻辑要短小，并把依赖数组限制在真正影响尺寸的值上。</li>
+          <li><strong>SSR 中使用 <code>useLayoutEffect</code> 要注意什么？</strong> 结论是服务端没有浏览器布局，布局副作用只能在客户端运行。原因是 DOM 尺寸、滚动和视口都依赖真实浏览器环境。需要 SSR 的项目通常用 CSS 预留空间、客户端再增强，避免首屏强依赖同步测量。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">React Docs: <code>useEffect</code></a></li>
+          <li><a href="https://react.dev/reference/react/useLayoutEffect" target="_blank" rel="noreferrer">React Docs: <code>useLayoutEffect</code></a></li>
+          <li><a href="https://react.dev/reference/react/useLayoutEffect#troubleshooting" target="_blank" rel="noreferrer">React Docs: useLayoutEffect troubleshooting</a></li>
         </ul>
       </div>
     </section>

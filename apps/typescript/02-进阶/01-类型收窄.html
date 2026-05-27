@@ -2,16 +2,15 @@
 分类: typescript / 02-进阶
   主题: 类型收窄与 discriminated union
   要点:
-    - typeof / instanceof / in / 字面量比较 用于缩窄联合类型
-    - 可辨识联合：成员含共同字面量字段 kind/type，switch 分支自动收窄
-    - 面试常写 API 结果：success | error 分支处理
-    - 断言 as 应谨慎；优先用类型守卫函数 isXxx(x): x is T
+    - typeof、instanceof、in 和相等性判断都能让控制流分析缩窄联合类型
+    - 可辨识联合依赖共同字面量字段，switch 分支内会得到精确成员类型
+    - 类型守卫函数适合复用复杂判断，as 断言不应替代真实校验
+    - API 成功/失败结果、表单状态和 reducer action 都适合用可辨识联合建模
   面试:
-    - 类型收窄与 discriminated union的核心概念是什么
-    - 类型收窄与 discriminated union在实际项目里怎么用
-    - 类型收窄与 discriminated union有哪些常见坑或易错点
-    - 类型收窄与 discriminated union和相近 API 如何区分选型
-    - 面试中如何简洁讲清 类型收窄与 discriminated union
+    - TypeScript 为什么能在 if 或 switch 后推断出更窄类型？
+    - 可辨识联合相比一组可选字段有什么优势？
+    - 类型守卫函数和 as 断言应该如何取舍？
+    - 新增联合成员时如何避免漏处理分支？
 -->
 
 <!doctype html>
@@ -37,16 +36,23 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>typeof</code> / <code>instanceof</code> / in / 字面量比较 用于缩窄联合类型。</li>
-          <li>可辨识联合：成员含共同字面量字段 kind/type，switch 分支自动收窄。</li>
-          <li>面试常写 API 结果：success | error 分支处理。</li>
-          <li>断言 as 应谨慎；优先用类型守卫函数 isXxx(x): x is T。</li>
+          <li>类型收窄来自 TypeScript 的控制流分析：经过 <code>typeof</code>、<code>instanceof</code>、<code>in</code>、相等性判断或早返回后，编译器会在当前分支里排除不可能的联合成员。</li>
+          <li>可辨识联合要求每个成员都有共同的字面量字段，例如 <code>kind</code> 或 <code>type</code>；本页 <code>Shape</code> 在 <code>switch (s.kind)</code> 后分别获得圆和矩形的专属字段。</li>
+          <li>类型守卫函数 <code>isXxx(value): value is Xxx</code> 适合封装可复用的运行时判断；<code>as</code> 断言只是告诉编译器“相信我”，不会检查数据真假。</li>
+          <li>真实项目里常用可辨识联合表达接口结果、加载状态、表单提交状态和 reducer action，比一堆可选字段更容易获得穷尽检查。</li>
+          <li>涉及外部输入时，类型收窄只能基于当前 JS 判断；接口响应、表单值或本地存储仍要先做运行时校验，再让类型守卫把结果带回类型系统。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>typeof / instanceof / in / 字面量比较 用于缩窄联合类？</strong> <code>typeof</code> / <code>instanceof</code> / in / 字面量比较 用于缩窄联合类型；可辨识联合：成员含共同字面量字段 kind/type，switch 分支自动收窄</li>
-          <li><strong>面试常写 API 结果？</strong> 面试常写 API 结果：success | error 分支处理</li>
-          <li><strong>断言 as 应谨慎？</strong> 断言 as 应谨慎；优先用类型守卫函数 isXxx(x): x is T</li>
+          <li><strong>TypeScript 为什么能在分支里推断出更窄类型？</strong> 结论是编译器会做控制流分析。原因是条件判断、赋值、返回和抛错都会改变某个变量在当前位置可能具有的类型集合。边界是 TS 只相信能从代码静态看出的判断，外部数据仍要运行时校验。</li>
+          <li><strong>可辨识联合比可选字段建模好在哪里？</strong> 结论是它让不同状态互斥且分支精确。原因是共同的字面量字段能告诉编译器当前是哪一个成员，避免在每个字段前都写非空判断。项目里适合 API 结果、UI 状态机和 reducer action。</li>
+          <li><strong>类型守卫函数和 as 断言怎么取舍？</strong> 结论是能写真实判断就写类型守卫，只有编译器暂时无法表达但开发者确定安全时才用 <code>as</code>。原因是类型守卫同时执行运行时检查并反馈给类型系统，而断言不会生成校验逻辑。用户输入、网络响应和存储数据不能只靠断言。</li>
+          <li><strong>新增联合成员时如何避免漏处理？</strong> 结论是配合 <code>switch</code> 和 <code>never</code> 穷尽检查。原因是当所有成员都被处理后，默认分支里的变量应被收窄为 <code>never</code>；新增成员但漏写分支时编译器会报错。复杂状态流可以把这个模式放进 reducer 或状态机。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html" target="_blank" rel="noreferrer">TypeScript Handbook: Narrowing</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#union-types" target="_blank" rel="noreferrer">TypeScript Handbook: Union Types</a></li>
         </ul>
       </div>
     </section>

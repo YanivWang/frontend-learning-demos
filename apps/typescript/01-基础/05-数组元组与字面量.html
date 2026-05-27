@@ -1,17 +1,16 @@
 <!--
-分类: typescript / 01-基础
+  分类: typescript / 01-基础
   主题: 数组、元组、readonly、字面量类型、as const 与 satisfies
   要点:
-    - 数组适合长度不固定的同类数据，元组适合固定位置含义的数据
-    - readonly 表示类型层面的只读，避免调用方修改入参
-    - 字面量类型把值收窄成有限集合，常用于状态、路由、事件名
-    - as const 保留最窄字面量；satisfies 校验结构但尽量保留推断
+    - 数组适合变长同类集合；元组适合固定长度且位置有语义的数据
+    - readonly 是类型层面的不可写约束，运行时是否冻结取决于实际 JS 代码
+    - 字面量类型把值限制在有限集合，常用于状态、路由、事件名和配置键
+    - as const 生成最窄 readonly 字面量；satisfies 在 TS 4.9+ 校验结构并保留推断
   面试:
-    - 数组、元组、readonly、字面量类型、as const 与 satisfies的核心概念是什么
-    - 数组、元组、readonly、字面量类型、as const 与 satisfies在实际项目里怎么用
-    - 数组、元组、readonly、字面量类型、as const 与 satisfies有哪些常见坑或易错点
-    - 数组、元组、readonly、字面量类型、as const 与 satisfies和相近 API 如何区分选型
-    - 面试中如何简洁讲清 数组、元组、readonly、字面量类型、as const 与 satisfies
+    - 数组和元组的建模边界是什么？
+    - readonly 类型为什么不等于 Object.freeze？
+    - as const 和普通 const 声明有什么区别？
+    - satisfies 相比类型注解和 as 断言有什么优势？
 -->
 
 <!doctype html>
@@ -36,17 +35,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>数组适合长度不固定的同类数据，元组适合固定位置含义的数据。</li>
-          <li>readonly 表示类型层面的只读，避免调用方修改入参。</li>
-          <li>字面量类型把值收窄成有限集合，常用于状态、路由、事件名。</li>
-          <li>as <code>const</code> 保留最窄字面量；satisfies 校验结构但尽量保留推断。</li>
+          <li>数组适合变长同类集合，例如 <code>number[]</code>；元组适合固定长度且每个位置有语义的数据，例如本页的 <code>readonly [number, number]</code> 坐标。</li>
+          <li><code>readonly</code> 是类型层面的不可写约束，能阻止调用方在 TypeScript 中修改入参；它不会自动冻结运行时对象，本页用 <code>Object.freeze</code> 才让路由对象运行时也不可变。</li>
+          <li>字面量类型把值限制为有限集合，适合状态机、路由键、事件名和组件 variant；比裸 <code>string</code> 更能提前发现拼写错误。</li>
+          <li><code>as const</code> 会把对象和数组推断为最窄的 readonly 字面量；普通 <code>const</code> 只保证变量绑定不可重新赋值，不会让对象属性都变成只读字面量。</li>
+          <li><code>satisfies</code> 是 TypeScript 4.9+ 能力；它校验表达式满足目标类型，同时尽量保留表达式自身的精确推断，适合配置表。本仓库校验使用 TypeScript 5.8.3，可直接使用。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>数组适合长度不固定的同类数据？</strong> 数组适合长度不固定的同类数据，元组适合固定位置含义的数据</li>
-          <li><strong>readonly 表示类型层面的只读？</strong> readonly 表示类型层面的只读，避免调用方修改入参</li>
-          <li><strong>字面量类型把值收窄成有限集合？</strong> 字面量类型把值收窄成有限集合，常用于状态、路由、事件名；as <code>const</code> 保留最窄字面量；satisfies 校验结构但尽量保留推断</li>
-          <li><strong>as const 保留最窄字面量？</strong> as <code>const</code> 保留最窄字面量；satisfies 校验结构但尽量保留推断</li>
+          <li><strong>数组和元组的建模边界是什么？</strong> 结论是变长同类数据用数组，固定位置语义用元组。原因是元组能表达第 0 位、第 1 位分别代表什么，并限制长度和元素类型。项目里坐标、RGB、Hook 返回值常用元组，普通列表用数组。</li>
+          <li><strong><code>readonly</code> 类型为什么不等于 <code>Object.freeze</code>？</strong> 结论是 <code>readonly</code> 只影响 TypeScript 检查，<code>Object.freeze</code> 才是运行时冻结。原因是类型会被编译擦除。跨模块传配置时可以用 <code>readonly</code> 防误改，确实要运行时不可变时再冻结或深拷贝。</li>
+          <li><strong><code>as const</code> 和普通 <code>const</code> 声明有什么区别？</strong> 结论是普通 <code>const</code> 固定变量绑定，<code>as const</code> 还会把属性和值收窄为 readonly 字面量。原因是对象属性默认仍可变，推断通常会放宽为 <code>string</code> 等类型。配置对象、路由表和事件名表常用 <code>as const</code>。</li>
+          <li><strong><code>satisfies</code> 相比类型注解和 <code>as</code> 断言有什么优势？</strong> 结论是它既检查结构，又保留更精确的推断。原因是类型注解可能把字面量放宽，<code>as</code> 断言可能绕过部分错误。TS 4.9+ 项目中，配置表常写成 <code>as const satisfies Record&lt;...&gt;</code>。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#arrays" target="_blank" rel="noopener">TypeScript Handbook: Arrays</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/objects.html#tuple-types" target="_blank" rel="noopener">TypeScript Handbook: Tuple Types</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#literal-types" target="_blank" rel="noopener">TypeScript Handbook: Literal Types</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html" target="_blank" rel="noopener">TypeScript 4.9 Release Notes: satisfies Operator</a></li>
         </ul>
       </div>
     </section>

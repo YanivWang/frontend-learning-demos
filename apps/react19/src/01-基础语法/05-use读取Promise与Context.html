@@ -4,14 +4,14 @@
   要点:
     - use(usable)：在 render 中读取 Promise 或 Context（React 19 新 Hook）
     - 读取 Promise 时组件会挂起，需外层 Suspense 提供 fallback
-    - 可在条件分支中调用 use()（与 useState 等 Hook 规则不同）
-    - 读取 Context 时可直接 use(Context)，等价于 useContext
+    - Promise reject 会交给 Error Boundary，不应在 use(Promise) 外层 try/catch
+    - 可在条件分支中调用 use()；读取 Context 时 use(Context) 类似 useContext
   面试:
-    - use() 读取 Promise 与 Context的核心概念是什么
-    - use() 读取 Promise 与 Context在实际项目里怎么用
-    - use() 读取 Promise 与 Context有哪些常见坑或易错点
-    - use() 读取 Promise 与 Context和相近 API 如何区分选型
-    - 面试中如何简洁讲清 use() 读取 Promise 与 Context
+    - use(Promise) 为什么需要 Suspense 包裹？
+    - Promise reject 时为什么要靠 Error Boundary？
+    - use() 和 useContext 读取 Context 有什么关系？
+    - use() 为什么可以在条件分支里调用？
+    - 客户端 use(Promise) 与 useEffect 请求数据如何取舍？
 -->
 
 <!doctype html>
@@ -38,17 +38,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>use(usable)：在 <code>render</code> 中读取 <code>Promise</code> 或 Context（React 19 新 Hook）。</li>
-          <li>读取 <code>Promise</code> 时组件会挂起，需外层 <code>Suspense</code> 提供 fallback。</li>
-          <li>可在条件分支中调用 use()（与 <code>useState</code> 等 Hook 规则不同）。</li>
-          <li>读取 Context 时可直接 use(Context)，等价于 useContext。</li>
+          <li><code>use(usable)</code> 是 React 19 的读取 API，可在渲染阶段读取 <code>Promise</code> 或 Context；读取 Promise 时组件会挂起。</li>
+          <li>挂起需要外层 <code>Suspense</code> 提供 fallback，否则用户会看不到明确加载态；本页点击“加载 Promise”时会先显示挂起文案。</li>
+          <li>Promise reject 不应通过包住 <code>use(promise)</code> 的 <code>try/catch</code> 处理，而是交给 Error Boundary；本页失败按钮演示错误边界兜底。</li>
+          <li><code>use()</code> 可在条件分支或循环中调用，这是它和 <code>useState</code>、<code>useEffect</code> 等传统 Hooks 的重要区别，但调用它的组件仍必须是组件或 Hook。</li>
+          <li>读取 Context 时可写 <code>use(ThemeContext)</code>，语义接近 <code>useContext</code>；普通客户端交互请求仍不应为了追新而全部改成 <code>use(Promise)</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>use(usable)？</strong> use(usable)：在 <code>render</code> 中读取 <code>Promise</code> 或 Context（React 19 新 Hook）；可在条件分支中调用 use()（与 <code>useState</code> 等 Hook 规则不同）</li>
-          <li><strong>读取 Promise 时组件会挂起？</strong> use(usable)：在 <code>render</code> 中读取 <code>Promise</code> 或 Context（React 19 新 Hook）；读取 <code>Promise</code> 时组件会挂起，需外层 <code>Suspense</code> 提供 fallback</li>
-          <li><strong>可在条件分支中调用 use()（与 useState 等 Hook 规则不同）？</strong> 可在条件分支中调用 use()（与 <code>useState</code> 等 Hook 规则不同）</li>
-          <li><strong>读取 Context 时可直接 use(Context)？</strong> use(usable)：在 <code>render</code> 中读取 <code>Promise</code> 或 Context（React 19 新 Hook）；读取 <code>Promise</code> 时组件会挂起，需外层 <code>Suspense</code> 提供 fallback</li>
+          <li><strong><code>use(Promise)</code> 为什么需要 <code>Suspense</code>？</strong> 结论是读取未完成 Promise 会让组件挂起。原因是 React 需要暂停当前子树，等 Promise 完成后再继续渲染。项目里必须给用户 fallback，并避免每次渲染都新建 Promise 造成反复挂起。</li>
+          <li><strong>Promise 失败怎么处理？</strong> 结论是 reject 会抛给 Error Boundary，而不是在 <code>use(promise)</code> 周围写 <code>try/catch</code>。原因是挂起和错误都由 React 渲染流程接管。边界是错误边界要提供重试或重新创建 Promise 的入口。</li>
+          <li><strong><code>use()</code> 和 <code>useContext</code> 有什么关系？</strong> 结论是读取 Context 时 <code>use(Context)</code> 类似 <code>useContext(Context)</code>。原因是两者都会订阅最近的 Provider 值。差异是 <code>use()</code> 还支持 Promise，并允许在条件分支中调用。</li>
+          <li><strong><code>use()</code> 能否替代 <code>useEffect</code> 请求？</strong> 结论是不能简单替代。原因是 <code>use(Promise)</code> 适合和 Suspense、缓存、服务端组件或框架数据层配合；事件驱动请求、订阅和命令式副作用仍常放在事件处理或 effect 中。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/use" target="_blank" rel="noreferrer">React Docs: <code>use</code></a></li>
+          <li><a href="https://react.dev/reference/react/Suspense" target="_blank" rel="noreferrer">React Docs: <code>Suspense</code></a></li>
+          <li><a href="https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary" target="_blank" rel="noreferrer">React Docs: Error Boundary</a></li>
+          <li><a href="https://react.dev/reference/react/useContext" target="_blank" rel="noreferrer">React Docs: <code>useContext</code></a></li>
         </ul>
       </div>
     </section>
@@ -60,14 +68,33 @@
 
     <!-- SCRIPT_START -->
     <script type="text/babel">
-      const { Suspense, use, useState } = React;
+      const { Component, Suspense, use, useState } = React;
 
       const ThemeContext = React.createContext("light");
 
-      function fetchMessage() {
-        return new Promise((resolve) => {
-          setTimeout(() => resolve("来自 Promise 的数据 @ " + new Date().toLocaleTimeString()), 600);
+      function fetchMessage(shouldFail = false) {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            if (shouldFail) {
+              reject(new Error("Promise 被服务端拒绝"));
+              return;
+            }
+            resolve("来自 Promise 的数据 @ " + new Date().toLocaleTimeString());
+          }, 600);
         });
+      }
+
+      class ErrorBoundary extends Component {
+        state = { error: null };
+        static getDerivedStateFromError(error) {
+          return { error };
+        }
+        render() {
+          if (this.state.error) {
+            return <p className="box">加载失败：{this.state.error.message}</p>;
+          }
+          return this.props.children;
+        }
       }
 
       function DataPanel({ messagePromise }) {
@@ -97,13 +124,18 @@
           </ThemeContext.Provider>
         </div>
         <div className="box">
-          <button type="button" onClick={() => setPromise(fetchMessage())}>
+          <button type="button" onClick={() => setPromise(fetchMessage(false))}>
             加载 Promise
           </button>
+          <button type="button" onClick={() => setPromise(fetchMessage(true))}>
+            加载失败 Promise
+          </button>
           {promise && (
-            <Suspense fallback={<p>Promise 挂起中…</p>}>
-              <DataPanel messagePromise={promise} />
-            </Suspense>
+            <ErrorBoundary key={promise}>
+              <Suspense fallback={<p>Promise 挂起中…</p>}>
+                <DataPanel messagePromise={promise} />
+              </Suspense>
+            </ErrorBoundary>
           )}
         </div>
       </section>

@@ -2,16 +2,15 @@
   分类: react19 / 02-面试题
   主题: 表单 Action 与 useFormStatus
   要点:
-    - 表单设置 action={serverAction} 后，子组件可用 useFormStatus 读 pending
-    - useFormStatus 必须在 form 内部的函数组件中调用
-    - 返回 pending、data、method、action 等，适合拆出 SubmitButton 子组件
-    - ReactDOM.useFormStatus；与 useActionState 配合是 React 19 表单面试高频组合
+    - React 19 支持把函数传给 form action，Action 可接收 FormData 并驱动提交状态
+    - useFormStatus 读取最近父级 form 的 pending、data、method、action，适合提交按钮组件
+    - useFormStatus 必须在 form 内部的子组件调用，不能在定义 form 的同一组件读取自身状态
+    - 客户端 Action 适合本地交互与渐进增强；服务端 Action 依赖框架和服务端运行环境
   面试:
-    - 表单 Action 与 useFormStatus的核心概念是什么
-    - 表单 Action 与 useFormStatus在实际项目里怎么用
-    - 表单 Action 与 useFormStatus有哪些常见坑或易错点
-    - 表单 Action 与 useFormStatus和相近 API 如何区分选型
-    - 面试中如何简洁讲清 表单 Action 与 useFormStatus
+    - React 19 表单 Action 相比 React 18 表单提交解决了什么问题？
+    - useFormStatus 为什么通常要封装成 SubmitButton 子组件？
+    - useFormStatus 与 useActionState 的 pending 分别适合放在哪里？
+    - 表单 Action 失败时为什么要返回可展示状态而不是只抛异常？
 -->
 
 <!doctype html>
@@ -38,17 +37,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>表单设置 action={serverAction} 后，子组件可用 useFormStatus 读 pending。</li>
-          <li>useFormStatus 必须在 form 内部的函数组件中调用。</li>
-          <li>返回 pending、data、method、action 等，适合拆出 SubmitButton 子组件。</li>
-          <li>ReactDOM.useFormStatus；与 useActionState 配合是 React 19 表单面试高频组合。</li>
+          <li>React 19 扩展了表单的 <code>action</code>：函数 Action 会收到 <code>FormData</code>，可直接由提交触发异步逻辑；React 18 项目通常需要自己写 <code>onSubmit</code>、阻止默认行为并维护 pending。</li>
+          <li><code>useFormStatus</code> 从 <code>react-dom</code> 导出，读取最近父级 <code>&lt;form&gt;</code> 的 <code>pending</code>、<code>data</code>、<code>method</code>、<code>action</code>；本页的 <code>SubmitButton</code> 不需要 props 下钻就能禁用按钮。</li>
+          <li>常见坑是调用位置：<code>useFormStatus</code> 只能在表单内部的子组件里读到状态，在渲染 <code>&lt;form&gt;</code> 的同一个组件中调用只会读到外层表单或空状态。</li>
+          <li><code>useActionState</code> 更适合保存提交后的业务结果，<code>useFormStatus</code> 更适合做局部提交反馈；两者组合时要同时处理空输入、重复点击、异步失败和用户可读错误。</li>
+          <li>本页演示的是静态 HTML 中的客户端 Action；真正的 Server Action 属于 React 19 生态中的框架能力，需要构建器、服务端环境和可序列化参数约束。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>表单设置 action={serverAction} 后？</strong> 表单设置 action={serverAction} 后，子组件可用 useFormStatus 读 pending</li>
-          <li><strong>useFormStatus 必须在 form 内部的函数组件中调用？</strong> 表单设置 action={serverAction} 后，子组件可用 useFormStatus 读 pending；useFormStatus 必须在 form 内部的函数组件中调用</li>
-          <li><strong>返回 pending、data、method、action 等？</strong> 返回 pending、data、method、action 等，适合拆出 SubmitButton 子组件</li>
-          <li><strong>ReactDOM.useFormStatus？</strong> ReactDOM.useFormStatus；与 useActionState 配合是 React 19 表单面试高频组合</li>
+          <li><strong>React 19 表单 Action 相比 React 18 表单提交解决了什么问题？</strong> 结论是把“提交触发异步逻辑、pending、结果状态”收进 React 的表单模型里。原因是 <code>action</code> 函数天然接收 <code>FormData</code>，并能和 <code>useActionState</code>、<code>useFormStatus</code> 联动。边界是它不是替代表单校验和错误建模，服务端 Action 还需要框架运行时支持。</li>
+          <li><strong><code>useFormStatus</code> 为什么通常要封装成 <code>SubmitButton</code> 子组件？</strong> 结论是它读取的是最近父级表单状态，子组件位置正好在表单上下文内部。原因是 Hook 的状态来自 DOM 表单提交上下文，而不是当前组件自己创建的某个变量。项目里常把按钮、loading 文案和重复提交禁用放到独立组件中。</li>
+          <li><strong><code>useFormStatus</code> 与 <code>useActionState</code> 的 pending 分别适合放在哪里？</strong> 结论是 <code>useFormStatus</code> 适合表单内部局部控件，<code>useActionState</code> 适合拥有 Action 的组件统一展示结果。原因是前者跟随最近表单，后者返回 action 的最新 state 和 pending。复杂表单可用前者禁用按钮，用后者渲染成功或失败提示。</li>
+          <li><strong>表单 Action 失败时为什么要返回可展示状态而不是只抛异常？</strong> 结论是业务失败应进入页面状态，异常边界更适合兜底未知错误。原因是“评论不能为空”“库存不足”这类失败需要展示在表单旁并允许用户修正。项目中还要考虑网络失败、重复提交、服务端校验和可访问性提示。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react-dom/hooks/useFormStatus" target="_blank" rel="noopener">React DOM Reference: useFormStatus</a></li>
+          <li><a href="https://react.dev/reference/react/useActionState" target="_blank" rel="noopener">React Reference: useActionState</a></li>
+          <li><a href="https://react.dev/reference/react-dom/components/form" target="_blank" rel="noopener">React DOM Reference: &lt;form&gt;</a></li>
         </ul>
       </div>
     </section>

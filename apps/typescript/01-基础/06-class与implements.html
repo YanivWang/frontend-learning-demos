@@ -1,17 +1,16 @@
 <!--
-分类: typescript / 01-基础
+  分类: typescript / 01-基础
   主题: class、implements、abstract 与访问修饰符
   要点:
-    - implements 检查 class 是否满足接口形状，但不会改变运行时行为
-    - public / private / protected 是 TS 类型层面的访问约束
-    - abstract class 可放公共实现，子类必须实现抽象成员
-    - 面试要能说清 interface、abstract class、普通 class 的边界
+    - implements 只检查 class 实例侧是否满足接口形状，不会生成运行时代码
+    - public、private、protected 是 TypeScript 访问控制；JS #private 才是运行时私有字段
+    - abstract class 可包含公共实现和抽象成员，但只能被继承不能直接实例化
+    - interface、abstract class、普通 class 的取舍取决于是否需要运行时实现与复用
   面试:
-    - class、implements、abstract 与访问修饰符的核心概念是什么
-    - class、implements、abstract 与访问修饰符在实际项目里怎么用
-    - class、implements、abstract 与访问修饰符有哪些常见坑或易错点
-    - class、implements、abstract 与访问修饰符和相近 API 如何区分选型
-    - 面试中如何简洁讲清 class、implements、abstract 与访问修饰符
+    - implements 会不会改变 class 的运行时行为？
+    - TS private 和 JavaScript #private 有什么区别？
+    - abstract class 和 interface 应该如何选？
+    - implements 检查的是实例侧还是静态侧？
 -->
 
 <!doctype html>
@@ -36,17 +35,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>implements</code> 检查 class 是否满足接口形状，但不会改变运行时行为。</li>
-          <li>public / private / protected 是 TS 类型层面的访问约束。</li>
-          <li>abstract class 可放公共实现，子类必须实现抽象成员。</li>
-          <li>面试要能说清 <code>interface</code>、abstract class、普通 class 的边界。</li>
+          <li><code>implements</code> 只在编译期检查 class 的实例侧是否满足接口形状，不会把接口方法注入到类中，也不会生成运行时代码。</li>
+          <li><code>public</code>、<code>private</code>、<code>protected</code> 是 TypeScript 访问控制；编译后是否保留限制取决于目标语法，而 JavaScript <code>#private</code> 字段是运行时私有，本页运行示例使用 <code>#users</code> 演示真实私有字段。</li>
+          <li><code>abstract class</code> 可以放公共实现和抽象成员，不能直接实例化；子类必须实现抽象方法，适合有共享逻辑的类层级。</li>
+          <li><code>interface</code> 只描述形状，<code>abstract class</code> 提供可继承实现，普通 <code>class</code> 同时产生类型和值；是否需要运行时代码是选型关键。</li>
+          <li>常见坑是以为 <code>implements</code> 会检查静态成员或影响运行时。它默认检查实例侧；构造函数和静态属性需要单独建模。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>implements 检查 class 是否满足接口形状？</strong> <code>implements</code> 检查 class 是否满足接口形状，但不会改变运行时行为</li>
-          <li><strong>public / private / protected 是 TS 类型层面的访？</strong> public / private / protected 是 TS 类型层面的访问约束</li>
-          <li><strong>abstract class 可放公共实现？</strong> abstract class 可放公共实现，子类必须实现抽象成员；面试要能说清 <code>interface</code>、abstract class、普通 class 的边界</li>
-          <li><strong>面试要能说清 interface、abstract class、普通 class？</strong> 面试要能说清 <code>interface</code>、abstract class、普通 class 的边界</li>
+          <li><strong><code>implements</code> 会不会改变 class 的运行时行为？</strong> 结论是不会，它只做编译期形状检查。原因是接口和 <code>implements</code> 都会在输出 JS 时被擦除。项目中它能保证服务类实现约定方法，但不能替代运行时依赖注入或接口校验。</li>
+          <li><strong>TS <code>private</code> 和 JavaScript <code>#private</code> 有什么区别？</strong> 结论是 TS <code>private</code> 主要是类型检查语义，<code>#private</code> 是 JavaScript 运行时私有字段。原因是类型会被擦除，而 <code>#users</code> 会成为语言级私有槽。需要运行时强私有时优先用 <code>#private</code>，只需类型边界时 TS 修饰符足够。</li>
+          <li><strong><code>abstract class</code> 和 <code>interface</code> 应该如何选？</strong> 结论是只要形状用 <code>interface</code>，需要共享实现和模板方法时用 <code>abstract class</code>。原因是 <code>interface</code> 没有运行时代码，抽象类会生成可继承的 JS 类。项目中仓储契约可用接口，带通用日志、缓存或校验流程的基类可用抽象类。</li>
+          <li><strong><code>implements</code> 检查的是实例侧还是静态侧？</strong> 结论是默认检查实例侧。原因是 class 类型有实例侧和静态侧两部分，<code>implements</code> 面向 <code>new</code> 出来的对象。若要约束构造函数或静态方法，需要单独定义构造签名或工厂函数类型。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/classes.html" target="_blank" rel="noopener">TypeScript Handbook: Classes</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/classes.html#implements-clauses" target="_blank" rel="noopener">TypeScript Handbook: implements Clauses</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/classes.html#member-visibility" target="_blank" rel="noopener">TypeScript Handbook: Member Visibility</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements" target="_blank" rel="noopener">MDN: Private elements</a></li>
         </ul>
       </div>
     </section>
