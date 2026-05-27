@@ -1,16 +1,16 @@
 <!--
 分类: css / 02-布局 / grid
-  主题: Grid 二维布局系统集合演示
+  主题: Grid 二维布局与轨道函数
   要点:
-    - grid1: 固定像素列；grid2: 百分比；grid3: repeat 简写
-    - grid4: 与 grid3 并排对比，展示 grid-template-areas 命名 vs repeat 列写法
-    - grid5: auto-fill；grid6/7: fr & minmax；grid8: auto
+    - Grid 是二维布局系统，容器定义行列轨道，直接子元素放入网格单元或命名区域
+    - repeat、fr、minmax、auto-fill 用来描述可重复、按剩余空间分配或带上下限的轨道
+    - grid-template-areas 适合语义化页面骨架，显式行列适合规则卡片和表格式排布
+    - 百分比轨道叠加边框或 gap 可能溢出，真实项目更常用 fr/minmax
   面试:
-    - Grid 二维布局系统集合演示的核心概念是什么
-    - Grid 二维布局系统集合演示在实际项目里怎么用
-    - Grid 二维布局系统集合演示有哪些常见坑或易错点
-    - Grid 二维布局系统集合演示和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Grid 二维布局系统集合演示
+    - Grid 为什么叫二维布局，和 Flex 的核心差异是什么
+    - fr、百分比、auto、minmax 在列宽分配上有什么区别
+    - repeat(auto-fill, 100px) 适合什么场景，和响应式卡片有什么关系
+    - grid-template-areas 的优势和维护边界是什么
 -->
 
 <!doctype html>
@@ -145,15 +145,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>grid1: 固定像素列；grid2: 百分比；grid3: repeat 简写。</li>
-          <li>grid4: 与 grid3 并排对比，展示 <code>grid</code>-template-areas 命名 vs repeat 列写法。</li>
-          <li>grid5: auto-fill；grid6/7: fr &amp; minmax；grid8: auto。</li>
+          <li><code>display: grid</code> 会让直接子元素参与网格布局，容器通过 <code>grid-template-columns</code> 和 <code>grid-template-rows</code> 定义列、行轨道。</li>
+          <li>固定像素和百分比适合明确尺寸，但百分比轨道再叠加边框、内边距或 <code>gap</code> 容易超出容器；示例中的 <code>fr</code> 更适合按剩余空间分配。</li>
+          <li><code>repeat()</code> 用来减少重复轨道书写，<code>auto-fill</code> 会按可用空间尽量填入更多轨道，常用于卡片列表的自适应列数。</li>
+          <li><code>minmax()</code> 给轨道设置最小和最大边界，能避免列宽过窄；与 <code>fr</code> 配合时常见写法是 <code>minmax(0, 1fr)</code> 或业务最小宽度。</li>
+          <li><code>grid-template-areas</code> 用命名区域表达页面骨架，可读性好；边界是区域名和 DOM/样式强绑定，频繁动态增删的列表更适合自动放置和显式轨道。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Grid 二维布局系统集合演示的核心概念是什么？</strong> grid1: 固定像素列；grid2: 百分比；grid3: repeat 简写；grid4: 与 grid3 并排对比，展示 <code>grid</code>-template-areas 命名 vs repeat 列写法</li>
-          <li><strong>Grid 二维布局系统集合演示在实际项目里怎么用？</strong> grid1: 固定像素列；grid2: 百分比；grid3: repeat 简写；grid4: 与 grid3 并排对比，展示 <code>grid</code>-template-areas 命名 vs repeat 列写法</li>
-          <li><strong>Grid 二维布局系统集合演示有哪些常见坑或易错点？</strong> grid1: 固定像素列；grid2: 百分比；grid3: repeat 简写；grid4: 与 grid3 并排对比，展示 <code>grid</code>-template-areas 命名 vs repeat 列写法</li>
+          <li><strong>Grid 为什么叫二维布局，和 Flex 的核心差异是什么？</strong> 结论是 Grid 同时控制行和列，Flex 主要沿一条主轴分配空间。原因是 Grid 先定义网格轨道和单元格，再把项目放进去。项目里页面骨架、仪表盘、卡片矩阵优先 Grid，导航条和局部对齐优先 Flex。</li>
+          <li><strong><code>fr</code>、百分比、<code>auto</code>、<code>minmax()</code> 怎么区分？</strong> 结论是百分比按容器尺寸计算，<code>fr</code> 分配剩余空间，<code>auto</code> 倾向内容尺寸，<code>minmax()</code> 给轨道加边界。原因是它们参与网格轨道尺寸算法的阶段不同。真实项目中不确定内容宽度时应避免纯百分比硬凑。</li>
+          <li><strong><code>repeat(auto-fill, 100px)</code> 适合什么场景？</strong> 结论是适合固定卡片最小宽度、容器变宽就自动增加列数的布局。原因是 <code>auto-fill</code> 会创建尽可能多的轨道。边界是它不会自动拉伸卡片宽度，想兼顾最小宽度和铺满容器通常写 <code>repeat(auto-fit, minmax(160px, 1fr))</code>。</li>
+          <li><strong><code>grid-template-areas</code> 的优势和边界是什么？</strong> 结论是它适合 header/sidebar/main/footer 这类语义明确的区域。原因是命名区域能让布局结构一眼可读。边界是区域必须形成矩形，且命名和 CSS 强耦合，动态列表不适合用它逐项维护。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout">MDN: CSS grid layout</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/repeat">MDN: repeat()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/minmax">MDN: minmax()</a></li>
+          <li><a href="https://www.w3.org/TR/css-grid-1/">W3C: CSS Grid Layout Module Level 1</a></li>
         </ul>
       </div>
     </section>

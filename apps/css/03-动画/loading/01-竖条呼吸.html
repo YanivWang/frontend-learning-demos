@@ -2,15 +2,15 @@
 分类: css / 03-动画 / loading
   主题: 5 条竖条横向并排呼吸 loading
   要点:
-    - 每条竖条通过 animation-delay 错峰执行 loadAni
-    - keyframes 中同时改 background-color + height + margin 形成「呼吸跳动」
-    - from/to 是 0%/100% 的简写；多关键帧需用 0%/50%/100%
+    - 多个子元素复用同一个 @keyframes，并用 animation-delay 做错峰节奏
+    - 竖条伸缩优先动画 transform: scaleY，减少 height / margin 变化带来的布局开销
+    - transform-origin 决定缩放锚点，居中缩放更适合对称呼吸效果
+    - loading 动画应提供 prefers-reduced-motion 降级路径
   面试:
-    - 5 条竖条横向并排呼吸 loading的核心概念是什么
-    - 5 条竖条横向并排呼吸 loading在实际项目里怎么用
-    - 5 条竖条横向并排呼吸 loading有哪些常见坑或易错点
-    - 5 条竖条横向并排呼吸 loading和相近 API 如何区分选型
-    - 面试中如何简洁讲清 5 条竖条横向并排呼吸 loading
+    - 竖条 loading 如何用一个 keyframes 做出错峰效果
+    - 为什么不建议用 height 和 margin 做持续 loading 动画
+    - animation-delay 的正值和负值有什么区别
+    - loading 动效如何处理可访问性和性能边界
 -->
 
 <!doctype html>
@@ -40,7 +40,8 @@
         background-color: #ddd;
         border-radius: 10px;
         height: 100%;
-        animation: loadAni 1s infinite;
+        transform-origin: center;
+        animation: 1s ease-in-out infinite alternate loadAni;
       }
       .loading .loadWrap > div.loadBtn2 {
         animation-delay: 0.2s;
@@ -57,12 +58,18 @@
       @keyframes loadAni {
         from {
           background-color: lightgreen;
-          height: 40px;
+          transform: scaleY(0.58);
         }
         to {
           background-color: lightblue;
-          margin: -15px 0;
-          height: 70px;
+          transform: scaleY(1);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .loading .loadWrap > div {
+          animation: none;
+          background-color: lightblue;
+          transform: scaleY(0.8);
         }
       }
     </style>
@@ -77,15 +84,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>每条竖条通过 animation-delay 错峰执行 loadAni。</li>
-          <li>keyframes 中同时改 background-color + height + margin 形成「呼吸跳动」。</li>
-          <li>from/to 是 0%/100% 的简写；多关键帧需用 0%/50%/100%。</li>
+          <li>这个 loading 由 5 个竖条组成，所有竖条复用同一个 <code>@keyframes loadAni</code>，再用不同 <code>animation-delay</code> 让动画依次开始。</li>
+          <li><code>animation-delay</code> 的正值表示等待一段时间再播放；如果使用负值，动画会立即开始但从周期中间位置切入，常用于让首屏不从静止状态统一起跑。</li>
+          <li>持续循环的 loading 不建议反复动画 <code>height</code>、<code>margin</code> 这类影响布局的属性；本页用 <code>transform: scaleY()</code> 模拟伸缩，视觉相近且更符合现代 CSS 动画实践。</li>
+          <li><code>transform-origin: center</code> 让竖条从中心缩放，适合呼吸感；如果要从底部向上伸缩，可改成 <code>transform-origin: bottom</code>。</li>
+          <li>loading 是状态提示，不应无限阻塞用户；真实项目还需要处理请求失败、超时、重复触发和 <code>prefers-reduced-motion</code> 等边界。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>每条竖条通过 animation-delay 错峰执行 loadAni？</strong> 每条竖条通过 animation-delay 错峰执行 loadAni</li>
-          <li><strong>keyframes 中同时改 background-color + height？</strong> keyframes 中同时改 background-color + height + margin 形成「呼吸跳动」</li>
-          <li><strong>from/to 是 0%/100% 的简写？</strong> from/to 是 0%/100% 的简写；多关键帧需用 0%/50%/100%</li>
+          <li><strong>多个竖条怎样只写一套关键帧？</strong> 结论是把形变和颜色变化写进同一个 <code>@keyframes</code>，每个竖条引用同名动画，再用递增的 <code>animation-delay</code> 错开节奏。原因是 delay 改变的是播放起点时间，不需要复制多份关键帧。项目里常把间隔抽成 CSS 变量或用预处理器生成，避免手写大量 nth-child。</li>
+          <li><strong>为什么持续 loading 不推荐动画 <code>height</code>？</strong> 结论是优先用 <code>transform</code> 模拟伸缩。原因是 <code>height</code>、<code>margin</code> 会影响盒模型和周围布局，循环执行时更容易带来重排和重绘压力。边界是如果动画本身必须改变真实布局，就要控制元素数量和频率，不能把它当纯装饰动画处理。</li>
+          <li><strong><code>animation-delay</code> 的正负值怎么理解？</strong> 结论是正值延后开始，负值立即开始但跳到动画周期中对应进度。原因是 delay 是从动画应用到元素那一刻计算的时间偏移。项目里骨架屏或 loading 想避免所有元素同步起步时，可以用递增 delay 或负 delay 做自然错峰。</li>
+          <li><strong>loading 动画有哪些工程边界？</strong> 结论是 loading 只能表达“正在处理”，不能替代错误处理。原因是网络请求、异步任务和用户取消都可能失败或超时。项目里要配合超时提示、重试按钮、禁用重复提交，并用 <code>prefers-reduced-motion</code> 降低非必要动效。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes">MDN: @keyframes CSS at-rule</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/animation-delay">MDN: animation-delay</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transform">MDN: transform</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion">MDN: prefers-reduced-motion</a></li>
         </ul>
       </div>
     </section>

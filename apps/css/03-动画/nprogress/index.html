@@ -2,15 +2,15 @@
 分类: css / 03-动画 / nprogress
   主题: NProgress 顶部进度条第三方库
   要点:
-    - NProgress.start() 开启进度，NProgress.done() 完成
-    - SPA 中可在路由切换前后调用 start/done
-    - 第三方库源码在 lib/，按 CONVENTIONS §5 不修改
+    - NProgress 用 start() 显示顶部进度条，用 done() 收尾并隐藏
+    - 顶部进度条表达“正在发生”，不代表真实下载百分比
+    - SPA 路由、异步请求和动态导入都要在成功、失败、取消路径里成对结束
+    - 第三方库源码位于 lib/，本页只演示使用方式，不修改运行时库
   面试:
-    - NProgress 顶部进度条第三方库的核心概念是什么
-    - NProgress 顶部进度条第三方库在实际项目里怎么用
-    - NProgress 顶部进度条第三方库有哪些常见坑或易错点
-    - NProgress 顶部进度条第三方库和相近 API 如何区分选型
-    - 面试中如何简洁讲清 NProgress 顶部进度条第三方库
+    - NProgress 适合表示真实进度还是感知进度
+    - SPA 路由切换中如何保证 NProgress 一定结束
+    - 顶部进度条和骨架屏、局部 loading 如何选
+    - 第三方进度条库接入时有哪些失败和可访问性边界
 -->
 
 <!doctype html>
@@ -19,7 +19,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NProgress 顶部进度条</title>
-    <script src='lib/nprogress.js'></script>
+    <script src="lib/nprogress.js"></script>
     <link href="lib/nprogress.css" rel="stylesheet" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -27,33 +27,88 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>NProgress 顶部进度条第三方库</h1>
+      <h1>NProgress 顶部进度条</h1>
       <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>NProgress.start() 开启进度，NProgress.done() 完成。</li>
-          <li>SPA 中可在路由切换前后调用 start/done。</li>
-          <li>第三方库源码在 lib/，按 CONVENTIONS §5 不修改。</li>
+          <li>NProgress 是轻量顶部进度条库，常用于页面跳转、动态导入或全局异步任务；<code>NProgress.start()</code> 显示进度，<code>NProgress.done()</code> 完成并隐藏。</li>
+          <li>它展示的是感知进度，不是网络真实百分比；如果需要上传/下载百分比，应使用请求进度事件或服务端进度接口，而不是只靠 NProgress。</li>
+          <li>SPA 中通常在路由开始前 <code>start()</code>，在成功、失败、重定向和取消路径里统一 <code>done()</code>，避免异常时顶部条一直挂着。</li>
+          <li>全局进度条适合“整页正在切换”，局部按钮 loading 或骨架屏适合局部内容更新；不要让一个全局条掩盖具体错误信息。</li>
+          <li>本页第三方源码位于 <code>lib/</code>，按仓库约定不修改库文件；业务层只封装调用时机、错误处理和可访问性提示。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>NProgress.start() 开启进度？</strong> NProgress.start() 开启进度，NProgress.done() 完成</li>
-          <li><strong>SPA 中可在路由切换前后调用 start/done？</strong> SPA 中可在路由切换前后调用 start/done</li>
-          <li><strong>第三方库源码在 lib/？</strong> 第三方库源码在 lib/，按 CONVENTIONS §5 不修改</li>
+          <li><strong>NProgress 表示的是真实进度吗？</strong> 结论是不是，它主要表示“任务正在进行”的感知进度。原因是很多路由切换和接口请求没有稳定的总进度，NProgress 只能用递增动画缓解等待感。边界是文件上传、下载或长任务需要真实百分比时，应接入 progress 事件或后端任务状态。</li>
+          <li><strong>SPA 路由里怎么保证进度条不挂死？</strong> 结论是在所有结束路径调用 <code>done()</code>。原因是路由守卫、懒加载组件、接口预取都可能成功、失败、重定向或取消。项目里常在 router beforeEach 里 start，在 afterEach 和 onError/finally 里 done，并处理重复导航。</li>
+          <li><strong>顶部进度条、骨架屏和局部 loading 怎么选？</strong> 结论是整页切换用顶部进度条，内容占位用骨架屏，按钮提交或局部列表刷新用局部 loading。原因是反馈范围要和任务影响范围一致。边界是全局条不能替代错误提示，失败后必须给出可见状态和重试入口。</li>
+          <li><strong>第三方进度条库接入有哪些风险？</strong> 结论是要封装调用点，不要把库 API 散落到业务里。原因是异步竞态、重复请求和页面卸载都可能让进度条状态错乱。项目里还要给屏幕阅读器提供文本状态，例如本页用 <code>aria-live</code> 更新任务结果。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://github.com/rstacruz/nprogress">NProgress 官方仓库</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch">MDN: try...catch</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/finally">MDN: Promise.prototype.finally()</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
+    <!-- PAGE_DOM_START -->
+    <section class="demo-block">
+      <h2 class="demo-block__label">异步任务演示</h2>
+      <p>点击按钮后顶部会出现 NProgress。成功和失败路径都会在结束时关闭进度条。</p>
+      <button type="button" id="successTask">模拟成功任务</button>
+      <button type="button" id="failTask">模拟失败任务</button>
+      <p id="taskStatus" role="status" aria-live="polite">等待触发任务。</p>
+    </section>
+    <!-- PAGE_DOM_END -->
+
     <!-- SCRIPT_START -->
     <script>
-      NProgress.start();
+      const status = document.getElementById("taskStatus");
+      const buttons = [document.getElementById("successTask"), document.getElementById("failTask")];
 
-      setTimeout(function () {
-        NProgress.done();
-      }, 3000);
+      function setBusy(isBusy) {
+        buttons.forEach((button) => {
+          button.disabled = isBusy;
+        });
+      }
 
+      function runTask(shouldFail) {
+        if (!window.NProgress) {
+          status.textContent = "NProgress 资源加载失败，无法显示顶部进度条。";
+          return;
+        }
+
+        setBusy(true);
+        status.textContent = shouldFail ? "任务执行中，稍后会模拟失败。" : "任务执行中，稍后会模拟成功。";
+        NProgress.start();
+
+        new Promise((resolve, reject) => {
+          setTimeout(() => {
+            if (shouldFail) {
+              reject(new Error("模拟接口失败"));
+              return;
+            }
+            resolve();
+          }, 1200);
+        })
+          .then(() => {
+            status.textContent = "任务成功：进度条已完成。";
+          })
+          .catch((error) => {
+            status.textContent = `${error.message}：进度条同样需要收尾，并给用户错误反馈。`;
+          })
+          .finally(() => {
+            NProgress.done();
+            setBusy(false);
+          });
+      }
+
+      document.getElementById("successTask").addEventListener("click", () => runTask(false));
+      document.getElementById("failTask").addEventListener("click", () => runTask(true));
     </script>
     <!-- SCRIPT_END -->
 

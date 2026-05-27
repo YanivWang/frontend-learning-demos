@@ -2,15 +2,15 @@
 分类: css / 02-布局 / flex
   主题: Flex 一维布局
   要点:
-    - flex 是一维布局，主轴由 flex-direction 决定
-    - justify-content 管主轴，align-items 管交叉轴
-    - flex: grow shrink basis 是项目放大、收缩、基础尺寸的简写
+    - Flex 按主轴和交叉轴分配一行或一列的空间，主轴由 flex-direction 决定
+    - justify-content 处理主轴剩余空间，align-items / align-self 处理交叉轴对齐
+    - flex 是 flex-grow、flex-shrink、flex-basis 的简写，basis 先参与基础尺寸计算
+    - 子项默认 min-width:auto，长文本可能撑破容器，真实布局常配 min-width:0
   面试:
-    - Flex 一维布局的核心概念是什么
-    - Flex 一维布局在实际项目里怎么用
-    - Flex 一维布局有哪些常见坑或易错点
-    - Flex 一维布局和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Flex 一维布局
+    - Flex 的主轴、交叉轴和 justify-content、align-items 如何对应
+    - flex: 1 到底等价于什么，为什么会影响收缩
+    - Flex 子项为什么会被长文本撑破，如何处理
+    - 一维布局为什么优先 Flex，二维布局为什么优先 Grid
 -->
 
 <!doctype html>
@@ -58,16 +58,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>flex</code> 是一维布局，主轴由 <code>flex</code>-direction 决定。</li>
-          <li>justify-content 管主轴，align-items 管交叉轴。</li>
-          <li><code>flex</code>: grow shrink basis 是项目放大、收缩、基础尺寸的简写。</li>
-          <li><code>flex</code> 是一维布局，主轴由 <code>flex</code>-direction 决定（补充）。</li>
+          <li><code>display: flex</code> 会让直接子元素成为 flex items，按一条主轴排布；<code>flex-direction</code> 决定主轴方向，交叉轴与主轴垂直。</li>
+          <li><code>justify-content</code> 分配主轴上的剩余空间，<code>align-items</code> 处理整行项目在交叉轴上的对齐，单个项目可用 <code>align-self</code> 覆盖。</li>
+          <li><code>flex</code> 是 <code>flex-grow</code>、<code>flex-shrink</code>、<code>flex-basis</code> 的简写；布局先看 <code>flex-basis</code>，再按剩余空间 grow 或 shrink。</li>
+          <li><code>flex: 1</code> 常用于“占满剩余空间”，实际会让项目可增长且基础尺寸趋近于 0；需要保留内容基础宽度时应显式写 <code>flex: 1 1 auto</code> 或具体 basis。</li>
+          <li>常见坑是 flex item 默认 <code>min-width: auto</code>，长单词、表格或代码块可能撑破布局；两栏/三栏自适应区域通常补 <code>min-width: 0</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>flex 是一维布局？</strong> <code>flex</code> 是一维布局，主轴由 <code>flex</code>-direction 决定；<code>flex</code>: grow shrink basis 是项目放大、收缩、基础尺寸的简写</li>
-          <li><strong>justify-content 管主轴？</strong> justify-content 管主轴，align-items 管交叉轴</li>
-          <li><strong>Flex 一维布局的核心概念是什么？</strong> <code>flex</code> 是一维布局，主轴由 <code>flex</code>-direction 决定；justify-content 管主轴，align-items 管交叉轴</li>
+          <li><strong>Flex 的主轴和交叉轴怎么判断？</strong> 结论是主轴由 <code>flex-direction</code> 决定，默认横向从左到右；交叉轴与主轴垂直。原因是 Flex 是一维布局，所有空间分配都先围绕主轴展开。项目里不要死记“justify 是水平、align 是垂直”，换成 column 后两者方向会互换。</li>
+          <li><strong><code>flex: 1</code> 到底等价于什么？</strong> 结论是浏览器通常按 <code>flex: 1 1 0%</code> 展开，用于把剩余空间按比例分掉。原因是 basis 为 0 时内容基础尺寸不再主导分配。边界是内容不能被压缩时仍可能溢出，需要配合 <code>min-width: 0</code> 或显式 basis。</li>
+          <li><strong>Flex 子项为什么会把容器撑破？</strong> 结论是默认最小尺寸可能来自内容本身，而不是可用空间。原因是 flex item 的 <code>min-width:auto</code> 会保护内容不被无限压缩。项目里自适应主栏、卡片标题、代码块区域通常要给子项加 <code>min-width:0</code>。</li>
+          <li><strong>Flex 和 Grid 怎么选？</strong> 结论是一维排列、居中、导航栏、左右栏优先 Flex；同时控制行和列的二维结构优先 Grid。原因是 Flex 以内容流和剩余空间分配为核心，Grid 以显式网格轨道为核心。复杂页面可外层 Grid、局部 Flex 组合使用。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_flexible_box_layout/Basic_concepts_of_flexbox">MDN: Basic concepts of flexbox</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/flex">MDN: flex</a></li>
+          <li><a href="https://www.w3.org/TR/css-flexbox-1/">W3C: CSS Flexible Box Layout Module Level 1</a></li>
         </ul>
       </div>
     </section>

@@ -2,15 +2,15 @@
 分类: css / 02-布局 / 定位与层叠上下文
   主题: position、包含块、z-index、层叠上下文
   要点:
-    - absolute 相对最近的非 static 定位祖先定位；没有则相对初始包含块
-    - fixed 相对视口；sticky 在滚动祖先中达到阈值后吸附
-    - z-index 只在定位元素或层叠上下文中比较；transform、opacity 等会创建新的层叠上下文
+    - absolute 的偏移参考包含块，常见情况是最近的非 static 定位祖先
+    - fixed 通常相对视口，sticky 依赖最近滚动祖先和 top/right/bottom/left 阈值
+    - z-index 只在同一层叠上下文内比较，transform、opacity 等会创建新的层叠上下文
+    - 定位会影响覆盖、滚动和可访问性，弹层类组件需要统一管理层级
   面试:
-    - position、包含块、z-index、层叠上下文的核心概念是什么
-    - position、包含块、z-index、层叠上下文在实际项目里怎么用
-    - position、包含块、z-index、层叠上下文有哪些常见坑或易错点
-    - position、包含块、z-index、层叠上下文和相近 API 如何区分选型
-    - 面试中如何简洁讲清 position、包含块、z-index、层叠上下文
+    - absolute 的包含块如何确定，为什么父级常写 position: relative
+    - fixed 和 sticky 的定位参考和失效场景有什么区别
+    - z-index 很大仍被盖住通常是什么原因
+    - transform 创建层叠上下文会给弹层和吸顶带来什么风险
 -->
 
 <!doctype html>
@@ -91,15 +91,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>absolute 相对最近的非 static 定位祖先定位；没有则相对初始包含块。</li>
-          <li>fixed 相对视口；sticky 在滚动祖先中达到阈值后吸附。</li>
-          <li>z-index 只在定位元素或层叠上下文中比较；transform、opacity 等会创建新的层叠上下文。</li>
+          <li><code>position: absolute</code> 会脱离普通流，偏移量参考它的包含块；常见包含块是最近的非 <code>static</code> 定位祖先，所以父级常写 <code>position: relative</code>。</li>
+          <li><code>position: fixed</code> 通常相对视口固定，适合悬浮按钮；但包含 <code>transform</code>、<code>filter</code> 等属性的祖先可能改变固定定位的包含块，真实项目要特别检查。</li>
+          <li><code>position: sticky</code> 先按普通流占位，滚动到阈值后吸附；它依赖最近滚动祖先，缺少 <code>top</code> 等阈值或祖先滚动/裁剪设置不当时会看似失效。</li>
+          <li><code>z-index</code> 不是全局数字排行榜，只在同一个层叠上下文中比较；<code>transform</code>、<code>opacity &lt; 1</code>、<code>position</code> 配合 <code>z-index</code> 等都可能创建新的层叠上下文。</li>
+          <li>弹窗、下拉菜单、吸顶栏和 fixed 按钮要统一规划层级，并检查滚动容器、裁剪和新层叠上下文，否则会出现“z-index 写到 9999 仍被盖住”的问题。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>absolute 相对最近的非 static 定位祖先定位？</strong> absolute 相对最近的非 static 定位祖先定位；没有则相对初始包含块</li>
-          <li><strong>fixed 相对视口？</strong> fixed 相对视口；sticky 在滚动祖先中达到阈值后吸附</li>
-          <li><strong>z-index 只在定位元素或层叠上下文中比较？</strong> z-index 只在定位元素或层叠上下文中比较；transform、opacity 等会创建新的层叠上下文</li>
+          <li><strong>absolute 的包含块如何确定？</strong> 结论是常见情况下相对最近的非 <code>static</code> 定位祖先。原因是绝对定位需要一个包含块来解析 <code>top/right/bottom/left</code>。项目里父级写 <code>position: relative</code> 通常不是为了移动父级，而是为了给子级建立定位参考。</li>
+          <li><strong>fixed 和 sticky 有什么区别？</strong> 结论是 fixed 脱离文档流并固定在视口附近，sticky 仍保留原位置并在滚动到阈值后吸附。原因是 sticky 是普通流与相对定位的混合模型。边界是 transformed ancestor、滚动祖先和 overflow 裁剪都会影响实际表现。</li>
+          <li><strong>为什么 <code>z-index: 9999</code> 仍可能被盖住？</strong> 结论是元素可能处在较低的层叠上下文里。原因是 z-index 先比较层叠上下文，再比较上下文内部的层级。项目里要沿祖先查 <code>transform</code>、<code>opacity</code>、<code>position + z-index</code>、<code>isolation</code> 等创建上下文的属性。</li>
+          <li><strong><code>transform</code> 创建层叠上下文有什么风险？</strong> 结论是它能隔离内部层级，也可能让子弹层无法覆盖外部元素。原因是内部 z-index 不会跳出父上下文。动画优化、3D 变换和弹层同时出现时，通常应把弹层挂到更高层容器或统一 portal/root。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/position">MDN: position</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Containing_block">MDN: Layout and the containing block</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_positioned_layout/Understanding_z-index/Stacking_context">MDN: Stacking context</a></li>
+          <li><a href="https://www.w3.org/TR/css-position-3/">W3C: CSS Positioned Layout Module Level 3</a></li>
         </ul>
       </div>
     </section>
@@ -124,7 +134,7 @@
       <div class="card a">z-index: 2</div>
       <div class="card b">z-index: 1 + transform</div>
     </div>
-    <p style="color:#666;font-size:0.875rem;">红色卡片 z-index 更低，但 <code>transform</code> 创建了独立层叠上下文。</p>
+    <p style="color:#666;font-size:0.875rem;">红色卡片的 <code>transform</code> 会创建独立层叠上下文，但它整体仍按 <code>z-index: 1</code> 与蓝色卡片比较。</p>
     <div class="fixed-badge">fixed · 视口右下角</div>
     <!-- PAGE_DOM_END -->
 

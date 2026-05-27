@@ -181,3 +181,8 @@ npm run validate:smoke
 - [ ] `npm run validate` 通过。
 - [ ] 每个模块至少抽查 2-3 个页面，确认内容可以直接用于复习和面试回答。
 - [ ] `npm run validate` 如果因为 `npx` 或依赖下载触发网络问题，需要说明原因并在允许联网后重跑；不能把网络失败解释为代码通过。
+
+## 批次进度记录
+
+- 2026-05-27：完成 `apps/css/03-动画/keyframes/index.html` 与 `apps/css/03-动画/loading/01-竖条呼吸.html` 至 `04-文字淡出.html` 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `148/357` 提升到 `153/357`，下一处失败为 `apps/css/03-动画/nprogress/index.html`。
+- 2026-05-27：完成 `apps/css/03-动画/nprogress/index.html`、`光标闪烁/index.html`、`展开折叠/index.html`、`序列帧/index.html` 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `153/357` 提升到 `157/357`，下一处失败为 `apps/css/04-视觉效果/background-blend-mode/index.html`。

@@ -2,15 +2,15 @@
 分类: css / 03-动画 / 光标闪烁
   主题: CSS 实现终端式闪烁光标
   要点:
-    - steps(1, start) 阶梯函数：让 background-color 跳变而非渐变
-    - 通过 @keyframes 在 50% 切换 transparent，形成「闪烁」
-    - 比 visibility/opacity 渐变更接近真实命令行视觉
+    - steps(1, start) 把动画拆成离散跳变，比线性渐变更像终端光标
+    - @keyframes 在可见色和 transparent 之间切换，形成闪烁效果
+    - 这类伪光标不同于输入框真实 insertion caret，真实文本光标用 caret-color 控制颜色
+    - 闪烁动画要考虑 prefers-reduced-motion，避免持续闪烁干扰用户
   面试:
-    - CSS 实现终端式闪烁光标的核心概念是什么
-    - CSS 实现终端式闪烁光标在实际项目里怎么用
-    - CSS 实现终端式闪烁光标有哪些常见坑或易错点
-    - CSS 实现终端式闪烁光标和相近 API 如何区分选型
-    - 面试中如何简洁讲清 CSS 实现终端式闪烁光标
+    - steps() 为什么适合做闪烁光标
+    - 伪元素光标和输入框 caret-color 有什么区别
+    - 闪烁动画有什么可访问性边界
+    - background-color、opacity、visibility 做闪烁时怎么取舍
 -->
 
 <!doctype html>
@@ -34,6 +34,11 @@
         0%, 100% { background-color: #000; }
         50%      { background-color: transparent; }
       }
+      @media (prefers-reduced-motion: reduce) {
+        .cursor {
+          animation: none;
+        }
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -46,15 +51,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>steps(1, start) 阶梯函数：让 background-color 跳变而非渐变。</li>
-          <li>通过 @keyframes 在 50% 切换 transparent，形成「闪烁」。</li>
-          <li>比 visibility/opacity 渐变更接近真实命令行视觉。</li>
+          <li><code>steps(1, start)</code> 会把一段动画拆成 1 个离散区间，并在区间开始处跳变；这比 <code>linear</code> 渐变更接近终端光标“亮/灭”切换。</li>
+          <li>本页用 <code>@keyframes</code> 在 <code>#000</code> 与 <code>transparent</code> 之间切换 <code>background-color</code>，所以光标宽度和布局位置保持稳定。</li>
+          <li>这只是一个视觉伪光标，不是输入框或 <code>contenteditable</code> 中的真实 insertion caret；真实文本插入光标的颜色应使用 <code>caret-color</code>。</li>
+          <li><code>opacity</code> 也能做闪烁，但会影响整个光标元素；<code>visibility</code> 是离散切换；<code>background-color</code> 适合只改变竖线填充色。</li>
+          <li>持续闪烁可能干扰阅读或触发不适，真实产品应在 <code>prefers-reduced-motion</code> 下停用或降低频率。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>通过 @keyframes 在 50% 切换 transparent？</strong> 通过 @keyframes 在 50% 切换 transparent，形成「闪烁」</li>
-          <li><strong>比 visibility/opacity 渐变更接近真实命令行视觉？</strong> 比 visibility/opacity 渐变更接近真实命令行视觉</li>
-          <li><strong>CSS 实现终端式闪烁光标的核心概念是什么？</strong> steps(1, start) 阶梯函数：让 background-color 跳变而非渐变；通过 @keyframes 在 50% 切换 transparent，形成「闪烁」</li>
+          <li><strong><code>steps()</code> 为什么适合做闪烁光标？</strong> 结论是它能让动画按离散步骤跳变，而不是连续插值。原因是终端光标通常只有可见和不可见两个状态。项目里做打字机、精灵图或帧动画时也常用 <code>steps()</code>，但要确认步数和状态数量匹配。</li>
+          <li><strong>伪光标和 <code>caret-color</code> 有什么区别？</strong> 结论是伪光标是普通元素或伪元素，<code>caret-color</code> 控制的是可编辑文本中的插入光标。原因是 insertion caret 只出现在可输入、可编辑并获得焦点的元素里。项目里展示命令行视觉可用伪元素，真实输入框只改 caret 颜色时用 <code>caret-color</code>。</li>
+          <li><strong>闪烁动画有哪些可访问性风险？</strong> 结论是要降低频率或提供关闭方式。原因是持续闪烁可能干扰注意力，对部分用户造成不适。项目里可用 <code>@media (prefers-reduced-motion: reduce)</code> 停止动画，并避免大面积高频闪烁。</li>
+          <li><strong><code>background-color</code>、<code>opacity</code>、<code>visibility</code> 怎么选？</strong> 结论是只想让竖线颜色消失可用 <code>background-color</code>，整块元素淡入淡出用 <code>opacity</code>，完全离散显示隐藏可用 <code>visibility</code>。原因是它们影响的绘制范围和插值方式不同。边界是不要让闪烁影响文本本身的可读性。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/easing-function/steps">MDN: steps()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/caret-color">MDN: caret-color</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion">MDN: prefers-reduced-motion</a></li>
         </ul>
       </div>
     </section>

@@ -2,15 +2,15 @@
 分类: css / 02-布局 / 滚动表格
   主题: 表头固定 + 表体滚动
   要点:
-    - 方案 A：用 display: table/block 切换 + table-layout 固定列宽，需手动扣滚动条宽度
-    - 方案 B：thead th { position: sticky; top: 0 }，无需切换 display，保留列对齐
-    - sticky 必须依附「可滚动祖先」，所以外层 wrap 需 overflow:auto
+    - 推荐方案是在滚动容器内保留原生 table 结构，让 th 使用 position: sticky 固定在顶部
+    - 旧方案把 thead/tbody/tr 改成 table/block，能实现滚动但要手动处理滚动条和列宽
+    - sticky 依赖最近滚动祖先和 top 阈值，表头背景与 z-index 要避免内容穿透
+    - 真实表格还要考虑横向滚动、列宽同步、可访问性和虚拟滚动性能
   面试:
-    - 表头固定 + 表体滚动的核心概念是什么
-    - 表头固定 + 表体滚动在实际项目里怎么用
-    - 表头固定 + 表体滚动有哪些常见坑或易错点
-    - 表头固定 + 表体滚动和相近 API 如何区分选型
-    - 面试中如何简洁讲清 表头固定 + 表体滚动
+    - 表头固定为什么优先用 position: sticky 而不是拆成两个表
+    - sticky 表头失效通常要检查哪些条件
+    - display:block 滚动 tbody 方案有哪些维护风险
+    - 大数据表格只靠 CSS 固定表头够不够
 -->
 
 <!doctype html>
@@ -61,15 +61,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>方案 A：用 display: table/block 切换 + table-layout 固定列宽，需手动扣滚动条宽度。</li>
-          <li>方案 B：thead th { position: sticky; top: 0 }，无需切换 display，保留列对齐。</li>
-          <li>sticky 必须依附「可滚动祖先」，所以外层 wrap 需 overflow:auto。</li>
+          <li>现代固定表头优先让表格外层成为滚动容器，并给 <code>thead th</code> 设置 <code>position: sticky; top: 0</code>，这样能保留原生 table 的列宽计算和语义结构。</li>
+          <li>示例 A 的老方案把 <code>tbody</code> 变成 <code>display:block</code> 并单独滚动，同时让 <code>thead</code> 和 <code>tbody tr</code> 继续模拟 table 布局；它能工作，但列宽、滚动条宽度和响应式都要手动补。</li>
+          <li><code>sticky</code> 必须有阈值（如 <code>top:0</code>），并依附最近的滚动祖先；本页的 <code>.wrap-b { max-height; overflow:auto }</code> 就是表头吸附的滚动边界。</li>
+          <li>固定表头要给 <code>th</code> 设置不透明背景和合适 <code>z-index</code>，否则滚动内容会从表头下方透出；边框折叠、阴影和多行表头时还要单独检查层叠效果。</li>
+          <li>真实数据表还常见横向滚动、固定首列、排序筛选和几千行性能问题；CSS sticky 解决的是表头视觉固定，不替代虚拟滚动、列宽测量或无障碍表格标注。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>sticky 必须依附「可滚动祖先」？</strong> 方案 B：thead th { position: sticky; top: 0 }，无需切换 display，保留列对齐；sticky 必须依附「可滚动祖先」，所以外层 wrap 需 overflow:auto</li>
-          <li><strong>表头固定 + 表体滚动的核心概念是什么？</strong> 方案 A：用 display: table/block 切换 + table-layout 固定列宽，需手动扣滚动条宽度；方案 B：thead th { position: sticky; top: 0 }，无需切换 display，保留列对齐</li>
-          <li><strong>表头固定 + 表体滚动在实际项目里怎么用？</strong> 方案 A：用 display: table/block 切换 + table-layout 固定列宽，需手动扣滚动条宽度；方案 B：thead th { position: sticky; top: 0 }，无需切换 display，保留列对齐</li>
+          <li><strong>表头固定为什么优先用 <code>position: sticky</code>？</strong> 结论是 sticky 能在保留原生表格布局的同时固定表头。原因是列宽仍由 table 算法统一计算，不需要把表头和表体拆开。边界是 sticky 依赖滚动容器和阈值，复杂多级表头仍要测试层叠和边框。</li>
+          <li><strong>sticky 表头失效通常检查什么？</strong> 结论是先查 <code>top</code> 是否设置、滚动祖先是否正确、祖先是否有影响显示的 overflow/transform、以及表头是否被其他层覆盖。原因是 sticky 是相对滚动容器的定位模型。项目里外层滚动容器变化后，吸附边界也会变化。</li>
+          <li><strong><code>tbody display:block</code> 的方案有什么风险？</strong> 结论是能兼容旧做法，但维护成本高。原因是它破坏了表格头体共享列宽的天然布局，需要手动扣滚动条、固定列宽或同步宽度。响应式、字体变化、隐藏列和横向滚动都会放大这些问题。</li>
+          <li><strong>大数据表格只靠 CSS 固定表头够不够？</strong> 结论是不够。原因是 CSS sticky 只解决视觉固定，不减少 DOM 数量。上千行数据还需要分页、虚拟滚动、懒渲染或专门的数据表组件，同时保留表头、单元格关联和键盘可访问性。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/position">MDN: position</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout">MDN: table-layout</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/table">MDN: The Table element</a></li>
+          <li><a href="https://www.w3.org/TR/css-position-3/#sticky-pos">W3C: CSS Positioned Layout - Sticky positioning</a></li>
         </ul>
       </div>
     </section>

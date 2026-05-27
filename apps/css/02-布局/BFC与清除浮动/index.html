@@ -1,16 +1,16 @@
 <!--
 分类: css / 02-布局 / BFC与清除浮动
-  主题: BFC 的作用和触发方式
+  主题: BFC 与清除浮动
   要点:
-    - BFC 是独立布局区域，内部浮动会参与高度计算
-    - 常见触发: display: flow-root、overflow:hidden、float、position:absolute/fixed、inline-block
-    - BFC 可用于清除浮动、阻止 margin 折叠、避免文字环绕浮动元素
+    - BFC 是块格式化上下文，内部浮动会参与该上下文的高度计算
+    - display: flow-root 是现代创建 BFC 的语义化写法，clearfix 是兼容旧项目的方案
+    - overflow:hidden 也能创建 BFC，但可能裁剪阴影、下拉层或溢出内容
+    - BFC 可清除内部浮动、隔离外部浮动并阻止父子 margin 折叠
   面试:
-    - BFC 的作用和触发方式的核心概念是什么
-    - BFC 的作用和触发方式在实际项目里怎么用
-    - BFC 的作用和触发方式有哪些常见坑或易错点
-    - BFC 的作用和触发方式和相近 API 如何区分选型
-    - 面试中如何简洁讲清 BFC 的作用和触发方式
+    - BFC 为什么能解决浮动父元素高度塌陷
+    - flow-root、overflow:hidden、clearfix 清浮动怎么选
+    - BFC 如何影响垂直 margin 折叠和浮动环绕
+    - overflow:hidden 清浮动在真实项目里有什么副作用
 -->
 
 <!doctype html>
@@ -50,16 +50,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>BFC</code> 是独立布局区域，内部浮动会参与高度计算。</li>
-          <li>常见触发: display: flow-root、overflow:hidden、float、position:absolute/fixed、inline-block。</li>
-          <li><code>BFC</code> 可用于清除浮动、阻止 margin 折叠、避免文字环绕浮动元素。</li>
-          <li><code>BFC</code> 是独立布局区域，内部浮动会参与高度计算（补充）。</li>
+          <li><code>BFC</code>（Block Formatting Context）是块级盒子的独立布局上下文，内部块盒按普通流垂直排列，内部浮动不会逃出该上下文的高度计算。</li>
+          <li>常见触发方式包括 <code>display: flow-root</code>、非 <code>visible</code>/<code>clip</code> 的 <code>overflow</code>、浮动元素、绝对/固定定位元素、<code>inline-block</code> 和部分表格/弹性/网格容器。</li>
+          <li>现代清浮动优先用 <code>display: flow-root</code>，语义就是“让这个盒子建立新的块格式化上下文”；旧项目可保留 <code>::after { clear: both }</code> clearfix。</li>
+          <li><code>overflow: hidden</code> 虽然也能创建 BFC，但它会裁剪溢出内容，遇到阴影、弹层、焦点轮廓或内部滚动时容易变成布局副作用。</li>
+          <li>BFC 还能隔离外部浮动，阻止父元素与子元素之间的垂直 <code>margin</code> 折叠；但相邻兄弟块之间的 margin 折叠不是靠给其中一个元素创建 BFC 就一定消失。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>BFC 是独立布局区域？</strong> <code>BFC</code> 是独立布局区域，内部浮动会参与高度计算；<code>BFC</code> 可用于清除浮动、阻止 margin 折叠、避免文字环绕浮动元素</li>
-          <li><strong>BFC 可用于清除浮动、阻止 margin 折叠、避免文字环绕浮动元素？</strong> <code>BFC</code> 是独立布局区域，内部浮动会参与高度计算；<code>BFC</code> 可用于清除浮动、阻止 margin 折叠、避免文字环绕浮动元素</li>
-          <li><strong>BFC 的作用和触发方式的核心概念是什么？</strong> <code>BFC</code> 是独立布局区域，内部浮动会参与高度计算；<code>BFC</code> 可用于清除浮动、阻止 margin 折叠、避免文字环绕浮动元素</li>
+          <li><strong>BFC 为什么能解决浮动父元素高度塌陷？</strong> 结论是父元素创建 BFC 后，内部浮动盒会参与该 BFC 的高度计算。原因是 BFC 是独立格式化上下文，浮动不再只影响外部普通流。项目里新代码优先写 <code>display: flow-root</code>，旧浏览器或历史代码才常见 clearfix。</li>
+          <li><strong><code>flow-root</code>、<code>overflow:hidden</code>、clearfix 清浮动怎么选？</strong> 结论是现代布局优先 <code>flow-root</code>，它表达的是布局意图。<code>overflow:hidden</code> 的原因是副作用触发 BFC，但边界是会裁剪内容；clearfix 兼容性好，但需要伪元素补丁，维护成本更高。</li>
+          <li><strong>BFC 对 margin 折叠和浮动环绕有什么影响？</strong> 结论是 BFC 可以阻止父子垂直 margin 折叠，并让内容块避开外部浮动。原因是新的格式化上下文隔离了内部布局计算。边界是它不是万能清除器，兄弟元素之间的 margin 折叠和 stacking 问题要分别处理。</li>
+          <li><strong><code>overflow:hidden</code> 清浮动有什么项目风险？</strong> 结论是能用但不推荐作为默认方案。原因是它把“创建 BFC”和“裁剪溢出”绑定在一起。下拉菜单、阴影、焦点环、绝对定位提示层被截断时，应改用 <code>flow-root</code> 或 clearfix。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_display/Block_formatting_context">MDN: Block formatting context</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/display">MDN: display</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/clear">MDN: clear</a></li>
         </ul>
       </div>
     </section>

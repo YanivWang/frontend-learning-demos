@@ -1,16 +1,16 @@
 <!--
 分类: css / 03-动画 / keyframes
-  主题: @keyframes 基础旋转动画
+  主题: @keyframes 与 animation 旋转动画
   要点:
-    - @keyframes name { 0% {...} 50% {...} 100% {...} } 定义多段关键帧
-    - animation: name duration timing-function iteration-count
-    - linear 等速；infinite 无限循环；transform 用 GPU 加速性能好
+    - @keyframes 定义动画时间线上的关键帧，animation-name 把元素和关键帧规则关联起来
+    - from/to 等价于 0%/100%，中间百分比可描述更细的过渡状态
+    - animation 简写包含 duration、timing-function、delay、iteration-count、direction 等子属性
+    - 旋转、平移、缩放优先用 transform，避免用几何尺寸制造不必要的布局开销
   面试:
-    - @keyframes 基础旋转动画的核心概念是什么
-    - @keyframes 基础旋转动画在实际项目里怎么用
-    - @keyframes 基础旋转动画有哪些常见坑或易错点
-    - @keyframes 基础旋转动画和相近 API 如何区分选型
-    - 面试中如何简洁讲清 @keyframes 基础旋转动画
+    - @keyframes 和 animation 属性分别负责什么
+    - animation 简写里两个时间值如何解析
+    - 为什么旋转 loading 更推荐动画 transform
+    - 无限动画如何照顾 prefers-reduced-motion
 -->
 
 <!doctype html>
@@ -24,7 +24,7 @@
         width: 50px;
         height: 50px;
         background-color: red;
-        animation: spinnerAni 2s linear infinite;
+        animation: 2s linear infinite spinnerAni;
       }
       @keyframes spinnerAni {
         0% {
@@ -37,6 +37,11 @@
           transform: rotate(360deg);
         }
       }
+      @media (prefers-reduced-motion: reduce) {
+        .testDiv {
+          animation: none;
+        }
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -44,20 +49,30 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>@keyframes 基础旋转动画</h1>
+      <h1>@keyframes 与 animation 旋转动画</h1>
       <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>@keyframes name { 0% {...} 50% {...} 100% {...} } 定义多段关键帧。</li>
-          <li>animation: name duration timing-function iteration-count。</li>
-          <li>linear 等速；infinite 无限循环；transform 用 GPU 加速性能好。</li>
+          <li><code>@keyframes</code> 只定义动画序列本身，元素是否播放取决于 <code>animation-name</code> 或 <code>animation</code> 简写是否引用了同名关键帧。</li>
+          <li><code>from</code>/<code>to</code> 等价于 <code>0%</code>/<code>100%</code>；未写起点或终点时，浏览器会使用元素当前样式作为缺失端点。</li>
+          <li><code>animation</code> 简写可同时设置时长、缓动、延迟、次数、方向、填充模式、播放状态和名称；写两个时间值时，第一个是 <code>duration</code>，第二个是 <code>delay</code>。</li>
+          <li>旋转 loading 这类视觉动效优先动画 <code>transform</code>，通常比动画 <code>width</code>、<code>height</code>、<code>margin</code> 更少触发布局计算。</li>
+          <li>无限循环动画属于非必要动效时，应考虑 <code>prefers-reduced-motion</code>，给对动效敏感的用户提供暂停、减少或替代体验。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>@keyframes name { 0% {...} 50% {...} 100？</strong> @keyframes name { 0% {...} 50% {...} 100% {...} } 定义多段关键帧</li>
-          <li><strong>animation？</strong> animation: name duration timing-function iteration-count</li>
-          <li><strong>linear 等速？</strong> linear 等速；infinite 无限循环；transform 用 GPU 加速性能好</li>
+          <li><strong><code>@keyframes</code> 和 <code>animation</code> 的分工是什么？</strong> 结论是 <code>@keyframes</code> 定义时间线上的样式片段，<code>animation</code> 把这条时间线应用到元素。原因是关键帧规则本身不会自动执行，必须由 <code>animation-name</code> 匹配名称。项目里通常把可复用的关键帧命名清楚，再在不同元素上用不同 duration、delay 或 iteration-count 复用。</li>
+          <li><strong><code>animation: 2s linear infinite spinnerAni</code> 怎么解析？</strong> 结论是 <code>2s</code> 是单次时长，<code>linear</code> 是等速缓动，<code>infinite</code> 是无限次数，<code>spinnerAni</code> 是关键帧名称。原因是 animation 简写会按可解析的子属性分配值。边界是出现两个时间值时第二个会变成 delay，名称建议放最后，避免和其他关键字混淆。</li>
+          <li><strong>为什么 loading 旋转常用 <code>transform</code>？</strong> 结论是旋转、位移、缩放优先用 <code>transform</code>。原因是它修改视觉坐标空间，通常不需要重新计算周围元素布局。边界是 <code>transform</code> 会创建新的 stacking context，定位和层叠关系复杂时要额外检查。</li>
+          <li><strong>无限 CSS 动画有哪些可访问性风险？</strong> 结论是非必要的无限动画要提供降低动效的路径。原因是闪烁、缩放或大幅运动可能影响注意力、前庭敏感或偏头痛用户。项目里可用 <code>@media (prefers-reduced-motion: reduce)</code> 暂停动画或换成更弱的透明度变化。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes">MDN: @keyframes CSS at-rule</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/animation">MDN: animation</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transform">MDN: transform</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion">MDN: prefers-reduced-motion</a></li>
         </ul>
       </div>
     </section>

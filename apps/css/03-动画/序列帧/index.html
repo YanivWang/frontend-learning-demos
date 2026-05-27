@@ -1,19 +1,22 @@
 <!--
-分类: css / 03-动画 / 序列帧
-  主题: 用 background-position + steps() 播放精灵图
-  要点:
-    - 精灵图（sprite）横向拼接多帧，background-size 设为完整长度
-    - steps(5, end) 把 5 帧拆成 5 步离散跳变，配合 keyframes 从 0 到 -2000px
-    - animation-play-state: paused/running 实现暂停/播放控制
+分类: css / 03-动画 / 序列帧
+
+  主题: 用 background-position + steps() 播放精灵图
+  要点:
+    - 精灵图（sprite）横向拼接多帧，background-size 设为完整长度
+    - steps(5, end) 把动画拆成 5 个离散区间，避免帧与帧之间被线性插值
+    - background-position 横向移动距离要和单帧宽度、帧数对应，避免露出空白或跳帧
+    - animation-play-state: paused/running 可暂停和恢复，恢复时会从暂停进度继续播放
+    - 序列帧资源体积较大时要考虑图片压缩、预加载和 reduced-motion
   面试:
-    - 用 background-position + steps() 播放精灵图的核心概念是什么
-    - 用 background-position + steps() 播放精灵图在实际项目里怎么用
-    - 用 background-position + steps() 播放精灵图有哪些常见坑或易错点
-    - 用 background-position + steps() 播放精灵图和相近 API 如何区分选型
-    - 面试中如何简洁讲清 用 background-position + steps() 播放精灵图
+    - 精灵图序列帧为什么要配合 steps()
+    - background-position 的偏移量如何和帧宽、帧数对应
+    - animation-play-state 暂停后再次运行会从哪里开始
+    - CSS 序列帧、GIF、视频和 Canvas 动画如何选型
 -->
 
-<!doctype html>
+<!doctype html>
+
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -47,6 +50,12 @@
       .laba.run  { animation-play-state: running; }
       .laba.stop { animation-play-state: paused; }
       button { margin: 1rem 6px 0; padding: 6px 14px; }
+      @media (prefers-reduced-motion: reduce) {
+        .laba {
+          animation: none;
+          background-position: 0 0;
+        }
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -59,15 +68,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>精灵图（sprite）横向拼接多帧，background-size 设为完整长度。</li>
-          <li>steps(5, end) 把 5 帧拆成 5 步离散跳变，配合 keyframes 从 0 到 -2000px。</li>
-          <li>animation-play-state: paused/running 实现暂停/播放控制。</li>
+          <li>精灵图序列帧把多张帧图横向或纵向拼到一张图里，容器只显示单帧尺寸，本页用 5 个 500px 宽的色块模拟 2500px 宽精灵图。</li>
+          <li><code>background-position</code> 控制背景图在容器中的起始位置；横向精灵图通常把 x 坐标从 <code>0</code> 移到负方向，让下一帧进入可视区域。</li>
+          <li><code>steps(5, end)</code> 把 1.5 秒拆成 5 个离散区间，避免背景位置连续滑动；如果使用 <code>linear</code>，用户会看到图像平移而不是逐帧切换。</li>
+          <li><code>animation-play-state: paused</code> 会暂停当前进度，恢复为 <code>running</code> 时从暂停处继续，而不是从第一帧重新开始。</li>
+          <li>序列帧比 GIF 更容易用 CSS 控制播放、暂停和速度，但大图可能增加首屏体积；真实项目要压缩图片、控制帧数，并在 reduced motion 下停止非必要播放。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>精灵图（sprite）横向拼接多帧？</strong> 精灵图（sprite）横向拼接多帧，background-size 设为完整长度</li>
-          <li><strong>animation-play-state？</strong> animation-play-state: paused/running 实现暂停/播放控制</li>
-          <li><strong>用 background-position + steps() 播放精灵图的核心概念是什么？</strong> 精灵图（sprite）横向拼接多帧，background-size 设为完整长度；steps(5, end) 把 5 帧拆成 5 步离散跳变，配合 keyframes 从 0 到 -2000px</li>
+          <li><strong>精灵图序列帧为什么要用 <code>steps()</code>？</strong> 结论是序列帧需要离散跳变，不需要连续插值。原因是每一帧都是独立画面，线性移动会看到中间滑动过程。项目里步数通常等于帧数或可见切换次数，写错会导致重复帧、漏帧或末帧停顿异常。</li>
+          <li><strong><code>background-position</code> 偏移量怎么计算？</strong> 结论是偏移要按单帧宽度和帧数计算。原因是容器只显示一帧，背景图每次移动一个帧宽才能对齐下一帧。本页 5 帧、单帧 500px，关键帧移动到 <code>-2000px</code>，对应最后一帧左边缘进入容器。</li>
+          <li><strong><code>animation-play-state</code> 暂停后再播放会怎样？</strong> 结论是会从暂停位置继续。原因是该属性只改变动画播放状态，不重置动画时间线。项目里如果要从第一帧重播，通常需要移除并重新添加动画类，或改变 animation-name 触发重建。</li>
+          <li><strong>CSS 序列帧、GIF、视频和 Canvas 怎么选？</strong> 结论是短小可控 UI 动效可用 CSS 精灵图，简单表情可用 GIF，长时长高压缩动画用视频，复杂实时绘制和交互用 Canvas。原因是它们在体积、控制能力、性能和可访问性上的取舍不同。边界是大尺寸序列帧会占内存和带宽，要谨慎用于首屏。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/background-position">MDN: background-position</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/easing-function/steps">MDN: steps()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/animation-play-state">MDN: animation-play-state</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion">MDN: prefers-reduced-motion</a></li>
         </ul>
       </div>
     </section>
@@ -109,5 +128,7 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
-</html>
+</body>
+
+</html>
+

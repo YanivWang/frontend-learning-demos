@@ -278,7 +278,7 @@
 
 ### BFC与清除浮动
 
-- [index](/apps/css/02-%E5%B8%83%E5%B1%80/BFC%E4%B8%8E%E6%B8%85%E9%99%A4%E6%B5%AE%E5%8A%A8/index.html) — BFC 的作用和触发方式
+- [index](/apps/css/02-%E5%B8%83%E5%B1%80/BFC%E4%B8%8E%E6%B8%85%E9%99%A4%E6%B5%AE%E5%8A%A8/index.html) — BFC 与清除浮动
 
 ### flex
 
@@ -286,7 +286,7 @@
 
 ### grid
 
-- [index](/apps/css/02-%E5%B8%83%E5%B1%80/grid/index.html) — Grid 二维布局系统集合演示
+- [index](/apps/css/02-%E5%B8%83%E5%B1%80/grid/index.html) — Grid 二维布局与轨道函数
 
 ### rem
 
@@ -306,7 +306,7 @@
 
 ### keyframes
 
-- [index](/apps/css/03-%E5%8A%A8%E7%94%BB/keyframes/index.html) — @keyframes 基础旋转动画
+- [index](/apps/css/03-%E5%8A%A8%E7%94%BB/keyframes/index.html) — @keyframes 与 animation 旋转动画
 
 ### loading
 

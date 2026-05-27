@@ -1,19 +1,19 @@
 <!--
-分类: css / 03-动画 / 展开折叠
-  主题: height / max-height / grid 三种展开折叠方案
-  要点:
-    - height: auto 不可被 transition；必须给定明确像素值
-    - 高度不固定时改用 max-height 或 grid-template-rows: 0fr → 1fr
+分类: css / 03-动画 / 展开折叠
+  主题: height / max-height / grid 三种展开折叠方案
+  要点:
+    - transition 只能在可插值值之间过渡，height: auto 不能直接补间到具体高度
+    - 固定高度方案简单但不适合动态内容，max-height 方案需要猜上限且速度可能失真
+    - grid-template-rows: 0fr → 1fr 可做自适应高度折叠，但要给内部容器 overflow: hidden / min-height: 0
     - overflow: hidden 防止收起时子元素「溢出露脸」
   面试:
-    - height / max-height / grid 三种展开折叠方案的核心概念是什么
-    - height / max-height / grid 三种展开折叠方案在实际项目里怎么用
-    - height / max-height / grid 三种展开折叠方案有哪些常见坑或易错点
-    - height / max-height / grid 三种展开折叠方案和相近 API 如何区分选型
-    - 面试中如何简洁讲清 height / max-height / grid 三种展开折叠方案
+    - 为什么 height: auto 不能直接 transition
+    - 固定 height、max-height、grid 折叠分别适合什么场景
+    - max-height 展开折叠为什么会出现速度不均匀
+    - 展开折叠组件要处理哪些交互和可访问性边界
 -->
 
-<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -56,6 +56,13 @@
       .panel-grid.open { grid-template-rows: 1fr; }
       .panel-grid-inner { overflow: hidden; min-height: 0; }
       .panel-grid-inner > div { padding: 4px 12px; }
+      @media (prefers-reduced-motion: reduce) {
+        .panel-height,
+        .panel-max,
+        .panel-grid {
+          transition: none;
+        }
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -68,15 +75,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>height: auto 不可被 transition；必须给定明确像素值。</li>
-          <li>高度不固定时改用 max-height 或 <code>grid</code>-template-rows: 0fr → 1fr。</li>
-          <li>overflow: hidden 防止收起时子元素「溢出露脸」。</li>
+          <li><code>transition</code> 描述两个状态之间的过渡，但只有可插值的值才能平滑补间；<code>height: auto</code> 依赖内容布局计算，不能直接过渡到具体高度。</li>
+          <li>固定 <code>height</code> 方案最直观，适合内容高度可控的菜单；内容行数变化时容易截断或留空，需要 JS 测量高度才能精确。</li>
+          <li><code>max-height</code> 可绕过未知高度问题，但必须设置一个足够大的上限；真实内容高度小于上限时，视觉展开时间会短于声明时长，速度看起来不均匀。</li>
+          <li><code>grid-template-rows: 0fr → 1fr</code> 能让内容高度自适应，内部容器配 <code>overflow: hidden</code> 和 <code>min-height: 0</code>，避免收起时内容溢出。</li>
+          <li>展开折叠是交互组件，真实项目还要同步按钮 <code>aria-expanded</code>、键盘焦点、动态内容高度和 <code>prefers-reduced-motion</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>高度不固定时改用 max-height 或 grid-template-rows？</strong> 高度不固定时改用 max-height 或 <code>grid</code>-template-rows: 0fr → 1fr</li>
-          <li><strong>height / max-height / grid 三种展开折叠方案的核心概念是什么？</strong> height: auto 不可被 transition；必须给定明确像素值；高度不固定时改用 max-height 或 <code>grid</code>-template-rows: 0fr → 1fr</li>
-          <li><strong>height / max-height / grid 三种展开折叠方案在实际项目里怎么用？</strong> height: auto 不可被 transition；必须给定明确像素值；高度不固定时改用 max-height 或 <code>grid</code>-template-rows: 0fr → 1fr</li>
+          <li><strong>为什么 <code>height: auto</code> 不能直接做过渡？</strong> 结论是 CSS 不能在 <code>0</code> 和 <code>auto</code> 之间算出连续中间值。原因是 <code>auto</code> 是布局结果，不是一个固定数值。项目里如果必须精确高度动画，可以用 JS 读取 <code>scrollHeight</code>，或用 grid / max-height 方案替代。</li>
+          <li><strong>三种展开折叠方案怎么选？</strong> 结论是固定高度适合内容稳定，<code>max-height</code> 适合简单自适应，grid 方案适合纯 CSS 且内容高度不固定的面板。原因是它们对内容变化、动画速度和维护成本的约束不同。边界是复杂手风琴、虚拟列表或频繁动态内容通常需要 JS 管理状态和高度。</li>
+          <li><strong><code>max-height</code> 方案为什么速度不均匀？</strong> 结论是动画跑的是声明的上限，不是内容真实高度。原因是内容达到实际高度后视觉上已经展开完成，但 <code>max-height</code> 仍在继续补间到更大的值。项目里上限越夸张，视觉时长偏差越明显。</li>
+          <li><strong>展开折叠组件有哪些工程边界？</strong> 结论是动画之外还要处理语义和状态。原因是按钮、面板、焦点和屏幕阅读器都需要知道当前是否展开。项目里应维护 <code>aria-expanded</code>、必要时设置 <code>aria-controls</code>，并在 reduced motion 下关闭过渡。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transition">MDN: transition</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-rows">MDN: grid-template-rows</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/overflow">MDN: overflow</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion">MDN: prefers-reduced-motion</a></li>
         </ul>
       </div>
     </section>
@@ -85,7 +102,7 @@
     <!-- PAGE_DOM_START -->
     <div class="section">
       <h2>方案 1 · 固定 height 过渡</h2>
-      <button onclick="document.getElementById('panel-height').classList.toggle('open')">切换</button>
+      <button type="button" data-toggle-panel="panel-height" aria-expanded="false" aria-controls="panel-height">切换</button>
       <div class="panel-height" id="panel-height">
         <div>列表项 1</div>
         <div>列表项 2</div>
@@ -96,7 +113,7 @@
     </div>
     <div class="section">
       <h2>方案 2 · max-height 过渡</h2>
-      <button onclick="document.getElementById('panel-max').classList.toggle('open')">切换</button>
+      <button type="button" data-toggle-panel="panel-max" aria-expanded="false" aria-controls="panel-max">切换</button>
       <div class="panel-max" id="panel-max">
         <div>内容高度未知时，过渡到足够大的 max-height</div>
         <div>第二行</div>
@@ -105,7 +122,7 @@
     </div>
     <div class="section">
       <h2>方案 3 · grid-template-rows: 0fr → 1fr（推荐）</h2>
-      <button onclick="document.getElementById('panel-grid').classList.toggle('open')">切换</button>
+      <button type="button" data-toggle-panel="panel-grid" aria-expanded="false" aria-controls="panel-grid">切换</button>
       <div class="panel-grid" id="panel-grid">
         <div class="panel-grid-inner">
           <div>高度自适应，无需猜像素</div>
@@ -115,6 +132,18 @@
       </div>
     </div>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      document.querySelectorAll("[data-toggle-panel]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const panel = document.getElementById(button.dataset.togglePanel);
+          const isOpen = panel.classList.toggle("open");
+          button.setAttribute("aria-expanded", String(isOpen));
+        });
+      });
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
@@ -134,5 +163,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
-</html>
+</body>
+</html>
