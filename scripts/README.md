@@ -4,14 +4,14 @@
 
 ## `build-index.mjs`
 
-扫描仓库内所有 `.html` demo，自动生成根目录 `index.html`（总入口）和 `manifest.json`（结构化数据）。
+扫描仓库内所有 `.html` demo，自动生成 `manifest.json`（结构化数据），并链式更新 VitePress 导航。
 
 ```bash
 node scripts/build-index.mjs
 node scripts/build-index.mjs --check
 ```
 
-**扫描范围**：`learn/javascript/`、`learn/css/`、`learn/vue2/`、`learn/vue3/`、`learn/react/`、`learn/demos/`、`learn/typescript/` 下的 `.html`；跳过 `libs/`、`lib/`、根 `index.html`。
+**扫描范围**：`learn/javascript/`、`learn/css/`、`learn/vue2/`、`learn/vue3/`、`learn/react/`、`learn/demos/`、`learn/typescript/` 下的 `.html`；跳过 `libs/`、`lib/`。
 
 **什么时候运行**：
 
@@ -22,7 +22,7 @@ node scripts/build-index.mjs --check
 
 详细约定见 [`../CONVENTIONS.md`](../CONVENTIONS.md)。
 
-`--check` 只比较当前 `index.html` / `manifest.json` 是否与脚本输出一致，不写文件，适合 CI。
+`--check` 只比较当前 `manifest.json` 是否与脚本输出一致，不写文件，适合 CI。
 
 ## `sync-readmes.mjs`
 
@@ -55,7 +55,7 @@ node scripts/gen-readme-tables.mjs react
 
 ## `inject-demo-nav.mjs`
 
-为所有 demo 注入 `viewport` / `lang="zh-CN"` 与页脚导航（目录 / 上一篇 / 下一篇）。由 `npm run build:index` 链式调用。
+为所有 demo 注入 `viewport` / `lang="zh-CN"` 与页脚导航（目录 → VitePress 首页 / 上一篇 / 下一篇）。由 `npm run build:index` 链式调用。
 
 ## `validate-topic-coverage.mjs`
 

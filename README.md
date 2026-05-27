@@ -1,6 +1,6 @@
 # frontend-learning-demos
 
-前端语法与框架复习 Demo 库。**每个 HTML 直接在浏览器打开，无需构建**。
+前端语法与框架复习 Demo 库。**VitePress 文档站为唯一入口**；每个 HTML demo 仍可直接打开。
 
 ## Demo 规模（由 `npm run validate` / manifest 统计）
 
@@ -13,27 +13,33 @@
 | React 18 | `learn/react/src/` | 53 | [`learn/react/README.md`](learn/react/README.md) |
 | TypeScript | `learn/typescript/` | 18 | [`learn/typescript/README.md`](learn/typescript/README.md) |
 | 综合 Demo | `learn/demos/` | 5 | [`learn/demos/README.md`](learn/demos/README.md) |
-| **合计** | — | **337** | 统一头注释 + 页脚导航 + 入口搜索（见 [`CONVENTIONS.md`](CONVENTIONS.md)） |
+| **合计** | — | **337** | 统一头注释 + 页脚导航 + VitePress 搜索（见 [`CONVENTIONS.md`](CONVENTIONS.md)） |
 
 ## 快速开始
 
 ```bash
-# 浏览器打开总入口（支持搜索 / 分类筛选）
-open index.html
-
-# 或使用本地静态服务（推荐 Router / 模块 demo）
-npm run serve
-# → http://127.0.0.1:4173/index.html
+npm install
+npm run build:index
+npm run docs:dev
+# → http://127.0.0.1:5173
 ```
 
-`index.html` 由 [`scripts/build-index.mjs`](scripts/build-index.mjs) 自动生成，并链式注入页脚导航。
+构建并预览静态站点：
+
+```bash
+npm run docs:build
+npm run serve
+# → http://127.0.0.1:4173/
+```
+
+`manifest.json` 与 VitePress 导航由 [`scripts/build-index.mjs`](scripts/build-index.mjs) 链式生成，**请勿手改**。
 
 ## 目录结构
 
 ```text
 .
-├── index.html               # 总入口（自动生成，请勿手改）
 ├── manifest.json            # demo 结构化清单（自动生成）
+├── docs-site/               # VitePress 文档站（唯一入口）
 ├── README.md                # 本文件
 ├── CONVENTIONS.md           # 目录与命名约定（每次想动结构前先读它）
 ├── docs/
@@ -55,7 +61,7 @@ npm run serve
 │   └── demos/               # 综合 Demo（drag / svg / viewpager）
 │
 └── scripts/
-    ├── build-index.mjs      # 扫描生成 index.html / manifest.json
+    ├── build-index.mjs      # 扫描生成 manifest.json
     ├── sync-readmes.mjs     # 同步各模块 README 的 demo 清单表
     ├── validate-demos.mjs   # 头注释 / 脚本语法 / manifest 一致性校验
     ├── validate-browser-smoke.mjs
@@ -107,7 +113,7 @@ node scripts/sync-readmes.mjs --check
 - **文件命名**：`NN-中文/英文API名.html`，连字符 `-` 连接，**不**用下划线 / 拼音首字母 / 无意义编号
 - **目录命名**：中文短语，一级目录加 `NN-` 编号
 - **`libs/`**：第三方运行时，每个目录里有 `README.md` 标注版本与官方地址
-- **不要手改 `index.html`**：它是脚本输出
+- **不要手改 `manifest.json` 与 VitePress 自动生成文件**：它们是脚本输出
 - **demo 头注释**：每个 `.html` 在 `<!DOCTYPE` 前应有 `分类` / `主题` / `要点` 块
 
 如果你打算批量改名或新增分类，先读 [`CONVENTIONS.md`](CONVENTIONS.md)。

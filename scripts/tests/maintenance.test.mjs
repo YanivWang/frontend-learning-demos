@@ -7,16 +7,12 @@ import test from "node:test";
 const ROOT = new URL("../..", import.meta.url).pathname;
 const NODE = process.execPath;
 
-function readGeneratedFiles() {
-  return {
-    index: readFileSync(join(ROOT, "index.html"), "utf8"),
-    manifest: readFileSync(join(ROOT, "manifest.json"), "utf8"),
-  };
+function readManifest() {
+  return readFileSync(join(ROOT, "manifest.json"), "utf8");
 }
 
-function restoreGeneratedFiles(snapshot) {
-  writeFileSync(join(ROOT, "index.html"), snapshot.index);
-  writeFileSync(join(ROOT, "manifest.json"), snapshot.manifest);
+function restoreManifest(snapshot) {
+  writeFileSync(join(ROOT, "manifest.json"), snapshot);
 }
 
 function runScript(args) {
@@ -27,28 +23,28 @@ function runScript(args) {
 }
 
 test("build-index --check validates generated files without rewriting them", () => {
-  const before = readGeneratedFiles();
+  const before = readManifest();
   try {
     const result = runScript(["scripts/build-index.mjs", "--check"]);
-    const after = readGeneratedFiles();
+    const after = readManifest();
 
     assert.equal(result.status, 0, result.stderr || result.stdout);
-    assert.deepEqual(after, before);
+    assert.equal(after, before);
   } finally {
-    restoreGeneratedFiles(before);
+    restoreManifest(before);
   }
 });
 
 test("validate-demos validates manifest consistency without rewriting generated files", () => {
-  const before = readGeneratedFiles();
+  const before = readManifest();
   try {
     const result = runScript(["scripts/validate-demos.mjs"]);
-    const after = readGeneratedFiles();
+    const after = readManifest();
 
     assert.equal(result.status, 0, result.stderr || result.stdout);
-    assert.deepEqual(after, before);
+    assert.equal(after, before);
   } finally {
-    restoreGeneratedFiles(before);
+    restoreManifest(before);
   }
 });
 
@@ -90,6 +86,8 @@ test("package.json exposes one-command maintenance scripts", () => {
     "check:index",
     "sync:readmes",
     "serve",
+    "docs:dev",
+    "docs:build",
     "validate",
     "validate:topics",
     "validate:tsc",
@@ -99,4 +97,33 @@ test("package.json exposes one-command maintenance scripts", () => {
     assert.equal(typeof pkg.scripts[key], "string", `missing script: ${key}`);
   }
   assert.match(pkg.scripts["build:index"], /inject-demo-nav/);
+  assert.match(pkg.scripts["build:index"], /gen-vitepress-sidebar/);
+});
+
+test("gen-vitepress-sidebar --check validates generated docs nav without rewriting", () => {
+  const generatedFiles = {
+    sidebar: readFileSync(
+      join(ROOT, "docs-site/.vitepress/sidebar.generated.mts"),
+      "utf8"
+    ),
+    demosIndex: readFileSync(join(ROOT, "docs-site/demos/index.md"), "utf8"),
+  };
+  try {
+    const result = runScript(["scripts/gen-vitepress-sidebar.mjs", "--check"]);
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    assert.equal(
+      readFileSync(join(ROOT, "docs-site/.vitepress/sidebar.generated.mts"), "utf8"),
+      generatedFiles.sidebar
+    );
+    assert.equal(
+      readFileSync(join(ROOT, "docs-site/demos/index.md"), "utf8"),
+      generatedFiles.demosIndex
+    );
+  } finally {
+    writeFileSync(
+      join(ROOT, "docs-site/.vitepress/sidebar.generated.mts"),
+      generatedFiles.sidebar
+    );
+    writeFileSync(join(ROOT, "docs-site/demos/index.md"), generatedFiles.demosIndex);
+  }
 });

@@ -26,10 +26,15 @@ jobs:
 
       - name: Check working tree clean after scripts
         run: |
-          git diff --exit-code index.html manifest.json learn/javascript/README.md learn/css/README.md learn/vue2/README.md learn/vue3/README.md learn/react/README.md learn/typescript/README.md || (
-            echo "::error::index.html / manifest.json / 模块 README 与脚本输出不一致，请本地运行 npm run build:index && npm run sync:readmes"
+          git diff --exit-code manifest.json \
+            docs-site/.vitepress/sidebar.generated.mts docs-site/demos/index.md \
+            learn/javascript/README.md learn/css/README.md learn/vue2/README.md learn/vue3/README.md learn/react/README.md learn/typescript/README.md || (
+            echo "::error::manifest.json / VitePress 导航 / 模块 README 与脚本输出不一致，请本地运行 npm run build:index && npm run sync:readmes"
             exit 1
           )
+
+      - name: Build VitePress docs site
+        run: npm run docs:build
 
   playwright:
     runs-on: ubuntu-latest
@@ -47,14 +52,14 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install chromium
 
-      - name: Build index and inject nav
-        run: npm run build:index
+      - name: Build docs site and inject nav
+        run: npm run docs:build
 
       - name: Start static server
-        run: npx --yes serve . -p 4173 &
+        run: npx --yes serve docs-site/.vitepress/dist -p 4173 &
         
       - name: Wait for server
-        run: npx --yes wait-on http://127.0.0.1:4173/index.html
+        run: npx --yes wait-on http://127.0.0.1:4173/
 
       - name: Playwright sample smoke
         run: npm run validate:playwright

@@ -11,6 +11,7 @@
 import { readFile, readdir, stat, writeFile } from "node:fs/promises";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { docsHomeHref } from "./docs-home.mjs";
 
 const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
 const NAV_START = "<!-- DEMO_NAV_START -->";
@@ -65,8 +66,8 @@ function ensureHeadMeta(content) {
   return next;
 }
 
-function buildNavHtml(fromAbs, prev, nextItem, indexHref) {
-  const parts = [`<a href="${relHref(fromAbs, indexHref)}">目录</a>`];
+function buildNavHtml(fromAbs, prev, nextItem) {
+  const parts = [`<a href="${docsHomeHref()}">目录</a>`];
   if (prev) {
     parts.push(`<a href="${relHref(fromAbs, join(ROOT, decodeHref(prev.href)))}">← ${escapeHtml(prev.title)}</a>`);
   }
@@ -129,7 +130,6 @@ async function main() {
   }
 
   const hrefToIndex = new Map(flat.map((it, i) => [decodeHref(it.href), i]));
-  const indexHref = join(ROOT, "index.html");
   let updated = 0;
 
   const files = [];
@@ -149,7 +149,7 @@ async function main() {
 
     const prev = idx > 0 ? flat[idx - 1] : null;
     const nextItem = idx < flat.length - 1 ? flat[idx + 1] : null;
-    const navBlock = buildNavHtml(abs, prev, nextItem, indexHref);
+    const navBlock = buildNavHtml(abs, prev, nextItem);
 
     let content = await readFile(abs, "utf8");
     const before = content;

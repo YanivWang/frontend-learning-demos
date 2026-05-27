@@ -69,8 +69,8 @@
 
 ## 6. 入口 / 索引
 
-- 根目录 `index.html` 是总入口，**由 `scripts/build-index.mjs` 自动生成**，不要手动编辑
-- `manifest.json` 与 `index.html` 同步生成，记录路径、标题、分组
+- **VitePress 文档站**（`docs-site/`）是唯一入口，侧边栏与 Demo 索引由 `manifest.json` 驱动
+- `manifest.json` **由 `scripts/build-index.mjs` 自动生成**，不要手动编辑
 - 想新增 demo：直接放到对应目录，运行：
   ```bash
   npm run build:index
