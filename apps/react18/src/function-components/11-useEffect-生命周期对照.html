@@ -8,11 +8,11 @@
     - 没有一一对应关系：一个 useEffect 可组合多种时机，应按「副作用语义」拆分
     - StrictMode 下（见 26）开发环境会 mount → unmount → mount，effect 与 cleanup 各执行两次；生产环境不受影响
   面试:
-    - useEffect 与 class 生命周期对照的核心概念是什么
-    - useEffect 与 class 生命周期对照在实际项目里怎么用
-    - useEffect 与 class 生命周期对照有哪些常见坑或易错点
-    - useEffect 与 class 生命周期对照和相近 API 如何区分选型
-    - 面试中如何简洁讲清 useEffect 与 class 生命周期对照
+    - useEffect 能否和 class 生命周期一一对应？
+    - useEffect(fn, []) 与 componentDidMount 的相同点和差异是什么？
+    - useEffect(fn, [deps]) 为什么不是纯粹的 componentDidUpdate？
+    - cleanup 和 componentWillUnmount 如何对应，异步副作用要注意什么？
+    - StrictMode 下 effect 为什么会在开发环境重复执行？
 -->
 
 <!doctype html>
@@ -35,18 +35,27 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>componentDidMount ≈ <code>useEffect</code>(fn, [])。</li>
-          <li>componentDidUpdate ≈ <code>useEffect</code>(fn, [deps]) 在 deps 变化时的行为（注意：带 deps 的 effect 在 <code>mount</code> 时也会执行，与 componentDidUpdate 不同）。</li>
-          <li>componentWillUnmount ≈ <code>useEffect</code> 返回的 cleanup。</li>
-          <li>没有一一对应关系：一个 <code>useEffect</code> 可组合多种时机，应按「副作用语义」拆分。</li>
-          <li>StrictMode 下（见 26）开发环境会 <code>mount</code> → unmount → <code>mount</code>，effect 与 cleanup 各执行两次；生产环境不受影响。</li>
+          <li><code>useEffect(fn, [])</code> 常被类比为 <code>componentDidMount</code>，因为它在组件提交到 DOM 后运行一次；但它表达的是“这个副作用不依赖响应式值”，不是生命周期方法的逐字替代。</li>
+          <li><code>useEffect(fn, [deps])</code> 会在首次 mount 后运行，也会在依赖变化后的提交中运行。若要模拟“只在更新时执行”，本 demo 用 <code>useRef</code> 跳过首次 effect。</li>
+          <li><code>useEffect</code> 返回的 cleanup 会在组件卸载前，以及下一次执行同一个 effect 之前运行；它适合清理订阅、定时器、事件监听和过期异步任务。</li>
+          <li>Hooks 推荐按副作用语义拆分 effect，而不是把所有逻辑塞进一个“生命周期对照表”。例如订阅、日志、请求、DOM 集成可以放在不同 effect 中，各自声明依赖。</li>
+          <li>React 18 <code>StrictMode</code> 在开发环境会额外执行一次 setup + cleanup，用来暴露副作用清理不完整的问题；生产环境不会因为 StrictMode 做这次额外检查。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>componentDidMount ≈ useEffect(fn？</strong> componentDidMount ≈ <code>useEffect</code>(fn, [])；componentDidUpdate ≈ <code>useEffect</code>(fn, [deps]) 在 deps 变化时的行为（注意：带 deps 的 effect 在 <code>mount</code> 时也会执行，与 componentDidUpdate 不同）</li>
-          <li><strong>componentDidUpdate ≈ useEffect(fn？</strong> componentDidMount ≈ <code>useEffect</code>(fn, [])；componentDidUpdate ≈ <code>useEffect</code>(fn, [deps]) 在 deps 变化时的行为（注意：带 deps 的 effect 在 <code>mount</code> 时也会执行，与 componentDidUpdate 不同）</li>
-          <li><strong>componentWillUnmount ≈ useEffect 返回的 cle？</strong> componentDidMount ≈ <code>useEffect</code>(fn, [])；componentDidUpdate ≈ <code>useEffect</code>(fn, [deps]) 在 deps 变化时的行为（注意：带 deps 的 effect 在 <code>mount</code> 时也会执行，与 componentDidUpdate 不同）</li>
-          <li><strong>StrictMode 下（见 26）开发环境会 mount → unmount？</strong> StrictMode 下（见 26）开发环境会 <code>mount</code> → unmount → <code>mount</code>，effect 与 cleanup 各执行两次；生产环境不受影响</li>
+          <li><strong><code>useEffect</code> 能否和 class 生命周期一一对应？</strong> 结论是不能一一对应，只能做近似类比。原因是 effect 描述“同步到外部系统”的副作用，而 class 生命周期按组件阶段组织；项目迁移时应按副作用拆分，而不是机械翻译。</li>
+          <li><strong><code>useEffect(fn, [])</code> 和 <code>componentDidMount</code> 有何差异？</strong> 结论是二者都在首次提交后运行，但 effect 仍有 cleanup 语义和 StrictMode 开发检查。原因是 Hooks 关注依赖和清理；边界是如果 effect 读取了 props/state，就不能为了“只跑一次”省略依赖。</li>
+          <li><strong><code>useEffect(fn, [deps])</code> 为什么不是纯粹的 <code>componentDidUpdate</code>？</strong> 结论是带依赖的 effect 首次 mount 后也会执行。原因是 React 需要先运行 setup；如果只想处理更新，可以像本 demo 一样用 ref 跳过首次，或重新设计副作用语义。</li>
+          <li><strong>cleanup 和卸载生命周期如何对应？</strong> 结论是 cleanup 可以覆盖卸载清理，也会在依赖变化导致 effect 重跑前执行。原因是 React 要先清理旧订阅再建立新订阅；网络请求、定时器、事件监听都要在 cleanup 中处理边界。</li>
+          <li><strong>StrictMode 下 effect 为什么会重复执行？</strong> 结论是 React 18 开发环境会额外执行一次 setup + cleanup 来检查副作用是否可恢复。原因是这能提前暴露遗漏清理的问题；生产环境不会做这次额外执行，不能把它当线上行为。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">react.dev: useEffect</a></li>
+          <li><a href="https://react.dev/learn/lifecycle-of-reactive-effects" target="_blank" rel="noreferrer">react.dev: Lifecycle of Reactive Effects</a></li>
+          <li><a href="https://react.dev/learn/synchronizing-with-effects" target="_blank" rel="noreferrer">react.dev: Synchronizing with Effects</a></li>
+          <li><a href="https://react.dev/reference/react/StrictMode" target="_blank" rel="noreferrer">react.dev: StrictMode</a></li>
+          <li><a href="https://legacy.reactjs.org/docs/react-component.html" target="_blank" rel="noreferrer">legacy.reactjs.org: React.Component lifecycle</a></li>
         </ul>
       </div>
     </section>

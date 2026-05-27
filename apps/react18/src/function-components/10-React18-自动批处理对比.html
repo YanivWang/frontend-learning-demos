@@ -7,11 +7,11 @@
     - flushSync 可退出批处理，强制同步提交
     - 对比 class 05：原理一致，演示函数组件在异步回调中的批处理行为
   面试:
-    - React 18 自动批处理对比的核心概念是什么
-    - React 18 自动批处理对比在实际项目里怎么用
-    - React 18 自动批处理对比有哪些常见坑或易错点
-    - React 18 自动批处理对比和相近 API 如何区分选型
-    - 面试中如何简洁讲清 React 18 自动批处理对比
+    - React 18 自动批处理相比 React 17 扩展了哪些场景？
+    - createRoot 对自动批处理有什么前提意义？
+    - 批处理为什么减少 render 次数但不改变更新队列语义？
+    - flushSync 如何退出批处理，代价是什么？
+    - 异步回调里连续 setState 时项目中应如何写 updater？
 -->
 
 <!doctype html>
@@ -34,17 +34,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>React 18 <code>createRoot</code> 下，事件、<code>setTimeout</code>、<code>Promise</code> 等中的多次 setState 默认都会批处理。</li>
-          <li>批处理减少重复渲染，最终 state 仍按更新队列合并。</li>
-          <li>flushSync 可退出批处理，强制同步提交。</li>
-          <li>对比 class 05：原理一致，演示函数组件在异步回调中的批处理行为。</li>
+          <li>React 18 在 <code>createRoot</code> 根下启用自动批处理：不只 React 事件，<code>setTimeout</code>、Promise、原生事件等异步回调中的多次 state 更新也会合并为更少提交。</li>
+          <li>批处理的目标是减少不必要的 render 和 DOM commit。它不会改变“更新入队并按顺序计算”的语义；本 demo 用 effect 日志观察一次异步点击通常只提交一次。</li>
+          <li>批处理并不保证固定值更新都累加成功。如果新值依赖旧 state，仍应写 <code>setCount(prev =&gt; prev + 1)</code> 这类函数式更新。</li>
+          <li><code>flushSync</code> 可以退出批处理并强制同步提交，本 demo 连续两次 <code>flushSync</code> 用来对比更多 commit。真实业务只在必须同步读 DOM 或集成第三方 API 时使用。</li>
+          <li>React 17 的旧根在异步回调里不会覆盖所有自动批处理场景；React 18 讨论自动批处理时必须说明 <code>createRoot</code> 前提，不能把 legacy root 行为混成当前推荐写法。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>React 18 createRoot 下？</strong> React 18 <code>createRoot</code> 下，事件、<code>setTimeout</code>、<code>Promise</code> 等中的多次 setState 默认都会批处理</li>
-          <li><strong>批处理减少重复渲染？</strong> React 18 <code>createRoot</code> 下，事件、<code>setTimeout</code>、<code>Promise</code> 等中的多次 setState 默认都会批处理；批处理减少重复渲染，最终 state 仍按更新队列合并</li>
-          <li><strong>flushSync 可退出批处理？</strong> flushSync 可退出批处理，强制同步提交</li>
-          <li><strong>对比 class 05？</strong> 对比 class 05：原理一致，演示函数组件在异步回调中的批处理行为</li>
+          <li><strong>React 18 自动批处理扩展了哪些场景？</strong> 结论是 <code>createRoot</code> 下 React 会自动批处理更多来源的更新，包括 timeout、Promise、原生事件等。原因是 React 18 root 统一了更新调度；边界是 legacy root 不应拿来代表 React 18 推荐行为。</li>
+          <li><strong>批处理会改变 state 计算结果吗？</strong> 结论是不会改变更新队列语义，但会减少提交次数。原因是更新仍按顺序入队计算；如果传固定值，结果可能看起来被覆盖，如果传 updater，则会基于队列逐步累加。</li>
+          <li><strong><code>flushSync</code> 如何退出批处理？</strong> 结论是把更新放进 <code>flushSync</code> 回调，React 会同步提交。原因是它告诉 React 这个更新必须立刻刷新 DOM；代价是打断批处理和调度优化，因此不适合常规点击或输入更新。</li>
+          <li><strong>项目中异步回调连续更新应怎么写？</strong> 结论是依赖旧值就用函数式更新，不依赖旧值才直接传新值。原因是批处理场景下当前闭包里的 state 可能是旧快照；例如计数、追加日志、切换布尔值都应写 updater。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://github.com/reactwg/react-18/discussions/21" target="_blank" rel="noreferrer">React 18 Working Group: Automatic batching</a></li>
+          <li><a href="https://react.dev/reference/react-dom/client/createRoot" target="_blank" rel="noreferrer">react.dev: createRoot</a></li>
+          <li><a href="https://react.dev/learn/queueing-a-series-of-state-updates" target="_blank" rel="noreferrer">react.dev: Queueing a Series of State Updates</a></li>
+          <li><a href="https://react.dev/reference/react-dom/flushSync" target="_blank" rel="noreferrer">react.dev: flushSync</a></li>
         </ul>
       </div>
     </section>

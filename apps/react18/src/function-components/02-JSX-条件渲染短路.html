@@ -7,11 +7,11 @@
     - 安全写法：{arr.length > 0 && <X/>} 或 {Boolean(arr.length) && <X/>}
     - React 18 统一用 createRoot(...).render(...)，ReactDOM.render 已废弃
   面试:
-    - 条件渲染中的「短路求值」陷阱的核心概念是什么
-    - 条件渲染中的「短路求值」陷阱在实际项目里怎么用
-    - 条件渲染中的「短路求值」陷阱有哪些常见坑或易错点
-    - 条件渲染中的「短路求值」陷阱和相近 API 如何区分选型
-    - 面试中如何简洁讲清 条件渲染中的「短路求值」陷阱
+    - 为什么 arr.length && <List /> 会在空数组时渲染出 0？
+    - React 会忽略哪些子节点值，哪些 falsy 值仍会渲染？
+    - 条件渲染中何时用 &&，何时改用三元表达式？
+    - 列表为空、权限关闭、接口未返回时如何避免 0 或空字符串泄漏到 UI？
+    - React 18 页面入口为什么仍应使用 createRoot？
 -->
 
 <!doctype html>
@@ -34,16 +34,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>{falsyValue &amp;&amp; &lt;X/&gt;} 只有当 falsyValue 为 false / <code>null</code> / <code>undefined</code> 时不渲染。</li>
-          <li>反面教材：{arr.length &amp;&amp; &lt;X/&gt;} 当 arr.length === 0 时短路返回 0，会被渲染成「0」文本节点。</li>
-          <li>安全写法：{arr.length &gt; 0 &amp;&amp; &lt;X/&gt;} 或 {Boolean(arr.length) &amp;&amp; &lt;X/&gt;}。</li>
-          <li>React 18 统一用 <code>createRoot</code>(...).render(...)，ReactDOM.render 已废弃。</li>
+          <li><code>&amp;&amp;</code> 是 JavaScript 短路表达式：左侧为 falsy 时返回左侧本身，左侧为 truthy 时返回右侧 JSX；React 不会额外把返回值强制转成布尔值。</li>
+          <li>React 会把 <code>false</code>、<code>null</code>、<code>undefined</code> 当作空节点跳过，但数字 <code>0</code> 和非空字符串会作为文本子节点渲染。本 demo 的 <code>arr.length</code> 为 0，因此页面会出现一个文本 <code>0</code>。</li>
+          <li>条件来自数量、字符串或可能为 <code>0</code> 的表达式时，先显式得到布尔值：<code>arr.length &gt; 0 &amp;&amp; &lt;List /&gt;</code> 或 <code>Boolean(arr.length) &amp;&amp; &lt;List /&gt;</code>。</li>
+          <li>需要二选一展示时优先使用三元表达式，例如 <code>items.length &gt; 0 ? &lt;List /&gt; : &lt;Empty /&gt;</code>；只在“满足条件才展示一段 UI”时使用 <code>&amp;&amp;</code> 更清晰。</li>
+          <li>React 18 的客户端入口应使用 <code>ReactDOM.createRoot(container).render(element)</code>，这样才能进入 React 18 root 行为；旧 <code>ReactDOM.render</code> 只适合维护旧项目。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>{falsyValue &amp;&amp; &lt;X/&gt;} 只有当 falsyValue 为 fa？</strong> {falsyValue &amp;&amp; &lt;X/&gt;} 只有当 falsyValue 为 false / <code>null</code> / <code>undefined</code> 时不渲染</li>
-          <li><strong>React 18 统一用 createRoot(...).render(...)？</strong> React 18 统一用 <code>createRoot</code>(...).render(...)，ReactDOM.render 已废弃</li>
-          <li><strong>条件渲染中的「短路求值」陷阱的核心概念是什么？</strong> {falsyValue &amp;&amp; &lt;X/&gt;} 只有当 falsyValue 为 false / <code>null</code> / <code>undefined</code> 时不渲染；反面教材：{arr.length &amp;&amp; &lt;X/&gt;} 当 arr.length === 0 时短路返回 0，会被渲染成「0」文本节点</li>
+          <li><strong>为什么 <code>arr.length &amp;&amp; &lt;List /&gt;</code> 会在空数组时渲染出 0？</strong> 结论是 <code>0 &amp;&amp; &lt;List /&gt;</code> 的结果就是数字 <code>0</code>，React 会渲染数字子节点。原因是 <code>&amp;&amp;</code> 返回操作数本身，而不是布尔值；项目里所有数量判断都应写成 <code>arr.length &gt; 0</code> 或显式 <code>Boolean(...)</code>。</li>
+          <li><strong>React 会忽略哪些子节点值？</strong> 结论是 <code>false</code>、<code>null</code>、<code>undefined</code> 会被当作空节点，数字和字符串会渲染。原因是 React children 支持文本节点；边界是空字符串通常不可见但仍是字符串，不能把“不可见”等同于“被忽略”。</li>
+          <li><strong>条件渲染中何时用 <code>&amp;&amp;</code>，何时用三元表达式？</strong> 结论是“有就展示、没有就什么都不展示”适合 <code>&amp;&amp;</code>，“A/B 二选一”适合三元表达式。原因是三元表达式能显式写出 fallback；空态、错误态、加载态这些产品状态不要隐藏在短路表达式里。</li>
+          <li><strong>React 18 页面入口为什么仍应使用 <code>createRoot</code>？</strong> 结论是 React 18 新代码使用 <code>createRoot</code>。原因是它创建 React 18 root 并启用新行为；维护旧页面时可能保留 <code>ReactDOM.render</code>，但不应和 React 18 推荐写法混用。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/learn/conditional-rendering" target="_blank" rel="noreferrer">react.dev: Conditional Rendering</a></li>
+          <li><a href="https://react.dev/reference/react/Children#children-foreach-caveats" target="_blank" rel="noreferrer">react.dev: Children caveats</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_AND" target="_blank" rel="noreferrer">MDN: Logical AND (&&)</a></li>
+          <li><a href="https://react.dev/reference/react-dom/client/createRoot" target="_blank" rel="noreferrer">react.dev: createRoot</a></li>
         </ul>
       </div>
     </section>

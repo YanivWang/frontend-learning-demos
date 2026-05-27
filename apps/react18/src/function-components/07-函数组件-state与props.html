@@ -7,11 +7,11 @@
     - 受控于父的展示用 props，交互产生的局部状态用 state
     - 对比 class 02：函数组件用 useState 替代 this.state / this.setState
   面试:
-    - 函数组件 state 与 props 综合的核心概念是什么
-    - 函数组件 state 与 props 综合在实际项目里怎么用
-    - 函数组件 state 与 props 综合有哪些常见坑或易错点
-    - 函数组件 state 与 props 综合和相近 API 如何区分选型
-    - 面试中如何简洁讲清 函数组件 state 与 props 综合
+    - props 和 state 的所有权分别属于谁？
+    - 父组件输入框变化为什么会让子组件展示同步更新？
+    - 子组件本地计数为什么不会直接影响父组件？
+    - 子组件需要影响父组件时为什么要调用 props 回调？
+    - 什么时候应把 state 提升到父组件？
 -->
 
 <!doctype html>
@@ -34,17 +34,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>props 由父组件传入，只读；state 由组件自身 <code>useState</code> 管理。</li>
-          <li>父改 props 会触发子组件重渲染；子改 state 只影响自身。</li>
-          <li>受控于父的展示用 props，交互产生的局部状态用 state。</li>
-          <li>对比 class 02：函数组件用 <code>useState</code> 替代 <code>this</code>.state / <code>this</code>.setState。</li>
+          <li><code>props</code> 是父组件拥有并传入的只读输入，<code>state</code> 是组件自己拥有的可变记忆。本 demo 中 <code>title</code> 来自父组件 props，<code>localCount</code> 是子组件 state。</li>
+          <li>父组件输入框更新 <code>parentTitle</code> 后，父组件重新渲染并把新的 <code>title</code> props 传给子组件，所以子组件展示会同步变化。</li>
+          <li>子组件点击“本地 +1”只更新自己的 <code>localCount</code>，不会直接改父组件 state。React 的数据流默认从父到子，避免子组件偷偷改外部数据。</li>
+          <li>子组件需要影响父组件时，应调用父组件通过 props 传下来的回调。本 demo 的 <code>onNotify</code> 由父组件提供，子组件只负责在事件发生时调用。</li>
+          <li>当多个兄弟组件需要共享同一份数据，或父组件必须控制子组件输入值时，应把 state 提升到最近共同父组件；纯局部交互则留在组件内部。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>props 由父组件传入？</strong> props 由父组件传入，只读；state 由组件自身 <code>useState</code> 管理；父改 props 会触发子组件重渲染；子改 state 只影响自身</li>
-          <li><strong>父改 props 会触发子组件重渲染？</strong> 父改 props 会触发子组件重渲染；子改 state 只影响自身</li>
-          <li><strong>受控于父的展示用 props？</strong> 受控于父的展示用 props，交互产生的局部状态用 state</li>
-          <li><strong>对比 class 02？</strong> 对比 class 02：函数组件用 <code>useState</code> 替代 <code>this</code>.state / <code>this</code>.setState</li>
+          <li><strong>props 和 state 的所有权分别属于谁？</strong> 结论是 props 属于父组件，state 属于声明它的组件。原因是 React 通过所有权让数据流可预测；项目里不要在子组件里修改 props，也不要把同一份数据维护成两份 state。</li>
+          <li><strong>父组件输入框变化为什么会让子组件同步更新？</strong> 结论是父 state 变化触发父组件重新渲染，新 props 会传给子组件。原因是子组件的 <code>title</code> 没有自己的副本；边界是如果子组件把 props 复制进 state，就可能出现不同步。</li>
+          <li><strong>子组件本地 state 会不会影响父组件？</strong> 结论是不会自动影响。原因是 <code>localCount</code> 的 setter 只更新子组件自己的状态；如果业务需要通知父级，应通过回调、Context 或状态管理显式传递。</li>
+          <li><strong>什么时候应把 state 提升到父组件？</strong> 结论是当多个组件需要读取或修改同一份数据时提升 state。原因是单一数据源能避免状态分叉；项目里表单值、筛选条件、选中项通常会提升到共同父级。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/learn/passing-props-to-a-component" target="_blank" rel="noreferrer">react.dev: Passing Props to a Component</a></li>
+          <li><a href="https://react.dev/learn/state-a-components-memory" target="_blank" rel="noreferrer">react.dev: State: A Component's Memory</a></li>
+          <li><a href="https://react.dev/learn/sharing-state-between-components" target="_blank" rel="noreferrer">react.dev: Sharing State Between Components</a></li>
+          <li><a href="https://react.dev/learn/reacting-to-input-with-state" target="_blank" rel="noreferrer">react.dev: Reacting to Input with State</a></li>
         </ul>
       </div>
     </section>

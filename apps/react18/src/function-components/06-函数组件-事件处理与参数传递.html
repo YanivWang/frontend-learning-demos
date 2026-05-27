@@ -7,11 +7,11 @@
     - 事件对象 e 作为第一个参数传入；需要同时传参时写 (e) => handle(e, id)
     - 父组件通过 props 传入回调，子组件在事件里调用；不是 DOM 原生事件（对比 class 13 的 this 绑定）
   面试:
-    - 函数组件事件处理与参数传递的核心概念是什么
-    - 函数组件事件处理与参数传递在实际项目里怎么用
-    - 函数组件事件处理与参数传递有哪些常见坑或易错点
-    - 函数组件事件处理与参数传递和相近 API 如何区分选型
-    - 面试中如何简洁讲清 函数组件事件处理与参数传递
+    - 函数组件事件处理为什么不需要 bind this？
+    - onClick={handle(id)} 和 onClick={() => handle(id)} 有什么区别？
+    - 同时需要事件对象和业务参数时参数顺序怎么设计？
+    - 子组件删除按钮为什么通过 props 回调通知父组件？
+    - React 事件和 DOM 原生事件在项目里有哪些边界？
 -->
 
 <!doctype html>
@@ -34,17 +34,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>函数组件没有 <code>this</code>，事件处理函数直接定义即可，无需 <code>bind</code>。</li>
-          <li>需要传参时用箭头函数包装: onClick={() =&gt; handle(id)}，不要写 handle(id) 立即执行。</li>
-          <li>事件对象 e 作为第一个参数传入；需要同时传参时写 (e) =&gt; handle(e, id)。</li>
-          <li>父组件通过 props 传入回调，子组件在事件里调用；不是 DOM 原生事件（对比 class 13 的 <code>this</code> 绑定）。</li>
+          <li>函数组件没有实例 <code>this</code>，事件处理函数可以直接定义在组件内部或组件外部，不需要像 class 组件那样在 constructor 中 <code>bind</code>。</li>
+          <li><code>onClick={handleClick}</code> 传入的是函数引用，点击时由 React 调用；<code>onClick={handleClick()}</code> 会在渲染阶段立即执行，通常会造成意外更新或无限渲染。</li>
+          <li>需要传业务参数时，用箭头函数延迟调用：<code>onClick={() =&gt; onRemove(id)}</code>。需要同时拿事件对象时，可以写 <code>onClick={(event) =&gt; handle(event, id)}</code>，让参数含义清楚。</li>
+          <li>子组件不直接修改父组件列表，而是在事件里调用父级通过 props 传入的回调。本 demo 的 <code>TodoItem</code> 删除按钮把 <code>id</code> 交回父组件，由父组件更新数组 state。</li>
+          <li>React 事件处理器接收的是 React 包装过的事件对象，常用字段与 DOM 事件一致。涉及阻止默认行为、读取 <code>target</code>、异步使用事件对象时，应按 React 当前事件文档处理。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>函数组件没有 this？</strong> 函数组件没有 <code>this</code>，事件处理函数直接定义即可，无需 <code>bind</code></li>
-          <li><strong>需要传参时用箭头函数包装？</strong> 需要传参时用箭头函数包装: onClick={() =&gt; handle(id)}，不要写 handle(id) 立即执行</li>
-          <li><strong>事件对象 e 作为第一个参数传入？</strong> 事件对象 e 作为第一个参数传入；需要同时传参时写 (e) =&gt; handle(e, id)</li>
-          <li><strong>父组件通过 props 传入回调？</strong> 父组件通过 props 传入回调，子组件在事件里调用；不是 DOM 原生事件（对比 class 13 的 <code>this</code> 绑定）</li>
+          <li><strong>函数组件事件处理为什么不需要 <code>bind this</code>？</strong> 结论是函数组件没有实例 <code>this</code>。原因是组件函数每次渲染被调用，事件处理函数通过闭包访问当前 props/state；维护 class 组件时才需要关注方法 this 绑定。</li>
+          <li><strong><code>onClick={handle(id)}</code> 和 <code>onClick={() =&gt; handle(id)}</code> 有什么区别？</strong> 结论是前者渲染时立即执行，后者点击时执行。原因是 JSX attribute 需要函数引用；项目里传参、埋点、删除项等场景都应使用箭头包装或提前返回函数。</li>
+          <li><strong>同时需要事件对象和业务参数怎么写？</strong> 结论是显式写 <code>(event) =&gt; handle(event, id)</code> 或 <code>(event) =&gt; handle(id, event)</code>，团队保持一致即可。原因是这样不会丢失事件对象，也不会在 render 阶段执行业务逻辑。</li>
+          <li><strong>为什么子组件通过回调通知父组件？</strong> 结论是状态归谁所有，就由谁更新。原因是本例列表 state 在父组件，子组件只有 id 和回调；边界是深层组件传递回调太多时，可考虑 Context 或状态管理。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/learn/responding-to-events" target="_blank" rel="noreferrer">react.dev: Responding to Events</a></li>
+          <li><a href="https://react.dev/learn/updating-arrays-in-state" target="_blank" rel="noreferrer">react.dev: Updating Arrays in State</a></li>
+          <li><a href="https://react.dev/learn/passing-props-to-a-component" target="_blank" rel="noreferrer">react.dev: Passing Props to a Component</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Event/target" target="_blank" rel="noreferrer">MDN: Event.target</a></li>
         </ul>
       </div>
     </section>

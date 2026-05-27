@@ -7,11 +7,11 @@
     - 函数式更新 setCount(prev => ...) 每次基于队列最新值，可正确累加
     - 对比 class 03：原理相同，只是 API 从 this.setState 换成 useState 返回的 setter
   面试:
-    - useState 异步合并与连续更新的核心概念是什么
-    - useState 异步合并与连续更新在实际项目里怎么用
-    - useState 异步合并与连续更新有哪些常见坑或易错点
-    - useState 异步合并与连续更新和相近 API 如何区分选型
-    - 面试中如何简洁讲清 useState 异步合并与连续更新
+    - setCount 后为什么同步读取的 count 仍是旧值？
+    - 连续三次 setCount(count + 1) 为什么通常只加 1？
+    - 函数式更新 setCount(prev => prev + 1) 解决了什么问题？
+    - React 18 批处理和 useState 更新队列是什么关系？
+    - 什么时候必须使用函数式更新？
 -->
 
 <!doctype html>
@@ -34,17 +34,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>setCount 不会立刻改变当前 <code>render</code> 中的 count 变量，而是请求下一次渲染。</li>
-          <li>同一事件回调里多次 setCount(count + 1) 都基于当前 <code>render</code> 快照，连续 +1 三次通常只 +1。</li>
-          <li>函数式更新 setCount(prev =&gt; ...) 每次基于队列最新值，可正确累加。</li>
-          <li>对比 class 03：原理相同，只是 API 从 <code>this</code>.setState 换成 <code>useState</code> 返回的 setter。</li>
+          <li><code>setCount</code> 不会修改当前这次 render 里的 <code>count</code> 变量，而是把更新加入队列，请求 React 在下一次渲染中使用新 state。</li>
+          <li>同一个事件回调中，<code>count</code> 是当前 render 的快照。连续三次 <code>setCount(count + 1)</code> 都计算出同一个新值，所以本 demo 的“快照式连续 +3”通常只增加 1。</li>
+          <li>函数式更新 <code>setCount(prev =&gt; prev + 1)</code> 会让 React 按队列顺序把上一次更新结果传给下一次 updater，因此连续三次可以稳定累加 3。</li>
+          <li>React 18 会批处理同一事件中的多次 state 更新，减少重复渲染。批处理不等于丢更新；是否能累加取决于你传的是固定值还是 updater 函数。</li>
+          <li>当新 state 依赖旧 state 时，优先使用函数式更新；当新值完全来自事件输入或接口结果时，可以直接传新值。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>setCount 不会立刻改变当前 render 中的 count 变量？</strong> setCount 不会立刻改变当前 <code>render</code> 中的 count 变量，而是请求下一次渲染；同一事件回调里多次 setCount(count + 1) 都基于当前 <code>render</code> 快照，连续 +1 三次通常只 +1</li>
-          <li><strong>同一事件回调里多次 setCount(count + 1) 都基于当前 rend？</strong> 同一事件回调里多次 setCount(count + 1) 都基于当前 <code>render</code> 快照，连续 +1 三次通常只 +1</li>
-          <li><strong>函数式更新 setCount(prev =&gt; ...) 每次基于队列最新值？</strong> 函数式更新 setCount(prev =&gt; ...) 每次基于队列最新值，可正确累加</li>
-          <li><strong>对比 class 03？</strong> 对比 class 03：原理相同，只是 API 从 <code>this</code>.setState 换成 <code>useState</code> 返回的 setter</li>
+          <li><strong><code>setCount</code> 后为什么同步读取仍是旧值？</strong> 结论是当前 render 的变量不会被 setter 原地改写。原因是 React 把更新排队，等当前事件处理结束后再渲染；项目里需要观察更新后的结果应看下一次渲染或 effect。</li>
+          <li><strong>连续三次 <code>setCount(count + 1)</code> 为什么只加 1？</strong> 结论是三次都基于同一个 <code>count</code> 快照计算。原因是 <code>count + 1</code> 在调用 setter 前已经算好了；边界是如果三次发生在不同 render 中，就会基于不同快照。</li>
+          <li><strong>函数式更新解决什么问题？</strong> 结论是它解决“新值依赖旧值”的连续更新问题。原因是 React 会按队列依次调用 updater，把前一个 updater 的结果传给下一个；计数、追加数组、切换布尔值都适合这种写法。</li>
+          <li><strong>React 18 批处理会不会丢更新？</strong> 结论是批处理不会主动丢更新，但固定值更新可能覆盖成同一个结果。原因是批处理合并提交，更新队列仍会执行；项目里依赖旧状态时用 updater 就能表达正确意图。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/useState" target="_blank" rel="noreferrer">react.dev: useState</a></li>
+          <li><a href="https://react.dev/learn/state-as-a-snapshot" target="_blank" rel="noreferrer">react.dev: State as a Snapshot</a></li>
+          <li><a href="https://react.dev/learn/queueing-a-series-of-state-updates" target="_blank" rel="noreferrer">react.dev: Queueing a Series of State Updates</a></li>
+          <li><a href="https://github.com/reactwg/react-18/discussions/21" target="_blank" rel="noreferrer">React 18 Working Group: Automatic batching</a></li>
         </ul>
       </div>
     </section>

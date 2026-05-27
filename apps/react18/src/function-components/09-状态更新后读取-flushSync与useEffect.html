@@ -7,11 +7,11 @@
     - 需要同步刷 DOM 时用 ReactDOM.flushSync（慎用，会打断批处理）
     - 大多数场景优先 useEffect，flushSync 仅用于必须同步读 DOM 的少数情况
   面试:
-    - 状态更新后读取 DOM — flushSync 与 useEffect的核心概念是什么
-    - 状态更新后读取 DOM — flushSync 与 useEffect在实际项目里怎么用
-    - 状态更新后读取 DOM — flushSync 与 useEffect有哪些常见坑或易错点
-    - 状态更新后读取 DOM — flushSync 与 useEffect和相近 API 如何区分选型
-    - 面试中如何简洁讲清 状态更新后读取 DOM — flushSync 与 useEffect
+    - 函数组件 setState 后为什么不能立刻读到新 state？
+    - 需要在 DOM 提交后执行逻辑时为什么优先用 useEffect？
+    - flushSync 适合解决什么少数同步 DOM 场景？
+    - flushSync 为什么要慎用？
+    - class setState callback 和函数组件 useEffect 如何对应？
 -->
 
 <!doctype html>
@@ -34,16 +34,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>setState 后立即读 state 仍是旧值；class 组件可用 setState 第二参数 callback。</li>
-          <li>函数组件等价方案: <code>useEffect</code> 监听 state 变化后执行副作用。</li>
-          <li>需要同步刷 DOM 时用 ReactDOM.flushSync（慎用，会打断批处理）。</li>
-          <li>大多数场景优先 <code>useEffect</code>，flushSync 仅用于必须同步读 DOM 的少数情况。</li>
+          <li>函数组件中的 state 是当前 render 的快照。调用 setter 后，同步代码仍读到旧的 <code>count</code>；新 state 要等 React 完成下一次渲染后才体现在 UI 中。</li>
+          <li>需要在 DOM 已经提交后执行副作用时，优先使用 <code>useEffect</code> 监听相关 state。本 demo 在 <code>count</code> 更新后用 effect 写入提示，表达“commit 后再做事”。</li>
+          <li><code>ReactDOM.flushSync</code> 会强制 React 同步执行回调内的更新并立即刷新 DOM，适合必须把 DOM 更新交给浏览器或第三方代码前就完成的少数场景。</li>
+          <li><code>flushSync</code> 会打断 React 的批处理和调度优化，可能降低性能，也可能让 Suspense fallback 更早出现；普通业务状态联动不要用它替代 effect。</li>
+          <li>class 组件的 <code>setState(updater, callback)</code> 可在提交后运行 callback；函数组件没有 setter callback，通常用 <code>useEffect</code> 或 <code>useLayoutEffect</code> 表达提交后的副作用。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>setState 后立即读 state 仍是旧值？</strong> setState 后立即读 state 仍是旧值；class 组件可用 setState 第二参数 callback</li>
-          <li><strong>需要同步刷 DOM 时用 ReactDOM.flushSync（慎用？</strong> 需要同步刷 DOM 时用 ReactDOM.flushSync（慎用，会打断批处理）</li>
-          <li><strong>大多数场景优先 useEffect？</strong> 大多数场景优先 <code>useEffect</code>，flushSync 仅用于必须同步读 DOM 的少数情况</li>
+          <li><strong>setter 后为什么不能立刻读到新 state？</strong> 结论是当前函数闭包里的 state 是旧快照。原因是 React 先排队更新，再渲染和提交；项目里同步读 state 做下一步逻辑容易读错，应使用 updater、effect 或事件中的原始值。</li>
+          <li><strong>为什么提交后逻辑优先用 <code>useEffect</code>？</strong> 结论是 effect 在浏览器 DOM 提交后运行，适合日志、订阅、请求、读取已更新 DOM 等副作用。原因是它和渲染阶段分离；边界是布局测量若必须阻塞绘制，应考虑 <code>useLayoutEffect</code>。</li>
+          <li><strong><code>flushSync</code> 适合什么场景？</strong> 结论是只适合必须同步看到 DOM 更新的少数集成场景。原因是它强制 React 立即提交；例如第三方库马上要测量 DOM，或浏览器 API 回调要求 DOM 已经更新。</li>
+          <li><strong>为什么 <code>flushSync</code> 要慎用？</strong> 结论是它是逃生口，不是常规状态管理手段。原因是强制同步会削弱批处理和并发调度收益；高频点击、输入、列表更新中滥用会带来性能风险。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react-dom/flushSync" target="_blank" rel="noreferrer">react.dev: flushSync</a></li>
+          <li><a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">react.dev: useEffect</a></li>
+          <li><a href="https://react.dev/learn/state-as-a-snapshot" target="_blank" rel="noreferrer">react.dev: State as a Snapshot</a></li>
+          <li><a href="https://react.dev/reference/react/useLayoutEffect" target="_blank" rel="noreferrer">react.dev: useLayoutEffect</a></li>
         </ul>
       </div>
     </section>

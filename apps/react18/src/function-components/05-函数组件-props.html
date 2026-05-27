@@ -6,11 +6,11 @@
     - props 是只读的；要更新视图需重新调用 render（或者使用 state / hooks）
     - createRoot 只创建一次后复用；ReactDOM.render 已废弃
   面试:
-    - 函数组件 + props 传值（计数器示例）的核心概念是什么
-    - 函数组件 + props 传值（计数器示例）在实际项目里怎么用
-    - 函数组件 + props 传值（计数器示例）有哪些常见坑或易错点
-    - 函数组件 + props 传值（计数器示例）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 函数组件 + props 传值（计数器示例）
+    - 函数组件接收 props 的规则是什么？
+    - 为什么 props 必须按只读输入处理？
+    - 本例为什么用外部 count + root.render，而真实项目更常用 state？
+    - props 和 state 在职责上如何区分？
+    - createRoot 与 root.render 在计数器更新中各负责什么？
 -->
 
 <!doctype html>
@@ -37,15 +37,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>函数组件唯一参数是 props 对象；从父级传入的所有 attribute 都被打包进 props。</li>
-          <li>props 是只读的；要更新视图需重新调用 <code>render</code>（或者使用 state / hooks）。</li>
-          <li><code>createRoot</code> 只创建一次后复用；ReactDOM.render 已废弃。</li>
+          <li>函数组件本质上是接收 <code>props</code> 并返回 React element 的函数。父级写在 JSX attribute 上的值，例如 <code>count={count}</code>，会组成一个 props 对象传给组件。</li>
+          <li><code>props</code> 是组件的外部输入，应按只读值处理。子组件不能通过修改 <code>props.count</code> 改变父级数据；需要改变数据时应由父级重新传入 props，或让组件使用自己的 state。</li>
+          <li>本 demo 用外部变量 <code>count</code> 加 <code>root.render(&lt;Counter count={count} /&gt;)</code> 演示“父级重新传 props”。真实项目中更常见的是父组件用 <code>useState</code> 更新 count，然后自然触发子组件重渲染。</li>
+          <li><code>props</code> 适合表达父级控制的输入和配置，<code>state</code> 适合表达组件自身随交互变化的数据。不要把 props 复制到 state 里再维护两份来源，除非有明确的派生状态需求。</li>
+          <li><code>createRoot</code> 只负责在 DOM 容器上创建 React root；之后每次更新复用同一个 <code>root.render</code>。旧 <code>ReactDOM.render</code> 不作为 React 18 新代码入口。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>函数组件唯一参数是 props 对象？</strong> 函数组件唯一参数是 props 对象；从父级传入的所有 attribute 都被打包进 props</li>
-          <li><strong>props 是只读的？</strong> 函数组件唯一参数是 props 对象；从父级传入的所有 attribute 都被打包进 props；props 是只读的；要更新视图需重新调用 <code>render</code>（或者使用 state / hooks）</li>
-          <li><strong>createRoot 只创建一次后复用？</strong> <code>createRoot</code> 只创建一次后复用；ReactDOM.render 已废弃</li>
+          <li><strong>函数组件接收 props 的规则是什么？</strong> 结论是 React 调用函数组件时会传入一个 props 对象。原因是 JSX attribute 会被收集到这个对象中；边界是组件名必须大写，小写标签不会按自定义函数组件调用。</li>
+          <li><strong>为什么 props 必须只读？</strong> 结论是 props 是父级传入的输入，子组件不能修改它。原因是 React 的数据流是从父到子，修改 props 不会通知父级也会破坏可预测性；项目里要改数据应调用父级回调或使用 state。</li>
+          <li><strong>本例为什么不用 <code>useState</code>？</strong> 结论是本例刻意用手动 <code>root.render</code> 突出 props 传值过程。原因是它处在入门阶段；真实业务计数器应放在组件 state 中，而不是维护全局变量和定时 render。</li>
+          <li><strong>props 和 state 如何区分？</strong> 结论是 props 表示外部输入，state 表示内部可变数据。原因是它们的所有权不同；边界是受控组件会把值提升到父级 state，再通过 props 下发。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/learn/passing-props-to-a-component" target="_blank" rel="noreferrer">react.dev: Passing Props to a Component</a></li>
+          <li><a href="https://react.dev/reference/rules/components-and-hooks-must-be-pure" target="_blank" rel="noreferrer">react.dev: Components and Hooks must be pure</a></li>
+          <li><a href="https://react.dev/learn/state-a-components-memory" target="_blank" rel="noreferrer">react.dev: State: A Component's Memory</a></li>
+          <li><a href="https://react.dev/reference/react-dom/client/createRoot" target="_blank" rel="noreferrer">react.dev: createRoot</a></li>
         </ul>
       </div>
     </section>
