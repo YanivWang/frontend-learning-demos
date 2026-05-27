@@ -174,7 +174,7 @@ function renderIndex(sectionsHtml, manifest) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>js-css-vue-react-learn · 入口</title>
+  <title>frontend-learning-demos · 入口</title>
   <style>
     :root { font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; line-height: 1.55; color: #1a1a1a; }
     body { max-width: 60rem; margin: 2rem auto 4rem; padding: 0 1.25rem; }
@@ -192,7 +192,7 @@ function renderIndex(sectionsHtml, manifest) {
   </style>
 </head>
 <body>
-  <h1>js-css-vue-react-learn</h1>
+  <h1>frontend-learning-demos</h1>
   <p class="hint">前端语法与框架复习 Demo · 打开任意链接即可学习 · <a href="README.md">README</a> · <a href="CONVENTIONS.md">命名约定</a></p>
   <p class="meta">本页由 <code>scripts/build-index.mjs</code> 自动生成于 ${escapeHtml(manifest.generatedAt)}。不要手动编辑。</p>
 
