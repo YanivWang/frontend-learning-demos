@@ -1,0 +1,66 @@
+<!--
+  分类: typescript / 02-进阶
+  主题: 类型收窄与 discriminated union
+  要点:
+    - typeof / instanceof / in / 字面量比较 用于缩窄联合类型
+    - 可辨识联合：成员含共同字面量字段 kind/type，switch 分支自动收窄
+    - 面试常写 API 结果：success | error 分支处理
+    - 断言 as 应谨慎；优先用类型守卫函数 isXxx(x): x is T
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TypeScript · 类型收窄</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 760px; line-height: 1.6; }
+    pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; font-size: 0.85rem; }
+    button { margin: 4px 8px 4px 0; padding: 6px 12px; cursor: pointer; }
+    #log { white-space: pre-wrap; background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <h1>类型收窄 · 可辨识联合</h1>
+  <pre>type Shape =
+  | { kind: "circle"; radius: number }
+  | { kind: "rect"; width: number; height: number };
+
+function area(s: Shape): number {
+  switch (s.kind) {
+    case "circle": return Math.PI * s.radius ** 2;
+    case "rect": return s.width * s.height;
+  }
+}</pre>
+
+  <button type="button" id="btn-circle">计算圆面积</button>
+  <button type="button" id="btn-rect">计算矩形面积</button>
+  <div id="log"></div>
+
+  <script>
+    /** @typedef {{ kind: 'circle', radius: number } | { kind: 'rect', width: number, height: number }} Shape */
+
+    /** @param {Shape} s */
+    function area(s) {
+      switch (s.kind) {
+        case "circle":
+          return Math.PI * s.radius ** 2;
+        case "rect":
+          return s.width * s.height;
+        default:
+          throw new Error("unknown shape");
+      }
+    }
+
+    const log = document.getElementById("log");
+    document.getElementById("btn-circle").onclick = () => {
+      const result = area({ kind: "circle", radius: 3 });
+      log.textContent = `circle r=3 → area ≈ ${result.toFixed(2)}`;
+    };
+    document.getElementById("btn-rect").onclick = () => {
+      const result = area({ kind: "rect", width: 4, height: 5 });
+      log.textContent = `rect 4×5 → area = ${result}`;
+    };
+  </script>
+</body>
+</html>

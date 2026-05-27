@@ -1,0 +1,64 @@
+<!--
+  分类: vue3 / 07-路由状态工程化
+  主题: script setup 编译宏与工程约定
+  要点:
+    - defineProps / defineEmits / defineExpose 是编译宏，无需 import，只在 SFC 编译期生效
+    - defineModel（3.4+）简化组件 v-model，等价 props + emit update:modelValue
+    - withDefaults(defineProps&lt;...&gt;(), { ... }) 为 TS  props 提供默认值
+    - 宏只能在 .vue 的 script setup 顶层使用；本 demo 用等价运行时 API 演示行为
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vue3 · script setup 编译宏</title>
+  <script src="../../libs/vue.global.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; line-height: 1.7; padding: 24px; max-width: 760px; }
+    pre { background: #f6f8fa; padding: 12px; border-radius: 8px; font-size: 0.85rem; overflow: auto; }
+    .panel { border: 1px solid #ddd; border-radius: 8px; padding: 14px; margin: 12px 0; }
+    input { padding: 6px 8px; margin-left: 8px; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h1>script setup 编译宏（概念 + 运行时等价）</h1>
+    <pre>&lt;script setup&gt;
+const props = defineProps({ title: String })
+const emit = defineEmits(['save'])
+const model = defineModel()  // 3.4+
+defineExpose({ focus: () => inputRef.value?.focus() })
+&lt;/script&gt;</pre>
+
+    <div class="panel">
+      <h2>defineModel 等价行为</h2>
+      <child-input v-model="keyword"></child-input>
+      <p>父组件 keyword：<code>{{ keyword }}</code></p>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref } = Vue;
+
+    const ChildInput = {
+      props: { modelValue: String },
+      emits: ["update:modelValue"],
+      template: `
+        <label>
+          子组件输入（v-model 双向）：
+          <input :value="modelValue" @input="$emit('update:modelValue', $event.target.value)" />
+        </label>
+      `,
+    };
+
+    createApp({
+      components: { ChildInput },
+      setup() {
+        const keyword = ref("hello");
+        return { keyword };
+      },
+    }).mount("#app");
+  </script>
+</body>
+</html>

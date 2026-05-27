@@ -75,6 +75,7 @@ const tasks = [
   ["vue2/README.md", join("vue2", "src")],
   ["vue3/README.md", join("vue3", "src")],
   ["react/README.md", join("react", "src")],
+  ["typescript/README.md", "typescript"],
 ];
 
 for (const [readme, scan] of tasks) {

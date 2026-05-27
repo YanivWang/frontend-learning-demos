@@ -2,18 +2,19 @@
 
 本仓库是「前端语法 / 框架学习 Demo 库」，每个 `.html` 都可以直接在浏览器打开。本文规定目录与命名规范，保持仓库长期清爽。
 
-当前仓库共 **304** 个可索引 demo（`javascript` 120 · `css` 33 · `vue2` 57 · `vue3` 37 · `react` 53 · `demos` 4），统计以 `node scripts/build-index.mjs` 输出为准。
+当前仓库共 **312** 个可索引 demo（`javascript` 120 · `css` 36 · `vue2` 57 · `vue3` 39 · `react` 52 · `typescript` 4 · `demos` 4），统计以 `node scripts/validate-demos.mjs` 输出为准。
 
 ## 1. 顶层目录
 
 | 目录 | 用途 | 说明 |
 |---|---|---|
 | `javascript/` | 纯 JavaScript 知识点 demo | 按 `01-` ~ `09-` 编号分类 |
-| `css/` | CSS 布局 / 动画 / 视觉 / 响应式 / 性能 | 按 `00-` ~ `05-` 编号分类，外加 `CSS选择器/` |
+| `css/` | CSS 布局 / 动画 / 视觉 / 响应式 / 性能 / 现代特性 | 按 `00-` ~ `06-` 编号分类，外加 `CSS选择器/` |
 | `vue2/` `vue3/` | Vue 框架 demo | 内含 `libs/`（运行时）与 `src/`（demo） |
-| `react/` | React 18 demo | 内含 `libs/`（运行时）与 `src/`（`function-components` + `class-components`） |
+| `react/` | React 18 demo | 内含 `libs/` 与 `src/`（`function-components` + `class-components`） |
+| `typescript/` | TypeScript 面试基础 demo | 按 `01-基础` / `02-进阶` 编号 |
 | `demos/` | 综合性 / 交互小项目 | `drag`、`svg`、`viewpager` 等 |
-| `scripts/` | 仓库工具脚本 | `build-index.mjs`、`sync-readmes.mjs` 等 |
+| `scripts/` | 仓库工具脚本 | `build-index.mjs`、`sync-readmes.mjs`、`validate-demos.mjs` 等 |
 
 ## 2. 目录命名规则
 
@@ -36,7 +37,7 @@
 4. **不使用拼音首字母**（`FZ` `ZJ`）；要么写全中文，要么写英文全称
 5. **同主题多个 demo** 用「主题-子点」格式：`Promise-基础.html` `Promise-并发.html` `Promise-串行.html`，而不是 `test1.html` `test2.html`
 
-## 4. 元数据头注释（推荐，当前 304 个 demo 均已具备）
+## 4. 元数据头注释（推荐，当前 312 个 demo 均已具备）
 
 每个 demo 在 `<!DOCTYPE html>` 之前加入注释，方便检索与生成 README 清单：
 
@@ -73,6 +74,7 @@
   ```bash
   node scripts/build-index.mjs
   node scripts/sync-readmes.mjs
+  node scripts/validate-demos.mjs
   ```
 - 各模块 `README.md` 的学习顺序、面试覆盖范围可手写维护；`<!-- DEMO_TABLE_START -->` … `<!-- DEMO_TABLE_END -->` 之间的表格由脚本生成，**勿手改表格正文**
 

@@ -22,11 +22,12 @@ const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
 // 仓库子目录扫描配置（顺序即在导航页中的展示顺序）
 const SECTIONS = [
   { dir: "javascript", title: "JavaScript", desc: "纯 JS 知识点 demo（按 01–09 编号分类）" },
-  { dir: "css",        title: "CSS",         desc: "布局 / 动画 / 视觉效果 / 响应式" },
+  { dir: "css",        title: "CSS",         desc: "布局 / 动画 / 视觉 / 响应式 / 现代特性" },
   { dir: "vue2",       title: "Vue 2",       desc: "响应式原理、基础语法、组件、路由与状态" },
   { dir: "vue3",       title: "Vue 3",       desc: "基础语法、响应式、组件通信、内置组件、路由状态、原理性能" },
   { dir: "react",      title: "React 18",    desc: "函数组件 33 + 类组件 19：JSX、Hooks、setState、生命周期、面试考点" },
   { dir: "demos",      title: "综合 Demo",    desc: "拖拽 / SVG / ViewPager 等小项目" },
+  { dir: "typescript", title: "TypeScript",  desc: "类型注解、interface/type、泛型、类型收窄" },
 ];
 
 // 这些子目录不参与扫描（视为运行时 / 工具库 / VCS / 依赖目录）

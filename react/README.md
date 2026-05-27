@@ -1,6 +1,6 @@
 # React 18
 
-按学习顺序编号的 React 18 demo。`react/src/` 下共 **53** 个 `.html`（函数组件 **33** + 类组件 **19** + 根目录遗留 **1**）。
+按学习顺序编号的 React 18 demo。`react/src/` 下共 **52** 个 `.html`（函数组件 **33** + 类组件 **19**）。
 
 打开任意 `src/class-components/*.html` 或 `src/function-components/*.html` 即可，无需构建。脚本通过 `<script src="../../libs/...">` 引用 React / Babel 运行时。
 
@@ -10,7 +10,6 @@
 |---|---:|---|
 | `src/function-components/` | 33 | JSX、函数组件、Hooks、Context、性能优化、路由状态等 |
 | `src/class-components/` | 19 | class 组件、`setState`、生命周期、Error Boundary 等 |
-| `src/03-元素与函数组件.html` | 1 | **历史路径**：与 `function-components/03-元素与函数组件.html` 内容相同，仅 `libs` 相对路径不同；新学习请打开 `function-components/` 下版本 |
 
 > **关于 `03-元素与函数组件.html`**：文件名保留历史命名，当前代码侧重 **React 元素**、**JSX 嵌入表达式** 与 **`createRoot` 渲染流程**；函数组件从 `05-函数组件-props.html` 起系统讲解。
 
@@ -102,11 +101,10 @@
 
 <!-- DEMO_TABLE_START -->
 
-共 **53** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
+共 **52** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
 
 | 文件 | 主题 |
 |---|---|
-| `03-元素与函数组件.html` | React 元素、JSX 嵌入表达式与 createRoot（与 function-components/03 同内容） |
 | `class-components/01-class-必须super.html` | class 组件 constructor 必须调用 super() |
 | `class-components/02-class-state与props.html` | class 组件的 state 与 props 区别 + 事件 this 绑定 |
 | `class-components/03-setState-异步合并.html` | setState 异步合并（同步触发多次只会更新一次） |

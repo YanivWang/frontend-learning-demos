@@ -1,0 +1,65 @@
+<!--
+  分类: typescript / 01-基础
+  主题: 类型注解、推断与基本类型
+  要点:
+    - TS 在 JS 上增加静态类型；变量可显式注解 let n: number = 1
+    - 未注解时编译器会推断类型；推断结果在 IDE / tsc 中生效，浏览器运行仍是 JS
+    - 基本类型：string / number / boolean / null / undefined / bigint / symbol
+    - 面试常问：any 放弃检查；unknown 更安全，使用前须收窄
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TypeScript · 类型注解与推断</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; max-width: 760px; line-height: 1.6; }
+    h1 { font-size: 1.25rem; }
+    pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.85rem; }
+    .ts { margin-bottom: 0.5rem; }
+    .ok { color: #1a7f37; }
+    .err { color: #cf222e; }
+    code { background: #f6f8fa; padding: 2px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>类型注解与推断</h1>
+  <p>左侧为 TypeScript 源码（在 .ts / IDE 中检查），下方为等价的可运行 JavaScript + 断言。</p>
+
+  <p class="ts"><strong>TypeScript</strong></p>
+  <pre>let count: number = 0;
+let title = "demo";        // 推断为 string
+let flag: boolean | null = null;
+
+function add(a: number, b: number): number {
+  return a + b;
+}
+
+// add("1", 2);  // ❌ 编译错误：参数类型不匹配
+// count = "x";  // ❌ 编译错误</pre>
+
+  <p><strong>运行时 JavaScript（本页执行）</strong></p>
+  <pre id="log"></pre>
+
+  <script>
+    let count = 0;
+    let title = "demo";
+    let flag = null;
+
+    function add(a, b) {
+      return a + b;
+    }
+
+    const lines = [];
+    const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+
+    assert(typeof count === "number", "count 是 number");
+    assert(typeof title === "string", "title 推断/运行为 string");
+    assert(add(1, 2) === 3, "add(1,2) === 3");
+    assert(add("1", 2) === "12", "JS 运行时 add('1',2) 会拼接 — TS 可在编译期拦截");
+
+    document.getElementById("log").textContent = lines.join("\n");
+  </script>
+</body>
+</html>

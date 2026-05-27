@@ -1,0 +1,58 @@
+<!--
+  分类: typescript / 01-基础
+  主题: interface 与 type 别名
+  要点:
+    - interface 描述对象形状，可声明合并（同名 interface 自动合并）
+    - type 可描述联合、交叉、元组、映射等更复杂类型
+    - 对象形状优先 interface；联合/工具类型常用 type
+    - 两者都支持 extends / 交叉（&）组合
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TypeScript · interface 与 type</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 760px; line-height: 1.6; }
+    pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; font-size: 0.85rem; overflow: auto; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <h1>interface vs type</h1>
+  <pre>interface User {
+  id: number;
+  name: string;
+}
+
+type Role = "admin" | "guest";
+type UserWithRole = User & { role: Role };
+
+type ApiResult&lt;T&gt; =
+  | { ok: true; data: T }
+  | { ok: false; error: string };</pre>
+
+  <div id="app" class="card"></div>
+
+  <script>
+    /** @typedef {{ id: number, name: string, role: string }} UserWithRole */
+
+    /** @type {UserWithRole} */
+    const user = { id: 1, name: "Alice", role: "admin" };
+
+    /** @type {{ ok: true, data: UserWithRole } | { ok: false, error: string }} */
+    function fetchUser() {
+      return user.id > 0
+        ? { ok: true, data: user }
+        : { ok: false, error: "not found" };
+    }
+
+    const result = fetchUser();
+    const el = document.getElementById("app");
+    el.innerHTML = result.ok
+      ? `<p>✓ 成功：${result.data.name}（${result.data.role}）</p>`
+      : `<p>✗ ${result.error}</p>`;
+  </script>
+</body>
+</html>

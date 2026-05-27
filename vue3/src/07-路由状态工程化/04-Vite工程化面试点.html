@@ -1,0 +1,83 @@
+<!--
+  分类: vue3 / 07-路由状态工程化
+  主题: Vite 工程化结构与面试要点
+  要点:
+    - Vite 开发期基于 ESM + esbuild 预构建，生产构建走 Rollup，冷启动快于 Webpack
+    - 典型目录：src/views、components、composables、stores、router、assets、api
+    - 环境变量 import.meta.env.VITE_* 需在 .env 中 VITE_ 前缀暴露给客户端
+    - 路由/组件懒加载：() => import('./views/Home.vue') 配合 defineAsyncComponent
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vue3 · Vite 工程化面试点</title>
+  <script src="../../libs/vue.global.js"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; max-width: 860px; }
+    pre { background: #f6f8fa; border-radius: 8px; padding: 14px; overflow: auto; font-size: 0.85rem; }
+    .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin: 16px 0; }
+    h2 { font-size: 1.05rem; margin-top: 1.5rem; }
+    table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+    th, td { border: 1px solid #e3e3e3; padding: 8px 10px; text-align: left; }
+    th { background: #f6f8fa; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h1>Vite + Vue3 工程化面试点</h1>
+
+    <div class="box">
+      <h2>推荐目录结构</h2>
+      <pre>{{ tree }}</pre>
+    </div>
+
+    <h2>Webpack vs Vite（面试对比）</h2>
+    <table>
+      <thead>
+        <tr><th>维度</th><th>Webpack</th><th>Vite</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>开发启动</td><td>打包整图后启动 dev server</td><td>按需编译 ESM，冷启动快</td></tr>
+        <tr><td>热更新</td><td>模块图 HMR</td><td>ESM 原生 HMR，通常更快</td></tr>
+        <tr><td>生产构建</td><td>自身打包</td><td>Rollup 打包 + 可选插件生态</td></tr>
+        <tr><td>配置</td><td>loader/plugin 体系成熟</td><td>vite.config.ts 简洁，插件兼容 Rollup</td></tr>
+      </tbody>
+    </table>
+
+    <h2>懒加载代码片段（概念）</h2>
+    <pre>const Home = () => import('@/views/Home.vue')
+router.addRoute({ path: '/', component: Home })
+
+// 组件级
+const AsyncPanel = defineAsyncComponent(() => import('./Panel.vue'))</pre>
+
+    <p>当前 demo 仍用 CDN 版 Vue 运行；真实项目用 <code>npm create vite@latest</code> 脚手架 + <code>vue-router</code> / <code>pinia</code>。</p>
+  </div>
+
+  <script>
+    const { createApp, ref } = Vue;
+    createApp({
+      setup() {
+        const tree = ref(`my-vue-app/
+├── public/
+├── src/
+│   ├── assets/
+│   ├── components/
+│   ├── composables/     # useXxx 组合式函数
+│   ├── router/          # createRouter 配置
+│   ├── stores/          # Pinia defineStore
+│   ├── views/           # 页面级组件
+│   ├── App.vue
+│   └── main.ts
+├── .env.development     # VITE_API_BASE=...
+├── index.html           # Vite 入口（非 public/index.html）
+├── vite.config.ts
+└── package.json`);
+        return { tree };
+      },
+    }).mount("#app");
+  </script>
+</body>
+</html>

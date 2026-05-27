@@ -52,4 +52,15 @@ node scripts/gen-readme-tables.mjs react
 # 改 demo 后
 node scripts/build-index.mjs
 node scripts/sync-readmes.mjs
+node scripts/validate-demos.mjs
 ```
+
+## `validate-demos.mjs`
+
+校验头注释完整性、普通 `<script>` 的 `node --check`、运行 `build-index` 并核对 manifest 数量与重复 href。
+
+```bash
+node scripts/validate-demos.mjs
+```
+
+CI（`.github/workflows/ci.yml`）在 push / PR 时自动执行。

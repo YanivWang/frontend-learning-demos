@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate demos and regenerate index
+        run: node scripts/validate-demos.mjs
+
+      - name: Sync README demo tables
+        run: node scripts/sync-readmes.mjs
+
+      - name: Check working tree clean after scripts
+        run: |
+          git diff --exit-code index.html manifest.json || (
+            echo "::error::index.html / manifest.json 与脚本输出不一致，请本地运行 node scripts/build-index.mjs"
+            exit 1
+          )

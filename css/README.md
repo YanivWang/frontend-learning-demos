@@ -1,6 +1,6 @@
 # CSS
 
-按主题编号的 CSS demo，共 **33** 个 `.html` 文件，兼顾常用效果和 CSS 面试基础。每个 demo 可直接在浏览器打开。
+按主题编号的 CSS demo，共 **36** 个 `.html` 文件，兼顾常用效果、CSS 面试基础与现代特性。每个 demo 可直接在浏览器打开。
 
 目录按 `00-基础` ~ `05-性能` 编号，外加 `CSS选择器/` 专题。`04-响应式/media-queries/` 下 `step1.html` → `final.html` 演示媒体查询的渐进增强；`04-响应式/libs/` 存放 IE8 及以下 polyfill（见 [`04-响应式/libs/README.md`](04-响应式/libs/README.md)）。
 
@@ -14,6 +14,7 @@
 | `03-视觉效果/` | 文本省略、图片处理、百分比圆环、3D 按钮、`drop-shadow`、`background-blend-mode`、Tooltip |
 | `04-响应式/` | Media Queries（含 step1 → final 演进对比）、rem + @media + vw / vh 综合适配 |
 | `05-性能/` | 重排、重绘、合成层、`transform` / `opacity` 动画性能、`will-change`、`contain` |
+| `06-现代特性/` | `:has()` 父选择器、`@layer` 层叠管理、Container Queries 容器查询 |
 | `CSS选择器/` | 优先级与各种选择器一览 |
 
 ## CSS 面试基础覆盖
@@ -33,16 +34,17 @@
 | 动画、过渡、`transform` | `02-动画/` |
 | 文本省略、图片适配、基线空隙 | `03-视觉效果/文本与图片处理/` |
 | CSS 渲染性能 | `05-性能/渲染性能/` |
+| `:has()` / `@layer` / Container Queries | `06-现代特性/` |
 
 ## 推荐顺序
 
-`00-基础 → 01-布局 → 02-动画 → 03-视觉效果 → 04-响应式 → 05-性能 → CSS选择器`
+`00-基础 → 01-布局 → 02-动画 → 03-视觉效果 → 04-响应式 → 05-性能 → 06-现代特性 → CSS选择器`
 
 ## 完整 demo 清单
 
 <!-- DEMO_TABLE_START -->
 
-共 **33** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
+共 **36** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
 
 | 文件 | 主题 |
 |---|---|
@@ -77,6 +79,9 @@
 | `04-响应式/media-queries/step1.html` | 响应式布局基础页（仅加载 style.css，未引入 media-queries.css） |
 | `04-响应式/vw-vh/index.html` | rem + @media + vw / vh 综合响应式示例 |
 | `05-性能/渲染性能/index.html` | 重排、重绘、合成层与动画性能 |
+| `06-现代特性/01-has选择器/index.html` | :has() 父选择器与条件样式 |
+| `06-现代特性/02-layer层叠管理/index.html` | @layer 层叠上下文与优先级管理 |
+| `06-现代特性/03-container-queries容器查询/index.html` | container-type 与 @container 组件级响应式 |
 | `CSS选择器/index.html` | 选择器种类与优先级（specificity） |
 | `index.html` | CSS 模块导航入口 |
 
