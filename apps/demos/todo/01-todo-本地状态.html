@@ -1,17 +1,19 @@
 <!--
-分类: demos / todo
+  分类: demos / todo
   主题: Todo 本地状态管理
   难度: 入门
   要点:
-    - 用数组 + 渲染函数维护列表状态
-    - 新增 / 切换完成 / 删除三种基本操作
-    - 无框架，适合理解单向数据流雏形
+    - 把 todos 数组当作唯一数据源，所有 UI 都由 render() 从状态重新生成
+    - 新增用展开语法生成新数组，切换用 map，删除用 filter，避免原地修改状态
+    - 动态列表用父级事件委托处理子元素交互，依赖事件冒泡和 event.target
+    - 用户输入用 textContent 写入 DOM，避免把不可信字符串交给 innerHTML 解析
+    - 这个原生示例对应 React / Vue 中「状态变化 -> 重新渲染视图」的基础模型
   面试:
-    - Todo 本地状态管理的核心概念是什么
-    - Todo 本地状态管理在实际项目里怎么用
-    - Todo 本地状态管理有哪些常见坑或易错点
-    - Todo 本地状态管理和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Todo 本地状态管理
+    - 原生 Todo 如何组织状态、事件和渲染？
+    - 为什么列表更新推荐生成新数组，而不是直接 push / splice 原数组？
+    - 动态列表为什么适合用事件委托？
+    - 用户输入为什么不要直接拼到 innerHTML？
+    - 这个 demo 和 React / Vue 的状态驱动视图有什么关系？
 -->
 
 <!doctype html>
@@ -23,15 +25,18 @@
     <style>
       * { box-sizing: border-box; }
       body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; background: #f5f5f5; }
-      .app { max-width: 420px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+      .app { max-width: 520px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
       h1 { margin: 0 0 16px; font-size: 1.25rem; }
       form { display: flex; gap: 8px; margin-bottom: 16px; }
       input { flex: 1; padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; }
       button { padding: 8px 12px; border: none; border-radius: 6px; background: #4f46e5; color: #fff; cursor: pointer; }
       ul { list-style: none; margin: 0; padding: 0; }
       li { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #eee; }
-      li.done span { text-decoration: line-through; color: #999; }
+      li.done .todo-text { text-decoration: line-through; color: #999; }
       .del { background: #fee2e2; color: #b91c1c; font-size: 0.75rem; }
+      .summary { margin: 0 0 12px; color: #555; font-size: 0.92rem; }
+      .empty { color: #777; padding: 8px 0; }
+      .todo-text { flex: 1; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -39,20 +44,31 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>Todo</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <h1>Todo 本地状态管理</h1>
+      <p class="hint">这个 demo 用原生 DOM 写一个小 Todo，重点观察：状态数组如何驱动视图、动态列表如何用事件委托、用户输入如何安全写入页面。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>用数组 + 渲染函数维护列表状态。</li>
-          <li>新增 / 切换完成 / 删除三种基本操作。</li>
-          <li>无框架，适合理解单向数据流雏形。</li>
+          <li><strong>状态唯一来源：</strong><code>todos</code> 数组是页面的业务状态，DOM 只是状态的展示结果。新增、切换、删除都先更新数组，再调用 <code>render()</code> 重新生成列表。</li>
+          <li><strong>不可变更新思路：</strong>新增用 <code>[...todos, newTodo]</code>，切换用 <code>map()</code> 返回新对象，删除用 <code>filter()</code> 返回新数组。这和 React 官方推荐的数组状态更新方式一致，也更容易追踪状态变化。</li>
+          <li><strong>事件委托：</strong>列表项由 <code>render()</code> 动态创建，不需要给每个 checkbox / 删除按钮单独绑定事件；把监听器放在父级 <code>ul</code> 上，通过冒泡上来的 <code>event.target</code> 判断用户点了谁。</li>
+          <li><strong>安全渲染文本：</strong>任务内容来自输入框，属于不可信字符串；示例使用 <code>textContent</code> 写入文本，避免把用户输入交给 <code>innerHTML</code> 当 HTML 解析，从源头降低 XSS 风险。</li>
+          <li><strong>和框架的关系：</strong>React / Vue 帮你做了更复杂的状态追踪和 DOM 更新，但最基础的心智模型仍然是「状态变化 -> 视图重新计算」。先理解这个原生版本，再学框架会更稳。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>用数组 + 渲染函数维护列表状态？</strong> 用数组 + 渲染函数维护列表状态</li>
-          <li><strong>新增 / 切换完成 / 删除三种基本操作？</strong> 新增 / 切换完成 / 删除三种基本操作</li>
-          <li><strong>Todo 本地状态管理的核心概念是什么？</strong> 用数组 + 渲染函数维护列表状态；新增 / 切换完成 / 删除三种基本操作</li>
+          <li><strong>原生 Todo 如何组织状态、事件和渲染？</strong> 可以回答为：用一个数组保存任务列表，把新增、切换、删除都收敛成状态更新，然后统一调用渲染函数把状态同步到 DOM。这样业务状态不会散落在多个 DOM 节点里，后续迁移到 React / Vue 也容易。</li>
+          <li><strong>为什么列表更新推荐生成新数组，而不是直接 push / splice 原数组？</strong> 原生 JS 里直接改数组也能跑，但生成新数组能让“这次状态发生了变化”更明确。React 官方也要求把 state 中的数组当作只读数据，新增用展开或 <code>concat()</code>，删除用 <code>filter()</code>，替换用 <code>map()</code>。</li>
+          <li><strong>动态列表为什么适合用事件委托？</strong> 因为列表项会频繁新增、删除和重建，给父级容器绑定一次事件更稳定。事件从子元素冒泡到父元素后，通过 <code>event.target</code> 和 <code>dataset</code> 判断动作类型，可以避免重复绑定和遗漏新节点。</li>
+          <li><strong>用户输入为什么不要直接拼到 innerHTML？</strong> <code>innerHTML</code> 会把字符串按 HTML 解析，不可信输入可能变成可执行或危险的 DOM。展示纯文本时优先用 <code>textContent</code>；如果确实要渲染 HTML，必须先做严格的可信来源控制或净化。</li>
+          <li><strong>这个 demo 和 React / Vue 的状态驱动视图有什么关系？</strong> 它是框架心智模型的最小版：状态是数据源，视图由状态推导，事件只负责触发状态变化。区别是框架会自动调度更新、做局部 diff 或响应式追踪，而这里手动调用 <code>render()</code>。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Event_bubbling" target="_blank" rel="noopener">MDN Web Docs：Event bubbling</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener" target="_blank" rel="noopener">MDN Web Docs：EventTarget.addEventListener()</a></li>
+          <li><a href="https://developer.mozilla.org/docs/Web/API/Element/innerHTML" target="_blank" rel="noopener">MDN Web Docs：Element.innerHTML security considerations</a></li>
+          <li><a href="https://react.dev/learn/updating-arrays-in-state" target="_blank" rel="noopener">React Docs：Updating Arrays in State</a></li>
         </ul>
       </div>
     </section>
@@ -60,30 +76,80 @@
 
     <!-- PAGE_DOM_START -->
     <div class="app">
+      <h1>Todo 本地状态</h1>
       <form id="form"><input id="input" placeholder="新任务…" autocomplete="off" /><button type="submit">添加</button></form>
+      <p id="summary" class="summary"></p>
       <ul id="list"></ul>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      let todos = [{ id: 1, text: "学习 manifest 驱动导航", done: true }, { id: 2, text: "写一个 Todo demo", done: false }];
+      let todos = [
+        { id: 1, text: "学习状态驱动视图", done: true },
+        { id: 2, text: "用事件委托处理动态列表", done: false },
+      ];
       let nextId = 3;
       const list = document.getElementById("list");
+      const summary = document.getElementById("summary");
+
       function render() {
-        list.innerHTML = todos.map((t) => `
-        <li class="${t.done ? "done" : ""}">
-          <input type="checkbox" data-id="${t.id}" ${t.done ? "checked" : ""} aria-label="完成 ${t.text}" />
-          <span>${t.text}</span>
-          <button type="button" class="del" data-del="${t.id}">删除</button>
-        </li>`).join("");
+        list.replaceChildren();
+
+        const doneCount = todos.filter((todo) => todo.done).length;
+        summary.textContent = `共 ${todos.length} 项，已完成 ${doneCount} 项，待完成 ${todos.length - doneCount} 项`;
+
+        if (todos.length === 0) {
+          const empty = document.createElement("li");
+          empty.className = "empty";
+          empty.textContent = "暂无任务，请先添加一个新任务。";
+          list.append(empty);
+          return;
+        }
+
+        for (const todo of todos) {
+          const item = document.createElement("li");
+          item.className = todo.done ? "done" : "";
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = todo.done;
+          checkbox.dataset.action = "toggle";
+          checkbox.dataset.id = String(todo.id);
+          checkbox.setAttribute("aria-label", `切换任务：${todo.text}`);
+
+          const text = document.createElement("span");
+          text.className = "todo-text";
+          text.textContent = todo.text;
+
+          const removeButton = document.createElement("button");
+          removeButton.type = "button";
+          removeButton.className = "del";
+          removeButton.dataset.action = "delete";
+          removeButton.dataset.id = String(todo.id);
+          removeButton.textContent = "删除";
+
+          item.append(checkbox, text, removeButton);
+          list.append(item);
+        }
       }
-      list.addEventListener("click", (e) => {
-        const id = Number(e.target.dataset.id || e.target.dataset.del);
-        if (e.target.dataset.id) todos = todos.map((t) => t.id === id ? { ...t, done: !t.done } : t);
-        if (e.target.dataset.del) todos = todos.filter((t) => t.id !== id);
+
+      list.addEventListener("change", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement) || target.dataset.action !== "toggle") return;
+        const id = Number(target.dataset.id);
+        todos = todos.map((todo) => todo.id === id ? { ...todo, done: !todo.done } : todo);
         render();
       });
+
+      list.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement) || target.dataset.action !== "delete") return;
+        const id = Number(target.dataset.id);
+        todos = todos.filter((todo) => todo.id !== id);
+        render();
+      });
+
       document.getElementById("form").onsubmit = (e) => {
         e.preventDefault();
         const input = document.getElementById("input");
@@ -116,5 +182,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

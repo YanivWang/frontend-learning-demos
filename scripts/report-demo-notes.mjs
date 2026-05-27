@@ -24,6 +24,8 @@ const SECTIONS = [
 ];
 const SKIP_DIRS = new Set(["libs", "lib", "node_modules"]);
 const isStrict = process.argv.includes("--strict");
+const TEMPLATE_INTERVIEW_RE =
+  /核心概念是什么|在实际项目里怎么用|相近 API 如何区分选型|面试中如何简洁讲清/;
 
 const issues = [];
 
@@ -48,6 +50,14 @@ function countSectionBullets(html, heading) {
   const m = html.match(re);
   if (!m) return 0;
   return (m[1].match(/<li[\s>]/gi) || []).length;
+}
+
+function hasNotesShell(html) {
+  return /demo-block--notes/.test(html);
+}
+
+function hasDemoNotes(html) {
+  return /<div[^>]*class\s*=\s*["'][^"']*\bdemo-notes\b/i.test(html);
 }
 
 function requiresInterview(rel) {
@@ -78,18 +88,28 @@ async function main() {
         fileIssues.push("缺少头注释「面试:」");
       } else if (meta.interviewPoints.length < 3) {
         fileIssues.push(`头注释「面试:」仅 ${meta.interviewPoints.length} 条（建议 ≥3）`);
+      } else if (TEMPLATE_INTERVIEW_RE.test(meta.interviewPoints.join("\n"))) {
+        fileIssues.push("头注释「面试:」疑似仍是模板化问句");
       }
     }
 
-    if (!/<section[^>]*class\s*=\s*["'][^"']*\bdemo-notes\b/i.test(content)) {
-      fileIssues.push("缺少 section.demo-notes");
+    if (!hasNotesShell(content)) {
+      fileIssues.push("缺少 demo-block--notes 复习区");
+    } else if (!hasDemoNotes(content)) {
+      fileIssues.push("缺少 div.demo-notes");
     } else {
       if (!/知识点要点/.test(content)) fileIssues.push("demo-notes 缺少「知识点要点」");
       if (!/面试考点/.test(content)) fileIssues.push("demo-notes 缺少「面试考点」");
+      if (!/参考资料/.test(content)) fileIssues.push("demo-notes 缺少「参考资料」");
       const kp = countSectionBullets(content, "知识点要点");
       const iv = countSectionBullets(content, "面试考点");
+      const refs = countSectionBullets(content, "参考资料");
       if (kp < 3) fileIssues.push(`正文「知识点要点」仅 ${kp} 条（建议 ≥3）`);
       if (iv < 3) fileIssues.push(`正文「面试考点」仅 ${iv} 条（建议 ≥3）`);
+      if (refs < 2) fileIssues.push(`正文「参考资料」仅 ${refs} 条（建议 ≥2）`);
+      if (TEMPLATE_INTERVIEW_RE.test(content)) {
+        fileIssues.push("demo-notes 疑似仍含模板化面试问句");
+      }
       if (/待补充答法|<!-- 待补充 -->/.test(content)) {
         fileIssues.push("demo-notes 仍含占位待补充");
       }
