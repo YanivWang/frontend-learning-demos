@@ -2,15 +2,15 @@
 分类: javascript / 08-面试题 / 作用域
   主题: 嵌套函数 - 返回内层函数执行结果
   要点:
-    - f() 在 checkscope 内被执行，按作用域链取到 local 的 scope
-    - 内层函数的作用域是「定义时」的词法作用域，而非执行时所在
-    - 与下一题对比：直接返回 f vs 返回 f()
+    - 内层函数 f 在 checkscope 内定义，词法作用域包含局部变量 scope
+    - return f() 返回的是 f 的执行结果，此时直接得到字符串 local
+    - 词法作用域由函数定义位置决定，不由调用位置动态改变
+    - 与下一题 return f 对比：返回函数会让局部词法环境通过闭包继续存活
   面试:
-    - 嵌套函数 - 返回内层函数执行结果的核心概念是什么
-    - 嵌套函数 - 返回内层函数执行结果在实际项目里怎么用
-    - 嵌套函数 - 返回内层函数执行结果有哪些常见坑或易错点
-    - 嵌套函数 - 返回内层函数执行结果和相近 API 如何区分选型
-    - 面试中如何简洁讲清 嵌套函数 - 返回内层函数执行结果
+    - checkscope() 为什么输出 local 而不是 global？
+    - return f() 和 return f 在作用域题里有什么本质区别？
+    - 词法作用域为什么不是按调用位置查找变量？
+    - 闭包什么时候会让外层局部变量继续存活？
 -->
 
 <!doctype html>
@@ -30,15 +30,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>f() 在 checkscope 内被执行，按作用域链取到 local 的 scope。</li>
-          <li>内层函数的作用域是「定义时」的词法作用域，而非执行时所在。</li>
-          <li>与下一题对比：直接返回 f vs 返回 f()。</li>
+          <li><code>f</code> 在 <code>checkscope</code> 内部定义，它的外层词法环境包含局部变量 <code>scope = "local"</code>，所以执行 <code>f()</code> 时优先读取局部 <code>scope</code>。</li>
+          <li><code>return f()</code> 返回的是内层函数的执行结果，调用 <code>checkscope()</code> 得到字符串 <code>"local"</code>，而不是得到函数本身。</li>
+          <li>JavaScript 使用词法作用域：函数能访问哪些外层变量由“定义位置”决定，不会因为未来在哪里调用而改成调用方的局部变量。</li>
+          <li>本题中 <code>f()</code> 在 <code>checkscope</code> 还没返回前执行，结果已经计算完成；调用结束后，如果没有返回函数或其他引用，局部环境即可被回收。</li>
+          <li>与下一题 <code>return f</code> 的区别是：返回函数会把 <code>f</code> 连同它引用的外层词法环境一起带出，形成闭包，因此之后再调用也能读到 <code>"local"</code>。</li>
+          <li>现代代码中更推荐用 <code>let</code> / <code>const</code> 表达块级作用域；面试老题常用 <code>var</code>，答题时要说明这是函数作用域语境。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>f() 在 checkscope 内被执行？</strong> f() 在 checkscope 内被执行，按作用域链取到 local 的 scope；与下一题对比：直接返回 f vs 返回 f()</li>
-          <li><strong>内层函数的作用域是「定义时」的词法作用域？</strong> 内层函数的作用域是「定义时」的词法作用域，而非执行时所在</li>
-          <li><strong>嵌套函数 - 返回内层函数执行结果的核心概念是什么？</strong> f() 在 checkscope 内被执行，按作用域链取到 local 的 scope；内层函数的作用域是「定义时」的词法作用域，而非执行时所在</li>
+          <li><strong><code>checkscope()</code> 为什么输出 <code>local</code> 而不是 <code>global</code>？</strong> 结论：因为 <code>f</code> 的词法作用域优先找到 <code>checkscope</code> 内的局部 <code>scope</code>。原因是函数定义时就记录了外层词法环境，变量查找从当前函数环境向外层逐级查找。边界是如果局部没有声明 <code>scope</code>，才会继续向外找到全局变量。</li>
+          <li><strong><code>return f()</code> 和 <code>return f</code> 有什么本质区别？</strong> 结论：<code>return f()</code> 返回执行结果，<code>return f</code> 返回函数引用。原因是前者在外层函数返回前已经调用内层函数，后者把内层函数带到外部等待之后调用。项目里封装工厂函数、权限校验器、事件回调时，返回函数通常意味着要依赖闭包保存外层状态。</li>
+          <li><strong>词法作用域为什么不是按调用位置查找变量？</strong> 结论：JavaScript 是词法作用域语言，不是动态作用域语言。原因是函数创建时的外层环境决定了自由变量解析路径，调用位置只影响调用栈和普通函数的 <code>this</code>。边界是 <code>eval</code>、<code>with</code> 等低频特性会让静态分析变复杂，现代项目应避免使用。</li>
+          <li><strong>闭包什么时候会让外层局部变量继续存活？</strong> 结论：当内层函数被外部引用且仍访问外层变量时，相关词法环境会继续存活。原因是垃圾回收不能释放仍可达的数据。本题返回的是 <code>f()</code> 的字符串结果，不会把函数引用带出；下一题返回 <code>f</code> 才是典型闭包持久化场景。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures" target="_blank" rel="noreferrer">MDN: Closures</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions" target="_blank" rel="noreferrer">MDN: Functions</a></li>
+          <li><a href="https://javascript.info/closure" target="_blank" rel="noreferrer">JavaScript.info: Variable scope, closure</a></li>
+          <li><a href="https://tc39.es/ecma262/#sec-lexical-environments" target="_blank" rel="noreferrer">ECMA-262: Lexical Environments</a></li>
         </ul>
       </div>
     </section>
@@ -48,15 +59,15 @@
     <script>
       //题目一
       var scope = "global";
-      function checkscope(){
+      function checkscope() {
         var scope = "local";
-        function f(){
+        function f() {
           return scope;
         }
         return f();
       }
 
-      console.log(checkscope());//local
+      console.log(checkscope()); // local
 
     </script>
     <!-- SCRIPT_END -->

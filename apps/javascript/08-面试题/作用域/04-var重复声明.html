@@ -2,15 +2,15 @@
 分类: javascript / 08-面试题 / 作用域
   主题: var 重复声明：后值覆盖前值
   要点:
-    - var 允许重复声明；后一次声明不会清空，赋值覆盖
-    - let/const 在同一作用域重复声明会抛 SyntaxError
-    - 顶层 var a 会变成 window.a 的属性
+    - var 在同一函数或全局作用域内允许重复声明，重复声明本身不会重新初始化变量
+    - var a = 234 包含声明和赋值两步；真正覆盖前值的是执行阶段的赋值
+    - let/const 在同一作用域重复声明会抛 SyntaxError，能提前暴露命名冲突
+    - 普通 script 顶层 var 会创建 window 属性，ES module 与 let/const 不会
   面试:
-    - var 重复声明：后值覆盖前值的核心概念是什么
-    - var 重复声明：后值覆盖前值在实际项目里怎么用
-    - var 重复声明：后值覆盖前值有哪些常见坑或易错点
-    - var 重复声明：后值覆盖前值和相近 API 如何区分选型
-    - 面试中如何简洁讲清 var 重复声明：后值覆盖前值
+    - var 重复声明为什么不会报错，最终为什么输出 234？
+    - var a; var a = 234; 中声明和赋值分别发生在什么时候？
+    - let/const 为什么能避免同一作用域重复声明问题？
+    - 顶层 var 在浏览器普通脚本和 ES module 中有什么区别？
 -->
 
 <!doctype html>
@@ -30,16 +30,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>var</code> 允许重复声明；后一次声明不会清空，赋值覆盖。</li>
-          <li><code>let</code>/const 在同一作用域重复声明会抛 SyntaxError。</li>
-          <li>顶层 <code>var</code> a 会变成 window.a 的属性。</li>
-          <li><code>var</code> 允许重复声明；后一次声明不会清空，赋值覆盖（补充）。</li>
+          <li><code>var</code> 是函数作用域或全局作用域声明，同一作用域内重复声明同名变量是允许的，不会像 <code>let</code> / <code>const</code> 那样抛语法错误。</li>
+          <li><code>var a = 234</code> 可以拆成“声明 <code>a</code>”和“给 <code>a</code> 赋值 234”；重复声明不会清空已有值，执行阶段的赋值才会覆盖 <code>1</code>。</li>
+          <li>这段代码按顺序执行后，第一次赋值让 <code>a</code> 为 <code>1</code>，第二次赋值让 <code>a</code> 为 <code>234</code>，所以 <code>console.log(a)</code> 输出 <code>234</code>。</li>
+          <li><code>let</code> / <code>const</code> 是块级作用域声明，同一作用域重复声明会在解析阶段抛 <code>SyntaxError</code>，这也是现代代码更推荐它们的原因之一。</li>
+          <li>浏览器普通脚本里的顶层 <code>var a</code> 会创建 <code>window.a</code>；顶层 <code>let</code> / <code>const</code> 不会，<code>type="module"</code> 中的顶层声明也属于模块作用域。</li>
+          <li>真实项目里不要依赖 <code>var</code> 重复声明；它容易掩盖命名冲突，尤其在老脚本拼接、全局工具函数和条件分支中更难排查。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>var 允许重复声明？</strong> <code>var</code> 允许重复声明；后一次声明不会清空，赋值覆盖；顶层 <code>var</code> a 会变成 window.a 的属性</li>
-          <li><strong>let/const 在同一作用域重复声明会抛 SyntaxError？</strong> <code>let</code>/const 在同一作用域重复声明会抛 SyntaxError</li>
-          <li><strong>顶层 var a 会变成 window.a 的属性？</strong> 顶层 <code>var</code> a 会变成 window.a 的属性</li>
+          <li><strong><code>var</code> 重复声明为什么不会报错，最终为什么输出 <code>234</code>？</strong> 结论：<code>var</code> 允许同一作用域重复声明，最终值来自最后一次赋值。原因是重复的 <code>var a</code> 声明不会创建第二个变量，也不会把已有值重置为 <code>undefined</code>。边界是如果第二句只有 <code>var a;</code> 没有赋值，输出仍是前一次赋值后的 <code>1</code>。</li>
+          <li><strong>声明提升和赋值执行在这题里怎么区分？</strong> 结论：声明会在进入作用域时处理，赋值仍按代码顺序执行。原因是 <code>var a = 1</code> 的声明部分被提升，<code>= 1</code> 留在原位置执行。项目里分析老代码时，要把“有没有声明”与“什么时候赋值”分开看。</li>
+          <li><strong><code>let</code> / <code>const</code> 为什么能避免重复声明问题？</strong> 结论：它们在同一词法作用域内禁止重复声明。原因是块级词法声明会在解析阶段建立约束，重复名字直接抛 <code>SyntaxError</code>。实际项目中这能更早发现变量名冲突，也是禁用 <code>var</code> 的重要理由。</li>
+          <li><strong>顶层 <code>var</code> 在普通脚本和模块里有什么区别？</strong> 结论：普通脚本顶层 <code>var</code> 会成为全局对象属性，模块顶层声明不会。原因是 ES module 有独立的模块作用域。边界是面试题默认常是普通 <code>&lt;script&gt;</code>，答题时要主动说明运行环境。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/var" target="_blank" rel="noreferrer">MDN: var</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let" target="_blank" rel="noreferrer">MDN: let</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/const" target="_blank" rel="noreferrer">MDN: const</a></li>
+          <li><a href="https://javascript.info/variables" target="_blank" rel="noreferrer">JavaScript.info: Variables</a></li>
         </ul>
       </div>
     </section>
@@ -49,7 +59,7 @@
     <script>
       var a = 1;
       var a = 234;
-      console.log(a);
+      console.log(a); // 234
 
     </script>
     <!-- SCRIPT_END -->

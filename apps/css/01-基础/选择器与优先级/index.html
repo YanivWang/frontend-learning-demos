@@ -2,15 +2,15 @@
 分类: css / 01-基础
   主题: 选择器种类与优先级（specificity）
   要点:
-    - 优先级权重：内联 1000 / #id 0100 / .class·[attr]·:pseudo 0010 / tag·::ele 0001 / * 0000
-    - !important 凌驾所有权重；同权重时「后写覆盖先写」
-    - 属性选择器 ^= $= *= ~= |= 五种匹配方式各有用途
+    - specificity 比较 ID、类/属性/伪类、类型/伪元素三列权重，内联样式单独优先
+    - !important 改变声明优先级层级；在同一层级内仍比较来源、层、specificity 和顺序
+    - 属性选择器支持存在、精确、词列表、语言前缀、开头、结尾、包含等匹配
+    - 降低选择器复杂度比堆权重更利于维护，覆盖第三方样式时优先控制加载顺序和作用域
   面试:
-    - 选择器种类与优先级（specificity）的核心概念是什么
-    - 选择器种类与优先级（specificity）在实际项目里怎么用
-    - 选择器种类与优先级（specificity）有哪些常见坑或易错点
-    - 选择器种类与优先级（specificity）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 选择器种类与优先级（specificity）
+    - CSS 优先级冲突的比较顺序是什么？
+    - 为什么不建议滥用 !important？
+    - 属性选择器 ^=、$=、*=、~=、|= 分别适合什么场景？
+    - 覆盖组件库或第三方样式时如何避免权重失控？
 -->
 
 <!doctype html>
@@ -67,15 +67,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>优先级权重：内联 1000 / #id 0100 / .class·[attr]·:pseudo 0010 / tag·::ele 0001 / * 0000。</li>
-          <li>!important 凌驾所有权重；同权重时「后写覆盖先写」。</li>
-          <li>属性选择器 ^= $= *= ~= |= 五种匹配方式各有用途。</li>
+          <li>CSS 冲突不是只看“谁更长”，同来源同重要性下先比较 specificity：ID 选择器列最高，其次是类、属性、伪类，再是类型选择器和伪元素；通配符和组合符本身不增加权重。</li>
+          <li>内联样式通常高于普通作者样式，但本例的 <code>.box { background-color: yellow !important; }</code> 能覆盖 <code>style="background-color: red"</code>，因为 <code>!important</code> 会把声明提升到 important 层级。</li>
+          <li><code>!important</code> 不是日常覆盖工具，它会让后续维护必须进入同样的 important 层级；在同一重要性、来源和层级下，才继续比较 specificity，完全相同则后写覆盖先写。</li>
+          <li>属性选择器可以按属性存在、精确值、包含子串、前缀、后缀、空格分隔词列表和语言前缀匹配；<code>[class~="important"]</code> 匹配独立 class 词，<code>[href*="baidu"]</code> 只是子串匹配。</li>
+          <li>工程推荐让选择器短而可预测，例如 BEM、CSS Modules、组件作用域或级联层；覆盖第三方样式时优先调整加载顺序、作用域和公开变量，最后才提高权重或使用 <code>!important</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>!important 凌驾所有权重？</strong> !important 凌驾所有权重；同权重时「后写覆盖先写」</li>
-          <li><strong>属性选择器 ^= $= *= ~= |= 五种匹配方式各有用途？</strong> 属性选择器 ^= $= *= ~= |= 五种匹配方式各有用途</li>
-          <li><strong>选择器种类与优先级（specificity）的核心概念是什么？</strong> 属性选择器 ^= $= *= ~= |= 五种匹配方式各有用途</li>
+          <li><strong>CSS 优先级冲突的比较顺序是什么？</strong> 结论是先看级联来源、重要性和级联层，再在同一层级内比较 specificity，最后才看声明顺序。原因是 CSS Cascade 不只是选择器权重算法，<code>!important</code>、内联样式、用户样式、作者样式和层级都会参与。项目里排查样式不生效时，应先在 DevTools 里看被哪条规则覆盖，再判断是顺序、权重还是 important 问题。</li>
+          <li><strong>为什么不建议滥用 !important？</strong> 结论是 <code>!important</code> 只适合少数强约束或覆盖不可控来源的场景，不适合常规布局。原因是它提升声明优先层级，后续覆盖往往只能继续加 <code>!important</code> 或提高来源层级，维护成本很高。本例用它是为了演示可以覆盖普通内联背景色，真实项目更推荐通过作用域、加载顺序或设计 token 解决。</li>
+          <li><strong>属性选择器 ^=、$=、*=、~=、|= 分别适合什么场景？</strong> 结论是 <code>^=</code> 匹配前缀，<code>$=</code> 匹配后缀，<code>*=</code> 匹配任意子串，<code>~=</code> 匹配空格分隔词，<code>|=</code> 匹配语言代码或连字符前缀。原因是属性值可能是 URL、class 词列表或语言标签，匹配语义不同。项目里用子串匹配要谨慎，URL 和 class 命名变化都可能造成误命中。</li>
+          <li><strong>覆盖组件库或第三方样式时如何避免权重失控？</strong> 结论是先控制样式加载顺序和作用域，再使用组件库暴露的 class、CSS 变量或主题 API，最后才提高选择器权重。原因是权重越高越难回收，深层选择器和 <code>!important</code> 会把局部问题扩散成全局维护成本。边界是修复浏览器扩展、第三方 iframe 外壳或紧急线上样式时可以临时用 important，但应标注原因并尽快移除。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_cascade/Specificity" target="_blank" rel="noreferrer">MDN Specificity</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors" target="_blank" rel="noreferrer">MDN Attribute selectors</a></li>
+          <li><a href="https://www.w3.org/TR/selectors-4/" target="_blank" rel="noreferrer">Selectors Level 4</a></li>
+          <li><a href="https://www.w3.org/TR/css-cascade-5/" target="_blank" rel="noreferrer">CSS Cascading and Inheritance Level 5</a></li>
         </ul>
       </div>
     </section>

@@ -2,15 +2,15 @@
 分类: javascript / 08-面试题 / 作用域
   主题: var 与 function 同名提升
   要点:
-    - 预编译阶段：函数声明先提升、后者覆盖前者；var 提升但不覆盖已有值
-    - 执行阶段：alert(a) 显示当前 a 的值（可能是函数或被 var 改写后的数字）
-    - 输出顺序：function → 1 → 3 → 3
+    - 函数声明会在执行前创建函数绑定；同名函数声明中后面的声明覆盖前面的声明
+    - var 同名声明不会覆盖已有函数绑定，执行到赋值语句时才把 a 改成数字
+    - 本例输出顺序是函数引用、1、3、3，关键是区分声明实例化和运行期赋值
+    - 同名 var/function 是老题和老脚本坑点，现代代码应避免同作用域重名声明
   面试:
-    - var 与 function 同名提升的核心概念是什么
-    - var 与 function 同名提升在实际项目里怎么用
-    - var 与 function 同名提升有哪些常见坑或易错点
-    - var 与 function 同名提升和相近 API 如何区分选型
-    - 面试中如何简洁讲清 var 与 function 同名提升
+    - 为什么第一行输出的是后一个 function a 而不是 undefined？
+    - var a = 1 为什么会把函数绑定改成数字 1？
+    - 多个同名函数声明和 var 声明的处理顺序如何理解？
+    - 为什么现代代码要避免 var 和 function 同名声明？
 -->
 
 <!doctype html>
@@ -30,50 +30,46 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>预编译阶段：函数声明先提升、后者覆盖前者；<code>var</code> 提升但不覆盖已有值。</li>
-          <li>执行阶段：alert(a) 显示当前 a 的值（可能是函数或被 <code>var</code> 改写后的数字）。</li>
-          <li>输出顺序：function → 1 → 3 → 3。</li>
+          <li>这题运行在普通非模块脚本中。代码执行前会先处理 <code>var</code> 声明和函数声明，函数声明会创建函数对象并绑定到名字 <code>a</code>。</li>
+          <li>同一作用域里有多个同名函数声明时，后面的函数声明会覆盖前面的函数声明，所以第一处读取 <code>a</code> 时看到的是后一个 <code>function a() { return 4; }</code>。</li>
+          <li><code>var a</code> 的声明部分不会覆盖已有函数绑定；但 <code>var a = 1</code> 的赋值部分会在执行到该行时把 <code>a</code> 改成数字 <code>1</code>。</li>
+          <li>随后 <code>var a = 3</code> 再次执行赋值，把 <code>a</code> 改成数字 <code>3</code>；函数声明语句本身不会在运行到那一行时重新执行赋值。</li>
+          <li>因此本例控制台依次输出：函数引用、<code>1</code>、<code>3</code>、<code>3</code>。面试答题要把“声明实例化阶段”和“运行期赋值阶段”分开讲。</li>
+          <li>现代代码应避免同一作用域内 <code>var</code> 与函数声明重名；用 <code>let</code> / <code>const</code>、函数表达式或模块作用域能让命名冲突更早暴露。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>var 与 function 同名提升的核心概念是什么？</strong> 预编译阶段：函数声明先提升、后者覆盖前者；<code>var</code> 提升但不覆盖已有值；执行阶段：alert(a) 显示当前 a 的值（可能是函数或被 <code>var</code> 改写后的数字）</li>
-          <li><strong>var 与 function 同名提升在实际项目里怎么用？</strong> 预编译阶段：函数声明先提升、后者覆盖前者；<code>var</code> 提升但不覆盖已有值；执行阶段：alert(a) 显示当前 a 的值（可能是函数或被 <code>var</code> 改写后的数字）</li>
-          <li><strong>var 与 function 同名提升有哪些常见坑或易错点？</strong> 预编译阶段：函数声明先提升、后者覆盖前者；<code>var</code> 提升但不覆盖已有值；执行阶段：alert(a) 显示当前 a 的值（可能是函数或被 <code>var</code> 改写后的数字）</li>
+          <li><strong>为什么第一行输出的是后一个 <code>function a</code>，不是 <code>undefined</code>？</strong> 结论：因为函数声明在执行前已经完成绑定，并且后面的同名函数声明覆盖前面的。原因是 <code>var a</code> 只声明变量，不会把已经由函数声明创建的绑定重置成 <code>undefined</code>。边界是不同环境中函数源码字符串格式可能不同，但它仍是函数引用。</li>
+          <li><strong><code>var a = 1</code> 为什么会把函数绑定改成数字 <code>1</code>？</strong> 结论：因为赋值发生在运行期，会直接更新同一个名字绑定。原因是 <code>var a = 1</code> 的声明部分已在前置阶段处理，执行到这行时只剩赋值动作。项目里看到“提升”题时不能把声明提升误解为赋值也提前执行。</li>
+          <li><strong>多个同名函数声明和 <code>var</code> 声明的处理顺序怎么理解？</strong> 结论：先建立作用域内声明绑定，再按代码顺序执行赋值和表达式。原因是函数声明会提供初始函数值，同名 <code>var</code> 声明不会覆盖它，而后续赋值会覆盖。边界是块级函数声明在严格模式和不同历史浏览器中曾有兼容差异，现代代码应避免写这种歧义代码。</li>
+          <li><strong>为什么现代代码要避免 <code>var</code> 和 <code>function</code> 同名？</strong> 结论：它依赖提升细节，阅读成本高且容易被打包、拼接或维护修改放大风险。原因是同名绑定会让“函数还是值”随执行位置变化。实际项目用 <code>const fn = function...</code>、唯一命名和模块作用域更清晰，Lint 也通常会禁止重复声明。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function" target="_blank" rel="noreferrer">MDN: function declaration</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/var" target="_blank" rel="noreferrer">MDN: var</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Glossary/Hoisting" target="_blank" rel="noreferrer">MDN Glossary: Hoisting</a></li>
+          <li><a href="https://javascript.info/var" target="_blank" rel="noreferrer">JavaScript.info: The old "var"</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>打开控制台查看输出，思考为什么是 function → 1 → 3 → 3。</p>
+    <p>打开控制台查看输出，思考为什么是函数引用 → 1 → 3 → 3。</p>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      /*
-      预编译阶段：
-      1. function 声明会被整体提升，且后者覆盖前者 → a = function a(){ alert(4) }
-      2. var a 声明会被提升但不赋值，因变量已经存在 function 同名，所以不会覆盖
-
-      执行阶段：
-      alert(a)  → 此时 a 是后那个 function（alert 4 的那个）的引用，打印「函数定义」
-      （现代浏览器中实际显示 "function a() { alert(4); }"）
-      var a = 1 → a 被重新赋值为 1
-      function a(){ alert(2) }  → 函数声明已在预编译期处理，本语句执行期不再执行
-      alert(a)  → 1
-      var a = 3 → a 重新赋值为 3
-      function a(){ alert(4) }  → 同上，执行期忽略
-      alert(a)  → 3
-      alert(a)  → 3
-      */
-      alert(a);
+      // 执行前：后一个函数声明覆盖前一个，a 先绑定为 function a() { return 4; }。
+      console.log(a);
       var a = 1;
-      function a() { alert(2); }
-      alert(a);
+      function a() { return 2; }
+      console.log(a);
       var a = 3;
-      alert(a);
-      function a() { alert(4); }
-      alert(a);
+      console.log(a);
+      function a() { return 4; }
+      console.log(a);
 
     </script>
     <!-- SCRIPT_END -->

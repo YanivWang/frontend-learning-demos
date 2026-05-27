@@ -2,15 +2,15 @@
 分类: javascript / 08-面试题 / 手写
   主题: 手写 instanceof
   要点:
-    - instanceof 沿对象原型链查找 Constructor.prototype
-    - 原始值、null、undefined 不是对象，直接返回 false
-    - 使用 Object.getPrototypeOf 比直接读 __proto__ 更推荐
+    - instanceof 判断左值原型链上是否能找到右侧构造函数的 prototype
+    - 原始值、null、undefined 不参与普通对象原型链查找，结果为 false
+    - 右值必须是可调用对象，且其 prototype 通常要是对象；异常路径要和原生语义区分
+    - 手写实现推荐使用 Object.getPrototypeOf 遍历，避免依赖 __proto__
   面试:
-    - 手写 instanceof的核心概念是什么
-    - 手写 instanceof在实际项目里怎么用
-    - 手写 instanceof有哪些常见坑或易错点
-    - 手写 instanceof和相近 API 如何区分选型
-    - 面试中如何简洁讲清 手写 instanceof
+    - instanceof 的判断过程是什么？
+    - 为什么原始值和 null 做 instanceof 会返回 false？
+    - 手写 instanceof 为什么要校验右侧构造函数？
+    - instanceof、typeof 和 Array.isArray 应该如何选？
 -->
 
 <!doctype html>
@@ -30,16 +30,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>instanceof</code> 沿对象原型链查找 Constructor.prototype。</li>
-          <li>原始值、<code>null</code>、<code>undefined</code> 不是对象，直接返回 false。</li>
-          <li>使用 <code>Object</code>.getPrototypeOf 比直接读 __proto__ 更推荐。</li>
-          <li><code>instanceof</code> 沿对象原型链查找 Constructor.prototype（补充）。</li>
+          <li><code>value instanceof Constructor</code> 的核心是原型链匹配：从左值对象的 <code>[[Prototype]]</code> 开始向上查找，能找到 <code>Constructor.prototype</code> 就返回 <code>true</code>。</li>
+          <li>左值如果是原始值、<code>null</code> 或 <code>undefined</code>，没有普通对象原型链可遍历，原生 <code>instanceof</code> 会直接得到 <code>false</code>。</li>
+          <li>右值不是函数时，原生 <code>instanceof</code> 会抛 <code>TypeError</code>；面试手写版至少要区分“左值不匹配返回 false”和“右值非法抛错”。</li>
+          <li>遍历原型链时推荐使用 <code>Object.getPrototypeOf()</code>，它是标准 API；<code>__proto__</code> 是历史访问器，不适合作为现代实现的首选。</li>
+          <li><code>instanceof</code> 依赖构造函数原型，跨 iframe、手动改原型、<code>Symbol.hasInstance</code> 自定义判断时都可能和直觉不同；判断数组优先用 <code>Array.isArray()</code>。</li>
+          <li>业务代码通常不需要手写 <code>instanceof</code>，这个题主要考原型链、异常边界和类型判断 API 的取舍。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>instanceof 沿对象原型链查找 Constructor.prototyp？</strong> <code>instanceof</code> 沿对象原型链查找 Constructor.prototype</li>
-          <li><strong>原始值、null、undefined 不是对象？</strong> 原始值、<code>null</code>、<code>undefined</code> 不是对象，直接返回 false</li>
-          <li><strong>使用 Object.getPrototypeOf 比直接读 __proto__？</strong> 使用 <code>Object</code>.getPrototypeOf 比直接读 __proto__ 更推荐</li>
+          <li><strong><code>instanceof</code> 的判断过程是什么？</strong> 结论：它判断右侧构造函数的 <code>prototype</code> 是否出现在左侧对象的原型链上。原因是实例方法查找和构造关系都依赖原型链，而不是只看构造函数名称。边界是自定义 <code>Symbol.hasInstance</code>、跨 realm 对象和被改写的 <code>prototype</code> 会影响判断结果。</li>
+          <li><strong>为什么原始值和 <code>null</code> 做 <code>instanceof</code> 会返回 <code>false</code>？</strong> 结论：左侧没有可遍历的对象原型链时不会命中构造函数原型。原因是 <code>instanceof</code> 检查的是对象内部原型，而不是装箱后的临时包装对象。项目里判断基础类型应优先用 <code>typeof</code>，不要用 <code>instanceof String</code> 判断字符串字面量。</li>
+          <li><strong>手写 <code>instanceof</code> 为什么要校验右侧构造函数？</strong> 结论：右侧不是可调用对象时应抛出 <code>TypeError</code>，不能简单返回 <code>false</code>。原因是原生运算符把“类型错误”和“原型链不匹配”作为不同语义处理。面试实现可以覆盖常规函数构造器，但要说明未完整实现 <code>Symbol.hasInstance</code> 等规范细节。</li>
+          <li><strong><code>instanceof</code>、<code>typeof</code> 和 <code>Array.isArray()</code> 应该如何选？</strong> 结论：基础类型用 <code>typeof</code>，数组用 <code>Array.isArray()</code>，自定义类实例关系才考虑 <code>instanceof</code>。原因是 <code>typeof</code> 不看原型链，<code>Array.isArray()</code> 对数组品牌判断更可靠。边界是多窗口对象或可伪造原型时，<code>instanceof</code> 不适合当安全边界。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof" target="_blank" rel="noreferrer">MDN: instanceof</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf" target="_blank" rel="noreferrer">MDN: Object.getPrototypeOf()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray" target="_blank" rel="noreferrer">MDN: Array.isArray()</a></li>
         </ul>
       </div>
     </section>

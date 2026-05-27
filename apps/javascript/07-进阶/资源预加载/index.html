@@ -2,15 +2,15 @@
 分类: javascript / 07-进阶 / 资源预加载
   主题: 用 new Image / new Audio 触发浏览器预加载
   要点:
-    - new Image() 离屏对象赋 src，浏览器仍会发起请求 + 缓存
-    - onProgress 计算 current/total，可驱动进度条
-    - 用相同 URL 在业务渲染处再次 new Image，会命中缓存，加载迅速
+    - new Image() / new Audio() 离屏设置 src 会触发资源请求，可在进入业务渲染前预热缓存
+    - 预加载进度只能按已完成资源数估算，不能代表字节级下载百分比
+    - 失败资源也要推进进度并暴露错误，否则进度条可能永久卡住
+    - 资源预加载受 HTTP 缓存、CORS、优先级和用户网络影响，不等同于强制缓存
   面试:
-    - 用 new Image / new Audio 触发浏览器预加载的核心概念是什么
-    - 用 new Image / new Audio 触发浏览器预加载在实际项目里怎么用
-    - 用 new Image / new Audio 触发浏览器预加载有哪些常见坑或易错点
-    - 用 new Image / new Audio 触发浏览器预加载和相近 API 如何区分选型
-    - 面试中如何简洁讲清 用 new Image / new Audio 触发浏览器预加载
+    - new Image() 预加载为什么能让后续渲染更快？
+    - 资源预加载进度条为什么通常只能做数量进度？
+    - 预加载图片失败时应该如何设计回调和兜底？
+    - new Image() 预加载和 <link rel="preload"> 如何选型？
 -->
 
 <!doctype html>
@@ -36,15 +36,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>new Image() 离屏对象赋 src，浏览器仍会发起请求 + 缓存。</li>
-          <li>onProgress 计算 current/total，可驱动进度条。</li>
-          <li>用相同 URL 在业务渲染处再次 new Image，会命中缓存，加载迅速。</li>
+          <li><code>new Image()</code> / <code>new Audio()</code> 创建离屏资源对象后设置 <code>src</code>，浏览器会像普通资源一样发起请求；后续使用同 URL 时能复用 HTTP 缓存或内存缓存。</li>
+          <li>本 demo 的 <code>onProgress(current, total)</code> 是“已完成资源数 / 总资源数”，适合驱动加载页进度条；它不是字节级进度，单个大图和小图权重相同。</li>
+          <li>真实项目必须处理失败路径：图片 <code>error</code>、音频 <code>error</code> 也要计入完成并记录失败 URL，否则任一资源 404、跨域失败或网络中断都会让 <code>onComplete</code> 永远不触发。</li>
+          <li>预加载不等于强制缓存。是否复用取决于 URL 完全一致、HTTP 缓存响应头、浏览器缓存策略和资源优先级；带随机查询参数的 URL 通常会绕开缓存。</li>
+          <li><code>&lt;link rel="preload"&gt;</code> 更适合首屏关键资源的声明式优先加载；<code>new Image()</code> 更适合游戏、轮播、相册等运行时才能确定的图片列表。</li>
+          <li>图片如果后续绘制到 <code>canvas</code>，还要考虑 CORS 与画布污染；仅作为 <code>&lt;img&gt;</code> 展示时，跨域限制相对少，但网络失败仍需要占位图或重试策略。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>new Image() 离屏对象赋 src？</strong> new Image() 离屏对象赋 src，浏览器仍会发起请求 + 缓存；用相同 URL 在业务渲染处再次 new Image，会命中缓存，加载迅速</li>
-          <li><strong>onProgress 计算 current/total？</strong> onProgress 计算 current/total，可驱动进度条</li>
-          <li><strong>用相同 URL 在业务渲染处再次 new Image？</strong> 用相同 URL 在业务渲染处再次 new Image，会命中缓存，加载迅速</li>
+          <li><strong><code>new Image()</code> 预加载为什么能让后续渲染更快？</strong> 结论：因为设置 <code>src</code> 后浏览器会提前请求图片，后续相同 URL 的 <code>&lt;img&gt;</code> 通常能命中缓存。原因是资源请求和缓存由浏览器网络层管理，不要求元素已经插入 DOM。边界是缓存复用取决于 URL、响应头和浏览器策略，跨页面或弱网场景不能保证必然瞬时完成。</li>
+          <li><strong>资源预加载进度条为什么通常只能做数量进度？</strong> 结论：用离屏图片对象只能可靠知道每个资源 load/error 完成，无法知道每个图片的实时字节进度。原因是 <code>HTMLImageElement</code> 不提供下载字节进度事件。项目里若需要精确字节进度，要改用 <code>fetch</code> 流式读取并自行解码，但会增加兼容性、缓存和 CORS 复杂度。</li>
+          <li><strong>预加载失败时应该怎么设计？</strong> 结论：失败要进入进度统计，并单独暴露失败 URL 给业务兜底。原因是加载页的目标是进入可用状态，而不是因为某个非关键资源失败永久阻塞。项目中常见做法是记录失败、展示占位图、允许重试，并区分关键资源和非关键资源。</li>
+          <li><strong><code>new Image()</code> 和 <code>&lt;link rel="preload"&gt;</code> 如何选型？</strong> 结论：首屏关键资源优先用 <code>preload</code> 声明意图，运行时列表优先用 JS 预加载。原因是 <code>preload</code> 能参与浏览器优先级调度且更早发现资源，JS 预加载则灵活可控。边界是 preload 使用错误会抢占带宽，JS 预加载过多也会影响首屏和移动端流量。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/Image" target="_blank" rel="noreferrer">MDN: Image() constructor</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAudioElement/Audio" target="_blank" rel="noreferrer">MDN: Audio() constructor</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel/preload" target="_blank" rel="noreferrer">MDN: rel="preload"</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching" target="_blank" rel="noreferrer">MDN: HTTP caching</a></li>
         </ul>
       </div>
     </section>
@@ -75,8 +86,11 @@
           document.getElementById("bar").value = percent;
           document.getElementById("msg").textContent = `加载中：${current}/${total}（${percent}%）`;
         },
+        onError(url) {
+          console.warn("资源预加载失败，业务侧可在这里记录或替换占位资源：", url);
+        },
         onComplete(total) {
-          document.getElementById("msg").textContent = `✅ 全部 ${total} 张加载完成，开始渲染`;
+          document.getElementById("msg").textContent = `全部 ${total} 张加载完成，开始渲染`;
           const gallery = document.getElementById("gallery");
           loader.option.resources.forEach((url) => {
             const img = new Image();

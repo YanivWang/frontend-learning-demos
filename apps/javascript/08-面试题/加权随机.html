@@ -2,15 +2,15 @@
 分类: javascript / 08-面试题
   主题: 加权随机（按概率抽奖）
   要点:
-    - 方案 1：把每项扩成 N 份后用均匀随机；空间 O(N)
-    - 方案 2：累加权重建立区间，Math.random() 落到哪个区间就是哪项；O(k) 额外空间
-    - 验证：跑 1 万次统计命中率，应该接近权重比例
+    - 加权随机把每个候选项映射到权重区间，随机数落在哪个区间就命中哪项
+    - 扩容数组写法直观但空间随权重总量增长，权重不是整数时还会有精度取舍
+    - 累加权重写法按总权重生成随机阈值，单次抽取 O(n)，额外空间可做到 O(1)
+    - Math.random() 不是密码学安全随机，抽奖、风控、资金场景应由服务端可信随机源决定
   面试:
-    - 加权随机（按概率抽奖）的核心概念是什么
-    - 加权随机（按概率抽奖）在实际项目里怎么用
-    - 加权随机（按概率抽奖）有哪些常见坑或易错点
-    - 加权随机（按概率抽奖）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 加权随机（按概率抽奖）
+    - 加权随机如何用累加区间实现？
+    - 扩容数组法和前缀权重法怎么比较？
+    - 为什么前端 Math.random() 不适合真实抽奖开奖？
+    - 如何验证加权随机实现是否大致符合权重比例？
 -->
 
 <!doctype html>
@@ -34,15 +34,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>方案 1：把每项扩成 N 份后用均匀随机；空间 O(N)。</li>
-          <li>方案 2：累加权重建立区间，Math.random() 落到哪个区间就是哪项；O(k) 额外空间。</li>
-          <li>验证：跑 1 万次统计命中率，应该接近权重比例。</li>
+          <li>加权随机的核心是把权重转成连续区间：例如 <code>A:0.5, B:0.3, C:0.2</code> 对应 <code>[0,0.5)</code>、<code>[0.5,0.8)</code>、<code>[0.8,1)</code>，随机数落在哪段就返回哪项。</li>
+          <li>扩容数组法把每个候选项重复放入查找表，再用均匀随机取下标，写法直观但空间复杂度和权重放大倍数相关，权重很大或有小数时不适合。</li>
+          <li>累加权重法先计算总权重，再生成 <code>[0,total)</code> 的随机阈值，遍历时不断累加，第一次超过阈值的项就是结果；单次抽取时间 <code>O(n)</code>，额外空间可做到 <code>O(1)</code>。</li>
+          <li>权重输入要校验：空对象、非数字、负数、全 0、<code>NaN</code> 都应拒绝或明确兜底，否则可能返回 <code>undefined</code> 或造成概率偏差。</li>
+          <li><code>Math.random()</code> 适合前端演示、动画和非安全抽样，不提供密码学安全性；真实抽奖、红包、风控等涉及利益的场景应由服务端使用可信随机源并记录审计。</li>
+          <li>验证概率只能看统计近似，样本越多越接近期望比例；单次或少量抽样不可能保证严格按权重分布。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>加权随机（按概率抽奖）的核心概念是什么？</strong> 方案 1：把每项扩成 N 份后用均匀随机；空间 O(N)；方案 2：累加权重建立区间，Math.random() 落到哪个区间就是哪项；O(k) 额外空间</li>
-          <li><strong>加权随机（按概率抽奖）在实际项目里怎么用？</strong> 方案 1：把每项扩成 N 份后用均匀随机；空间 O(N)；方案 2：累加权重建立区间，Math.random() 落到哪个区间就是哪项；O(k) 额外空间</li>
-          <li><strong>加权随机（按概率抽奖）有哪些常见坑或易错点？</strong> 方案 1：把每项扩成 N 份后用均匀随机；空间 O(N)；方案 2：累加权重建立区间，Math.random() 落到哪个区间就是哪项；O(k) 额外空间</li>
+          <li><strong>加权随机如何用累加区间实现？</strong> 结论：先求总权重，再生成一个小于总权重的随机阈值，遍历累加到超过阈值时返回当前项。原因是每个项占据的区间长度等于它的权重，随机数落入该区间的概率自然与权重成正比。边界是权重必须为有限非负数，并且总权重要大于 0。</li>
+          <li><strong>扩容数组法和前缀权重法怎么比较？</strong> 结论：扩容数组适合讲解，累加权重更适合通用实现。原因是扩容数组需要把权重放大成整数份，空间成本和精度取舍都不可控；累加权重只依赖数值区间，空间可做到常量级。项目里如果需要高频抽取，可以预先存前缀和再用二分查找，把单次抽取降到 <code>O(log n)</code>。</li>
+          <li><strong>为什么前端 <code>Math.random()</code> 不适合真实抽奖开奖？</strong> 结论：它不是安全随机源，也不应由客户端决定有利益的开奖结果。原因是浏览器随机算法不保证密码学安全，客户端代码和请求都可被观察或篡改。真实抽奖应放在服务端，用可信随机源、签名日志和幂等校验保证可审计。</li>
+          <li><strong>如何验证加权随机实现是否大致符合权重？</strong> 结论：用大量采样统计命中率，并和期望比例比较。原因是随机结果有波动，样本量越大越接近期望分布。边界是采样验证只能发现明显偏差，不能证明随机源安全，也不能保证每个短窗口都严格满足比例。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random" target="_blank" rel="noreferrer">MDN: Math.random()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Crypto/getRandomValues" target="_blank" rel="noreferrer">MDN: Crypto.getRandomValues()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isFinite" target="_blank" rel="noreferrer">MDN: Number.isFinite()</a></li>
         </ul>
       </div>
     </section>
@@ -52,7 +62,7 @@
     <p>需求：按概率 <code>{A: 0.5, B: 0.3, C: 0.2}</code> 随机抽中某一项。</p>
     <h3>方案 1：扩容数组 + Math.random（直观）</h3>
     <pre id="out1"></pre>
-    <h3>方案 2：累加阈值 + Math.random（推荐，O(n) 空间→O(1)）</h3>
+    <h3>方案 2：累加阈值 + Math.random（推荐，O(1) 额外空间）</h3>
     <pre id="out2"></pre>
     <!-- PAGE_DOM_END -->
 
@@ -72,11 +82,21 @@
       // ============ 方案 2：累加权重区间 ============
       function weightedRandV2(spec) {
         const entries = Object.entries(spec); // [['A', 0.5], ...]
-        let sum = 0;
-        const ranges = entries.map(([k, w]) => [k, (sum += w)]);
-        const r = Math.random() * sum;
-        for (const [k, threshold] of ranges) {
-          if (r < threshold) return k;
+        const total = entries.reduce((sum, [, weight]) => {
+          if (!Number.isFinite(weight) || weight < 0) {
+            throw new TypeError("weight must be a finite non-negative number");
+          }
+          return sum + weight;
+        }, 0);
+        if (total <= 0) {
+          throw new RangeError("total weight must be greater than 0");
+        }
+
+        const r = Math.random() * total;
+        let acc = 0;
+        for (const [key, weight] of entries) {
+          acc += weight;
+          if (r < acc) return key;
         }
       }
 
@@ -89,14 +109,14 @@
           stat[k] = (stat[k] || 0) + 1;
         }
         return Object.fromEntries(
-        Object.entries(stat).map(([k, v]) => [k, (v / 10000).toFixed(3)])
-      );
+          Object.entries(stat).map(([k, v]) => [k, (v / 10000).toFixed(3)])
+        );
       }
 
       document.getElementById("out1").textContent =
-      "10000 次采样命中率：\n" + JSON.stringify(bench(weightedRandV1), null, 2);
+        "10000 次采样命中率：\n" + JSON.stringify(bench(weightedRandV1), null, 2);
       document.getElementById("out2").textContent =
-      "10000 次采样命中率：\n" + JSON.stringify(bench(weightedRandV2), null, 2);
+        "10000 次采样命中率：\n" + JSON.stringify(bench(weightedRandV2), null, 2);
 
     </script>
     <!-- SCRIPT_END -->

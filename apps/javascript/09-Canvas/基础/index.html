@@ -2,15 +2,15 @@
 分类: javascript / 09-Canvas / 基础
   主题: Canvas 2D 基础绘图
   要点:
-    - 流程：getContext('2d') → 设置样式 → 路径 / 形状 → fill / stroke
-    - 同一条 path 内的所有线段会一起 fill/stroke；使用 beginPath 隔离不同路径
-    - 渐变、文字、圆角矩形等都基于同一套 ctx API
+    - canvas 元素提供位图画布，CanvasRenderingContext2D 负责命令式绘制
+    - 基础流程是获取 2D 上下文、设置绘图状态、构建路径或矩形、再 fill/stroke
+    - 路径状态会累积，绘制新形状前用 beginPath 隔离，否则样式和线段容易串联
+    - Canvas 适合动态绘制和像素级效果，不适合需要 DOM 语义和可访问性的静态内容
   面试:
-    - Canvas 2D 基础绘图的核心概念是什么
-    - Canvas 2D 基础绘图在实际项目里怎么用
-    - Canvas 2D 基础绘图有哪些常见坑或易错点
-    - Canvas 2D 基础绘图和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Canvas 2D 基础绘图
+    - Canvas 2D 绘图的基本调用顺序是什么？
+    - beginPath、fill 和 stroke 分别解决什么问题？
+    - Canvas 和 SVG 在图表或可视化项目里如何选型？
+    - Canvas 基础绘图有哪些尺寸、清晰度和可访问性边界？
 -->
 
 <!doctype html>
@@ -35,15 +35,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>流程：getContext('2d') → 设置样式 → 路径 / 形状 → fill / stroke。</li>
-          <li>同一条 path 内的所有线段会一起 fill/stroke；使用 beginPath 隔离不同路径。</li>
-          <li>渐变、文字、圆角矩形等都基于同一套 ctx API。</li>
+          <li><code>&lt;canvas&gt;</code> 本身只是一个位图绘制区域，真正绘图要通过 <code>getContext("2d")</code> 拿到 <code>CanvasRenderingContext2D</code>，再调用矩形、路径、文字、渐变等 API。</li>
+          <li>基础流程是先设置绘图状态，例如 <code>fillStyle</code>、<code>strokeStyle</code>、<code>font</code>，再创建形状或路径，最后调用 <code>fill()</code> 或 <code>stroke()</code> 把当前状态绘制到位图上。</li>
+          <li>路径是有状态的：<code>moveTo()</code>、<code>lineTo()</code>、<code>arc()</code>、<code>arcTo()</code> 会加入当前路径；绘制互不相关的形状前要调用 <code>beginPath()</code>，否则后续 <code>fill()</code>/<code>stroke()</code> 可能影响旧路径。</li>
+          <li>Canvas 绘制后不保留 DOM 节点语义，浏览器无法像操作 SVG/HTML 那样单独选择某个圆或文字；如果需要事件命中、无障碍文本或结构化导出，要自己维护模型，或改用 SVG/HTML。</li>
+          <li>常见坑包括忘记处理 <code>getContext()</code> 失败、只改 CSS 尺寸导致画面拉伸、未按 <code>devicePixelRatio</code> 缩放导致高 DPI 屏模糊，以及重新绘制时忘记清屏或恢复绘图状态。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>同一条 path 内的所有线段会一起 fill/stroke？</strong> 同一条 path 内的所有线段会一起 fill/stroke；使用 beginPath 隔离不同路径</li>
-          <li><strong>渐变、文字、圆角矩形等都基于同一套 ctx API？</strong> 渐变、文字、圆角矩形等都基于同一套 ctx API</li>
-          <li><strong>Canvas 2D 基础绘图的核心概念是什么？</strong> 流程：getContext('2d') → 设置样式 → 路径 / 形状 → fill / stroke；同一条 path 内的所有线段会一起 fill/stroke；使用 beginPath 隔离不同路径</li>
+          <li><strong>Canvas 2D 绘图的基本调用顺序是什么？</strong> 结论是获取 canvas、拿 2D 上下文、设置绘图状态、构建路径或形状，最后调用 <code>fill()</code> 或 <code>stroke()</code>。原因是 Canvas 是命令式位图 API，每次绘制都会把当前上下文状态写入像素。项目里通常会把数据模型和绘制函数分开，状态变化后清屏并重绘，而不是期待浏览器帮你维护图形节点。</li>
+          <li><strong>beginPath、fill 和 stroke 分别解决什么问题？</strong> 结论是 <code>beginPath()</code> 开始一条新路径，<code>fill()</code> 填充当前路径内部，<code>stroke()</code> 描边当前路径边界。原因是路径命令会累积在上下文里，不隔离路径会让多个图形被同一次填充或描边影响。边界是 <code>fillRect()</code>/<code>strokeRect()</code> 这类矩形快捷 API 会直接绘制，不需要先手写路径。</li>
+          <li><strong>Canvas 和 SVG 在图表或可视化项目里如何选型？</strong> 结论是大量点、频繁动画、像素处理优先 Canvas，少量结构化图形、需要 CSS/DOM 事件和无障碍语义优先 SVG。原因是 Canvas 绘制结果是位图，重绘成本由你控制；SVG 是保留模式图形，每个图形都是节点。项目里折中方案常见于图表库：主图层用 Canvas 提性能，tooltip、坐标轴或交互层用 HTML/SVG。</li>
+          <li><strong>Canvas 基础绘图有哪些尺寸、清晰度和可访问性边界？</strong> 结论是 Canvas 不应只看页面上显示的 CSS 尺寸。原因是 <code>canvas.width</code>/<code>height</code> 决定绘图缓冲区，CSS 宽高只决定显示尺寸，两者不一致会缩放像素；高 DPI 屏还要考虑 <code>devicePixelRatio</code>。此外 canvas 内文字不是可选择文本，重要信息要提供旁路 DOM 文本或 ARIA 说明。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial" target="_blank" rel="noreferrer">MDN Canvas tutorial</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D" target="_blank" rel="noreferrer">MDN CanvasRenderingContext2D</a></li>
+          <li><a href="https://html.spec.whatwg.org/multipage/canvas.html" target="_blank" rel="noreferrer">WHATWG HTML Standard: The canvas element</a></li>
         </ul>
       </div>
     </section>

@@ -2,16 +2,15 @@
 分类: javascript / 08-面试题 / 手写
   主题: 手写 LRU 缓存
   要点:
-    - LRU：最近最少使用淘汰；Map 保持插入顺序（ES6 Map）
-    - get 时删除再 set 可「刷新」为最新
-    - 容量满时删除 Map 第一个 key（最旧）
-    - 时间复杂度 O(1) 需 Map + 双向链表；面试简化版 Map 即可
+    - LRU 按最近使用顺序淘汰最久未访问的缓存项
+    - Map 保持插入顺序，get 命中后删除再 set 可刷新为最新
+    - 容量满时删除 Map 的第一个 key，也就是当前最旧项
+    - 严格 O(1) LRU 通常使用哈希表 + 双向链表，Map 版适合面试简化演示
   面试:
-    - 手写 LRU 缓存的核心概念是什么
-    - 手写 LRU 缓存在实际项目里怎么用
-    - 手写 LRU 缓存有哪些常见坑或易错点
-    - 手写 LRU 缓存和相近 API 如何区分选型
-    - 面试中如何简洁讲清 手写 LRU 缓存
+    - LRU 为什么命中 get 后也要刷新顺序？
+    - Map 版 LRU 为什么能删除最旧 key？
+    - Map 简化版和哈希表 + 双向链表版有什么差异？
+    - LRU 缓存适合哪些项目场景，容量边界怎么处理？
 -->
 
 <!doctype html>
@@ -37,16 +36,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>LRU：最近最少使用淘汰；<code>Map</code> 保持插入顺序（ES6 <code>Map</code>）。</li>
-          <li>get 时删除再 set 可「刷新」为最新。</li>
-          <li>容量满时删除 <code>Map</code> 第一个 <code>key</code>（最旧）。</li>
-          <li>时间复杂度 O(1) 需 <code>Map</code> + 双向链表；面试简化版 <code>Map</code> 即可。</li>
+          <li>LRU（Least Recently Used）按“最近使用”维护缓存顺序：越久没有被访问的项越靠前，容量超限时优先淘汰最旧项。</li>
+          <li>ES <code>Map</code> 会按插入顺序迭代键；命中 <code>get</code> 后先 <code>delete</code> 再 <code>set</code>，可以把该键移动到顺序末尾，表示最近使用。</li>
+          <li><code>put</code> 已存在的键时也要刷新顺序；插入后如果 <code>map.size &gt; capacity</code>，通过 <code>map.keys().next().value</code> 取到第一个键并删除。</li>
+          <li>严格算法题常要求 <code>get</code> / <code>put</code> 都是 <code>O(1)</code>，典型实现是哈希表定位节点、双向链表维护新旧顺序；本页 Map 版更短，适合解释思路。</li>
+          <li>容量必须是正整数，非法容量要明确抛错；真实缓存还要考虑过期时间、内存上限、并发读写、缓存击穿和数据一致性。</li>
+          <li>本 demo 用 <code>textContent</code> 输出操作日志，不把日志拼成 HTML；带用户输入或服务端数据的缓存可视化也应避免把内容直接写入 <code>innerHTML</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>get 时删除再 set 可「刷新」为最新？</strong> get 时删除再 set 可「刷新」为最新</li>
-          <li><strong>容量满时删除 Map 第一个 key（最旧）？</strong> 容量满时删除 <code>Map</code> 第一个 <code>key</code>（最旧）</li>
-          <li><strong>时间复杂度 O(1) 需 Map + 双向链表？</strong> 时间复杂度 O(1) 需 <code>Map</code> + 双向链表；面试简化版 <code>Map</code> 即可</li>
+          <li><strong>LRU 为什么命中 <code>get</code> 后也要刷新顺序？</strong> 结论：因为“使用”不仅包括写入，也包括读取。原因是 LRU 淘汰的是最近最少使用项，如果读取命中后不刷新，该热点数据仍可能被误判为旧数据而淘汰。项目里接口响应缓存、图片缓存、计算结果缓存都需要在命中时刷新热度。</li>
+          <li><strong><code>Map</code> 版 LRU 为什么能删除最旧 <code>key</code>？</strong> 结论：因为 <code>Map</code> 按插入顺序迭代键，第一个键就是当前最旧项。原因是每次命中或更新都会删除再插入，把最近使用项移动到末尾。边界是这依赖 ECMAScript 对 <code>Map</code> 迭代顺序的定义，不适用于普通对象属性顺序来做严谨 LRU。</li>
+          <li><strong><code>Map</code> 简化版和哈希表 + 双向链表版有什么差异？</strong> 结论：Map 版代码短，双向链表版更贴近严格算法题。原因是双向链表能显式把任意节点移到头部或尾部，哈希表负责 O(1) 定位；Map 版利用语言内置顺序，适合前端面试讲解和小型缓存。边界是大规模缓存还要考虑内存、淘汰策略和过期策略。</li>
+          <li><strong>LRU 缓存适合哪些项目场景，容量边界怎么处理？</strong> 结论：适合缓存最近访问更可能再次访问的数据，比如接口结果、编译产物、图片缩略图。原因是它用有限容量换取热点数据命中率。边界是容量应按内存和业务命中率评估，非法容量要拒绝，缓存数据过期或权限变化时还要主动失效。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map" target="_blank" rel="noreferrer">MDN: Map</a></li>
+          <li><a href="https://tc39.es/ecma262/multipage/keyed-collections.html#sec-map-objects" target="_blank" rel="noreferrer">ECMA-262: Map Objects</a></li>
         </ul>
       </div>
     </section>
@@ -55,6 +62,9 @@
     <!-- PAGE_DOM_START -->
     <pre>class LRU {
       constructor(capacity) {
+      if (!Number.isInteger(capacity) || capacity <= 0) {
+      throw new RangeError("capacity must be a positive integer");
+      }
       this.capacity = capacity;
       this.map = new Map();
       }
@@ -83,6 +93,9 @@
     <script>
       class LRU {
         constructor(capacity) {
+          if (!Number.isInteger(capacity) || capacity <= 0) {
+            throw new RangeError("capacity must be a positive integer");
+          }
           this.capacity = capacity;
           this.map = new Map();
         }

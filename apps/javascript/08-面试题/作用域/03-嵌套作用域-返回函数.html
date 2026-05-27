@@ -2,15 +2,15 @@
 分类: javascript / 08-面试题 / 作用域
   主题: 嵌套函数 - 返回内层函数引用
   要点:
-    - 返回 f 让外部得到一个闭包：依旧记得定义时的 scope = "local"
-    - 词法作用域：变量解析按代码书写位置，不随调用位置改变
-    - 与上一题对比：返回 f vs 返回 f()，结果都是 'local'
+    - return f 返回的是内层函数引用，外部再调用时形成闭包
+    - f 的自由变量 scope 按定义时词法环境解析，仍然指向 checkscope 内的 local
+    - 与 return f() 对比：输出同为 local，但一个返回结果，一个返回可复用函数
+    - 闭包会延长被引用词法环境的生命周期，使用不当可能保留过多状态
   面试:
-    - 嵌套函数 - 返回内层函数引用的核心概念是什么
-    - 嵌套函数 - 返回内层函数引用在实际项目里怎么用
-    - 嵌套函数 - 返回内层函数引用有哪些常见坑或易错点
-    - 嵌套函数 - 返回内层函数引用和相近 API 如何区分选型
-    - 面试中如何简洁讲清 嵌套函数 - 返回内层函数引用
+    - 为什么 checkscope()() 仍然输出 local？
+    - return f 和 return f() 在闭包生命周期上有什么区别？
+    - 闭包为什么会让外层局部变量不被立即回收？
+    - 项目中使用闭包保存状态时要注意哪些内存边界？
 -->
 
 <!doctype html>
@@ -30,15 +30,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>返回 f 让外部得到一个闭包：依旧记得定义时的 scope = &quot;local&quot;。</li>
-          <li>词法作用域：变量解析按代码书写位置，不随调用位置改变。</li>
-          <li>与上一题对比：返回 f vs 返回 f()，结果都是 'local'。</li>
+          <li><code>checkscope</code> 返回的是内层函数 <code>f</code> 的引用，外部通过 <code>checkscope()()</code> 再执行它，因此这是典型闭包题。</li>
+          <li><code>f</code> 引用了外层局部变量 <code>scope</code>，函数被返回后仍保留对定义时词法环境的引用，所以最终输出 <code>"local"</code>。</li>
+          <li>词法作用域由函数定义位置决定，不由调用位置决定；即使 <code>f</code> 在全局位置被调用，它查找 <code>scope</code> 时仍先回到 <code>checkscope</code> 的局部环境。</li>
+          <li>与上一题 <code>return f()</code> 对比：两题输出都为 <code>"local"</code>，但上一题返回字符串结果，本题返回函数引用并让外层环境继续可达。</li>
+          <li>闭包常用于函数工厂、私有状态、事件回调和缓存，但如果闭包长期持有大型对象、DOM 节点或定时器引用，可能导致内存无法及时释放。</li>
+          <li>现代项目仍推荐优先用 <code>let</code> / <code>const</code> 明确变量边界；面试老题里的 <code>var</code> 主要用于突出函数作用域和提升行为。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>返回 f 让外部得到一个闭包？</strong> 返回 f 让外部得到一个闭包：依旧记得定义时的 scope = &quot;local&quot;；与上一题对比：返回 f vs 返回 f()，结果都是 'local'</li>
-          <li><strong>嵌套函数 - 返回内层函数引用的核心概念是什么？</strong> 返回 f 让外部得到一个闭包：依旧记得定义时的 scope = &quot;local&quot;；词法作用域：变量解析按代码书写位置，不随调用位置改变</li>
-          <li><strong>嵌套函数 - 返回内层函数引用在实际项目里怎么用？</strong> 返回 f 让外部得到一个闭包：依旧记得定义时的 scope = &quot;local&quot;；词法作用域：变量解析按代码书写位置，不随调用位置改变</li>
+          <li><strong>为什么 <code>checkscope()()</code> 仍然输出 <code>local</code>？</strong> 结论：因为第一次调用返回了 <code>f</code>，第二次调用执行的是带着外层词法环境的闭包。原因是 <code>f</code> 定义在 <code>checkscope</code> 内部，自由变量 <code>scope</code> 会优先解析到局部 <code>"local"</code>。边界是如果返回前没有任何函数或对象引用该环境，局部变量才会在调用结束后变得不可达。</li>
+          <li><strong><code>return f</code> 和 <code>return f()</code> 有什么区别？</strong> 结论：<code>return f</code> 返回函数本身，<code>return f()</code> 返回函数执行结果。原因是前者把函数引用带出外层作用域，后者在外层函数返回前就计算出结果。项目里返回函数通常用于延迟执行、参数预置或保存私有状态，返回结果则只是一次性计算。</li>
+          <li><strong>闭包为什么会让外层局部变量不被立即回收？</strong> 结论：因为外部仍然可以通过返回的函数访问这些变量。原因是垃圾回收基于可达性，<code>f</code> 还活着，它引用的词法环境也必须保留。边界是闭包不会“复制”变量值，而是保留对变量环境的访问，多个闭包可能共享同一份状态。</li>
+          <li><strong>项目中使用闭包保存状态要注意什么？</strong> 结论：闭包适合封装私有状态，但要控制生命周期。原因是长生命周期回调、缓存函数、事件监听器如果持有大对象或 DOM，会让这些对象持续可达。实际项目里要在组件卸载、路由切换或任务取消时移除监听、清理定时器和断开无用引用。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures" target="_blank" rel="noreferrer">MDN: Closures</a></li>
+          <li><a href="https://javascript.info/closure" target="_blank" rel="noreferrer">JavaScript.info: Variable scope, closure</a></li>
+          <li><a href="https://tc39.es/ecma262/#sec-lexical-environments" target="_blank" rel="noreferrer">ECMA-262: Lexical Environments</a></li>
         </ul>
       </div>
     </section>
@@ -46,10 +56,9 @@
 
     <!-- SCRIPT_START -->
     <script>
-      //题目三
+      // 返回函数引用，外部再调用时仍能访问定义时的词法环境。
       var scope = "global";
 
-      //作用域链条
       function checkscope() {
         var scope = "local";
 
@@ -60,7 +69,7 @@
         return f;
       }
 
-      console.log(checkscope()());//local
+      console.log(checkscope()()); // local
 
     </script>
     <!-- SCRIPT_END -->

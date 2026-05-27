@@ -2,13 +2,15 @@
   分类: javascript / 09-Canvas / 动画
   主题: Canvas 烟花动画
   要点:
-    - 用 requestAnimationFrame 驱动帧循环（含旧浏览器兼容 shim）
-    - 每帧用半透明黑色覆盖画布，实现「拖尾消散」的效果
-    - 烟花 = 上升小球；炸开后变成多个粒子（particle），各自带速度衰减
+    - requestAnimationFrame 在下一次重绘前调度一帧，后台页通常会暂停
+    - destination-out 半透明擦除旧像素，lighter 叠加新像素形成烟花亮度
+    - 烟花上升到目标点后拆成粒子数组，粒子按速度、摩擦、重力和透明度衰减
+    - 粒子数量、画布尺寸和高刷新率屏幕都会影响帧率，需要限流和清理
   面试:
-    - requestAnimationFrame 与 setInterval 做动画的区别？
-    - Canvas 拖尾效果如何实现？
-    - 粒子系统在游戏/可视化里如何抽象？
+    - 为什么 Canvas 动画优先用 requestAnimationFrame？
+    - Canvas 烟花拖尾为什么用 destination-out 而不是每帧 clearRect？
+    - 粒子系统如何避免点击过快或页面长时间运行导致卡顿？
+    - 高 DPI、窗口 resize 和后台标签页会给 Canvas 动画带来什么边界？
 -->
 
 <!doctype html>
@@ -39,16 +41,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>动画主循环优先用 <code>requestAnimationFrame</code>，与显示器刷新对齐；旧浏览器可用 shim 降级到 <code>setTimeout</code>。</li>
-          <li>每帧用半透明黑色矩形覆盖全画布，上一帧内容未完全擦除，形成<strong>拖尾消散</strong>效果。</li>
-          <li>烟花分两段：上升阶段为小球；到达顶点后炸开为多颗粒子，各自带初速度与衰减。</li>
-          <li>粒子位置每帧按速度积分更新，配合随机颜色与生命周期控制视觉丰富度。</li>
+          <li><code>requestAnimationFrame</code> 会在浏览器准备重绘前调用回调，回调是一次性的，连续动画必须在每帧重新注册；页面在后台标签页时多数浏览器会暂停它，能减少无效计算。</li>
+          <li>本例没有用 <code>clearRect()</code> 立刻清屏，而是先把 <code>globalCompositeOperation</code> 设为 <code>destination-out</code>，再用半透明矩形逐步擦除旧像素，所以轨迹会残留几帧后淡出。</li>
+          <li><code>lighter</code> 合成模式会把重叠像素的颜色相加，适合烟花、光点、粒子发光这类视觉效果；绘制普通 UI 或图表时通常保持默认的 <code>source-over</code>，避免颜色被意外叠亮。</li>
+          <li>烟花对象负责从底部飞向目标点，抵达后创建粒子；粒子对象保存位置、历史坐标、角度、速度、摩擦、重力和透明度，每帧先更新状态再绘制，透明度衰减到阈值后从数组移除。</li>
+          <li>Canvas 动画的常见风险是粒子过多、画布过大、窗口 resize 后尺寸不匹配，以及高刷新率屏幕上如果不用时间差计算会运动变快；项目中通常要限制发射频率、控制粒子上限，并在销毁页面时取消动画。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>requestAnimationFrame 与 setInterval 做动画的区别？</strong> rAF 在页面不可见时会暂停，更省电；时间步长与刷新率绑定，避免掉帧时「快进」。setInterval 固定间隔，与绘制不同步易抖动。</li>
-          <li><strong>Canvas 拖尾效果如何实现？</strong> 每帧不用 clearRect 全清，而用 <code>fillStyle</code> 半透明黑色 fill 全画布，保留上一帧残影，多次叠加后自然淡出。</li>
-          <li><strong>粒子系统如何抽象？</strong> 统一维护粒子数组，每粒子有位置、速度、寿命、颜色；每帧 update + draw，寿命归零则移除，发射器定时 push 新粒子。</li>
+          <li><strong>为什么 Canvas 动画优先用 requestAnimationFrame？</strong> 结论是动画主循环优先用 <code>requestAnimationFrame</code>，因为它和浏览器重绘节奏对齐，后台页通常会暂停，性能和电量表现更稳定。原因是 <code>setInterval</code> 只按计时器排队，不保证和绘制同步，主线程繁忙时还会堆积或抖动。边界是 rAF 的回调只执行一次，高刷新率屏幕上还应使用回调时间戳或时间差计算位移，否则动画速度可能随刷新率变化。</li>
+          <li><strong>Canvas 烟花拖尾为什么用 destination-out 而不是每帧 clearRect？</strong> 结论是 <code>clearRect()</code> 会直接清空旧帧，而本例用 <code>destination-out</code> 配合半透明填充逐步削弱旧像素，视觉上形成拖尾。原因是合成模式决定新绘制内容如何影响已有像素，半透明擦除会让历史轨迹按帧衰减。项目里如果要画精确图表、签名板或截图导出，就不应保留残影，应改为明确清屏或分层画布。</li>
+          <li><strong>粒子系统如何避免点击过快或页面长时间运行导致卡顿？</strong> 结论是粒子系统要限流、限量并及时清理失效粒子。原因是每个粒子每帧都要 update 和 draw，复杂度近似随粒子数量线性增长，点击连发会迅速增加 CPU/GPU 压力。本例用 <code>limiterTick</code> 限制鼠标按下时的发射频率，并在透明度衰减后 <code>splice</code> 移除粒子；真实项目还常加最大粒子数、暂停不可见动画和性能降级策略。</li>
+          <li><strong>高 DPI、窗口 resize 和后台标签页会给 Canvas 动画带来什么边界？</strong> 结论是 Canvas 动画不能只按初始化尺寸和固定像素绘制。原因是 <code>canvas.width/height</code> 是绘图缓冲区尺寸，CSS 尺寸、设备像素比和窗口变化会影响清晰度与命中坐标；后台标签页 rAF 暂停后恢复也可能出现时间跨度。项目中要在 resize 时重设缓冲区并按 <code>devicePixelRatio</code> 缩放上下文，使用时间差时还要限制最大步长。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial" target="_blank" rel="noreferrer">MDN Canvas tutorial</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame" target="_blank" rel="noreferrer">MDN Window: requestAnimationFrame()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation" target="_blank" rel="noreferrer">MDN CanvasRenderingContext2D: globalCompositeOperation</a></li>
         </ul>
       </div>
     </section>

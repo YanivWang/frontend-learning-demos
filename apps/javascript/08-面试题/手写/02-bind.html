@@ -2,15 +2,15 @@
 分类: javascript / 08-面试题 / 手写
   主题: 手写 bind
   要点:
-    - bind 返回新函数，不会立即执行
-    - 普通调用时 this 指向绑定对象；new 调用时 this 指向新实例，忽略绑定对象
-    - 支持预置参数，并维护原函数 prototype 原型链
+    - bind 返回绑定函数，不会立即执行；call/apply 会立即执行
+    - 普通调用绑定函数时 this 固定为 thisArg，并支持预置参数
+    - 绑定函数被 new 调用时 this 指向新实例，绑定的 thisArg 会被忽略
+    - 手写 bind 要维护原函数 prototype 原型链，但 name、length 等规范细节通常会简化
   面试:
-    - 手写 bind的核心概念是什么
-    - 手写 bind在实际项目里怎么用
-    - 手写 bind有哪些常见坑或易错点
-    - 手写 bind和相近 API 如何区分选型
-    - 面试中如何简洁讲清 手写 bind
+    - bind 和 call/apply 最大区别是什么？
+    - 手写 bind 如何同时支持预置参数和后续参数？
+    - new 调用绑定函数时为什么要忽略绑定的 thisArg？
+    - 手写 bind 为什么要处理 prototype 原型链？
 -->
 
 <!doctype html>
@@ -30,16 +30,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>bind</code> 返回新函数，不会立即执行。</li>
-          <li>普通调用时 <code>this</code> 指向绑定对象；new 调用时 <code>this</code> 指向新实例，忽略绑定对象。</li>
-          <li>支持预置参数，并维护原函数 prototype 原型链。</li>
-          <li><code>bind</code> 返回新函数，不会立即执行（补充）。</li>
+          <li><code>Function.prototype.bind()</code> 返回一个新的绑定函数，不会立即执行；这是它和 <code>call</code> / <code>apply</code> 最核心的区别。</li>
+          <li>绑定函数普通调用时，内部会用原函数配合绑定的 <code>thisArg</code> 执行，并把预置参数与调用时传入的参数拼接。</li>
+          <li>绑定函数也可以作为构造函数使用；当它被 <code>new</code> 调用时，<code>this</code> 必须指向新创建的实例，绑定的 <code>thisArg</code> 会被忽略。</li>
+          <li>为了让 <code>new BoundPerson()</code> 创建的实例仍能访问 <code>Person.prototype</code> 上的方法，手写实现需要让绑定函数的 <code>prototype</code> 继承原函数 <code>prototype</code>。</li>
+          <li>规范里的绑定函数还涉及 <code>length</code>、<code>name</code>、不可作为普通函数时的异常等细节；面试手写一般重点答 <code>this</code>、参数、<code>new</code> 和原型链。</li>
+          <li>真实项目不建议重写 <code>Function.prototype.bind</code>；需要固定回调上下文时直接用原生 <code>bind</code>，或在现代代码中用箭头函数捕获外层 <code>this</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>bind 返回新函数？</strong> <code>bind</code> 返回新函数，不会立即执行</li>
-          <li><strong>普通调用时 this 指向绑定对象？</strong> 普通调用时 <code>this</code> 指向绑定对象；new 调用时 <code>this</code> 指向新实例，忽略绑定对象</li>
-          <li><strong>手写 bind的核心概念是什么？</strong> <code>bind</code> 返回新函数，不会立即执行；普通调用时 <code>this</code> 指向绑定对象；new 调用时 <code>this</code> 指向新实例，忽略绑定对象</li>
+          <li><strong><code>bind</code> 和 <code>call/apply</code> 最大区别是什么？</strong> 结论：<code>bind</code> 返回新函数并延迟执行，<code>call/apply</code> 会立即执行。原因是 <code>bind</code> 的用途是预先固定 <code>this</code> 和部分参数，等待之后作为回调或构造函数调用。项目里事件回调、定时器、类方法传参常用 <code>bind</code> 或箭头函数解决上下文丢失。</li>
+          <li><strong>手写 <code>bind</code> 如何同时支持预置参数和后续参数？</strong> 结论：在外层保存 <code>presetArgs</code>，绑定函数执行时再和 <code>laterArgs</code> 拼接。原因是 <code>bind</code> 支持偏函数能力，先传的参数会排在后续实参之前。边界是参数拼接不改变原函数的形参数量，规范里的 <code>length</code> 调整面试实现通常不强求。</li>
+          <li><strong><code>new</code> 调用绑定函数时为什么要忽略绑定的 <code>thisArg</code>？</strong> 结论：构造调用的 <code>this</code> 必须是新创建的实例。原因是 <code>new</code> 的语义是创建对象、连接原型、以新对象作为 <code>this</code> 执行构造函数；如果仍使用绑定对象，实例属性会写错位置。边界是绑定参数仍然有效，只是绑定的 <code>thisArg</code> 被忽略。</li>
+          <li><strong>手写 <code>bind</code> 为什么要处理 <code>prototype</code>？</strong> 结论：为了让绑定函数作为构造函数时，实例仍然能继承原构造函数的原型方法。原因是 <code>instanceof</code> 和方法查找都依赖原型链。本 demo 用 <code>Object.create(fn.prototype)</code> 连接原型，避免直接共享并修改原函数的 <code>prototype</code> 对象。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind" target="_blank" rel="noreferrer">MDN: Function.prototype.bind()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new" target="_blank" rel="noreferrer">MDN: new operator</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this" target="_blank" rel="noreferrer">MDN: this</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create" target="_blank" rel="noreferrer">MDN: Object.create()</a></li>
         </ul>
       </div>
     </section>

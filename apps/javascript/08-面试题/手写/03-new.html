@@ -2,15 +2,15 @@
 分类: javascript / 08-面试题 / 手写
   主题: 手写 new
   要点:
-    - 创建一个新对象，并把它的原型指向构造函数 prototype
-    - 用新对象作为 this 执行构造函数
-    - 构造函数如果显式返回对象/函数，则 new 表达式返回该对象；否则返回新对象
+    - new 会创建新对象，并把新对象的原型链接到构造函数 prototype
+    - 构造函数以新对象作为 this 执行，实例属性通常在这一步写入
+    - 构造函数显式返回对象或函数时，new 表达式返回该对象；返回原始值则忽略
+    - 手写 new 可用 Object.create + apply 模拟，但 class 构造器不能被 apply 直接调用
   面试:
-    - 手写 new的核心概念是什么
-    - 手写 new在实际项目里怎么用
-    - 手写 new有哪些常见坑或易错点
-    - 手写 new和相近 API 如何区分选型
-    - 面试中如何简洁讲清 手写 new
+    - new 操作符具体做了哪几步？
+    - 构造函数显式 return 对 new 结果有什么影响？
+    - Object.create(Constructor.prototype) 在手写 new 中解决了什么？
+    - 手写 new 和 Reflect.construct 有什么边界差异？
 -->
 
 <!doctype html>
@@ -30,15 +30,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>创建一个新对象，并把它的原型指向构造函数 prototype。</li>
-          <li>用新对象作为 <code>this</code> 执行构造函数。</li>
-          <li>构造函数如果显式返回对象/函数，则 new 表达式返回该对象；否则返回新对象。</li>
+          <li><code>new Constructor(...args)</code> 的核心步骤是：创建新对象、连接原型、用新对象作为 <code>this</code> 执行构造函数、按返回值规则决定最终结果。</li>
+          <li><code>Object.create(Constructor.prototype)</code> 用来创建一个原型指向构造函数 <code>prototype</code> 的对象，因此实例可以访问原型方法，并满足 <code>instanceof Constructor</code>。</li>
+          <li>构造函数执行时，<code>this</code> 指向新实例，像 <code>this.name = name</code> 这样的赋值会写入实例自身属性。</li>
+          <li>如果构造函数显式返回对象或函数，<code>new</code> 表达式会返回这个对象；如果返回原始值或没有返回值，则返回前面创建的新实例。</li>
+          <li>真实规范还涉及 <code>new.target</code>、派生类构造器、绑定函数、不可构造函数等细节；本 demo 是面试版核心模拟，不等同完整 polyfill。</li>
+          <li>现代代码如果需要以参数数组动态构造对象，优先使用 <code>Reflect.construct()</code> 或展开语法 <code>new Ctor(...args)</code>，不要在业务里自定义 <code>new</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>用新对象作为 this 执行构造函数？</strong> 用新对象作为 <code>this</code> 执行构造函数</li>
-          <li><strong>构造函数如果显式返回对象/函数？</strong> 创建一个新对象，并把它的原型指向构造函数 prototype；用新对象作为 <code>this</code> 执行构造函数</li>
-          <li><strong>手写 new的核心概念是什么？</strong> 创建一个新对象，并把它的原型指向构造函数 prototype；用新对象作为 <code>this</code> 执行构造函数</li>
+          <li><strong><code>new</code> 操作符具体做了哪几步？</strong> 结论：创建对象、连接原型、绑定 <code>this</code> 执行构造函数、处理返回值。原因是实例既要拥有构造函数写入的自身属性，也要通过原型链访问方法。边界是构造函数必须可构造，箭头函数和普通非构造调用不能直接套用这套语义。</li>
+          <li><strong>构造函数显式 <code>return</code> 对 <code>new</code> 结果有什么影响？</strong> 结论：返回对象或函数会覆盖默认实例，返回原始值会被忽略。原因是规范对构造调用有专门的返回值处理规则，只有对象类型结果才会成为最终构造结果。项目里构造函数通常不显式返回对象，避免实例语义变得难读。</li>
+          <li><strong><code>Object.create(Constructor.prototype)</code> 解决了什么？</strong> 结论：它让新对象的原型指向构造函数原型。原因是原型链决定方法查找和 <code>instanceof</code> 判断；如果只写 <code>{}</code>，实例就访问不到 <code>Constructor.prototype</code> 上的方法。边界是如果 <code>prototype</code> 不是对象，原生 <code>new</code> 会退回默认对象原型，手写实现要考虑兜底。</li>
+          <li><strong>手写 <code>new</code> 和 <code>Reflect.construct</code> 有什么差异？</strong> 结论：手写版只模拟核心流程，<code>Reflect.construct</code> 更接近规范级构造。原因是 <code>Reflect.construct</code> 能处理 <code>newTarget</code>、类构造器和内置构造语义；而 <code>Constructor.apply(instance, args)</code> 不能直接调用 <code>class</code> 构造器。面试答核心步骤即可，生产动态构造应使用语言内置能力。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new" target="_blank" rel="noreferrer">MDN: new operator</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create" target="_blank" rel="noreferrer">MDN: Object.create()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof" target="_blank" rel="noreferrer">MDN: instanceof</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect/construct" target="_blank" rel="noreferrer">MDN: Reflect.construct()</a></li>
         </ul>
       </div>
     </section>
@@ -55,7 +66,12 @@
           throw new TypeError("Constructor must be a function");
         }
 
-        const instance = Object.create(Constructor.prototype);
+        const prototype = Constructor.prototype;
+        const instancePrototype =
+          prototype !== null && (typeof prototype === "object" || typeof prototype === "function")
+            ? prototype
+            : Object.prototype;
+        const instance = Object.create(instancePrototype);
         const result = Constructor.apply(instance, args);
         const isObject = result !== null && (typeof result === "object" || typeof result === "function");
         return isObject ? result : instance;

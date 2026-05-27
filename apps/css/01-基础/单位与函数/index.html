@@ -2,15 +2,15 @@
 分类: css / 01-基础 / 单位与函数
   主题: px、em、rem、百分比、vw/vh、calc、clamp、CSS 变量
   要点:
-    - em 参考自身或父级字体大小，rem 参考 html 根字体大小
-    - 百分比通常参考包含块，vw/vh 参考视口
-    - calc() 做混合计算，clamp(min, preferred, max) 常用于响应式字号和宽度
+    - px 是绝对长度；em 取决于当前元素字体或父级字体，rem 取决于根元素字体
+    - 百分比的参考对象取决于属性，vw/vh 参考视口尺寸，移动端还要注意动态视口
+    - calc() 用于混合单位计算，clamp() 用 min、首选值、max 限制响应式范围
+    - CSS 自定义属性可继承并在计算值阶段参与 var() 替换，适合主题和间距 token
   面试:
-    - px、em、rem、百分比、vw/vh、calc、clamp、CSS 变量的核心概念是什么
-    - px、em、rem、百分比、vw/vh、calc、clamp、CSS 变量在实际项目里怎么用
-    - px、em、rem、百分比、vw/vh、calc、clamp、CSS 变量有哪些常见坑或易错点
-    - px、em、rem、百分比、vw/vh、calc、clamp、CSS 变量和相近 API 如何区分选型
-    - 面试中如何简洁讲清 px、em、rem、百分比、vw/vh、calc、clamp、CSS 变量
+    - em 和 rem 的计算基准有什么区别？
+    - 百分比、vw/vh 和容器宽度在响应式布局里如何选？
+    - calc() 与 clamp() 分别适合解决什么问题？
+    - CSS 变量在主题系统里有哪些继承和失效边界？
 -->
 
 <!doctype html>
@@ -57,15 +57,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>em 参考自身或父级字体大小，rem 参考 html 根字体大小。</li>
-          <li>百分比通常参考包含块，vw/vh 参考视口。</li>
-          <li>calc() 做混合计算，clamp(min, preferred, max) 常用于响应式字号和宽度。</li>
+          <li><code>px</code> 是 CSS 绝对长度单位；<code>em</code> 用在 <code>font-size</code> 上时参考父元素字体大小，用在其他长度属性上通常参考当前元素已计算字体大小；<code>rem</code> 始终参考根元素字体大小。</li>
+          <li>百分比不是永远参考父元素宽度，它的参考对象由具体属性定义；本例卡片宽度的百分比来自包含块宽度，而 <code>vw</code>/<code>vh</code> 来自视口尺寸，适合视口相关区域但在移动端地址栏变化时要谨慎。</li>
+          <li><code>calc()</code> 允许不同单位在同一个属性值里按表达式计算，例如 <code>calc(50% - var(--gap) / 2)</code>；表达式结果必须适合当前属性，单位不兼容或语法无效会导致声明失效。</li>
+          <li><code>clamp(min, preferred, max)</code> 会把首选值限制在最小值和最大值之间，常用于流式字号、容器宽度和间距，让布局随视口变化但不突破可读性边界。</li>
+          <li>CSS 自定义属性以 <code>--name</code> 定义，用 <code>var(--name)</code> 读取，默认会继承；实践中适合沉淀颜色、间距、圆角等设计 token，但要提供 fallback 或保证作用域内有定义。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>em 参考自身或父级字体大小？</strong> em 参考自身或父级字体大小，rem 参考 html 根字体大小</li>
-          <li><strong>百分比通常参考包含块？</strong> 百分比通常参考包含块，vw/vh 参考视口</li>
-          <li><strong>calc() 做混合计算？</strong> calc() 做混合计算，clamp(min, preferred, max) 常用于响应式字号和宽度</li>
+          <li><strong>em 和 rem 的计算基准有什么区别？</strong> 结论是 <code>em</code> 跟当前字体环境走，<code>rem</code> 跟根元素字体走。原因是 <code>em</code> 会受到父级字体和自身计算结果影响，嵌套组件里可能层层放大；<code>rem</code> 更稳定，适合全局字号和间距体系。项目里组件内部相对当前文字的 padding 可用 <code>em</code>，全站设计 token 更常用 <code>rem</code>。</li>
+          <li><strong>百分比、vw/vh 和容器宽度在响应式布局里如何选？</strong> 结论是跟随父容器用百分比，跟随浏览器视口用 <code>vw</code>/<code>vh</code>，跟随组件容器则优先考虑容器查询或基于布局上下文计算。原因是百分比的参考对象由属性决定，而视口单位不关心父容器。边界是移动端浏览器 UI 会改变可视视口，满屏高度场景要测试 <code>vh</code> 行为或使用现代动态视口单位。</li>
+          <li><strong>calc() 与 clamp() 分别适合解决什么问题？</strong> 结论是 <code>calc()</code> 解决混合单位和变量运算，<code>clamp()</code> 解决响应式值的上下限。原因是 <code>calc()</code> 返回一个表达式计算结果，<code>clamp()</code> 等价于在最小值、首选值、最大值之间夹取。项目里两列卡片可用 <code>calc(50% - gap)</code>，流式标题可用 <code>clamp(1.25rem, 2vw + 1rem, 2rem)</code>。</li>
+          <li><strong>CSS 变量在主题系统里有哪些继承和失效边界？</strong> 结论是 CSS 变量适合主题切换和局部覆盖，但要管理作用域和 fallback。原因是自定义属性会继承，并在 <code>var()</code> 替换时才校验最终属性值；变量未定义或替换后类型不合法会让声明失效。项目里通常把基础 token 放在 <code>:root</code>，组件内覆盖局部 token，并用 <code>var(--brand, #2f80ed)</code> 兜底关键值。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/Values_and_units" target="_blank" rel="noreferrer">MDN Values and units</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/calc" target="_blank" rel="noreferrer">MDN calc()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/clamp" target="_blank" rel="noreferrer">MDN clamp()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties" target="_blank" rel="noreferrer">MDN Using CSS custom properties</a></li>
         </ul>
       </div>
     </section>

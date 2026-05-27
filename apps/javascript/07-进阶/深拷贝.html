@@ -2,15 +2,15 @@
 分类: javascript / 07-进阶
   主题: 浅拷贝 vs 深拷贝
   要点:
-    - 浅拷贝（Object.assign / 展开）只复制第一层；嵌套对象仍共享引用
-    - JSON.parse(JSON.stringify(x)) 不支持函数/Date/RegExp/Symbol/循环引用
-    - 现代浏览器原生 structuredClone：支持 Date/RegExp/Map/Set/循环引用
+    - 浅拷贝只复制第一层属性值，嵌套对象、数组、Map 值仍共享引用
+    - JSON 序列化深拷贝会丢失 undefined、函数、Symbol，Date 会变字符串，循环引用会报错
+    - structuredClone 使用结构化克隆算法，能处理 Date、RegExp、Map、Set、循环引用，但不能克隆函数和 DOM 节点
+    - 手写 deepClone 需要处理循环引用、内置对象、Symbol 键和原型，但属性描述符、getter/setter 是常见遗漏点
   面试:
-    - 浅拷贝 vs 深拷贝的核心概念是什么
-    - 浅拷贝 vs 深拷贝在实际项目里怎么用
-    - 浅拷贝 vs 深拷贝有哪些常见坑或易错点
-    - 浅拷贝 vs 深拷贝和相近 API 如何区分选型
-    - 面试中如何简洁讲清 浅拷贝 vs 深拷贝
+    - Object.assign 和展开运算符为什么不是深拷贝？
+    - JSON.parse(JSON.stringify()) 做深拷贝会丢哪些类型？
+    - structuredClone 相比手写 deepClone 适合什么场景？
+    - 深拷贝在状态管理里为什么不总是最佳方案？
 -->
 
 <!doctype html>
@@ -30,16 +30,27 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>浅拷贝（<code>Object</code>.assign / 展开）只复制第一层；嵌套对象仍共享引用。</li>
-          <li>JSON.parse(JSON.stringify(x)) 不支持函数/Date/RegExp/Symbol/循环引用。</li>
-          <li>现代浏览器原生 structuredClone：支持 Date/RegExp/Map/Set/循环引用。</li>
-          <li>浅拷贝（<code>Object</code>.assign / 展开）只复制第一层；嵌套对象仍共享引用（补充）。</li>
+          <li>浅拷贝复制的是第一层属性值：原始值会得到新值，引用值仍指向同一个对象，所以改 <code>s1.b.c</code> 会影响原对象。</li>
+          <li><code>Object.assign()</code> 和对象展开都适合合并扁平配置或做不可变更新的第一层拷贝，但它们会读取 getter，并不会递归复制嵌套结构。</li>
+          <li><code>JSON.parse(JSON.stringify(value))</code> 只适合纯 JSON 数据；它会丢失 <code>undefined</code>、函数、Symbol，<code>Date</code> 变字符串，<code>RegExp</code> 变普通对象，遇到循环引用会抛错。</li>
+          <li><code>structuredClone()</code> 是现代浏览器和 Node.js 可用的原生深拷贝能力，基于结构化克隆算法，支持 <code>Date</code>、<code>RegExp</code>、<code>Map</code>、<code>Set</code>、循环引用和部分可转移对象；函数、DOM 节点等不可克隆值会抛 <code>DataCloneError</code>。</li>
+          <li>手写 <code>deepClone</code> 可按业务补齐特殊类型，并用 <code>WeakMap</code> 解决循环引用；但属性描述符、不可写属性、getter/setter、类实例私有状态等边界很容易漏，生产代码通常优先选原生 API 或成熟库。</li>
+          <li>状态管理里不建议无脑深拷贝整棵对象树；现代推荐做结构共享的不可变更新，只复制发生变化的路径，避免性能浪费和引用稳定性被破坏。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>浅拷贝（Object.assign / 展开）只复制第一层？</strong> 浅拷贝（<code>Object</code>.assign / 展开）只复制第一层；嵌套对象仍共享引用</li>
-          <li><strong>JSON.parse(JSON.stringify(x)) 不支持函数/Date？</strong> JSON.parse(JSON.stringify(x)) 不支持函数/Date/RegExp/Symbol/循环引用</li>
-          <li><strong>现代浏览器原生 structuredClone？</strong> 现代浏览器原生 structuredClone：支持 Date/RegExp/Map/Set/循环引用</li>
+          <li><strong><code>Object.assign</code> 和展开运算符为什么不是深拷贝？</strong> 结论：它们都是浅拷贝，只复制对象自身可枚举属性的第一层值。原因是嵌套对象的属性值本身就是引用，复制后两个对象仍指向同一份嵌套数据。项目里合并一层配置可以用它们，更新深层状态时要沿修改路径逐层复制或使用专门工具。</li>
+          <li><strong>为什么不推荐把 JSON 序列化当通用深拷贝？</strong> 结论：它只适合纯 JSON 数据，不是通用对象克隆。原因是 JSON 格式本身不能表达函数、<code>undefined</code>、Symbol、循环引用、Map/Set 等对象语义，部分类型会被丢弃或降级。接口 DTO、缓存纯数据可以用，业务对象、表单状态、图结构不应依赖它。</li>
+          <li><strong><code>structuredClone()</code> 能替代所有手写深拷贝吗？</strong> 结论：大多数结构化数据优先用它，但不是万能。原因是它按结构化克隆算法复制，能处理很多内置类型和循环引用，也会对函数、DOM 节点等不可克隆值抛错。需要自定义类实例规则、保留访问器或兼容旧环境时，仍要评估 polyfill、库或业务专用克隆函数。</li>
+          <li><strong>手写 <code>deepClone</code> 面试题应该答到哪些边界？</strong> 结论：递归复制普通对象只是起点，完整答法要包含循环引用、数组、<code>Date</code>、<code>RegExp</code>、<code>Map</code>、<code>Set</code>、Symbol 键和原型。原因是真实对象图不只是一层 plain object。边界上还要说明属性描述符、getter/setter、不可克隆资源和性能问题，避免把面试实现误当生产级实现。</li>
+          <li><strong>深拷贝在前端状态管理里什么时候反而有问题？</strong> 结论：整树深拷贝通常不是首选。原因是它会带来不必要的 CPU 与内存开销，并破坏未变化对象的引用稳定性，影响 memo、diff 和缓存命中。实际项目更常用结构共享的不可变更新，只复制变化分支。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone" target="_blank" rel="noreferrer">MDN: Window.structuredClone()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm" target="_blank" rel="noreferrer">MDN: The structured clone algorithm</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign" target="_blank" rel="noreferrer">MDN: Object.assign()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify" target="_blank" rel="noreferrer">MDN: JSON.stringify()</a></li>
         </ul>
       </div>
     </section>

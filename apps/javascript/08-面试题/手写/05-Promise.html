@@ -3,14 +3,14 @@
   主题: 面试简化版 Promise
   要点:
     - Promise 有 pending / fulfilled / rejected 三种状态，状态一旦改变不可逆
-    - then 返回新 Promise，以支持链式调用
-    - 回调异步执行；这里用 queueMicrotask 模拟微任务入队
+    - then 必须返回新 Promise，并按回调返回值决定新 Promise 的状态
+    - 回调异步执行；这里用 queueMicrotask 演示微任务入队
+    - 面试简化版只覆盖核心链式调用，不等同完整 Promise/A+ 或 ECMAScript 实现
   面试:
-    - 面试简化版 Promise的核心概念是什么
-    - 面试简化版 Promise在实际项目里怎么用
-    - 面试简化版 Promise有哪些常见坑或易错点
-    - 面试简化版 Promise和相近 API 如何区分选型
-    - 面试中如何简洁讲清 面试简化版 Promise
+    - Promise 为什么状态一旦改变就不能再变？
+    - then 为什么必须返回一个新的 Promise？
+    - 回调为什么要异步执行而不是 resolve 后同步调用？
+    - 手写 Promise 和原生 Promise 有哪些边界差异？
 -->
 
 <!doctype html>
@@ -30,16 +30,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>Promise</code> 有 pending / fulfilled / rejected 三种状态，状态一旦改变不可逆。</li>
-          <li><code>then</code> 返回新 <code>Promise</code>，以支持链式调用。</li>
-          <li>回调异步执行；这里用 <code>queueMicrotask</code> 模拟微任务入队。</li>
-          <li><code>Promise</code> 有 pending / fulfilled / rejected 三种状态，状态一旦改变不可逆（补充）。</li>
+          <li><code>Promise</code> 有 <code>pending</code>、<code>fulfilled</code>、<code>rejected</code> 三种状态；一旦从等待态落定，就不能再被后续 <code>resolve</code> 或 <code>reject</code> 改写。</li>
+          <li><code>then</code> 返回一个新的 <code>Promise</code>，新状态由回调返回值决定：返回普通值则 fulfilled，抛错则 rejected，返回另一个 Promise 则跟随它的最终状态。</li>
+          <li>Promise 回调应异步执行；本 demo 用 <code>queueMicrotask()</code> 演示微任务调度，让 <code>then</code> 回调晚于当前同步代码执行。</li>
+          <li><code>catch</code> 本质上是只传失败回调的 <code>then</code>，<code>finally</code> 适合释放资源或收尾，但不应吞掉原本的成功值或失败原因。</li>
+          <li>真实 Promise 还要处理 thenable 同化、自解析循环、宿主未处理拒绝追踪等细节；面试版可以先讲清状态机、回调队列、链式解析，再说明边界。</li>
+          <li>项目中优先使用原生 <code>Promise</code> 和 <code>async/await</code>；手写题用于理解异步模型，不应用自定义实现替换标准能力。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Promise 有 pending / fulfilled / rejected？</strong> <code>Promise</code> 有 pending / fulfilled / rejected 三种状态，状态一旦改变不可逆；<code>then</code> 返回新 <code>Promise</code>，以支持链式调用</li>
-          <li><strong>then 返回新 Promise？</strong> <code>then</code> 返回新 <code>Promise</code>，以支持链式调用</li>
-          <li><strong>面试简化版 Promise的核心概念是什么？</strong> <code>Promise</code> 有 pending / fulfilled / rejected 三种状态，状态一旦改变不可逆；<code>then</code> 返回新 <code>Promise</code>，以支持链式调用</li>
+          <li><strong><code>Promise</code> 为什么状态一旦改变就不能再变？</strong> 结论：Promise 只能从 <code>pending</code> 变为 fulfilled 或 rejected，落定后不可逆。原因是异步结果必须有稳定的最终状态，否则多个回调链会看到互相矛盾的结果。边界是重复调用 <code>resolve</code>/<code>reject</code> 只应第一次生效，后续调用应被忽略。</li>
+          <li><strong><code>then</code> 为什么必须返回新的 <code>Promise</code>？</strong> 结论：为了让链式调用能表达“上一步处理后的下一个异步结果”。原因是每个 <code>then</code> 都可能返回值、抛异常或返回另一个 Promise，新 Promise 负责承接这些结果。项目里用 <code>return</code> 把异步结果传下去，否则后续链会拿到 <code>undefined</code>。</li>
+          <li><strong>回调为什么要异步执行而不是 <code>resolve</code> 后同步调用？</strong> 结论：Promise 反应任务要在当前同步调用栈结束后执行。原因是这能保证 <code>then</code> 注册顺序、同步代码顺序和异常传播语义稳定。边界是本 demo 用 <code>queueMicrotask</code> 近似演示，真实规范由宿主的 Promise Jobs / microtask 队列调度。</li>
+          <li><strong>手写 <code>Promise</code> 和原生 <code>Promise</code> 有哪些边界差异？</strong> 结论：面试手写版通常只覆盖状态机、回调队列和链式解析。原因是完整实现还要处理 thenable、循环引用、静态组合方法、未处理拒绝事件和跨 realm 行为。实际项目必须使用原生 Promise 或成熟运行时，不要引入自制 Promise 替换标准实现。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" target="_blank" rel="noreferrer">MDN: Promise</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide" target="_blank" rel="noreferrer">MDN: Using microtasks in JavaScript with queueMicrotask()</a></li>
+          <li><a href="https://javascript.info/promise-basics" target="_blank" rel="noreferrer">JavaScript.info: Promise</a></li>
+          <li><a href="https://promisesaplus.com/" target="_blank" rel="noreferrer">Promises/A+ specification</a></li>
         </ul>
       </div>
     </section>
@@ -134,19 +144,19 @@
 
         finally(callback) {
           return this.then(
-          value => MyPromise.resolve(callback()).then(() => value),
-          reason => MyPromise.resolve(callback()).then(() => { throw reason; })
-        );
-      }
+            value => MyPromise.resolve(callback()).then(() => value),
+            reason => MyPromise.resolve(callback()).then(() => { throw reason; })
+          );
+        }
 
-      static resolve(value) {
-        if (value instanceof MyPromise) return value;
-        return new MyPromise(resolve => resolve(value));
-      }
+        static resolve(value) {
+          if (value instanceof MyPromise) return value;
+          return new MyPromise(resolve => resolve(value));
+        }
 
-      static reject(reason) {
-        return new MyPromise((resolve, reject) => reject(reason));
-      }
+        static reject(reason) {
+          return new MyPromise((resolve, reject) => reject(reason));
+        }
       }
 
       function resolvePromise(result, resolve, reject) {
@@ -158,23 +168,23 @@
       }
 
       MyPromise.resolve(1)
-      .then(value => value + 1)
-      .then(value => {
-        console.assert(value === 2, "then chain passes value");
-        return new MyPromise(resolve => setTimeout(() => resolve(value + 1), 20));
-      })
-      .then(value => {
-        console.assert(value === 3, "then unwraps MyPromise result");
-        console.log("chain result:", value);
-      });
+        .then(value => value + 1)
+        .then(value => {
+          console.assert(value === 2, "then chain passes value");
+          return new MyPromise(resolve => setTimeout(() => resolve(value + 1), 20));
+        })
+        .then(value => {
+          console.assert(value === 3, "then unwraps MyPromise result");
+          console.log("chain result:", value);
+        });
 
       MyPromise.reject("fail")
-      .catch(reason => {
-        console.assert(reason === "fail", "catch receives rejection");
-        return "recovered";
-      })
-      .finally(() => console.log("finally called"))
-      .then(value => console.log("catch result:", value));
+        .catch(reason => {
+          console.assert(reason === "fail", "catch receives rejection");
+          return "recovered";
+        })
+        .finally(() => console.log("finally called"))
+        .then(value => console.log("catch result:", value));
 
     </script>
     <!-- SCRIPT_END -->

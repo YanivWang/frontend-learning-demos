@@ -20,6 +20,7 @@
       resources: [],          // 资源列表
       onStart: null,          // (total) => void
       onProgress: null,       // (currentIndex, total) => void
+      onError: null,          // (url, error) => void
       onComplete: null,       // (total) => void
     };
 
@@ -35,11 +36,19 @@
   }
 
   ResLoader.prototype.start = function () {
+    if (this.status === 1) return;
     this.status = 1;
     const _this = this;
     const baseUrl = this.option.baseUrl;
     const isAbs = (u) => u.indexOf("http://") === 0 || u.indexOf("https://") === 0;
     const audioRE = /\.mp3(\?|$)/i;
+
+    if (isFunc(this.option.onStart)) this.option.onStart(this.total);
+    if (this.total === 0) {
+      this.status = 2;
+      if (isFunc(this.option.onComplete)) this.option.onComplete(this.total);
+      return;
+    }
 
     for (let i = 0; i < this.option.resources.length; i++) {
       const r = this.option.resources[i];
@@ -48,14 +57,22 @@
       if (audioRE.test(url)) {
         const audio = new Audio();
         audio.addEventListener("canplaythrough", () => _this.loaded(), { once: true });
+        audio.addEventListener("error", (event) => _this.failed(url, event), { once: true });
         audio.src = url;
       } else {
         const image = new Image();
-        image.onload = image.onerror = () => _this.loaded();
+        image.onload = () => _this.loaded();
+        image.onerror = (event) => _this.failed(url, event);
         image.src = url;
       }
     }
-    if (isFunc(this.option.onStart)) this.option.onStart(this.total);
+  };
+
+  ResLoader.prototype.failed = function (url, error) {
+    if (isFunc(this.option.onError)) {
+      this.option.onError(url, error);
+    }
+    this.loaded();
   };
 
   ResLoader.prototype.loaded = function () {
