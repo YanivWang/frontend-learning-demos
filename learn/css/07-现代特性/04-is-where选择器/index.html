@@ -1,0 +1,62 @@
+<!--
+  分类: css / 07-现代特性 / 04-is-where选择器
+  主题: :is() 与 :where() 及特异性
+  要点:
+    - :is() 特异性 = 参数中最具体选择器的特异性
+    - :where() 特异性恒为 0，适合重置样式而不抬高优先级
+    - 简化复杂选择器列表，避免重复写父级
+    - 与 :not() 组合可表达「排除某些子元素」
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CSS :is() 与 :where()</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 720px; color: #222; }
+    .demo article :is(h2, h3, strong) { color: #0969da; }
+    .demo article :where(p, li) { line-height: 1.7; margin: 0.5rem 0; }
+    .override-test p { color: #cf222e; }
+    .override-test :where(p) { color: #1a7f37; font-weight: 600; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <h1>:is() 与 :where()</h1>
+  <p><code>:is(h2, h3, strong)</code> 等价于分别写三条规则；<code>:where(p, li)</code> 特异性为 0，易被后续规则覆盖。</p>
+
+  <div class="demo card">
+    <article>
+      <h2>标题 h2（:is 命中，蓝色）</h2>
+      <h3>标题 h3（:is 命中）</h3>
+      <p>正文段落</p>
+      <p><strong>强调 strong</strong></p>
+    </article>
+  </div>
+
+  <div class="override-test card">
+    <p>这条 p 先被 <code>p { color: red }</code> 命中，但 <code>:where(p)</code> 特异性更低；最终绿色来自后面的 :where 规则（演示特异性 0 可被覆盖）。</p>
+  </div>
+
+  <h2>面试对比</h2>
+  <ul>
+    <li><code>:is(.a, #b)</code> 特异性 = 100（#b 决定）</li>
+    <li><code>:where(.a, #b)</code> 特异性 = 0</li>
+  </ul>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="../../../../index.html">目录</a>
+  <a href="../03-container-queries%E5%AE%B9%E5%99%A8%E6%9F%A5%E8%AF%A2/index.html">← index</a>
+  <a href="../05-view-transitions/index.html">index →</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

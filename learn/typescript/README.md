@@ -20,7 +20,7 @@ TypeScript 面试与语法复习 demo，共 **15** 个 `.html`。本模块在浏
 
 <!-- DEMO_TABLE_START -->
 
-共 **15** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
+共 **18** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
 
 | 文件 | 主题 |
 |---|---|
@@ -36,8 +36,11 @@ TypeScript 面试与语法复习 demo，共 **15** 个 `.html`。本模块在浏
 | `02-进阶/03-条件类型与infer.html` | 条件类型、infer、ReturnType 与 Awaited |
 | `02-进阶/04-映射类型与模板字面量.html` | 映射类型、索引访问与模板字面量类型 |
 | `02-进阶/05-never与穷尽检查.html` | never、穷尽检查与 assertNever |
+| `02-进阶/06-手写Utility-Types练习.html` | 手写 Utility Types 练习 |
 | `03-工程与框架/01-tsconfig-strict配置.html` | tsconfig、strict、noImplicitAny 与常用工程配置 |
 | `03-工程与框架/02-类型声明与模块.html` | .d.ts、declare module 与第三方库类型声明 |
 | `03-工程与框架/03-Vue3与React组件类型.html` | Vue3 与 React 中的组件 Props 类型 |
+| `03-工程与框架/04-React表单与Vue-emits类型.html` | React 表单事件与 Vue defineEmits 类型 |
+| `mini-project/index.html` | TypeScript mini-project 与 tsc --noEmit |
 
 <!-- DEMO_TABLE_END -->

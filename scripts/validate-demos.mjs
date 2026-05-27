@@ -60,6 +60,28 @@ function validateHeader(content, fileRel) {
   }
 }
 
+function validateFilename(name, fileRel) {
+  if (name === "index.html") return;
+  if (/[_]/.test(name)) {
+    errors.push(`${fileRel}: 文件名含下划线，应使用连字符（见 CONVENTIONS.md §3）`);
+  }
+  if (/^[a-z]{1,3}\d+\.html$/i.test(name)) {
+    errors.push(`${fileRel}: 文件名像无意义编号（如 test1.html）`);
+  }
+}
+
+function validatePageMeta(content, fileRel) {
+  if (!/<html[^>]*\blang\s*=\s*["']zh-CN["']/i.test(content)) {
+    errors.push(`${fileRel}: 缺少 lang="zh-CN"（运行 node scripts/inject-demo-nav.mjs 可自动补齐）`);
+  }
+  if (!/<meta[^>]*name\s*=\s*["']viewport["']/i.test(content)) {
+    errors.push(`${fileRel}: 缺少 viewport meta（运行 node scripts/inject-demo-nav.mjs 可自动补齐）`);
+  }
+  if (!content.includes("<!-- DEMO_NAV_START -->")) {
+    errors.push(`${fileRel}: 缺少页脚导航（运行 node scripts/inject-demo-nav.mjs）`);
+  }
+}
+
 function stripHtmlComments(html) {
   return html.replace(/<!--[\s\S]*?-->/g, "");
 }
@@ -112,6 +134,8 @@ async function main() {
     const rel = relative(ROOT, abs).split(sep).join("/");
     const content = await readFile(abs, "utf8");
     validateHeader(content, rel);
+    validateFilename(abs.split(sep).pop(), rel);
+    validatePageMeta(content, rel);
     await checkScripts(content, rel);
   }
 

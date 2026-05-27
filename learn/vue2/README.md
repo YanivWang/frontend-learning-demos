@@ -61,7 +61,7 @@ Vue 2.7 时代的 demo（`libs/vue.js` 为 **2.7.16**，Vue 2 最终版）。`le
 | `02-响应式原理/02-defineProperty访问器.html` | Object.defineProperty 实现访问器属性（Vue2 响应式核心） |
 | `02-响应式原理/03-Vue-set实战.html` | Vue.$set 与 Object.assign 实战 |
 | `02-响应式原理/04-数组响应式限制.html` | Vue2 数组响应式限制 |
-| `02-响应式原理/05-实例与_data.html` | 实例 vm 与 _data 的关系 |
+| `02-响应式原理/05-实例与data代理.html` | 实例 vm 与 _data 的关系 |
 | `02-响应式原理/06-响应式性能timeline.html` | 用 Performance 时间线观察大数组对响应式性能的影响 |
 | `03-生命周期/01-八个钩子速记.html` | Vue2 八个生命周期钩子速记 |
 | `04-组件/01-全局与局部组件.html` | Vue.component 全局组件 + data 与 vm 代理同步 |

@@ -79,6 +79,16 @@ function sortFiles(a, b) {
 /**
  * 递归收集目录下所有 .html 文件，返回 { 相对目录路径: [文件名…] }。
  */
+async function parseDemoMeta(absPath) {
+  const content = await readFile(absPath, "utf8");
+  const comment = content.match(/<!--\s*([\s\S]*?)\s*-->/);
+  const block = comment?.[1] || "";
+  const theme = (block.match(/主题:\s*(.+)/) || [])[1]?.trim() || "";
+  const category = (block.match(/分类:\s*(.+)/) || [])[1]?.trim() || "";
+  const bullets = [...block.matchAll(/^\s*-\s*(.+)$/gm)].map((m) => m[1].trim());
+  return { theme, category, keywords: bullets.join(" ") };
+}
+
 async function collect(dirAbs, results) {
   const entries = await readdir(dirAbs, { withFileTypes: true });
   const htmls = [];
@@ -134,10 +144,19 @@ async function main() {
 
     for (const [dirAbs, files] of groupsSorted) {
       const groupRel = relDirDisplay(dirAbs);
-      const items = files.map((f) => ({
-        title: fileToTitle(f),
-        href: toHref(join(dirAbs, f)),
-      }));
+      const items = await Promise.all(
+        files.map(async (f) => {
+          const abs = join(dirAbs, f);
+          const meta = await parseDemoMeta(abs);
+          return {
+            title: fileToTitle(f),
+            href: toHref(abs),
+            theme: meta.theme,
+            category: meta.category,
+            searchText: [fileToTitle(f), meta.theme, meta.category, meta.keywords].join(" "),
+          };
+        })
+      );
       sectionManifest.groups.push({ path: groupRel, items });
 
       // HTML 渲染
@@ -197,6 +216,11 @@ function escapeHtml(s) {
 }
 
 function renderIndex(sectionsHtml, manifest) {
+  const total = manifest.sections.reduce(
+    (s, sec) => s + sec.groups.reduce((g, gr) => g + gr.items.length, 0),
+    0
+  );
+  const manifestJson = JSON.stringify(manifest).replace(/</g, "\\u003c");
   return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -211,21 +235,98 @@ function renderIndex(sectionsHtml, manifest) {
     h3 { font-size: 0.9rem; color: #555; margin: 1.1rem 0 0.35rem; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
     ul { margin: 0.25rem 0 0.75rem; padding-left: 1.25rem; }
     li { margin: 0.1rem 0; }
+    li[data-hidden="true"] { display: none; }
     a { color: #0969da; text-decoration: none; }
     a:hover { text-decoration: underline; }
     a:visited { color: #6f42c1; }
     .hint { color: #666; font-size: 0.875rem; margin: 0 0 0.5rem; }
     .meta { color: #888; font-size: 0.8rem; margin-top: 0.25rem; }
     .meta code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .search-bar { margin: 1rem 0 1.5rem; display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+    .search-bar input { flex: 1; min-width: 12rem; padding: 0.5rem 0.75rem; font-size: 1rem; border: 1px solid #ccc; border-radius: 8px; }
+    .search-bar select { padding: 0.5rem 0.75rem; font-size: 0.9375rem; border: 1px solid #ccc; border-radius: 8px; }
+    .search-stats { font-size: 0.8125rem; color: #666; }
+    section[data-hidden="true"] { display: none; }
+    h3[data-hidden="true"] { display: none; }
+    ul[data-hidden="true"] { display: none; }
+    .search-hit .theme { display: block; font-size: 0.75rem; color: #666; margin-top: 0.1rem; }
   </style>
 </head>
 <body>
   <h1>frontend-learning-demos</h1>
-  <p class="hint">前端语法与框架复习 Demo · 打开任意链接即可学习 · <a href="README.md">README</a> · <a href="CONVENTIONS.md">命名约定</a></p>
-  <p class="meta">本页由 <code>${escapeHtml(manifest.generatedBy)}</code> 自动生成。不要手动编辑。</p>
+  <p class="hint">前端语法与框架复习 Demo · 打开任意链接即可学习 · <a href="README.md">README</a> · <a href="CONVENTIONS.md">命名约定</a> · <a href="CONTRIBUTING.md">贡献指南</a></p>
+  <p class="meta">本页由 <code>${escapeHtml(manifest.generatedBy)}</code> 自动生成 · 共 <strong>${total}</strong> 个 demo · 不要手动编辑。</p>
 
+  <div class="search-bar">
+    <input id="q" type="search" placeholder="搜索标题、主题、分类、要点…" autocomplete="off" />
+    <select id="section-filter" aria-label="按分类筛选">
+      <option value="">全部分类</option>
+      ${manifest.sections.map((s) => `<option value="${escapeHtml(s.title)}">${escapeHtml(s.title)}</option>`).join("\n      ")}
+    </select>
+    <span class="search-stats" id="stats"></span>
+  </div>
+
+  <div id="catalog">
 ${sectionsHtml}
+  </div>
 
+  <script type="application/json" id="manifest-data">${manifestJson}</script>
+  <script>
+    (function () {
+      const manifest = JSON.parse(document.getElementById("manifest-data").textContent);
+      const q = document.getElementById("q");
+      const sectionFilter = document.getElementById("section-filter");
+      const stats = document.getElementById("stats");
+
+      function normalize(s) { return (s || "").toLowerCase(); }
+
+      function applyFilter() {
+        const term = normalize(q.value.trim());
+        const sec = sectionFilter.value;
+        let visible = 0;
+        let total = 0;
+
+        manifest.sections.forEach(function (section, si) {
+          const secEl = document.querySelectorAll("#catalog > section")[si];
+          if (!secEl) return;
+          if (sec && section.title !== sec) {
+            secEl.dataset.hidden = "true";
+            return;
+          }
+          let secVisible = false;
+          section.groups.forEach(function (group, gi) {
+            const h3 = secEl.querySelectorAll("h3")[gi];
+            const ul = secEl.querySelectorAll("ul")[gi];
+            if (!h3 || !ul) return;
+            let groupVisible = false;
+            group.items.forEach(function (item, ii) {
+              total++;
+              const li = ul.querySelectorAll("li")[ii];
+              if (!li) return;
+              const text = normalize(item.searchText || item.title);
+              const match = !term || text.includes(term);
+              li.dataset.hidden = match ? "false" : "true";
+              if (match) { visible++; groupVisible = true; secVisible = true; }
+              if (match && item.theme && !li.querySelector(".theme")) {
+                const span = document.createElement("span");
+                span.className = "theme";
+                span.textContent = item.theme;
+                li.appendChild(span);
+              }
+            });
+            h3.dataset.hidden = groupVisible ? "false" : "true";
+            ul.dataset.hidden = groupVisible ? "false" : "true";
+          });
+          secEl.dataset.hidden = secVisible ? "false" : "true";
+        });
+        stats.textContent = term || sec ? "显示 " + visible + " / " + total : "共 " + total + " 个 demo";
+      }
+
+      q.addEventListener("input", applyFilter);
+      sectionFilter.addEventListener("change", applyFilter);
+      applyFilter();
+    })();
+  </script>
 </body>
 </html>
 `;

@@ -34,7 +34,7 @@ Vue 3.5.x 时代的 demo（`libs/vue.global.js` 为 **3.5.34**，全局构建）
 
 <!-- DEMO_TABLE_START -->
 
-共 **39** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
+共 **41** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
 
 | 文件 | 主题 |
 |---|---|
@@ -72,6 +72,8 @@ Vue 3.5.x 时代的 demo（`libs/vue.global.js` 为 **3.5.34**，全局构建）
 | `07-路由状态工程化/03-工程化与组合式组织.html` | 工程化与组合式组织 |
 | `07-路由状态工程化/04-Vite工程化面试点.html` | Vite 工程化结构与面试要点 |
 | `07-路由状态工程化/05-script-setup编译宏.html` | script setup 编译宏与工程约定 |
+| `07-路由状态工程化/06-Router与Pinia可运行示例.html` | Vue Router 4 + Pinia 可运行最小示例 |
+| `07-路由状态工程化/07-Vitest单元测试面试点.html` | Vitest 单元测试面试边界 |
 | `08-原理与性能面试/01-Proxy响应式原理.html` | Proxy 响应式原理 |
 | `08-原理与性能面试/02-虚拟DOM-diff-key.html` | 虚拟 DOM / diff / key |
 | `08-原理与性能面试/03-调度器与nextTick.html` | 调度器 / nextTick |

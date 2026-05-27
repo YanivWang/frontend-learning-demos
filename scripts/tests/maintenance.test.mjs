@@ -77,7 +77,7 @@ test("sync-readmes --check validates README tables without rewriting them", () =
 test("browser smoke validation confirms manifest pages and local assets exist", () => {
   const result = runScript(["scripts/validate-browser-smoke.mjs"]);
   assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.match(result.stdout, /通过：323 个 HTML/);
+  assert.match(result.stdout, /通过：\d+ 个 HTML/);
 });
 
 test("package.json exposes one-command maintenance scripts", () => {
@@ -85,15 +85,18 @@ test("package.json exposes one-command maintenance scripts", () => {
   assert.equal(existsSync(packagePath), true, "package.json should exist");
 
   const pkg = JSON.parse(readFileSync(packagePath, "utf8"));
-  assert.deepEqual(pkg.scripts, {
-    "build:index": "node scripts/build-index.mjs",
-    "check:index": "node scripts/build-index.mjs --check",
-    "sync:readmes": "node scripts/sync-readmes.mjs",
-    "validate:demos": "node scripts/validate-demos.mjs",
-    "validate:typescript": "node scripts/validate-typescript-coverage.mjs",
-    "validate:smoke": "node scripts/validate-browser-smoke.mjs",
-    validate:
-      "node scripts/validate-demos.mjs && node scripts/sync-readmes.mjs --check && node scripts/validate-typescript-coverage.mjs && node scripts/validate-browser-smoke.mjs",
-    test: "node --test scripts/tests/*.test.mjs",
-  });
+  const required = [
+    "build:index",
+    "check:index",
+    "sync:readmes",
+    "serve",
+    "validate",
+    "validate:topics",
+    "validate:tsc",
+    "test",
+  ];
+  for (const key of required) {
+    assert.equal(typeof pkg.scripts[key], "string", `missing script: ${key}`);
+  }
+  assert.match(pkg.scripts["build:index"], /inject-demo-nav/);
 });

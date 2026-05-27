@@ -2,7 +2,7 @@
 
 本仓库是「前端语法 / 框架学习 Demo 库」，每个 `.html` 都可以直接在浏览器打开。本文规定目录与命名规范，保持仓库长期清爽。
 
-当前仓库共 **323** 个可索引 demo（`javascript` 120 · `css` 36 · `vue2` 57 · `vue3` 39 · `react` 52 · `typescript` 15 · `demos` 4），统计以 `node scripts/validate-demos.mjs` 输出为准。
+当前仓库共 **337** 个可索引 demo（`javascript` 124 · `css` 39 · `vue2` 57 · `vue3` 41 · `react` 53 · `typescript` 18 · `demos` 5），统计以 `node scripts/validate-demos.mjs` 输出为准。
 
 ## 1. 顶层目录
 

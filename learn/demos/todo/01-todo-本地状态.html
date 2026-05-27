@@ -1,0 +1,101 @@
+<!--
+  分类: demos / todo
+  主题: Todo 本地状态与 localStorage 持久化
+  要点:
+    - 增删改查 + 过滤（全部/进行中/已完成）
+    - JSON 序列化存 localStorage，刷新后恢复
+    - 无框架，复习 DOM 事件与不可变更新思路
+    - 综合 demo：比单知识点页更接近小项目
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Todo · localStorage</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 480px; }
+    input[type="text"] { width: 100%; box-sizing: border-box; padding: 8px; margin-bottom: 8px; }
+    ul { list-style: none; padding: 0; }
+    li { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #eee; }
+    li.done span { text-decoration: line-through; color: #888; }
+    .filters button { margin-right: 6px; }
+    .filters button.active { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>Todo</h1>
+  <input type="text" id="input" placeholder="添加任务，回车确认" />
+  <div class="filters" id="filters">
+    <button type="button" data-f="all" class="active">全部</button>
+    <button type="button" data-f="active">进行中</button>
+    <button type="button" data-f="done">已完成</button>
+  </div>
+  <ul id="list"></ul>
+
+  <script>
+    const KEY = "demo-todo-v1";
+    let filter = "all";
+    let items = JSON.parse(localStorage.getItem(KEY) || "[]");
+
+    const input = document.getElementById("input");
+    const list = document.getElementById("list");
+
+    function save() { localStorage.setItem(KEY, JSON.stringify(items)); }
+
+    function render() {
+      const visible = items.filter((t) =>
+        filter === "all" ? true : filter === "done" ? t.done : !t.done
+      );
+      list.innerHTML = "";
+      visible.forEach((t) => {
+        const li = document.createElement("li");
+        if (t.done) li.classList.add("done");
+        li.innerHTML = `<input type="checkbox" ${t.done ? "checked" : ""} />
+          <span>${t.text}</span>
+          <button type="button">删</button>`;
+        li.querySelector("input").onchange = () => {
+          items = items.map((x) => (x.id === t.id ? { ...x, done: !x.done } : x));
+          save(); render();
+        };
+        li.querySelector("button").onclick = () => {
+          items = items.filter((x) => x.id !== t.id);
+          save(); render();
+        };
+        list.appendChild(li);
+      });
+    }
+
+    input.onkeydown = (e) => {
+      if (e.key !== "Enter" || !input.value.trim()) return;
+      items = [...items, { id: Date.now(), text: input.value.trim(), done: false }];
+      input.value = "";
+      save(); render();
+    };
+
+    document.getElementById("filters").onclick = (e) => {
+      const btn = e.target.closest("button[data-f]");
+      if (!btn) return;
+      filter = btn.dataset.f;
+      document.querySelectorAll(".filters button").forEach((b) => b.classList.toggle("active", b === btn));
+      render();
+    };
+
+    render();
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="../../../index.html">目录</a>
+  <a href="../svg/01-SVG-%E5%9F%BA%E7%A1%80.html">← SVG-基础</a>
+  <a href="../viewpager/01-viewpager-%E7%BF%BB%E9%A1%B5%E4%B8%8E%E7%BC%93%E5%8A%A8.html">viewpager-翻页与缓动 →</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

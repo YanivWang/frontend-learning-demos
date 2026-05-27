@@ -2,27 +2,31 @@
 
 前端语法与框架复习 Demo 库。**每个 HTML 直接在浏览器打开，无需构建**。
 
-## 快速开始
-
-```bash
-# 用浏览器或 Live Server 打开入口
-open index.html
-```
-
-`index.html` 是总入口，由脚本 [`scripts/build-index.mjs`](scripts/build-index.mjs) 自动扫描生成。
-
-## Demo 规模（截至 2026-05）
+## Demo 规模（由 `npm run validate` / manifest 统计）
 
 | 分类 | 路径 | demo 数量 | 说明文档 |
 |---|---|---:|---|
-| JavaScript | `learn/javascript/` | 120 | [`learn/javascript/README.md`](learn/javascript/README.md) |
-| CSS | `learn/css/` | 36 | [`learn/css/README.md`](learn/css/README.md) |
+| JavaScript | `learn/javascript/` | 124 | [`learn/javascript/README.md`](learn/javascript/README.md) |
+| CSS | `learn/css/` | 39 | [`learn/css/README.md`](learn/css/README.md) |
 | Vue 2 | `learn/vue2/src/` | 57 | [`learn/vue2/README.md`](learn/vue2/README.md) |
-| Vue 3 | `learn/vue3/src/` | 39 | [`learn/vue3/README.md`](learn/vue3/README.md) |
-| React 18 | `learn/react/src/` | 52 | [`learn/react/README.md`](learn/react/README.md) |
-| TypeScript | `learn/typescript/` | 15 | [`learn/typescript/README.md`](learn/typescript/README.md) |
-| 综合 Demo | `learn/demos/` | 4 | [`learn/demos/README.md`](learn/demos/README.md) |
-| **合计** | — | **323** | 各 demo 均有统一头注释（见 [`CONVENTIONS.md`](CONVENTIONS.md) §4） |
+| Vue 3 | `learn/vue3/src/` | 41 | [`learn/vue3/README.md`](learn/vue3/README.md) |
+| React 18 | `learn/react/src/` | 53 | [`learn/react/README.md`](learn/react/README.md) |
+| TypeScript | `learn/typescript/` | 18 | [`learn/typescript/README.md`](learn/typescript/README.md) |
+| 综合 Demo | `learn/demos/` | 5 | [`learn/demos/README.md`](learn/demos/README.md) |
+| **合计** | — | **337** | 统一头注释 + 页脚导航 + 入口搜索（见 [`CONVENTIONS.md`](CONVENTIONS.md)） |
+
+## 快速开始
+
+```bash
+# 浏览器打开总入口（支持搜索 / 分类筛选）
+open index.html
+
+# 或使用本地静态服务（推荐 Router / 模块 demo）
+npm run serve
+# → http://127.0.0.1:4173/index.html
+```
+
+`index.html` 由 [`scripts/build-index.mjs`](scripts/build-index.mjs) 自动生成，并链式注入页脚导航。
 
 ## 目录结构
 
@@ -35,7 +39,9 @@ open index.html
 ├── docs/
 │   ├── plans/               # 面试知识点 / 工程化补齐计划
 │   └── reviews/             # 全量审查与演进记录
-├── package.json             # npm 维护命令（无第三方依赖）
+├── package.json             # npm 维护命令（playwright 为可选 devDependency）
+├── CONTRIBUTING.md          # 贡献与必跑命令
+├── .githooks/pre-commit     # 可选 Git Hook 模板
 ├── .github/workflows/ci.yml # CI：test + validate
 ├── .gitignore .editorconfig
 │

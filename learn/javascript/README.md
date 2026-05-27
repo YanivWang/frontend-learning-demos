@@ -31,7 +31,7 @@
 
 <!-- DEMO_TABLE_START -->
 
-共 **120** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
+共 **124** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
 
 | 文件 | 主题 |
 |---|---|
@@ -117,12 +117,14 @@
 | `06-浏览器API/浏览器渲染与性能.html` | 浏览器渲染流程、重排、重绘与性能优化 |
 | `06-浏览器API/事件模型/01-事件循环.html` | 事件循环综合（同步 + Promise + async/await + setTimeout） |
 | `06-浏览器API/事件模型/02-dom事件-冒泡捕获委托.html` | DOM 事件流：捕获、目标、冒泡与事件委托 |
+| `06-浏览器API/事件模型/03-Node与浏览器事件循环对比.html` | Node.js 与浏览器事件循环对比 |
 | `06-浏览器API/拖曳手柄/01-贴边侧栏拖拽.html` | 拖拽调整侧栏宽度（Vue3 + requestAnimationFrame 版） |
 | `06-浏览器API/拖曳手柄/02-悬浮侧栏拖拽.html` | 悬浮侧栏拖拽 V2（带圆角与外边距） |
 | `06-浏览器API/BOM/hash.html` | hash 路由的基本演示 |
 | `06-浏览器API/BOM/history.html` | history pushState / replaceState 与 popstate |
 | `06-浏览器API/DOM操作.html` | DOM 基础操作（选择 / 属性 / 数据集 / 类） |
 | `06-浏览器API/fetch与跨域.html` | fetch 基础、错误处理与 CORS 跨域 |
+| `06-浏览器API/HTTP缓存.html` | HTTP 强缓存与协商缓存 |
 | `06-浏览器API/IntersectionObserver.html` | IntersectionObserver 实现图片懒加载 |
 | `06-浏览器API/MutationObserver.html` | MutationObserver 监听 DOM 变化 |
 | `06-浏览器API/Notification.html` | Notification 桌面通知 |
@@ -131,6 +133,7 @@
 | `06-浏览器API/toolTips/index.html` | Vue3 实现可交互的 Tooltip |
 | `06-浏览器API/WebWorker/01-基础/01-Worker-基础与子脚本.html` | Worker 基础与子脚本 |
 | `06-浏览器API/WebWorker/02-命名与消息分发/01-Worker-命名与消息分发.html` | 给 Worker 命名 + 用消息体分发不同任务 |
+| `07-进阶/安全/XSS与CSRF.html` | XSS 与 CSRF 防护 |
 | `07-进阶/垃圾回收.html` | 垃圾回收、可达性、标记清除与分代回收 |
 | `07-进阶/内存泄漏/index.html` | 全局大对象引用导致的内存占用 |
 | `07-进阶/内存泄漏/leakSuccess.html` | 通过手动置 null 释放闭包引用 |
@@ -147,6 +150,7 @@
 | `08-面试题/手写/04-instanceof.html` | 手写 instanceof |
 | `08-面试题/手写/05-Promise.html` | 面试简化版 Promise |
 | `08-面试题/手写/06-EventEmitter.html` | 手写 EventEmitter |
+| `08-面试题/手写/07-LRU缓存.html` | 手写 LRU 缓存 |
 | `08-面试题/作用域/01-this指向与作用域链.html` | 经典题 - this 指向与作用域链 |
 | `08-面试题/作用域/02-嵌套作用域-返回值.html` | 嵌套函数 - 返回内层函数执行结果 |
 | `08-面试题/作用域/03-嵌套作用域-返回函数.html` | 嵌套函数 - 返回内层函数引用 |

@@ -53,6 +53,22 @@ node scripts/gen-readme-tables.mjs javascript
 node scripts/gen-readme-tables.mjs react
 ```
 
+## `inject-demo-nav.mjs`
+
+为所有 demo 注入 `viewport` / `lang="zh-CN"` 与页脚导航（目录 / 上一篇 / 下一篇）。由 `npm run build:index` 链式调用。
+
+## `validate-topic-coverage.mjs`
+
+校验 JS/CSS/Vue/React/TS 扩展主题 demo 及 `learn/typescript/mini-project/` 是否存在。
+
+## `validate-browser-playwright.mjs`
+
+抽样打开 demo（需 `npm run serve` + 已安装 `playwright`），检查无 pageerror。
+
+## `check-lib-versions.mjs`
+
+检查 `libs/` vendored 文件版本注释（警告，不阻断 CI）。
+
 ## 推荐工作流
 
 ```bash

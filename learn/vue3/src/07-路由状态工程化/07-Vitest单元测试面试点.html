@@ -1,0 +1,75 @@
+<!--
+  分类: vue3 / 07-路由状态工程化
+  主题: Vitest 单元测试面试边界
+  要点:
+    - Vitest 与 Vite 配置共享，API 兼容 Jest（describe/it/expect）
+    - 组件测试：@vue/test-utils + mount/shallowMount
+    - mock：vi.fn()、vi.mock() 模块；定时器 vi.useFakeTimers()
+    - 面试边界：测行为不测实现细节；E2E 用 Playwright 而非 Vitest
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vue3 · Vitest 面试点</title>
+  <script src="../../libs/vue.global.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 780px; line-height: 1.65; }
+    pre { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 8px; font-size: 0.82rem; overflow: auto; }
+    button { padding: 8px 14px; cursor: pointer; margin: 8px 0; }
+    #log { background: #f6f8fa; padding: 12px; border-radius: 8px; font-family: ui-monospace, monospace; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h1>Vitest 单元测试（概念 + 迷你 mock 演示）</h1>
+    <pre>{{ configSnippet }}</pre>
+    <button type="button" @click="runMockDemo">运行 vi.fn 风格 mock 演示</button>
+    <div id="log">{{ log }}</div>
+  </div>
+
+  <script>
+    const { createApp, ref } = Vue;
+    createApp({
+      setup() {
+        const log = ref("");
+        const configSnippet = [
+          "// vitest.config.ts",
+          "export default defineConfig({",
+          "  test: { environment: 'jsdom', globals: true },",
+          "})",
+          "",
+          "it('increment', () => {",
+          "  const fn = vi.fn()",
+          "  fn(1)",
+          "  expect(fn).toHaveBeenCalledWith(1)",
+          "})",
+        ].join("\n");
+        function runMockDemo() {
+          const calls = [];
+          const fn = (...args) => { calls.push(args); };
+          fn(1); fn(2, "x");
+          log.value = "mock 调用记录:\n" + calls.map((a, i) => `#${i + 1} ${JSON.stringify(a)}`).join("\n") +
+            "\n\n面试：Vitest 适合单测 composable/store；路由+Pinia 集成测可 mock router.push";
+        }
+        return { configSnippet, log, runMockDemo };
+      },
+    }).mount("#app");
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="../../../../index.html">目录</a>
+  <a href="./06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html">← Router与Pinia可运行示例</a>
+  <a href="../08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/01-Proxy%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86.html">Proxy响应式原理 →</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

@@ -101,7 +101,7 @@
 
 <!-- DEMO_TABLE_START -->
 
-共 **52** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
+共 **53** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
 
 | 文件 | 主题 |
 |---|---|
@@ -157,5 +157,6 @@
 | `function-components/31-高阶组件HOC与renderProps.html` | 高阶组件 HOC 与 render props |
 | `function-components/32-useLayoutEffect与useEffect对比.html` | useLayoutEffect 与 useEffect 对比 |
 | `function-components/33-props派生状态与key重置.html` | props 派生状态与 key 重置 |
+| `function-components/34-React19新特性概览.html` | React 19 新特性概览 |
 
 <!-- DEMO_TABLE_END -->

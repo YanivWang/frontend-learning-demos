@@ -1,0 +1,70 @@
+<!--
+  分类: css / 07-现代特性 / 05-view-transitions
+  主题: View Transitions API（CSS 部分）
+  要点:
+    - document.startViewTransition() 触发默认交叉淡入淡出
+    - ::view-transition-old / ::view-transition-new 可自定义动画
+    - 适合 SPA 路由切换、主题切换、列表 reorder
+    - 不支持时 @supports 降级为普通 transition
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>View Transitions API</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 720px; }
+    .panel {
+      width: 200px; height: 200px; border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.25rem; color: #fff; cursor: pointer; user-select: none;
+      transition: background 0.3s;
+    }
+    @supports (view-transition-name: none) {
+      ::view-transition-old(root), ::view-transition-new(root) {
+        animation-duration: 0.4s;
+      }
+    }
+    .hint { font-size: 0.875rem; color: #666; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>View Transitions</h1>
+  <p>点击色块切换颜色，支持 View Transitions 的浏览器会有平滑过渡。</p>
+  <div class="panel" id="box">点击</div>
+  <p class="hint" id="support"></p>
+
+  <script>
+    const box = document.getElementById("box");
+    const colors = ["#0969da", "#8250df", "#1a7f37", "#bf8700"];
+    let i = 0;
+    box.style.background = colors[0];
+    document.getElementById("support").textContent =
+      typeof document.startViewTransition === "function"
+        ? "✅ 当前浏览器支持 startViewTransition"
+        : "⚠️ 不支持 View Transitions，将直接切换背景色";
+
+    box.onclick = () => {
+      i = (i + 1) % colors.length;
+      const next = () => { box.style.background = colors[i]; box.textContent = colors[i]; };
+      if (document.startViewTransition) document.startViewTransition(next);
+      else next();
+    };
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="../../../../index.html">目录</a>
+  <a href="../04-is-where%E9%80%89%E6%8B%A9%E5%99%A8/index.html">← index</a>
+  <a href="../06-subgrid/index.html">index →</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

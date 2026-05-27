@@ -43,7 +43,7 @@
 
 <!-- DEMO_TABLE_START -->
 
-共 **36** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
+共 **39** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
 
 | 文件 | 主题 |
 |---|---|
@@ -82,6 +82,9 @@
 | `07-现代特性/01-has选择器/index.html` | :has() 父选择器与条件样式 |
 | `07-现代特性/02-layer层叠管理/index.html` | @layer 层叠上下文与优先级管理 |
 | `07-现代特性/03-container-queries容器查询/index.html` | container-type 与 @container 组件级响应式 |
+| `07-现代特性/04-is-where选择器/index.html` | :is() 与 :where() 及特异性 |
+| `07-现代特性/05-view-transitions/index.html` | View Transitions API（CSS 部分） |
+| `07-现代特性/06-subgrid/index.html` | CSS Grid subgrid |
 | `index.html` | CSS 模块导航入口 |
 
 <!-- DEMO_TABLE_END -->

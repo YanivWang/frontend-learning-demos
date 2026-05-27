@@ -10,6 +10,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>严格模式 · use strict</title>
 </head>
 <body>
@@ -61,37 +62,40 @@ console.log(fb());    // true</code></pre>
   <p>严格模式下修改 <code>arguments[0]</code> 不会改变形参 <code>a</code>，反之亦然。</p>
 
   <h2>7. 实战：可执行的演示</h2>
+  <button type="button" id="run-demo">运行全部演示</button>
+  <div id="out" class="demo-output" aria-live="polite"></div>
   <script>
     'use strict';
 
-    // 字符串转义（与严格模式无关，复习一下）
-    const x = "i am \"history\" ant";
-    console.log(x);
+    function runDemo() {
+      const lines = [];
+      const log = (m) => lines.push(m);
 
-    // 16 进制可用
-    const y = 0x10;
-    console.log("0x10 =", y); // 16
+      const y = 0x10;
+      log("0x10 = " + y);
 
-    // 删除对象属性
-    const person = { name: "fighting!", age: 20 };
-    delete person.name;
-    console.log("delete 后:", person);
+      const person = { name: "fighting!", age: 20 };
+      delete person.name;
+      log("delete 后: " + JSON.stringify(person));
 
-    // 严格模式下函数内 this === undefined
-    function fa() {
-      'use strict';
-      return !this;
+      function fa() {
+        "use strict";
+        return !this;
+      }
+      log("独立调用 fa() 时 !this = " + fa());
+
+      const obj = { name: "obj" };
+      function showThis() {
+        "use strict";
+        return this;
+      }
+      log("showThis.call(42): " + showThis.call(42));
+      log("showThis.call(obj): " + JSON.stringify(showThis.call(obj)));
+
+      document.getElementById("out").textContent = lines.join("\n");
     }
-    console.log("独立调用 fa() 时 !this =", fa()); // true
-
-    // 但通过对象/call/bind 调用时，this 不会被自动包装为 Object
-    const obj = { name: "obj" };
-    function showThis() {
-      'use strict';
-      return this;
-    }
-    console.log("showThis.call(42):", showThis.call(42));    // 42（严格）/ Number(42)（非严格）
-    console.log("showThis.call(obj):", showThis.call(obj));  // { name: 'obj' }
+    document.getElementById("run-demo").addEventListener("click", runDemo);
+    runDemo();
   </script>
 
   <h2>常见踩坑</h2>
@@ -102,5 +106,19 @@ console.log(fb());    // true</code></pre>
   </ul>
 
   <p>相关：<a href="IIFE.html">IIFE 立即执行函数</a> · <a href="函数进阶.html">函数进阶</a></p>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="../../../index.html">目录</a>
+  <a href="./%E6%95%B0%E7%BB%84%E6%96%B9%E6%B3%95.html">← 数组方法</a>
+  <a href="./%E8%BF%90%E7%AE%97%E7%AC%A6.html">运算符 →</a>
+</footer>
+<!-- DEMO_NAV_END -->
 </body>
 </html>

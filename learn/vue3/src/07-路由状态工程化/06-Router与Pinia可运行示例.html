@@ -1,0 +1,122 @@
+<!--
+  分类: vue3 / 07-路由状态工程化
+  主题: Vue Router 4 + Pinia 可运行最小示例
+  要点:
+    - 使用 hash 模式，file:// 与静态服务均可打开
+    - createRouter + createPinia 挂载到同一 app
+    - 路由守卫读取 Pinia 登录态，未登录跳转 /login
+    - 可运行示例替代纯代码片段，见同目录 01/02 面试点页
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vue3 · Router + Pinia 可运行</title>
+  <script src="../../libs/vue.global.js"></script>
+  <script src="../../libs/vue-router.global.js"></script>
+  <script src="../../libs/pinia.iife.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; color: #202124; }
+    nav { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    nav a { color: #0969da; text-decoration: none; }
+    nav a.router-link-active { font-weight: 700; text-decoration: underline; }
+    .box { border: 1px solid #ddd; border-radius: 10px; padding: 16px; max-width: 520px; }
+    button { padding: 6px 12px; margin: 4px 4px 4px 0; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <nav>
+      <router-link to="/">首页</router-link>
+      <router-link to="/profile">个人中心（需登录）</router-link>
+      <router-link to="/login">登录</router-link>
+    </nav>
+    <div class="box">
+      <router-view></router-view>
+    </div>
+    <p style="font-size:0.875rem;color:#666;margin-top:1rem">
+      登录态：{{ userStore.isLogin ? userStore.token : '未登录' }}
+    </p>
+  </div>
+
+  <script>
+    const { createApp, ref } = Vue;
+    const { createRouter, createWebHashHistory } = VueRouter;
+    const { createPinia, defineStore } = Pinia;
+
+    const useUserStore = defineStore("user", {
+      state: () => ({ token: "" }),
+      getters: { isLogin: (s) => Boolean(s.token) },
+      actions: {
+        login(name) { this.token = "token-" + name; },
+        logout() { this.token = ""; },
+      },
+    });
+
+    const Home = { template: "<h2>首页</h2><p>Hash 路由 + Pinia 全局状态演示。</p>" };
+    const Login = {
+      setup() {
+        const userStore = useUserStore();
+        const name = ref("demo");
+        return {
+          name,
+          submit() {
+            userStore.login(name.value);
+            router.push("/profile");
+          },
+        };
+      },
+      template: `<h2>登录</h2>
+        <input v-model="name" placeholder="用户名" />
+        <button type="button" @click="submit">登录并跳转</button>`,
+    };
+    const Profile = {
+      setup() {
+        const userStore = useUserStore();
+        return { userStore, logout: () => { userStore.logout(); router.push("/login"); } };
+      },
+      template: `<h2>个人中心</h2>
+        <p>欢迎，{{ userStore.token }}</p>
+        <button type="button" @click="logout">退出</button>`,
+    };
+
+    const router = createRouter({
+      history: createWebHashHistory(),
+      routes: [
+        { path: "/", component: Home },
+        { path: "/login", component: Login },
+        { path: "/profile", component: Profile, meta: { requiresAuth: true } },
+      ],
+    });
+
+    router.beforeEach((to) => {
+      const userStore = useUserStore();
+      if (to.meta.requiresAuth && !userStore.isLogin) return "/login";
+    });
+
+    const pinia = createPinia();
+    const app = createApp({
+      setup() {
+        const userStore = useUserStore();
+        return { userStore };
+      },
+    });
+    app.use(pinia).use(router).mount("#app");
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="../../../../index.html">目录</a>
+  <a href="./05-script-setup%E7%BC%96%E8%AF%91%E5%AE%8F.html">← script-setup编译宏</a>
+  <a href="./07-Vitest%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E9%9D%A2%E8%AF%95%E7%82%B9.html">Vitest单元测试面试点 →</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>
