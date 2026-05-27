@@ -1,0 +1,64 @@
+<!--
+  分类: vue2 / 02-响应式原理
+  主题: Vue2 数组响应式限制
+  要点:
+    - Vue2 通过重写数组的 7 个变更方法触发更新：push / pop / shift / unshift / splice / sort / reverse
+    - 通过索引直接赋值 arr[index] = value 不会触发视图更新
+    - 直接修改 arr.length 也不会触发视图更新
+    - 修复方式：Vue.set(arr, index, value) 或 arr.splice(index, 1, value)
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Vue2 数组响应式限制</title>
+    <script src="../../libs/vue.js"></script>
+</head>
+<body>
+
+<div id="app">
+    <p>items: {{ items }}</p>
+    <button @click="badSet">索引赋值: items[1] = 'B'</button>
+    <button @click="goodSetByVueSet">Vue.set(items, 1, 'B')</button>
+    <button @click="goodSetBySplice">splice 替换</button>
+    <button @click="badLength">直接改 length</button>
+    <button @click="goodLength">splice 截断</button>
+    <pre>{{ logs.join('\n') }}</pre>
+</div>
+
+<script>
+    new Vue({
+        el: "#app",
+        data() {
+            return {
+                items: ["a", "b", "c"],
+                logs: []
+            };
+        },
+        methods: {
+            badSet() {
+                this.items[1] = "B";
+                this.logs.push("items[1] = 'B' 数据变了，但视图通常不会刷新");
+            },
+            goodSetByVueSet() {
+                Vue.set(this.items, 1, "B");
+                this.logs.push("Vue.set 会触发响应式更新");
+            },
+            goodSetBySplice() {
+                this.items.splice(1, 1, "BB");
+                this.logs.push("splice 是 Vue2 拦截过的数组方法，会触发更新");
+            },
+            badLength() {
+                this.items.length = 1;
+                this.logs.push("直接改 length 不会触发响应式更新");
+            },
+            goodLength() {
+                this.items.splice(1);
+                this.logs.push("用 splice 截断数组会触发更新");
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

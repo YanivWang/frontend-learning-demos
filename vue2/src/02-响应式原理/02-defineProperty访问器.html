@@ -1,0 +1,39 @@
+<!--
+  分类: vue2 / 02-响应式原理
+  主题: Object.defineProperty 实现访问器属性（Vue2 响应式核心）
+  要点:
+    - 把同名属性改成 getter/setter，必须用「闭包私有变量」做真正存储，否则 set/get 内部访问 this.name 会再次触发自身，形成栈溢出
+    - Vue2 数据响应式正是借此对每个字段挂上 getter/setter 并通知 Dep
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Object.defineProperty 与访问器属性</title>
+  </head>
+  <body>
+    <script>
+      let person = {
+        name: "wangcheng",
+      };
+
+      // 用闭包私有变量 _name 存值；setter 中若写 this.name = xxx 会再次触发自身 setter，导致栈溢出
+      let _name = person.name;
+      Object.defineProperty(person, "name", {
+        configurable: true,
+        enumerable: true,
+        set(newValue) {
+          _name = newValue;
+        },
+        get() {
+          return _name;
+        },
+      });
+
+      console.log(person);
+      person.name = "tom";
+      console.log("after set:", person.name);
+    </script>
+  </body>
+</html>

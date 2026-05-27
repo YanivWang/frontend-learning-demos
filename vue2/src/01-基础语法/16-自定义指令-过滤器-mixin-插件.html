@@ -1,0 +1,85 @@
+<!--
+  分类: vue2 / 01-基础语法
+  主题: 自定义指令 / 过滤器 / mixin / 插件
+  要点:
+    - 自定义指令适合封装底层 DOM 行为，常见钩子有 bind / inserted / update / componentUpdated / unbind
+    - 过滤器只用于模板文本格式化，Vue3 已移除；复杂逻辑应使用 computed 或 methods
+    - mixin 会把选项合并到组件中，生命周期都会执行，同名 methods/data 容易冲突
+    - 插件通过 install(Vue, options) 统一注册全局能力
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>指令 / 过滤器 / mixin / 插件</title>
+    <script src="../../libs/vue.js"></script>
+</head>
+<body>
+
+<div id="app">
+    <input v-focus v-border="'#409eff'" v-model="price">
+    <p>过滤器格式化: {{ price | currency }}</p>
+    <button @click="sayFromMixin">调用 mixin 方法</button>
+    <button @click="$toast('插件方法来自 Vue.prototype')">调用插件方法</button>
+    <pre>{{ logs.join('\n') }}</pre>
+</div>
+
+<script>
+    Vue.directive("focus", {
+        inserted(el) {
+            el.focus();
+        }
+    });
+
+    Vue.directive("border", {
+        bind(el, binding) {
+            el.style.border = "2px solid " + binding.value;
+        },
+        update(el, binding) {
+            el.style.borderColor = binding.value;
+        }
+    });
+
+    Vue.filter("currency", function (value) {
+        const number = Number(value);
+        return Number.isNaN(number) ? value : "￥" + number.toFixed(2);
+    });
+
+    const logMixin = {
+        created() {
+            this.logs.push("mixin created 先于组件自己的 created 执行");
+        },
+        methods: {
+            sayFromMixin() {
+                this.logs.push("mixin method 被调用");
+            }
+        }
+    };
+
+    const ToastPlugin = {
+        install(Vue) {
+            Vue.prototype.$toast = function (message) {
+                this.logs.push(message);
+            };
+        }
+    };
+
+    Vue.use(ToastPlugin);
+
+    new Vue({
+        el: "#app",
+        mixins: [logMixin],
+        data() {
+            return {
+                price: 12,
+                logs: []
+            };
+        },
+        created() {
+            this.logs.push("component created");
+        }
+    });
+</script>
+
+</body>
+</html>

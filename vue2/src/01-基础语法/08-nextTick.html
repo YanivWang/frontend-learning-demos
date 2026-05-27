@@ -1,0 +1,61 @@
+<!--
+  分类: vue2 / 01-基础语法
+  主题: nextTick 与异步 DOM 更新队列
+  要点:
+    - Vue2 修改响应式数据后，不会立刻同步更新 DOM，而是把 watcher 放入异步队列
+    - 同一轮事件循环内多次修改同一个数据，会被合并成一次 DOM 更新
+    - 需要在数据变化后读取最新 DOM 时，用 this.$nextTick(callback) 或 Vue.nextTick(callback)
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>nextTick 与异步 DOM 更新队列</title>
+    <script src="../../libs/vue.js"></script>
+</head>
+<body>
+
+<div id="app">
+    <p ref="text">{{ message }}</p>
+    <button @click="changeMessage">修改 message 后读取 DOM</button>
+    <button @click="batchUpdate">连续修改 count</button>
+    <p>count: {{ count }}</p>
+    <pre>{{ log.join('\n') }}</pre>
+</div>
+
+<script>
+    new Vue({
+        el: "#app",
+        data() {
+            return {
+                message: "旧文本",
+                count: 0,
+                log: []
+            };
+        },
+        methods: {
+            changeMessage() {
+                this.log = [];
+                this.message = "新文本";
+
+                this.log.push("同步读取 DOM: " + this.$refs.text.textContent);
+
+                this.$nextTick(() => {
+                    this.log.push("nextTick 后读取 DOM: " + this.$refs.text.textContent);
+                });
+            },
+            batchUpdate() {
+                this.count++;
+                this.count++;
+                this.count++;
+
+                this.$nextTick(() => {
+                    this.log.push("连续修改 3 次后，DOM 只在本轮末尾统一刷新: count = " + this.count);
+                });
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

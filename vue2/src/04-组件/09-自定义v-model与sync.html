@@ -1,0 +1,79 @@
+<!--
+  分类: vue2 / 04-组件
+  主题: 自定义组件 v-model 与 .sync
+  要点:
+    - Vue2 自定义组件 v-model 默认使用 prop: value 与 event: input
+    - 组件可用 model 选项改成其它 prop/event，比如 checked/change
+    - .sync 是 :prop + @update:prop 的语法糖，适合子组件请求父组件更新某个 prop
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>自定义组件 v-model 与 .sync</title>
+    <script src="../../libs/vue.js"></script>
+</head>
+<body>
+
+<div id="app">
+    <h3>默认 v-model: value + input</h3>
+    <text-editor v-model="title"></text-editor>
+    <p>title: {{ title }}</p>
+
+    <h3>自定义 model: checked + change</h3>
+    <switch-button v-model="enabled"></switch-button>
+    <p>enabled: {{ enabled }}</p>
+
+    <h3>.sync: update:visible</h3>
+    <button @click="dialogVisible = true">打开弹窗</button>
+    <simple-dialog :visible.sync="dialogVisible"></simple-dialog>
+</div>
+
+<script>
+    Vue.component("text-editor", {
+        props: ["value"],
+        template: `
+            <input
+                :value="value"
+                @input="$emit('input', $event.target.value)"
+            >
+        `
+    });
+
+    Vue.component("switch-button", {
+        model: {
+            prop: "checked",
+            event: "change"
+        },
+        props: ["checked"],
+        template: `
+            <button @click="$emit('change', !checked)">
+                {{ checked ? '开启' : '关闭' }}
+            </button>
+        `
+    });
+
+    Vue.component("simple-dialog", {
+        props: ["visible"],
+        template: `
+            <div v-if="visible" style="border:1px solid #ccc;padding:8px;margin-top:8px;">
+                <p>我是弹窗内容</p>
+                <button @click="$emit('update:visible', false)">关闭</button>
+            </div>
+        `
+    });
+
+    new Vue({
+        el: "#app",
+        data() {
+            return {
+                title: "Vue2 面试",
+                enabled: true,
+                dialogVisible: false
+            };
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!--
+  分类: vue2 / 05-路由与状态
+  主题: Vuex 全家桶（state / mutations / actions / getters / mapState / mapGetters）
+  要点:
+    - state 必须先声明字段才会被响应式追踪；getters 的「函数式」用法可以接外部参数
+    - 易错点：doneTodos 是「返回函数的 getter」，doneTodos.length 会取到函数 arity(=1)，不是数组长度
+    - doneTodosArr 直接返回 done:true 的数组，doneTodosCount 取其 length
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vuex · state / mutations / actions / getters</title>
+    <script src="../../libs/vue.js"></script>
+    <!--vuex 依赖 Promise；老浏览器需先加载 polyfill-->
+    <script src="../../libs/es6-promise.auto.js"></script>
+    <script src="../../libs/vuex.js"></script>
+</head>
+<body>
+
+<div id="app">
+</div>
+
+<script>
+    //vuex概念：
+    //Vuex是什么：Vuex是一个专为vue.js应用程序开发的状态管理模式。它采用集中式存储管理应用的所有组件的状态
+    //并以相应的规则保证状态以一种可预测的方式发生变化
+    //将组件的共享状态抽取出来，以一个全局单例模式管理,这样每个组件都能访问到这个全局唯一的状态实例，就不需要层层的传递参数
+    //每个组件都能获取状态和触发事件
+
+    //vuex核心：
+    //每一个Vuex应用的核心就是store(仓库)，"store"就像是一个容器，它包含着你的应用中大部分的状态(state)。Vuex(全局的单例对象)和单纯的全局对象
+    //有两点不同：
+    /*
+    * 1.Vuex 的状态存储是响应式的。当 Vue 组件从 store 中读取状态的时候，如果 store 中的状态发生变化，那么相应的组件也会得到高效更新（它和组件内部的数据一样，都是响应式的数据）
+    * 2.不能直接改变store中的状态。改变store中状态的唯一途径就是显式的“提交”(commit)mutation。这样使得我们可以方便的跟踪每一个状态的变化
+    * */
+
+    //vuex: 使用单一状态树，用一个全局单例模式对象，包含应用的所有层级状态。因此作为一个唯一的数据源存在。也就是每个应用只能
+    //包含一个store实例。单一状态树让我们能够直接地定位任一特定的状态片段。在调试的过程中也能轻易地取得整个当前应用状态的快照。
+    //在组件中使用Vuex的state,需要使用计算属性的方法
+
+    const store = new Vuex.Store({
+        //该属性用于存储共享的状态
+        state: {
+            count: 0,
+            name: "wc",
+            todos: [
+                { id: 1, text: '...', done: true },
+                { id: 2, text: '...', done: false }
+            ]
+        },
+        //其它组件可以提交突变，来改变状态
+        mutations: {
+            increment(state) {
+                state.count++;
+            }
+        },
+        //action 类似于 mutation：1.action 提交的是 mutation，而不是直接变更状态  2.action 可以包含任意的异步操作
+        actions:{
+          increment(context){
+              context.commit('increment');
+          },
+          incrementAsync({commit}){
+              setTimeout(()=>{
+                  commit('increment');
+              },3000)
+          }
+        },
+        //相当于的store的state的computed属性(访问它store.getters.getCount，并不是一个函数，而是一个值)
+        //通过getters可以对state进行一些扩展
+        //计算属性
+        getters: {
+            //有时候需要对store的state进行扩展，store提供getters方法来进行扩展(类似于组件的计算属性，其值也是响应式的)
+            //通过属性方式访问
+            getCount: function (state) {
+                return state.count * 100;
+            },
+            //通过函数的方式访问(这种方式，可以传递外部的参数)
+            doneTodos: (state)=>(id)=>{
+               return state.todos.find(todo => todo.id === id);
+            },
+            // 纯数组形式的「已完成 todos」，便于其他 getter 直接取 length
+            doneTodosArr: (state)=> state.todos.filter(todo => todo.done),
+            //接受其它的getter（取数组 length 才是「已完成数」）
+            doneTodosCount:(state,getters)=>{
+                return getters.doneTodosArr.length;
+            }
+        }
+    });
+
+    //通过属性访问，是作为Vue的响应式系统的一部分缓存
+    console.log(store.getters.getCount);
+    console.log(store.getters.doneTodos(2));
+    console.log(store.getters.doneTodosCount);
+
+    //通过store的commit方法，提交mutation
+    store.commit('increment');
+
+    //通过store的dispatch方法，分发action，以载荷方式分发
+    //载荷：就是参数，说的那么高端
+    store.dispatch('incrementAsync',{
+       amount: 10
+    });
+    store.dispatch({
+        type:'incrementAsync',
+        amount: 10
+    });
+
+    let mapStateUser = Vuex.mapState(['count', 'name']);
+    let complexUser = {
+        //计算属性一定要return一个值(相当于属性的get函数)
+        reverseMsg: function () {
+            return this.msg.split("").reverse().join("");
+        },
+        ...mapStateUser
+    };
+
+    // Vue 模板绑定中：是一个 javascript 表达式
+    const About = {
+        data() {
+            return {
+                msg: "wang"
+            }
+        },
+        template: `
+      <div>
+         <div>About</div>
+         <div>getCount:{{getCount}}</div>
+         <div>doneTodos:{{doneTodos(2)}}</div>
+      </div>`,
+        computed: {
+            ...Vuex.mapGetters(["getCount","doneTodos"])
+        }
+    };
+
+
+    const User = {
+        data() {
+            return {
+                msg: "wang"
+            }
+        },
+        template: `
+      <div>
+         <div>User</div>
+         <div>{{count}}</div>
+         <div>{{name}}</div>
+         <div>{{reverseMsg}}</div>
+      </div>`,
+        //使用mapState更方便的将Vuex的状态，映射为组件内部的计算属性(计算属性是响应式的依赖)
+        computed: complexUser
+    };
+
+
+    let mapStateRoot = Vuex.mapState({
+        count: state => state.count,
+        countAlias: 'count',
+        countPlusLocalState(state) {
+            //要想在使用了mapState映射生成的计算属性中访问组件的局部状态，必须使用常规的函数
+            return state.count + this.localCount
+        }
+    });
+    let complexRoot = {
+        //计算属性一定要return一个值(相当于属性的get函数)
+        reverseMsg: function () {
+            return this.msg.split("").reverse().join("");
+        },
+        //使用对象展开运算符，将
+        ...mapStateRoot
+    };
+
+    new Vue({
+        //state: 驱动应用的数据源
+        data() {
+            return {
+                msg: "cheng",
+                localCount: 2
+            }
+        },
+        store,//vuex通过store属性，将状态从根组件“注入”到每一个子组件中
+        computed: {
+            //计算属性依赖于原始数据对象，如果原始数据对象，发生改变，计算属性，会自动的重新求值
+            count: function () {
+                return this.$store.state.count;
+            },
+            ...complexRoot
+        },
+        //view： 以声明方式将state映射到视图
+        template: `
+            <div>
+              <div>根：{{ count }}</div>
+              <div>localCount: {{localCount}}</div>
+              <User/>
+              <About/>
+            </div>
+        `,
+        //actions：响应在view上的用户输入导致的状态变化
+        methods: {
+            increment() {
+                this.count++;
+            }
+        },
+        components: {
+            User,
+            About
+        }
+    }).$mount("#app");
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!--
+  分类: vue2 / 01-基础语法
+  主题: v-model 原理
+  要点:
+    - 表单元素上的 v-model 本质是 value 绑定 + input/change 事件
+    - text/textarea 默认使用 value + input；checkbox/radio/select 有各自的表单语义
+    - 自定义组件上的 v-model 默认等价于 :value="x" @input="x = $event"
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>v-model 原理</title>
+    <script src="../../libs/vue.js"></script>
+</head>
+<body>
+
+<div id="app">
+    <h3>原生 input</h3>
+    <input v-model="keyword">
+    <input :value="keyword" @input="keyword = $event.target.value">
+    <p>keyword: {{ keyword }}</p>
+
+    <h3>checkbox</h3>
+    <label><input type="checkbox" value="Vue" v-model="checkedList">Vue</label>
+    <label><input type="checkbox" value="React" v-model="checkedList">React</label>
+    <p>checkedList: {{ checkedList }}</p>
+
+    <h3>自定义组件 v-model</h3>
+    <name-input v-model="username"></name-input>
+    <p>username: {{ username }}</p>
+</div>
+
+<script>
+    Vue.component("name-input", {
+        props: ["value"],
+        template: `
+            <label>
+                用户名:
+                <input
+                    :value="value"
+                    @input="$emit('input', $event.target.value)"
+                >
+            </label>
+        `
+    });
+
+    new Vue({
+        el: "#app",
+        data() {
+            return {
+                keyword: "vue2",
+                checkedList: ["Vue"],
+                username: "wangcheng"
+            };
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!--
+  分类: vue2 / 04-组件
+  主题: Vue2 组件通信方式汇总
+  要点:
+    - 父子通信：props 下传，$emit 上抛
+    - 跨层通信：provide / inject，适合稳定依赖，不推荐滥用成全局状态
+    - 兄弟/远亲通信：事件总线 EventBus，小项目可用，大项目更推荐 Vuex
+    - 透传属性/事件：$attrs / $listeners，常用于二次封装基础组件
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Vue2 组件通信方式汇总</title>
+    <script src="../../libs/vue.js"></script>
+</head>
+<body>
+
+<div id="app">
+    <child-card
+        :title="title"
+        button-text="透传按钮文案"
+        @rename="title = $event"
+        @native-click="logs.push('来自孙组件透传的事件')"
+    ></child-card>
+
+    <sibling-a></sibling-a>
+    <sibling-b></sibling-b>
+
+    <pre>{{ logs.join('\n') }}</pre>
+</div>
+
+<script>
+    const EventBus = new Vue();
+
+    Vue.component("base-button", {
+        inheritAttrs: false,
+        template: `
+            <button v-bind="$attrs" v-on="$listeners">
+                {{ $attrs['button-text'] || '按钮' }}
+            </button>
+        `
+    });
+
+    Vue.component("child-card", {
+        inject: ["theme"],
+        props: ["title"],
+        template: `
+            <section style="border:1px solid #ddd;padding:8px;margin-bottom:8px;">
+                <p>props title: {{ title }}</p>
+                <p>inject theme.color: {{ theme.color }}</p>
+                <button @click="$emit('rename', '子组件改名请求')">props + $emit</button>
+                <base-button v-bind="$attrs" @click="$emit('native-click')"></base-button>
+            </section>
+        `
+    });
+
+    Vue.component("sibling-a", {
+        template: `<button @click="send">兄弟 A 发送事件</button>`,
+        methods: {
+            send() {
+                EventBus.$emit("sibling-message", "来自兄弟 A");
+            }
+        }
+    });
+
+    Vue.component("sibling-b", {
+        template: `<p>兄弟 B 收到: {{ message }}</p>`,
+        data() {
+            return { message: "" };
+        },
+        created() {
+            EventBus.$on("sibling-message", this.onMessage);
+        },
+        beforeDestroy() {
+            EventBus.$off("sibling-message", this.onMessage);
+        },
+        methods: {
+            onMessage(message) {
+                this.message = message;
+            }
+        }
+    });
+
+    new Vue({
+        el: "#app",
+        provide() {
+            return {
+                theme: this.theme
+            };
+        },
+        data() {
+            return {
+                title: "父组件标题",
+                theme: { color: "blue" },
+                logs: []
+            };
+        }
+    });
+</script>
+
+</body>
+</html>

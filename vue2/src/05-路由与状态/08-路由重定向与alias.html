@@ -1,0 +1,67 @@
+<!--
+  分类: vue2 / 05-路由与状态
+  主题: vue-router 路由重定向 与 alias 别名
+  要点:
+    - redirect: 命中后地址栏会被替换；URL 与匹配到的路由不再是 /a 而是 /b
+    - alias: 让 URL 保持原样，但实际渲染原路径对应的组件，常用于隐藏 UI 内部结构
+    - 路由对象支持 name 命名路由，便于 router.push({ name: 'toC' }) 调用
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>vue-router · redirect & alias</title>
+    <script src="../../libs/vue.js"></script>
+    <script src="../../libs/vue-router.js"></script>
+</head>
+<body>
+
+<div id="app">
+    <router-link to="/a">to a（redirect → /b）</router-link>
+    <router-link to="/b">to b</router-link>
+    <router-link to="/c">to c</router-link>
+    <router-link to="/我是">to /我是（alias of /c）</router-link>
+    <router-link to="/d">to d</router-link>
+    <button @click="goToCByName">编程式 push({ name: 'toC' })</button>
+
+    <p>当前: {{ $route.fullPath }}</p>
+    <router-view></router-view>
+</div>
+
+<script>
+    const A = { template: `<div>A（不会显示，/a 会 redirect 到 /b）</div>` };
+    const B = { template: `<div>B</div>` };
+    const C = { template: `<div>C</div>` };
+    const D = { template: `<div>D</div>` };
+
+    const router = new VueRouter({
+        routes: [
+            {
+                path: '/a',
+                redirect: '/b',
+                component: A
+            },
+            { path: '/b', component: B },
+            {
+                name: "toC",
+                path: '/c',
+                component: C,
+                alias: '/我是'
+            },
+            { path: '/d', component: D }
+        ]
+    });
+
+    new Vue({
+        el: '#app',
+        router,
+        methods: {
+            goToCByName: function () {
+                this.$router.push({ name: 'toC' });
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!--
+  分类: vue2 / 02-响应式原理
+  主题: 用 Performance 时间线观察大数组对响应式性能的影响
+  要点:
+    - 易错点：原生 onclick="handleClickFn" 无法访问 Vue methods；应该用 @click（v-on:click）
+    - 百万次 push 到响应式数组会触发巨量依赖通知；应先在非响应式 buffer 处理完再整体赋值
+    - 打开 Chrome DevTools → Performance 面板录制，可观察长 task 与 scripting 耗时
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>响应式：大数组与 Performance timeline</title>
+    <script src="../../libs/vue.js"></script>
+    <style>
+      button { display: block; margin: 8px 0; }
+      pre { background: #f5f5f5; padding: 12px; max-height: 280px; overflow: auto; }
+      .warn { color: #c00; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div>{{ message }}</div>
+
+      <p class="warn">错误写法（原生 onclick 无法调用 Vue methods）：</p>
+      <button onclick="handleClickFn()">onclick="handleClickFn()" — 点击会报错</button>
+
+      <p>正确写法：</p>
+      <button @click="pushManyTimes">慢：循环 push 1 万次到响应式 arr</button>
+      <button @click="assignWhole">快：非响应式 buffer 处理后 this.arr = buffer</button>
+
+      <div>arr.length = {{ arr.length }}</div>
+      <pre>{{ logs.join('\n') }}</pre>
+      <p><small>提示：点击按钮前打开 DevTools → Performance → 录制，可在 timeline 中看到 scripting 耗时差异</small></p>
+    </div>
+
+    <script>
+      new Vue({
+        el: "#app",
+        data() {
+          return {
+            message: "大数组响应式性能对比",
+            arr: [],
+            logs: []
+          };
+        },
+        mounted() {
+          console.log("vm._data:", this._data);
+          console.log("vm.data 不存在:", this.data);
+        },
+        methods: {
+          _log(msg) {
+            this.logs.unshift(new Date().toLocaleTimeString() + "  " + msg);
+          },
+          pushManyTimes() {
+            var t0 = performance.now();
+            var buffer = new Array(10000).fill("x");
+            for (var i = 0; i < buffer.length; i++) {
+              this.arr.push(buffer[i]);
+            }
+            var ms = (performance.now() - t0).toFixed(1);
+            this._log("循环 push 1 万次耗时 " + ms + "ms（打开 Performance 面板可录 timeline）");
+          },
+          assignWhole() {
+            var t0 = performance.now();
+            var buffer = new Array(10000).fill("x");
+            this.arr = buffer.slice();
+            var ms = (performance.now() - t0).toFixed(1);
+            this._log("整体赋值 1 万元素耗时 " + ms + "ms");
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
