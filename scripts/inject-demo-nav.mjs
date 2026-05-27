@@ -14,8 +14,8 @@ import { fileURLToPath } from "node:url";
 import { docsHomeHref } from "./docs-home.mjs";
 
 const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
-const NAV_START = "<!-- DEMO_NAV_START -->";
-const NAV_END = "<!-- DEMO_NAV_END -->";
+const NAV_START = "<!-- NAV_START -->";
+const NAV_END = "<!-- NAV_END -->";
 
 const SECTIONS = [
   join("apps", "javascript"),
@@ -108,15 +108,11 @@ function buildNavHtml(fromAbs, prev, nextItem, current, flat) {
     parts.push(`<a href="${relHref(fromAbs, join(ROOT, decodeHref(nextItem.href)))}">${escapeHtml(nextItem.title)} →</a>`);
   }
   return `${NAV_START}
-<footer class="demo-nav" aria-label="Demo 导航">
-  <style>
-    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
-    .demo-nav a { color: #0969da; text-decoration: none; }
-    .demo-nav a:hover { text-decoration: underline; }
-    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
-    .demo-output:empty { display: none; }
-  </style>
-  ${parts.join("\n  ")}
+    <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
+      <h2 class="demo-block__label">页面导航</h2>
+      <nav class="demo-nav" aria-label="相关链接">
+  ${parts.join("\n        ")}
+      </nav>
   <script>
     (function () {
       var a = document.querySelector("[data-demo-catalog]");
@@ -138,7 +134,10 @@ function escapeHtml(s) {
 }
 
 function injectNav(content, navBlock) {
-  const re = new RegExp(`${NAV_START}[\\s\\S]*?${NAV_END}`, "m");
+  const re = new RegExp(
+    `(?:<!--\\s*(?:DEMO_)?NAV_START\\s*-->[\\s\\S]*?<!--\\s*(?:DEMO_)?NAV_END\\s*-->)`,
+    "m"
+  );
   if (re.test(content)) return content.replace(re, navBlock);
   if (/<\/body>/i.test(content)) {
     return content.replace(/<\/body>/i, `${navBlock}\n</body>`);

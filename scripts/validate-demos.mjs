@@ -91,8 +91,12 @@ function validateDemoNotes(content, fileRel) {
   } else if (meta.interviewPoints.length < 3) {
     errors.push(`${fileRel}: demo「面试:」至少 3 条 bullet`);
   }
-  if (!/<section[^>]*class\s*=\s*["'][^"']*\bdemo-notes\b/i.test(content)) {
-    errors.push(`${fileRel}: 缺少 section.demo-notes（运行 npm run transform:all-demos）`);
+  if (!/demo-block--notes/.test(content)) {
+    errors.push(`${fileRel}: 缺少 demo-block--notes 复习区（运行 npm run migrate:demo-shell）`);
+    return;
+  }
+  if (!/<div[^>]*class\s*=\s*["'][^"']*\bdemo-notes\b/.test(content)) {
+    errors.push(`${fileRel}: 缺少 div.demo-notes（运行 npm run migrate:demo-shell）`);
     return;
   }
   if (!/知识点要点/.test(content)) {
@@ -108,17 +112,20 @@ function validateDemoNotes(content, fileRel) {
 
 function validateVisibleLearningSurface(content, fileRel) {
   if (!/^apps\/javascript\//.test(fileRel)) return;
-  if (!/<h1[\s>]/i.test(content)) {
-    errors.push(`${fileRel}: JavaScript demo 须有 <h1>（运行 npm run enhance:js-demos）`);
+  if (!/demo-block--notes[\s\S]*?<h1[\s>]/i.test(content)) {
+    errors.push(`${fileRel}: JavaScript demo 须在复习区含 <h1>（运行 npm run migrate:demo-shell）`);
   }
   if (!/console\.(log|info|warn|error|dir)\s*\(/i.test(content)) return;
   const hasOutput =
+    /demo-block--run[\s\S]*?demo-output/i.test(content) ||
     /id\s*=\s*["']demo-output["']/i.test(content) ||
     /id\s*=\s*["']log["']/i.test(content) ||
-    /class\s*=\s*["'][^"']*\bdemo-output\b/i.test(content) ||
-    /id\s*=\s*["']out["']/i.test(content);
+    /id\s*=\s*["']out["']/i.test(content) ||
+    /<!--\s*SCRIPT_START\s*-->/.test(content);
   if (!hasOutput) {
-    errors.push(`${fileRel}: 含 console 输出的 JavaScript demo 须有可见输出区（#demo-output）`);
+    errors.push(
+      `${fileRel}: 含 console 输出的 JavaScript demo 须有运行输出区或 SCRIPT 区块（见 字符串方法.html）`
+    );
   }
 }
 
@@ -129,8 +136,14 @@ function validatePageMeta(content, fileRel) {
   if (!/<meta[^>]*name\s*=\s*["']viewport["']/i.test(content)) {
     errors.push(`${fileRel}: 缺少 viewport meta（运行 node scripts/inject-demo-nav.mjs 可自动补齐）`);
   }
-  if (!content.includes("<!-- DEMO_NAV_START -->")) {
+  if (!/<!--\s*(?:DEMO_)?NAV_START\s*-->/.test(content)) {
     errors.push(`${fileRel}: 缺少页脚导航（运行 node scripts/inject-demo-nav.mjs）`);
+  }
+  if (!/demo-shell\.css/i.test(content)) {
+    errors.push(`${fileRel}: 缺少 demo-shell.css（运行 npm run migrate:demo-shell）`);
+  }
+  if (!/class\s*=\s*["'][^"']*\bdemo-page\b/.test(content)) {
+    errors.push(`${fileRel}: body 缺少 demo-page 类（运行 npm run migrate:demo-shell）`);
   }
 }
 

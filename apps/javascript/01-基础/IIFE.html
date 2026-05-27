@@ -11,20 +11,22 @@
     - IIFE 和模块化的关系？
   相关: 严格模式, 闭包
 -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IIFE · 立即执行函数</title>
   <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
 </head>
-<body>
-  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-  <h1>IIFE（Immediately Invoked Function Expression）</h1>
-  <p>定义后立刻调用的函数。常用于：① 创建独立作用域，避免污染全局；② 模块的早期实现方式。</p>
-  <section class="demo-notes" aria-label="复习与面试要点">
-    <h2>知识点要点</h2>
+<body class="demo-page">
+    <!-- NOTES_START -->
+    <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
+      <h1>IIFE（Immediately Invoked Function Expression）</h1>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <div class="demo-notes">
+<h2>知识点要点</h2>
     <ul>
       <li>IIFE = 函数表达式 + 紧跟的 <code>()</code>；<code>function</code> 开头会被当声明，需括号或一元运算符逼成表达式。</li>
       <li>常见写法：<code>(function(){})()</code>、<code>!function(){}()</code>、具名 IIFE、带参 IIFE。</li>
@@ -38,8 +40,21 @@
       <li><strong>var+for 闭包怎么修？</strong> IIFE 传 i：<code>(function(j){ setTimeout(...) })(i)</code>；或直接用 <code>let</code>。见下方第 3 节演示。</li>
       <li><strong>和模块化的关系？</strong> IIFE 是 ES5 时代的模块雏形；ES6 import/export 是标准方案。UMD 等仍可能包一层 IIFE。</li>
     </ul>
-  </section>
+      </div>
+    </section>
+    <!-- NOTES_END -->
 
+    <!-- RUN_START -->
+    <section class="demo-block demo-block--run" aria-label="运行输出">
+      <h2 class="demo-block__label">运行输出</h2>
+      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
+      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
+    </section>
+    <!-- RUN_END -->
+
+    <script src="../../../packages/shared/demo-log.js"></script>
+
+<p>定义后立刻调用的函数。常用于：① 创建独立作用域，避免污染全局；② 模块的早期实现方式。</p>
   <h2>核心：函数表达式 + 后面的 <code>()</code></h2>
   <p>
     解析器看到 <code>function</code> 开头时，会优先把它当成<strong>函数声明</strong>，
@@ -47,8 +62,10 @@
   </p>
 
   <h2>1. 多种常见写法</h2>
-    <script src="../../../packages/shared/demo-log.js"></script>
-<script>
+
+    
+        <!-- SCRIPT_START -->
+    <script>
     // ① 整个函数表达式用括号包起来，再加 ()
     (function () {
       console.log("[IIFE-1] 我是匿名 IIFE");
@@ -77,9 +94,14 @@
     +function () { console.log("[IIFE-6] +function 同理"); }();
     void function () { console.log("[IIFE-7] void function 同理"); }();
   </script>
+    <!-- SCRIPT_END -->
+    
 
-  <h2>2. 立即传参：把外部变量"快照"到函数内</h2>
-  <script>
+<h2>2. 立即传参：把外部变量"快照"到函数内</h2>
+
+    
+        <!-- SCRIPT_START -->
+    <script>
     const param = [1, 2, 3, 4];
     const sum = (function (arr) {
       let total = 0;
@@ -88,9 +110,14 @@
     })(param);
     console.log("[IIFE 传参] sum =", sum); // 10
   </script>
+    <!-- SCRIPT_END -->
+    
 
-  <h2>3. 经典面试题：用 IIFE 修复 var + for 闭包</h2>
-  <script>
+<h2>3. 经典面试题：用 IIFE 修复 var + for 闭包</h2>
+
+    
+        <!-- SCRIPT_START -->
+    <script>
     // ❌ 经典坑：var 没有块级作用域，回调里全是同一个 i
     // for (var i = 0; i < 3; i++) {
     //   setTimeout(() => console.log("var:", i), 0);
@@ -109,9 +136,14 @@
       setTimeout(() => console.log("[let 写法] k =", k), 0);
     }
   </script>
+    <!-- SCRIPT_END -->
+    
 
-  <h2>4. 模块化的雏形：揭示模块模式（Revealing Module Pattern）</h2>
-  <script>
+<h2>4. 模块化的雏形：揭示模块模式（Revealing Module Pattern）</h2>
+
+    
+        <!-- SCRIPT_START -->
+    <script>
     const Counter = (function () {
       let count = 0;                  // 私有变量
       function inc() { count++; }
@@ -124,9 +156,14 @@
     console.log("[模块模式] Counter.get() =", Counter.get()); // 2
     console.log("[模块模式] Counter.count =", Counter.count); // undefined（私有）
   </script>
+    <!-- SCRIPT_END -->
+    
 
-  <h2>5. 与 <code>new Function()</code> 的对比</h2>
-  <script>
+<h2>5. 与 <code>new Function()</code> 的对比</h2>
+
+    
+        <!-- SCRIPT_START -->
+    <script>
     // new Function：通过字符串动态创建函数（不推荐，无法访问外层作用域）
     const multiply = new Function("a", "b", "return a * b");
     console.log("[new Function] 2 * 3 =", multiply(2, 3));
@@ -141,22 +178,21 @@
       console.log("[new Function 看不见 outerVar]", e.message);
     }
   </script>
+    <!-- SCRIPT_END -->
+    
 
-  <p>相关：<a href="严格模式.html">严格模式</a> · <a href="../02-函数与作用域/闭包/01-闭包-作用域链与变量提升.html">闭包</a></p>
-<!-- DEMO_NAV_START -->
-<footer class="demo-nav" aria-label="Demo 导航">
-  <style>
-    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
-    .demo-nav a { color: #0969da; text-decoration: none; }
-    .demo-nav a:hover { text-decoration: underline; }
-    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
-    .demo-output:empty { display: none; }
-  </style>
-  <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-  <a href="./%E4%B8%A5%E6%A0%BC%E6%A8%A1%E5%BC%8F.html">相关 · 严格模式</a>
-  <a href="./eval%E4%B8%8EGlobal.html">← eval与Global</a>
-  <a href="./JSON.html">JSON →</a>
-  <script>
+<p>相关：<a href="严格模式.html">严格模式</a> · <a href="../02-函数与作用域/闭包/01-闭包-作用域链与变量提升.html">闭包</a></p>
+
+    <!-- NAV_START -->
+    <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
+      <h2 class="demo-block__label">页面导航</h2>
+      <nav class="demo-nav" aria-label="相关链接">
+        <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+        <a href="./%E4%B8%A5%E6%A0%BC%E6%A8%A1%E5%BC%8F.html">相关 · 严格模式</a>
+        <a href="./eval%E4%B8%8EGlobal.html">← eval与Global</a>
+        <a href="./JSON.html">JSON →</a>
+      </nav>
+      <script>
     (function () {
       var a = document.querySelector("[data-demo-catalog]");
       if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
@@ -164,7 +200,9 @@
       }
     })();
   </script>
-</footer>
-<!-- DEMO_NAV_END -->
+    </footer>
+    <!-- NAV_END -->
+  
+  
 </body>
 </html>

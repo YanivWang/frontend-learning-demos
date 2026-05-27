@@ -13,19 +13,22 @@
     - 面试中如何简洁讲清 原型属性 vs 实例属性、hasOwnProperty 与 in
 
 -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>原型属性 vs 实例属性 · hasOwnProperty / in</title>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
   </head>
-<body>
-  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-  <h1>原型属性 vs 实例属性</h1>
-<section class="demo-notes" aria-label="复习与面试要点">
-    <h2>知识点要点</h2>
+<body class="demo-page">
+    <!-- NOTES_START -->
+    <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
+      <h1>原型属性 vs 实例属性</h1>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <div class="demo-notes">
+<h2>知识点要点</h2>
     <ul>
       <li>实例属性每个实例独立；原型属性所有实例共享一份引用。</li>
       <li>hasOwnProperty 只判自有；in 沿原型链查找。</li>
@@ -37,13 +40,27 @@
       <li><strong>hasOwnProperty 只判自有？</strong> hasOwnProperty 只判自有；in 沿原型链查找</li>
       <li><strong>推荐 Object.getPrototypeOf(obj) 代替 __proto？</strong> 推荐 <code>Object</code>.getPrototypeOf(obj) 代替 __proto__（标准 API）</li>
     </ul>
-  </section>
+      </div>
+    </section>
+    <!-- NOTES_END -->
 
-  <p>这是初学者最容易混淆的点：同样是给对象加属性，<strong>定义在构造函数里</strong>和<strong>挂在 prototype 上</strong>有本质区别。</p>
+    <!-- RUN_START -->
+    <section class="demo-block demo-block--run" aria-label="运行输出">
+      <h2 class="demo-block__label">运行输出</h2>
+      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
+      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
+    </section>
+    <!-- RUN_END -->
+
+    <script src="../../../packages/shared/demo-log.js"></script>
+
+<p>这是初学者最容易混淆的点：同样是给对象加属性，<strong>定义在构造函数里</strong>和<strong>挂在 prototype 上</strong>有本质区别。</p>
 
   <h2>1. 两种写法的本质对比</h2>
-    <script src="../../../packages/shared/demo-log.js"></script>
-<script>
+
+    
+        <!-- SCRIPT_START -->
+    <script>
     // ===== 方式 A：属性/方法定义在构造函数内 =====
     // 每次 new 都会创建独立副本（占内存，但实例之间互不影响）
     function Dog(name) {
@@ -67,9 +84,14 @@
     const p2 = new Panda();
     console.log("[B] p1.eat === p2.eat ?", p1.eat === p2.eat); // true（共享）
   </script>
+    <!-- SCRIPT_END -->
+    
 
-  <h2>2. hasOwnProperty：只检查"自有属性"，不查原型链</h2>
-  <script>
+<h2>2. hasOwnProperty：只检查"自有属性"，不查原型链</h2>
+
+    
+        <!-- SCRIPT_START -->
+    <script>
     function Person() {
       this.name = "wc";
       this.age = 20;
@@ -84,9 +106,14 @@
     console.log("hasOwnProperty('species'): ", me.hasOwnProperty("species"));  // false（原型上）
     console.log("hasOwnProperty('toString'):", me.hasOwnProperty("toString")); // false（Object.prototype 上）
   </script>
+    <!-- SCRIPT_END -->
+    
 
-  <h2>3. in 操作符：会沿原型链查找</h2>
-  <script>
+<h2>3. in 操作符：会沿原型链查找</h2>
+
+    
+        <!-- SCRIPT_START -->
+    <script>
     function Person() { this.name = "wc"; }
     Person.prototype.species = "human";
     const me = new Person();
@@ -96,9 +123,14 @@
     console.log("'toString' in me:", "toString" in me); // true（Object.prototype）
     console.log("'salary'   in me:", "salary"   in me); // false
   </script>
+    <!-- SCRIPT_END -->
+    
 
-  <h2>4. 仅遍历"自有"属性的几种方式</h2>
-  <script>
+<h2>4. 仅遍历"自有"属性的几种方式</h2>
+
+    
+        <!-- SCRIPT_START -->
+    <script>
     function Cat() { this.name = "Tom"; this.age = 3; }
     Cat.prototype.species = "cat";
     const c = new Cat();
@@ -112,9 +144,14 @@
     console.log("Object.getOwnPropertyNames:", Object.getOwnPropertyNames(c)); // ['name', 'age']
     console.log("for...in + hasOwnProperty 过滤");
   </script>
+    <!-- SCRIPT_END -->
+    
 
-  <h2>5. <code>__proto__</code> ≡ <code>Object.getPrototypeOf(obj)</code></h2>
-  <script>
+<h2>5. <code>__proto__</code> ≡ <code>Object.getPrototypeOf(obj)</code></h2>
+
+    
+        <!-- SCRIPT_START -->
+    <script>
     function Person(name) { this.name = name; }
     const p = new Person("wc");
 
@@ -128,9 +165,14 @@
     console.log("p.prototype:", p.prototype); // undefined
     console.log("Person.prototype 是函数的属性:", typeof Person.prototype); // 'object'
   </script>
+    <!-- SCRIPT_END -->
+    
 
-  <h2>6. 同一个实例的方法引用相等</h2>
-  <script>
+<h2>6. 同一个实例的方法引用相等</h2>
+
+    
+        <!-- SCRIPT_START -->
+    <script>
     function Animal() {}
     Animal.prototype.run = function () {};
 
@@ -139,8 +181,10 @@
     console.log("a.run === b.run ?", a.run === b.run); // true（都指向 Animal.prototype.run）
     console.log("a.toString === b.toString ?", a.toString === b.toString); // true（都指向 Object.prototype.toString）
   </script>
+    <!-- SCRIPT_END -->
+    
 
-  <h2>核心结论</h2>
+<h2>核心结论</h2>
   <ul>
     <li><strong>数据属性</strong>（每个实例不一样）→ 放<strong>构造函数内 <code>this.xxx</code></strong></li>
     <li><strong>方法</strong>（所有实例共享逻辑）→ 放 <strong><code>Foo.prototype.xxx</code></strong></li>
@@ -149,19 +193,16 @@
   </ul>
 
   <p>相关：<a href="原型.html">原型</a> · <a href="原型链.html">原型链（继承）</a> · <a href="构造函数.html">构造函数</a></p>
-<!-- DEMO_NAV_START -->
-<footer class="demo-nav" aria-label="Demo 导航">
-  <style>
-    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
-    .demo-nav a { color: #0969da; text-decoration: none; }
-    .demo-nav a:hover { text-decoration: underline; }
-    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
-    .demo-output:empty { display: none; }
-  </style>
-  <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-  <a href="./%E5%8E%9F%E5%9E%8B%E9%93%BE.html">← 原型链</a>
-  <a href="../04-ES6%2B/%E8%A7%A3%E6%9E%84%E5%B1%95%E5%BC%80%E4%B8%8E%E6%A8%A1%E6%9D%BF%E5%AD%97%E7%AC%A6%E4%B8%B2.html">解构展开与模板字符串 →</a>
-  <script>
+
+    <!-- NAV_START -->
+    <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
+      <h2 class="demo-block__label">页面导航</h2>
+      <nav class="demo-nav" aria-label="相关链接">
+        <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+        <a href="./%E5%8E%9F%E5%9E%8B%E9%93%BE.html">← 原型链</a>
+        <a href="../04-ES6%2B/%E8%A7%A3%E6%9E%84%E5%B1%95%E5%BC%80%E4%B8%8E%E6%A8%A1%E6%9D%BF%E5%AD%97%E7%AC%A6%E4%B8%B2.html">解构展开与模板字符串 →</a>
+      </nav>
+      <script>
     (function () {
       var a = document.querySelector("[data-demo-catalog]");
       if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
@@ -169,7 +210,9 @@
       }
     })();
   </script>
-</footer>
-<!-- DEMO_NAV_END -->
+    </footer>
+    <!-- NAV_END -->
+  
+  
 </body>
 </html>
