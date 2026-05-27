@@ -14,8 +14,6 @@ TypeScript 面试与语法复习 demo，共 **15** 个 `.html`。本模块在浏
 
 `01-基础/01 → 02 → 03 → 04 → 05 → 06 → 07` → `02-进阶/01 → 02 → 03 → 04 → 05` → `03-工程与框架/01 → 02 → 03`
 
-更细的补齐记录见 [`../../docs/plans/TypeScript面试知识补齐计划.md`](../../docs/plans/TypeScript面试知识补齐计划.md)。
-
 ## 完整 demo 清单
 
 <!-- DEMO_TABLE_START -->

@@ -17,7 +17,6 @@
 | `apps/typescript/` | TypeScript 面试基础 / 进阶 / 工程与框架 demo | 按 `01-基础` / `02-进阶` / `03-工程与框架` 编号 |
 | `apps/demos/` | 综合性 / 交互小项目 | `drag`、`svg`、`viewpager` 等 |
 | `scripts/` | 仓库工具脚本 | `build-index.mjs`、`sync-readmes.mjs`、`validate-demos.mjs` 等 |
-| `docs/` | 计划与审查文档 | `plans/` 放补齐计划，`reviews/` 放审查记录 |
 
 ## 2. 目录命名规则
 

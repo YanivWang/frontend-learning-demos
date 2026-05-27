@@ -25,8 +25,6 @@
 - `08-面试题/作用域` 可以在学完 `02` 后作复盘。
 - `08-面试题/手写` 建议分阶段刷：学完 this 后看 call/apply/bind，学完对象与原型后看 new/instanceof，学完 Promise 后看手写 Promise。
 
-更细的补齐记录见 [`../../docs/plans/JS面试知识补齐计划.md`](../../docs/plans/JS面试知识补齐计划.md)。
-
 ## 完整 demo 清单
 
 <!-- DEMO_TABLE_START -->

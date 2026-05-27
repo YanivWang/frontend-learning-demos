@@ -43,9 +43,6 @@ npm run serve
 ├── docs-site/               # VitePress 文档站（唯一入口）
 ├── README.md                # 本文件
 ├── CONVENTIONS.md           # 目录与命名约定（每次想动结构前先读它）
-├── docs/
-│   ├── plans/               # 面试知识点 / 工程化补齐计划
-│   └── reviews/             # 全量审查与演进记录
 ├── package.json             # npm 维护命令（playwright 为可选 devDependency）
 ├── packages/                # 共用库与子包（shared/libs、见 packages/README.md）
 ├── CONTRIBUTING.md          # 贡献与必跑命令

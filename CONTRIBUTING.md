@@ -57,7 +57,3 @@ git config core.hooksPath .githooks
 ```bash
 npm run validate:tsc
 ```
-
-## 待办 backlog
-
-见 [`docs/plans/BACKLOG.md`](docs/plans/BACKLOG.md)。
