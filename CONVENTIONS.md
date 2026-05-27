@@ -2,7 +2,7 @@
 
 本仓库是「前端语法 / 框架学习 Demo 库」，每个 `.html` 都可以直接在浏览器打开。本文规定目录与命名规范，保持仓库长期清爽。
 
-当前仓库共 **337** 个可索引 demo（`javascript` 124 · `css` 39 · `vue2` 57 · `vue3` 41 · `react` 53 · `typescript` 18 · `demos` 5），统计以 `node scripts/validate-demos.mjs` 输出为准。
+当前仓库共 **348** 个可索引 demo（`javascript` 124 · `css` 39 · `vue2` 57 · `vue3` 41 · `react` 53 · `react19` 11 · `typescript` 18 · `demos` 5），统计以 `node scripts/validate-demos.mjs` 输出为准。
 
 ## 1. 顶层目录
 
@@ -12,6 +12,7 @@
 | `learn/css/` | CSS 布局 / 动画 / 视觉 / 响应式 / 性能 / 现代特性 | 按 `01-` ~ `07-` 编号分类 |
 | `learn/vue2/` `learn/vue3/` | Vue 框架 demo | 内含 `libs/`（运行时）与 `src/`（demo） |
 | `learn/react/` | React 18 demo | 内含 `libs/` 与 `src/`（`function-components` + `class-components`） |
+| `learn/react19/` | React 19 新特性与面试 demo | 内含 React 19 运行时（`umd-react`）与 `src/`（`01-基础语法` + `02-面试题`） |
 | `learn/typescript/` | TypeScript 面试基础 / 进阶 / 工程与框架 demo | 按 `01-基础` / `02-进阶` / `03-工程与框架` 编号 |
 | `learn/demos/` | 综合性 / 交互小项目 | `drag`、`svg`、`viewpager` 等 |
 | `scripts/` | 仓库工具脚本 | `build-index.mjs`、`sync-readmes.mjs`、`validate-demos.mjs` 等 |
@@ -21,7 +22,7 @@
 
 - **一级分类目录**：保留中文短语，加 `NN-` 编号前缀（`01-基础`、`03-动画`；CSS 从 `01-基础` 起）。
 - **二级专题子目录**：纯中文（`正则/`、`闭包/`、`异步/`）；编号可省略。
-- **每个分类目录都应有一份 `README.md`** 作为目录索引；`learn/javascript` / `learn/css` / `learn/vue2` / `learn/vue3` / `learn/react` / `learn/typescript` 的 README 内含由 `sync-readmes.mjs` 维护的完整 demo 清单表。
+- **每个分类目录都应有一份 `README.md`** 作为目录索引；`learn/javascript` / `learn/css` / `learn/vue2` / `learn/vue3` / `learn/react` / `learn/react19` / `learn/typescript` 的 README 内含由 `sync-readmes.mjs` 维护的完整 demo 清单表。
 
 ## 3. 文件命名规则
 

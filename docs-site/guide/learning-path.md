@@ -22,7 +22,11 @@
 
 ### React 18
 
-`src/function-components/` 按编号；类组件见 `class-components/`
+`learn/react/src/function-components/` 按编号；类组件见 `class-components/`
+
+### React 19
+
+`learn/react19/src/01-基础语法` → `02-面试题`（建议在 React 18 Hooks 之后）
 
 ## CSS
 

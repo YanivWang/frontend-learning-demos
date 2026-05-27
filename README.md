@@ -11,9 +11,10 @@
 | Vue 2 | `learn/vue2/src/` | 57 | [`learn/vue2/README.md`](learn/vue2/README.md) |
 | Vue 3 | `learn/vue3/src/` | 41 | [`learn/vue3/README.md`](learn/vue3/README.md) |
 | React 18 | `learn/react/src/` | 53 | [`learn/react/README.md`](learn/react/README.md) |
+| React 19 | `learn/react19/src/` | 11 | [`learn/react19/README.md`](learn/react19/README.md) |
 | TypeScript | `learn/typescript/` | 18 | [`learn/typescript/README.md`](learn/typescript/README.md) |
 | 综合 Demo | `learn/demos/` | 5 | [`learn/demos/README.md`](learn/demos/README.md) |
-| **合计** | — | **337** | 统一头注释 + 页脚导航 + VitePress 搜索（见 [`CONVENTIONS.md`](CONVENTIONS.md)） |
+| **合计** | — | **348** | 统一头注释 + 页脚导航 + VitePress 搜索（见 [`CONVENTIONS.md`](CONVENTIONS.md)） |
 
 ## 快速开始
 
@@ -57,6 +58,7 @@ npm run serve
 │   ├── vue2/                # Vue 2.7.16
 │   ├── vue3/                # Vue 3.5.34
 │   ├── react/               # React 18.3.1（function-components + class-components）
+│   ├── react19/             # React 19（基础语法 + 面试题，umd-react 运行时）
 │   ├── typescript/          # TypeScript 面试基础 / 进阶 / 工程与框架
 │   └── demos/               # 综合 Demo（drag / svg / viewpager）
 │
@@ -83,7 +85,8 @@ npm run serve
 
 1. **Vue 2** → `src/响应式原理` → `src/基础语法` → `src/生命周期` → `src/组件` → `src/路由与状态` → `src/原理与性能`
 2. **Vue 3** → `src/01-基础语法` → … → `src/07-路由状态工程化`（含 Vite / script setup 宏）→ `src/08-原理与性能面试`
-3. **React** → `src/function-components/` 按编号；类组件见 `class-components/`
+3. **React 18** → `learn/react/src/function-components/` 按编号；类组件见 `class-components/`
+4. **React 19** → `learn/react19/src/01-基础语法` → `02-面试题`（需先掌握 React 18 Hooks）
 
 ### CSS
 

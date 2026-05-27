@@ -1,0 +1,82 @@
+<!--
+  分类: react19 / 01-基础语法
+  主题: JSX 表达式与 React 19 自动批处理
+  要点:
+    - JSX 花括号内可写任意 JavaScript 表达式（变量、三元、函数调用）
+    - 注意 && 短路：0、空字符串可能被渲染到 DOM
+    - React 19 在 createRoot 下对 setTimeout、Promise 等中的 setState 默认批处理
+    - 需要同步读 DOM 时仍可用 flushSync 退出批处理
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>React 19 · JSX 与批处理</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 760px; line-height: 1.6; }
+    .warn { color: #9a6700; background: #fff8c5; padding: 0.5rem 0.75rem; border-radius: 6px; }
+    button { margin-right: 0.5rem; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useRef, useState } = React;
+    const { flushSync } = ReactDOM;
+
+    function App() {
+      const [count, setCount] = useState(0);
+      const [flag, setFlag] = useState(false);
+      const renders = useRef(0);
+      renders.current += 1;
+
+      const batchInTimeout = () => {
+        setTimeout(() => {
+          setCount((c) => c + 1);
+          setFlag((f) => !f);
+        }, 0);
+      };
+
+      const noBatch = () => {
+        flushSync(() => setCount((c) => c + 1));
+        flushSync(() => setFlag((f) => !f));
+      };
+
+      const items = ["A", "B"];
+      const empty = 0;
+
+      return (
+        <section>
+          <h1>JSX 表达式</h1>
+          <p>列表长度展示：{items.length} 项</p>
+          <p className="warn">
+            陷阱演示：{empty && <span>不会显示</span>}
+            {empty} ← 上面 length 为 0 时，&& 左侧为 0 会渲染数字 0
+          </p>
+          <p>三元安全写法：{items.length ? items.join("、") : "暂无"}</p>
+
+          <h2>自动批处理（React 19）</h2>
+          <p>count={count}，flag={String(flag)}，本组件 render 次数={renders.current}</p>
+          <button type="button" onClick={batchInTimeout}>setTimeout 内两次 setState</button>
+          <button type="button" onClick={noBatch}>flushSync 两次提交</button>
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+  </style>
+  <a href="/">目录</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

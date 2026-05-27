@@ -1,0 +1,110 @@
+<!--
+  分类: react19 / 02-面试题
+  主题: 错误边界与 Action 状态边界
+  要点:
+    - Error Boundary 仍是 class 组件 getDerivedStateFromError + componentDidCatch
+    - 函数组件不能充当错误边界；事件处理器内错误需 try/catch
+    - useActionState 的 action 抛错会反映到 state；应用层需返回可展示的错误信息
+    - 面试：区分渲染错误、事件错误、异步 Action 错误三种处理位置
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>面试 · 错误边界</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 720px; line-height: 1.6; }
+    .err-ui { background: #ffebe9; border: 1px solid #ff8182; padding: 1rem; border-radius: 8px; }
+    button { margin-right: 0.5rem; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { Component, useActionState, useState } = React;
+
+    class ErrorBoundary extends Component {
+      state = { error: null };
+      static getDerivedStateFromError(error) {
+        return { error };
+      }
+      componentDidCatch(error, info) {
+        console.log("边界捕获", error, info.componentStack);
+      }
+      render() {
+        if (this.state.error) {
+          return (
+            <div className="err-ui">
+              <h3>错误边界兜底</h3>
+              <p>{String(this.state.error.message)}</p>
+              <button type="button" onClick={() => this.setState({ error: null })}>
+                重置
+              </button>
+            </div>
+          );
+        }
+        return this.props.children;
+      }
+    }
+
+    function Buggy({ shouldThrow }) {
+      if (shouldThrow) throw new Error("渲染期故意抛错");
+      return <p>子树正常</p>;
+    }
+
+    async function riskyAction(prev, formData) {
+      const mode = formData.get("mode");
+      await new Promise((r) => setTimeout(r, 400));
+      if (mode === "fail") return "模拟业务失败：库存不足";
+      return null;
+    }
+
+    function ActionDemo() {
+      const [msg, action, pending] = useActionState(riskyAction, null);
+      return (
+        <form action={action} style={{ marginTop: "1.5rem" }}>
+          <h3>Action 错误走 state，不走边界</h3>
+          <button name="mode" value="ok" type="submit" disabled={pending}>
+            成功提交
+          </button>
+          <button name="mode" value="fail" type="submit" disabled={pending}>
+            业务失败
+          </button>
+          {msg && <p>{msg}</p>}
+        </form>
+      );
+    }
+
+    function App() {
+      const [throwRender, setThrowRender] = useState(false);
+      return (
+        <section>
+          <h1>三类错误处理位置</h1>
+          <button type="button" onClick={() => setThrowRender(true)}>
+            触发渲染错误（由边界捕获）
+          </button>
+          <ErrorBoundary>
+            <Buggy shouldThrow={throwRender} />
+          </ErrorBoundary>
+          <ActionDemo />
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+  </style>
+  <a href="/">目录</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

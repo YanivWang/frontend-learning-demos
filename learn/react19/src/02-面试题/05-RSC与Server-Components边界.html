@@ -1,0 +1,87 @@
+<!--
+  分类: react19 / 02-面试题
+  主题: RSC 与 Server Components 面试边界
+  要点:
+    - Server Component：在服务端运行，默认不打包到客户端，可直接访问 DB/文件系统
+    - Client Component：文件顶行 'use client'，可使用 Hooks 与浏览器 API
+    - Server Actions：服务端函数，经编译后由客户端 form action 调用
+    - 本仓库为静态 HTML demo，RSC 需在 Next.js 等框架中体验；面试答清边界即可
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>面试 · RSC 边界</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 820px; line-height: 1.55; }
+    pre { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 8px; font-size: 0.82rem; overflow: auto; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 1rem; }
+    @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const codeSample = `// Server Component — 无 useState/useEffect
+async function Page() {
+  const data = await db.query();
+  return <List items={data} />;
+}
+
+// Client Component — 文件顶部 'use client'
+export function Counter() {
+  const [n, setN] = useState(0);
+  return <button onClick={() => setN(n + 1)}>{n}</button>;
+}`;
+
+    function RSCGuide() {
+      return (
+        <section>
+          <h1>RSC / Server Actions — 面试边界</h1>
+          <pre>{codeSample}</pre>
+          <div className="grid">
+            <div className="card">
+              <h3>Server Component</h3>
+              <ul>
+                <li>零客户端 JS（理想情况）</li>
+                <li>可用 async/await 直接拉数据</li>
+                <li>不能把 Hooks 或浏览器 API 写在里面</li>
+              </ul>
+            </div>
+            <div className="card">
+              <h3>Client Component</h3>
+              <ul>
+                <li>标记 <code>'use client'</code></li>
+                <li>交互、订阅、Effects 放这里</li>
+                <li>可 import Server 组件为子节点（单向）</li>
+              </ul>
+            </div>
+          </div>
+          <h2>与 React 19 本仓库 demo 的关系</h2>
+          <p>
+            <code>useActionState</code> / 表单 <code>action</code> 是客户端 Actions 模式；
+            框架中的 Server Actions 会把函数序列化到服务端执行，面试需说明部署与序列化约束。
+          </p>
+          <p><strong>追问：</strong>为何 RSC 不能传普通函数给客户端？— 函数不可序列化，需 Server Actions 等约定通道。</p>
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<RSCGuide />);
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+  </style>
+  <a href="/">目录</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!--
+  分类: react19 / 01-基础语法
+  主题: useOptimistic 乐观更新
+  要点:
+    - useOptimistic(state, updateFn) 在异步 Action 完成前展示临时 UI
+    - updateFn(state, optimisticValue) 根据乐观输入计算下一屏状态
+    - 真实 state 更新后，乐观层自动与服务器结果对齐
+    - 典型场景：发消息、点赞、列表追加（先显示 sending，再确认）
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>React 19 · useOptimistic</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 640px; line-height: 1.6; }
+    ul { padding-left: 1.25rem; }
+    li.sending { opacity: 0.55; font-style: italic; }
+    input { width: 70%; padding: 0.4rem; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useOptimistic, useState, useTransition } = React;
+
+    function delay(ms) {
+      return new Promise((r) => setTimeout(r, ms));
+    }
+
+    function MessageList() {
+      const [messages, setMessages] = useState([
+        { id: 1, text: "欢迎学习 React 19", sent: true },
+      ]);
+      const [optimisticMessages, addOptimistic] = useOptimistic(
+        messages,
+        (state, newMsg) => [...state, { ...newMsg, sending: true }]
+      );
+      const [isPending, startTransition] = useTransition();
+
+      const send = (text) => {
+        const optimistic = { id: Date.now(), text, sent: false };
+        startTransition(async () => {
+          addOptimistic(optimistic);
+          await delay(900);
+          setMessages((prev) => [
+            ...prev,
+            { id: optimistic.id, text, sent: true },
+          ]);
+        });
+      };
+
+      return (
+        <section>
+          <h2>useOptimistic 发消息</h2>
+          <ul>
+            {optimisticMessages.map((m) => (
+              <li key={m.id} className={m.sending ? "sending" : ""}>
+                {m.text}
+                {m.sending ? "（发送中…）" : ""}
+              </li>
+            ))}
+          </ul>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const text = e.target.message.value.trim();
+              if (!text || isPending) return;
+              e.target.reset();
+              send(text);
+            }}
+          >
+            <input name="message" placeholder="输入消息" disabled={isPending} />
+            <button type="submit" disabled={isPending}>
+              发送
+            </button>
+          </form>
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<MessageList />);
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+  </style>
+  <a href="/">目录</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

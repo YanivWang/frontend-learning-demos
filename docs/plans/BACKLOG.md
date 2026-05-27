@@ -16,7 +16,7 @@
 
 ## 可选后续
 
-- [ ] 真实 React 19 运行时升级与 `useActionState` 可运行 demo
+- [x] React 19 独立模块 `learn/react19/`（umd-react 运行时 + `useActionState` 等可运行 demo）
 - [ ] Webpack vs Vite 可构建最小对比仓库（子目录）
 - [ ] 全量 Playwright（当前为抽样 24 页）
 - [ ] 共享 `learn/shared/libs/` 减少 vue2/vue3 重复 vendoring

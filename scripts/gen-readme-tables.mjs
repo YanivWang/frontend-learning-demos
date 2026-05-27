@@ -17,6 +17,7 @@ const CONFIG = {
   vue2: { scan: join("learn", "vue2", "src"), label: "learn/vue2/src" },
   vue3: { scan: join("learn", "vue3", "src"), label: "learn/vue3/src" },
   react: { scan: join("learn", "react", "src"), label: "learn/react/src" },
+  react19: { scan: join("learn", "react19", "src"), label: "learn/react19/src" },
   typescript: { scan: join("learn", "typescript"), label: "learn/typescript" },
 };
 

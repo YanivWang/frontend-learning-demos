@@ -11,6 +11,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
 const LIB_ROOTS = [
   "learn/react/libs",
+  "learn/react19/libs",
   "learn/vue2/libs",
   "learn/vue3/libs",
   "learn/demos/libs",

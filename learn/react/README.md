@@ -1,6 +1,8 @@
 # React 18
 
-按学习顺序编号的 React 18 demo。`learn/react/src/` 下共 **52** 个 `.html`（函数组件 **33** + 类组件 **19**）。
+按学习顺序编号的 React 18 demo。`learn/react/src/` 下共 **53** 个 `.html`（函数组件 **34** + 类组件 **19**）。
+
+**React 19 可运行 demo** 见独立模块 [`../react19/README.md`](../react19/README.md)（`useActionState`、`useOptimistic`、`use()` 等）。
 
 打开任意 `src/class-components/*.html` 或 `src/function-components/*.html` 即可，无需构建。脚本通过 `<script src="../../libs/...">` 引用 React / Babel 运行时。
 

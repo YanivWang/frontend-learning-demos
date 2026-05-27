@@ -1818,6 +1818,68 @@ const sidebar: DefaultTheme.SidebarItem[] = [
     ]
   },
   {
+    "text": "React 19",
+    "collapsed": true,
+    "items": [
+      {
+        "text": "01-基础语法",
+        "collapsed": true,
+        "items": [
+          {
+            "text": "入门-createRoot与元素",
+            "link": "/learn/react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/01-%E5%85%A5%E9%97%A8-createRoot%E4%B8%8E%E5%85%83%E7%B4%A0.html"
+          },
+          {
+            "text": "JSX表达式与自动批处理",
+            "link": "/learn/react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/02-JSX%E8%A1%A8%E8%BE%BE%E5%BC%8F%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%89%B9%E5%A4%84%E7%90%86.html"
+          },
+          {
+            "text": "Actions与useActionState",
+            "link": "/learn/react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/03-Actions%E4%B8%8EuseActionState.html"
+          },
+          {
+            "text": "useOptimistic乐观更新",
+            "link": "/learn/react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/04-useOptimistic%E4%B9%90%E8%A7%82%E6%9B%B4%E6%96%B0.html"
+          },
+          {
+            "text": "use读取Promise与Context",
+            "link": "/learn/react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/05-use%E8%AF%BB%E5%8F%96Promise%E4%B8%8EContext.html"
+          },
+          {
+            "text": "ref作为prop传递",
+            "link": "/learn/react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/06-ref%E4%BD%9C%E4%B8%BAprop%E4%BC%A0%E9%80%92.html"
+          }
+        ]
+      },
+      {
+        "text": "02-面试题",
+        "collapsed": true,
+        "items": [
+          {
+            "text": "React19相对18变化速记",
+            "link": "/learn/react19/src/02-%E9%9D%A2%E8%AF%95%E9%A2%98/01-React19%E7%9B%B8%E5%AF%B918%E5%8F%98%E5%8C%96%E9%80%9F%E8%AE%B0.html"
+          },
+          {
+            "text": "表单Action与useFormStatus",
+            "link": "/learn/react19/src/02-%E9%9D%A2%E8%AF%95%E9%A2%98/02-%E8%A1%A8%E5%8D%95Action%E4%B8%8EuseFormStatus.html"
+          },
+          {
+            "text": "并发渲染与Transitions面试",
+            "link": "/learn/react19/src/02-%E9%9D%A2%E8%AF%95%E9%A2%98/03-%E5%B9%B6%E5%8F%91%E6%B8%B2%E6%9F%93%E4%B8%8ETransitions%E9%9D%A2%E8%AF%95.html"
+          },
+          {
+            "text": "错误边界与状态边界",
+            "link": "/learn/react19/src/02-%E9%9D%A2%E8%AF%95%E9%A2%98/04-%E9%94%99%E8%AF%AF%E8%BE%B9%E7%95%8C%E4%B8%8E%E7%8A%B6%E6%80%81%E8%BE%B9%E7%95%8C.html"
+          },
+          {
+            "text": "RSC与Server-Components边界",
+            "link": "/learn/react19/src/02-%E9%9D%A2%E8%AF%95%E9%A2%98/05-RSC%E4%B8%8EServer-Components%E8%BE%B9%E7%95%8C.html"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "text": "综合 Demo",
     "collapsed": true,
     "items": [

@@ -26,6 +26,8 @@ const REQUIRED = [
   { file: "learn/vue3/src/07-路由状态工程化/07-Vitest单元测试面试点.html", keywords: ["Vitest", "单元测试", "mock"] },
   // React
   { file: "learn/react/src/function-components/34-React19新特性概览.html", keywords: ["React 19", "use", "Action"] },
+  { file: "learn/react19/src/01-基础语法/03-Actions与useActionState.html", keywords: ["useActionState", "action", "isPending"] },
+  { file: "learn/react19/src/01-基础语法/05-use读取Promise与Context.html", keywords: ["use(", "Suspense", "Context"] },
   // TypeScript 扩展
   { file: "learn/typescript/02-进阶/06-手写Utility-Types练习.html", keywords: ["Partial", "Pick", "Omit"] },
   { file: "learn/typescript/03-工程与框架/04-React表单与Vue-emits类型.html", keywords: ["ChangeEvent", "defineEmits", "表单"] },

@@ -93,6 +93,7 @@ const tasks = [
   ["learn/vue2/README.md", join("learn", "vue2", "src")],
   ["learn/vue3/README.md", join("learn", "vue3", "src")],
   ["learn/react/README.md", join("learn", "react", "src")],
+  ["learn/react19/README.md", join("learn", "react19", "src")],
   ["learn/typescript/README.md", join("learn", "typescript")],
 ];
 
