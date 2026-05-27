@@ -9,7 +9,7 @@
 | 目录 | 用途 | 说明 |
 |---|---|---|
 | `javascript/` | 纯 JavaScript 知识点 demo | 按 `01-` ~ `09-` 编号分类 |
-| `css/` | CSS 布局 / 动画 / 视觉 / 响应式 / 性能 / 现代特性 | 按 `00-` ~ `06-` 编号分类 |
+| `css/` | CSS 布局 / 动画 / 视觉 / 响应式 / 性能 / 现代特性 | 按 `01-` ~ `07-` 编号分类 |
 | `vue2/` `vue3/` | Vue 框架 demo | 内含 `libs/`（运行时）与 `src/`（demo） |
 | `react/` | React 18 demo | 内含 `libs/` 与 `src/`（`function-components` + `class-components`） |
 | `typescript/` | TypeScript 面试基础 demo | 按 `01-基础` / `02-进阶` 编号 |
@@ -18,7 +18,7 @@
 
 ## 2. 目录命名规则
 
-- **一级分类目录**：保留中文短语，加 `NN-` 编号前缀（`01-基础`、`02-动画`；CSS 从 `00-基础` 起）。
+- **一级分类目录**：保留中文短语，加 `NN-` 编号前缀（`01-基础`、`03-动画`；CSS 从 `01-基础` 起）。
 - **二级专题子目录**：纯中文（`正则/`、`闭包/`、`异步/`）；编号可省略。
 - **每个分类目录都应有一份 `README.md`** 作为目录索引；`javascript` / `css` / `vue2` / `vue3` / `react` 的 README 内含由 `sync-readmes.mjs` 维护的完整 demo 清单表。
 
@@ -61,7 +61,7 @@
 
 每个框架 / 第三方运行时统一放在所属目录下的 `libs/`：
 
-- `react/libs/`、`vue2/libs/`、`vue3/libs/`、`demos/libs/`、`css/04-响应式/libs/`
+- `react/libs/`、`vue2/libs/`、`vue3/libs/`、`demos/libs/`、`css/05-响应式/libs/`
 - demo 内嵌的小库放在 demo 同级的 `lib/`（注意是单数）
 - **每个第三方文件**首行必须有注释，写明：**名称 + 版本号 + 官方下载地址 + 下载日期**
 - 自己写的工具脚本不要放在 `libs/`，统一放在 `src/utils/` 或 demo 同级目录

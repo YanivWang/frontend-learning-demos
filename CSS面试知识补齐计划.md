@@ -8,9 +8,9 @@
 
 ## 完成清单
 
-- [x] 新建 `css/06-现代特性/01-has选择器/`
-- [x] 新建 `css/06-现代特性/02-layer层叠管理/`
-- [x] 新建 `css/06-现代特性/03-container-queries容器查询/`
+- [x] 新建 `css/07-现代特性/01-has选择器/`
+- [x] 新建 `css/07-现代特性/02-layer层叠管理/`
+- [x] 新建 `css/07-现代特性/03-container-queries容器查询/`
 - [x] 更新 `css/README.md` 目录表与推荐顺序
 
 ## 验证方式

@@ -1,0 +1,81 @@
+<!--
+  分类: css / 07-现代特性 / 02-layer层叠管理
+  主题: @layer 层叠上下文与优先级管理
+  要点:
+    - @layer 把样式分组，未分层样式优先级高于任意 @layer 内规则
+    - 同层内仍按选择器特异性 + 源码顺序决定；层之间按声明顺序：后声明的层覆盖先声明的层
+    - 适合第三方 reset、组件库、工具类分层，避免 !important 滥用
+    - 可 @layer utilities { ... } 或在文件顶部 @layer base, components, utilities;
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CSS @layer</title>
+  <style>
+    @layer reset, components, utilities;
+
+    @layer reset {
+      .btn-reset-only {
+        padding: 8px 16px;
+        border: 1px solid #999;
+        background: #f0f0f0;
+        color: #333;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .demo-btn {
+        padding: 8px 16px;
+        border: 1px solid #999;
+        background: #f0f0f0;
+        color: #333;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+    }
+
+    @layer components {
+      .demo-btn {
+        background: #dff0ff;
+        border-color: #0969da;
+        color: #0550ae;
+      }
+    }
+
+    @layer utilities {
+      .demo-btn {
+        background: #fff8c5;
+        border-color: #bf8700;
+        color: #7d4e00;
+      }
+    }
+
+    /* 未入层的规则优先级最高，会覆盖上面所有 @layer */
+    .demo-btn.override {
+      background: #ffebe9;
+      border-color: #cf222e;
+      color: #a40e26;
+    }
+
+    body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; max-width: 720px; }
+    h1 { font-size: 1.25rem; }
+    .row { display: flex; flex-wrap: wrap; gap: 12px; margin: 1rem 0; }
+    pre { background: #f6f8fa; padding: 12px; border-radius: 8px; font-size: 0.85rem; overflow: auto; }
+  </style>
+</head>
+<body>
+  <h1>@layer — 分层管理样式优先级</h1>
+  <p>三个按钮都使用 <code>.demo-btn</code>，但分别只受不同层或「未分层」规则影响。</p>
+
+  <div class="row">
+    <button type="button" class="btn-reset-only">仅 reset 层（灰色）</button>
+    <button type="button" class="demo-btn">utilities 层生效（黄色）</button>
+    <button type="button" class="demo-btn override">未分层规则（红色，优先级最高）</button>
+  </div>
+
+  <pre>@layer reset, components, utilities;
+/* utilities 层最后声明 → 默认 .demo-btn 呈黄色 */
+/* 未分层的 .demo-btn.override 优先级更高 → 红色 */</pre>
+</body>
+</html>

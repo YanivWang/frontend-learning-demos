@@ -1,0 +1,93 @@
+<!--
+  分类: css / 03-动画 / 展开折叠
+  主题: height / max-height / grid 三种展开折叠方案
+  要点:
+    - height: auto 不可被 transition；必须给定明确像素值
+    - 高度不固定时改用 max-height 或 grid-template-rows: 0fr → 1fr
+    - overflow: hidden 防止收起时子元素「溢出露脸」
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>展开折叠 · height / max-height / grid</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
+    h1 { font-size: 1.3rem; }
+    h2 { font-size: 1rem; margin-top: 2rem; }
+    .section { margin-bottom: 1.5rem; }
+    button { padding: 6px 14px; margin-right: 6px; margin-bottom: 8px; }
+
+    /* 方案 1：固定 height 过渡 */
+    .panel-height {
+      background-color: rosybrown;
+      color: #fff;
+      height: 0;
+      overflow: hidden;
+      transition: height 0.4s ease;
+    }
+    .panel-height.open { height: 140px; }
+    .panel-height > div { padding: 4px 12px; }
+
+    /* 方案 2：max-height 过渡（高度未知时的常见写法，动画速度可能不均匀） */
+    .panel-max {
+      background-color: #2f80ed;
+      color: #fff;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+    .panel-max.open { max-height: 200px; }
+    .panel-max > div { padding: 4px 12px; }
+
+    /* 方案 3：grid-template-rows 0fr → 1fr（推荐，高度自适应） */
+    .panel-grid {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.4s ease;
+      background-color: #27ae60;
+      color: #fff;
+    }
+    .panel-grid.open { grid-template-rows: 1fr; }
+    .panel-grid-inner { overflow: hidden; min-height: 0; }
+    .panel-grid-inner > div { padding: 4px 12px; }
+  </style>
+</head>
+<body>
+  <h1>展开折叠 · 三种方案对比</h1>
+
+  <div class="section">
+    <h2>方案 1 · 固定 height 过渡</h2>
+    <button onclick="document.getElementById('panel-height').classList.toggle('open')">切换</button>
+    <div class="panel-height" id="panel-height">
+      <div>列表项 1</div>
+      <div>列表项 2</div>
+      <div>列表项 3</div>
+      <div>列表项 4</div>
+      <div>列表项 5</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>方案 2 · max-height 过渡</h2>
+    <button onclick="document.getElementById('panel-max').classList.toggle('open')">切换</button>
+    <div class="panel-max" id="panel-max">
+      <div>内容高度未知时，过渡到足够大的 max-height</div>
+      <div>第二行</div>
+      <div>第三行</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>方案 3 · grid-template-rows: 0fr → 1fr（推荐）</h2>
+    <button onclick="document.getElementById('panel-grid').classList.toggle('open')">切换</button>
+    <div class="panel-grid" id="panel-grid">
+      <div class="panel-grid-inner">
+        <div>高度自适应，无需猜像素</div>
+        <div>配合 min-height: 0 防止子项溢出</div>
+        <div>动画速度更均匀</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -41,7 +41,7 @@ open index.html
 ├── .gitignore .editorconfig
 │
 ├── javascript/              # 纯 JavaScript（详见 javascript/README.md）
-├── css/                     # CSS（含 06-现代特性）
+├── css/                     # CSS（含 07-现代特性）
 ├── vue2/                    # Vue 2.7.16
 ├── vue3/                    # Vue 3.5.34
 ├── react/                   # React 18.3.1（function-components + class-components）
@@ -73,7 +73,7 @@ open index.html
 
 ### CSS
 
-`00-基础 → 01-布局 → 02-动画 → 03-视觉效果 → 04-响应式 → 05-性能 → 06-现代特性`
+`01-基础 → 02-布局 → 03-动画 → 04-视觉效果 → 05-响应式 → 06-性能 → 07-现代特性`
 
 ## 工作流
 
