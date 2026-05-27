@@ -2,15 +2,15 @@
 分类: css / 04-视觉效果 / drop-shadow
   主题: box-shadow vs filter: drop-shadow 对比
   要点:
-    - box-shadow 沿元素矩形外边产生阴影，无视虚线/不透明像素
-    - filter: drop-shadow 沿非透明像素轮廓产生阴影，对 PNG/SVG 描边更友好
-    - drop-shadow 使用 GPU 合成，但对触发位图层的元素会增大显存
+    - box-shadow 按元素边框盒绘制阴影，不关心内容透明像素
+    - filter: drop-shadow() 基于输入图像的 alpha 轮廓投影
+    - drop-shadow() 对透明 PNG、SVG 和虚线边框更贴近可见形状
+    - filter 会创建新的渲染效果链，动画或大面积使用要关注性能
   面试:
-    - box-shadow vs filter: drop-shadow 对比的核心概念是什么
-    - box-shadow vs filter: drop-shadow 对比在实际项目里怎么用
-    - box-shadow vs filter: drop-shadow 对比有哪些常见坑或易错点
-    - box-shadow vs filter: drop-shadow 对比和相近 API 如何区分选型
-    - 面试中如何简洁讲清 box-shadow vs filter: drop-shadow 对比
+    - box-shadow 和 filter: drop-shadow() 为什么画出的阴影不同？
+    - 透明 PNG、SVG 图标阴影应该优先用哪个方案？
+    - drop-shadow() 和 box-shadow 在扩散半径、inset、性能上有什么边界？
+    - 阴影动画为什么不能无脑加在大量列表项上？
 -->
 
 <!doctype html>
@@ -50,15 +50,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>box-shadow 沿元素矩形外边产生阴影，无视虚线/不透明像素。</li>
-          <li>filter: drop-shadow 沿非透明像素轮廓产生阴影，对 PNG/SVG 描边更友好。</li>
-          <li>drop-shadow 使用 GPU 合成，但对触发位图层的元素会增大显存。</li>
+          <li><code>box-shadow</code> 是盒模型阴影，默认围绕元素边框盒绘制；即使内容是透明 PNG 或虚线边框，它也主要表现为矩形盒子的投影。</li>
+          <li><code>filter: drop-shadow()</code> 是滤镜函数，基于元素渲染后的 alpha 轮廓生成阴影，所以本页虚线边框的阴影会跟随可见线段。</li>
+          <li><code>drop-shadow()</code> 参数类似 <code>box-shadow</code> 的水平偏移、垂直偏移、模糊半径和颜色，但没有 spread 扩张半径，也不支持 <code>inset</code> 内阴影。</li>
+          <li>选型上，普通卡片、按钮、面板用 <code>box-shadow</code> 更直观；透明图标、SVG、裁剪形状或非矩形图形需要沿可见轮廓投影时用 <code>drop-shadow()</code>。</li>
+          <li>性能边界是 <code>filter</code> 需要额外滤镜处理，频繁动画、大面积模糊或长列表批量使用时要实测，必要时降低模糊半径或改为静态资源。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>box-shadow 沿元素矩形外边产生阴影？</strong> box-shadow 沿元素矩形外边产生阴影，无视虚线/不透明像素</li>
-          <li><strong>drop-shadow 使用 GPU 合成？</strong> filter: drop-shadow 沿非透明像素轮廓产生阴影，对 PNG/SVG 描边更友好；drop-shadow 使用 GPU 合成，但对触发位图层的元素会增大显存</li>
-          <li><strong>box-shadow vs filter: drop-shadow 对比的核心概念是什么？</strong> box-shadow 沿元素矩形外边产生阴影，无视虚线/不透明像素</li>
+          <li><strong>box-shadow 和 drop-shadow() 为什么画出的阴影不同？</strong> 结论是 <code>box-shadow</code> 看盒模型，<code>drop-shadow()</code> 看渲染结果的 alpha 轮廓。原因是前者是盒阴影属性，后者是滤镜函数，会对输入图像做投影。本页虚线边框能明显看出差异：矩形盒子阴影和线段轮廓阴影不是同一种模型。</li>
+          <li><strong>透明 PNG 或 SVG 图标应该用哪种阴影？</strong> 结论是通常优先用 <code>filter: drop-shadow()</code>。原因是图标透明区域不会参与 alpha 轮廓，阴影更贴合可见图形。边界是如果只是卡片容器、按钮背景或需要 spread / inset，仍然应该用 <code>box-shadow</code>。</li>
+          <li><strong>drop-shadow() 有哪些能力限制？</strong> 结论是它适合轮廓投影，但不是 <code>box-shadow</code> 的完整替代。原因是 CSS 滤镜的 <code>drop-shadow()</code> 不提供扩张半径和内阴影语义，多个阴影也要通过多个 filter 函数组合。项目里需要复杂层次阴影时，盒阴影或设计切图可能更稳定。</li>
+          <li><strong>阴影动画为什么要谨慎？</strong> 结论是大量模糊阴影和滤镜动画都可能增加渲染成本。原因是浏览器需要重新计算阴影或滤镜输出，面积越大、模糊半径越高越昂贵。真实列表、瀑布流或低端设备上应减少同时动画的阴影数量，并用性能面板验证。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/box-shadow">MDN: box-shadow</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/filter-function/drop-shadow">MDN: drop-shadow()</a></li>
+          <li><a href="https://drafts.fxtf.org/filter-effects/#funcdef-filter-drop-shadow">Filter Effects Module Level 1: drop-shadow()</a></li>
         </ul>
       </div>
     </section>

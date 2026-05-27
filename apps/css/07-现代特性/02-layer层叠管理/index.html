@@ -1,17 +1,16 @@
 <!--
 分类: css / 07-现代特性 / 02-layer层叠管理
-  主题: @layer 层叠上下文与优先级管理
+  主题: @layer 级联层与样式优先级管理
   要点:
-    - @layer 把样式分组，未分层样式优先级高于任意 @layer 内规则
-    - 同层内仍按选择器特异性 + 源码顺序决定；层之间按声明顺序：后声明的层覆盖先声明的层
-    - 适合第三方 reset、组件库、工具类分层，避免 !important 滥用
-    - 可 @layer utilities { ... } 或在文件顶部 @layer base, components, utilities;
+    - @layer 创建级联层，让 reset、组件、工具类等样式先按层顺序比较
+    - 正常声明中，未分层样式优先于任意分层样式；同层内再比较特异性和源码顺序
+    - 层顺序由首次声明决定，本页 reset < components < utilities，因此 utilities 覆盖 components
+    - @layer 解决的是级联管理，不等同于 stacking context 或 z-index 层叠上下文
   面试:
-    - @layer 层叠上下文与优先级管理的核心概念是什么
-    - @layer 层叠上下文与优先级管理在实际项目里怎么用
-    - @layer 层叠上下文与优先级管理有哪些常见坑或易错点
-    - @layer 层叠上下文与优先级管理和相近 API 如何区分选型
-    - 面试中如何简洁讲清 @layer 层叠上下文与优先级管理
+    - @layer 在 CSS 级联顺序里解决了什么问题？
+    - 为什么未分层样式能覆盖 @layer 里的规则？
+    - @layer、选择器特异性、源码顺序三者怎么比较？
+    - @layer 和 z-index 的层叠上下文有什么区别？
 -->
 
 <!doctype html>
@@ -71,22 +70,30 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>@layer — 分层管理样式优先级</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <h1>@layer — 级联层管理样式优先级</h1>
+      <p class="hint">观察三个按钮：同一个 .demo-btn 会被后声明的 utilities 层覆盖，而未分层 override 又能覆盖所有普通分层规则。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>@layer 把样式分组，未分层样式优先级高于任意 @layer 内规则。</li>
-          <li>同层内仍按选择器特异性 + 源码顺序决定；层之间按声明顺序：后声明的层覆盖先声明的层。</li>
-          <li>适合第三方 reset、组件库、工具类分层，避免 !important 滥用。</li>
-          <li>可 @layer utilities { ... } 或在文件顶部 @layer base, components, utilities;。</li>
+          <li><code>@layer</code> 创建的是 cascade layers（级联层），用于在 CSS 级联中新增一层“先比较层，再比较特异性”的管理维度。它适合把 reset、基础样式、组件样式、工具类和业务覆盖分清楚。</li>
+          <li>本页先声明 <code>@layer reset, components, utilities;</code>，因此正常声明中 <code>utilities</code> 层优先于 <code>components</code>，<code>components</code> 又优先于 <code>reset</code>。按钮默认显示黄色，是因为 <code>utilities</code> 层最后胜出。</li>
+          <li>未分层的普通样式在正常声明中优先于所有分层样式，所以 <code>.demo-btn.override</code> 即使没有使用 <code>!important</code>，也能覆盖 <code>@layer</code> 中的同类按钮规则。</li>
+          <li>同一层内部仍遵守普通级联规则：来源、重要性、选择器特异性和源码顺序都会继续生效。<code>@layer</code> 不是取消特异性，而是把层顺序放到特异性比较之前。</li>
+          <li><code>@layer</code> 和视觉层叠上下文无关，不控制元素谁压在谁上面；<code>z-index</code>、定位、transform 等影响的是绘制层叠，<code>@layer</code> 管的是 CSS 规则谁覆盖谁。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>@layer 把样式分组？</strong> @layer 把样式分组，未分层样式优先级高于任意 @layer 内规则；可 @layer utilities { ... } 或在文件顶部 @layer base, components, utilities;</li>
-          <li><strong>同层内仍按选择器特异性 + 源码顺序决定？</strong> 同层内仍按选择器特异性 + 源码顺序决定；层之间按声明顺序：后声明的层覆盖先声明的层</li>
-          <li><strong>适合第三方 reset、组件库、工具类分层？</strong> 适合第三方 reset、组件库、工具类分层，避免 !important 滥用</li>
-          <li><strong>可 @layer utilities { ... } 或在文件顶部 @layer？</strong> 可 @layer utilities { ... } 或在文件顶部 @layer base, components, utilities;</li>
+          <li><strong>@layer 在 CSS 级联顺序里解决了什么问题？</strong> 结论是它让团队可以显式声明样式层级，减少靠选择器加重或 <code>!important</code> 抢优先级。原因是层顺序会在特异性之前参与比较，后面的层可以稳定覆盖前面的层。项目里常把第三方 reset 放低层，把组件和工具类放高层。</li>
+          <li><strong>为什么未分层样式能覆盖 @layer 里的规则？</strong> 结论是在正常声明中，未分层规则优先级高于任意分层规则。原因是 CSS Cascade 规范把未分层正常声明排在分层正常声明之后。边界是 <code>!important</code> 的比较方向和普通声明不同，使用时要单独核对，不建议用它作为常规覆盖手段。</li>
+          <li><strong>@layer、选择器特异性、源码顺序三者怎么比较？</strong> 结论是先比较来源和重要性，再比较级联层，然后才在同层内比较特异性和源码顺序。原因是 <code>@layer</code> 的目的就是让“这类样式应该在哪个层级”比“选择器写得多重”更早决定结果。项目中应先设计层顺序，再控制选择器复杂度。</li>
+          <li><strong>@layer 和 z-index 的层叠上下文有什么区别？</strong> 结论是 <code>@layer</code> 管 CSS 规则覆盖，<code>z-index</code> 和 stacking context 管视觉绘制顺序。原因是二者属于不同模型：一个是级联算法，一个是布局绘制。项目里按钮颜色被谁覆盖看 <code>@layer</code>，弹窗是否压住遮罩看 stacking context。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@layer">MDN: @layer</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_cascade/Cascade">MDN: Cascade</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_cascade/Specificity">MDN: Specificity</a></li>
+          <li><a href="https://drafts.csswg.org/css-cascade-5/#layering">CSS Cascading and Inheritance Level 5: Cascade layers</a></li>
         </ul>
       </div>
     </section>

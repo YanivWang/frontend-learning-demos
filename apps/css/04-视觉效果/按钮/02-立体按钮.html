@@ -2,14 +2,15 @@
 分类: css / 04-视觉效果 / 按钮
   主题: 拟物 3D 按钮的按下动效
   要点:
-    - 通过 box-shadow 偏移构造「立体感」，:active 时缩小阴影并下沉 top 实现按下
-    - cursor: pointer + user-select: none 防止文字误选影响交互
+    - box-shadow 的垂直偏移模拟按钮厚度，:active 缩短阴影表示被按下
+    - transform: translateY() 比修改 top 更适合做点击反馈位移
+    - button 元素保留键盘、焦点和表单语义，不能用 div 假装按钮
+    - 点击动效需要焦点样式和 reduced-motion 边界，避免牺牲可访问性
   面试:
-    - 拟物 3D 按钮的按下动效的核心概念是什么
-    - 拟物 3D 按钮的按下动效在实际项目里怎么用
-    - 拟物 3D 按钮的按下动效有哪些常见坑或易错点
-    - 拟物 3D 按钮的按下动效和相近 API 如何区分选型
-    - 面试中如何简洁讲清 拟物 3D 按钮的按下动效
+    - 立体按钮为什么通常用 box-shadow 模拟厚度？
+    - :active 点击反馈应该改 top 还是 transform？
+    - 为什么交互按钮不应该用 div 实现？
+    - 拟物按钮动效在无障碍和减少动效设置下如何处理？
 -->
 
 <!doctype html>
@@ -23,11 +24,11 @@
         left: 100px;
         top: 100px;
         position: absolute;
-        color: rgba(255, 255, 255, 1);
-        background-color: #e1e1e1;
+        appearance: none;
+        background-color: #e8a52a;
         padding: 14px 60px;
         border-radius: 50px;
-        border-color: silver;
+        border: 0;
         color: #ffffff;
         font-weight: 600;
         font-size: 1.5rem;
@@ -35,11 +36,21 @@
         text-align: center;
         user-select: none;
         cursor: pointer;
+        transition: transform 120ms ease, box-shadow 120ms ease;
       }
-      /* 按下时把 4px 的下阴影缩到 2px，并把 top 下移 2px，看起来就像被「按进去」了 */
+      /* 按下时把 4px 的下阴影缩到 2px，并整体下移 2px，看起来就像被「按进去」了 */
       .css-3d-btn:active {
-        box-shadow: 0px 2px 0px #78C800;
-        top: 102px;
+        box-shadow: 0px 2px 0px #c88d1f;
+        transform: translateY(2px);
+      }
+      .css-3d-btn:focus-visible {
+        outline: 3px solid #2563eb;
+        outline-offset: 4px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .css-3d-btn {
+          transition: none;
+        }
       }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
@@ -53,16 +64,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>通过 box-shadow 偏移构造「立体感」，:active 时缩小阴影并下沉 top 实现按下。</li>
-          <li>cursor: pointer + user-select: none 防止文字误选影响交互。</li>
-          <li>通过 box-shadow 偏移构造「立体感」，:active 时缩小阴影并下沉 top 实现按下。</li>
-          <li>cursor: pointer + user-select: none 防止文字误选影响交互。</li>
+          <li>拟物按钮的核心是把 <code>box-shadow</code> 的垂直偏移当作“厚度”，默认状态阴影更长，按下时阴影变短。</li>
+          <li><code>:active</code> 表示元素正在被激活，鼠标按住、触摸按下或键盘触发时会短暂匹配，适合做即时点击反馈。</li>
+          <li>位移推荐用 <code>transform: translateY()</code>，它不会改变文档流位置；修改 <code>top</code> 也能看到效果，但更容易牵涉布局和定位细节。</li>
+          <li>真实交互控件应使用 <code>&lt;button&gt;</code>，因为它天然支持键盘、焦点、禁用状态和表单语义；用 <code>div</code> 需要额外补键盘事件和 ARIA，容易漏边界。</li>
+          <li>动效要保留可见焦点，并尊重 <code>prefers-reduced-motion</code>；按钮文案也要避免只靠颜色或阴影表达状态。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>通过 box-shadow 偏移构造「立体感」？</strong> 通过 box-shadow 偏移构造「立体感」，:active 时缩小阴影并下沉 top 实现按下</li>
-          <li><strong>拟物 3D 按钮的按下动效的核心概念是什么？</strong> 通过 box-shadow 偏移构造「立体感」，:active 时缩小阴影并下沉 top 实现按下；cursor: pointer + user-select: none 防止文字误选影响交互</li>
-          <li><strong>拟物 3D 按钮的按下动效在实际项目里怎么用？</strong> 通过 box-shadow 偏移构造「立体感」，:active 时缩小阴影并下沉 top 实现按下；cursor: pointer + user-select: none 防止文字误选影响交互</li>
+          <li><strong>立体按钮为什么通常用 box-shadow 模拟厚度？</strong> 结论是阴影偏移可以低成本制造按钮离开背景的错觉。原因是人眼会把下方较深的投影理解成厚度或光照差。本页按下时缩短阴影并下移按钮，就是把“凸起”变成“压下”。</li>
+          <li><strong>:active 点击反馈应该改 top 还是 transform？</strong> 结论是现代写法优先用 <code>transform</code>。原因是 transform 更适合做视觉位移，通常不会改变布局位置；<code>top</code> 依赖定位上下文，维护成本更高。边界是静态小 demo 改 top 也能演示，但项目组件应优先选择 transform。</li>
+          <li><strong>为什么不能用 div 假装按钮？</strong> 结论是能点击的控件应优先使用 <code>button</code>。原因是原生按钮自带键盘触发、焦点、禁用和辅助技术语义，<code>div</code> 需要手工补齐且容易遗漏。项目里只有在语义不是按钮时，才考虑其他元素加相应角色和事件处理。</li>
+          <li><strong>按钮动效有哪些无障碍边界？</strong> 结论是动效不能替代语义、焦点和文本状态。原因是部分用户依赖键盘或开启减少动效，过强位移也可能造成不适。真实项目里要提供 <code>:focus-visible</code>、明确文字/状态，并用 <code>prefers-reduced-motion</code> 降低非必要动画。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/box-shadow">MDN: box-shadow</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/:active">MDN: :active</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button">MDN: &lt;button&gt;</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion">MDN: prefers-reduced-motion</a></li>
         </ul>
       </div>
     </section>
@@ -70,7 +90,7 @@
 
     <!-- PAGE_DOM_START -->
     <div>
-      <div class="css-3d-btn">点击</div>
+      <button class="css-3d-btn" type="button">点击</button>
     </div>
     <!-- PAGE_DOM_END -->
 

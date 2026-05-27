@@ -2,15 +2,15 @@
 分类: css / 04-视觉效果 / tooltip
   主题: 纯 CSS tooltip（上下左右四方向）
   要点:
-    - ::before 画三角；::after 用 attr(data-tip) 拿提示文字
-    - 默认 opacity:0；:hover 时 opacity:1 + 反向移动实现「出现 + 弹出」动效
-    - transparent border + border-XXX-color 是经典「画三角形」技巧
+    - ::before 绘制三角箭头，::after 通过 attr(data-tip) 读取提示文字
+    - hover 和 focus-visible 都应触发提示，避免键盘用户无法看到内容
+    - transparent border + 单侧 border-color 可以绘制纯 CSS 三角形
+    - CSS 伪元素提示不等同于完整无障碍 tooltip，复杂场景应配合 ARIA 和 JS
   面试:
-    - 纯 CSS tooltip（上下左右四方向）的核心概念是什么
-    - 纯 CSS tooltip（上下左右四方向）在实际项目里怎么用
-    - 纯 CSS tooltip（上下左右四方向）有哪些常见坑或易错点
-    - 纯 CSS tooltip（上下左右四方向）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 纯 CSS tooltip（上下左右四方向）
+    - 纯 CSS tooltip 如何用伪元素和 attr() 生成提示内容？
+    - 为什么 tooltip 不能只依赖 :hover？
+    - border 三角形的原理是什么，如何控制方向？
+    - 纯 CSS tooltip 和 JS/ARIA tooltip 在项目里如何选型？
 -->
 
 <!doctype html>
@@ -54,9 +54,14 @@
         background-color: #000000;
         color: #ffffff;
       }
-      .tip:hover:before, .tip:hover:after {
+      .tip:hover:before, .tip:hover:after,
+      .tip:focus-visible:before, .tip:focus-visible:after {
         opacity: 1; /* hover 时显示 tooltip */
         z-index: 1000;
+      }
+      .tip:focus-visible {
+        outline: 2px solid #2563eb;
+        outline-offset: 4px;
       }
       /*top*/
       .tip-top:before {
@@ -75,6 +80,12 @@
         margin-bottom: -6px;
       }
       .tip-top:hover:after {
+        margin-bottom: 6px;
+      }
+      .tip-top:focus-visible:before {
+        margin-bottom: -6px;
+      }
+      .tip-top:focus-visible:after {
         margin-bottom: 6px;
       }
       /*bottom*/
@@ -97,6 +108,12 @@
       .tip-bottom:hover:after {
         margin-top: 9px;
       }
+      .tip-bottom:focus-visible:before {
+        margin-top: -3px;
+      }
+      .tip-bottom:focus-visible:after {
+        margin-top: 9px;
+      }
       /*right*/
       .tip-right:before {
         top: 50%;
@@ -115,6 +132,12 @@
         margin-left: -3px;
       }
       .tip-right:hover:after {
+        margin-left: 9px;
+      }
+      .tip-right:focus-visible:before {
+        margin-left: -3px;
+      }
+      .tip-right:focus-visible:after {
         margin-left: 9px;
       }
       /*left*/
@@ -137,6 +160,12 @@
       .tip-left:hover:after {
         margin-right: 6px;
       }
+      .tip-left:focus-visible:before {
+        margin-left: -6px;
+      }
+      .tip-left:focus-visible:after {
+        margin-right: 6px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -149,15 +178,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>::before 画三角；::after 用 attr(data-tip) 拿提示文字。</li>
-          <li>默认 opacity:0；:hover 时 opacity:1 + 反向移动实现「出现 + 弹出」动效。</li>
-          <li>transparent border + border-XXX-color 是经典「画三角形」技巧。</li>
+          <li>本页用 <code>::before</code> 画小三角，用 <code>::after</code> 生成提示气泡，<code>content: attr(data-tip)</code> 会读取元素上的 <code>data-tip</code> 文案。</li>
+          <li>定位机制是让触发元素 <code>position: relative</code>，伪元素 <code>position: absolute</code>，再用 <code>top</code>、<code>bottom</code>、<code>left</code>、<code>right</code> 和 margin 控制四个方向。</li>
+          <li>三角形来自透明边框技巧：元素尺寸为 0 时，四条边框会形成四个三角区域，只给某一侧设置颜色就能得到箭头。</li>
+          <li>交互上不能只写 <code>:hover</code>，因为键盘和触屏用户可能无法触发；本页额外支持 <code>:focus-visible</code>，按钮获得焦点时也能显示提示。</li>
+          <li>纯 CSS tooltip 适合短文本装饰说明；如果提示内容很长、需要关闭逻辑、动态定位、防溢出或读屏器稳定朗读，应使用 JS 管理状态并补充 <code>aria-describedby</code> / <code>role="tooltip"</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>默认 opacity？</strong> 默认 opacity:0；:hover 时 opacity:1 + 反向移动实现「出现 + 弹出」动效</li>
-          <li><strong>transparent border + border-XXX-color 是经？</strong> transparent border + border-XXX-color 是经典「画三角形」技巧</li>
-          <li><strong>纯 CSS tooltip（上下左右四方向）的核心概念是什么？</strong> ::before 画三角；::after 用 attr(data-tip) 拿提示文字；默认 opacity:0；:hover 时 opacity:1 + 反向移动实现「出现 + 弹出」动效</li>
+          <li><strong>纯 CSS tooltip 如何生成提示内容？</strong> 结论是用伪元素生成结构，用 <code>attr(data-tip)</code> 读取提示文案。原因是 <code>::before</code> / <code>::after</code> 可以通过 <code>content</code> 插入生成内容，并相对触发元素定位。边界是生成内容不适合承载复杂交互，也不能替代可靠的无障碍语义。</li>
+          <li><strong>为什么 tooltip 不能只依赖 :hover？</strong> 结论是只依赖 hover 会漏掉键盘和部分触屏场景。原因是键盘用户通过焦点导航，触屏设备没有稳定的悬停状态。本页补了 <code>:focus-visible</code>，真实项目还应根据交互复杂度加入 JS、Escape 关闭和 <code>aria-describedby</code>。</li>
+          <li><strong>CSS 三角形的原理是什么？</strong> 结论是利用透明边框拼出的斜切区域。原因是零尺寸盒子的四条 border 会分别形成三角形，只给目标方向的边框着色，其余保持透明，就能得到箭头。项目里要注意箭头尺寸、气泡背景色和方向边框颜色保持一致。</li>
+          <li><strong>纯 CSS tooltip 适合什么场景？</strong> 结论是适合短提示、静态方向和低风险装饰说明。原因是 CSS 缺少碰撞检测、异步内容、关闭时机和完整可访问性状态管理。复杂表单错误提示、动态菜单或移动端长文本说明应使用组件化 tooltip/popover。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/::before">MDN: ::before</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/attr">MDN: attr()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/:focus-visible">MDN: :focus-visible</a></li>
+          <li><a href="https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/">WAI-ARIA Authoring Practices: Tooltip Pattern</a></li>
         </ul>
       </div>
     </section>

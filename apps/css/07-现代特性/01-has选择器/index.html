@@ -2,16 +2,15 @@
 分类: css / 07-现代特性 / 01-has选择器
   主题: :has() 父选择器与条件样式
   要点:
-    - :has() 根据子元素或后续兄弟是否存在来匹配祖先/自身，俗称「父选择器」
-    - 卡片 :has(input:checked) 高亮选中项，无需 JS 切换 class
-    - form :has(:invalid) 可在存在无效表单项时提示提交区
-    - 浏览器支持已较广（Chrome 105+、Safari 15.4+、Firefox 121+），降级时样式不生效但不影响布局
+    - :has() 是关系伪类，可根据相对选择器是否匹配来选择当前元素
+    - .card:has(input:checked) 能用子控件状态驱动父级卡片样式，无需 JS 切换 class
+    - form:has(:invalid) 可表达“表单内部存在无效控件”这类状态样式
+    - :has() 参数会影响选择器特异性，复杂匹配也可能增加样式失效成本
   面试:
-    - :has() 父选择器与条件样式的核心概念是什么
-    - :has() 父选择器与条件样式在实际项目里怎么用
-    - :has() 父选择器与条件样式有哪些常见坑或易错点
-    - :has() 父选择器与条件样式和相近 API 如何区分选型
-    - 面试中如何简洁讲清 :has() 父选择器与条件样式
+    - :has() 为什么常被称为父选择器，但它的准确语义是什么？
+    - 什么时候用 :has() 替代 JS class 切换，什么时候不该用？
+    - :has() 的特异性和性能边界要怎么回答？
+    - 表单状态用 form:has(:invalid) 有哪些交互和兼容边界？
 -->
 
 <!doctype html>
@@ -54,20 +53,29 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>:has() — 根据子节点状态匹配父元素</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">切换套餐和输入邮箱，观察父级卡片和表单提示如何被子元素状态驱动，不需要额外 JavaScript。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>:has() 根据子元素或后续兄弟是否存在来匹配祖先/自身，俗称「父选择器」。</li>
-          <li>卡片 :has(input:checked) 高亮选中项，无需 JS 切换 class。</li>
-          <li>form :has(:invalid) 可在存在无效表单项时提示提交区。</li>
-          <li>浏览器支持已较广（Chrome 105+、Safari 15.4+、Firefox 121+），降级时样式不生效但不影响布局。</li>
+          <li><code>:has()</code> 是 CSS Selectors 规范里的关系伪类：当参数中的相对选择器能从当前元素出发匹配到目标时，当前元素就会被选中。它常被叫作“父选择器”，但实际能力不只选父级，也能表达后代、子代、后续兄弟等关系。</li>
+          <li>示例中的 <code>.card:has(input[type="radio"]:checked)</code> 用单选框状态高亮外层卡片，适合“样式只取决于 DOM 中已有状态”的场景，可以少写一段 JS class 同步逻辑。</li>
+          <li><code>form:has(:invalid)</code> 表达的是“表单内部存在无效控件”。这类写法适合即时视觉提示，但真实提交仍要依赖 HTML 约束校验、服务端校验和清晰错误文案，不能把 CSS 状态当作业务校验。</li>
+          <li><code>:has()</code> 的特异性由参数中最具体的选择器参与计算，可能让规则比预期更难覆盖；实践中应保持选择器短而明确，必要时配合 <code>:where()</code> 降低特异性。</li>
+          <li>现代浏览器已广泛支持 <code>:has()</code>，但复杂祖先匹配会扩大样式失效范围。项目里应避免在超大 DOM 上写过宽的 <code>body:has(...)</code> 或频繁变化状态的深层选择器，并用兼容性表确认目标浏览器。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>浏览器支持已较广（Chrome 105+、Safari 15.4+、Firefo？</strong> 浏览器支持已较广（Chrome 105+、Safari 15.4+、Firefox 121+），降级时样式不生效但不影响布局</li>
-          <li><strong>:has() 父选择器与条件样式的核心概念是什么？</strong> :has() 根据子元素或后续兄弟是否存在来匹配祖先/自身，俗称「父选择器」；卡片 :has(input:checked) 高亮选中项，无需 JS 切换 class</li>
-          <li><strong>:has() 父选择器与条件样式在实际项目里怎么用？</strong> :has() 根据子元素或后续兄弟是否存在来匹配祖先/自身，俗称「父选择器」；卡片 :has(input:checked) 高亮选中项，无需 JS 切换 class</li>
+          <li><strong>:has() 为什么常被称为父选择器，但它的准确语义是什么？</strong> 结论是 <code>:has()</code> 是关系伪类，不只是父选择器。原因是它根据参数里的相对选择器是否匹配来决定当前元素是否匹配，所以可以让父级受子元素状态影响，也可以表达兄弟关系。项目里常用于选中卡片、表单状态、导航包含当前项等纯样式状态。</li>
+          <li><strong>什么时候用 :has() 替代 JS class 切换，什么时候不该用？</strong> 结论是样式状态已经存在于 DOM 或表单伪类中时适合用 <code>:has()</code>，业务状态复杂或需要副作用时仍应使用 JS/框架状态。原因是 CSS 适合声明视觉关系，不负责数据流、异步校验和持久化。边界是如果状态来自服务端权限、接口结果或复杂组件逻辑，强行用 <code>:has()</code> 会让维护成本变高。</li>
+          <li><strong>:has() 的特异性和性能边界要怎么回答？</strong> 结论是它会按参数中最高特异性的选择器参与计算，并且复杂关系匹配可能增加样式重算成本。原因是浏览器需要在相关 DOM 状态变化时判断祖先或兄弟是否受影响。项目里应缩小作用范围，比如写 <code>.card:has(input:checked)</code>，少写全局深层匹配。</li>
+          <li><strong>表单状态用 form:has(:invalid) 有哪些交互和兼容边界？</strong> 结论是它适合做渐进增强的视觉提示，但不能替代真实校验和错误处理。原因是 CSS 只能改变样式，不能阻止服务端收到非法数据，也不能给所有辅助技术提供完整错误说明。项目里要配合 <code>required</code>、类型约束、错误文本、服务端校验，并确认目标浏览器支持。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/:has">MDN: :has()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_selectors/Selector_structure#specificity">MDN: Selector specificity</a></li>
+          <li><a href="https://drafts.csswg.org/selectors-4/#has-pseudo">Selectors Level 4: The relational pseudo-class :has()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Learn/Forms/Form_validation">MDN: Client-side form validation</a></li>
         </ul>
       </div>
     </section>

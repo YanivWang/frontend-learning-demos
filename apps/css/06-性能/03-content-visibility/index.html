@@ -1,19 +1,19 @@
 <!--
 分类: css / 06-性能 / 03-content-visibility
-  主题: content-visibility 跳过屏幕外渲染
+  主题: content-visibility 与屏幕外内容跳过渲染
   难度: 进阶
   前置: 01-重排重绘
   相关: 02-合成层
   要点:
-    - content-visibility: auto 让浏览器跳过屏幕外内容的渲染
-    - contain-intrinsic-size 避免滚动条跳动
-    - 适合长列表 / 文档流大段内容
+    - content-visibility: auto 允许浏览器跳过屏幕外内容的布局和绘制工作
+    - contain-intrinsic-size 为未渲染内容提供占位尺寸，减少滚动条跳动
+    - 适合长文档、卡片流和首屏外大块内容，不等同于虚拟列表
+    - 跳过渲染会影响测量、查找和无障碍体验，需要按交互边界验证
   面试:
-    - content-visibility 跳过屏幕外渲染的核心概念是什么
-    - content-visibility 跳过屏幕外渲染在实际项目里怎么用
-    - content-visibility 跳过屏幕外渲染有哪些常见坑或易错点
-    - content-visibility 跳过屏幕外渲染和相近 API 如何区分选型
-    - 面试中如何简洁讲清 content-visibility 跳过屏幕外渲染
+    - content-visibility: auto 到底优化了什么？
+    - 为什么 content-visibility 通常要配合 contain-intrinsic-size？
+    - content-visibility 和虚拟列表有什么区别？
+    - 使用 content-visibility 时有哪些测量、可访问性和兼容性边界？
 -->
 
 <!doctype html>
@@ -40,19 +40,29 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>content-visibility: auto</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">向下滚动观察长文档区块；本页用 DOM API 生成静态区块，并用 content-visibility 让浏览器跳过首屏外渲染工作。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>content-visibility: auto 让浏览器跳过屏幕外内容的渲染。</li>
-          <li>contain-intrinsic-size 避免滚动条跳动。</li>
-          <li>适合长列表 / 文档流大段内容。</li>
+          <li><code>content-visibility: auto</code> 允许浏览器对屏幕外内容跳过部分渲染工作，常见收益是减少首屏外大块 DOM 的布局和绘制成本；元素接近视口时浏览器再补做需要的工作。</li>
+          <li><code>contain-intrinsic-size</code> 给尚未完整渲染的内容提供一个估算占位尺寸，避免滚动条长度和页面位置在区块进入视口时大幅跳动。示例中每个区块用 <code>0 120px</code> 作为占位。</li>
+          <li>它适合长文章、卡片流、说明文档等“DOM 仍在页面中，但首屏外暂时不用渲染”的场景；它不删除 DOM，也不减少节点数量，因此不能替代真正的虚拟列表。</li>
+          <li>常见坑是对未渲染内容做尺寸测量、滚动定位、查找高亮或依赖内部布局时，结果可能和完全渲染状态不同。项目中要重点测试锚点跳转、浏览器查找、懒加载图片、可访问性树和打印等边界。</li>
+          <li>本页脚本只生成固定文本区块，因此使用 DOM API 的 <code>textContent</code> 写入内容；如果区块内容来自用户或网络，不能直接拼接到 <code>innerHTML</code>，否则会把性能 demo 变成 XSS 风险示例。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>content-visibility？</strong> content-visibility: auto 让浏览器跳过屏幕外内容的渲染；contain-intrinsic-size 避免滚动条跳动</li>
-          <li><strong>contain-intrinsic-size 避免滚动条跳动？</strong> content-visibility: auto 让浏览器跳过屏幕外内容的渲染；contain-intrinsic-size 避免滚动条跳动</li>
-          <li><strong>适合长列表 / 文档流大段内容？</strong> 适合长列表 / 文档流大段内容</li>
+          <li><strong>content-visibility: auto 到底优化了什么？</strong> 结论是它让浏览器可以跳过屏幕外内容的部分布局和绘制，从而降低首屏渲染成本。原因是浏览器在确认内容暂不可见时，不必立即完成内部子树的渲染工作。边界是 DOM 仍然存在，脚本创建和内存占用不会消失，所以超大列表仍可能需要分页或虚拟列表。</li>
+          <li><strong>为什么 content-visibility 通常要配合 contain-intrinsic-size？</strong> 结论是为了给被跳过渲染的内容预留合理空间。原因是如果浏览器不知道屏幕外内容的大致尺寸，滚动条和页面位置可能在内容渲染后变化。项目里应根据卡片均高、骨架屏高度或历史测量值设置接近真实的占位尺寸。</li>
+          <li><strong>content-visibility 和虚拟列表有什么区别？</strong> 结论是 <code>content-visibility</code> 是 CSS 渲染跳过，虚拟列表是应用层只渲染可见范围 DOM。原因是前者保留完整 DOM，开发成本低但节点仍存在；后者减少 DOM 数量，适合十万级数据但要处理滚动高度、焦点和键盘导航。项目里长文档可优先试 <code>content-visibility</code>，海量数据列表通常选虚拟列表。</li>
+          <li><strong>使用 content-visibility 时有哪些测量、可访问性和兼容性边界？</strong> 结论是要验证尺寸测量、锚点跳转、浏览器查找、辅助技术读取和不支持浏览器的表现。原因是跳过渲染会改变浏览器何时计算内部布局，不同浏览器支持程度也有差异。项目里应把它当渐进增强：没有支持时页面仍可正常阅读，只是少一层性能优化。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/content-visibility">MDN: content-visibility</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/contain-intrinsic-size">MDN: contain-intrinsic-size</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment">MDN: CSS containment</a></li>
+          <li><a href="https://drafts.csswg.org/css-contain-2/">CSS Containment Module Level 2</a></li>
         </ul>
       </div>
     </section>
@@ -68,8 +78,13 @@
       const list = document.getElementById("list");
       for (let i = 1; i <= 40; i++) {
         const el = document.createElement("section");
+        const title = document.createElement("h2");
+        const text = document.createElement("p");
+
         el.className = "block";
-        el.innerHTML = `<h2>区块 #${i}</h2><p>模拟长文档中的一段内容。content-visibility 让浏览器延迟绘制视口外的节点。</p>`;
+        title.textContent = `区块 #${i}`;
+        text.textContent = "模拟长文档中的一段内容。content-visibility 让浏览器延迟绘制视口外的节点。";
+        el.append(title, text);
         list.appendChild(el);
       }
 

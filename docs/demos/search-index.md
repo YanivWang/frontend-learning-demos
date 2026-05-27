@@ -322,7 +322,7 @@
 
 ### 百分比圆环
 
-- [index](/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E7%99%BE%E5%88%86%E6%AF%94%E5%9C%86%E7%8E%AF/index.html) — 纯 CSS 百分比圆环 demo 页（多色 / dark / 多尺寸）
+- [index](/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E7%99%BE%E5%88%86%E6%AF%94%E5%9C%86%E7%8E%AF/index.html) — 旧式纯 CSS 百分比圆环组件
 
 ### 文本与图片处理
 
@@ -330,7 +330,7 @@
 
 ### background-blend-mode
 
-- [index](/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/background-blend-mode/index.html) — 背景叠加颜色 / 渐变的混合演示
+- [index](/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/background-blend-mode/index.html) — background-blend-mode 与 mix-blend-mode 混合模式
 
 ### drop-shadow
 
@@ -342,24 +342,24 @@
 
 ### media-queries
 
-- [基础布局](/apps/css/05-%E5%93%8D%E5%BA%94%E5%BC%8F/media-queries/01-%E5%9F%BA%E7%A1%80%E5%B8%83%E5%B1%80.html) — 响应式布局基础页（仅加载 style.css，未引入 media-queries.css）
-- [响应式最终页](/apps/css/05-%E5%93%8D%E5%BA%94%E5%BC%8F/media-queries/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E6%9C%80%E7%BB%88%E9%A1%B5.html) — 响应式布局最终页（基础布局上叠加 media-queries）
+- [基础布局](/apps/css/05-%E5%93%8D%E5%BA%94%E5%BC%8F/media-queries/01-%E5%9F%BA%E7%A1%80%E5%B8%83%E5%B1%80.html) — 固定宽度三栏布局的响应式基线
+- [响应式最终页](/apps/css/05-%E5%93%8D%E5%BA%94%E5%BC%8F/media-queries/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E6%9C%80%E7%BB%88%E9%A1%B5.html) — 基于 @media 断点的旧式页面响应式改造
 
 ### vw-vh
 
-- [index](/apps/css/05-%E5%93%8D%E5%BA%94%E5%BC%8F/vw-vh/index.html) — rem + @media + vw / vh 综合响应式示例
+- [index](/apps/css/05-%E5%93%8D%E5%BA%94%E5%BC%8F/vw-vh/index.html) — rem、@media 与 vw/vh 的组合响应式布局
 
 ### 01-重排重绘
 
-- [index](/apps/css/06-%E6%80%A7%E8%83%BD/01-%E9%87%8D%E6%8E%92%E9%87%8D%E7%BB%98/index.html) — 重排、重绘与触发布局属性
+- [index](/apps/css/06-%E6%80%A7%E8%83%BD/01-%E9%87%8D%E6%8E%92%E9%87%8D%E7%BB%98/index.html) — CSS 重排、重绘与合成友好动画
 
 ### 02-合成层
 
-- [index](/apps/css/06-%E6%80%A7%E8%83%BD/02-%E5%90%88%E6%88%90%E5%B1%82/index.html) — 合成层、GPU 加速与 will-change
+- [index](/apps/css/06-%E6%80%A7%E8%83%BD/02-%E5%90%88%E6%88%90%E5%B1%82/index.html) — 合成层、合成动画与 will-change 使用边界
 
 ### 03-content-visibility
 
-- [index](/apps/css/06-%E6%80%A7%E8%83%BD/03-content-visibility/index.html) — content-visibility 跳过屏幕外渲染
+- [index](/apps/css/06-%E6%80%A7%E8%83%BD/03-content-visibility/index.html) — content-visibility 与屏幕外内容跳过渲染
 
 ### 01-has选择器
 
@@ -367,7 +367,7 @@
 
 ### 02-layer层叠管理
 
-- [index](/apps/css/07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/02-layer%E5%B1%82%E5%8F%A0%E7%AE%A1%E7%90%86/index.html) — @layer 层叠上下文与优先级管理
+- [index](/apps/css/07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/02-layer%E5%B1%82%E5%8F%A0%E7%AE%A1%E7%90%86/index.html) — @layer 级联层与样式优先级管理
 
 ### 03-container-queries容器查询
 

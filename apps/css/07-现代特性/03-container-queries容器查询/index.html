@@ -2,16 +2,15 @@
 分类: css / 07-现代特性 / 03-container-queries容器查询
   主题: container-type 与 @container 组件级响应式
   要点:
-    - 媒体查询看视口宽度；容器查询看「父容器」宽度，适合卡片/侧边栏等可复用组件
-    - 父元素设置 container-type: inline-size（或 size）并可选 container-name
-    - @container (min-width: 400px) 在容器够宽时切换布局，与 viewport 无关
-    - 面试对比：media query 全局断点 vs container query 组件自适配
+    - 媒体查询看视口，容器查询看查询容器，适合可复用组件在不同区域自适应
+    - 父元素设置 container-type: inline-size 并可选 container-name，才能被 @container 查询
+    - @container card (min-width: 360px) 在容器够宽时切换卡片布局，与 viewport 无直接关系
+    - 容器查询会建立 containment，不能随意查询被样式改变的同一个元素自身尺寸
   面试:
-    - container-type 与 @container 组件级响应式的核心概念是什么
-    - container-type 与 @container 组件级响应式在实际项目里怎么用
-    - container-type 与 @container 组件级响应式有哪些常见坑或易错点
-    - container-type 与 @container 组件级响应式和相近 API 如何区分选型
-    - 面试中如何简洁讲清 container-type 与 @container 组件级响应式
+    - 容器查询和媒体查询的根本区别是什么？
+    - 为什么要先设置 container-type 才能写 @container？
+    - container-name 有什么作用，什么时候需要命名容器？
+    - 容器查询有哪些布局、性能和兼容边界？
 -->
 
 <!doctype html>
@@ -77,16 +76,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>媒体查询看视口宽度；容器查询看「父容器」宽度，适合卡片/侧边栏等可复用组件。</li>
-          <li>父元素设置 container-<code>type</code>: inline-size（或 size）并可选 container-name。</li>
-          <li>@container (min-width: 400px) 在容器够宽时切换布局，与 viewport 无关。</li>
-          <li>面试对比：media query 全局断点 vs container query 组件自适配。</li>
+          <li>媒体查询根据视口或设备特征切换样式，容器查询根据最近的查询容器尺寸切换样式。它解决的是“同一个组件放在主栏、侧栏、弹窗里宽度不同，布局也应不同”的组件级响应式问题。</li>
+          <li>要使用尺寸容器查询，祖先元素需要声明 <code>container-type</code>。本页的 <code>.card-container</code> 设置 <code>container-type: inline-size</code>，表示可按容器的行向尺寸（通常是宽度）查询，同时用 <code>container-name: card</code> 命名。</li>
+          <li><code>@container card (min-width: 360px)</code> 只在名为 <code>card</code> 的查询容器达到 360px 时生效。示例中两张卡片 HTML/CSS 相同，但因所在虚线容器宽度不同，可能呈现纵向或横向布局。</li>
+          <li>容器查询不是媒体查询的替代品：页面整体导航、栅格和断点仍适合用媒体查询；可复用组件内部布局、卡片密度和按钮排列更适合容器查询。</li>
+          <li><code>container-type</code> 会引入 containment，浏览器需要避免“组件样式改变自身尺寸、自身尺寸又改变查询结果”的循环依赖。实践中通常把容器设在组件外壳，查询内部子元素，而不是让被查询的元素直接查询自己。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>媒体查询看视口宽度？</strong> 媒体查询看视口宽度；容器查询看「父容器」宽度，适合卡片/侧边栏等可复用组件</li>
-          <li><strong>父元素设置 container-type？</strong> 父元素设置 container-<code>type</code>: inline-size（或 size）并可选 container-name</li>
-          <li><strong>@container (min-width？</strong> @container (min-width: 400px) 在容器够宽时切换布局，与 viewport 无关</li>
+          <li><strong>容器查询和媒体查询的根本区别是什么？</strong> 结论是媒体查询看全局视口或设备特征，容器查询看组件所在容器的尺寸。原因是组件复用时，视口相同不代表组件可用宽度相同。项目里页面级布局用媒体查询，组件级自适应用容器查询更准确。</li>
+          <li><strong>为什么要先设置 container-type 才能写 @container？</strong> 结论是浏览器需要明确哪个祖先可以作为查询容器。原因是尺寸查询会引入 containment，避免子元素样式反过来无限影响被查询尺寸。项目里常把 <code>container-type: inline-size</code> 放在卡片外壳、列表项外壳或侧栏内容容器上。</li>
+          <li><strong>container-name 有什么作用，什么时候需要命名容器？</strong> 结论是命名容器让 <code>@container card (...)</code> 精确匹配目标容器，而不是只找最近的可查询祖先。原因是组件可能嵌套在多个容器里，未命名查询容易被更近的外壳截获。项目中简单组件可不命名，复杂嵌套或设计系统组件建议命名。</li>
+          <li><strong>容器查询有哪些布局、性能和兼容边界？</strong> 结论是它适合组件自适应，但要注意 containment 副作用、循环依赖和浏览器兼容。原因是容器查询依赖浏览器对容器尺寸的独立计算，不能随意让被查询元素决定查询容器尺寸。项目里应提供基础布局作为降级，并在目标浏览器矩阵中确认支持情况。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries">MDN: CSS container queries</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/container-type">MDN: container-type</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@container">MDN: @container</a></li>
+          <li><a href="https://drafts.csswg.org/css-contain-3/">CSS Containment Module Level 3</a></li>
         </ul>
       </div>
     </section>

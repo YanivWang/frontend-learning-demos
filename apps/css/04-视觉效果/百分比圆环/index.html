@@ -1,16 +1,16 @@
 <!--
 分类: css / 04-视觉效果 / 百分比圆环
-  主题: 纯 CSS 百分比圆环 demo 页（多色 / dark / 多尺寸）
+  主题: 旧式纯 CSS 百分比圆环组件
   要点:
-    - 通过组合 .c100 .p25/.p50/.p75 + dark/green/orange/big/small 修饰类切换风格
-    - 配套样式见 ./css/circle.css
-    - 第三方组件，按 CONVENTIONS §5 保留 IE 条件注释、作者署名等原始信息
+    - .p1 到 .p100 把百分比映射为半圆 transform 旋转角度
+    - 组件用 clip: rect() 裁出左右半圆，51% 以上再显示 .fill 补足另一半
+    - dark、green、orange、big、small 是外观修饰类，不改变进度算法
+    - clip 已废弃，现代项目可优先考虑 conic-gradient 或 SVG 圆环
   面试:
-    - 纯 CSS 百分比圆环 demo 页（多色 / dark / 多尺寸）的核心概念是什么
-    - 纯 CSS 百分比圆环 demo 页（多色 / dark / 多尺寸）在实际项目里怎么用
-    - 纯 CSS 百分比圆环 demo 页（多色 / dark / 多尺寸）有哪些常见坑或易错点
-    - 纯 CSS 百分比圆环 demo 页（多色 / dark / 多尺寸）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 纯 CSS 百分比圆环 demo 页（多色 / dark / 多尺寸）
+    - 纯 CSS 圆环如何用两个半圆和 transform 表示百分比？
+    - 为什么 50% 以上需要额外的 fill 半圆？
+    - 这类旧组件里的 clip: rect() 有什么维护风险？
+    - 百分比圆环在 CSS、SVG、Canvas 方案之间如何选型？
 -->
 
 <!doctype html>
@@ -68,20 +68,30 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>Pure CSS Percentage Circle - circle100</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <h1>旧式纯 CSS 百分比圆环组件</h1>
+      <p class="hint">下方组件来自 Pure CSS Percentage Circle：通过百分比类名、半圆裁剪和旋转展示 12%、25%、50% 等静态进度。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>通过组合 .c100 .p25/.p50/.p75 + dark/green/orange/big/small 修饰类切换风格。</li>
-          <li>配套样式见 ./css/circle.css。</li>
-          <li>第三方组件，按 CONVENTIONS §5 保留 IE 条件注释、作者署名等原始信息。</li>
+          <li>这个组件把进度写成类名：<code>.p25</code>、<code>.p50</code>、<code>.p75</code> 等分别对应百分比，样式表中按 <code>百分比 * 3.6deg</code> 生成 <code>transform: rotate(...)</code>。</li>
+          <li>圆环由两个半圆拼出：<code>.slice</code> 负责裁出可见区域，<code>.bar</code> 旋转显示当前半圆进度，超过 50% 时再让 <code>.fill</code> 显示另一半。</li>
+          <li><code>dark</code>、<code>green</code>、<code>orange</code>、<code>big</code>、<code>small</code> 都只是修饰类，改变颜色或字号尺寸，不改变百分比计算逻辑。</li>
+          <li>配套样式使用了已废弃的 <code>clip: rect()</code> 和大量预生成选择器，适合理解早期 CSS 技巧；新项目通常更推荐 <code>conic-gradient()</code>、SVG <code>stroke-dasharray</code> 或组件库进度环。</li>
+          <li>可访问性边界是圆环视觉本身不等于进度语义。真实进度组件应提供文本数值，必要时补 <code>role="progressbar"</code>、<code>aria-valuenow</code>、<code>aria-valuemin</code> 和 <code>aria-valuemax</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>通过组合 .c100 .p25/.p50/.p75 + dark/green/o？</strong> 通过组合 .c100 .p25/.p50/.p75 + dark/green/orange/big/small 修饰类切换风格</li>
-          <li><strong>配套样式见 ./css/circle.css？</strong> 配套样式见 ./css/circle.css</li>
-          <li><strong>纯 CSS 百分比圆环 demo 页（多色 / dark / 多尺寸）的核心概念是什么？</strong> 通过组合 .c100 .p25/.p50/.p75 + dark/green/orange/big/small 修饰类切换风格；配套样式见 ./css/circle.css</li>
+          <li><strong>纯 CSS 圆环如何用两个半圆表示百分比？</strong> 结论是把圆环拆成左右两个可裁剪半圆，再用旋转角度映射进度。原因是一个完整圆是 360 度，每 1% 对应 3.6 度，<code>.p25</code> 就让半圆旋转到 90 度。这个 demo 的算法写在 <code>css/circle.css</code> 的 <code>.p1</code> 到 <code>.p100</code> 选择器里。</li>
+          <li><strong>为什么 50% 以上需要 fill 半圆？</strong> 结论是单个半圆最多只能覆盖半个圆环。原因是前 0-50% 只需要旋转一个被裁剪的半圆，超过 180 度后必须解除或改变裁剪，并显示另一个固定半圆补足剩余区域。项目里如果用这种旧方案，要特别检查 50% 临界点是否跳变。</li>
+          <li><strong>clip: rect() 有什么维护风险？</strong> 结论是它能解释旧组件机制，但不适合作为新代码首选。原因是 <code>clip</code> 已废弃，且只适用于绝对定位元素；大量百分比类也让动态进度更新不灵活。现代项目通常用 <code>conic-gradient()</code> 写静态圆环，或用 SVG 更精确地控制动画、圆角和可访问性。</li>
+          <li><strong>CSS、SVG、Canvas 圆环如何选型？</strong> 结论是静态装饰圆环用 CSS，数据型进度环优先 SVG，高频复杂绘制再考虑 Canvas。原因是 CSS 轻量但语义和精细控制有限，SVG 有图形语义、描边和动画能力，Canvas 适合大量绘制但需要自己补可访问性。后台仪表盘或上传进度通常更偏向 SVG/组件库方案。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/rotate">MDN: rotate()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/clip">MDN: clip</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/gradient/conic-gradient">MDN: conic-gradient()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Roles/progressbar_role">MDN: ARIA progressbar role</a></li>
         </ul>
       </div>
     </section>

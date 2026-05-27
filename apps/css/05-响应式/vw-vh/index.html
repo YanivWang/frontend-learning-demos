@@ -1,16 +1,16 @@
 <!--
 分类: css / 05-响应式 / vw-vh
-  主题: rem + @media + vw / vh 综合响应式示例
+  主题: rem、@media 与 vw/vh 的组合响应式布局
   要点:
-    - rem：@media 切换 html font-size，正文/侧栏用 rem 等比缩放
-    - vw / vh：页宽 min(980px, 96vw)、横幅 30vh、顶栏间距 2vh 等视口相对尺寸
-    - 顶部 .vw-vh-demo 区直观展示 vw/vh 与 rem 的配合方式
+    - rem 取决于根元素 font-size，本页用 @media 在不同视口宽度下调整根字号
+    - vw/vh 直接相对视口尺寸，本页用 96vw、50vw、12vh、30vh 展示宽高随视口变化
+    - min(980px, 96vw) 把最大内容宽度和窄屏安全边距合在一个声明里
+    - vh 在移动浏览器会受动态地址栏影响，现代项目可按场景考虑 svh/lvh/dvh
   面试:
-    - rem + @media + vw / vh 综合响应式示例的核心概念是什么
-    - rem + @media + vw / vh 综合响应式示例在实际项目里怎么用
-    - rem + @media + vw / vh 综合响应式示例有哪些常见坑或易错点
-    - rem + @media + vw / vh 综合响应式示例和相近 API 如何区分选型
-    - 面试中如何简洁讲清 rem + @media + vw / vh 综合响应式示例
+    - rem 和 vw/vh 的参照物分别是什么，为什么不能混为一谈？
+    - 用 @media 改 html font-size 做 rem 适配有哪些收益和风险？
+    - min(980px, 96vw) 相比固定宽度或单纯百分比有什么优势？
+    - 移动端使用 vh 做整屏或大图高度时要注意什么？
 -->
 
 <!doctype html>
@@ -30,20 +30,30 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>武汉亿房网</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <h1>rem、@media 与 vw/vh 的组合响应式布局</h1>
+      <p class="hint">调整浏览器宽高，观察顶部 50vw / 12vh 演示块、30vh 主图和 rem 字号在断点附近的变化。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>rem：@media 切换 html font-size，正文/侧栏用 rem 等比缩放。</li>
-          <li>vw / vh：页宽 min(980px, 96vw)、横幅 30vh、顶栏间距 2vh 等视口相对尺寸。</li>
-          <li>顶部 .vw-vh-demo 区直观展示 vw/vh 与 rem 的配合方式。</li>
+          <li><code>rem</code> 是相对根元素 <code>html</code> 的字体大小。本页在 <code>1600px</code>、<code>1280px</code>、<code>960px</code> 等区间切换 <code>html { font-size: ... }</code>，正文 <code>1.3rem</code> 和侧栏 <code>1rem</code> 会跟着根字号等比变化。</li>
+          <li><code>vw</code> / <code>vh</code> 是视口百分比单位，<code>1vw</code> 等于视口宽度的 1%，<code>1vh</code> 等于视口高度的 1%。顶部演示块的 <code>50vw</code> 和 <code>12vh</code> 会直接随窗口宽高变化，不依赖父元素字号。</li>
+          <li><code>width: min(980px, 96vw)</code> 表示内容宽度取 <code>980px</code> 与 <code>96vw</code> 中较小值：大屏限制最大行宽，小屏保留约 2vw 的左右边距，比固定 <code>980px</code> 更不容易横向溢出。</li>
+          <li><code>@media</code>、<code>rem</code> 和 <code>vw/vh</code> 适合解决不同问题：断点负责结构变化，<code>rem</code> 适合字号和间距体系，<code>vw/vh</code> 适合随视口变化的容器或舞台尺寸。混用时要避免所有尺寸都跟视口线性缩放，导致极端屏幕上过大或过小。</li>
+          <li>移动浏览器的地址栏、工具栏会改变可见视口，传统 <code>vh</code> 可能导致“100vh 被遮挡”或高度跳动；现代 CSS 增加了 <code>svh</code>、<code>lvh</code>、<code>dvh</code> 等单位，整屏区域应按兼容性和产品体验选择。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>顶部 .vw-vh-demo 区直观展示 vw/vh 与 rem 的配合方式？</strong> 顶部 .vw-vh-demo 区直观展示 vw/vh 与 rem 的配合方式</li>
-          <li><strong>rem + @media + vw / vh 综合响应式示例的核心概念是什么？</strong> rem：@media 切换 html font-size，正文/侧栏用 rem 等比缩放；顶部 .vw-vh-demo 区直观展示 vw/vh 与 rem 的配合方式</li>
-          <li><strong>rem + @media + vw / vh 综合响应式示例在实际项目里怎么用？</strong> rem：@media 切换 html font-size，正文/侧栏用 rem 等比缩放；顶部 .vw-vh-demo 区直观展示 vw/vh 与 rem 的配合方式</li>
+          <li><strong>rem 和 vw/vh 的参照物分别是什么，为什么不能混为一谈？</strong> 结论是 <code>rem</code> 参照根元素字号，<code>vw/vh</code> 参照视口宽高。原因是 <code>rem</code> 更适合统一文字、间距和组件比例，<code>vw/vh</code> 更适合做随屏幕尺寸变化的容器。项目里如果把字号全部设成 <code>vw</code>，极窄或超宽屏会出现可读性问题，通常要配合 <code>clamp()</code> 或断点限制。</li>
+          <li><strong>用 @media 改 html font-size 做 rem 适配有哪些收益和风险？</strong> 结论是收益是少量规则就能联动一批 <code>rem</code> 尺寸，风险是全局根字号变化会影响所有依赖 <code>rem</code> 的组件。原因是 <code>rem</code> 链路很短但作用域是全局的。项目里如果有第三方组件、用户浏览器字号设置或无障碍放大需求，应避免过度覆盖根字号，必要时用局部 CSS 变量控制比例。</li>
+          <li><strong>min(980px, 96vw) 相比固定宽度或单纯百分比有什么优势？</strong> 结论是它同时表达最大宽度和窄屏流式宽度。原因是固定 <code>980px</code> 会在小屏溢出，单纯 <code>96vw</code> 又会在超宽屏形成过长行宽；<code>min()</code> 能让容器在两种边界下都保持合理。项目里也常见等价写法 <code>width: 96vw; max-width: 980px</code>。</li>
+          <li><strong>移动端使用 vh 做整屏或大图高度时要注意什么？</strong> 结论是要注意浏览器动态工具栏导致的可见高度变化。原因是传统 <code>vh</code> 与移动端可见区域的关系在不同浏览器历史实现中并不完全一致，可能出现内容被底栏遮挡或滚动时跳动。项目里整屏落地页可测试 <code>100dvh</code>、<code>100svh</code> 或 JS 兜底，并保留内容可滚动。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/length">MDN: CSS length units</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_media_queries/Using_media_queries">MDN: Using media queries</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/min">MDN: min()</a></li>
+          <li><a href="https://drafts.csswg.org/css-values-4/#viewport-relative-lengths">CSS Values and Units Level 4: viewport-relative lengths</a></li>
         </ul>
       </div>
     </section>

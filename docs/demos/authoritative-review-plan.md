@@ -186,3 +186,8 @@ npm run validate:smoke
 
 - 2026-05-27：完成 `apps/css/03-动画/keyframes/index.html` 与 `apps/css/03-动画/loading/01-竖条呼吸.html` 至 `04-文字淡出.html` 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `148/357` 提升到 `153/357`，下一处失败为 `apps/css/03-动画/nprogress/index.html`。
 - 2026-05-27：完成 `apps/css/03-动画/nprogress/index.html`、`光标闪烁/index.html`、`展开折叠/index.html`、`序列帧/index.html` 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `153/357` 提升到 `157/357`，下一处失败为 `apps/css/04-视觉效果/background-blend-mode/index.html`。
+- 2026-05-27：完成 `apps/css/04-视觉效果/background-blend-mode/index.html`、`drop-shadow/index.html`、`tooltip/index.html`、`按钮/02-立体按钮.html`、`按钮/03-3D按钮.html` 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `157/357` 提升到 `162/357`，下一处失败为 `apps/css/04-视觉效果/文本与图片处理/index.html`。
+- 2026-05-27：完成 `apps/css/04-视觉效果/文本与图片处理/index.html`、`百分比圆环/index.html` 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `162/357` 提升到 `164/357`，下一处失败为 `apps/css/05-响应式/media-queries/01-基础布局.html`。
+- 2026-05-27：完成 `apps/css/05-响应式/media-queries/01-基础布局.html`、`02-响应式最终页.html`、`apps/css/05-响应式/vw-vh/index.html` 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `164/357` 提升到 `167/357`，下一处失败为 `apps/css/06-性能/01-重排重绘/index.html`。
+- 2026-05-27：完成 `apps/css/06-性能/01-重排重绘/index.html`、`02-合成层/index.html`、`03-content-visibility/index.html` 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `167/357` 提升到 `170/357`，下一处失败为 `apps/css/07-现代特性/01-has选择器/index.html`。
+- 2026-05-27：完成 `apps/css/07-现代特性/01-has选择器/index.html`、`02-layer层叠管理/index.html`、`03-container-queries容器查询/index.html` 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `170/357` 提升到 `173/357`，下一处失败为 `apps/css/07-现代特性/04-is-where选择器/index.html`。

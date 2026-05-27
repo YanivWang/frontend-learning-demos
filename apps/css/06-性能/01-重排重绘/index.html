@@ -1,18 +1,18 @@
 <!--
 分类: css / 06-性能 / 01-重排重绘
-  主题: 重排、重绘与触发布局属性
+  主题: CSS 重排、重绘与合成友好动画
   难度: 进阶
   前置: display与文档流
   要点:
-    - 改 width/height/top/left 通常会触发布局重排
-    - 改 color/background 通常触发重绘
-    - transform/opacity 常可走合成层，适合动画；will-change 要少量、短期使用
+    - 修改 width、height、margin、top、left 等几何属性通常会让浏览器重新计算布局
+    - 修改 color、background、box-shadow 等视觉属性通常不改布局，但仍可能触发绘制
+    - transform 和 opacity 动画通常更容易交给合成阶段处理，适合高频动画
+    - contain 可缩小布局和绘制影响范围，will-change 只能短期提示浏览器优化
   面试:
-    - 重排、重绘与触发布局属性的核心概念是什么
-    - 重排、重绘与触发布局属性在实际项目里怎么用
-    - 重排、重绘与触发布局属性有哪些常见坑或易错点
-    - 重排、重绘与触发布局属性和相近 API 如何区分选型
-    - 面试中如何简洁讲清 重排、重绘与触发布局属性
+    - 重排和重绘的区别是什么，为什么重排通常更贵？
+    - 为什么动画优先使用 transform 和 opacity？
+    - will-change 为什么不能长期写在大量元素上？
+    - contain: layout paint 适合解决什么性能边界？
 -->
 
 <!doctype html>
@@ -74,19 +74,30 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>CSS 重排与重绘</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">打开 DevTools Performance 或 Rendering 面板观察动画：示例用 transform/opacity 做运动，并对比容易触发布局或绘制的属性。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>改 width/height/top/left 通常会触发布局重排。</li>
-          <li>改 color/background 通常触发重绘。</li>
-          <li>transform/opacity 常可走合成层，适合动画；will-change 要少量、短期使用。</li>
+          <li>浏览器渲染通常会经历样式计算、布局、绘制和合成等阶段。修改 <code>width</code>、<code>height</code>、<code>margin</code>、<code>padding</code>、<code>top</code>、<code>left</code>、<code>font-size</code> 等影响盒子几何信息的属性，往往需要重新布局，也就是常说的 reflow/layout。</li>
+          <li>修改 <code>color</code>、<code>background</code>、<code>box-shadow</code> 这类视觉属性通常不改变元素占位，但仍可能让浏览器重新绘制像素。它比重排少了布局计算，但在大面积阴影、滤镜或复杂背景上仍可能很贵。</li>
+          <li>高频动画优先使用 <code>transform</code> 和 <code>opacity</code>，因为它们通常可以在合成阶段更新，不必每帧重新计算文档流。示例中的蓝色圆点用 <code>translateX()</code> 和透明度变化演示了这种写法。</li>
+          <li><code>will-change</code> 只是提前告诉浏览器某个属性即将变化，不是“性能开关”。长期给大量元素设置会提前分配资源、增加内存或显存压力，实践中应只在动画即将发生前添加，并在结束后移除。</li>
+          <li><code>contain: layout paint</code> 可以把组件内部的布局和绘制影响限制在局部，适合复杂卡片、列表项或独立小组件；边界是它会建立隔离上下文，可能影响尺寸依赖、定位、溢出和可访问性关联，需要按组件验证。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>改 width/height/top/left 通常会触发布局重排？</strong> 改 width/height/top/left 通常会触发布局重排</li>
-          <li><strong>改 color/background 通常触发重绘？</strong> 改 color/background 通常触发重绘</li>
-          <li><strong>transform/opacity 常可走合成层？</strong> transform/opacity 常可走合成层，适合动画；will-change 要少量、短期使用</li>
+          <li><strong>重排和重绘的区别是什么，为什么重排通常更贵？</strong> 结论是重排会重新计算元素几何和文档流位置，重绘主要更新像素外观。原因是布局变化可能影响祖先、后代和后续兄弟节点，传播范围比单纯绘制更大。项目里滚动、拖拽、动画等高频场景要避免每帧读写布局属性交错，必要时批量读写或使用 <code>requestAnimationFrame</code>。</li>
+          <li><strong>为什么动画优先使用 transform 和 opacity？</strong> 结论是这两个属性通常更容易交给合成阶段处理，帧率更稳定。原因是位移、缩放和透明度变化不一定需要重新排版其他元素。边界是“通常”不等于绝对，滤镜、巨大图层、复杂混合或设备资源不足仍可能掉帧，所以要用 DevTools 实测。</li>
+          <li><strong>will-change 为什么不能长期写在大量元素上？</strong> 结论是它会让浏览器提前做优化准备，滥用反而增加资源占用。原因是浏览器可能提前创建图层或缓存绘制结果，元素越多成本越高。项目里应在交互前短期添加，比如 hover、进入视口或动画开始前，动画结束后清理。</li>
+          <li><strong>contain: layout paint 适合解决什么性能边界？</strong> 结论是它适合把复杂组件的布局和绘制影响限制在组件内部。原因是 containment 告诉浏览器外部不依赖内部布局细节，从而减少无关区域失效。边界是组件如果依赖内容撑开外部、跨容器定位或被外部查询尺寸，就要谨慎测试。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Animation_performance_and_frame_rate">MDN: Animation performance and frame rate</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transform">MDN: transform</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/opacity">MDN: opacity</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/will-change">MDN: will-change</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/contain">MDN: contain</a></li>
         </ul>
       </div>
     </section>

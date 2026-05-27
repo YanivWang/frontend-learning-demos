@@ -1,16 +1,16 @@
 <!--
 分类: css / 04-视觉效果 / background-blend-mode
-  主题: 背景叠加颜色 / 渐变的混合演示
+  主题: background-blend-mode 与 mix-blend-mode 混合模式
   要点:
-    - 在一张底图上加同色 linear-gradient + background-blend-mode: lighten 可整体调色
-    - mix-blend-mode 用于元素与下层背景混合，常用于深色背景上的反白文字
-    - 注意：外链图片依赖 GitHub 图床；离线打开会显示空白
+    - background-blend-mode 只混合同一元素的多层 background-image
+    - mix-blend-mode 混合元素内容与后方背景，影响文本、图片或整块元素
+    - lighten、screen、difference 等模式会改变亮度和对比度，需要校验可读性
+    - 外链图片加载失败时只能看到渐变层，视觉效果会退化
   面试:
-    - 背景叠加颜色 / 渐变的混合演示的核心概念是什么
-    - 背景叠加颜色 / 渐变的混合演示在实际项目里怎么用
-    - 背景叠加颜色 / 渐变的混合演示有哪些常见坑或易错点
-    - 背景叠加颜色 / 渐变的混合演示和相近 API 如何区分选型
-    - 面试中如何简洁讲清 背景叠加颜色 / 渐变的混合演示
+    - background-blend-mode 和 mix-blend-mode 的作用范围有什么区别？
+    - 用渐变给背景图片统一调色时为什么常选 background-blend-mode？
+    - 混合模式在文字反白、深色封面上有哪些可访问性风险？
+    - 外链背景图加载失败时如何设计降级效果？
 -->
 
 <!doctype html>
@@ -26,20 +26,29 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>背景叠加颜色 / 渐变的混合演示</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <h1>background-blend-mode 与 mix-blend-mode 混合模式</h1>
+      <p class="hint">观察下方原图、渐变调色和文字混合效果：前半部分是背景图层混合，后半部分是元素与后方背景混合。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>在一张底图上加同色 linear-gradient + background-blend-mode: lighten 可整体调色。</li>
-          <li>mix-blend-mode 用于元素与下层背景混合，常用于深色背景上的反白文字。</li>
-          <li>注意：外链图片依赖 GitHub 图床；离线打开会显示空白。</li>
+          <li><code>background-blend-mode</code> 作用于同一个元素的多层背景图像，本页用图片层叠加纯色或渐变层，再用 <code>lighten</code> 改变整体色调。</li>
+          <li><code>mix-blend-mode</code> 作用于元素自身内容与其后方已绘制内容，本页的文字会和深色渐变背景做 <code>difference</code> 或 <code>screen</code> 混合。</li>
+          <li>混合模式来自图形合成模型，不是简单透明度；<code>multiply</code> 会压暗，<code>screen</code> 会提亮，<code>difference</code> 常用于反色效果。</li>
+          <li>常见坑是把两者混用：想给一张卡片背景统一调色用 <code>background-blend-mode</code>，想让文字或图标与下方内容融合才用 <code>mix-blend-mode</code>。</li>
+          <li>混合结果依赖底图亮度和颜色，线上需要检查文字对比度；本页图片来自外链，离线或网络失败时只会剩渐变/纯色背景，视觉效果会退化。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>在一张底图上加同色 linear-gradient + background-b？</strong> 在一张底图上加同色 linear-gradient + background-blend-mode: lighten 可整体调色</li>
-          <li><strong>mix-blend-mode 用于元素与下层背景混合？</strong> mix-blend-mode 用于元素与下层背景混合，常用于深色背景上的反白文字</li>
-          <li><strong>背景叠加颜色 / 渐变的混合演示的核心概念是什么？</strong> 在一张底图上加同色 linear-gradient + background-blend-mode: lighten 可整体调色；mix-blend-mode 用于元素与下层背景混合，常用于深色背景上的反白文字</li>
+          <li><strong>background-blend-mode 和 mix-blend-mode 的作用范围有什么区别？</strong> 结论是前者混合同一元素的背景层，后者混合元素内容和背后的页面内容。原因是它们处在不同的绘制对象上：background 先在元素背景内合成，mix 则参与元素与 backdrop 的合成。项目里给封面图统一加品牌色通常用前者，做反白标题或特殊海报效果才考虑后者。</li>
+          <li><strong>为什么用渐变层给图片调色，而不是直接改图片资源？</strong> 结论是渐变层 + <code>background-blend-mode</code> 更适合运行时主题化和批量复用。原因是 CSS 可以按主题、暗色模式或状态动态调整，不需要生成多套图片。边界是混合结果依赖原图，品牌色严格一致或无网络外链时仍应准备可靠图片资源或纯色降级。</li>
+          <li><strong>混合模式做文字反白有什么风险？</strong> 结论是可以做视觉效果，但不能默认保证可读性。原因是 <code>difference</code>、<code>screen</code> 的结果取决于后方像素，背景换图后对比度可能突然变差。真实项目里应限制背景范围、提供普通颜色兜底，并在关键文本上做可访问性对比测试。</li>
+          <li><strong>外链背景图加载失败时页面会怎样？</strong> 结论是混合仍会执行，但没有图片层时效果会退化为渐变或纯色。原因是 CSS 背景列表中失败的图片不会提供像素参与混合。项目里应设置基础背景色、避免把关键内容只放在背景图里，并为离线或弱网场景准备降级视觉。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/background-blend-mode">MDN: background-blend-mode</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/mix-blend-mode">MDN: mix-blend-mode</a></li>
+          <li><a href="https://drafts.fxtf.org/compositing-1/">CSS Compositing and Blending Level 1</a></li>
         </ul>
       </div>
     </section>

@@ -1,19 +1,19 @@
 <!--
 分类: css / 06-性能 / 02-合成层
-  主题: 合成层、GPU 加速与 will-change
+  主题: 合成层、合成动画与 will-change 使用边界
   难度: 进阶
   前置: 01-重排重绘
   相关: 03-content-visibility
   要点:
-    - transform / opacity 动画常走合成层，不触发布局
-    - will-change 提示浏览器提前优化，应短期使用
-    - 过多合成层会占用显存，需权衡
+    - 合成阶段把已绘制内容按层合并，transform / opacity 动画通常能避开布局和绘制
+    - will-change 用来提示即将变化的属性，应在交互前短期添加
+    - 合成层不是越多越好，过多图层会增加内存、显存和合成成本
+    - 是否提升为合成层由浏览器实现决定，应通过 DevTools Layers / Performance 实测
   面试:
-    - 合成层、GPU 加速与 will-change的核心概念是什么
-    - 合成层、GPU 加速与 will-change在实际项目里怎么用
-    - 合成层、GPU 加速与 will-change有哪些常见坑或易错点
-    - 合成层、GPU 加速与 will-change和相近 API 如何区分选型
-    - 面试中如何简洁讲清 合成层、GPU 加速与 will-change
+    - 合成层和 GPU 加速是什么关系，为什么不能简单等同？
+    - transform / opacity 动画为什么通常比 left/top 更稳？
+    - will-change 应该何时添加和移除？
+    - 图层过多会带来哪些性能风险？
 -->
 
 <!doctype html>
@@ -48,19 +48,29 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>合成层与 GPU 加速</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在 DevTools 的 Layers 或 Performance 面板观察动画元素是否被单独合成；页面示例重点演示 transform 动画和 will-change 的边界。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>transform / opacity 动画常走合成层，不触发布局。</li>
-          <li>will-change 提示浏览器提前优化，应短期使用。</li>
-          <li>过多合成层会占用显存，需权衡。</li>
+          <li>浏览器会把页面拆成若干可绘制区域，再在合成阶段把这些内容合并成最终画面。某些元素被提升为独立合成层后，后续 <code>transform</code> 或 <code>opacity</code> 变化通常可以只更新合成，不重新布局整棵文档。</li>
+          <li>“GPU 加速”是实现层面的优化结果，不是 CSS 规范保证的固定行为。不同浏览器、设备、元素大小、滤镜和混合效果都会影响图层策略，所以面试里应说“通常更容易合成友好”，不要说“一定走 GPU”。</li>
+          <li><code>will-change: transform</code> 用于提前告知浏览器元素即将变化，让浏览器有机会准备图层或缓存。它应靠近交互发生的时间点使用，例如 hover 前后、进入视口前后，而不是全站常驻。</li>
+          <li>图层过多会增加内存/显存占用、纹理上传和合成开销，低端移动设备尤其明显。优化目标不是把所有元素提升为层，而是让真正高频变化的少量元素稳定渲染。</li>
+          <li>排查时不要只看代码猜测，应结合 DevTools 的 Layers、Rendering、Performance 面板，观察是否出现长任务、频繁 Layout/Paint、图层爆炸或帧率下降。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>transform / opacity 动画常走合成层？</strong> transform / opacity 动画常走合成层，不触发布局</li>
-          <li><strong>will-change 提示浏览器提前优化？</strong> will-change 提示浏览器提前优化，应短期使用</li>
-          <li><strong>过多合成层会占用显存？</strong> 过多合成层会占用显存，需权衡</li>
+          <li><strong>合成层和 GPU 加速是什么关系，为什么不能简单等同？</strong> 结论是合成层是浏览器渲染管线中的分层合成策略，GPU 加速是常见实现手段之一。原因是浏览器可能把某些层交给 GPU 处理，但是否提升、如何合成由实现和设备决定。项目里应通过 DevTools 验证，而不是用 <code>translateZ(0)</code> 这类技巧盲目强推。</li>
+          <li><strong>transform / opacity 动画为什么通常比 left/top 更稳？</strong> 结论是它们通常不改变文档流几何，能减少布局和绘制压力。原因是 <code>left/top</code> 会影响定位盒的位置计算，可能带来布局失效；<code>transform</code> 更像在合成阶段移动已绘制内容。边界是大面积元素、复杂阴影或滤镜仍可能导致合成成本上升。</li>
+          <li><strong>will-change 应该何时添加和移除？</strong> 结论是只在元素即将发生高成本变化前添加，变化结束后移除。原因是 <code>will-change</code> 会让浏览器提前准备资源，长期保留会浪费内存或显存。项目里可以在 hover、拖拽开始、轮播切换前短期设置，也可以用类名或 JS 在 transitionend 后清理。</li>
+          <li><strong>图层过多会带来哪些性能风险？</strong> 结论是图层过多会增加内存/显存、纹理上传和合成管理成本。原因是每个层都需要浏览器维护绘制结果和合成顺序，低端设备更容易掉帧或白屏。项目里要优先定位真正的瓶颈，只提升少量高频动画元素。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Animation_performance_and_frame_rate">MDN: Animation performance and frame rate</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/will-change">MDN: will-change</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transform">MDN: transform</a></li>
+          <li><a href="https://developer.chrome.com/docs/devtools/layers/">Chrome DevTools: Layers panel</a></li>
         </ul>
       </div>
     </section>

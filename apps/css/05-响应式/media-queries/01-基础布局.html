@@ -1,16 +1,16 @@
 <!--
 分类: css / 05-响应式 / media-queries
-  主题: 响应式布局基础页（仅加载 style.css，未引入 media-queries.css）
+  主题: 固定宽度三栏布局的响应式基线
   要点:
-    - 演示「未做响应式」的初始三栏布局
-    - 与 02-响应式最终页.html 对比，可看到引入 @media 之后随宽度变化的效果差异
-    - 第三方页面，按 CONVENTIONS §5 保留 html5shim 占位脚本
+    - 仅加载 style.css，页面主体固定为 980px，内容栏和侧栏依赖 float 排列
+    - viewport meta 已设置，但没有 @media 覆盖时，小视口仍会出现横向滚动
+    - 该页作为 02-响应式最终页.html 的对照组，用来观察断点样式的真实收益
+    - 旧式 html5shim 和第三方 HTTP 资源只适合历史样例，新项目应改用原生语义元素与本地/HTTPS 资源
   面试:
-    - 响应式布局基础页（仅加载 style.css，未引入 media-queries.css）的核心概念是什么
-    - 响应式布局基础页（仅加载 style.css，未引入 media-queries.css）在实际项目里怎么用
-    - 响应式布局基础页（仅加载 style.css，未引入 media-queries.css）有哪些常见坑或易错点
-    - 响应式布局基础页（仅加载 style.css，未引入 media-queries.css）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 响应式布局基础页（仅加载 style.css，未引入 media-queries.css）
+    - 只有 viewport meta 没有媒体查询时，页面为什么仍然不算响应式？
+    - 固定宽度 float 布局在移动端最常见的问题是什么？
+    - 为什么响应式改造通常要先保留桌面基线，再逐步添加断点？
+    - 旧式 polyfill、HTTP 第三方脚本和现代响应式页面有哪些兼容与安全边界？
 -->
 
 <!doctype html>
@@ -31,20 +31,30 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1 id="site-logo"><a href="#">Demo</a></h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <h1>固定宽度三栏布局的响应式基线</h1>
+      <p class="hint">缩窄浏览器窗口并与下一页对比：本页只有桌面端基础样式，没有真正的断点改造。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>演示「未做响应式」的初始三栏布局。</li>
-          <li>与 02-响应式最终页.html 对比，可看到引入 @media 之后随宽度变化的效果差异。</li>
-          <li>第三方页面，按 CONVENTIONS §5 保留 html5shim 占位脚本。</li>
+          <li><code>style.css</code> 把 <code>#pagewrap</code> 写死为 <code>980px</code>，内容区 <code>#content</code> 与侧栏 <code>#sidebar</code> 通过固定宽度和 <code>float</code> 组成桌面三栏/两栏布局；这能稳定复现桌面排版，但不会随视口主动重排。</li>
+          <li><code>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</code> 只是在移动浏览器里把布局视口对齐设备宽度，不会自动把固定宽度 CSS 变成弹性布局；如果 CSS 仍是 <code>980px</code>，窄屏会横向滚动。</li>
+          <li>这页是响应式改造的“基线页”：先保留桌面样式，下一页再通过 <code>@media (max-width: ...)</code> 覆盖宽度、浮动和间距，才能清楚看出每个断点解决了什么问题。</li>
+          <li>固定宽度 float 布局的常见坑是清浮动、内容溢出、图片或第三方嵌入宽度超出容器；现代项目通常优先使用 Flexbox/Grid、流式宽度、<code>max-width</code> 和断点组合。</li>
+          <li>示例保留了旧式 html5shim 条件注释和 HTTP 第三方资源，这是历史页面的兼容痕迹；生产环境应避免依赖不受控的 HTTP 脚本，改用本地资源、HTTPS 或静态占位，防止加载失败和混合内容风险。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>演示「未做响应式」的初始三栏布局？</strong> 演示「未做响应式」的初始三栏布局</li>
-          <li><strong>与 02-响应式最终页.html 对比？</strong> 与 02-响应式最终页.html 对比，可看到引入 @media 之后随宽度变化的效果差异</li>
-          <li><strong>响应式布局基础页（仅加载 style.css，未引入 media-queries.css）的核心概念是什么？</strong> 演示「未做响应式」的初始三栏布局；与 02-响应式最终页.html 对比，可看到引入 @media 之后随宽度变化的效果差异</li>
+          <li><strong>只有 viewport meta 没有媒体查询时，页面为什么仍然不算响应式？</strong> 结论是 viewport meta 只是设定移动端布局视口和缩放初始值，不会重写 CSS 布局。原因是响应式的核心变化仍来自 CSS：容器宽度、列布局、图片和嵌入内容必须能按视口调整。边界是简单单列流式页面可能只靠百分比宽度就够，但固定 <code>980px</code> 页面必须补断点或改布局模型。</li>
+          <li><strong>固定宽度 float 布局在移动端最常见的问题是什么？</strong> 结论是横向滚动、列挤压和浮动清除问题最常见。原因是 float 最初主要用于文字环绕和传统排版，固定列宽不会自动按视口改成单列。项目里做旧站改造时，通常先用断点取消浮动、改成 <code>width: auto</code> 或百分比宽度，再逐步迁移到 Flexbox/Grid。</li>
+          <li><strong>为什么响应式改造通常要先保留桌面基线，再逐步添加断点？</strong> 结论是这样更容易控制回归范围。原因是桌面样式作为默认层，断点只覆盖窄屏真正需要改变的属性，便于定位是哪条规则影响了布局。边界是新项目可以采用移动优先，从小屏基础样式开始，再用 <code>min-width</code> 增强大屏。</li>
+          <li><strong>旧式 polyfill 和 HTTP 第三方脚本在响应式 demo 里要注意什么？</strong> 结论是它们只能作为历史兼容样例，不应成为现代推荐写法。原因是条件注释、IE polyfill 和 HTTP 资源会带来维护成本、加载失败或混合内容风险。项目里如果必须嵌入第三方内容，要准备失败占位、HTTPS 链接、懒加载和尺寸兜底。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Viewport_meta_tag">MDN: Viewport meta tag</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_media_queries/Using_media_queries">MDN: Using media queries</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout/Floats">MDN: Floats</a></li>
+          <li><a href="https://drafts.csswg.org/mediaqueries-5/">CSSWG: Media Queries Level 5</a></li>
         </ul>
       </div>
     </section>
@@ -54,6 +64,7 @@
     <div id="pagewrap">
       <header id="header">
         <hgroup>
+          <h1 id="site-logo"><a href="#">Demo</a></h1>
           <h2 id="site-description">Site Description</h2>
         </hgroup>
         <nav>
