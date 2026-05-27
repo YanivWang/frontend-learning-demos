@@ -69,33 +69,54 @@
 - **`前置`**（可选）：建议先学的 demo 名或知识点
 - **`相关`**（可选）：逗号分隔的相关 demo 标题，会注入页脚链接
 
-### 4.1 页面骨架（全库 demo，对标 `01-基础/变量进阶.html`）
+### 4.1 页面骨架（全库 demo，对标 `01-基础/字符串方法.html`）
 
 ```html
-<body>
-  <h1><!-- 与「主题」一致 --></h1>
-  <p class="hint">下方为 console.log 同步输出。</p>
-  <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
-  <section class="demo-notes" aria-label="复习与面试要点">
-    <h2>知识点要点</h2>
-    <ul><!-- 4～6 条展开说明 --></ul>
-    <h2>面试考点</h2>
-    <ul><!-- 问句标题 + 标准答法 --></ul>
+<body class="demo-page">
+  <!-- NOTES_START -->
+  <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
+    <h1><!-- 与「主题」一致 --></h1>
+    <p class="hint"><!-- 引导语 --></p>
+    <div class="demo-notes">
+      <h2>知识点要点</h2>
+      <ul><!-- 4～6 条展开说明 --></ul>
+      <h2>面试考点</h2>
+      <ul><!-- 问句标题 + 标准答法 --></ul>
+    </div>
   </section>
-  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
+  <!-- NOTES_END -->
+
+  <!-- 可选：含 console 同步输出时 -->
+  <!-- RUN_START -->
+  <section class="demo-block demo-block--run" aria-label="运行输出">
+    <h2 class="demo-block__label">运行输出</h2>
+    <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
+    <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
+  </section>
+  <!-- RUN_END -->
   <script src="../../../packages/shared/demo-log.js"></script>
+
+  <!-- SCRIPT_START -->
   <script>/* demo 逻辑 */</script>
+  <!-- SCRIPT_END -->
+
+  <!-- NAV_START -->
+  <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
+    <h2 class="demo-block__label">页面导航</h2>
+    <nav class="demo-nav" aria-label="相关链接"><!-- 目录 / 相关 / 上一篇 / 下一篇 --></nav>
+  </footer>
+  <!-- NAV_END -->
 </body>
 ```
 
-- 运行 `npm run transform:all-demos` 可批量补齐头注释 `面试:`、`.demo-notes`、h1 / 输出区 / demo-log（不覆盖已有 `.demo-notes` 正文）
-- 运行 `npm run enhance:js-demos` 可仅为 JavaScript 补齐 h1 / 输出区 / demo-log 骨架
-- 运行 `npm run enhance:demo-notes` 可批量补齐 `.demo-notes` 占位骨架（不覆盖已有正文）
-- 运行 `npm run report:demo-notes` 查看全库复习区块覆盖率
+- `<head>` 须引入 `demo-notes.css` 与 `demo-shell.css`
+- 运行 `npm run migrate:demo-shell` 可批量迁移为上述骨架
+- 运行 `npm run transform:all-demos` 可批量补齐头注释 `面试:`、`.demo-notes` 正文（不覆盖已有正文）
+- 纯 console 且无 `#demo-output` 的 demo（如 `字符串方法.html`）可省略 RUN 区块，hint 引导打开 DevTools
 
-- **JavaScript（含 console）**：须有 `<h1>`、`#demo-output`、`demo-log.js`
-- **CSS / 可视化 demo**：须有 `<h1>` 与 `.demo-notes`，演示区保留原有样式与交互
-- **Vue / React**：在 `#app` / `#root` 之前放静态 `<h1>` + `.demo-notes`；原「面试回答」并入「面试考点」
+- **JavaScript（含 console）**：须有复习区 `<h1>`；有 `#demo-output` 时用 RUN 区块 + `demo-log.js`，否则 SCRIPT 区块 + DevTools hint
+- **CSS / 可视化 demo**：须有复习区；演示区保留原有样式与交互
+- **Vue / React**：在 `#app` / `#root` 之前放复习区；`text/babel` 脚本用 SCRIPT 区块包裹
 
 ### 4.2 复习区块写作规范（全库）
 
