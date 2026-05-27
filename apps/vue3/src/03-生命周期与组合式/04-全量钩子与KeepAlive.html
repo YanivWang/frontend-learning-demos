@@ -23,11 +23,11 @@
     <title>Vue3 · Composition API 生命周期钩子</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-    body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-    button { margin-right: 8px; padding: 6px 12px; }
-    pre { background: #f6f8fa; border-radius: 8px; padding: 12px; overflow: auto; max-height: 280px; }
-    .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
-    .dom-target { padding: 8px; background: #eef5ff; border-radius: 6px; margin: 8px 0; }
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin-right: 8px; padding: 6px 12px; }
+      pre { background: #f6f8fa; border-radius: 8px; padding: 12px; overflow: auto; max-height: 280px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+      .dom-target { padding: 8px; background: #eef5ff; border-radius: 6px; margin: 8px 0; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -55,9 +55,9 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="app">
+    <!-- PAGE_DOM_START -->
+    <div id="app">
       <h1>Composition API 生命周期钩子</h1>
-
       <div class="box">
         <button @click="showChild = !showChild">显示/隐藏 KeepAlive 区域</button>
         <button @click="currentTab = currentTab === 'A' ? 'B' : 'A'" :disabled="!showChild">切换缓存页</button>
@@ -68,71 +68,68 @@
         <pre>{{ logs.join("\n") }}</pre>
       </div>
     </div>
+    <!-- PAGE_DOM_END -->
 
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       const {
-      createApp, ref,
-      onBeforeMount, onMounted,
-      onBeforeUpdate, onUpdated,
-      onBeforeUnmount, onUnmounted,
-      onActivated, onDeactivated,
+        createApp, ref,
+        onBeforeMount, onMounted,
+        onBeforeUpdate, onUpdated,
+        onBeforeUnmount, onUnmounted,
+        onActivated, onDeactivated,
       } = Vue;
-      
+
       const CachedPanel = {
-      props: { tab: String },
-      template: `
-      <div>
-      <p>KeepAlive 缓存页 {{ tab }}，count：{{ count }}
-      <button @click="count++">+1</button>
-      </p>
-      </div>
-      `,
-      setup(props) {
-      const count = ref(0);
-      const logs = window.__lifecycleLogs;
-      
-      onBeforeMount(() => logs.value.push(`[${props.tab}] onBeforeMount`));
-      onMounted(() => logs.value.push(`[${props.tab}] onMounted`));
-      onBeforeUpdate(() => logs.value.push(`[${props.tab}] onBeforeUpdate`));
-      onUpdated(() => logs.value.push(`[${props.tab}] onUpdated`));
-      onBeforeUnmount(() => logs.value.push(`[${props.tab}] onBeforeUnmount`));
-      onUnmounted(() => logs.value.push(`[${props.tab}] onUnmounted`));
-      onActivated(() => logs.value.push(`[${props.tab}] onActivated（从缓存恢复）`));
-      onDeactivated(() => logs.value.push(`[${props.tab}] onDeactivated（进入缓存）`));
-      
-      return { count };
-      },
+        props: { tab: String },
+        template: `
+        <div>
+          <p>KeepAlive 缓存页 {{ tab }}，count：{{ count }}
+            <button @click="count++">+1</button>
+          </p>
+        </div>
+        `,
+        setup(props) {
+          const count = ref(0);
+          const logs = window.__lifecycleLogs;
+
+          onBeforeMount(() => logs.value.push(`[${props.tab}] onBeforeMount`));
+          onMounted(() => logs.value.push(`[${props.tab}] onMounted`));
+          onBeforeUpdate(() => logs.value.push(`[${props.tab}] onBeforeUpdate`));
+          onUpdated(() => logs.value.push(`[${props.tab}] onUpdated`));
+          onBeforeUnmount(() => logs.value.push(`[${props.tab}] onBeforeUnmount`));
+          onUnmounted(() => logs.value.push(`[${props.tab}] onUnmounted`));
+          onActivated(() => logs.value.push(`[${props.tab}] onActivated（从缓存恢复）`));
+          onDeactivated(() => logs.value.push(`[${props.tab}] onDeactivated（进入缓存）`));
+
+          return { count };
+        },
       };
-      
+
       const app = createApp({
-      components: { CachedPanel },
-      setup() {
-      const logs = ref([]);
-      const showChild = ref(true);
-      const currentTab = ref("A");
-      const elRef = ref(null);
-      window.__lifecycleLogs = logs;
-      
-      onBeforeMount(() => logs.value.push("根组件 onBeforeMount"));
-      onMounted(() => {
-      logs.value.push(`根组件 onMounted，elRef 已挂载：${!!elRef.value}`);
+        components: { CachedPanel },
+        setup() {
+          const logs = ref([]);
+          const showChild = ref(true);
+          const currentTab = ref("A");
+          const elRef = ref(null);
+          window.__lifecycleLogs = logs;
+
+          onBeforeMount(() => logs.value.push("根组件 onBeforeMount"));
+          onMounted(() => {
+            logs.value.push(`根组件 onMounted，elRef 已挂载：${!!elRef.value}`);
+          });
+          onBeforeUpdate(() => logs.value.push("根组件 onBeforeUpdate"));
+          onUpdated(() => logs.value.push("根组件 onUpdated"));
+          onBeforeUnmount(() => logs.value.push("根组件 onBeforeUnmount"));
+          onUnmounted(() => logs.value.push("根组件 onUnmounted"));
+
+          return { logs, showChild, currentTab, elRef };
+        },
       });
-      onBeforeUpdate(() => logs.value.push("根组件 onBeforeUpdate"));
-      onUpdated(() => logs.value.push("根组件 onUpdated"));
-      onBeforeUnmount(() => logs.value.push("根组件 onBeforeUnmount"));
-      onUnmounted(() => logs.value.push("根组件 onUnmounted"));
-      
-      return { logs, showChild, currentTab, elRef };
-      },
-      });
-      
+
       app.mount("#app");
+
     </script>
     <!-- SCRIPT_END -->
 

@@ -22,13 +22,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HTTP 缓存 · 强缓存与协商缓存</title>
     <style>
-    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 760px; line-height: 1.65; color: #222; }
-    table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 0.9rem; }
-    th, td { border: 1px solid #ddd; padding: 8px 10px; text-align: left; }
-    th { background: #f6f8fa; }
-    pre { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 8px; overflow: auto; font-size: 0.85rem; }
-    button { padding: 8px 14px; margin: 4px 4px 4px 0; cursor: pointer; }
-    #log { margin-top: 1rem; padding: 12px; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; min-height: 3rem; }
+      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 760px; line-height: 1.65; color: #222; }
+      table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 0.9rem; }
+      th, td { border: 1px solid #ddd; padding: 8px 10px; text-align: left; }
+      th { background: #f6f8fa; }
+      pre { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 8px; overflow: auto; font-size: 0.85rem; }
+      button { padding: 8px 14px; margin: 4px 4px 4px 0; cursor: pointer; }
+      #log { margin-top: 1rem; padding: 12px; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; min-height: 3rem; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -56,57 +56,54 @@
     </section>
     <!-- NOTES_END -->
 
-<table>
-    <thead><tr><th>类型</th><th>关键响应头</th><th>行为</th></tr></thead>
-    <tbody>
-      <tr><td>强缓存</td><td><code>Cache-Control: max-age=3600</code></td><td>未过期直接用本地副本，不发网络请求</td></tr>
-      <tr><td>协商缓存</td><td><code>ETag</code> + 请求 <code>If-None-Match</code></td><td>过期后问服务器，未变则 304，用本地副本</td></tr>
-      <tr><td>协商缓存</td><td><code>Last-Modified</code> + <code>If-Modified-Since</code></td><td>精度到秒，ETag 更精确</td></tr>
-    </tbody>
-  </table>
+    <!-- PAGE_DOM_START -->
+    <table>
+      <thead><tr><th>类型</th><th>关键响应头</th><th>行为</th></tr></thead>
+      <tbody>
+        <tr><td>强缓存</td><td><code>Cache-Control: max-age=3600</code></td><td>未过期直接用本地副本，不发网络请求</td></tr>
+        <tr><td>协商缓存</td><td><code>ETag</code> + 请求 <code>If-None-Match</code></td><td>过期后问服务器，未变则 304，用本地副本</td></tr>
+        <tr><td>协商缓存</td><td><code>Last-Modified</code> + <code>If-Modified-Since</code></td><td>精度到秒，ETag 更精确</td></tr>
+      </tbody>
+    </table>
+    <h2>常见 Cache-Control</h2>
+    <ul>
+      <li><code>no-store</code>：完全不缓存（敏感数据）</li>
+      <li><code>no-cache</code>：可存但必须协商验证后才能用</li>
+      <li><code>max-age=31536000, immutable</code>：带 hash 的静态资源长缓存</li>
+    </ul>
+    <h2>模拟：本地「缓存表」</h2>
+    <p>点击下方按钮模拟浏览器缓存决策（非真实 HTTP，便于理解流程）。</p>
+    <button type="button" id="btn-strong">强缓存命中（200 from cache）</button>
+    <button type="button" id="btn-304">协商缓存 304</button>
+    <button type="button" id="btn-200">缓存失效 200 新内容</button>
+    <div id="log"></div>
+    <!-- PAGE_DOM_END -->
 
-  <h2>常见 Cache-Control</h2>
-  <ul>
-    <li><code>no-store</code>：完全不缓存（敏感数据）</li>
-    <li><code>no-cache</code>：可存但必须协商验证后才能用</li>
-    <li><code>max-age=31536000, immutable</code>：带 hash 的静态资源长缓存</li>
-  </ul>
-
-  <h2>模拟：本地「缓存表」</h2>
-  <p>点击下方按钮模拟浏览器缓存决策（非真实 HTTP，便于理解流程）。</p>
-  <button type="button" id="btn-strong">强缓存命中（200 from cache）</button>
-  <button type="button" id="btn-304">协商缓存 304</button>
-  <button type="button" id="btn-200">缓存失效 200 新内容</button>
-  <div id="log"></div>
-
-    
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       const cache = { etag: '"abc123"', body: "v1 内容", maxAge: 60, storedAt: Date.now() };
       const log = document.getElementById("log");
       function write(msg) { log.textContent += msg + "\n"; }
-      
+
       document.getElementById("btn-strong").onclick = () => {
-      log.textContent = "";
-      const age = (Date.now() - cache.storedAt) / 1000;
-      if (age < cache.maxAge) write(`[强缓存] age=${age.toFixed(0)}s < max-age → 200 (from disk cache)\n不发送请求`);
-      else write("[强缓存] 已过期，进入协商缓存流程");
+        log.textContent = "";
+        const age = (Date.now() - cache.storedAt) / 1000;
+        if (age < cache.maxAge) write(`[强缓存] age=${age.toFixed(0)}s < max-age → 200 (from disk cache)\n不发送请求`);
+        else write("[强缓存] 已过期，进入协商缓存流程");
       };
       document.getElementById("btn-304").onclick = () => {
-      log.textContent = "";
-      write("请求: If-None-Match: " + cache.etag);
-      write("响应: 304 Not Modified → 使用本地副本");
+        log.textContent = "";
+        write("请求: If-None-Match: " + cache.etag);
+        write("响应: 304 Not Modified → 使用本地副本");
       };
       document.getElementById("btn-200").onclick = () => {
-      log.textContent = "";
-      cache.body = "v2 新内容 @ " + new Date().toLocaleTimeString();
-      cache.etag = '"xyz' + Date.now() + '"';
-      cache.storedAt = Date.now();
-      write("响应: 200 OK\n新 ETag: " + cache.etag + "\nBody: " + cache.body);
+        log.textContent = "";
+        cache.body = "v2 新内容 @ " + new Date().toLocaleTimeString();
+        cache.etag = '"xyz' + Date.now() + '"';
+        cache.storedAt = Date.now();
+        write("响应: 200 OK\n新 ETag: " + cache.etag + "\nBody: " + cache.body);
       };
+
     </script>
     <!-- SCRIPT_END -->
 

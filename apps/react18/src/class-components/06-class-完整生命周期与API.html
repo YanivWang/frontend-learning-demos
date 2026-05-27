@@ -55,259 +55,254 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="app"></div>
+    <!-- PAGE_DOM_START -->
+    <div id="app"></div>
+    <!-- PAGE_DOM_END -->
 
-    
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script type="text/babel">
-      
       function Wife(props) {
-      //组件的属性 props.children 是一个特殊的prop，通常是由jsx表达式中嵌套的子组件构成
-      return (
-      <div>
-      <div>好多老婆</div>
-      <div>{props.children}</div>
-      </div>
+        //组件的属性 props.children 是一个特殊的prop，通常是由jsx表达式中嵌套的子组件构成
+        return (
+        <div>
+          <div>好多老婆</div>
+          <div>{props.children}</div>
+        </div>
       )
       }
-      
+
       //react 函数式组件
       function House(props) {
-      console.log("被重新调用...");
-      return (<div>
-      house 时间戳： {Date.now()}
+        console.log("被重新调用...");
+        return (<div>
+        house 时间戳： {Date.now()}
       </div>)
       }
-      
+
       //类组件，必须继承React.Component
       class Car extends React.Component {
-      constructor() {
-      super();
-      console.log("car constructor called...");
+        constructor() {
+          super();
+          console.log("car constructor called...");
+        }
+
+        //必须在render函数中返回jsx
+        render() {
+          return (<div>
+          car 时间戳： {Date.now()}
+        </div>)
       }
-      
-      //必须在render函数中返回jsx
-      render() {
-      return (<div>
-      car 时间戳： {Date.now()}
-      </div>)
       }
-      }
-      
+
       const ID = "uid1234543636";
       const IDPlus = Symbol.for("class id");
-      
+
       //react class方式的组件
       class Person extends React.Component {
-      //组件的属性会在构造函数中被传递过来
-      constructor(props) {
-      //console.log("constructor 之前", this);//'this' is not allowed before superclass constructor invocation
-      super(props);//调用super关键字来调用父类的构造函数，并将props传递到父类的构造器
-      //super调用完毕后，this才可以访问，也就是实例才被创建
-      console.log("constructor###");
-      
-      //通过this.xx 添加的变量,是不需要在页面上渲染出来的
-      this.address = props.address || "北京";
-      
-      
-      //构造函数是唯一可以给 this.state 直接赋值的地方
-      //state的更新是异步的
-      //出于性能考虑，react会把多个setState()调用合并成一个调用
-      //不需要在页面上渲染的数据，不要添加到state中，比如定时器
-      this.state = {
-      num: 0,
-      autoIncrement: 0,
-      autoIncrementPlus: 0
-      }
-      }
-      
-      //会在调用 render 方法之前被调用，并且在初始挂载及后续更新时都会被调用。
-      //它应返回一个对象来更新state，如果返回null则不更新任何内容
-      //根据属性props获取派生的state
-      //此方法无权访问组件实例
-      // static getDerivedStateFromProps(props, state){
-      //     console.log("getDerivedStateFromProps###");
-      //     return null;
-      // }
-      
-      add = function () {
-      
-      };
-      
-      // React 16.3+ 已废弃 componentWillMount，使用须改名为 UNSAFE_componentWillMount
-      UNSAFE_componentWillMount() {
-      console.log("UNSAFE_componentWillMount###");
-      }
-      
-      componentDidMount() {
-      console.log("componentDidMount###");
-      
-      //不需要在dom上渲染的变量，没必要放到this.state中
-      //注意：1. this.props this.state 的值都是由react来设置的，我们不能直接修改它们。
-      //这些属性中的值都是响应式的数据流
-      //2. 你可以向 class 中随意添加不参与数据流（比如计时器 ID）的额外字段
-      this.interVal = setInterval(() => {
-      //3.注意，因为 this.props 和 this.state 是异步更新，所以不要依赖它们的值来更新下一个状态
-      // this.setState({
-      //     autoIncrement: ++this.state.autoIncrement
-      // })
-      
-      //3.1 写法一
-      this.setState((state, props) => {
-      return {
-      autoIncrement: state.autoIncrement + 1
-      }
-      });
-      
-      //3.2 写法二
-      this.setState((state, props) => ({
-      autoIncrementPlus: state.autoIncrementPlus + 1
-      }));
-      //setState原理 当你调用 setState() 的时候，React 会把你提供的对象合并到当前的 state，就是覆盖state中
-      //的同名的key
-      }, 10000)
-      }
-      
-      //当父组件传递下来的属性发生改变的时候，此钩子函数会被调用
-      // componentWillReceiveProps 已废弃，使用须改名 UNSAFE_componentWillReceiveProps
-      UNSAFE_componentWillReceiveProps() {
-      
-      }
-      
-      //首次渲染，不会触发这个钩子；state 或 props 的改变才会触发
-      //首次渲染或使用 forceUpdate() 时不会调用该方法
-      //可用于性能优化，手动决定是否需要重新渲染页面
-      shouldComponentUpdate(nextProps, nextState) {
-      console.log("shouldComponentUpdate###", nextProps, nextState);
-      return true;
-      }
-      
-      // componentWillUpdate 已废弃，使用须改名 UNSAFE_componentWillUpdate
-      UNSAFE_componentWillUpdate() {
-      
-      }
-      
-      //首次渲染，不会触发这个钩子
-      componentDidUpdate(prevProps, prevState, snapshot) {
-      console.log("componentDidUpdate###", prevProps, prevState, snapshot);
-      }
-      
-      
-      //此钩子函数，会在后代组件抛出错误后，被调用
-      componentDidCatch(error, info) {
-      
-      }
-      
-      componentWillUnmount() {
-      clearInterval(this.interVal);
-      }
-      
-      startCountHandle(e) {
-      console.log("被点击", this);//你会发现 this 的值是 undefined，是因为这个函数是由 window 对象调用的
-      }
-      
-      name = "Person 组件";//实例变量
-      age = 30;//实例变量
-      forceUpdateContent = "非state数据";
-      static species = "智人";
-      
-      startCountHandlePlus = e => {
-      console.log("被点击 plus", this);//这个this是类的实例，注意类的实例和通过构造函数创建的实例属性上有些差异
-      //组件实例访问不到class的静态属性
-      // console.log("this __proto__", this.__proto__);//Person {props: {…}, context: {…}, refs: {…}, updater: {…}, add: ƒ, …}
-      
-      this.setState({
-      num: ++this.state.num
-      }, function (a, b) {
-      console.log("渲染完毕...");
-      console.log(a);//undefined
-      console.log(b);//undefined
-      });
-      };
-      
-      //React Component 的子类中有个必须定义的render函数，其它生命周期钩子都是可选的
-      //注意只要 jsx 中包含的state或者props值发生改变，render函数都会被调用，用于根据
-      //新的值生成一个新的虚拟dom，然后使用diff算法比对新旧虚拟dom的差异
-      forceUpdateClickHandle = e => {
-      this.forceUpdateContent = this.forceUpdateContent + Date.now();
-      //什么时候需要使用这个api,当render依赖的变量是非state和非props的时候，你改变了这个变量，react
-      //是不会触发render的，你需要主动的去调用 this.forceUpdate()
-      //调用这个 api 后，会跳过当前组件的 shouldComponentUpdate 钩子（但是其子组件的生命周期钩子会正常调用）
-      //你应该避免在组件中给调用 this.forceUpdate方法，应该尽可能在render方法中使用state和props
-      this.forceUpdate();
-      };
-      
-      render() {
-      //console.log(this);
-      console.log("render###");
-      
-      return (
-      <div>
-      <div>------------------------------------------</div>
-      <div>使用forceUpdate来更新组件的DOM</div>
-      <div>forceUpdateContent: {this.forceUpdateContent}</div>
-      <div>
-      <button onClick={this.forceUpdateClickHandle}>强制更新</button>
-      </div>
-      
-      <div>------------------------------------------</div>
-      <div>秒表计时： {this.state.autoIncrement}</div>
-      <div>秒表计时 plus： {this.state.autoIncrementPlus}</div>
-      
-      <div>------------------------------------------</div>
-      <div>点击事件计数: {this.state.num}</div>
-      <div>
-      <button onClick={this.startCountHandle}>点击计数</button>
-      <button onClick={this.startCountHandlePlus}>点击计数 plus...</button>
-      </div>
-      
-      <div>------------------------------------------</div>
-      <div>插槽内容: {this.props.children}</div>
-      
-      <div>------------------------------------------</div>
-      <div>
-      <div>嵌入子组件 House</div>
-      <div><House/></div>
-      </div>
-      <div>
-      <div>嵌入子组件 Car</div>
-      <div><Car/></div>
-      {/* 注意： 放置在同一个dom节点位置的子组件，在父组件页面刷新的时候，不会创建
-      新的实例，但是子组件的render方法会被重新调用， 如果是函数组件，则整个函数都会重新执行*/}
-      </div>
-      
-      <div>
-      <div>插入子组件</div>
-      <div><Wife>漂亮的wife</Wife></div>
-      </div>
-      
-      <div>------------------------------------------</div>
-      <div>
-      <div>直接访问全局的常量</div>
-      <div>{'ID:' + ID}</div>
-      {/* Cannot convert a Symbol value to a string */}
-      {/* <div>{'IDPlus:' + IDPlus}</div> */}
-      </div>
-      </div>
-      )
-      }
-      }
-      
-      //为组件添加默认属性，一般用于props未赋值，但是又不能为空
-      Person.defaultProps = {
-      name: "React App"
-      };
-      
-      // React 18 使用 createRoot 渲染
-      ReactDOM.createRoot(document.getElementById("app")).render(
-      <Person>
-      <div>person子组件</div>
-      </Person>
-      );
-      
+        //组件的属性会在构造函数中被传递过来
+        constructor(props) {
+          //console.log("constructor 之前", this);//'this' is not allowed before superclass constructor invocation
+          super(props);//调用super关键字来调用父类的构造函数，并将props传递到父类的构造器
+          //super调用完毕后，this才可以访问，也就是实例才被创建
+          console.log("constructor###");
+
+          //通过this.xx 添加的变量,是不需要在页面上渲染出来的
+          this.address = props.address || "北京";
+
+          //构造函数是唯一可以给 this.state 直接赋值的地方
+          //state的更新是异步的
+          //出于性能考虑，react会把多个setState()调用合并成一个调用
+          //不需要在页面上渲染的数据，不要添加到state中，比如定时器
+          this.state = {
+            num: 0,
+            autoIncrement: 0,
+            autoIncrementPlus: 0
+          }
+        }
+
+        //会在调用 render 方法之前被调用，并且在初始挂载及后续更新时都会被调用。
+        //它应返回一个对象来更新state，如果返回null则不更新任何内容
+        //根据属性props获取派生的state
+        //此方法无权访问组件实例
+        // static getDerivedStateFromProps(props, state){
+          //     console.log("getDerivedStateFromProps###");
+          //     return null;
+          // }
+
+          add = function () {
+
+          };
+
+          // React 16.3+ 已废弃 componentWillMount，使用须改名为 UNSAFE_componentWillMount
+          UNSAFE_componentWillMount() {
+            console.log("UNSAFE_componentWillMount###");
+          }
+
+          componentDidMount() {
+            console.log("componentDidMount###");
+
+            //不需要在dom上渲染的变量，没必要放到this.state中
+            //注意：1. this.props this.state 的值都是由react来设置的，我们不能直接修改它们。
+            //这些属性中的值都是响应式的数据流
+            //2. 你可以向 class 中随意添加不参与数据流（比如计时器 ID）的额外字段
+            this.interVal = setInterval(() => {
+              //3.注意，因为 this.props 和 this.state 是异步更新，所以不要依赖它们的值来更新下一个状态
+              // this.setState({
+                //     autoIncrement: ++this.state.autoIncrement
+                // })
+
+                //3.1 写法一
+                this.setState((state, props) => {
+                  return {
+                    autoIncrement: state.autoIncrement + 1
+                  }
+                });
+
+                //3.2 写法二
+                this.setState((state, props) => ({
+                  autoIncrementPlus: state.autoIncrementPlus + 1
+                }));
+                //setState原理 当你调用 setState() 的时候，React 会把你提供的对象合并到当前的 state，就是覆盖state中
+                //的同名的key
+              }, 10000)
+            }
+
+            //当父组件传递下来的属性发生改变的时候，此钩子函数会被调用
+            // componentWillReceiveProps 已废弃，使用须改名 UNSAFE_componentWillReceiveProps
+            UNSAFE_componentWillReceiveProps() {
+
+            }
+
+            //首次渲染，不会触发这个钩子；state 或 props 的改变才会触发
+            //首次渲染或使用 forceUpdate() 时不会调用该方法
+            //可用于性能优化，手动决定是否需要重新渲染页面
+            shouldComponentUpdate(nextProps, nextState) {
+              console.log("shouldComponentUpdate###", nextProps, nextState);
+              return true;
+            }
+
+            // componentWillUpdate 已废弃，使用须改名 UNSAFE_componentWillUpdate
+            UNSAFE_componentWillUpdate() {
+
+            }
+
+            //首次渲染，不会触发这个钩子
+            componentDidUpdate(prevProps, prevState, snapshot) {
+              console.log("componentDidUpdate###", prevProps, prevState, snapshot);
+            }
+
+            //此钩子函数，会在后代组件抛出错误后，被调用
+            componentDidCatch(error, info) {
+
+            }
+
+            componentWillUnmount() {
+              clearInterval(this.interVal);
+            }
+
+            startCountHandle(e) {
+              console.log("被点击", this);//你会发现 this 的值是 undefined，是因为这个函数是由 window 对象调用的
+            }
+
+            name = "Person 组件";//实例变量
+            age = 30;//实例变量
+            forceUpdateContent = "非state数据";
+            static species = "智人";
+
+            startCountHandlePlus = e => {
+              console.log("被点击 plus", this);//这个this是类的实例，注意类的实例和通过构造函数创建的实例属性上有些差异
+              //组件实例访问不到class的静态属性
+              // console.log("this __proto__", this.__proto__);//Person {props: {…}, context: {…}, refs: {…}, updater: {…}, add: ƒ, …}
+
+              this.setState({
+                num: ++this.state.num
+              }, function (a, b) {
+                console.log("渲染完毕...");
+                console.log(a);//undefined
+                console.log(b);//undefined
+              });
+            };
+
+            //React Component 的子类中有个必须定义的render函数，其它生命周期钩子都是可选的
+            //注意只要 jsx 中包含的state或者props值发生改变，render函数都会被调用，用于根据
+            //新的值生成一个新的虚拟dom，然后使用diff算法比对新旧虚拟dom的差异
+            forceUpdateClickHandle = e => {
+              this.forceUpdateContent = this.forceUpdateContent + Date.now();
+              //什么时候需要使用这个api,当render依赖的变量是非state和非props的时候，你改变了这个变量，react
+              //是不会触发render的，你需要主动的去调用 this.forceUpdate()
+              //调用这个 api 后，会跳过当前组件的 shouldComponentUpdate 钩子（但是其子组件的生命周期钩子会正常调用）
+              //你应该避免在组件中给调用 this.forceUpdate方法，应该尽可能在render方法中使用state和props
+              this.forceUpdate();
+            };
+
+            render() {
+              //console.log(this);
+              console.log("render###");
+
+              return (
+              <div>
+                <div>------------------------------------------</div>
+                <div>使用forceUpdate来更新组件的DOM</div>
+                <div>forceUpdateContent: {this.forceUpdateContent}</div>
+                <div>
+                  <button onClick={this.forceUpdateClickHandle}>强制更新</button>
+                </div>
+
+                <div>------------------------------------------</div>
+                <div>秒表计时： {this.state.autoIncrement}</div>
+                <div>秒表计时 plus： {this.state.autoIncrementPlus}</div>
+
+                <div>------------------------------------------</div>
+                <div>点击事件计数: {this.state.num}</div>
+                <div>
+                  <button onClick={this.startCountHandle}>点击计数</button>
+                  <button onClick={this.startCountHandlePlus}>点击计数 plus...</button>
+                </div>
+
+                <div>------------------------------------------</div>
+                <div>插槽内容: {this.props.children}</div>
+
+                <div>------------------------------------------</div>
+                <div>
+                  <div>嵌入子组件 House</div>
+                  <div><House/></div>
+                </div>
+                <div>
+                  <div>嵌入子组件 Car</div>
+                  <div><Car/></div>
+                  {/* 注意： 放置在同一个dom节点位置的子组件，在父组件页面刷新的时候，不会创建
+                    新的实例，但是子组件的render方法会被重新调用， 如果是函数组件，则整个函数都会重新执行*/}
+                  </div>
+
+                  <div>
+                    <div>插入子组件</div>
+                    <div><Wife>漂亮的wife</Wife></div>
+                  </div>
+
+                  <div>------------------------------------------</div>
+                  <div>
+                    <div>直接访问全局的常量</div>
+                    <div>{'ID:' + ID}</div>
+                    {/* Cannot convert a Symbol value to a string */}
+                    {/* <div>{'IDPlus:' + IDPlus}</div> */}
+                  </div>
+                </div>
+              )
+            }
+          }
+
+          //为组件添加默认属性，一般用于props未赋值，但是又不能为空
+          Person.defaultProps = {
+            name: "React App"
+          };
+
+          // React 18 使用 createRoot 渲染
+          ReactDOM.createRoot(document.getElementById("app")).render(
+          <Person>
+            <div>person子组件</div>
+          </Person>
+        );
+
     </script>
     <!-- SCRIPT_END -->
 

@@ -46,115 +46,96 @@
     </section>
     <!-- NOTES_END -->
 
-<!--所有的javascript表达式，会在所属的Vue实例的数据作用域下，作为javascript被解析-->
-<div id="main">
-    <!--1. {{}} 双大括号的文本插值，进行数据绑定：文本插值-->
-    <p v-on:click="changeHandle">{{msg}}</p>
-
-    <!--2.有些数据，你只希望渲染一次，就停止更新-->
-    <p v-once>{{msg}}</p>
-
-    <!--3. {{}} 双大括号会将数据解析成普通的文本-->
-    <div>
+    <!-- PAGE_DOM_START -->
+    <!--所有的javascript表达式，会在所属的Vue实例的数据作用域下，作为javascript被解析-->
+    <div id="main">
+      <!--1. {{}} 双大括号的文本插值，进行数据绑定：文本插值-->
+      <p v-on:click="changeHandle">{{msg}}</p>
+      <!--2.有些数据，你只希望渲染一次，就停止更新-->
+      <p v-once>{{msg}}</p>
+      <!--3. {{}} 双大括号会将数据解析成普通的文本-->
+      <div>
         <span>html test</span>
         <div>{{htmlStr}}</div>
-    </div>
-
-    <!--4. 为了输出真正的Html代码，需要使用v-html指令：该指令会将对应的html元素的内容，替换成对应的
-    html内容：html插值-->
-    <div>
+      </div>
+      <!--4. 为了输出真正的Html代码，需要使用v-html指令：该指令会将对应的html元素的内容，替换成对应的
+      html内容：html插值-->
+      <div>
         <span v-html="htmlStr"></span>
-    </div>
-
-    <!--5.html特性不能使用Mustache语法：会直接被解析成字符串-->
-    <div>
+      </div>
+      <!--5.html特性不能使用Mustache语法：会直接被解析成字符串-->
+      <div>
         <!--<div title="{{msg}}}">悬浮取值</div>-->
-
         <div title="msg">悬浮取值</div>
-
         <div v-bind:title="msg">悬浮取值</div>
-    </div>
-
-    <!--6. v-if：null / false / undefined / 0 均为假，其余为真 -->
-    <div v-if="showFlag">我可见</div>
-    <!-- v-bind 布尔特性：false / null / undefined 时不渲染该属性；空字符串 "" 与 0 会保留 -->
-    <button v-bind:disabled="isDisabled">Button</button>
-
-    <!--7.使用js表达式: 在mustache中可以直接写js表达式-->
-    <div>
+      </div>
+      <!--6. v-if：null / false / undefined / 0 均为假，其余为真 -->
+      <div v-if="showFlag">我可见</div>
+      <!-- v-bind 布尔特性：false / null / undefined 时不渲染该属性；空字符串 "" 与 0 会保留 -->
+      <button v-bind:disabled="isDisabled">Button</button>
+      <!--7.使用js表达式: 在mustache中可以直接写js表达式-->
+      <div>
         count: {{count+1}}
         random: {{Math.random()}}
-
         <!--在所有的数据绑定中，都支持js表达式-->
         <!--字符串拼接-->
         <div v-bind:id="'id_' + count + 1"></div>
-
         <!--先计算后拼接-->
         <div v-bind:id="'id_' + (count + 1)"></div>
-    </div>
-
-    <!-- 这些表达式会在所属的 Vue 实例数据的作用域下作为 javascript 被解析。一个限制
-     所有绑定的js表达式：不能是语句，不能有控制流，只能包含单个表达式-->
-
-    <div>
+      </div>
+      <!-- 这些表达式会在所属的 Vue 实例数据的作用域下作为 javascript 被解析。一个限制
+      所有绑定的js表达式：不能是语句，不能有控制流，只能包含单个表达式-->
+      <div>
         <!--{{var a = count;}}报错-->
         <!-- {{
-         if(ok){
-         return msg;
-         }
-         }}-->
-    </div>
-
-    <!--模板表达式中：只能访问js本身的全局变量，不能访问用户自定义的全局变量，和局部变量
-    可以访问，vm作用域下的data数据对象的key-->
-    <!--{{custom}}-->
-
-    <!--指令的值预期是单个js表达式-->
-    <!--指令的职责是，当表达式值改变时，将其产生的连带影响，响应式的作用于DOM中-->
-    <div v-bind:title="msg = msg.slice(0,1)">{{msg}}</div>
-
-    <div>
+        if(ok){
+        return msg;
+        }
+        }}-->
+      </div>
+      <!--模板表达式中：只能访问js本身的全局变量，不能访问用户自定义的全局变量，和局部变量
+      可以访问，vm作用域下的data数据对象的key-->
+      <!--{{custom}}-->
+      <!--指令的值预期是单个js表达式-->
+      <!--指令的职责是，当表达式值改变时，将其产生的连带影响，响应式的作用于DOM中-->
+      <div v-bind:title="msg = msg.slice(0,1)">{{msg}}</div>
+      <div>
         seen: {{seen}}
-
         <div v-if="seen">能看到我</div>
-
         <button v-on:click="showOrHide">hide or show</button>
+      </div>
     </div>
-</div>
+    <!-- PAGE_DOM_END -->
 
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       var custom = 123;
       //无论何时：Vue不是基于字符串的模板引擎
       var vm1 = new Vue({
-      el: "#main",
-      data: {
-      seen: true,
-      count: 1,
-      msg: "你好",
-      isDisabled: true,// v-bind 布尔特性：false / null / undefined 时不渲染；"" 与 0 会保留
-      showFlag: 0,// v-if：false / null / undefined / 0 均为假，其余为真
-      htmlStr: "<div v-bind:title='msg' style='color:red'>我是html</div>"//这里的v-bind:title会被忽略
-      },
-      methods: {
-      changeHandle: function () {
-      this.msg = "I am changed!!!";
-      },
-      
-      showOrHide: function () {
-      if (this.seen) {
-      this.seen = false;
-      } else {
-      this.seen = true;
-      }
-      }
-      }
+        el: "#main",
+        data: {
+          seen: true,
+          count: 1,
+          msg: "你好",
+          isDisabled: true,// v-bind 布尔特性：false / null / undefined 时不渲染；"" 与 0 会保留
+          showFlag: 0,// v-if：false / null / undefined / 0 均为假，其余为真
+          htmlStr: "<div v-bind:title='msg' style='color:red'>我是html</div>"//这里的v-bind:title会被忽略
+        },
+        methods: {
+          changeHandle: function () {
+            this.msg = "I am changed!!!";
+          },
+
+          showOrHide: function () {
+            if (this.seen) {
+              this.seen = false;
+            } else {
+              this.seen = true;
+            }
+          }
+        }
       });
+
     </script>
     <!-- SCRIPT_END -->
 

@@ -46,43 +46,41 @@
     </section>
     <!-- NOTES_END -->
 
-<p>打开控制台查看断言结果。</p>
+    <!-- PAGE_DOM_START -->
+    <p>打开控制台查看断言结果。</p>
+    <!-- PAGE_DOM_END -->
 
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       function myInstanceof(value, Constructor) {
-      if (value === null || value === undefined) return false;
-      if (typeof value !== "object" && typeof value !== "function") return false;
-      if (typeof Constructor !== "function") {
-      throw new TypeError("Right-hand side of instanceof is not callable");
+        if (value === null || value === undefined) return false;
+        if (typeof value !== "object" && typeof value !== "function") return false;
+        if (typeof Constructor !== "function") {
+          throw new TypeError("Right-hand side of instanceof is not callable");
+        }
+
+        const targetPrototype = Constructor.prototype;
+        let current = Object.getPrototypeOf(value);
+
+        while (current) {
+          if (current === targetPrototype) return true;
+          current = Object.getPrototypeOf(current);
+        }
+        return false;
       }
-      
-      const targetPrototype = Constructor.prototype;
-      let current = Object.getPrototypeOf(value);
-      
-      while (current) {
-      if (current === targetPrototype) return true;
-      current = Object.getPrototypeOf(current);
-      }
-      return false;
-      }
-      
+
       function Person() {}
       const p = new Person();
-      
+
       console.assert(myInstanceof(p, Person) === true, "p is Person");
       console.assert(myInstanceof(p, Object) === true, "p is Object");
       console.assert(myInstanceof([], Array) === true, "array is Array");
       console.assert(myInstanceof("abc", String) === false, "primitive string is not String instance");
       console.assert(myInstanceof(null, Object) === false, "null returns false");
-      
+
       console.log("p -> Person:", myInstanceof(p, Person));
       console.log("[] -> Object:", myInstanceof([], Object));
+
     </script>
     <!-- SCRIPT_END -->
 

@@ -23,9 +23,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WebSocket 基础</title>
     <style>
-    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 640px; }
-    button { margin: 4px 4px 4px 0; padding: 8px 12px; cursor: pointer; }
-    #log { margin-top: 1rem; padding: 12px; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; min-height: 4rem; }
+      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 640px; }
+      button { margin: 4px 4px 4px 0; padding: 8px 12px; cursor: pointer; }
+      #log { margin-top: 1rem; padding: 12px; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; min-height: 4rem; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -53,34 +53,33 @@
     </section>
     <!-- NOTES_END -->
 
-<p>使用公共 echo 服务演示连接、发送、接收与关闭。</p>
-  <button type="button" id="connect">连接</button>
-  <button type="button" id="send" disabled>发送 ping</button>
-  <button type="button" id="close" disabled>关闭</button>
-  <div id="log" aria-live="polite"></div>
+    <!-- PAGE_DOM_START -->
+    <p>使用公共 echo 服务演示连接、发送、接收与关闭。</p>
+    <button type="button" id="connect">连接</button>
+    <button type="button" id="send" disabled>发送 ping</button>
+    <button type="button" id="close" disabled>关闭</button>
+    <div id="log" aria-live="polite"></div>
+    <!-- PAGE_DOM_END -->
 
-    
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       const logEl = document.getElementById("log");
       const append = (line) => { logEl.textContent += (logEl.textContent ? "\n" : "") + line; };
       let ws = null;
       const URL = "wss://echo.websocket.events";
-      
+
       document.getElementById("connect").onclick = () => {
-      if (ws && ws.readyState <= 1) return append("已有连接");
-      ws = new WebSocket(URL);
-      append("CONNECTING…");
-      ws.onopen = () => { append("OPEN"); document.getElementById("send").disabled = false; document.getElementById("close").disabled = false; };
-      ws.onmessage = (e) => append("← " + e.data);
-      ws.onerror = () => append("ERROR（可能无网络或被拦截）");
-      ws.onclose = () => { append("CLOSED"); document.getElementById("send").disabled = true; document.getElementById("close").disabled = true; };
+        if (ws && ws.readyState <= 1) return append("已有连接");
+        ws = new WebSocket(URL);
+        append("CONNECTING…");
+        ws.onopen = () => { append("OPEN"); document.getElementById("send").disabled = false; document.getElementById("close").disabled = false; };
+        ws.onmessage = (e) => append("← " + e.data);
+        ws.onerror = () => append("ERROR（可能无网络或被拦截）");
+        ws.onclose = () => { append("CLOSED"); document.getElementById("send").disabled = true; document.getElementById("close").disabled = true; };
       };
       document.getElementById("send").onclick = () => { if (ws?.readyState === 1) { ws.send("ping-" + Date.now()); append("→ ping"); } };
       document.getElementById("close").onclick = () => ws?.close();
+
     </script>
     <!-- SCRIPT_END -->
 

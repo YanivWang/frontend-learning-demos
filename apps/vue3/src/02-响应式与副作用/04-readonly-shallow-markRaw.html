@@ -22,12 +22,12 @@
     <title>Vue3 · readonly/shallow/markRaw</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-    body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-    button { margin-right: 8px; padding: 6px 12px; }
-    code, pre { background: #f6f8fa; border-radius: 6px; }
-    code { padding: 2px 5px; }
-    pre { padding: 12px; overflow: auto; }
-    .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; margin-bottom: 16px; }
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin-right: 8px; padding: 6px 12px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; margin-bottom: 16px; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -54,10 +54,9 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="app">
+    <!-- PAGE_DOM_START -->
+    <div id="app">
       <h1>readonly / shallowReactive / markRaw</h1>
-
-
       <div class="box">
         <h2>readonly（只读视图）</h2>
         <p>源 deep.nested.count：{{ deep.nested.count }}</p>
@@ -65,14 +64,12 @@
         <button @click="deep.nested.count++">改源对象（只读视图同步）</button>
         <button @click="tryMutateReadonly">尝试改 readonly（应失败并在 note 说明）</button>
       </div>
-
       <div class="box">
         <h2>shallowReactive（只代理第一层）</h2>
         <p>浅层 shallowReactive：{{ shallow.nested.count }}</p>
         <button @click="shallow.nested.count++">改 shallow 嵌套字段</button>
         <button @click="replaceShallow">替换 shallow 第一层</button>
       </div>
-
       <div class="box">
         <h2>markRaw（标记为非响应式）</h2>
         <p>第三方实例 name：{{ rawWidget.name }}</p>
@@ -80,56 +77,50 @@
         <button @click="mutateRawWidget">改 markRaw 对象字段</button>
         <button @click="rawViewVersion++">手动 bump 视图计数</button>
       </div>
-
       <pre>{{ note }}</pre>
-
-      
     </div>
+    <!-- PAGE_DOM_END -->
 
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       const { createApp, reactive, shallowReactive, readonly, markRaw, ref } = Vue;
-      
+
       createApp({
-      setup() {
-      const deep = reactive({ nested: { count: 0 } });
-      const shallow = shallowReactive({ nested: { count: 0 } });
-      const readonlyDeep = readonly(deep);
-      const rawWidget = markRaw({ name: "第三方图表实例" });
-      const rawViewVersion = ref(0);
-      const note = ref("点击 shallow 嵌套字段时，通常不会触发视图更新；替换第一层对象才会触发。");
-      
-      function replaceShallow() {
-      shallow.nested = { count: shallow.nested.count + 1 };
-      note.value = "已替换 shallow 第一层，视图应更新。";
-      }
-      
-      function tryMutateReadonly() {
-      const before = readonlyDeep.nested.count;
-      readonlyDeep.nested.count = before + 100;
-      if (readonlyDeep.nested.count === before) {
-      note.value = `readonly 阻止直接修改：赋值被忽略，count 仍为 ${before}`;
-      } else {
-      note.value = "readonly 修改意外成功，请检查环境。";
-      }
-      }
-      
-      function mutateRawWidget() {
-      rawWidget.name = rawWidget.name === "第三方图表实例" ? "已修改但未追踪" : "第三方图表实例";
-      note.value = "已修改 markRaw 对象字段；若上方 name 未变，说明它未被响应式追踪。";
-      }
-      
-      return {
-      deep, shallow, readonlyDeep, rawWidget, rawViewVersion, note,
-      replaceShallow, tryMutateReadonly, mutateRawWidget,
-      };
-      },
+        setup() {
+          const deep = reactive({ nested: { count: 0 } });
+          const shallow = shallowReactive({ nested: { count: 0 } });
+          const readonlyDeep = readonly(deep);
+          const rawWidget = markRaw({ name: "第三方图表实例" });
+          const rawViewVersion = ref(0);
+          const note = ref("点击 shallow 嵌套字段时，通常不会触发视图更新；替换第一层对象才会触发。");
+
+          function replaceShallow() {
+            shallow.nested = { count: shallow.nested.count + 1 };
+            note.value = "已替换 shallow 第一层，视图应更新。";
+          }
+
+          function tryMutateReadonly() {
+            const before = readonlyDeep.nested.count;
+            readonlyDeep.nested.count = before + 100;
+            if (readonlyDeep.nested.count === before) {
+              note.value = `readonly 阻止直接修改：赋值被忽略，count 仍为 ${before}`;
+            } else {
+              note.value = "readonly 修改意外成功，请检查环境。";
+            }
+          }
+
+          function mutateRawWidget() {
+            rawWidget.name = rawWidget.name === "第三方图表实例" ? "已修改但未追踪" : "第三方图表实例";
+            note.value = "已修改 markRaw 对象字段；若上方 name 未变，说明它未被响应式追踪。";
+          }
+
+          return {
+            deep, shallow, readonlyDeep, rawWidget, rawViewVersion, note,
+            replaceShallow, tryMutateReadonly, mutateRawWidget,
+          };
+        },
       }).mount("#app");
+
     </script>
     <!-- SCRIPT_END -->
 

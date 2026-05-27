@@ -22,16 +22,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>分步表单向导</title>
     <style>
-    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 480px; }
-    .steps { display: flex; gap: 8px; margin-bottom: 1rem; font-size: 0.875rem; }
-    .steps span { padding: 4px 10px; border-radius: 999px; background: #eee; }
-    .steps span.active { background: #4f46e5; color: #fff; }
-    label { display: block; margin: 0.75rem 0 0.25rem; }
-    input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; }
-    .actions { margin-top: 1.25rem; display: flex; gap: 8px; }
-    button { padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; background: #4f46e5; color: #fff; }
-    button.secondary { background: #e5e7eb; color: #111; }
-    pre { background: #f6f8fa; padding: 12px; border-radius: 8px; font-size: 0.8125rem; }
+      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 480px; }
+      .steps { display: flex; gap: 8px; margin-bottom: 1rem; font-size: 0.875rem; }
+      .steps span { padding: 4px 10px; border-radius: 999px; background: #eee; }
+      .steps span.active { background: #4f46e5; color: #fff; }
+      label { display: block; margin: 0.75rem 0 0.25rem; }
+      input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; }
+      .actions { margin-top: 1.25rem; display: flex; gap: 8px; }
+      button { padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; background: #4f46e5; color: #fff; }
+      button.secondary { background: #e5e7eb; color: #111; }
+      pre { background: #f6f8fa; padding: 12px; border-radius: 8px; font-size: 0.8125rem; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -58,61 +58,59 @@
     </section>
     <!-- NOTES_END -->
 
-<div class="steps" id="steps"></div>
-  <form id="form"></form>
-  <div class="actions">
-    <button type="button" class="secondary" id="prev">上一步</button>
-    <button type="button" id="next">下一步</button>
-  </div>
+    <!-- PAGE_DOM_START -->
+    <div class="steps" id="steps"></div>
+    <form id="form"></form>
+    <div class="actions">
+      <button type="button" class="secondary" id="prev">上一步</button>
+      <button type="button" id="next">下一步</button>
+    </div>
+    <!-- PAGE_DOM_END -->
 
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       const fields = [
-      [{ key: "name", label: "姓名", required: true }],
-      [{ key: "email", label: "邮箱", type: "email", required: true }],
-      [{ key: "city", label: "城市", required: true }],
+        [{ key: "name", label: "姓名", required: true }],
+        [{ key: "email", label: "邮箱", type: "email", required: true }],
+        [{ key: "city", label: "城市", required: true }],
       ];
       let step = 0;
       const data = {};
       const stepsEl = document.getElementById("steps");
       const form = document.getElementById("form");
-      
+
       function renderSteps() {
-      stepsEl.innerHTML = fields.map((_, i) => `<span class="${i === step ? "active" : ""}">步骤 ${i + 1}</span>`).join("");
+        stepsEl.innerHTML = fields.map((_, i) => `<span class="${i === step ? "active" : ""}">步骤 ${i + 1}</span>`).join("");
       }
       function renderForm() {
-      if (step >= fields.length) {
-      form.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre><p>提交完成（demo 仅展示数据）</p>`;
-      document.getElementById("next").textContent = "完成";
-      return;
-      }
-      document.getElementById("next").textContent = step === fields.length - 1 ? "提交" : "下一步";
-      form.innerHTML = fields[step].map((f) => `
-      <label for="${f.key}">${f.label}</label>
-      <input id="${f.key}" name="${f.key}" type="${f.type || "text"}" value="${data[f.key] || ""}" ${f.required ? "required" : ""} />`).join("");
+        if (step >= fields.length) {
+          form.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre><p>提交完成（demo 仅展示数据）</p>`;
+          document.getElementById("next").textContent = "完成";
+          return;
+        }
+        document.getElementById("next").textContent = step === fields.length - 1 ? "提交" : "下一步";
+        form.innerHTML = fields[step].map((f) => `
+        <label for="${f.key}">${f.label}</label>
+        <input id="${f.key}" name="${f.key}" type="${f.type || "text"}" value="${data[f.key] || ""}" ${f.required ? "required" : ""} />`).join("");
       }
       function validate() {
-      if (step >= fields.length) return true;
-      for (const f of fields[step]) {
-      const v = form.querySelector(`#${f.key}`).value.trim();
-      if (f.required && !v) { alert(`请填写${f.label}`); return false; }
-      data[f.key] = v;
-      }
-      return true;
+        if (step >= fields.length) return true;
+        for (const f of fields[step]) {
+          const v = form.querySelector(`#${f.key}`).value.trim();
+          if (f.required && !v) { alert(`请填写${f.label}`); return false; }
+          data[f.key] = v;
+        }
+        return true;
       }
       document.getElementById("next").onclick = () => {
-      if (step >= fields.length) return;
-      if (!validate()) return;
-      if (step === fields.length - 1) { step++; renderSteps(); renderForm(); return; }
-      step++; renderSteps(); renderForm();
+        if (step >= fields.length) return;
+        if (!validate()) return;
+        if (step === fields.length - 1) { step++; renderSteps(); renderForm(); return; }
+        step++; renderSteps(); renderForm();
       };
       document.getElementById("prev").onclick = () => { if (step > 0) { step = Math.min(step, fields.length - 1); step--; renderSteps(); renderForm(); } };
       renderSteps(); renderForm();
+
     </script>
     <!-- SCRIPT_END -->
 

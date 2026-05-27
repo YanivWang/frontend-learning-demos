@@ -51,73 +51,72 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="root"></div>
+    <!-- PAGE_DOM_START -->
+    <div id="root"></div>
+    <!-- PAGE_DOM_END -->
 
-    
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script type="text/babel">
       const { useEffect, useLayoutEffect, useRef, useState } = React;
-      
+
       function Tooltip({ text }) {
-      const boxRef = useRef(null);
-      const [top, setTop] = useState(0);
-      
-      // 绘制前调整位置，避免 tooltip 先出现在错误位置再跳动
-      useLayoutEffect(() => {
-      if (!boxRef.current) return;
-      const rect = boxRef.current.getBoundingClientRect();
-      if (rect.bottom > window.innerHeight - 40) {
-      setTop(-48);
-      } else {
-      setTop(24);
+        const boxRef = useRef(null);
+        const [top, setTop] = useState(0);
+
+        // 绘制前调整位置，避免 tooltip 先出现在错误位置再跳动
+        useLayoutEffect(() => {
+          if (!boxRef.current) return;
+          const rect = boxRef.current.getBoundingClientRect();
+          if (rect.bottom > window.innerHeight - 40) {
+            setTop(-48);
+          } else {
+            setTop(24);
+          }
+        }, [text]);
+
+        useEffect(() => {
+          console.log("useEffect: 绘制完成后执行，适合请求/订阅");
+        }, [text]);
+
+        return (
+        <div style={{ position: "relative", marginTop: 120 }}>
+          <button>布局锚点</button>
+          <div
+            ref={boxRef}
+            style={{
+                position: "absolute",
+                top,
+                left: 0,
+                background: "#333",
+                color: "#fff",
+                padding: "4px 8px",
+                borderRadius: 4
+              }}
+              >
+              {text}
+            </div>
+          </div>
+        );
       }
-      }, [text]);
-      
-      useEffect(() => {
-      console.log("useEffect: 绘制完成后执行，适合请求/订阅");
-      }, [text]);
-      
-      return (
-      <div style={{ position: "relative", marginTop: 120 }}>
-      <button>布局锚点</button>
-      <div
-      ref={boxRef}
-      style={{
-      position: "absolute",
-      top,
-      left: 0,
-      background: "#333",
-      color: "#fff",
-      padding: "4px 8px",
-      borderRadius: 4
-      }}
-      >
-      {text}
-      </div>
-      </div>
-      );
-      }
-      
+
       function App() {
-      const [text, setText] = useState("短提示");
-      
-      return (
-      <section>
-      <h1>useLayoutEffect 与 useEffect</h1>
-      
-      <button onClick={() => setText(text === "短提示" ? "这是一段更长的提示文字" : "短提示")}>
-      切换 tooltip 文案
-      </button>
-      <Tooltip text={text} />
-      <p>面试回答: useLayoutEffect 同步阻塞绘制，仅用于 DOM 测量/同步布局；其余用 useEffect。</p>
-      </section>
+        const [text, setText] = useState("短提示");
+
+        return (
+        <section>
+          <h1>useLayoutEffect 与 useEffect</h1>
+
+          <button onClick={() => setText(text === "短提示" ? "这是一段更长的提示文字" : "短提示")}>
+            切换 tooltip 文案
+          </button>
+          <Tooltip text={text} />
+          <p>面试回答: useLayoutEffect 同步阻塞绘制，仅用于 DOM 测量/同步布局；其余用 useEffect。</p>
+        </section>
       );
       }
-      
+
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
     </script>
     <!-- SCRIPT_END -->
 

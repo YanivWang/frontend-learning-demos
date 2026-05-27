@@ -49,75 +49,73 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="app">
-    <input v-focus v-border="'#409eff'" v-model="price">
-    <p>过滤器格式化: {{ price | currency }}</p>
-    <button @click="sayFromMixin">调用 mixin 方法</button>
-    <button @click="$toast('插件方法来自 Vue.prototype')">调用插件方法</button>
-    <pre>{{ logs.join('\n') }}</pre>
-</div>
+    <!-- PAGE_DOM_START -->
+    <div id="app">
+      <input v-focus v-border="'#409eff'" v-model="price">
+      <p>过滤器格式化: {{ price | currency }}</p>
+      <button @click="sayFromMixin">调用 mixin 方法</button>
+      <button @click="$toast('插件方法来自 Vue.prototype')">调用插件方法</button>
+      <pre>{{ logs.join('\n') }}</pre>
+    </div>
+    <!-- PAGE_DOM_END -->
 
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       Vue.directive("focus", {
-      inserted(el) {
-      el.focus();
-      }
+        inserted(el) {
+          el.focus();
+        }
       });
-      
+
       Vue.directive("border", {
-      bind(el, binding) {
-      el.style.border = "2px solid " + binding.value;
-      },
-      update(el, binding) {
-      el.style.borderColor = binding.value;
-      }
+        bind(el, binding) {
+          el.style.border = "2px solid " + binding.value;
+        },
+        update(el, binding) {
+          el.style.borderColor = binding.value;
+        }
       });
-      
+
       Vue.filter("currency", function (value) {
-      const number = Number(value);
-      return Number.isNaN(number) ? value : "￥" + number.toFixed(2);
+        const number = Number(value);
+        return Number.isNaN(number) ? value : "￥" + number.toFixed(2);
       });
-      
+
       const logMixin = {
-      created() {
-      this.logs.push("mixin created 先于组件自己的 created 执行");
-      },
-      methods: {
-      sayFromMixin() {
-      this.logs.push("mixin method 被调用");
-      }
-      }
+        created() {
+          this.logs.push("mixin created 先于组件自己的 created 执行");
+        },
+        methods: {
+          sayFromMixin() {
+            this.logs.push("mixin method 被调用");
+          }
+        }
       };
-      
+
       const ToastPlugin = {
-      install(Vue) {
-      Vue.prototype.$toast = function (message) {
-      this.logs.push(message);
+        install(Vue) {
+          Vue.prototype.$toast = function (message) {
+            this.logs.push(message);
+          };
+        }
       };
-      }
-      };
-      
+
       Vue.use(ToastPlugin);
-      
+
       new Vue({
-      el: "#app",
-      mixins: [logMixin],
-      data() {
-      return {
-      price: 12,
-      logs: []
-      };
-      },
-      created() {
-      this.logs.push("component created");
-      }
+        el: "#app",
+        mixins: [logMixin],
+        data() {
+          return {
+            price: 12,
+            logs: []
+          };
+        },
+        created() {
+          this.logs.push("component created");
+        }
       });
+
     </script>
     <!-- SCRIPT_END -->
 

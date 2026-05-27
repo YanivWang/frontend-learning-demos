@@ -46,90 +46,86 @@
     </section>
     <!-- NOTES_END -->
 
-<!--在这里使用，被当成一般的自定义元素使用，指令都无效-->
-<my-comp1 v-bind:article="article" v-bind:key="index">111</my-comp1>
-
-<div id="my-comp1-demo">
-    <div v-bind:style="{fontSize: fontSize +'px'}">
+    <!-- PAGE_DOM_START -->
+    <!--在这里使用，被当成一般的自定义元素使用，指令都无效-->
+    <my-comp1 v-bind:article="article" v-bind:key="index">111</my-comp1>
+    <div id="my-comp1-demo">
+      <div v-bind:style="{fontSize: fontSize +'px'}">
         <template v-for="(article,index) in articleList">
-            <!--在组件上使用：v-bind:propName 将为组件的对应属性传递值 -->
-            <!--组件占位符最终被：组件内部的template替代-->
-            <!--Vue实例内部：使用v-on监听组件的内部事件-->
-            <my-comp1 v-bind:article="article" v-bind:key="index" v-on:extend="extend" v-on:small="small($event)"></my-comp1>
+          <!--在组件上使用：v-bind:propName 将为组件的对应属性传递值 -->
+          <!--组件占位符最终被：组件内部的template替代-->
+          <!--Vue实例内部：使用v-on监听组件的内部事件-->
+          <my-comp1 v-bind:article="article" v-bind:key="index" v-on:extend="extend" v-on:small="small($event)"></my-comp1>
         </template>
+      </div>
     </div>
-</div>
+    <!-- PAGE_DOM_END -->
 
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       //自定义组件：最好采用 a-b的命名形式
       //组件是可复用的Vue实例
       //1.组件的注册方式一，全局注册
       //2.一个组件就是一个Vue实例
       Vue.component("my-comp1", {//组件的data属性，必须是一个函数：通过这种方式，每个组件实例可以维护一份被返回对象的独立的拷贝
-      data: function () {
-      return {
-      count: 0
-      }
-      },
-      created: function () {
-      console.log("被创建");
-      },
-      watch: {
-      count: function (newValue, oldValue) {
-      console.log(newValue + ":" + oldValue);
-      }
-      },
-      methods: {
-      small: function () {
-      console.log("缩小：组件内部");
-      
-      this.$emit("small",{"a": 1,"b": 2});
-      }
-      },
-      props: ['article'],//通过props属性为自定义组件传递数据，定义属性
-      template: `<div><h3>{{article.title}}</h3><div>{{article.content}}</div><div>{{article.author}}</div>
-      <button v-on:click="$emit('extend')">放大</button>
-      <button v-on:click="small">缩小</button>
-      <button v-on:click="count += 1">计数：{{count}}</button></div>`
-      });//每个template只能有一个单独的root element
-      //$emit(eventName),vue提供$emit方法，并传入事件的名称，父组件可以捕获这事件，并做相应的处理
-      
-      //注意每创建一个组件：都重新定义了一个组件实例，每个组件实例会维护自己的data对象
-      
-      //定义的Vue组件，只能在Vue的根实例的作用域中使用，当作特殊的自定义元素使用(Vue的组件的定义符合web Component组件定义的规范)
-      var vm = new Vue({
-      el: "#my-comp1-demo",
-      data: {
-      fontSize: 30,
-      articleList: [
-      {"title": "标题一", "content": "我是标题一的内容部分", "author": "作者一"},
-      {"title": "标题二", "content": "我是标题二的内容部分", "author": "作者二"},
-      {"title": "标题三", "content": "我是标题三的内容部分", "author": "作者三"},
-      {"title": "标题四", "content": "我是标题四的内容部分", "author": "作者四"},
-      ]
-      },
-      methods: {
-      extend: function () {
-      console.log("放大字号");
-      this.fontSize += 5;
-      },
-      small: function (e) {
-      console.log(e);
-      console.log("缩小字号");
-      if (this.fontSize >= 5) {
-      
-      this.fontSize -= 5;
-      }
-      }
-      }
-      });
-      
+        data: function () {
+          return {
+            count: 0
+          }
+        },
+        created: function () {
+          console.log("被创建");
+        },
+        watch: {
+          count: function (newValue, oldValue) {
+            console.log(newValue + ":" + oldValue);
+          }
+        },
+        methods: {
+          small: function () {
+            console.log("缩小：组件内部");
+
+            this.$emit("small",{"a": 1,"b": 2});
+          }
+        },
+        props: ['article'],//通过props属性为自定义组件传递数据，定义属性
+        template: `<div><h3>{{article.title}}</h3><div>{{article.content}}</div><div>{{article.author}}</div>
+        <button v-on:click="$emit('extend')">放大</button>
+        <button v-on:click="small">缩小</button>
+        <button v-on:click="count += 1">计数：{{count}}</button></div>`
+        });//每个template只能有一个单独的root element
+        //$emit(eventName),vue提供$emit方法，并传入事件的名称，父组件可以捕获这事件，并做相应的处理
+
+        //注意每创建一个组件：都重新定义了一个组件实例，每个组件实例会维护自己的data对象
+
+        //定义的Vue组件，只能在Vue的根实例的作用域中使用，当作特殊的自定义元素使用(Vue的组件的定义符合web Component组件定义的规范)
+        var vm = new Vue({
+          el: "#my-comp1-demo",
+          data: {
+            fontSize: 30,
+            articleList: [
+              {"title": "标题一", "content": "我是标题一的内容部分", "author": "作者一"},
+              {"title": "标题二", "content": "我是标题二的内容部分", "author": "作者二"},
+              {"title": "标题三", "content": "我是标题三的内容部分", "author": "作者三"},
+              {"title": "标题四", "content": "我是标题四的内容部分", "author": "作者四"},
+            ]
+          },
+          methods: {
+            extend: function () {
+              console.log("放大字号");
+              this.fontSize += 5;
+            },
+            small: function (e) {
+              console.log(e);
+              console.log("缩小字号");
+              if (this.fontSize >= 5) {
+
+                this.fontSize -= 5;
+              }
+            }
+          }
+        });
+
     </script>
     <!-- SCRIPT_END -->
 

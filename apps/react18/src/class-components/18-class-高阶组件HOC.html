@@ -50,89 +50,88 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="root"></div>
+    <!-- PAGE_DOM_START -->
+    <div id="root"></div>
+    <!-- PAGE_DOM_END -->
 
-    
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script type="text/babel">
       function withLoading(WrappedComponent) {
-      class WithLoading extends React.Component {
-      render() {
-      const { loading, ...rest } = this.props;
-      if (loading) {
-      return <p>加载中...</p>;
+        class WithLoading extends React.Component {
+          render() {
+            const { loading, ...rest } = this.props;
+            if (loading) {
+              return <p>加载中...</p>;
+            }
+            return <WrappedComponent {...rest} />;
+          }
+        }
+        WithLoading.displayName = `WithLoading(${WrappedComponent.displayName || WrappedComponent.name || "Component"})`;
+        return WithLoading;
       }
-      return <WrappedComponent {...rest} />;
-      }
-      }
-      WithLoading.displayName = `WithLoading(${WrappedComponent.displayName || WrappedComponent.name || "Component"})`;
-      return WithLoading;
-      }
-      
+
       function withLogger(WrappedComponent) {
-      class WithLogger extends React.Component {
-      componentDidMount() {
-      console.log("[HOC] mounted:", WrappedComponent.name);
+        class WithLogger extends React.Component {
+          componentDidMount() {
+            console.log("[HOC] mounted:", WrappedComponent.name);
+          }
+
+          componentDidUpdate(prevProps) {
+            console.log("[HOC] updated:", WrappedComponent.name, prevProps, "->", this.props);
+          }
+
+          render() {
+            return <WrappedComponent {...this.props} />;
+          }
+        }
+        return WithLogger;
       }
-      
-      componentDidUpdate(prevProps) {
-      console.log("[HOC] updated:", WrappedComponent.name, prevProps, "->", this.props);
-      }
-      
-      render() {
-      return <WrappedComponent {...this.props} />;
-      }
-      }
-      return WithLogger;
-      }
-      
+
       class UserProfile extends React.Component {
-      render() {
-      return (
-      <div>
-      <strong>{this.props.user.name}</strong>
-      <span> — {this.props.user.email}</span>
-      </div>
-      );
+        render() {
+          return (
+          <div>
+            <strong>{this.props.user.name}</strong>
+            <span> — {this.props.user.email}</span>
+          </div>
+        );
       }
       }
-      
+
       const EnhancedProfile = withLogger(withLoading(UserProfile));
-      
+
       class App extends React.Component {
-      constructor(props) {
-      super(props);
-      this.state = {
-      loading: true,
-      user: null
-      };
+        constructor(props) {
+          super(props);
+          this.state = {
+            loading: true,
+            user: null
+          };
+        }
+
+        componentDidMount() {
+          setTimeout(() => {
+            this.setState({
+              loading: false,
+              user: { name: "Alice", email: "alice@example.com" }
+            });
+          }, 1500);
+        }
+
+        render() {
+          return (
+          <section>
+            <h1>高阶组件 HOC</h1>
+
+            <EnhancedProfile loading={this.state.loading} user={this.state.user} />
+            <p>面试回答: HOC 是组件逻辑复用模式，返回新组件；与 render props、Hook 是不同抽象层次。</p>
+          </section>
+        );
       }
-      
-      componentDidMount() {
-      setTimeout(() => {
-      this.setState({
-      loading: false,
-      user: { name: "Alice", email: "alice@example.com" }
-      });
-      }, 1500);
       }
-      
-      render() {
-      return (
-      <section>
-      <h1>高阶组件 HOC</h1>
-      
-      <EnhancedProfile loading={this.state.loading} user={this.state.user} />
-      <p>面试回答: HOC 是组件逻辑复用模式，返回新组件；与 render props、Hook 是不同抽象层次。</p>
-      </section>
-      );
-      }
-      }
-      
+
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
     </script>
     <!-- SCRIPT_END -->
 

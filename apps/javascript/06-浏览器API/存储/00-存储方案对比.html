@@ -21,12 +21,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>浏览器存储方案对比</title>
     <style>
-    body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
-    table { border-collapse: collapse; max-width: 1000px; }
-    th, td { border: 1px solid #ddd; padding: 8px 10px; vertical-align: top; }
-    th { background: #f5f5f5; }
-    button { margin: 4px 6px 4px 0; padding: 6px 10px; }
-    #output { padding: 10px; border: 1px solid #ddd; background: #fafafa; white-space: pre-line; }
+      body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
+      table { border-collapse: collapse; max-width: 1000px; }
+      th, td { border: 1px solid #ddd; padding: 8px 10px; vertical-align: top; }
+      th { background: #f5f5f5; }
+      button { margin: 4px 6px 4px 0; padding: 6px 10px; }
+      #output { padding: 10px; border: 1px solid #ddd; background: #fafafa; white-space: pre-line; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -53,96 +53,93 @@
     </section>
     <!-- NOTES_END -->
 
-<table>
-    <thead>
-      <tr>
-        <th>方案</th>
-        <th>容量</th>
-        <th>生命周期</th>
-        <th>是否随请求发送</th>
-        <th>API 特点</th>
-        <th>常见用途</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Cookie</td>
-        <td>约 4KB</td>
-        <td>由 Expires / Max-Age 控制；默认会话级</td>
-        <td>会，同源请求自动带上</td>
-        <td>字符串 API；可配置 Domain / Path / SameSite / Secure / HttpOnly</td>
-        <td>登录态、少量服务端需要读取的信息</td>
-      </tr>
-      <tr>
-        <td>sessionStorage</td>
-        <td>通常约 5MB</td>
-        <td>当前标签页关闭即清除</td>
-        <td>不会</td>
-        <td>同步 key-value API</td>
-        <td>页面临时状态、表单草稿</td>
-      </tr>
-      <tr>
-        <td>localStorage</td>
-        <td>通常约 5MB</td>
-        <td>手动清除前一直存在</td>
-        <td>不会</td>
-        <td>同步 key-value API，大量读写可能阻塞主线程</td>
-        <td>主题、偏好设置、小型缓存</td>
-      </tr>
-      <tr>
-        <td>IndexedDB</td>
-        <td>远大于 localStorage，浏览器按磁盘和策略限制</td>
-        <td>手动删除或浏览器清理前存在</td>
-        <td>不会</td>
-        <td>异步事务型数据库 API，可存对象和 Blob</td>
-        <td>离线数据、大文件、复杂结构缓存</td>
-      </tr>
-    </tbody>
-  </table>
+    <!-- PAGE_DOM_START -->
+    <table>
+      <thead>
+        <tr>
+          <th>方案</th>
+          <th>容量</th>
+          <th>生命周期</th>
+          <th>是否随请求发送</th>
+          <th>API 特点</th>
+          <th>常见用途</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Cookie</td>
+          <td>约 4KB</td>
+          <td>由 Expires / Max-Age 控制；默认会话级</td>
+          <td>会，同源请求自动带上</td>
+          <td>字符串 API；可配置 Domain / Path / SameSite / Secure / HttpOnly</td>
+          <td>登录态、少量服务端需要读取的信息</td>
+        </tr>
+        <tr>
+          <td>sessionStorage</td>
+          <td>通常约 5MB</td>
+          <td>当前标签页关闭即清除</td>
+          <td>不会</td>
+          <td>同步 key-value API</td>
+          <td>页面临时状态、表单草稿</td>
+        </tr>
+        <tr>
+          <td>localStorage</td>
+          <td>通常约 5MB</td>
+          <td>手动清除前一直存在</td>
+          <td>不会</td>
+          <td>同步 key-value API，大量读写可能阻塞主线程</td>
+          <td>主题、偏好设置、小型缓存</td>
+        </tr>
+        <tr>
+          <td>IndexedDB</td>
+          <td>远大于 localStorage，浏览器按磁盘和策略限制</td>
+          <td>手动删除或浏览器清理前存在</td>
+          <td>不会</td>
+          <td>异步事务型数据库 API，可存对象和 Blob</td>
+          <td>离线数据、大文件、复杂结构缓存</td>
+        </tr>
+      </tbody>
+    </table>
+    <h2>可运行演示</h2>
+    <button id="writeBtn">写入三种小数据</button>
+    <button id="readBtn">读取</button>
+    <button id="clearBtn">清理</button>
+    <div id="output">等待操作...</div>
+    <!-- PAGE_DOM_END -->
 
-  <h2>可运行演示</h2>
-  <button id="writeBtn">写入三种小数据</button>
-  <button id="readBtn">读取</button>
-  <button id="clearBtn">清理</button>
-  <div id="output">等待操作...</div>
-
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       const output = document.getElementById("output");
-      
+
       function show(text) {
-      output.textContent = text;
+        output.textContent = text;
       }
-      
+
       document.getElementById("writeBtn").addEventListener("click", () => {
-      localStorage.setItem("storage-demo-local", "localStorage value");
-      sessionStorage.setItem("storage-demo-session", "sessionStorage value");
-      
-      // JS 能设置普通 Cookie，但不能设置 HttpOnly；HttpOnly 只能由服务端 Set-Cookie 设置。
-      document.cookie = "storage_demo_cookie=cookie value; max-age=3600; path=/; SameSite=Lax";
-      show("已写入 localStorage、sessionStorage、Cookie。");
+        localStorage.setItem("storage-demo-local", "localStorage value");
+        sessionStorage.setItem("storage-demo-session", "sessionStorage value");
+
+        // JS 能设置普通 Cookie，但不能设置 HttpOnly；HttpOnly 只能由服务端 Set-Cookie 设置。
+        document.cookie = "storage_demo_cookie=cookie value; max-age=3600; path=/; SameSite=Lax";
+        show("已写入 localStorage、sessionStorage、Cookie。");
       });
-      
+
       document.getElementById("readBtn").addEventListener("click", () => {
-      show([
-      "localStorage: " + localStorage.getItem("storage-demo-local"),
-      "sessionStorage: " + sessionStorage.getItem("storage-demo-session"),
-      "document.cookie: " + document.cookie,
-      "IndexedDB: 本目录已有 localforage 系列 demo，可看 01-localforage-基础API.html"
-      ].join("\n"));
+        show([
+          "localStorage: " + localStorage.getItem("storage-demo-local"),
+          "sessionStorage: " + sessionStorage.getItem("storage-demo-session"),
+          "document.cookie: " + document.cookie,
+          "IndexedDB: 本目录已有 localforage 系列 demo，可看 01-localforage-基础API.html"
+        ].join("\n"));
       });
-      
+
       document.getElementById("clearBtn").addEventListener("click", () => {
-      localStorage.removeItem("storage-demo-local");
-      sessionStorage.removeItem("storage-demo-session");
-      document.cookie = "storage_demo_cookie=; max-age=0; path=/; SameSite=Lax";
-      show("已清理 demo 数据。");
+        localStorage.removeItem("storage-demo-local");
+        sessionStorage.removeItem("storage-demo-session");
+        document.cookie = "storage_demo_cookie=; max-age=0; path=/; SameSite=Lax";
+        show("已清理 demo 数据。");
       });
+
     </script>
     <!-- SCRIPT_END -->
 

@@ -22,9 +22,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TypeScript · 条件类型与 infer</title>
     <style>
-    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 860px; line-height: 1.6; }
-    pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
-    #out { background: #f6f8fa; color: #222; }
+      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 860px; line-height: 1.6; }
+      pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
+      #out { background: #f6f8fa; color: #222; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -53,42 +53,36 @@
     </section>
     <!-- NOTES_END -->
 
-<pre>type IsString&lt;T&gt; = T extends string ? true : false;
+    <!-- PAGE_DOM_START -->
+    <pre>type IsString&lt;T&gt; = T extends string ? true : false;
+      type MyReturnType&lt;T&gt; =
+      T extends (...args: any[]) =&gt; infer R ? R : never;
+      type MyAwaited&lt;T&gt; =
+      T extends Promise&lt;infer R&gt; ? MyAwaited&lt;R&gt; : T;
+      type A = ReturnType&lt;() =&gt; number&gt;;  // number
+      type B = MyAwaited&lt;Promise&lt;Promise&lt;string&gt;&gt;&gt;;  // string</pre>
+      <pre id="out"></pre>
+    <!-- PAGE_DOM_END -->
 
-type MyReturnType&lt;T&gt; =
-  T extends (...args: any[]) =&gt; infer R ? R : never;
-
-type MyAwaited&lt;T&gt; =
-  T extends Promise&lt;infer R&gt; ? MyAwaited&lt;R&gt; : T;
-
-type A = ReturnType&lt;() =&gt; number&gt;;  // number
-type B = MyAwaited&lt;Promise&lt;Promise&lt;string&gt;&gt;&gt;;  // string</pre>
-
-  <pre id="out"></pre>
-
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       function getUser() {
-      return { id: 1, name: "Grace" };
+        return { id: 1, name: "Grace" };
       }
-      
+
       async function loadName() {
-      const user = await Promise.resolve(getUser());
-      return user.name;
+        const user = await Promise.resolve(getUser());
+        return user.name;
       }
-      
+
       loadName().then((name) => {
-      document.getElementById("out").textContent = [
-      `运行时 getUser().name = ${getUser().name}`,
-      `Awaited<Promise<string>> 对应运行结果: ${name}`,
-      "面试重点：infer 是类型层面的“占位推断”，不会出现在运行时 JS 中。",
-      ].join("\n");
+        document.getElementById("out").textContent = [
+          `运行时 getUser().name = ${getUser().name}`,
+          `Awaited<Promise<string>> 对应运行结果: ${name}`,
+          "面试重点：infer 是类型层面的“占位推断”，不会出现在运行时 JS 中。",
+        ].join("\n");
       });
+
     </script>
     <!-- SCRIPT_END -->
 

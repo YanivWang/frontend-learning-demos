@@ -51,61 +51,60 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="app"></div>
+    <!-- PAGE_DOM_START -->
+    <div id="app"></div>
+    <!-- PAGE_DOM_END -->
 
-    
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script type="text/babel">
       //react class方式的组件
       class Person extends React.Component {
-      //组件的属性会在构造函数中被传递过来
-      constructor(props) {
-      super(props);//调用super关键字来调用父类的构造函数，并将props传递到父类的构造器
-      
-      //构造函数是唯一可以给 this.state 直接赋值的地方
-      //state的更新是异步的
-      //出于性能考虑，react会把 （短时间内） 多个setState()调用合并成一个调用
-      this.state = {
-      count: 0,
+        //组件的属性会在构造函数中被传递过来
+        constructor(props) {
+          super(props);//调用super关键字来调用父类的构造函数，并将props传递到父类的构造器
+
+          //构造函数是唯一可以给 this.state 直接赋值的地方
+          //state的更新是异步的
+          //出于性能考虑，react会把 （短时间内） 多个setState()调用合并成一个调用
+          this.state = {
+            count: 0,
+          }
+        }
+
+        componentDidMount() {
+          for (let i = 0; i < 10; i++) {
+
+            //只能在这个回调函数中获取到先前的状态，并返回得到下一个状态
+            this.setState((prevState)=>{
+              //这里是异步的
+              console.log("prevState", prevState.count);//0 1 2 3 4 5 ... 9
+
+              return {
+                count: prevState.count + 1
+              }
+            });
+
+            //这个是同步的
+            console.log("state", this.state.count);//10个0
+          }
+
+          setTimeout(()=>{
+            // 函数式 setState 每次基于最新值累加，最终是 10
+            console.log("2s后",this.state.count);//10
+          },2000)
+        }
+
+        render() {
+          // 函数式更新累加 10 次，页面上最终展示的是 10
+          return (
+          <div>{this.state.count}</div>
+        )
       }
       }
-      
-      componentDidMount() {
-      for (let i = 0; i < 10; i++) {
-      
-      //只能在这个回调函数中获取到先前的状态，并返回得到下一个状态
-      this.setState((prevState)=>{
-      //这里是异步的
-      console.log("prevState", prevState.count);//0 1 2 3 4 5 ... 9
-      
-      return {
-      count: prevState.count + 1
-      }
-      });
-      
-      //这个是同步的
-      console.log("state", this.state.count);//10个0
-      }
-      
-      setTimeout(()=>{
-      // 函数式 setState 每次基于最新值累加，最终是 10
-      console.log("2s后",this.state.count);//10
-      },2000)
-      }
-      
-      render() {
-      // 函数式更新累加 10 次，页面上最终展示的是 10
-      return (
-      <div>{this.state.count}</div>
-      )
-      }
-      }
-      
+
       // React 18 使用 createRoot 渲染
       ReactDOM.createRoot(document.getElementById("app")).render(<Person/>);
+
     </script>
     <!-- SCRIPT_END -->
 

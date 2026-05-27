@@ -50,60 +50,59 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="root"></div>
+    <!-- PAGE_DOM_START -->
+    <div id="root"></div>
+    <!-- PAGE_DOM_END -->
 
-    
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script type="text/babel">
       const { useEffect, useRef, useState } = React;
       const { flushSync } = ReactDOM;
-      
+
       function Counter() {
-      const [count, setCount] = useState(0);
-      const outputRef = useRef(null);
-      const [hint, setHint] = useState("");
-      
-      useEffect(() => {
-      if (count === 0) return;
-      setHint("useEffect: count 已变为 " + count + "，DOM 已提交");
-      }, [count]);
-      
-      function incrementNormal() {
-      console.log("setCount 前:", count);
-      setCount(count + 1);
-      console.log("setCount 后同步读:", count);
-      if (outputRef.current) {
-      outputRef.current.textContent = "同步读 DOM 文本仍是旧值: " + outputRef.current.dataset.value;
-      }
-      }
-      
-      function incrementFlushSync() {
-      flushSync(() => {
-      setCount(prev => prev + 1);
-      });
-      if (outputRef.current) {
-      outputRef.current.textContent = "flushSync 后 DOM 已同步更新";
-      }
-      }
-      
-      return (
-      <section>
-      <h1>更新后读取 state / DOM</h1>
-      
-      <p>count: {count}</p>
-      <p ref={outputRef} data-value={count}>DOM 提示区</p>
-      <p>{hint}</p>
-      <button onClick={incrementNormal}>普通 +1（看控制台）</button>
-      <button onClick={incrementFlushSync}>flushSync +1</button>
-      <p>面试回答: 函数组件用 useEffect 做 commit 后副作用；flushSync 强制同步渲染，一般少用。</p>
-      </section>
+        const [count, setCount] = useState(0);
+        const outputRef = useRef(null);
+        const [hint, setHint] = useState("");
+
+        useEffect(() => {
+          if (count === 0) return;
+          setHint("useEffect: count 已变为 " + count + "，DOM 已提交");
+        }, [count]);
+
+        function incrementNormal() {
+          console.log("setCount 前:", count);
+          setCount(count + 1);
+          console.log("setCount 后同步读:", count);
+          if (outputRef.current) {
+            outputRef.current.textContent = "同步读 DOM 文本仍是旧值: " + outputRef.current.dataset.value;
+          }
+        }
+
+        function incrementFlushSync() {
+          flushSync(() => {
+            setCount(prev => prev + 1);
+          });
+          if (outputRef.current) {
+            outputRef.current.textContent = "flushSync 后 DOM 已同步更新";
+          }
+        }
+
+        return (
+        <section>
+          <h1>更新后读取 state / DOM</h1>
+
+          <p>count: {count}</p>
+          <p ref={outputRef} data-value={count}>DOM 提示区</p>
+          <p>{hint}</p>
+          <button onClick={incrementNormal}>普通 +1（看控制台）</button>
+          <button onClick={incrementFlushSync}>flushSync +1</button>
+          <p>面试回答: 函数组件用 useEffect 做 commit 后副作用；flushSync 强制同步渲染，一般少用。</p>
+        </section>
       );
       }
-      
+
       ReactDOM.createRoot(document.getElementById("root")).render(<Counter />);
+
     </script>
     <!-- SCRIPT_END -->
 

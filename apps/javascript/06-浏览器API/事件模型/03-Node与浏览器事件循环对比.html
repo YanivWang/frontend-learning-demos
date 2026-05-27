@@ -1,18 +1,15 @@
 <!--
-分类: javascript / 06-浏览器API / 事件模型
+  分类: javascript / 06-浏览器API / 事件模型
   主题: Node.js 与浏览器事件循环对比
   要点:
     - 浏览器：微任务 Promise.then → 宏任务 setTimeout；每轮宏任务后清空微任务
     - Node.js：除 timers/poll/check 外还有 process.nextTick（优先级高于 Promise 微任务）
     - Node 11+ 微任务在阶段之间清空，与浏览器更接近
-    - 面试：setImmediate vs setTimeout(0) 在 Node 中的顺序
   面试:
-    - Node.js 与浏览器事件循环对比的核心概念是什么
-    - Node.js 与浏览器事件循环对比在实际项目里怎么用
-    - Node.js 与浏览器事件循环对比有哪些常见坑或易错点
-    - Node.js 与浏览器事件循环对比和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Node.js 与浏览器事件循环对比
-
+    - 浏览器与 Node 事件循环有何异同？
+    - process.nextTick 与 Promise.then 谁先执行？
+    - setImmediate 与 setTimeout(0) 在 Node 中顺序如何？
+  相关: 事件循环, dom事件-冒泡捕获委托
 -->
 
 <!doctype html>
@@ -22,13 +19,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Node 与浏览器事件循环对比</title>
     <style>
-    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 780px; line-height: 1.65; }
-    table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 0.9rem; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    th { background: #f6f8fa; }
-    pre { background: #f6f8fa; padding: 12px; border-radius: 8px; font-size: 0.85rem; }
-    button { padding: 8px 14px; cursor: pointer; }
-    #browser-log { margin-top: 1rem; font-family: ui-monospace, monospace; background: #eef; padding: 12px; border-radius: 8px; }
+      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 780px; line-height: 1.65; }
+      button { padding: 8px 14px; cursor: pointer; }
+      #browser-log { margin-top: 1rem; font-family: ui-monospace, monospace; background: #eef; padding: 12px; border-radius: 8px; white-space: pre-wrap; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -37,66 +30,45 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Node.js vs 浏览器事件循环</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">在浏览器中操作下方按钮；要点与面试答法见上方复习区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>浏览器：微任务 <code>Promise</code>.then → 宏任务 <code>setTimeout</code>；每轮宏任务后清空微任务。</li>
-          <li>Node.js：除 timers/poll/check 外还有 process.nextTick（优先级高于 <code>Promise</code> 微任务）。</li>
+          <li>浏览器宏任务：setTimeout、setInterval、I/O、UI 渲染；微任务：Promise.then、MutationObserver。</li>
+          <li>Node.js 宏任务：timers、poll、check、setImmediate；微任务：Promise.then、queueMicrotask。</li>
+          <li>Node 特有 <code>process.nextTick</code>，优先级高于 Promise 微任务。</li>
           <li>Node 11+ 微任务在阶段之间清空，与浏览器更接近。</li>
-          <li>面试：setImmediate vs <code>setTimeout</code>(0) 在 Node 中的顺序。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Node 11+ 微任务在阶段之间清空？</strong> Node.js：除 timers/poll/check 外还有 process.nextTick（优先级高于 <code>Promise</code> 微任务）；Node 11+ 微任务在阶段之间清空，与浏览器更接近</li>
-          <li><strong>Node.js 与浏览器事件循环对比的核心概念是什么？</strong> Node.js：除 timers/poll/check 外还有 process.nextTick（优先级高于 <code>Promise</code> 微任务）；Node 11+ 微任务在阶段之间清空，与浏览器更接近</li>
-          <li><strong>Node.js 与浏览器事件循环对比在实际项目里怎么用？</strong> Node.js：除 timers/poll/check 外还有 process.nextTick（优先级高于 <code>Promise</code> 微任务）；Node 11+ 微任务在阶段之间清空，与浏览器更接近</li>
+          <li><strong>浏览器执行顺序？</strong> 同步 → 微任务（Promise/queueMicrotask）→ 宏任务（setTimeout）。</li>
+          <li><strong>Node 与浏览器差异？</strong> Node 多 process.nextTick（最先）和 setImmediate；Node 11+ 微任务清空时机更接近浏览器。</li>
+          <li><strong>Node 典型输出？</strong> sync 1,5 → nextTick 4 → microtask 3 → macrotask 2（浏览器无 nextTick 则为 1,5,3,2）。</li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-<table>
-    <thead><tr><th></th><th>浏览器</th><th>Node.js</th></tr></thead>
-    <tbody>
-      <tr><td>宏任务</td><td>setTimeout、setInterval、I/O、UI 渲染</td><td>timers、poll、check、setImmediate</td></tr>
-      <tr><td>微任务</td><td>Promise.then、MutationObserver</td><td>Promise.then、queueMicrotask</td></tr>
-      <tr><td>特殊</td><td>—</td><td><code>process.nextTick</code> 优先于 Promise 微任务</td></tr>
-    </tbody>
-  </table>
+    <!-- PAGE_DOM_START -->
+    <button type="button" id="run">运行顺序演示</button>
+    <div id="browser-log">点击按钮查看浏览器中的宏/微任务顺序</div>
+    <!-- PAGE_DOM_END -->
 
-  <h2>浏览器实测（本页可运行）</h2>
-  <button type="button" id="run">运行顺序演示</button>
-  <div id="browser-log"></div>
-
-  <h2>Node 典型输出（需在 Node REPL 运行）</h2>
-  <pre>console.log('1');
-setTimeout(() => console.log('2'), 0);
-Promise.resolve().then(() => console.log('3'));
-process.nextTick(() => console.log('4'));
-console.log('5');
-// 浏览器: 1 5 3 2
-// Node:    1 5 4 3 2</pre>
-
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       document.getElementById("run").onclick = () => {
-      const log = [];
-      const push = (m) => log.push(m);
-      push("sync start");
-      setTimeout(() => push("macrotask setTimeout"), 0);
-      Promise.resolve().then(() => push("microtask Promise"));
-      queueMicrotask(() => push("microtask queueMicrotask"));
-      push("sync end");
-      setTimeout(() => {
-      document.getElementById("browser-log").textContent = log.join("\n");
-      }, 10);
+        const log = [];
+        const push = (m) => log.push(m);
+        push("sync start");
+        setTimeout(() => push("macrotask setTimeout"), 0);
+        Promise.resolve().then(() => push("microtask Promise"));
+        queueMicrotask(() => push("microtask queueMicrotask"));
+        push("sync end");
+        setTimeout(() => {
+          document.getElementById("browser-log").textContent = log.join("\n");
+        }, 10);
       };
+
     </script>
     <!-- SCRIPT_END -->
 
@@ -105,6 +77,8 @@ console.log('5');
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="./01-%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF.html">相关 · 事件循环</a>
+        <a href="./02-dom%E4%BA%8B%E4%BB%B6-%E5%86%92%E6%B3%A1%E6%8D%95%E8%8E%B7%E5%A7%94%E6%89%98.html">相关 · dom事件-冒泡捕获委托</a>
         <a href="./02-dom%E4%BA%8B%E4%BB%B6-%E5%86%92%E6%B3%A1%E6%8D%95%E8%8E%B7%E5%A7%94%E6%89%98.html">← dom事件-冒泡捕获委托</a>
         <a href="../%E6%8B%96%E6%9B%B3%E6%89%8B%E6%9F%84/01-%E8%B4%B4%E8%BE%B9%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html">贴边侧栏拖拽 →</a>
       </nav>
@@ -118,5 +92,6 @@ console.log('5');
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+
+  </body>
 </html>

@@ -48,93 +48,89 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="app">
-    <child-card
+    <!-- PAGE_DOM_START -->
+    <div id="app">
+      <child-card
         :title="title"
         button-text="透传按钮文案"
         @rename="title = $event"
         @native-click="logs.push('来自孙组件透传的事件')"
-    ></child-card>
+        ></child-card>
+        <sibling-a></sibling-a>
+        <sibling-b></sibling-b>
+        <pre>{{ logs.join('\n') }}</pre>
+      </div>
+    <!-- PAGE_DOM_END -->
 
-    <sibling-a></sibling-a>
-    <sibling-b></sibling-b>
-
-    <pre>{{ logs.join('\n') }}</pre>
-</div>
-
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       const EventBus = new Vue();
-      
+
       Vue.component("base-button", {
-      inheritAttrs: false,
-      template: `
-      <button v-bind="$attrs" v-on="$listeners">
-      {{ $attrs['button-text'] || '按钮' }}
-      </button>
-      `
+        inheritAttrs: false,
+        template: `
+        <button v-bind="$attrs" v-on="$listeners">
+          {{ $attrs['button-text'] || '按钮' }}
+        </button>
+        `
       });
-      
+
       Vue.component("child-card", {
-      inject: ["theme"],
-      props: ["title"],
-      template: `
-      <section style="border:1px solid #ddd;padding:8px;margin-bottom:8px;">
-      <p>props title: {{ title }}</p>
-      <p>inject theme.color: {{ theme.color }}</p>
-      <button @click="$emit('rename', '子组件改名请求')">props + $emit</button>
-      <base-button v-bind="$attrs" @click="$emit('native-click')"></base-button>
-      </section>
-      `
+        inject: ["theme"],
+        props: ["title"],
+        template: `
+        <section style="border:1px solid #ddd;padding:8px;margin-bottom:8px;">
+          <p>props title: {{ title }}</p>
+          <p>inject theme.color: {{ theme.color }}</p>
+          <button @click="$emit('rename', '子组件改名请求')">props + $emit</button>
+          <base-button v-bind="$attrs" @click="$emit('native-click')"></base-button>
+        </section>
+        `
       });
-      
+
       Vue.component("sibling-a", {
-      template: `<button @click="send">兄弟 A 发送事件</button>`,
-      methods: {
-      send() {
-      EventBus.$emit("sibling-message", "来自兄弟 A");
-      }
-      }
+        template: `<button @click="send">兄弟 A 发送事件</button>`,
+        methods: {
+          send() {
+            EventBus.$emit("sibling-message", "来自兄弟 A");
+          }
+        }
       });
-      
+
       Vue.component("sibling-b", {
-      template: `<p>兄弟 B 收到: {{ message }}</p>`,
-      data() {
-      return { message: "" };
-      },
-      created() {
-      EventBus.$on("sibling-message", this.onMessage);
-      },
-      beforeDestroy() {
-      EventBus.$off("sibling-message", this.onMessage);
-      },
-      methods: {
-      onMessage(message) {
-      this.message = message;
-      }
-      }
+        template: `<p>兄弟 B 收到: {{ message }}</p>`,
+        data() {
+          return { message: "" };
+        },
+        created() {
+          EventBus.$on("sibling-message", this.onMessage);
+        },
+        beforeDestroy() {
+          EventBus.$off("sibling-message", this.onMessage);
+        },
+        methods: {
+          onMessage(message) {
+            this.message = message;
+          }
+        }
       });
-      
+
       new Vue({
-      el: "#app",
-      provide() {
-      return {
-      theme: this.theme
-      };
-      },
-      data() {
-      return {
-      title: "父组件标题",
-      theme: { color: "blue" },
-      logs: []
-      };
-      }
+        el: "#app",
+        provide() {
+          return {
+            theme: this.theme
+          };
+        },
+        data() {
+          return {
+            title: "父组件标题",
+            theme: { color: "blue" },
+            logs: []
+          };
+        }
       });
+
     </script>
     <!-- SCRIPT_END -->
 

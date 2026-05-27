@@ -287,7 +287,10 @@ ${notesFormatted}
 }
 
 function stripStructuralMarkers(content) {
-  return content.replace(/<!--\s*(?:NOTES|SCRIPT|RUN|DEMO)_(?:START|END)\s*-->/gi, "");
+  return content.replace(
+    /<!--\s*(?:NOTES|SCRIPT|RUN|DEMO|PAGE_DOM)_(?:START|END)\s*-->/gi,
+    ""
+  );
 }
 
 function extractMiddleContent(content) {
@@ -304,31 +307,137 @@ function extractMiddleContent(content) {
 
 function indentMiddleBlock(block) {
   if (!block.trim()) return "";
-  if (/<!--\s*SCRIPT_START\s*-->/.test(block)) {
-    return block
-      .replace(
-        /<!--\s*SCRIPT_START\s*-->\s*(<script[\s\S]*?<\/script>)\s*<!--\s*SCRIPT_END\s*-->/gi,
-        (_, script) => {
-          const inner = script
-            .split("\n")
-            .map((line, i) =>
-              i === 0 ? `    ${line.trimStart()}` : `      ${line.trimStart()}`
-            )
-            .join("\n");
-          return `    <!-- SCRIPT_START -->\n${inner}\n    <!-- SCRIPT_END -->`;
-        }
-      )
-      .trim();
+  return formatMixedMiddle(block);
+}
+
+function isHtmlOpenTag(line) {
+  if (!/^<[A-Za-z][\w:-]*(\s|>|$)/.test(line)) return false;
+  if (/^<(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)\b/i.test(line)) {
+    return false;
   }
-  return block
-    .split(/\n{2,}/)
-    .map((chunk) =>
-      chunk
-        .split("\n")
-        .map((line) => `    ${line.trimStart()}`)
-        .join("\n")
-    )
-    .join("\n\n");
+  if (/\/>\s*$/.test(line)) return false;
+  const tag = line.match(/^<([A-Za-z][\w:-]*)\b/)?.[1];
+  if (!tag) return false;
+  return !new RegExp(`</${tag}>\\s*$`, "i").test(line);
+}
+
+function formatHtmlChunk(chunk) {
+  const lines = chunk
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  let depth = 0;
+  const out = [];
+
+  for (const line of lines) {
+    if (/^<\/[A-Za-z]/.test(line) || /^<!--\s*DEMO_END\s*-->$/i.test(line)) {
+      depth = Math.max(0, depth - 1);
+    }
+
+    out.push(`${" ".repeat(4 + depth * 2)}${line}`);
+
+    if (isHtmlOpenTag(line) || /^<!--\s*DEMO_START\s*-->$/i.test(line)) {
+      depth++;
+    }
+  }
+
+  return out.join("\n");
+}
+
+function countStructuralChars(line, open, close) {
+  let count = 0;
+  let quote = null;
+  let escaped = false;
+  for (const ch of line) {
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (ch === "\\") {
+      escaped = true;
+      continue;
+    }
+    if (quote) {
+      if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === "`") {
+      quote = ch;
+      continue;
+    }
+    if (ch === open) count++;
+    if (ch === close) count--;
+  }
+  return count;
+}
+
+function formatScriptInner(inner) {
+  const rawLines = inner.replace(/^\n+|\n+$/g, "").split("\n");
+  const out = [];
+  let depth = 0;
+
+  for (const raw of rawLines) {
+    const line = raw.trim();
+    if (!line) {
+      if (out.at(-1) !== "") out.push("");
+      continue;
+    }
+
+    if (/^(}|\]|\)|<\/)/.test(line)) depth = Math.max(0, depth - 1);
+    out.push(`${" ".repeat(6 + depth * 2)}${line}`);
+
+    const net =
+      countStructuralChars(line, "{", "}") +
+      countStructuralChars(line, "[", "]");
+    if (net > 0) depth += net;
+    if (net <= 0 && /\{\s*$/.test(line)) depth++;
+
+    if (isHtmlOpenTag(line)) depth++;
+  }
+
+  return out.join("\n").replace(/\n{3,}/g, "\n\n");
+}
+
+function formatScriptBlock(script) {
+  const m = script.match(/^(<script\b[^>]*>)([\s\S]*?)(<\/script>)$/i);
+  if (!m) {
+    return script
+      .split("\n")
+      .map((line) => `    ${line.trimStart()}`)
+      .join("\n");
+  }
+  const [, open, inner, close] = m;
+  const formattedInner = formatScriptInner(inner);
+  if (!formattedInner) return `    ${open.trim()}${close}`;
+  return `    ${open.trim()}\n${formattedInner}\n    ${close}`;
+}
+
+function wrapPageDomBlock(block) {
+  if (!block.trim()) return "";
+  return `    <!-- PAGE_DOM_START -->\n${block}\n    <!-- PAGE_DOM_END -->`;
+}
+
+function formatMixedMiddle(block) {
+  const scriptRegionRe =
+    /^[ \t]*<!--\s*SCRIPT_START\s*-->\s*(<script[\s\S]*?<\/script>)\s*^[ \t]*<!--\s*SCRIPT_END\s*-->/gim;
+  const chunks = [];
+  let last = 0;
+  let match;
+
+  while ((match = scriptRegionRe.exec(block)) !== null) {
+    const html = block.slice(last, match.index);
+    const htmlFormatted = formatHtmlChunk(html);
+    if (htmlFormatted) chunks.push(wrapPageDomBlock(htmlFormatted));
+
+    chunks.push(
+      `    <!-- SCRIPT_START -->\n${formatScriptBlock(match[1])}\n    <!-- SCRIPT_END -->`
+    );
+    last = match.index + match[0].length;
+  }
+
+  const tail = formatHtmlChunk(block.slice(last));
+  if (tail) chunks.push(wrapPageDomBlock(tail));
+  return chunks.join("\n\n").trimEnd();
 }
 
 function wrapInlineScripts(middle) {
@@ -375,25 +484,12 @@ function formatHead(content) {
   const headMatch = headBody.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
   if (!headMatch) return content;
 
-  const headInner = headMatch[1];
-  const headLines = headInner
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => {
-      if (line.startsWith("<meta") && !line.endsWith("/>")) {
-        line = line.replace(/\s*>$/, " />");
-      }
-      if (line.startsWith("<link") && !line.endsWith("/>")) {
-        line = line.replace(/\s*\/?>$/, " />");
-      }
-      return `    ${line}`;
-    });
+  const headLines = formatHeadInner(headMatch[1]);
 
   const formattedHead = `  <head>\n${headLines.join("\n")}\n  </head>`;
   const bodyTag = bodyOpen.includes("demo-page")
-    ? bodyOpen.replace(/\s+/g, " ").replace(/<body/i, "  <body")
-    : bodyOpen.replace(/<body/i, '  <body class="demo-page"');
+    ? bodyOpen.trim().replace(/\s+/g, " ").replace(/<body/i, "  <body")
+    : bodyOpen.trim().replace(/<body/i, '  <body class="demo-page"');
 
   return content.replace(
     htmlMatch[0],
@@ -401,11 +497,77 @@ function formatHead(content) {
   );
 }
 
+function formatCssInner(inner) {
+  const lines = inner
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  let depth = 0;
+  let continuation = false;
+
+  return lines
+    .map((line) => {
+      if (/^}/.test(line)) {
+        depth = Math.max(0, depth - 1);
+        continuation = false;
+      }
+
+      const formatted = `${" ".repeat(6 + (depth + (continuation ? 1 : 0)) * 2)}${line}`;
+
+      if (/\{\s*$/.test(line)) depth++;
+      if (/:\s*$/.test(line)) continuation = true;
+      if (/;\s*$/.test(line)) continuation = false;
+
+      return formatted;
+    })
+    .join("\n");
+}
+
+function formatStyleTag(raw) {
+  const m = raw.match(/^<style\b([^>]*)>([\s\S]*?)<\/style>$/i);
+  if (!m) return `    ${raw.trim()}`;
+  const attrs = m[1] || "";
+  return `    <style${attrs}>\n${formatCssInner(m[2])}\n    </style>`;
+}
+
+function formatHeadLine(line) {
+  let next = line.trim();
+  if (next.startsWith("<meta") && !next.endsWith("/>")) {
+    next = next.replace(/\s*>$/, " />");
+  }
+  if (next.startsWith("<link") && !next.endsWith("/>")) {
+    next = next.replace(/\s*\/?>$/, " />");
+  }
+  return `    ${next}`;
+}
+
+function formatHeadInner(headInner) {
+  const lines = headInner.split("\n");
+  const out = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    if (/^<style\b/i.test(line)) {
+      const styleLines = [line];
+      while (!/<\/style>/i.test(styleLines.at(-1) || "") && i < lines.length - 1) {
+        i++;
+        styleLines.push(lines[i]);
+      }
+      out.push(formatStyleTag(styleLines.join("\n")));
+      continue;
+    }
+
+    out.push(formatHeadLine(line));
+  }
+  return out;
+}
+
 function rebuildBody(content, parts) {
   const { notesBlock, middle, navBlock } = parts;
   const bodyOpenMatch = content.match(/<body[^>]*>/i);
   const bodyOpen = bodyOpenMatch
-    ? bodyOpenMatch[0].replace(/<body/i, "  <body")
+    ? bodyOpenMatch[0].trim().replace(/<body/i, "  <body")
     : '  <body class="demo-page">';
 
   const blocks = [notesBlock];
@@ -414,7 +576,7 @@ function rebuildBody(content, parts) {
   blocks.push(navBlock);
 
   return content.replace(
-    /<body[^>]*>[\s\S]*?<!--__NAV_PLACEHOLDER__-->/i,
+    /[ \t]*<body[^>]*>[\s\S]*?<!--__NAV_PLACEHOLDER__-->/i,
     `${bodyOpen}\n${blocks.join("\n\n")}\n`
   );
 }
@@ -445,17 +607,9 @@ function removeInlineHintStyle(content) {
 
 function formatScriptRegions(content) {
   return content.replace(
-    /<!--\s*SCRIPT_START\s*-->\s*(<script[\s\S]*?<\/script>)\s*<!--\s*SCRIPT_END\s*-->/gi,
+    /^[ \t]*<!--\s*SCRIPT_START\s*-->\s*(<script[\s\S]*?<\/script>)\s*^[ \t]*<!--\s*SCRIPT_END\s*-->/gim,
     (_, script) => {
-      const lines = script.split("\n");
-      const formatted = lines
-        .map((line, i) => {
-          const trimmed = line.trimStart();
-          if (i === 0 || trimmed === "</script>") return `    ${trimmed}`;
-          return `      ${trimmed}`;
-        })
-        .join("\n");
-      return `    <!-- SCRIPT_START -->\n${formatted}\n    <!-- SCRIPT_END -->`;
+      return `    <!-- SCRIPT_START -->\n${formatScriptBlock(script)}\n    <!-- SCRIPT_END -->`;
     }
   );
 }

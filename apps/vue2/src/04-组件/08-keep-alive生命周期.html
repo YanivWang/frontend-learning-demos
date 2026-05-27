@@ -46,62 +46,58 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="app">
-    <button @click="current = 'TabA'">TabA</button>
-    <button @click="current = 'TabB'">TabB</button>
-
-    <keep-alive>
+    <!-- PAGE_DOM_START -->
+    <div id="app">
+      <button @click="current = 'TabA'">TabA</button>
+      <button @click="current = 'TabB'">TabB</button>
+      <keep-alive>
         <component :is="current"></component>
-    </keep-alive>
+      </keep-alive>
+      <pre>{{ logs.join('\n') }}</pre>
+    </div>
+    <!-- PAGE_DOM_END -->
 
-    <pre>{{ logs.join('\n') }}</pre>
-</div>
-
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       const makeTab = function (name) {
-      return {
-      template: `
-      <div style="border:1px solid #ddd;padding:8px;margin-top:8px;">
-      <p>${name} 输入框会被 keep-alive 缓存</p>
-      <input>
-      </div>
-      `,
-      created() {
-      this.$root.logs.push(name + " created");
-      },
-      mounted() {
-      this.$root.logs.push(name + " mounted");
-      },
-      activated() {
-      this.$root.logs.push(name + " activated");
-      },
-      deactivated() {
-      this.$root.logs.push(name + " deactivated");
-      },
-      beforeDestroy() {
-      this.$root.logs.push(name + " beforeDestroy");
-      }
+        return {
+          template: `
+          <div style="border:1px solid #ddd;padding:8px;margin-top:8px;">
+            <p>${name} 输入框会被 keep-alive 缓存</p>
+            <input>
+          </div>
+          `,
+          created() {
+            this.$root.logs.push(name + " created");
+          },
+          mounted() {
+            this.$root.logs.push(name + " mounted");
+          },
+          activated() {
+            this.$root.logs.push(name + " activated");
+          },
+          deactivated() {
+            this.$root.logs.push(name + " deactivated");
+          },
+          beforeDestroy() {
+            this.$root.logs.push(name + " beforeDestroy");
+          }
+        };
       };
-      };
-      
+
       Vue.component("TabA", makeTab("TabA"));
       Vue.component("TabB", makeTab("TabB"));
-      
+
       new Vue({
-      el: "#app",
-      data() {
-      return {
-      current: "TabA",
-      logs: []
-      };
-      }
+        el: "#app",
+        data() {
+          return {
+            current: "TabA",
+            logs: []
+          };
+        }
       });
+
     </script>
     <!-- SCRIPT_END -->
 

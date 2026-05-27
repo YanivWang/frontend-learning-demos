@@ -49,86 +49,83 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="app">
-</div>
+    <!-- PAGE_DOM_START -->
+    <div id="app">
+    </div>
+    <!-- PAGE_DOM_END -->
 
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       //由于使用单一状态树，应用的所有状态都会被集中到一个对象中。当应用非常复杂的时候，store对象就可能变的非常臃肿
       //使用Vuex的module功能，可以将store对象分割成模块。
       //每个模块拥有自己的state，mutation，action，getter
       //甚至是嵌套子模块——从上至下进行同样方式的分割
-      
+
       // 模块 A：计数器
       const moduleA = {
-      namespaced: true,
-      state: () => ({ count: 0 }),
-      mutations: {
-      increment(state, n = 1) { state.count += n; }
-      },
-      actions: {
-      incrementAsync({ commit }, n = 1) {
-      setTimeout(() => commit('increment', n), 500);
-      }
-      },
-      getters: {
-      doubleCount: (state) => state.count * 2
-      }
+        namespaced: true,
+        state: () => ({ count: 0 }),
+        mutations: {
+          increment(state, n = 1) { state.count += n; }
+        },
+        actions: {
+          incrementAsync({ commit }, n = 1) {
+            setTimeout(() => commit('increment', n), 500);
+          }
+        },
+        getters: {
+          doubleCount: (state) => state.count * 2
+        }
       };
-      
+
       // 模块 B：用户信息
       const moduleB = {
-      namespaced: true,
-      state: () => ({ name: 'guest' }),
-      mutations: {
-      setName(state, name) { state.name = name; }
-      }
+        namespaced: true,
+        state: () => ({ name: 'guest' }),
+        mutations: {
+          setName(state, name) { state.name = name; }
+        }
       };
-      
+
       const store = new Vuex.Store({
-      modules: {
-      moduleA,
-      moduleB
-      }
+        modules: {
+          moduleA,
+          moduleB
+        }
       });
-      
+
       // 访问模块 state：注意带模块名前缀
       console.log('moduleA.count:', store.state.moduleA.count);
       console.log('moduleB.name :', store.state.moduleB.name);
-      
+
       // 提交「带命名空间」的 mutation / 派发 action
       store.commit('moduleA/increment', 5);
       store.dispatch('moduleA/incrementAsync', 3);
       store.commit('moduleB/setName', 'wangcheng');
-      
+
       new Vue({
-      data() {
-      return {}
-      },
-      store,
-      computed: {
-      // 使用 mapState 第二个参数 namespaced 简化跨模块访问
-      ...Vuex.mapState('moduleA', { aCount: 'count' }),
-      ...Vuex.mapState('moduleB', { bName: 'name' }),
-      ...Vuex.mapGetters('moduleA', ['doubleCount'])
-      },
-      template: `
-      <div>
-      <div>moduleA.count: {{ aCount }}（doubleCount: {{ doubleCount }}）</div>
-      <div>moduleB.name : {{ bName }}</div>
-      </div>
-      `,
-      methods: {
-      // 命名空间下的 actions 也可以用 mapActions(namespace, [...]) 映射
-      ...Vuex.mapActions('moduleA', ['incrementAsync'])
-      }
+        data() {
+          return {}
+        },
+        store,
+        computed: {
+          // 使用 mapState 第二个参数 namespaced 简化跨模块访问
+          ...Vuex.mapState('moduleA', { aCount: 'count' }),
+          ...Vuex.mapState('moduleB', { bName: 'name' }),
+          ...Vuex.mapGetters('moduleA', ['doubleCount'])
+        },
+        template: `
+        <div>
+          <div>moduleA.count: {{ aCount }}（doubleCount: {{ doubleCount }}）</div>
+          <div>moduleB.name : {{ bName }}</div>
+        </div>
+        `,
+        methods: {
+          // 命名空间下的 actions 也可以用 mapActions(namespace, [...]) 映射
+          ...Vuex.mapActions('moduleA', ['incrementAsync'])
+        }
       }).$mount("#app");
-      
+
     </script>
     <!-- SCRIPT_END -->
 

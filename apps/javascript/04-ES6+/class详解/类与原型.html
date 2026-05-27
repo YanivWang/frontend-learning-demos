@@ -49,47 +49,48 @@
     <script>
       // 除了 # 修饰的私有字段，其他都是公有的；静态字段也参与原型继承
       class Person {
-      static userType = "whitePerson";
-      static #userTypeName = "wp";
-      
-      // 公有/私有实例字段：每个实例各一份
-      userAge = 18;
-      #userAgeName = 18;
-      
-      // constructor：new 时被调用；不写则使用默认空构造器
-      constructor(userName, weight) {
-      // super(userName); // 没有父类不能 super()
-      
-      this.userName = userName;
-      
-      // 私有字段不能通过赋值临时创建，必须在类体中预先声明
-      // this.#weight = weight;
-      
-      // 反面：把方法挂在 this 上，每个实例都会有一份独立函数对象
-      this.sayhello = function(){};
+        static userType = "whitePerson";
+        static #userTypeName = "wp";
+
+        // 公有/私有实例字段：每个实例各一份
+        userAge = 18;
+        #userAgeName = 18;
+
+        // constructor：new 时被调用；不写则使用默认空构造器
+        constructor(userName, weight) {
+          // super(userName); // 没有父类不能 super()
+
+          this.userName = userName;
+
+          // 私有字段不能通过赋值临时创建，必须在类体中预先声明
+          // this.#weight = weight;
+
+          // 反面：把方法挂在 this 上，每个实例都会有一份独立函数对象
+          this.sayhello = function(){};
+        }
+
+        // 推荐：实例方法挂 prototype 上，由所有实例共享
+        eat() {
+          // 实例方法里访问私有字段须用 this.#field
+          console.log("this.#userAgeName", this.#userAgeName);
+          console.log("I am eatting!");
+        }
       }
-      
-      // 推荐：实例方法挂 prototype 上，由所有实例共享
-      eat() {
-      // 实例方法里访问私有字段须用 this.#field
-      console.log("this.#userAgeName", this.#userAgeName);
-      console.log("I am eatting!");
-      }
-      }
-      
+
       console.log(Person);
       console.log(typeof Person);
-      
+
       const p1 = new Person();
       p1.eat();
-      
+
       // 实例访问类静态属性返回 undefined（静态只能用类名访问）
       console.log("p1.userType", p1.userType);
-      
+
       // 类外部无法直接访问实例的私有字段
       // console.log("p1.#userAgeName", p1.#userAgeName);
-      
+
       console.log("Person.userType", Person.userType);
+
     </script>
     <!-- SCRIPT_END -->
 

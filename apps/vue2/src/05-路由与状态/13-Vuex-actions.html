@@ -48,111 +48,109 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="app"></div>
+    <!-- PAGE_DOM_START -->
+    <div id="app"></div>
+    <!-- PAGE_DOM_END -->
 
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       const store = new Vuex.Store({
-      state: {
-      count: 0,
-      todos: [
-      { id: 1, text: '...', done: true },
-      { id: 2, text: '...', done: false }
-      ]
-      },
-      mutations: {
-      increment(state) {
-      state.count++;
-      },
-      incrementA(state, n) {
-      state.count += n;
-      },
-      incrementB(state, payload) {
-      state.count += payload.count;
-      },
-      someMutation(state) {
-      state.count++;
-      }
-      },
-      actions: {
-      increment(context) {
-      context.commit("increment");
-      },
-      incrementA({ commit }) {
-      commit('incrementA', 10);
-      },
-      incrementAsync({ commit }, payload) {
-      var amount = (payload && payload.amount) || 1;
-      setTimeout(function () {
-      console.log("incrementAsync 完成，amount =", amount);
-      commit('incrementA', amount);
-      }, 800);
-      },
-      checkout({ commit }) {
-      return new Promise(function (resolve) {
-      setTimeout(function () {
-      commit('someMutation');
-      resolve();
-      }, 500);
+        state: {
+          count: 0,
+          todos: [
+            { id: 1, text: '...', done: true },
+            { id: 2, text: '...', done: false }
+          ]
+        },
+        mutations: {
+          increment(state) {
+            state.count++;
+          },
+          incrementA(state, n) {
+            state.count += n;
+          },
+          incrementB(state, payload) {
+            state.count += payload.count;
+          },
+          someMutation(state) {
+            state.count++;
+          }
+        },
+        actions: {
+          increment(context) {
+            context.commit("increment");
+          },
+          incrementA({ commit }) {
+            commit('incrementA', 10);
+          },
+          incrementAsync({ commit }, payload) {
+            var amount = (payload && payload.amount) || 1;
+            setTimeout(function () {
+              console.log("incrementAsync 完成，amount =", amount);
+              commit('incrementA', amount);
+            }, 800);
+          },
+          checkout({ commit }) {
+            return new Promise(function (resolve) {
+              setTimeout(function () {
+                commit('someMutation');
+                resolve();
+              }, 500);
+            });
+          },
+          checkoutPlus({ dispatch, commit }) {
+            return dispatch('checkout').then(function () {
+              commit('incrementB', { count: 1 });
+            });
+          }
+        },
+        getters: {}
       });
-      },
-      checkoutPlus({ dispatch, commit }) {
-      return dispatch('checkout').then(function () {
-      commit('incrementB', { count: 1 });
-      });
-      }
-      },
-      getters: {}
-      });
-      
+
       store.commit('increment');
       store.commit('incrementA', 10);
       store.commit('incrementB', { count: 10 });
-      
+
       store.dispatch('incrementAsync', { amount: 10 });
       store.dispatch({ type: 'incrementAsync', amount: 5 });
-      
+
       store.dispatch({ type: 'checkout' }).then(function () {
-      console.log('checkout 完成');
+        console.log('checkout 完成');
       });
-      
+
       new Vue({
-      store,
-      data: function () {
-      return { status: '' };
-      },
-      computed: {
-      count: function () {
-      return this.$store.state.count;
-      }
-      },
-      template: `
-      <div>
-      <div>count: {{ count }}</div>
-      <div>{{ status }}</div>
-      <button @click="$store.commit('increment')">commit increment</button>
-      <button @click="dispatchAsync">dispatch incrementAsync({ amount: 3 })</button>
-      <button @click="runCheckout">await checkoutPlus</button>
-      </div>
-      `,
-      methods: {
-      dispatchAsync: function () {
-      this.$store.dispatch('incrementAsync', { amount: 3 });
-      },
-      runCheckout: async function () {
-      this.status = 'checkoutPlus 进行中…';
-      await this.$store.dispatch('checkoutPlus');
-      this.status = 'checkoutPlus 完成，count = ' + this.$store.state.count;
-      },
-      ...Vuex.mapActions(['increment', 'incrementA', 'incrementAsync']),
-      ...Vuex.mapActions({ add: 'increment' })
-      }
+        store,
+        data: function () {
+          return { status: '' };
+        },
+        computed: {
+          count: function () {
+            return this.$store.state.count;
+          }
+        },
+        template: `
+        <div>
+          <div>count: {{ count }}</div>
+          <div>{{ status }}</div>
+          <button @click="$store.commit('increment')">commit increment</button>
+          <button @click="dispatchAsync">dispatch incrementAsync({ amount: 3 })</button>
+          <button @click="runCheckout">await checkoutPlus</button>
+        </div>
+        `,
+        methods: {
+          dispatchAsync: function () {
+            this.$store.dispatch('incrementAsync', { amount: 3 });
+          },
+          runCheckout: async function () {
+            this.status = 'checkoutPlus 进行中…';
+            await this.$store.dispatch('checkoutPlus');
+            this.status = 'checkoutPlus 完成，count = ' + this.$store.state.count;
+          },
+          ...Vuex.mapActions(['increment', 'incrementA', 'incrementAsync']),
+          ...Vuex.mapActions({ add: 'increment' })
+        }
       }).$mount("#app");
+
     </script>
     <!-- SCRIPT_END -->
 

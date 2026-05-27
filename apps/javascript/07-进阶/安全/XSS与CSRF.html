@@ -22,12 +22,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>XSS 与 CSRF 防护</title>
     <style>
-    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 760px; line-height: 1.65; }
-    .box { border: 1px solid #ddd; border-radius: 8px; padding: 14px; margin: 1rem 0; }
-    .bad { border-color: #cf222e; background: #fff5f5; }
-    .good { border-color: #1a7f37; background: #f6fff8; }
-    input { width: 100%; box-sizing: border-box; padding: 8px; margin: 6px 0; }
-    pre { background: #f6f8fa; padding: 10px; border-radius: 6px; overflow: auto; font-size: 0.85rem; }
+      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 760px; line-height: 1.65; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 14px; margin: 1rem 0; }
+      .bad { border-color: #cf222e; background: #fff5f5; }
+      .good { border-color: #1a7f37; background: #f6fff8; }
+      input { width: 100%; box-sizing: border-box; padding: 8px; margin: 6px 0; }
+      pre { background: #f6f8fa; padding: 10px; border-radius: 6px; overflow: auto; font-size: 0.85rem; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -55,40 +55,37 @@
     </section>
     <!-- NOTES_END -->
 
-<h2>XSS 演示：innerHTML vs textContent</h2>
-  <label>输入昵称（可试 <code>&lt;img src=x onerror=alert(1)&gt;</code>）：</label>
-  <input id="nick" value="小明" />
-  <button type="button" id="unsafe">❌ innerHTML（危险）</button>
-  <button type="button" id="safe">✅ textContent（安全）</button>
-  <div class="box bad" id="unsafe-out">不安全输出区</div>
-  <div class="box good" id="safe-out">安全输出区</div>
+    <!-- PAGE_DOM_START -->
+    <h2>XSS 演示：innerHTML vs textContent</h2>
+    <label>输入昵称（可试 <code>&lt;img src=x onerror=alert(1)&gt;</code>）：</label>
+    <input id="nick" value="小明" />
+    <button type="button" id="unsafe">❌ innerHTML（危险）</button>
+    <button type="button" id="safe">✅ textContent（安全）</button>
+    <div class="box bad" id="unsafe-out">不安全输出区</div>
+    <div class="box good" id="safe-out">安全输出区</div>
+    <h2>CSRF 防护要点</h2>
+    <ul>
+      <li>Cookie 设置 <code>SameSite=Lax/Strict</code>，敏感操作用 <code>SameSite=Strict</code></li>
+      <li>表单/接口携带不可预测的 <code>CSRF Token</code>（服务端校验）</li>
+      <li>校验 <code>Origin</code> / <code>Referer</code> 是否来自可信域</li>
+    </ul>
+    <pre>// 响应头示例
+      Content-Security-Policy: default-src 'self'; script-src 'self'
+      Set-Cookie: session=...; HttpOnly; Secure; SameSite=Lax</pre>
+    <!-- PAGE_DOM_END -->
 
-  <h2>CSRF 防护要点</h2>
-  <ul>
-    <li>Cookie 设置 <code>SameSite=Lax/Strict</code>，敏感操作用 <code>SameSite=Strict</code></li>
-    <li>表单/接口携带不可预测的 <code>CSRF Token</code>（服务端校验）</li>
-    <li>校验 <code>Origin</code> / <code>Referer</code> 是否来自可信域</li>
-  </ul>
-  <pre>// 响应头示例
-Content-Security-Policy: default-src 'self'; script-src 'self'
-Set-Cookie: session=...; HttpOnly; Secure; SameSite=Lax</pre>
-
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       const nick = document.getElementById("nick");
       document.getElementById("unsafe").onclick = () => {
-      document.getElementById("unsafe-out").innerHTML = "你好，" + nick.value;
+        document.getElementById("unsafe-out").innerHTML = "你好，" + nick.value;
       };
       document.getElementById("safe").onclick = () => {
-      const el = document.getElementById("safe-out");
-      el.textContent = "";
-      el.append(document.createTextNode("你好，" + nick.value));
+        const el = document.getElementById("safe-out");
+        el.textContent = "";
+        el.append(document.createTextNode("你好，" + nick.value));
       };
+
     </script>
     <!-- SCRIPT_END -->
 

@@ -1,17 +1,15 @@
 <!--
-分类: javascript / 06-浏览器API
+  分类: javascript / 06-浏览器API
   主题: 浏览器渲染流程、重排、重绘与性能优化
   要点:
     - 关键渲染路径：HTML -> DOM，CSS -> CSSOM，然后生成 Render Tree
     - Layout 计算位置尺寸，Paint 绘制像素，Composite 合成图层
     - 批量 DOM 操作、读写分离、transform/opacity 动画可以减少性能压力
   面试:
-    - 浏览器渲染流程、重排、重绘与性能优化的核心概念是什么
-    - 浏览器渲染流程、重排、重绘与性能优化在实际项目里怎么用
-    - 浏览器渲染流程、重排、重绘与性能优化有哪些常见坑或易错点
-    - 浏览器渲染流程、重排、重绘与性能优化和相近 API 如何区分选型
-    - 面试中如何简洁讲清 浏览器渲染流程、重排、重绘与性能优化
-
+    - 重排、重绘、合成分别是什么？如何减少？
+    - DocumentFragment 批量插入为何更快？
+    - 为什么 transform/opacity 动画性能更好？
+  相关: requestAnimation, DOM操作
 -->
 
 <!doctype html>
@@ -21,14 +19,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>浏览器渲染与性能</title>
     <style>
-    body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
-    .stage { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
-    .stage span { padding: 8px 10px; border: 1px solid #ddd; background: #f8f8f8; border-radius: 4px; }
-    button { margin: 4px 6px 4px 0; padding: 6px 10px; }
-    #list { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 6px; max-width: 600px; }
-    .item { padding: 8px; background: #eef7ff; border: 1px solid #cddfed; }
-    .box { width: 80px; height: 80px; margin-top: 12px; background: #3d8bfd; transition: transform 240ms ease, opacity 240ms ease; }
-    .box.move { transform: translateX(160px); opacity: 0.65; }
+      body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
+      .stage { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+      .stage span { padding: 8px 10px; border: 1px solid #ddd; background: #f8f8f8; border-radius: 4px; }
+      button { margin: 4px 6px 4px 0; padding: 6px 10px; }
+      #list { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 6px; max-width: 600px; }
+      .item { padding: 8px; background: #eef7ff; border: 1px solid #cddfed; }
+      .box { width: 80px; height: 80px; margin-top: 12px; background: #3d8bfd; transition: transform 240ms ease, opacity 240ms ease; }
+      .box.move { transform: translateX(160px); opacity: 0.65; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -41,90 +39,80 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>关键渲染路径：HTML -&gt; DOM，CSS -&gt; CSSOM，然后生成 Render Tree。</li>
+          <li>关键渲染路径：HTML → DOM，CSS → CSSOM，然后生成 Render Tree。</li>
           <li>Layout 计算位置尺寸，Paint 绘制像素，Composite 合成图层。</li>
+          <li>重排 reflow：几何信息变化；重绘 repaint：视觉样式变化但布局不变；合成 composite：transform/opacity 等。</li>
           <li>批量 DOM 操作、读写分离、transform/opacity 动画可以减少性能压力。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Layout 计算位置尺寸？</strong> Layout 计算位置尺寸，Paint 绘制像素，Composite 合成图层</li>
-          <li><strong>批量 DOM 操作、读写分离、transform/opacity 动画可以减少性？</strong> 批量 DOM 操作、读写分离、transform/opacity 动画可以减少性能压力</li>
-          <li><strong>浏览器渲染流程、重排、重绘与性能优化的核心概念是什么？</strong> 关键渲染路径：HTML -&gt; DOM，CSS -&gt; CSSOM，然后生成 Render Tree；Layout 计算位置尺寸，Paint 绘制像素，Composite 合成图层</li>
+          <li><strong>重排 vs 重绘 vs 合成？</strong> 重排最贵（改布局）；重绘次之（改颜色）；合成最轻（只改 transform/opacity 图层）。</li>
+          <li><strong>如何减少重排？</strong> DocumentFragment 批量插入、避免 layout thrashing（读写分离）、离线修改 DOM。</li>
+          <li><strong>动画优化？</strong> 优先 transform/opacity 触发合成；节流用 requestAnimationFrame。</li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-<div class="stage">
-    <span>HTML</span>
-    <span>DOM</span>
-    <span>CSSOM</span>
-    <span>Render Tree</span>
-    <span>Layout</span>
-    <span>Paint</span>
-    <span>Composite</span>
-  </div>
+    <!-- PAGE_DOM_START -->
+    <div class="stage">
+      <span>HTML</span>
+      <span>DOM</span>
+      <span>CSSOM</span>
+      <span>Render Tree</span>
+      <span>Layout</span>
+      <span>Paint</span>
+      <span>Composite</span>
+    </div>
+    <button id="badBtn">逐个插入 100 个节点</button>
+    <button id="goodBtn">DocumentFragment 批量插入</button>
+    <button id="animateBtn">transform 动画</button>
+    <p id="result">等待操作...</p>
+    <div id="list"></div>
+    <div id="box" class="box"></div>
+    <!-- PAGE_DOM_END -->
 
-  <h2>重排 / 重绘 / 合成</h2>
-  <ul>
-    <li>重排 reflow：元素几何信息变化，例如宽高、位置、字体大小、DOM 增删。</li>
-    <li>重绘 repaint：视觉样式变化但布局不变，例如颜色、背景。</li>
-    <li>合成 composite：图层合成变化，例如 transform、opacity 动画，通常更适合动画。</li>
-  </ul>
-
-  <button id="badBtn">逐个插入 100 个节点</button>
-  <button id="goodBtn">DocumentFragment 批量插入</button>
-  <button id="animateBtn">transform 动画</button>
-  <p id="result">等待操作...</p>
-  <div id="list"></div>
-  <div id="box" class="box"></div>
-
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       const list = document.getElementById("list");
       const result = document.getElementById("result");
       const box = document.getElementById("box");
-      
+
       function createItem(index) {
-      const div = document.createElement("div");
-      div.className = "item";
-      div.textContent = "item " + index;
-      return div;
+        const div = document.createElement("div");
+        div.className = "item";
+        div.textContent = "item " + index;
+        return div;
       }
-      
+
       document.getElementById("badBtn").addEventListener("click", () => {
-      list.innerHTML = "";
-      const start = performance.now();
-      for (let i = 0; i < 100; i++) {
-      list.appendChild(createItem(i));
-      // 读布局属性会强制浏览器把前面的写入同步计算出来，频繁读写混合容易触发性能问题。
-      list.offsetHeight;
-      }
-      result.textContent = "逐个插入耗时：" + (performance.now() - start).toFixed(2) + "ms";
+        list.innerHTML = "";
+        const start = performance.now();
+        for (let i = 0; i < 100; i++) {
+          list.appendChild(createItem(i));
+          list.offsetHeight;
+        }
+        result.textContent = "逐个插入耗时：" + (performance.now() - start).toFixed(2) + "ms";
       });
-      
+
       document.getElementById("goodBtn").addEventListener("click", () => {
-      list.innerHTML = "";
-      const start = performance.now();
-      const fragment = document.createDocumentFragment();
-      for (let i = 0; i < 100; i++) {
-      fragment.appendChild(createItem(i));
-      }
-      list.appendChild(fragment);
-      result.textContent = "批量插入耗时：" + (performance.now() - start).toFixed(2) + "ms";
+        list.innerHTML = "";
+        const start = performance.now();
+        const fragment = document.createDocumentFragment();
+        for (let i = 0; i < 100; i++) {
+          fragment.appendChild(createItem(i));
+        }
+        list.appendChild(fragment);
+        result.textContent = "批量插入耗时：" + (performance.now() - start).toFixed(2) + "ms";
       });
-      
+
       document.getElementById("animateBtn").addEventListener("click", () => {
-      box.classList.toggle("move");
-      result.textContent = "transform/opacity 通常走合成阶段，比频繁改 left/top 更适合动画。";
+        box.classList.toggle("move");
+        result.textContent = "transform/opacity 通常走合成阶段，比频繁改 left/top 更适合动画。";
       });
-      
+
       console.log("动画节流可以继续看 requestAnimation.html。");
+
     </script>
     <!-- SCRIPT_END -->
 
@@ -133,6 +121,8 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+        <a href="./requestAnimation.html">相关 · requestAnimation</a>
+        <a href="./DOM%E6%93%8D%E4%BD%9C.html">相关 · DOM操作</a>
         <a href="./%E5%89%AA%E8%B4%B4%E6%9D%BF.html">← 剪贴板</a>
         <a href="./DOM%E6%93%8D%E4%BD%9C.html">DOM操作 →</a>
       </nav>
@@ -146,5 +136,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

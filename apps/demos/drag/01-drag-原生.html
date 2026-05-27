@@ -21,33 +21,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HTML5 原生拖拽</title>
     <style>
-    /* 列表拖动区 */
-    .drag-list {
-    border: 1px solid #ddd;
-    min-height: 200px;
-    .dragable-ele {
-    color: blue;
-    }
-    .dragable-ele.draging {
-    background-color: red;
-    }
-    }
-    /* 不可放置区 */
-    .drag-not {
-    border: 1px solid #ddd;
-    min-height: 200px;
-    }
-    /* 可放置区 */
-    .drag-over {
-    border: 1px solid #ddd;
-    min-height: 200px;
-    }
-    .drag-over.hightlight {
-    border: 1px solid blue;
-    }
-    #p1 {
-    color: blue;
-    }
+      /* 列表拖动区 */
+      .drag-list {
+        border: 1px solid #ddd;
+        min-height: 200px;
+        .dragable-ele {
+          color: blue;
+        }
+        .dragable-ele.draging {
+          background-color: red;
+        }
+      }
+      /* 不可放置区 */
+      .drag-not {
+        border: 1px solid #ddd;
+        min-height: 200px;
+      }
+      /* 可放置区 */
+      .drag-over {
+        border: 1px solid #ddd;
+        min-height: 200px;
+      }
+      .drag-over.hightlight {
+        border: 1px solid blue;
+      }
+      #p1 {
+        color: blue;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -81,145 +81,138 @@
       在拖动元素（源元素） 和释放区（目标元素） 之间传递数据。它本质上是一个临时数据存储容器，
       在拖动开始时存入数据，在释放时取出数据，实现跨元素的数据传递。
       */
-      
+
       //############## for 全局监听 ##############
       // window.addEventListener("DOMContentLoaded", () => {
-      //   // Get the element by id
-      //   const element = document.getElementById("p1");
-      
-      //   //添加全局 拖动开始 事件处理函数
-      //   element.addEventListener("dragstart", dragstart_handler);
-      
-      //   //添加全局 拖动结束 事件处理函数
-      //   element.addEventListener("dragend", dragEnd_handler);
-      // });
-      
-      //############## for 拖放元素区域 ##############
-      //拖动开始 dragstart (针对拖动元素)
-      function dragstart_handler(ev) {
-      console.log("dragstart....");
-      
-      //设置拖放数据 => 在源元素中存储要传递的数据
-      /*
-      setData(format, data) 和 getData(format) 的 format 必须一致，否则无法获取数据。
-      常用格式：text/plain（文本）、text/html（HTML 片段）、text/uri-list（链接），也可自定义格式（如 application/my-data）。
-      dataTransfer 只能存储字符串数据。如果需要传递对象，需先用 JSON.stringify() 序列化，接收时用 JSON.parse() 解析：
-      */
-      
-      // Add the target element's id to the data transfer object
-      ev.dataTransfer.setData("text/plain", ev.target.id);
-      
-      // ev.dataTransfer.setData("text/plain", ev.target.innerText);
-      ev.dataTransfer.setData("text/html", ev.target.outerHTML);
-      ev.dataTransfer.setData("text/uri-list", ev.target.ownerDocument.location.href);
-      
-      //实际上就是key value 存储
-      ev.dataTransfer.setData("abcdef", "abcdef data....");
-      
-      //重点: 设置拖动效果为复制
-      ev.dataTransfer.effectAllowed = "copy";
-      
-      ev.target.classList.add("draging");
-      }
-      
-      //拖动结束 dragend (针对拖动元素)
-      //dragend 事件在拖放操作结束时触发（通过释放鼠标按钮或单击 escape 键）
-      function dragEnd_handler(ev) {
-      console.log("dragend....");
-      //拖动结束: 清除视觉效果
-      ev.target.classList.remove("draging");
-      }
-      
-      //############## for 拖放放置区 ##############
-      //针对放置区: 进入释放区
-      function dragenter_handler(ev) {
-      console.log("dragEnter222...");
-      }
-      //针对放置区: 离开释放区
-      function dragleave_handler(ev) {
-      console.log("dragLeave333...");
-      
-      ev.target.classList.remove("hightlight");
-      }
-      //针对放置区: 在释放区上空盘旋(一直拖着元素不释放),拖动元素经过目标区
-      //dragover 允许目标元素接收拖动的数据
-      function dragover_handler(ev) {
-      // console.log("dragover...");
-      //阻止默认行为
-      //关键: 允许目标元素接收拖动
-      //目标元素默认不允许接收拖动，必须在 dragover 事件中调用 e.preventDefault() 才能触发 drop 事件。
-      ev.preventDefault();
-      //设置 dropEffect
-      ev.dataTransfer.dropEffect = "copy";
-      
-      ev.target.classList.add("hightlight"); //添加视觉反馈
-      }
-      //针对放置区: 在放置区释放拖放元素(就是松开鼠标)
-      function drop_handler(ev) {
-      console.log("drop...");
-      
-      ev.preventDefault();
-      
-      ev.target.classList.remove("hightlight"); //移除视觉效果
-      
-      //在目标元素中取出拖动时存储的数据
-      var dragEleId = ev.dataTransfer.getData("text/plain");
-      
-      // var abcdef = ev.dataTransfer.getData("abcdef");
-      // console.log("abcdef111111,", abcdef);
-      
-      // var html = ev.dataTransfer.getData("text/html");
-      // console.log("html>>>,", html);
-      
-      // var uriList = ev.dataTransfer.getData("text/uri-list");
-      // console.log("uriList>>>,", uriList);
-      
-      var originalItem = document.getElementById(dragEleId);
-      const clonedItem = originalItem.cloneNode(true);
-      //修改副本的样式和属性
-      clonedItem.classList.remove("dragable-ele")
-      clonedItem.classList.remove("draging")
-      clonedItem.classList.add("cloned-ele")
-      clonedItem.removeAttribute('id')
-      clonedItem.removeAttribute('draggable')
-      clonedItem.removeAttribute('ondragstart')
-      clonedItem.removeAttribute('ondragend')
-      // ev.target 可能是放置区里的子元素（如 <p>），用 currentTarget 确保 append 到容器
-      //       使用 currentTarget（监听者）才能保证副本一定挂到容器
-      ev.currentTarget.appendChild(clonedItem);
-      }
+        //   // Get the element by id
+        //   const element = document.getElementById("p1");
+
+        //   //添加全局 拖动开始 事件处理函数
+        //   element.addEventListener("dragstart", dragstart_handler);
+
+        //   //添加全局 拖动结束 事件处理函数
+        //   element.addEventListener("dragend", dragEnd_handler);
+        // });
+
+        //############## for 拖放元素区域 ##############
+        //拖动开始 dragstart (针对拖动元素)
+        function dragstart_handler(ev) {
+          console.log("dragstart....");
+
+          //设置拖放数据 => 在源元素中存储要传递的数据
+          /*
+          setData(format, data) 和 getData(format) 的 format 必须一致，否则无法获取数据。
+          常用格式：text/plain（文本）、text/html（HTML 片段）、text/uri-list（链接），也可自定义格式（如 application/my-data）。
+          dataTransfer 只能存储字符串数据。如果需要传递对象，需先用 JSON.stringify() 序列化，接收时用 JSON.parse() 解析：
+          */
+
+          // Add the target element's id to the data transfer object
+          ev.dataTransfer.setData("text/plain", ev.target.id);
+
+          // ev.dataTransfer.setData("text/plain", ev.target.innerText);
+          ev.dataTransfer.setData("text/html", ev.target.outerHTML);
+          ev.dataTransfer.setData("text/uri-list", ev.target.ownerDocument.location.href);
+
+          //实际上就是key value 存储
+          ev.dataTransfer.setData("abcdef", "abcdef data....");
+
+          //重点: 设置拖动效果为复制
+          ev.dataTransfer.effectAllowed = "copy";
+
+          ev.target.classList.add("draging");
+        }
+
+        //拖动结束 dragend (针对拖动元素)
+        //dragend 事件在拖放操作结束时触发（通过释放鼠标按钮或单击 escape 键）
+        function dragEnd_handler(ev) {
+          console.log("dragend....");
+          //拖动结束: 清除视觉效果
+          ev.target.classList.remove("draging");
+        }
+
+        //############## for 拖放放置区 ##############
+        //针对放置区: 进入释放区
+        function dragenter_handler(ev) {
+          console.log("dragEnter222...");
+        }
+        //针对放置区: 离开释放区
+        function dragleave_handler(ev) {
+          console.log("dragLeave333...");
+
+          ev.target.classList.remove("hightlight");
+        }
+        //针对放置区: 在释放区上空盘旋(一直拖着元素不释放),拖动元素经过目标区
+        //dragover 允许目标元素接收拖动的数据
+        function dragover_handler(ev) {
+          // console.log("dragover...");
+          //阻止默认行为
+          //关键: 允许目标元素接收拖动
+          //目标元素默认不允许接收拖动，必须在 dragover 事件中调用 e.preventDefault() 才能触发 drop 事件。
+          ev.preventDefault();
+          //设置 dropEffect
+          ev.dataTransfer.dropEffect = "copy";
+
+          ev.target.classList.add("hightlight"); //添加视觉反馈
+        }
+        //针对放置区: 在放置区释放拖放元素(就是松开鼠标)
+        function drop_handler(ev) {
+          console.log("drop...");
+
+          ev.preventDefault();
+
+          ev.target.classList.remove("hightlight"); //移除视觉效果
+
+          //在目标元素中取出拖动时存储的数据
+          var dragEleId = ev.dataTransfer.getData("text/plain");
+
+          // var abcdef = ev.dataTransfer.getData("abcdef");
+          // console.log("abcdef111111,", abcdef);
+
+          // var html = ev.dataTransfer.getData("text/html");
+          // console.log("html>>>,", html);
+
+          // var uriList = ev.dataTransfer.getData("text/uri-list");
+          // console.log("uriList>>>,", uriList);
+
+          var originalItem = document.getElementById(dragEleId);
+          const clonedItem = originalItem.cloneNode(true);
+          //修改副本的样式和属性
+          clonedItem.classList.remove("dragable-ele")
+          clonedItem.classList.remove("draging")
+          clonedItem.classList.add("cloned-ele")
+          clonedItem.removeAttribute('id')
+          clonedItem.removeAttribute('draggable')
+          clonedItem.removeAttribute('ondragstart')
+          clonedItem.removeAttribute('ondragend')
+          // ev.target 可能是放置区里的子元素（如 <p>），用 currentTarget 确保 append 到容器
+          //       使用 currentTarget（监听者）才能保证副本一定挂到容器
+          ev.currentTarget.appendChild(clonedItem);
+        }
+
     </script>
     <!-- SCRIPT_END -->
-    
-    
-    
-    
-    
 
-<div id="app">
+    <!-- PAGE_DOM_START -->
+    <div id="app">
       <p>不可拖动元素</p>
-
       <div class="drag-list">
         <!-- 让一个元素可被拖拽 添加 draggable="true"
-         dragstart 事件在用户开始拖动元素或被选择的文本时调用。
+        dragstart 事件在用户开始拖动元素或被选择的文本时调用。
         -->
         <p class="dragable-ele" id="p1" draggable="true" ondragstart="dragstart_handler(event)" ondragend="dragEnd_handler(event)">可拖动元素111</p>
         <p>不可拖动元素222</p>
         <!-- <p class="dragable-ele" draggable="true">可拖动元素333</p> -->
       </div>
-
       <!-- 1111111111111 非放置区 -->
       <p>当拖拽一个项目到 HTML 元素中时，浏览器默认不会有任何响应</p>
       <div class="drag-not">
         <p>我不是放置区1111</p>
         <p>我不是放置区2222</p>
       </div>
-
-      <!-- 
+      <!--
       dragover 该事件在“放置目标”上触发
       dragover 事件在可拖动的元素或者被选择的文本被拖进一个有效的放置目标上方时（每几百毫秒）触发。
-       
-      drop 事件在元素或者文本选择被放置到有效的 放置目标(拖动元素释放区) 
+      drop 事件在元素或者文本选择被放置到有效的 放置目标(拖动元素释放区)
       为了确保 drop事件始终按预期触发，应该在处理 dragover事件的代码中始终包含 e.preventDefault()调用
       -->
       <!-- 2222222222222 放置区 -->
@@ -231,11 +224,12 @@
         ondragover="dragover_handler(event)"
         ondragenter="dragenter_handler(event)"
         ondragleave="dragleave_handler(event)"
-      >
+        >
         <p>我是放置区已有元素 1111</p>
         <p>我是放置区已有元素 2222</p>
       </div>
     </div>
+    <!-- PAGE_DOM_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

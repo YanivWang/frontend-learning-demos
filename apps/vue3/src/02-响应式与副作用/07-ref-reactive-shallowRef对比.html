@@ -23,10 +23,10 @@
     <title>Vue3 · ref / reactive / shallowRef</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-    body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-    button { margin: 4px 8px 4px 0; padding: 6px 12px; }
-    .panel { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 16px; max-width: 760px; }
-    h2 { margin-top: 0; font-size: 1.1rem; }
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin: 4px 8px 4px 0; padding: 6px 12px; }
+      .panel { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 16px; max-width: 760px; }
+      h2 { margin-top: 0; font-size: 1.1rem; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -55,22 +55,19 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="app">
+    <!-- PAGE_DOM_START -->
+    <div id="app">
       <h1>ref / shallowRef / reactive 对比</h1>
-
-
       <section class="panel">
         <h2>ref（模板自动解包，JS 需 .value）</h2>
         <p>message：{{ message }}</p>
         <button @click="changeMsgFn">修改 message</button>
       </section>
-
       <section class="panel">
         <h2>ref 嵌套对象（深层响应）</h2>
         <p>objRef.form.name：{{ objRef.form.name }}</p>
         <button @click="objRef.form.name = objRef.form.name ? '' : 'Alice'">切换 name</button>
       </section>
-
       <section class="panel">
         <h2>shallowRef（只追踪 .value 整体替换）</h2>
         <p>shallowObjRef.form.name：{{ shallowObjRef.form.name }}</p>
@@ -78,80 +75,76 @@
         <button @click="replaceShallowObjRef">整体替换 .value（会更新视图）</button>
         <p>{{ shallowNote }}</p>
       </section>
-
       <section class="panel">
         <h2>reactive（Proxy 对象，无 .value）</h2>
         <p>reactiveObj.form.name：{{ reactiveObj.form.name }}</p>
         <button @click="reactiveObj.form.name = reactiveObj.form.name ? '' : 'Bob'">切换 name</button>
       </section>
     </div>
+    <!-- PAGE_DOM_END -->
 
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       const { createApp, ref, shallowRef, reactive } = Vue;
-      
+
       const app = createApp({
-      setup() {
-      const objRef = ref({
-      form: { name: "", age: 0, address: {} },
-      array: [1, 2, 3, 4],
+        setup() {
+          const objRef = ref({
+            form: { name: "", age: 0, address: {} },
+            array: [1, 2, 3, 4],
+          });
+          console.log("objRef,", objRef);
+
+          const message = ref("Hello vue!");
+          console.log("message,", message);
+
+          const shallowObjRef = shallowRef({
+            form: { name: "", age: 0, address: {} },
+            array: [1, 2, 3, 4],
+          });
+          console.log("shallowObjRef,", shallowObjRef);
+
+          const reactiveObj = reactive({
+            form: { name: "", age: 0, address: {} },
+            array: [1, 2, 3, 4],
+          });
+          console.log("reactiveObj,", reactiveObj);
+
+          const shallowNote = ref("改嵌套字段不会触发 shallowRef 视图更新；整体替换 .value 才会。");
+
+          const changeMsgFn = () => {
+            message.value = "I am change to HI vue!";
+            console.log("message,", message);
+          };
+
+          function mutateShallowNested() {
+            shallowObjRef.value.form.name = shallowObjRef.value.form.name ? "" : "Charlie";
+            shallowNote.value = "已改嵌套字段，若视图未变，说明 shallowRef 未追踪内部变更。";
+          }
+
+          function replaceShallowObjRef() {
+            shallowObjRef.value = {
+              form: { name: "整体替换", age: 0, address: {} },
+              array: [1, 2, 3, 4],
+            };
+            shallowNote.value = "已整体替换 .value，视图应同步更新。";
+          }
+
+          return {
+            message,
+            objRef,
+            shallowObjRef,
+            reactiveObj,
+            shallowNote,
+            changeMsgFn,
+            mutateShallowNested,
+            replaceShallowObjRef,
+          };
+        },
       });
-      console.log("objRef,", objRef);
-      
-      const message = ref("Hello vue!");
-      console.log("message,", message);
-      
-      const shallowObjRef = shallowRef({
-      form: { name: "", age: 0, address: {} },
-      array: [1, 2, 3, 4],
-      });
-      console.log("shallowObjRef,", shallowObjRef);
-      
-      const reactiveObj = reactive({
-      form: { name: "", age: 0, address: {} },
-      array: [1, 2, 3, 4],
-      });
-      console.log("reactiveObj,", reactiveObj);
-      
-      const shallowNote = ref("改嵌套字段不会触发 shallowRef 视图更新；整体替换 .value 才会。");
-      
-      const changeMsgFn = () => {
-      message.value = "I am change to HI vue!";
-      console.log("message,", message);
-      };
-      
-      function mutateShallowNested() {
-      shallowObjRef.value.form.name = shallowObjRef.value.form.name ? "" : "Charlie";
-      shallowNote.value = "已改嵌套字段，若视图未变，说明 shallowRef 未追踪内部变更。";
-      }
-      
-      function replaceShallowObjRef() {
-      shallowObjRef.value = {
-      form: { name: "整体替换", age: 0, address: {} },
-      array: [1, 2, 3, 4],
-      };
-      shallowNote.value = "已整体替换 .value，视图应同步更新。";
-      }
-      
-      return {
-      message,
-      objRef,
-      shallowObjRef,
-      reactiveObj,
-      shallowNote,
-      changeMsgFn,
-      mutateShallowNested,
-      replaceShallowObjRef,
-      };
-      },
-      });
-      
+
       app.mount("#app");
+
     </script>
     <!-- SCRIPT_END -->
 

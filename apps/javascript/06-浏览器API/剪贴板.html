@@ -21,9 +21,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>剪贴板复制</title>
     <style>
-    body { font-family: system-ui, sans-serif; margin: 1.5rem; }
-    button { padding: 6px 12px; margin-right: 8px; }
-    #target { padding: 10px; background: #f5f5f5; border-radius: 4px; }
+      body { font-family: system-ui, sans-serif; margin: 1.5rem; }
+      button { padding: 6px 12px; margin-right: 8px; }
+      #target { padding: 10px; background: #f5f5f5; border-radius: 4px; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -50,54 +50,52 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="target">我是要被复制的内容（<span>包含嵌套 span</span>），文本可自定义。</div>
-  <p>
-    <button id="legacy">① 兼容方式 · document.execCommand('copy')</button>
-    <button id="modern">② 现代方式 · navigator.clipboard</button>
-  </p>
-  <p id="hint" style="color:#0969da;"></p>
+    <!-- PAGE_DOM_START -->
+    <div id="target">我是要被复制的内容（<span>包含嵌套 span</span>），文本可自定义。</div>
+    <p>
+      <button id="legacy">① 兼容方式 · document.execCommand('copy')</button>
+      <button id="modern">② 现代方式 · navigator.clipboard</button>
+    </p>
+    <p id="hint" style="color:#0969da;"></p>
+    <!-- PAGE_DOM_END -->
 
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       const target = document.getElementById("target");
       const hint = document.getElementById("hint");
-      
+
       // ============ ① 老旧但兼容性最好：execCommand ============
       // 原理：把内容塞进一个 <input>，selectionRange + 触发浏览器复制命令
       document.getElementById("legacy").addEventListener("click", () => {
-      const text = target.textContent;
-      const input = document.createElement("input");
-      input.setAttribute("readonly", "readonly");
-      input.setAttribute("value", text);
-      // 移出可视区，避免影响布局
-      input.style.cssText = "position:fixed;top:-1000px;";
-      document.body.appendChild(input);
-      input.setSelectionRange(0, 9999);
-      input.select();
-      try {
-      const ok = document.execCommand("copy");
-      hint.textContent = ok ? "复制成功（execCommand）" : "复制失败";
-      } catch (e) {
-      hint.textContent = "复制失败：" + e.message;
-      }
-      document.body.removeChild(input);
+        const text = target.textContent;
+        const input = document.createElement("input");
+        input.setAttribute("readonly", "readonly");
+        input.setAttribute("value", text);
+        // 移出可视区，避免影响布局
+        input.style.cssText = "position:fixed;top:-1000px;";
+        document.body.appendChild(input);
+        input.setSelectionRange(0, 9999);
+        input.select();
+        try {
+          const ok = document.execCommand("copy");
+          hint.textContent = ok ? "复制成功（execCommand）" : "复制失败";
+        } catch (e) {
+          hint.textContent = "复制失败：" + e.message;
+        }
+        document.body.removeChild(input);
       });
-      
+
       // ============ ② 现代异步 API：navigator.clipboard ============
       // 需要 HTTPS / localhost + 用户交互内调用
       document.getElementById("modern").addEventListener("click", async () => {
-      try {
-      await navigator.clipboard.writeText(target.textContent);
-      hint.textContent = "复制成功（clipboard）";
-      } catch (e) {
-      hint.textContent = "复制失败：" + e.message;
-      }
+        try {
+          await navigator.clipboard.writeText(target.textContent);
+          hint.textContent = "复制成功（clipboard）";
+        } catch (e) {
+          hint.textContent = "复制失败：" + e.message;
+        }
       });
+
     </script>
     <!-- SCRIPT_END -->
 

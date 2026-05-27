@@ -51,65 +51,64 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="root"></div>
+    <!-- PAGE_DOM_START -->
+    <div id="root"></div>
+    <!-- PAGE_DOM_END -->
 
-    
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script type="text/babel">
       const { useEffect, useRef, useState } = React;
       const { flushSync } = ReactDOM;
-      
+
       function App() {
-      const [count, setCount] = useState(0);
-      const [flag, setFlag] = useState(false);
-      const [commitLog, setCommitLog] = useState([]);
-      const renderCount = useRef(0);
-      
-      renderCount.current += 1;
-      
-      useEffect(() => {
-      setCommitLog(prev => [
-      ...prev.slice(-5),
-      "effect 执行: count=" + count + ", flag=" + String(flag)
-      ]);
-      }, [count, flag]);
-      
-      function batchInTimeout() {
-      setTimeout(() => {
-      console.log("setTimeout 内连续两次 setState（应批处理为一次渲染）");
-      setCount(prev => prev + 1);
-      setFlag(prev => !prev);
-      }, 0);
-      }
-      
-      function noBatchWithFlushSync() {
-      flushSync(() => setCount(prev => prev + 1));
-      flushSync(() => setFlag(prev => !prev));
-      }
-      
-      return (
-      <section>
-      <h1>React 18 自动批处理</h1>
-      
-      <p>count: {count}，flag: {String(flag)}</p>
-      <p>当前 render 次数: {renderCount.current}</p>
-      <button onClick={batchInTimeout}>setTimeout 内批处理更新</button>
-      <button onClick={noBatchWithFlushSync}>flushSync 强制两次提交</button>
-      <p>commit 后 effect 日志（批处理时一次点击只应追加一条）:</p>
-      <ul>
-      {commitLog.map((item, index) => (
-      <li key={index}>{item}</li>
-      ))}
-      </ul>
-      <p>面试回答: React 18 自动批处理覆盖更多场景；需要同步 DOM 时用 flushSync。</p>
-      </section>
+        const [count, setCount] = useState(0);
+        const [flag, setFlag] = useState(false);
+        const [commitLog, setCommitLog] = useState([]);
+        const renderCount = useRef(0);
+
+        renderCount.current += 1;
+
+        useEffect(() => {
+          setCommitLog(prev => [
+            ...prev.slice(-5),
+            "effect 执行: count=" + count + ", flag=" + String(flag)
+          ]);
+        }, [count, flag]);
+
+        function batchInTimeout() {
+          setTimeout(() => {
+            console.log("setTimeout 内连续两次 setState（应批处理为一次渲染）");
+            setCount(prev => prev + 1);
+            setFlag(prev => !prev);
+          }, 0);
+        }
+
+        function noBatchWithFlushSync() {
+          flushSync(() => setCount(prev => prev + 1));
+          flushSync(() => setFlag(prev => !prev));
+        }
+
+        return (
+        <section>
+          <h1>React 18 自动批处理</h1>
+
+          <p>count: {count}，flag: {String(flag)}</p>
+          <p>当前 render 次数: {renderCount.current}</p>
+          <button onClick={batchInTimeout}>setTimeout 内批处理更新</button>
+          <button onClick={noBatchWithFlushSync}>flushSync 强制两次提交</button>
+          <p>commit 后 effect 日志（批处理时一次点击只应追加一条）:</p>
+          <ul>
+            {commitLog.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+          <p>面试回答: React 18 自动批处理覆盖更多场景；需要同步 DOM 时用 flushSync。</p>
+        </section>
       );
       }
-      
+
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
     </script>
     <!-- SCRIPT_END -->
 

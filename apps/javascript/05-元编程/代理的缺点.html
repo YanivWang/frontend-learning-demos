@@ -49,31 +49,32 @@
     <!-- SCRIPT_START -->
     <script>
       const target = new Date();
-      
+
       const proxy = new Proxy(target, {});
       console.log(proxy instanceof Date); // true
-      
+
       target.getDate();
       console.log("target.getDate():", target.getDate());
-      
+
       try {
-      proxy.getDate();
+        proxy.getDate();
       } catch (e) {
-      console.log("空 handler 代理调用 getDate 报错:", e.message);
+        console.log("空 handler 代理调用 getDate 报错:", e.message);
       }
-      
+
       // 修复：get 拦截里对函数显式 bind 到原对象
       const proxyFixed = new Proxy(target, {
-      get(obj, prop) {
-      const value = Reflect.get(obj, prop, obj);
-      if (typeof value === "function") {
-      return value.bind(obj);
-      }
-      return value;
-      },
+        get(obj, prop) {
+          const value = Reflect.get(obj, prop, obj);
+          if (typeof value === "function") {
+            return value.bind(obj);
+          }
+          return value;
+        },
       });
-      
+
       console.log("修复后 proxyFixed.getDate():", proxyFixed.getDate());
+
     </script>
     <!-- SCRIPT_END -->
 

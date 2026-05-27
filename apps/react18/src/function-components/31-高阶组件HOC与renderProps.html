@@ -50,90 +50,89 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="root"></div>
+    <!-- PAGE_DOM_START -->
+    <div id="root"></div>
+    <!-- PAGE_DOM_END -->
 
-    
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script type="text/babel">
       const { useEffect, useState } = React;
-      
+
       function withLoading(WrappedComponent) {
-      function WithLoading({ loading, ...rest }) {
-      if (loading) return <p>加载中...</p>;
-      return <WrappedComponent {...rest} />;
+        function WithLoading({ loading, ...rest }) {
+          if (loading) return <p>加载中...</p>;
+          return <WrappedComponent {...rest} />;
+        }
+        WithLoading.displayName = `WithLoading(${WrappedComponent.displayName || WrappedComponent.name || "Component"})`;
+        return WithLoading;
       }
-      WithLoading.displayName = `WithLoading(${WrappedComponent.displayName || WrappedComponent.name || "Component"})`;
-      return WithLoading;
-      }
-      
+
       function MouseTracker({ render }) {
-      const [pos, setPos] = useState({ x: 0, y: 0 });
-      
-      useEffect(() => {
-      function move(e) {
-      setPos({ x: e.clientX, y: e.clientY });
+        const [pos, setPos] = useState({ x: 0, y: 0 });
+
+        useEffect(() => {
+          function move(e) {
+            setPos({ x: e.clientX, y: e.clientY });
+          }
+          window.addEventListener("mousemove", move);
+          return () => window.removeEventListener("mousemove", move);
+        }, []);
+
+        return render(pos);
       }
-      window.addEventListener("mousemove", move);
-      return () => window.removeEventListener("mousemove", move);
-      }, []);
-      
-      return render(pos);
-      }
-      
+
       function useMousePosition() {
-      const [pos, setPos] = useState({ x: 0, y: 0 });
-      useEffect(() => {
-      function move(e) {
-      setPos({ x: e.clientX, y: e.clientY });
+        const [pos, setPos] = useState({ x: 0, y: 0 });
+        useEffect(() => {
+          function move(e) {
+            setPos({ x: e.clientX, y: e.clientY });
+          }
+          window.addEventListener("mousemove", move);
+          return () => window.removeEventListener("mousemove", move);
+        }, []);
+        return pos;
       }
-      window.addEventListener("mousemove", move);
-      return () => window.removeEventListener("mousemove", move);
-      }, []);
-      return pos;
-      }
-      
+
       function UserProfile({ user }) {
-      return (
-      <div>
-      <strong>{user.name}</strong>
-      <span> — {user.email}</span>
-      </div>
+        return (
+        <div>
+          <strong>{user.name}</strong>
+          <span> — {user.email}</span>
+        </div>
       );
       }
-      
+
       const EnhancedProfile = withLoading(UserProfile);
-      
+
       function App() {
-      const [loading, setLoading] = useState(true);
-      const [user, setUser] = useState(null);
-      const hookPos = useMousePosition();
-      
-      useEffect(() => {
-      const timer = setTimeout(() => {
-      setLoading(false);
-      setUser({ name: "Alice", email: "alice@example.com" });
-      }, 1200);
-      return () => clearTimeout(timer);
-      }, []);
-      
-      return (
-      <section>
-      <h1>HOC 与 render props</h1>
-      
-      <EnhancedProfile loading={loading} user={user} />
-      <MouseTracker render={(pos) => (
-      <p>render props 鼠标: x={pos.x}, y={pos.y}</p>
-      )} />
-      <p>自定义 Hook 鼠标: x={hookPos.x}, y={hookPos.y}</p>
-      <p>面试回答: HOC/render props 是逻辑复用模式；新代码优先自定义 Hook，但需理解 HOC 原理。</p>
-      </section>
-      );
+        const [loading, setLoading] = useState(true);
+        const [user, setUser] = useState(null);
+        const hookPos = useMousePosition();
+
+        useEffect(() => {
+          const timer = setTimeout(() => {
+            setLoading(false);
+            setUser({ name: "Alice", email: "alice@example.com" });
+          }, 1200);
+          return () => clearTimeout(timer);
+        }, []);
+
+        return (
+        <section>
+          <h1>HOC 与 render props</h1>
+
+          <EnhancedProfile loading={loading} user={user} />
+          <MouseTracker render={(pos) => (
+              <p>render props 鼠标: x={pos.x}, y={pos.y}</p>
+            )} />
+            <p>自定义 Hook 鼠标: x={hookPos.x}, y={hookPos.y}</p>
+            <p>面试回答: HOC/render props 是逻辑复用模式；新代码优先自定义 Hook，但需理解 HOC 原理。</p>
+          </section>
+        );
       }
-      
+
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
     </script>
     <!-- SCRIPT_END -->
 

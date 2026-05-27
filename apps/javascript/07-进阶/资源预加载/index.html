@@ -22,9 +22,9 @@
     <title>资源预加载 · ResLoader</title>
     <script src="lib/ResLoader.js"></script>
     <style>
-    body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
-    progress { width: 320px; height: 14px; }
-    img { width: 80px; height: 80px; margin-right: 6px; object-fit: cover; border-radius: 4px; }
+      body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
+      progress { width: 320px; height: 14px; }
+      img { width: 80px; height: 80px; margin-right: 6px; object-fit: cover; border-radius: 4px; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -51,48 +51,44 @@
     </section>
     <!-- NOTES_END -->
 
-<p>核心思路：<code>new Image()</code> / <code>new Audio()</code> 离屏触发下载，浏览器自动缓存，加载完成后业务侧再使用相同 URL 即可走缓存。</p>
+    <!-- PAGE_DOM_START -->
+    <p>核心思路：<code>new Image()</code> / <code>new Audio()</code> 离屏触发下载，浏览器自动缓存，加载完成后业务侧再使用相同 URL 即可走缓存。</p>
+    <progress id="bar" max="100" value="0"></progress>
+    <p id="msg">准备中…</p>
+    <div id="gallery"></div>
+    <!-- PAGE_DOM_END -->
 
-  <progress id="bar" max="100" value="0"></progress>
-  <p id="msg">准备中…</p>
-
-  <div id="gallery"></div>
-
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       const loader = new ResLoader({
-      baseUrl: "",
-      resources: [
-      "https://picsum.photos/id/237/200/200",
-      "https://picsum.photos/id/238/200/200",
-      "https://picsum.photos/id/239/200/200",
-      "https://picsum.photos/id/240/200/200",
-      ],
-      onStart(total) {
-      document.getElementById("msg").textContent = `开始加载 ${total} 张...`;
-      },
-      onProgress(current, total) {
-      const percent = Math.round((current / total) * 100);
-      document.getElementById("bar").value = percent;
-      document.getElementById("msg").textContent = `加载中：${current}/${total}（${percent}%）`;
-      },
-      onComplete(total) {
-      document.getElementById("msg").textContent = `✅ 全部 ${total} 张加载完成，开始渲染`;
-      const gallery = document.getElementById("gallery");
-      loader.option.resources.forEach((url) => {
-      const img = new Image();
-      img.src = url; // 已被预加载，直接走缓存
-      gallery.appendChild(img);
+        baseUrl: "",
+        resources: [
+          "https://picsum.photos/id/237/200/200",
+          "https://picsum.photos/id/238/200/200",
+          "https://picsum.photos/id/239/200/200",
+          "https://picsum.photos/id/240/200/200",
+        ],
+        onStart(total) {
+          document.getElementById("msg").textContent = `开始加载 ${total} 张...`;
+        },
+        onProgress(current, total) {
+          const percent = Math.round((current / total) * 100);
+          document.getElementById("bar").value = percent;
+          document.getElementById("msg").textContent = `加载中：${current}/${total}（${percent}%）`;
+        },
+        onComplete(total) {
+          document.getElementById("msg").textContent = `✅ 全部 ${total} 张加载完成，开始渲染`;
+          const gallery = document.getElementById("gallery");
+          loader.option.resources.forEach((url) => {
+            const img = new Image();
+            img.src = url; // 已被预加载，直接走缓存
+            gallery.appendChild(img);
+          });
+        },
       });
-      },
-      });
-      
+
       loader.start();
+
     </script>
     <!-- SCRIPT_END -->
 

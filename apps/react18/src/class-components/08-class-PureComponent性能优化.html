@@ -50,84 +50,83 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="root"></div>
+    <!-- PAGE_DOM_START -->
+    <div id="root"></div>
+    <!-- PAGE_DOM_END -->
 
-    
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script type="text/babel">
       class NormalRow extends React.Component {
-      render() {
-      console.log("NormalRow render:", this.props.user.name);
-      return <li>{this.props.user.name} - {this.props.user.score}</li>;
+        render() {
+          console.log("NormalRow render:", this.props.user.name);
+          return <li>{this.props.user.name} - {this.props.user.score}</li>;
+        }
       }
-      }
-      
+
       class PureRow extends React.PureComponent {
-      render() {
-      console.log("PureRow render:", this.props.user.name);
-      return <li>{this.props.user.name} - {this.props.user.score}</li>;
+        render() {
+          console.log("PureRow render:", this.props.user.name);
+          return <li>{this.props.user.name} - {this.props.user.score}</li>;
+        }
       }
-      }
-      
+
       class ManualRow extends React.Component {
-      shouldComponentUpdate(nextProps) {
-      return nextProps.user !== this.props.user;
+        shouldComponentUpdate(nextProps) {
+          return nextProps.user !== this.props.user;
+        }
+
+        render() {
+          console.log("ManualRow render:", this.props.user.name);
+          return <li>{this.props.user.name} - {this.props.user.score}</li>;
+        }
       }
-      
-      render() {
-      console.log("ManualRow render:", this.props.user.name);
-      return <li>{this.props.user.name} - {this.props.user.score}</li>;
-      }
-      }
-      
+
       class App extends React.Component {
-      constructor(props) {
-      super(props);
-      this.state = {
-      users: [
-      { id: 1, name: "Alice", score: 80 },
-      { id: 2, name: "Bob", score: 90 }
-      ],
-      theme: "light"
-      };
+        constructor(props) {
+          super(props);
+          this.state = {
+            users: [
+              { id: 1, name: "Alice", score: 80 },
+              { id: 2, name: "Bob", score: 90 }
+            ],
+            theme: "light"
+          };
+        }
+
+        addScore = (id) => {
+          this.setState({
+            users: this.state.users.map(user => {
+              if (user.id !== id) return user;
+              return { ...user, score: user.score + 1 };
+            })
+          });
+        };
+
+        toggleTheme = () => {
+          this.setState({ theme: this.state.theme === "light" ? "dark" : "light" });
+        };
+
+        render() {
+          return (
+          <section>
+            <h1>PureComponent 性能优化</h1>
+
+            <button onClick={this.toggleTheme}>切换无关 state: {this.state.theme}</button>
+            <button onClick={() => this.addScore(1)}>Alice +1</button>
+            <h2>普通 Component（父 state 变就 render）</h2>
+            <ul>{this.state.users.map(u => <NormalRow key={u.id} user={u} />)}</ul>
+            <h2>PureComponent（props 浅相等则跳过）</h2>
+            <ul>{this.state.users.map(u => <PureRow key={u.id} user={u} />)}</ul>
+            <h2>手动 shouldComponentUpdate</h2>
+            <ul>{this.state.users.map(u => <ManualRow key={u.id} user={u} />)}</ul>
+            <p>面试回答: PureComponent 做 props/state 浅比较；不可变更新是配合优化的前提。</p>
+          </section>
+        );
       }
-      
-      addScore = (id) => {
-      this.setState({
-      users: this.state.users.map(user => {
-      if (user.id !== id) return user;
-      return { ...user, score: user.score + 1 };
-      })
-      });
-      };
-      
-      toggleTheme = () => {
-      this.setState({ theme: this.state.theme === "light" ? "dark" : "light" });
-      };
-      
-      render() {
-      return (
-      <section>
-      <h1>PureComponent 性能优化</h1>
-      
-      <button onClick={this.toggleTheme}>切换无关 state: {this.state.theme}</button>
-      <button onClick={() => this.addScore(1)}>Alice +1</button>
-      <h2>普通 Component（父 state 变就 render）</h2>
-      <ul>{this.state.users.map(u => <NormalRow key={u.id} user={u} />)}</ul>
-      <h2>PureComponent（props 浅相等则跳过）</h2>
-      <ul>{this.state.users.map(u => <PureRow key={u.id} user={u} />)}</ul>
-      <h2>手动 shouldComponentUpdate</h2>
-      <ul>{this.state.users.map(u => <ManualRow key={u.id} user={u} />)}</ul>
-      <p>面试回答: PureComponent 做 props/state 浅比较；不可变更新是配合优化的前提。</p>
-      </section>
-      );
       }
-      }
-      
+
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
     </script>
     <!-- SCRIPT_END -->
 

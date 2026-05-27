@@ -49,48 +49,49 @@
     <!-- SCRIPT_START -->
     <script>
       function timeOut(ms = 300) {
-      return new Promise(function (resolve) {
-      setTimeout(resolve, ms);
-      });
+        return new Promise(function (resolve) {
+          setTimeout(resolve, ms);
+        });
       }
-      
+
       // 简易执行器：把 yield 的值当作 Promise，resolve 后再 next
       function runGenerator(genFn) {
-      const gen = genFn();
-      function step(prev) {
-      const { value, done } = gen.next(prev);
-      if (done) return Promise.resolve(value);
-      return Promise.resolve(value).then(function (result) {
-      return step(result);
-      });
+        const gen = genFn();
+        function step(prev) {
+          const { value, done } = gen.next(prev);
+          if (done) return Promise.resolve(value);
+          return Promise.resolve(value).then(function (result) {
+            return step(result);
+          });
+        }
+        return step();
       }
-      return step();
-      }
-      
+
       function* flowGen() {
-      yield timeOut();
-      console.log("[generator] step1");
-      yield timeOut();
-      console.log("[generator] step2");
-      return "done-gen";
+        yield timeOut();
+        console.log("[generator] step1");
+        yield timeOut();
+        console.log("[generator] step2");
+        return "done-gen";
       }
-      
+
       async function flowAsync() {
-      await timeOut();
-      console.log("[async] step1");
-      await timeOut();
-      console.log("[async] step2");
-      return "done-async";
+        await timeOut();
+        console.log("[async] step1");
+        await timeOut();
+        console.log("[async] step2");
+        return "done-async";
       }
-      
+
       console.log("--- generator + 执行器（等价于手写 co）---");
       runGenerator(flowGen).then(function (result) {
-      console.log("[generator] return:", result);
-      console.log("--- async/await（语言内置执行器）---");
-      return flowAsync();
+        console.log("[generator] return:", result);
+        console.log("--- async/await（语言内置执行器）---");
+        return flowAsync();
       }).then(function (result) {
-      console.log("[async] return:", result);
+        console.log("[async] return:", result);
       });
+
     </script>
     <!-- SCRIPT_END -->
 

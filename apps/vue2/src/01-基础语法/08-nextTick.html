@@ -46,52 +46,50 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="app">
-    <p ref="text">{{ message }}</p>
-    <button @click="changeMessage">修改 message 后读取 DOM</button>
-    <button @click="batchUpdate">连续修改 count</button>
-    <p>count: {{ count }}</p>
-    <pre>{{ log.join('\n') }}</pre>
-</div>
+    <!-- PAGE_DOM_START -->
+    <div id="app">
+      <p ref="text">{{ message }}</p>
+      <button @click="changeMessage">修改 message 后读取 DOM</button>
+      <button @click="batchUpdate">连续修改 count</button>
+      <p>count: {{ count }}</p>
+      <pre>{{ log.join('\n') }}</pre>
+    </div>
+    <!-- PAGE_DOM_END -->
 
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       new Vue({
-      el: "#app",
-      data() {
-      return {
-      message: "旧文本",
-      count: 0,
-      log: []
-      };
-      },
-      methods: {
-      changeMessage() {
-      this.log = [];
-      this.message = "新文本";
-      
-      this.log.push("同步读取 DOM: " + this.$refs.text.textContent);
-      
-      this.$nextTick(() => {
-      this.log.push("nextTick 后读取 DOM: " + this.$refs.text.textContent);
+        el: "#app",
+        data() {
+          return {
+            message: "旧文本",
+            count: 0,
+            log: []
+          };
+        },
+        methods: {
+          changeMessage() {
+            this.log = [];
+            this.message = "新文本";
+
+            this.log.push("同步读取 DOM: " + this.$refs.text.textContent);
+
+            this.$nextTick(() => {
+              this.log.push("nextTick 后读取 DOM: " + this.$refs.text.textContent);
+            });
+          },
+          batchUpdate() {
+            this.count++;
+            this.count++;
+            this.count++;
+
+            this.$nextTick(() => {
+              this.log.push("连续修改 3 次后，DOM 只在本轮末尾统一刷新: count = " + this.count);
+            });
+          }
+        }
       });
-      },
-      batchUpdate() {
-      this.count++;
-      this.count++;
-      this.count++;
-      
-      this.$nextTick(() => {
-      this.log.push("连续修改 3 次后，DOM 只在本轮末尾统一刷新: count = " + this.count);
-      });
-      }
-      }
-      });
+
     </script>
     <!-- SCRIPT_END -->
 

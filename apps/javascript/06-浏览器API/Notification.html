@@ -21,8 +21,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>桌面通知 · Notification API</title>
     <style>
-    body { font-family: system-ui, sans-serif; margin: 1.5rem; }
-    button { padding: 8px 14px; margin-right: 8px; }
+      body { font-family: system-ui, sans-serif; margin: 1.5rem; }
+      button { padding: 8px 14px; margin-right: 8px; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -49,62 +49,58 @@
     </section>
     <!-- NOTES_END -->
 
-<p>需要用户授权；HTTPS 或 localhost 下才可用；不同浏览器 UI 差异较大。</p>
+    <!-- PAGE_DOM_START -->
+    <p>需要用户授权；HTTPS 或 localhost 下才可用；不同浏览器 UI 差异较大。</p>
+    <button id="ask">① 请求权限</button>
+    <button id="send">② 发送通知</button>
+    <button id="repeat">③ 每 4 秒发送一次</button>
+    <p>当前权限状态：<code id="status">unknown</code></p>
+    <!-- PAGE_DOM_END -->
 
-  <button id="ask">① 请求权限</button>
-  <button id="send">② 发送通知</button>
-  <button id="repeat">③ 每 4 秒发送一次</button>
-
-  <p>当前权限状态：<code id="status">unknown</code></p>
-
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       const status = document.getElementById("status");
       function refresh() {
-      status.textContent = ("Notification" in window) ? Notification.permission : "不支持";
+        status.textContent = ("Notification" in window) ? Notification.permission : "不支持";
       }
       refresh();
-      
+
       function notify(title, options) {
-      if (!("Notification" in window)) {
-      alert("此浏览器不支持桌面通知");
-      return;
+        if (!("Notification" in window)) {
+          alert("此浏览器不支持桌面通知");
+          return;
+        }
+        if (Notification.permission === "granted") {
+          return new Notification(title, options);
+        }
+        if (Notification.permission !== "denied") {
+          Notification.requestPermission().then((perm) => {
+            refresh();
+            if (perm === "granted") new Notification(title, options);
+          });
+        }
       }
-      if (Notification.permission === "granted") {
-      return new Notification(title, options);
-      }
-      if (Notification.permission !== "denied") {
-      Notification.requestPermission().then((perm) => {
-      refresh();
-      if (perm === "granted") new Notification(title, options);
-      });
-      }
-      }
-      
+
       document.getElementById("ask").onclick = () => {
-      Notification.requestPermission().then(refresh);
+        Notification.requestPermission().then(refresh);
       };
-      
+
       document.getElementById("send").onclick = () => {
-      notify("Hello!", { body: "这是一条桌面通知 " + new Date().toLocaleTimeString() });
+        notify("Hello!", { body: "这是一条桌面通知 " + new Date().toLocaleTimeString() });
       };
-      
+
       let timer = null;
       document.getElementById("repeat").onclick = () => {
-      if (timer) {
-      clearInterval(timer);
-      timer = null;
-      return;
-      }
-      timer = setInterval(() => {
-      notify("循环通知", { body: "随机值 " + Math.random().toFixed(3) });
-      }, 4000);
+        if (timer) {
+          clearInterval(timer);
+          timer = null;
+          return;
+        }
+        timer = setInterval(() => {
+          notify("循环通知", { body: "随机值 " + Math.random().toFixed(3) });
+        }, 4000);
       };
+
     </script>
     <!-- SCRIPT_END -->
 

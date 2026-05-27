@@ -25,10 +25,10 @@
     <script src="../../libs/react-dom.development.js"></script>
     <script src="../../libs/babel.min.js"></script>
     <style>
-    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 640px; line-height: 1.6; }
-    ul { padding-left: 1.25rem; }
-    li.sending { opacity: 0.55; font-style: italic; }
-    input { width: 70%; padding: 0.4rem; }
+      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 640px; line-height: 1.6; }
+      ul { padding-left: 1.25rem; }
+      li.sending { opacity: 0.55; font-style: italic; }
+      input { width: 70%; padding: 0.4rem; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -56,72 +56,71 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="root"></div>
+    <!-- PAGE_DOM_START -->
+    <div id="root"></div>
+    <!-- PAGE_DOM_END -->
 
-    
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script type="text/babel">
       const { useOptimistic, useState, useTransition } = React;
-      
+
       function delay(ms) {
-      return new Promise((r) => setTimeout(r, ms));
+        return new Promise((r) => setTimeout(r, ms));
       }
-      
+
       function MessageList() {
-      const [messages, setMessages] = useState([
-      { id: 1, text: "欢迎学习 React 19", sent: true },
-      ]);
-      const [optimisticMessages, addOptimistic] = useOptimistic(
-      messages,
-      (state, newMsg) => [...state, { ...newMsg, sending: true }]
+        const [messages, setMessages] = useState([
+          { id: 1, text: "欢迎学习 React 19", sent: true },
+        ]);
+        const [optimisticMessages, addOptimistic] = useOptimistic(
+        messages,
+        (state, newMsg) => [...state, { ...newMsg, sending: true }]
       );
       const [isPending, startTransition] = useTransition();
-      
+
       const send = (text) => {
-      const optimistic = { id: Date.now(), text, sent: false };
-      startTransition(async () => {
-      addOptimistic(optimistic);
-      await delay(900);
-      setMessages((prev) => [
-      ...prev,
-      { id: optimistic.id, text, sent: true },
-      ]);
-      });
+        const optimistic = { id: Date.now(), text, sent: false };
+        startTransition(async () => {
+          addOptimistic(optimistic);
+          await delay(900);
+          setMessages((prev) => [
+            ...prev,
+            { id: optimistic.id, text, sent: true },
+          ]);
+        });
       };
-      
+
       return (
       <section>
-      <h2>useOptimistic 发消息</h2>
-      <ul>
-      {optimisticMessages.map((m) => (
-      <li key={m.id} className={m.sending ? "sending" : ""}>
-      {m.text}
-      {m.sending ? "（发送中…）" : ""}
-      </li>
-      ))}
-      </ul>
-      <form
-      onSubmit={(e) => {
-      e.preventDefault();
-      const text = e.target.message.value.trim();
-      if (!text || isPending) return;
-      e.target.reset();
-      send(text);
-      }}
-      >
-      <input name="message" placeholder="输入消息" disabled={isPending} />
-      <button type="submit" disabled={isPending}>
-      发送
-      </button>
-      </form>
-      </section>
+        <h2>useOptimistic 发消息</h2>
+        <ul>
+          {optimisticMessages.map((m) => (
+            <li key={m.id} className={m.sending ? "sending" : ""}>
+              {m.text}
+              {m.sending ? "（发送中…）" : ""}
+            </li>
+          ))}
+        </ul>
+        <form
+          onSubmit={(e) => {
+              e.preventDefault();
+              const text = e.target.message.value.trim();
+              if (!text || isPending) return;
+              e.target.reset();
+              send(text);
+            }}
+            >
+            <input name="message" placeholder="输入消息" disabled={isPending} />
+            <button type="submit" disabled={isPending}>
+              发送
+            </button>
+          </form>
+        </section>
       );
       }
-      
+
       ReactDOM.createRoot(document.getElementById("root")).render(<MessageList />);
+
     </script>
     <!-- SCRIPT_END -->
 

@@ -21,8 +21,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>加权随机</title>
     <style>
-    body { font-family: system-ui, sans-serif; margin: 1.5rem; }
-    pre { background: #f5f5f5; padding: 1rem; border-radius: 4px; }
+      body { font-family: system-ui, sans-serif; margin: 1.5rem; }
+      pre { background: #f5f5f5; padding: 1rem; border-radius: 4px; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -49,60 +49,56 @@
     </section>
     <!-- NOTES_END -->
 
-<p>需求：按概率 <code>{A: 0.5, B: 0.3, C: 0.2}</code> 随机抽中某一项。</p>
+    <!-- PAGE_DOM_START -->
+    <p>需求：按概率 <code>{A: 0.5, B: 0.3, C: 0.2}</code> 随机抽中某一项。</p>
+    <h3>方案 1：扩容数组 + Math.random（直观）</h3>
+    <pre id="out1"></pre>
+    <h3>方案 2：累加阈值 + Math.random（推荐，O(n) 空间→O(1)）</h3>
+    <pre id="out2"></pre>
+    <!-- PAGE_DOM_END -->
 
-  <h3>方案 1：扩容数组 + Math.random（直观）</h3>
-  <pre id="out1"></pre>
-
-  <h3>方案 2：累加阈值 + Math.random（推荐，O(n) 空间→O(1)）</h3>
-  <pre id="out2"></pre>
-
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       // ============ 方案 1：扩容查找表 ============
       function weightedRandV1(spec) {
-      const table = [];
-      for (const key in spec) {
-      // 把每项按概率 × 100 重复推入 table
-      const count = Math.floor(spec[key] * 100);
-      for (let i = 0; i < count; i++) table.push(key);
+        const table = [];
+        for (const key in spec) {
+          // 把每项按概率 × 100 重复推入 table
+          const count = Math.floor(spec[key] * 100);
+          for (let i = 0; i < count; i++) table.push(key);
+        }
+        return table[Math.floor(Math.random() * table.length)];
       }
-      return table[Math.floor(Math.random() * table.length)];
-      }
-      
+
       // ============ 方案 2：累加权重区间 ============
       function weightedRandV2(spec) {
-      const entries = Object.entries(spec); // [['A', 0.5], ...]
-      let sum = 0;
-      const ranges = entries.map(([k, w]) => [k, (sum += w)]);
-      const r = Math.random() * sum;
-      for (const [k, threshold] of ranges) {
-      if (r < threshold) return k;
+        const entries = Object.entries(spec); // [['A', 0.5], ...]
+        let sum = 0;
+        const ranges = entries.map(([k, w]) => [k, (sum += w)]);
+        const r = Math.random() * sum;
+        for (const [k, threshold] of ranges) {
+          if (r < threshold) return k;
+        }
       }
-      }
-      
+
       // ============ 验证：跑 10000 次 ============
       const spec = { A: 0.5, B: 0.3, C: 0.2 };
       function bench(fn) {
-      const stat = {};
-      for (let i = 0; i < 10000; i++) {
-      const k = fn(spec);
-      stat[k] = (stat[k] || 0) + 1;
-      }
-      return Object.fromEntries(
-      Object.entries(stat).map(([k, v]) => [k, (v / 10000).toFixed(3)])
+        const stat = {};
+        for (let i = 0; i < 10000; i++) {
+          const k = fn(spec);
+          stat[k] = (stat[k] || 0) + 1;
+        }
+        return Object.fromEntries(
+        Object.entries(stat).map(([k, v]) => [k, (v / 10000).toFixed(3)])
       );
       }
-      
+
       document.getElementById("out1").textContent =
       "10000 次采样命中率：\n" + JSON.stringify(bench(weightedRandV1), null, 2);
       document.getElementById("out2").textContent =
       "10000 次采样命中率：\n" + JSON.stringify(bench(weightedRandV2), null, 2);
+
     </script>
     <!-- SCRIPT_END -->
 

@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { spawnSync } from "node:child_process";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 import test from "node:test";
 
 const ROOT = new URL("../..", import.meta.url).pathname;
@@ -20,6 +26,21 @@ function runScript(args) {
     cwd: ROOT,
     encoding: "utf8",
   });
+}
+
+function listHtmlFiles(dir) {
+  const files = [];
+  for (const entry of readdirSync(dir)) {
+    const abs = join(dir, entry);
+    const stat = statSync(abs);
+    if (stat.isDirectory()) {
+      if (["libs", "lib", "node_modules"].includes(entry)) continue;
+      files.push(...listHtmlFiles(abs));
+    } else if (entry.toLowerCase().endsWith(".html")) {
+      files.push(abs);
+    }
+  }
+  return files;
 }
 
 test("build-index --check validates generated files without rewriting them", () => {
@@ -46,6 +67,28 @@ test("validate-demos validates manifest consistency without rewriting generated 
   } finally {
     restoreManifest(before);
   }
+});
+
+test("framework mount DOM is wrapped by PAGE_DOM markers", () => {
+  const frameworkDirs = ["apps/vue2", "apps/vue3", "apps/react18", "apps/react19"];
+  const failures = [];
+
+  for (const dir of frameworkDirs) {
+    const files = listHtmlFiles(join(ROOT, dir));
+    for (const file of files) {
+      const html = readFileSync(file, "utf8");
+      if (!/<div[^>]+id\s*=\s*["'](?:app|root)["']/i.test(html)) continue;
+      if (
+        !/<!--\s*PAGE_DOM_START\s*-->[\s\S]*?<div[^>]+id\s*=\s*["'](?:app|root)["'][\s\S]*?<!--\s*PAGE_DOM_END\s*-->/i.test(
+          html
+        )
+      ) {
+        failures.push(relative(ROOT, file));
+      }
+    }
+  }
+
+  assert.deepEqual(failures, []);
 });
 
 test("sync-readmes --check validates README tables without rewriting them", () => {

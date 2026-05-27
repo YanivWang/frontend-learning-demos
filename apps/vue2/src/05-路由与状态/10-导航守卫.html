@@ -47,123 +47,121 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="app">
-    <router-link to="/">Home</router-link>
-    |
-    <router-link to="/about">About（需登录）</router-link>
-    |
-    <router-link to="/login">Login</router-link>
-    <p>登录状态: {{ isLoggedIn ? '已登录' : '未登录' }}</p>
-    <router-view></router-view>
-</div>
+    <!-- PAGE_DOM_START -->
+    <div id="app">
+      <router-link to="/">Home</router-link>
+      |
+      <router-link to="/about">About（需登录）</router-link>
+      |
+      <router-link to="/login">Login</router-link>
+      <p>登录状态: {{ isLoggedIn ? '已登录' : '未登录' }}</p>
+      <router-view></router-view>
+    </div>
+    <!-- PAGE_DOM_END -->
 
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
-    <script>
-      const AUTH_KEY = 'vue2-demo-auth';
-      
-      const Home = {
-      name: "home",
-      template: `<div>Home Page（公开）</div>`,
-      beforeRouteEnter: function (to, from, next) {
-      console.log("home beforeRouteEnter");
-      next();
-      },
-      beforeRouteUpdate: function (to, from, next) {
-      console.log("home beforeRouteUpdate");
-      next();
-      },
-      beforeRouteLeave: function (to, from, next) {
-      console.log("home beforeRouteLeave");
-      next();
-      }
-      };
-      
-      const About = {
-      name: "about",
-      template: `<div>About Page（受保护，仅登录后可访问）</div>`,
-      beforeRouteEnter: function (to, from, next) {
-      console.log("about beforeRouteEnter");
-      next(function (vm) {
-      console.log("about beforeRouteEnter next 回调，vm.name =", vm.$options.name);
-      });
-      },
-      beforeRouteUpdate: function (to, from, next) {
-      console.log("about beforeRouteUpdate");
-      next();
-      },
-      beforeRouteLeave: function (to, from, next) {
-      console.log("about beforeRouteLeave");
-      var answer = window.confirm('确定离开 About？');
-      next(answer ? undefined : false);
-      }
-      };
-      
-      const Login = {
-      template: `
-      <div>
-      <p>请登录后访问 About</p>
-      <button @click="login">模拟登录</button>
-      </div>
-      `,
-      methods: {
-      login: function () {
-      sessionStorage.setItem(AUTH_KEY, '1');
-      this.$root.isLoggedIn = true;
-      var redirect = this.$route.query.redirect || '/about';
-      this.$router.replace(redirect);
-      }
-      }
-      };
-      
-      const routes = [
-      { path: "/", component: Home },
-      {
-      path: "/about",
-      component: About,
-      meta: { requiresAuth: true },
-      beforeEnter: function (to, from, next) {
-      console.log("about 路由独享 beforeEnter");
-      next();
-      }
-      },
-      { path: "/login", component: Login }
-      ];
-      
-      const router = new VueRouter({ routes });
-      
-      router.beforeEach(function (to, from, next) {
-      console.log("全局 beforeEach →", to.path);
-      var isLoggedIn = sessionStorage.getItem(AUTH_KEY) === '1';
-      if (to.matched.some(function (record) { return record.meta.requiresAuth; })) {
-      if (!isLoggedIn) {
-      next({ path: '/login', query: { redirect: to.fullPath } });
-      return;
-      }
-      }
-      next();
-      });
-      
-      router.beforeResolve(function (to, from, next) {
-      console.log("全局 beforeResolve");
-      next();
-      });
-      
-      router.afterEach(function (to, from) {
-      console.log("全局 afterEach");
-      });
-      
-      new Vue({
-      router,
-      el: "#app",
-      data: {
-      isLoggedIn: sessionStorage.getItem(AUTH_KEY) === '1'
-      }
-      });
+    <!-- SCRIPT_START -->
+    <script>
+      const AUTH_KEY = 'vue2-demo-auth';
+
+      const Home = {
+        name: "home",
+        template: `<div>Home Page（公开）</div>`,
+        beforeRouteEnter: function (to, from, next) {
+          console.log("home beforeRouteEnter");
+          next();
+        },
+        beforeRouteUpdate: function (to, from, next) {
+          console.log("home beforeRouteUpdate");
+          next();
+        },
+        beforeRouteLeave: function (to, from, next) {
+          console.log("home beforeRouteLeave");
+          next();
+        }
+      };
+
+      const About = {
+        name: "about",
+        template: `<div>About Page（受保护，仅登录后可访问）</div>`,
+        beforeRouteEnter: function (to, from, next) {
+          console.log("about beforeRouteEnter");
+          next(function (vm) {
+            console.log("about beforeRouteEnter next 回调，vm.name =", vm.$options.name);
+          });
+        },
+        beforeRouteUpdate: function (to, from, next) {
+          console.log("about beforeRouteUpdate");
+          next();
+        },
+        beforeRouteLeave: function (to, from, next) {
+          console.log("about beforeRouteLeave");
+          var answer = window.confirm('确定离开 About？');
+          next(answer ? undefined : false);
+        }
+      };
+
+      const Login = {
+        template: `
+        <div>
+          <p>请登录后访问 About</p>
+          <button @click="login">模拟登录</button>
+        </div>
+        `,
+        methods: {
+          login: function () {
+            sessionStorage.setItem(AUTH_KEY, '1');
+            this.$root.isLoggedIn = true;
+            var redirect = this.$route.query.redirect || '/about';
+            this.$router.replace(redirect);
+          }
+        }
+      };
+
+      const routes = [
+        { path: "/", component: Home },
+        {
+          path: "/about",
+          component: About,
+          meta: { requiresAuth: true },
+          beforeEnter: function (to, from, next) {
+            console.log("about 路由独享 beforeEnter");
+            next();
+          }
+        },
+        { path: "/login", component: Login }
+      ];
+
+      const router = new VueRouter({ routes });
+
+      router.beforeEach(function (to, from, next) {
+        console.log("全局 beforeEach →", to.path);
+        var isLoggedIn = sessionStorage.getItem(AUTH_KEY) === '1';
+        if (to.matched.some(function (record) { return record.meta.requiresAuth; })) {
+          if (!isLoggedIn) {
+            next({ path: '/login', query: { redirect: to.fullPath } });
+            return;
+          }
+        }
+        next();
+      });
+
+      router.beforeResolve(function (to, from, next) {
+        console.log("全局 beforeResolve");
+        next();
+      });
+
+      router.afterEach(function (to, from) {
+        console.log("全局 afterEach");
+      });
+
+      new Vue({
+        router,
+        el: "#app",
+        data: {
+          isLoggedIn: sessionStorage.getItem(AUTH_KEY) === '1'
+        }
+      });
+
     </script>
     <!-- SCRIPT_END -->
 

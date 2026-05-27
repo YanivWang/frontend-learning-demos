@@ -48,51 +48,51 @@
     <!-- SCRIPT_START -->
     <script>
       let p1 = new Promise((resolve) => {
-      setTimeout(() => resolve("p1 ok!"), 1500);
+        setTimeout(() => resolve("p1 ok!"), 1500);
       });
-      
+
       let p2 = new Promise((resolve) => {
-      setTimeout(() => resolve("p2 ok!"), 2000);
+        setTimeout(() => resolve("p2 ok!"), 2000);
       });
-      
+
       let p3 = new Promise((resolve) => {
-      setTimeout(() => resolve("p3 ok!"), 2000);
+        setTimeout(() => resolve("p3 ok!"), 2000);
       });
-      
+
       // 规则:
       //   1.有一个失败就 reject
       //   2.全部成功才 resolve
       Promise.myAll = function (...args) {
-      return new Promise((resolve, reject) => {
-      const retArray = new Array(args.length);
-      
-      // 边界：传空数组应立即 resolve([])
-      if (args.length === 0) {
-      resolve(retArray);
-      return;
-      }
-      
-      // 用计数器 doneCount 代替 retArray.length，避免稀疏数组 length 判断陷阱
-      let doneCount = 0;
-      args.forEach((tempPromise, index) => {
-      // 包一层 Promise.resolve，容忍非 thenable 输入
-      Promise.resolve(tempPromise).then((res) => {
-      retArray[index] = res;
-      doneCount++;
-      if (doneCount === args.length) {
-      resolve(retArray);
-      }
-      }).catch(reject);
-      });
-      });
+        return new Promise((resolve, reject) => {
+          const retArray = new Array(args.length);
+
+          // 边界：传空数组应立即 resolve([])
+          if (args.length === 0) {
+            resolve(retArray);
+            return;
+          }
+
+          // 用计数器 doneCount 代替 retArray.length，避免稀疏数组 length 判断陷阱
+          let doneCount = 0;
+          args.forEach((tempPromise, index) => {
+            // 包一层 Promise.resolve，容忍非 thenable 输入
+            Promise.resolve(tempPromise).then((res) => {
+              retArray[index] = res;
+              doneCount++;
+              if (doneCount === args.length) {
+                resolve(retArray);
+              }
+            }).catch(reject);
+          });
+        });
       };
-      
-      
+
       Promise.myAll(p1, p2, p3).then(res => {
-      console.log("all resolved:", res);
+        console.log("all resolved:", res);
       }).catch(err => {
-      console.log("any rejected:", err);
+        console.log("any rejected:", err);
       });
+
     </script>
     <!-- SCRIPT_END -->
 

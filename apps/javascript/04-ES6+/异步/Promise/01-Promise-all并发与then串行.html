@@ -50,52 +50,53 @@
     <script>
       // 把任务封装为「返回 Promise 的函数」，方便串行 then 调用
       const taskP1 = () => new Promise((resolve) => {
-      setTimeout(function (param) {
-      console.log("p1");
-      resolve(param);
-      }, 1500, 'one');
+        setTimeout(function (param) {
+          console.log("p1");
+          resolve(param);
+        }, 1500, 'one');
       });
       const taskP2 = () => new Promise((resolve) => {
-      setTimeout(function (param) {
-      console.log("p2");
-      resolve(param);
-      }, 1000, 'two');
+        setTimeout(function (param) {
+          console.log("p2");
+          resolve(param);
+        }, 1000, 'two');
       });
       const taskP3 = () => new Promise((resolve) => {
-      setTimeout(function (param) {
-      console.log("p3");
-      resolve(param);
-      }, 2000, 'three');
+        setTimeout(function (param) {
+          console.log("p3");
+          resolve(param);
+        }, 2000, 'three');
       });
       const taskP4 = () => new Promise((resolve) => {
-      setTimeout(function (param) {
-      console.log("p4");
-      resolve(param);
-      }, 1000, 'four');
+        setTimeout(function (param) {
+          console.log("p4");
+          resolve(param);
+        }, 1000, 'four');
       });
-      
+
       // 一：并发执行（Promise.all）
       //    总耗时 ≈ max(各任务时长)，任一失败立刻 reject
       console.log("all start...");
       Promise.all([taskP1(), taskP2(), taskP3(), taskP4()]).then(values => {
-      console.log("values:", values);
-      console.log("all finish...");
+        console.log("values:", values);
+        console.log("all finish...");
       }).catch(reason => {
-      console.log("reason:", reason);
+        console.log("reason:", reason);
       });
-      
+
       // 二：串行执行
       //    易错点：.then(p1) 期望传函数，传入 Promise 实例会被当成「忽略上一步返回值的函数」
       //    解决：.then(() => p1Fn())，确保下一个任务是「返回新 Promise 的函数」
       new Promise((resolve) => {
-      console.log("serial start...");
-      resolve();
+        console.log("serial start...");
+        resolve();
       })
       .then(() => taskP1())
       .then(() => taskP2())
       .then(() => console.log("serial end..."));
-      
+
       console.log("script end...");
+
     </script>
     <!-- SCRIPT_END -->
 

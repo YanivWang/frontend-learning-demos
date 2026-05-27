@@ -50,31 +50,30 @@
     <script>
       // 压测：约 550 万次 push，每条 testStr 为 10 个字符，用于探测 IndexedDB 配额上限
       localforage.clear().then(function () {
-      localforage.keys().then(function (keys) {
-      console.log("keys:" + keys);
-      
-      //纯净版测试
-      var startTime = new Date().getTime();
-      var array = [];
-      var testStr = "ABCDEFGEFG";
-      for (var i = 0; i < 10000 * 100 * 5.5; i++) {
-      array.push(testStr);
-      }
-      localforage.setItem("bigData", array).then(function (value) {
-      // 粗估字符数：元素个数 × 每条字符串长度，再换算为 MB（非精确字节数）
-      console.log(value.length * testStr.length / 1024 / 1024 + "m");
-      
-      var endTime = new Date().getTime();
-      console.log("用时：" + (endTime - startTime) / 1000 + " s");
+        localforage.keys().then(function (keys) {
+          console.log("keys:" + keys);
+
+          //纯净版测试
+          var startTime = new Date().getTime();
+          var array = [];
+          var testStr = "ABCDEFGEFG";
+          for (var i = 0; i < 10000 * 100 * 5.5; i++) {
+            array.push(testStr);
+          }
+          localforage.setItem("bigData", array).then(function (value) {
+            // 粗估字符数：元素个数 × 每条字符串长度，再换算为 MB（非精确字节数）
+            console.log(value.length * testStr.length / 1024 / 1024 + "m");
+
+            var endTime = new Date().getTime();
+            console.log("用时：" + (endTime - startTime) / 1000 + " s");
+          }).catch(function (err) {
+            console.log("存储错误：" + err);
+          });
+        });
       }).catch(function (err) {
-      console.log("存储错误：" + err);
+        console.log("清空错误：" + err);
       });
-      });
-      }).catch(function (err) {
-      console.log("清空错误：" + err);
-      });
-      
-      
+
     </script>
     <!-- SCRIPT_END -->
 

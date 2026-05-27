@@ -25,10 +25,10 @@
     <script src="../../libs/react-dom.development.js"></script>
     <script src="../../libs/babel.min.js"></script>
     <style>
-    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 720px; line-height: 1.6; }
-    input { padding: 0.4rem; width: 100%; max-width: 320px; }
-    .slow-list { margin-top: 1rem; max-height: 200px; overflow: auto; font-size: 0.9rem; }
-    .pending { color: #0969da; }
+      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 720px; line-height: 1.6; }
+      input { padding: 0.4rem; width: 100%; max-width: 320px; }
+      .slow-list { margin-top: 1rem; max-height: 200px; overflow: auto; font-size: 0.9rem; }
+      .pending { color: #0969da; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -56,60 +56,59 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="root"></div>
+    <!-- PAGE_DOM_START -->
+    <div id="root"></div>
+    <!-- PAGE_DOM_END -->
 
-    
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script type="text/babel">
       const { useMemo, useState, useTransition } = React;
-      
+
       function slowFilter(text) {
-      const items = [];
-      for (let i = 0; i < 8000; i++) {
-      if (String(i).includes(text)) items.push("item-" + i);
+        const items = [];
+        for (let i = 0; i < 8000; i++) {
+          if (String(i).includes(text)) items.push("item-" + i);
+        }
+        return items.slice(0, 40);
       }
-      return items.slice(0, 40);
-      }
-      
+
       function App() {
-      const [query, setQuery] = useState("");
-      const [deferredQuery, setDeferredQuery] = useState("");
-      const [isPending, startTransition] = useTransition();
-      
-      const list = useMemo(
-      () => slowFilter(deferredQuery),
-      [deferredQuery]
+        const [query, setQuery] = useState("");
+        const [deferredQuery, setDeferredQuery] = useState("");
+        const [isPending, startTransition] = useTransition();
+
+        const list = useMemo(
+        () => slowFilter(deferredQuery),
+        [deferredQuery]
       );
-      
+
       const onChange = (e) => {
-      const value = e.target.value;
-      setQuery(value);
-      startTransition(() => {
-      setDeferredQuery(value);
-      });
+        const value = e.target.value;
+        setQuery(value);
+        startTransition(() => {
+          setDeferredQuery(value);
+        });
       };
-      
+
       return (
       <section>
-      <h1>useTransition 保持输入流畅</h1>
-      
-      <p>输入框（紧急更新）与下方列表（过渡更新）分离。</p>
-      <input value={query} onChange={onChange} placeholder="过滤数字，如 12" />
-      {isPending && <p className="pending">列表更新中（isPending）…</p>}
-      <ul className="slow-list">
-      {list.map((item) => (
-      <li key={item}>{item}</li>
-      ))}
-      </ul>
-      <p><strong>面试答法：</strong>startTransition 标记低优先级；Actions 默认在 transition 中运行，避免阻塞输入。</p>
+        <h1>useTransition 保持输入流畅</h1>
+
+        <p>输入框（紧急更新）与下方列表（过渡更新）分离。</p>
+        <input value={query} onChange={onChange} placeholder="过滤数字，如 12" />
+        {isPending && <p className="pending">列表更新中（isPending）…</p>}
+        <ul className="slow-list">
+          {list.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+        <p><strong>面试答法：</strong>startTransition 标记低优先级；Actions 默认在 transition 中运行，避免阻塞输入。</p>
       </section>
       );
       }
-      
+
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
     </script>
     <!-- SCRIPT_END -->
 

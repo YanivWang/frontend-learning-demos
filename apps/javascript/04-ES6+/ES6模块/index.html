@@ -1,17 +1,15 @@
 <!--
-分类: javascript / 04-ES6+ / ES6模块
+  分类: javascript / 04-ES6+ / ES6模块
   主题: ES Module import/export 静态导入与动态导入
   要点:
     - script type="module" 自动启用严格模式，import 必须是顶层语句
     - 静态导入 import {...} from '...'，动态导入 import('...').then(...)
     - 模块在浏览器中需要通过 http(s) 协议加载（直接 file:// 不行）
   面试:
-    - ES Module import/export 静态导入与动态导入的核心概念是什么
-    - ES Module import/export 静态导入与动态导入在实际项目里怎么用
-    - ES Module import/export 静态导入与动态导入有哪些常见坑或易错点
-    - ES Module import/export 静态导入与动态导入和相近 API 如何区分选型
-    - 面试中如何简洁讲清 ES Module import/export 静态导入与动态导入
-
+    - ES Module 与 CommonJS 有何区别？
+    - 静态 import 与动态 import() 分别适合什么场景？
+    - 为什么浏览器加载 ESM 需要 http(s) 协议？
+  相关: CommonJS-vs-ESM, ImportMaps
 -->
 
 <!doctype html>
@@ -27,64 +25,37 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>ES Module import/export 静态导入与动态导入</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。需通过 http(s) 协议访问本页（file:// 无法加载模块）。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>script <code>type</code>=&quot;<code>module</code>&quot; 自动启用严格模式，<code>import</code> 必须是顶层语句。</li>
-          <li>静态导入 <code>import</code> {...} from '...'，动态导入 <code>import</code>('...').then(...)。</li>
+          <li><code>&lt;script type="module"&gt;</code> 自动启用严格模式，<code>import</code> 必须是顶层语句。</li>
+          <li>静态导入 <code>import {...} from '...'</code>；动态导入 <code>import('...').then(...)</code> 可在运行时按需加载。</li>
           <li>模块在浏览器中需要通过 http(s) 协议加载（直接 file:// 不行）。</li>
-          <li>script <code>type</code>=&quot;<code>module</code>&quot; 自动启用严格模式，<code>import</code> 必须是顶层语句（补充）。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>script type=&quot;module&quot; 自动启用严格模式？</strong> script <code>type</code>=&quot;<code>module</code>&quot; 自动启用严格模式，<code>import</code> 必须是顶层语句</li>
-          <li><strong>静态导入 import {...} from '...'？</strong> 静态导入 <code>import</code> {...} from '...'，动态导入 <code>import</code>('...').then(...)</li>
-          <li><strong>模块在浏览器中需要通过 http(s) 协议加载（直接 file？</strong> 模块在浏览器中需要通过 http(s) 协议加载（直接 file:// 不行）</li>
+          <li><strong>静态 vs 动态 import？</strong> 静态 import 编译期确定依赖，利于 tree-shaking；动态 import() 返回 Promise，适合懒加载和条件加载。</li>
+          <li><strong>type="module" 有何特性？</strong> 自动严格模式、defer 执行、单例缓存、CORS 限制。</li>
+          <li><strong>为何 file:// 不行？</strong> 浏览器安全策略要求模块脚本通过 http(s) 加载，本地开发用 dev server。</li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-<!-- type="module" 声明此脚本为模块(模块脚本)
-     模块自动使用严格模式 
-    -->
-
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script type="module">
       console.log("Before importing moduleA");
       import { ageVar, sayHello } from "./moduleA.js";
-      console.log("After importing moduleA"); // 
+      console.log("After importing moduleA");
       console.log("ageVar", ageVar);
-      sayHello(); // 控制台输出 "nameVar" 标签及其值
-    </script>
-    <!-- SCRIPT_END -->
-    
-    
-    
-    
-    
+      sayHello();
 
-<!-- 动态导入的优点是它们始终可用，即使在脚本环境中也是如此 -->
-
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
-    <script>
-      // console.log("Before importing moduleA");
-      
+      // 动态导入：返回 Promise，可在条件分支中使用
       // import("./moduleA.js").then((moduleA) => {
-      //   console.log("moduleA", moduleA);
-      // });
-      // console.log("Before importing moduleA");
+        //   console.log("dynamic import:", moduleA);
+        // });
+
     </script>
     <!-- SCRIPT_END -->
 
@@ -93,6 +64,8 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="../%E6%A8%A1%E5%9D%97%E5%8C%96/CommonJS-vs-ESM.html">相关 · CommonJS-vs-ESM</a>
+        <a href="../../06-%E6%B5%8F%E8%A7%88%E5%99%A8API/ImportMaps.html">相关 · ImportMaps</a>
         <a href="../class%E8%AF%A6%E8%A7%A3/extends.html">← extends</a>
         <a href="../../05-%E5%85%83%E7%BC%96%E7%A8%8B/%E4%BB%A3%E7%90%86%E7%9A%84%E7%BC%BA%E7%82%B9.html">代理的缺点 →</a>
       </nav>
@@ -106,5 +79,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

@@ -22,12 +22,12 @@
     <title>Vue3 · effectScope 与副作用清理</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-    body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-    button { margin-right: 8px; padding: 6px 12px; }
-    code, pre { background: #f6f8fa; border-radius: 6px; }
-    code { padding: 2px 5px; }
-    pre { padding: 12px; overflow: auto; max-height: 280px; }
-    .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; margin-bottom: 16px; }
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin-right: 8px; padding: 6px 12px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; max-height: 280px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; margin-bottom: 16px; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -55,10 +55,9 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="app">
+    <!-- PAGE_DOM_START -->
+    <div id="app">
       <h1>effectScope 与副作用清理</h1>
-
-
       <div class="box">
         <h2>watch 返回停止函数</h2>
         <p>count：{{ count }}</p>
@@ -67,80 +66,73 @@
         <button @click="stopWatch">调用 watch 停止函数</button>
         <p>watch 状态：{{ watchActive ? "运行中" : "已停止" }}</p>
       </div>
-
       <div class="box">
         <h2>effectScope 统一停止</h2>
         <button @click="startScope">开启 scope</button>
         <button @click="stopScope">停止 scope</button>
         <p>scope 状态：{{ scopeActive ? "运行中" : "已停止" }}</p>
       </div>
-
       <pre>{{ logs.join("\n") }}</pre>
-
-      
     </div>
+    <!-- PAGE_DOM_END -->
 
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       const { createApp, ref, watch, effectScope } = Vue;
-      
+
       createApp({
-      setup() {
-      const count = ref(0);
-      const logs = ref([]);
-      const watchActive = ref(false);
-      const scopeActive = ref(false);
-      let stopWatchFn = null;
-      let scope = null;
-      
-      function startWatch() {
-      if (watchActive.value) return;
-      stopWatchFn = watch(count, (value) => {
-      logs.value.push(`独立 watch：count = ${value}`);
-      });
-      watchActive.value = true;
-      logs.value.push("已开启独立 watch");
-      }
-      
-      function stopWatch() {
-      if (!stopWatchFn) return;
-      stopWatchFn();
-      stopWatchFn = null;
-      watchActive.value = false;
-      logs.value.push("已调用 watch 停止函数");
-      }
-      
-      function startScope() {
-      if (scope) return;
-      scope = effectScope();
-      scope.run(() => {
-      watch(count, (value) => {
-      logs.value.push(`scope 内 watch：count = ${value}`);
-      });
-      });
-      scopeActive.value = true;
-      logs.value.push("已开启 effectScope");
-      }
-      
-      function stopScope() {
-      if (!scope) return;
-      scope.stop();
-      scope = null;
-      scopeActive.value = false;
-      logs.value.push("已停止 effectScope");
-      }
-      
-      return {
-      count, logs, watchActive, scopeActive,
-      startWatch, stopWatch, startScope, stopScope,
-      };
-      },
+        setup() {
+          const count = ref(0);
+          const logs = ref([]);
+          const watchActive = ref(false);
+          const scopeActive = ref(false);
+          let stopWatchFn = null;
+          let scope = null;
+
+          function startWatch() {
+            if (watchActive.value) return;
+            stopWatchFn = watch(count, (value) => {
+              logs.value.push(`独立 watch：count = ${value}`);
+            });
+            watchActive.value = true;
+            logs.value.push("已开启独立 watch");
+          }
+
+          function stopWatch() {
+            if (!stopWatchFn) return;
+            stopWatchFn();
+            stopWatchFn = null;
+            watchActive.value = false;
+            logs.value.push("已调用 watch 停止函数");
+          }
+
+          function startScope() {
+            if (scope) return;
+            scope = effectScope();
+            scope.run(() => {
+              watch(count, (value) => {
+                logs.value.push(`scope 内 watch：count = ${value}`);
+              });
+            });
+            scopeActive.value = true;
+            logs.value.push("已开启 effectScope");
+          }
+
+          function stopScope() {
+            if (!scope) return;
+            scope.stop();
+            scope = null;
+            scopeActive.value = false;
+            logs.value.push("已停止 effectScope");
+          }
+
+          return {
+            count, logs, watchActive, scopeActive,
+            startWatch, stopWatch, startScope, stopScope,
+          };
+        },
       }).mount("#app");
+
     </script>
     <!-- SCRIPT_END -->
 

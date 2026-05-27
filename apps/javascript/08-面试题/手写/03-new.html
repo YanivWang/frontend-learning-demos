@@ -45,46 +45,44 @@
     </section>
     <!-- NOTES_END -->
 
-<p>打开控制台查看断言结果。</p>
+    <!-- PAGE_DOM_START -->
+    <p>打开控制台查看断言结果。</p>
+    <!-- PAGE_DOM_END -->
 
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       function myNew(Constructor, ...args) {
-      if (typeof Constructor !== "function") {
-      throw new TypeError("Constructor must be a function");
+        if (typeof Constructor !== "function") {
+          throw new TypeError("Constructor must be a function");
+        }
+
+        const instance = Object.create(Constructor.prototype);
+        const result = Constructor.apply(instance, args);
+        const isObject = result !== null && (typeof result === "object" || typeof result === "function");
+        return isObject ? result : instance;
       }
-      
-      const instance = Object.create(Constructor.prototype);
-      const result = Constructor.apply(instance, args);
-      const isObject = result !== null && (typeof result === "object" || typeof result === "function");
-      return isObject ? result : instance;
-      }
-      
+
       function Person(name) {
-      this.name = name;
+        this.name = name;
       }
       Person.prototype.say = function () {
-      return "I am " + this.name;
+        return "I am " + this.name;
       };
-      
+
       const p = myNew(Person, "Ada");
       console.assert(p.name === "Ada", "assigns instance fields");
       console.assert(p instanceof Person, "links prototype");
       console.assert(p.say() === "I am Ada", "can access prototype methods");
-      
+
       function Factory() {
-      this.name = "inner";
-      return { name: "returned object" };
+        this.name = "inner";
+        return { name: "returned object" };
       }
       console.assert(myNew(Factory).name === "returned object", "constructor object return wins");
-      
+
       console.log("myNew Person:", p.say());
       console.log("myNew Factory:", myNew(Factory));
+
     </script>
     <!-- SCRIPT_END -->
 

@@ -50,59 +50,58 @@
     <script>
       //被代理的目标对象
       const person = {
-      name: "wangcheng",
-      sayHello(){
-      console.log("我是", this.name);
+        name: "wangcheng",
+        sayHello(){
+          console.log("我是", this.name);
+        }
       }
-      }
-      
+
       //处理器对象：有一些属性比如set get函数
       const handler = {
-      //targetObj被代理的目标对象
-      //property 当前对访问的属性
-      //proxyInstance 创建的代理实例
-      get(targetObj,property,proxyInstance){
-      console.log(targetObj === person);
-      console.log(property === "name");
-      console.log(proxyInstance === proxy);
-      
-      return targetObj[property]
-      },
-      set(targetObj, property, newValue, proxyInstance){
-      console.log("targetObj>>", targetObj)
-      console.log("property>>", property)
-      console.log("newValue>>", newValue)
-      
-      console.log("proxyInstance>>", proxyInstance)
-      
-      //如果用户传入的新的属性值，跟原来的属性值不一样，则将新值赋值给原来的属性
-      if(newValue !== targetObj[property]){
-      targetObj[property] = newValue;
-      
-      //触发 dom 更新等一系列操作
+        //targetObj被代理的目标对象
+        //property 当前对访问的属性
+        //proxyInstance 创建的代理实例
+        get(targetObj,property,proxyInstance){
+          console.log(targetObj === person);
+          console.log(property === "name");
+          console.log(proxyInstance === proxy);
+
+          return targetObj[property]
+        },
+        set(targetObj, property, newValue, proxyInstance){
+          console.log("targetObj>>", targetObj)
+          console.log("property>>", property)
+          console.log("newValue>>", newValue)
+
+          console.log("proxyInstance>>", proxyInstance)
+
+          //如果用户传入的新的属性值，跟原来的属性值不一样，则将新值赋值给原来的属性
+          if(newValue !== targetObj[property]){
+            targetObj[property] = newValue;
+
+            //触发 dom 更新等一系列操作
+          }
+
+          //新值跟原来的值一样的话 do nothing
+        }
       }
-      
-      //新值跟原来的值一样的话 do nothing
-      }
-      }
-      
+
       // Proxy 不能用 instanceof Proxy 判断（Proxy 不是构造函数）；代理对象仍走正常原型链
-      const proxy = new Proxy(person, handler); 
+      const proxy = new Proxy(person, handler);
       console.log(proxy.name);
-      
+
       //Uncaught TypeError: Function has non-object prototype 'undefined' in instanceof check
       //不能用 proxy instanceof Proxy 判断
       // console.log(proxy instanceof Proxy);
-      
+
       console.log(Reflect);
       console.log(typeof Reflect);//object
-      
-      
+
       proxy.name = "我是高杰"
-      
+
       console.log(proxy.name)
       console.log(person.name)
-      
+
     </script>
     <!-- SCRIPT_END -->
 

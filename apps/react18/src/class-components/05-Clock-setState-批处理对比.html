@@ -49,129 +49,128 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="root"></div>
+    <!-- PAGE_DOM_START -->
+    <div id="root"></div>
+    <!-- PAGE_DOM_END -->
 
-    
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script type="text/babel">
       class Clock extends React.Component {
-      constructor(props) {
-      super(props);
-      
-      //构造函数是唯一可以给state直接赋值的地方
-      this.state = {
-      date: new Date(),
-      id: 1,
-      count1: 10001,
-      count2: 20001,
-      };
+        constructor(props) {
+          super(props);
+
+          //构造函数是唯一可以给state直接赋值的地方
+          this.state = {
+            date: new Date(),
+            id: 1,
+            count1: 10001,
+            count2: 20001,
+          };
+        }
+
+        componentDidMount() {
+          console.log("组件已经挂载到dom上了...");
+
+          this.timer = setInterval(() => {
+            // this.tick();
+
+            this.counterOld();
+
+            // this.counterNew();
+          }, 6000);
+        }
+
+        //不能直接修改state
+        //state更新是异步的
+        //state更新会被合并: react会把你提供的对象合并到state中
+        counterOld() {
+          console.log("count1更新前>>>", this.state.count1);
+
+          //如果你想依赖前一个值，更新当前值
+          this.setState({
+            count1: this.state.count1 + 1
+          });
+
+          this.setState({
+            count1: this.state.count1 + 1
+          });
+
+          this.setState({
+            count1: this.state.count1 + 1
+          });
+
+          console.log("count1更新后>>>", this.state.count1);
+        }
+
+        counterNew() {
+          console.log("count2更新前>>>", this.state.count2);
+
+          //如果你想依赖前一个值，更新当前值，需要提供给 this.setState(()=>{})提供一个函数
+          //该函数的第一个参数是前一个 state，第二个参数是 props，且回调函数的内容是异步执行的
+          this.setState((preState, props) => {
+            console.log("preState", preState.count2);
+            console.log("props", props);
+
+            return {
+              count2: preState.count2 + 1,
+            };
+          });
+
+          this.setState((preState, props) => {
+            console.log("preState", preState.count2);
+            console.log("props", props);
+
+            return {
+              count2: preState.count2 + 1,
+            };
+          });
+
+          this.setState((preState, props) => {
+            console.log("preState", preState.count2);
+            console.log("props", props);
+
+            return {
+              count2: preState.count2 + 1,
+            };
+          });
+
+          console.log("count2更新后>>>", this.state.count2);
+        }
+
+        tick() {
+          //调用this.setState方法，让React找到当前组件的state发生了变化，React会重新调用组件
+          //render方法，确定页面上该展示什么。
+          //最后用新的jsx元素去更新UI界面
+          this.setState({
+            date: new Date(),
+          });
+
+          console.log("id更新前>>>", this.state.id);
+
+          //调用 setState 更新 id 后，this.state.id 的值并没有立即更新为最新的值 id：2
+          //而是下次渲染的时候
+          this.setState({
+            id: this.state.id + 1,
+          });
+
+          console.log("id更新后>>>", this.state.id);
+
+          //出于性能考虑，React会将多个setState()方法调用合并成一个调用
+        }
+
+        // componentWillUnmount 拼写必须正确，否则定时器无法清理
+        //       正确钩子是 componentWillUnmount（m 小写）
+        componentWillUnmount() {
+          clearInterval(this.timer);
+        }
+
+        render() {
+          return <div>{this.state.date.toLocaleTimeString()}</div>;
+        }
       }
-      
-      componentDidMount() {
-      console.log("组件已经挂载到dom上了...");
-      
-      this.timer = setInterval(() => {
-      // this.tick();
-      
-      this.counterOld();
-      
-      // this.counterNew();
-      }, 6000);
-      }
-      
-      //不能直接修改state
-      //state更新是异步的
-      //state更新会被合并: react会把你提供的对象合并到state中
-      counterOld() {
-      console.log("count1更新前>>>", this.state.count1);
-      
-      //如果你想依赖前一个值，更新当前值
-      this.setState({
-      count1: this.state.count1 + 1
-      });
-      
-      this.setState({
-      count1: this.state.count1 + 1
-      });
-      
-      this.setState({
-      count1: this.state.count1 + 1
-      });
-      
-      console.log("count1更新后>>>", this.state.count1);
-      }
-      
-      counterNew() {
-      console.log("count2更新前>>>", this.state.count2);
-      
-      //如果你想依赖前一个值，更新当前值，需要提供给 this.setState(()=>{})提供一个函数
-      //该函数的第一个参数是前一个 state，第二个参数是 props，且回调函数的内容是异步执行的
-      this.setState((preState, props) => {
-      console.log("preState", preState.count2);
-      console.log("props", props);
-      
-      return {
-      count2: preState.count2 + 1,
-      };
-      });
-      
-      this.setState((preState, props) => {
-      console.log("preState", preState.count2);
-      console.log("props", props);
-      
-      return {
-      count2: preState.count2 + 1,
-      };
-      });
-      
-      this.setState((preState, props) => {
-      console.log("preState", preState.count2);
-      console.log("props", props);
-      
-      return {
-      count2: preState.count2 + 1,
-      };
-      });
-      
-      console.log("count2更新后>>>", this.state.count2);
-      }
-      
-      tick() {
-      //调用this.setState方法，让React找到当前组件的state发生了变化，React会重新调用组件
-      //render方法，确定页面上该展示什么。
-      //最后用新的jsx元素去更新UI界面
-      this.setState({
-      date: new Date(),
-      });
-      
-      console.log("id更新前>>>", this.state.id);
-      
-      //调用 setState 更新 id 后，this.state.id 的值并没有立即更新为最新的值 id：2
-      //而是下次渲染的时候
-      this.setState({
-      id: this.state.id + 1,
-      });
-      
-      console.log("id更新后>>>", this.state.id);
-      
-      //出于性能考虑，React会将多个setState()方法调用合并成一个调用
-      }
-      
-      // componentWillUnmount 拼写必须正确，否则定时器无法清理
-      //       正确钩子是 componentWillUnmount（m 小写）
-      componentWillUnmount() {
-      clearInterval(this.timer);
-      }
-      
-      render() {
-      return <div>{this.state.date.toLocaleTimeString()}</div>;
-      }
-      }
-      
+
       ReactDOM.createRoot(document.getElementById("root")).render(<Clock name="IClock" />);
+
     </script>
     <!-- SCRIPT_END -->
 

@@ -48,35 +48,36 @@
     <!-- SCRIPT_START -->
     <script>
       class PrivateConstructor {
-      static #isInternalConstructing = false;
-      
-      constructor() {
-      if (!PrivateConstructor.#isInternalConstructing) {
-      throw new TypeError("PrivateConstructor is not constructable");
+        static #isInternalConstructing = false;
+
+        constructor() {
+          if (!PrivateConstructor.#isInternalConstructing) {
+            throw new TypeError("PrivateConstructor is not constructable");
+          }
+          PrivateConstructor.#isInternalConstructing = false;
+          // 这里继续做实例初始化
+
+          console.log("使用内部构造器，构造成功!");
+        }
+
+        // 工厂方法：唯一的合法构造入口
+        static create() {
+          PrivateConstructor.#isInternalConstructing = true;
+          const instance = new PrivateConstructor();
+          console.log("使用工厂方法构造成功!");
+          return instance;
+        }
       }
-      PrivateConstructor.#isInternalConstructing = false;
-      // 这里继续做实例初始化
-      
-      console.log("使用内部构造器，构造成功!");
-      }
-      
-      // 工厂方法：唯一的合法构造入口
-      static create() {
-      PrivateConstructor.#isInternalConstructing = true;
-      const instance = new PrivateConstructor();
-      console.log("使用工厂方法构造成功!");
-      return instance;
-      }
-      }
-      
+
       // 合法：走工厂方法
       PrivateConstructor.create();
-      
+
       // 反面教材 / 易错点：直接 new 会抛 TypeError，这里注释掉避免页面报错中断后续脚本
       // new PrivateConstructor();
-      
+
       // 类外部不能访问私有静态字段
       // console.log(PrivateConstructor.#isInternalConstructing);
+
     </script>
     <!-- SCRIPT_END -->
 

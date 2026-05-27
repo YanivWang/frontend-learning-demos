@@ -22,13 +22,13 @@
     <title>Vue3 · defineModel 组件 v-model</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-    body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-    input { padding: 6px 10px; }
-    code, pre { background: #f6f8fa; border-radius: 6px; }
-    code { padding: 2px 5px; }
-    pre { padding: 12px; overflow: auto; }
-    .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 820px; }
-    .grid { display: grid; gap: 12px; }
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      input { padding: 6px 10px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 820px; }
+      .grid { display: grid; gap: 12px; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -56,9 +56,9 @@
     </section>
     <!-- NOTES_END -->
 
-<div id="app">
+    <!-- PAGE_DOM_START -->
+    <div id="app">
       <h1>defineModel（Vue 3.4+）</h1>
-
       <div class="box grid">
         <model-input v-model="title"></model-input>
         <named-model-input v-model:title="subtitle"></named-model-input>
@@ -66,79 +66,74 @@
         <p>父组件 subtitle：{{ subtitle }}</p>
         <pre>{{ sfcSnippet }}</pre>
       </div>
-
-      
     </div>
+    <!-- PAGE_DOM_END -->
 
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       const { createApp, ref, computed } = Vue;
-      
+
       // defineModel() 编译后的等价运行时写法
       function useVModel(props, emit, key = "modelValue") {
-      const event = key === "modelValue" ? "update:modelValue" : `update:${key}`;
-      return computed({
-      get: () => props[key],
-      set: (value) => emit(event, value),
-      });
+        const event = key === "modelValue" ? "update:modelValue" : `update:${key}`;
+        return computed({
+          get: () => props[key],
+          set: (value) => emit(event, value),
+        });
       }
-      
+
       const ModelInput = {
-      props: { modelValue: String },
-      emits: ["update:modelValue"],
-      setup(props, { emit }) {
-      const model = useVModel(props, emit);
-      return { model };
-      },
-      template: `
-      <label>
-      默认 defineModel 等价：
-      <input v-model="model" />
-      </label>
-      `,
+        props: { modelValue: String },
+        emits: ["update:modelValue"],
+        setup(props, { emit }) {
+          const model = useVModel(props, emit);
+          return { model };
+        },
+        template: `
+        <label>
+          默认 defineModel 等价：
+          <input v-model="model" />
+        </label>
+        `,
       };
-      
+
       const NamedModelInput = {
-      props: { title: String },
-      emits: ["update:title"],
-      setup(props, { emit }) {
-      const model = useVModel(props, emit, "title");
-      return { model };
-      },
-      template: `
-      <label>
-      命名 defineModel('title') 等价：
-      <input v-model="model" />
-      </label>
-      `,
+        props: { title: String },
+        emits: ["update:title"],
+        setup(props, { emit }) {
+          const model = useVModel(props, emit, "title");
+          return { model };
+        },
+        template: `
+        <label>
+          命名 defineModel('title') 等价：
+          <input v-model="model" />
+        </label>
+        `,
       };
-      
+
       createApp({
-      components: { ModelInput, NamedModelInput },
-      setup() {
-      const title = ref("Vue 3.4 defineModel");
-      const subtitle = ref("命名 v-model:title");
-      const sfcSnippet = [
-      "<!-- 默认模型 -->",
-      "&lt;script setup&gt;",
-      "const model = defineModel()",
-      "&lt;/script&gt;",
-      '<input v-model="model" />',
-      "",
-      "<!-- 命名模型 -->",
-      "&lt;script setup&gt;",
-      "const title = defineModel('title')",
-      "&lt;/script&gt;",
-      '<input v-model="title" />',
-      ].join("\n");
-      return { title, subtitle, sfcSnippet };
-      },
+        components: { ModelInput, NamedModelInput },
+        setup() {
+          const title = ref("Vue 3.4 defineModel");
+          const subtitle = ref("命名 v-model:title");
+          const sfcSnippet = [
+            "<!-- 默认模型 -->",
+            "&lt;script setup&gt;",
+            "const model = defineModel()",
+            "&lt;/script&gt;",
+            '<input v-model="model" />',
+            "",
+            "<!-- 命名模型 -->",
+            "&lt;script setup&gt;",
+            "const title = defineModel('title')",
+            "&lt;/script&gt;",
+            '<input v-model="title" />',
+          ].join("\n");
+          return { title, subtitle, sfcSnippet };
+        },
       }).mount("#app");
+
     </script>
     <!-- SCRIPT_END -->
 

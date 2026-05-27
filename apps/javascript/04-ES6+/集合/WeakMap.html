@@ -46,14 +46,11 @@
     </section>
     <!-- NOTES_END -->
 
-<button id="myButton">click me</button>
+    <!-- PAGE_DOM_START -->
+    <button id="myButton">click me</button>
+    <!-- PAGE_DOM_END -->
 
-    
-        
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
       // WeakMap 键不属于「强引用」，不会阻止 GC
       // 只要键被回收，对应键值对就一起消失
@@ -61,46 +58,47 @@
       // wm.set(1, 123);        // 报错：Invalid value used as weak map key
       // wm.set("2", {});       // 报错：原始类型也不行
       wm.set({}, { address: "北京奶东村" });
-      
+
       // wm.entries           // WeakMap 不存在迭代方法
       console.log(wm);
-      
+
       setTimeout(() => {
-      console.log(wm);
+        console.log(wm);
       }, 3000);
-      
+
       // 场景 1：实现类的私有变量
       const privateData = new WeakMap();
-      
+
       class MyClass {
-      constructor() {
-      privateData.set(this, {
-      secret: "这是私有数据",
-      });
+        constructor() {
+          privateData.set(this, {
+            secret: "这是私有数据",
+          });
+        }
+        getSecret() {
+          return privateData.get(this).secret;
+        }
       }
-      getSecret() {
-      return privateData.get(this).secret;
-      }
-      }
-      
+
       const instance = new MyClass();
       console.log(instance.getSecret());
       // 通过外部 key 取不到，但只要类内部能拿到 this 这个键，就能访问
       console.log(privateData.get({})); // undefined
-      
+
       // 场景 2：给 DOM 节点关联元数据；节点被移除时元数据可自动回收
       const elementStates = new WeakMap();
       const button = document.getElementById("myButton");
-      
+
       elementStates.set(button, {
-      clickCount: 0,
+        clickCount: 0,
       });
-      
+
       button.addEventListener("click", function () {
-      const state = elementStates.get(this);
-      state.clickCount++;
-      console.log(`按钮被点击了 ${state.clickCount} 次`);
+        const state = elementStates.get(this);
+        state.clickCount++;
+        console.log(`按钮被点击了 ${state.clickCount} 次`);
       });
+
     </script>
     <!-- SCRIPT_END -->
 

@@ -45,109 +45,67 @@
     </section>
     <!-- NOTES_END -->
 
-<p>
-    严格模式通过 <code>"use strict";</code> 启用，
-    可声明在<strong>整个脚本</strong>顶部，或<strong>函数内部</strong>第一行（局部生效）。
-  </p>
-  <pre><code>"use strict"; // 必须是脚本/函数体的第一条语句，前面只能有注释</code></pre>
-
-  <h2>1. 不允许使用未声明的变量（防止意外创建全局变量）</h2>
-  <pre><code>"use strict";
-// testStr = "abc";   // ❌ ReferenceError: testStr is not defined
-let testStr = "abc";  // ✅</code></pre>
-
-  <h2>2. 禁用八进制字面量（避免 010 被误以为是 8）</h2>
-  <pre><code>"use strict";
-// var x = 010;       // ❌ SyntaxError
-var y = 0x10;         // ✅ 十六进制依旧可用
-console.log(y);       // 16</code></pre>
-
-  <h2>3. 不能 delete 变量 / 函数（只允许 delete 对象属性）</h2>
-  <pre><code>"use strict";
-var a = 1;
-// delete a;          // ❌ SyntaxError
-
-const person = { name: "fighting!", age: 20 };
-delete person.name;   // ✅
-console.log(person);  // { age: 20 }</code></pre>
-
-  <h2>4. 函数形参不允许重名</h2>
-  <pre><code>"use strict";
-// function fn(a, a) { return a; } // ❌ SyntaxError</code></pre>
-
-  <h2>5. 函数内独立的 <code>this</code> 指向 <code>undefined</code></h2>
-  <p>非严格模式下，独立调用的函数 <code>this</code> 指向全局对象（window）；严格模式下变成 <code>undefined</code>。</p>
-  <pre><code>"use strict";
-function fa() {
-  return this;        // undefined
-}
-console.log(fa());    // undefined（非严格下是 Window）
-
-function fb() {
-  return !this;       // !undefined === true
-}
-console.log(fb());    // true</code></pre>
-
-  <h2>6. 部分参数对象（arguments）不再随形参联动</h2>
-  <p>严格模式下修改 <code>arguments[0]</code> 不会改变形参 <code>a</code>，反之亦然。</p>
-
-  <h2>7. 实战：可执行的演示</h2>
-  <button type="button" id="run-demo">运行全部演示</button>
-  <div id="out" class="demo-output" aria-live="polite"></div>
-
-    
-            
-                
-                
-                <!-- SCRIPT_START -->
+    <!-- SCRIPT_START -->
     <script>
-      'use strict';
-      
-      function runDemo() {
-      const lines = [];
-      const log = (m) => lines.push(m);
-      
+      "use strict";
+
+      // ============ 1. 未声明变量赋值 → ReferenceError ============
+      try {
+        // testStr = "abc"; // ❌ ReferenceError
+        let testStr = "abc";
+        console.log("[1] 声明后赋值:", testStr);
+      } catch (e) {
+        console.log("[1] 未声明变量:", e.message);
+      }
+
+      // ============ 2. 八进制字面量 → SyntaxError（此处仅注释演示）============
+      // var x = 010; // ❌ SyntaxError
       const y = 0x10;
-      log("0x10 = " + y);
-      
+      console.log("[2] 0x10 =", y); // 16
+
+      // ============ 3. delete 变量 vs delete 对象属性 ============
+      const a = 1;
+      // delete a; // ❌ SyntaxError
       const person = { name: "fighting!", age: 20 };
       delete person.name;
-      log("delete 后: " + JSON.stringify(person));
-      
+      console.log("[3] delete 对象属性后:", person); // { age: 20 }
+
+      // ============ 4. 形参重名 → SyntaxError（此处仅注释演示）============
+      // function fn(a, a) { return a; } // ❌ SyntaxError
+
+      // ============ 5. 独立调用时 this === undefined ============
       function fa() {
-      "use strict";
-      return !this;
+        return this;
       }
-      log("独立调用 fa() 时 !this = " + fa());
-      
-      const obj = { name: "obj" };
+      console.log("[5] fa() 的 this:", fa()); // undefined（非严格下是 window）
+
+      function fb() {
+        return !this;
+      }
+      console.log("[5] fb() 的 !this:", fb()); // true
+
       function showThis() {
-      "use strict";
-      return this;
+        return this;
       }
-      log("showThis.call(42): " + showThis.call(42));
-      log("showThis.call(obj): " + JSON.stringify(showThis.call(obj)));
-      
-      document.getElementById("out").textContent = lines.join("\n");
+      const obj = { name: "obj" };
+      console.log("[5] showThis.call(42):", showThis.call(42));
+      console.log("[5] showThis.call(obj):", showThis.call(obj));
+
+      // ============ 6. arguments 与形参不再联动 ============
+      function argsDemo(a) {
+        arguments[0] = 99;
+        return { a, arguments0: arguments[0] };
       }
-      document.getElementById("run-demo").addEventListener("click", runDemo);
-      runDemo();
+      console.log("[6] 改 arguments[0] 后:", argsDemo(1)); // a 仍为 1
+
+      // ============ 7. 局部严格模式：IIFE 内开启，不影响外部 ============
+      (function () {
+        "use strict";
+        console.log("[7] IIFE 内独立调用 this:", function () { return this; }());
+      })();
+
     </script>
     <!-- SCRIPT_END -->
-    
-    
-    
-    
-    
-
-<h2>常见踩坑</h2>
-  <ul>
-    <li><code>'use strict'</code> 必须放在<strong>第一条语句</strong>，否则被当作普通字符串忽略</li>
-    <li>ES6 模块（<code>type="module"</code>）和 <code>class</code> 内部默认就是严格模式</li>
-    <li>用 IIFE 包裹的 <code>'use strict'</code> 只在该 IIFE 内生效，不会污染外部</li>
-  </ul>
-
-  <p>相关：<a href="IIFE.html">IIFE 立即执行函数</a> · <a href="函数进阶.html">函数进阶</a></p>
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
@@ -169,6 +127,6 @@ console.log(fb());    // true</code></pre>
       </script>
     </footer>
     <!-- NAV_END -->
-  
-</body>
+
+  </body>
 </html>
