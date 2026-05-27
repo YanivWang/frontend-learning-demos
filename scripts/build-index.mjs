@@ -8,7 +8,7 @@
  *   node scripts/build-index.mjs
  *
  * 约定见 CONVENTIONS.md：
- *   - 顶层分类目录：javascript / css / vue2 / vue3 / react / demos
+ *   - 学习分类目录：learn/javascript / learn/css / learn/vue2 / learn/vue3 / learn/react / learn/demos
  *   - libs / lib 子目录视为第三方/工具，不扫描
  *   - 根目录 index.html 是输出目标，不参与扫描
  */
@@ -21,13 +21,13 @@ const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
 
 // 仓库子目录扫描配置（顺序即在导航页中的展示顺序）
 const SECTIONS = [
-  { dir: "javascript", title: "JavaScript", desc: "纯 JS 知识点 demo（按 01–09 编号分类）" },
-  { dir: "css",        title: "CSS",         desc: "布局 / 动画 / 视觉 / 响应式 / 现代特性" },
-  { dir: "vue2",       title: "Vue 2",       desc: "响应式原理、基础语法、组件、路由与状态" },
-  { dir: "vue3",       title: "Vue 3",       desc: "基础语法、响应式、组件通信、内置组件、路由状态、原理性能" },
-  { dir: "react",      title: "React 18",    desc: "函数组件 33 + 类组件 19：JSX、Hooks、setState、生命周期、面试考点" },
-  { dir: "demos",      title: "综合 Demo",    desc: "拖拽 / SVG / ViewPager 等小项目" },
-  { dir: "typescript", title: "TypeScript",  desc: "类型注解、interface/type、泛型、类型收窄" },
+  { dir: "learn/javascript", title: "JavaScript", desc: "纯 JS 知识点 demo（按 01–09 编号分类）" },
+  { dir: "learn/css",        title: "CSS",         desc: "布局 / 动画 / 视觉 / 响应式 / 现代特性" },
+  { dir: "learn/vue2",       title: "Vue 2",       desc: "响应式原理、基础语法、组件、路由与状态" },
+  { dir: "learn/vue3",       title: "Vue 3",       desc: "基础语法、响应式、组件通信、内置组件、路由状态、原理性能" },
+  { dir: "learn/react",      title: "React 18",    desc: "函数组件 33 + 类组件 19：JSX、Hooks、setState、生命周期、面试考点" },
+  { dir: "learn/demos",      title: "综合 Demo",    desc: "拖拽 / SVG / ViewPager 等小项目" },
+  { dir: "learn/typescript", title: "TypeScript",  desc: "类型注解、interface/type、泛型、类型收窄" },
 ];
 
 // 这些子目录不参与扫描（视为运行时 / 工具库 / VCS / 依赖目录）
@@ -91,7 +91,7 @@ async function collect(dirAbs, results) {
 }
 
 /**
- * 把绝对目录路径转成相对仓库根的显示路径（"javascript/04-ES6+/异步/Promise"）。
+ * 把绝对目录路径转成相对仓库根的显示路径（"learn/javascript/04-ES6+/异步/Promise"）。
  */
 function relDirDisplay(dirAbs) {
   return relative(ROOT, dirAbs).split(sep).join("/");

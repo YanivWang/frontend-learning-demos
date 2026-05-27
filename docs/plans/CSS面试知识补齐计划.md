@@ -1,6 +1,6 @@
 # CSS 面试知识补齐计划
 
-> 仓库 `css/` 在补齐现代特性后共 **36** 个 demo，完整清单见 [`css/README.md`](css/README.md)。
+> 仓库 `learn/css/` 在补齐现代特性后共 **36** 个 demo，完整清单见 [`learn/css/README.md`](../../learn/css/README.md)。
 
 ## 目标
 
@@ -8,10 +8,10 @@
 
 ## 完成清单
 
-- [x] 新建 `css/07-现代特性/01-has选择器/`
-- [x] 新建 `css/07-现代特性/02-layer层叠管理/`
-- [x] 新建 `css/07-现代特性/03-container-queries容器查询/`
-- [x] 更新 `css/README.md` 目录表与推荐顺序
+- [x] 新建 `learn/css/07-现代特性/01-has选择器/`
+- [x] 新建 `learn/css/07-现代特性/02-layer层叠管理/`
+- [x] 新建 `learn/css/07-现代特性/03-container-queries容器查询/`
+- [x] 更新 `learn/css/README.md` 目录表与推荐顺序
 
 ## 验证方式
 

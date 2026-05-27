@@ -12,11 +12,11 @@ const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
 const SKIP = new Set(["libs", "lib", "node_modules", ".git"]);
 
 const CONFIG = {
-  javascript: { scan: "javascript", label: "javascript" },
-  css: { scan: "css", label: "css" },
-  vue2: { scan: join("vue2", "src"), label: "vue2/src" },
-  vue3: { scan: join("vue3", "src"), label: "vue3/src" },
-  react: { scan: join("react", "src"), label: "react/src" },
+  javascript: { scan: join("learn", "javascript"), label: "learn/javascript" },
+  css: { scan: join("learn", "css"), label: "learn/css" },
+  vue2: { scan: join("learn", "vue2", "src"), label: "learn/vue2/src" },
+  vue3: { scan: join("learn", "vue3", "src"), label: "learn/vue3/src" },
+  react: { scan: join("learn", "react", "src"), label: "learn/react/src" },
 };
 
 function parseHeader(content) {

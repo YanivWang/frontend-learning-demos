@@ -1,10 +1,10 @@
 # JavaScript 面试知识点补齐计划
 
-> 仓库当前 `javascript/` 共 **120** 个 demo，完整清单见 [`javascript/README.md`](javascript/README.md)（由 `node scripts/sync-readmes.mjs` 根据头注释同步）。
+> 仓库当前 `learn/javascript/` 共 **120** 个 demo，完整清单见 [`learn/javascript/README.md`](../../learn/javascript/README.md)（由 `node scripts/sync-readmes.mjs` 根据头注释同步）。
 
 ## 目标
 
-结合当前 `javascript/` 目录，优先补齐 JS 基础面试中最常见、最容易被追问的空缺：类型转换、数组 API、DOM 事件、存储对比、ES6 语法糖、模块化对比、fetch/CORS、GC 原理、浏览器渲染，以及高频手写题。
+结合当前 `learn/javascript/` 目录，优先补齐 JS 基础面试中最常见、最容易被追问的空缺：类型转换、数组 API、DOM 事件、存储对比、ES6 语法糖、模块化对比、fetch/CORS、GC 原理、浏览器渲染，以及高频手写题。
 
 本轮按“基础高频优先，其次浏览器与进阶，最后扩展专题”的顺序执行。
 
@@ -48,24 +48,24 @@ flowchart TB
 
 ## 完成清单
 
-- [x] 新建 `javascript/01-基础/类型转换.html`
-- [x] 新建 `javascript/01-基础/数组方法.html`
-- [x] 新建 `javascript/04-ES6+/解构展开与模板字符串.html`
-- [x] 新建 `javascript/04-ES6+/模块化/CommonJS-vs-ESM.html`
-- [x] 重命名 `javascript/06-浏览器API/事件模型/event.html` 为 `javascript/06-浏览器API/事件模型/01-事件循环.html`
-- [x] 新建 `javascript/06-浏览器API/事件模型/02-dom事件-冒泡捕获委托.html`
-- [x] 新建 `javascript/06-浏览器API/存储/00-存储方案对比.html`
-- [x] 新建 `javascript/06-浏览器API/fetch与跨域.html`
-- [x] 新建 `javascript/06-浏览器API/浏览器渲染与性能.html`
-- [x] 新建 `javascript/07-进阶/垃圾回收.html`
-- [x] 新建 `javascript/08-面试题/手写/` 下 6 个手写 demo
-- [x] 更新 `javascript/README.md` 目录表与推荐顺序说明
+- [x] 新建 `learn/javascript/01-基础/类型转换.html`
+- [x] 新建 `learn/javascript/01-基础/数组方法.html`
+- [x] 新建 `learn/javascript/04-ES6+/解构展开与模板字符串.html`
+- [x] 新建 `learn/javascript/04-ES6+/模块化/CommonJS-vs-ESM.html`
+- [x] 重命名 `learn/javascript/06-浏览器API/事件模型/event.html` 为 `learn/javascript/06-浏览器API/事件模型/01-事件循环.html`
+- [x] 新建 `learn/javascript/06-浏览器API/事件模型/02-dom事件-冒泡捕获委托.html`
+- [x] 新建 `learn/javascript/06-浏览器API/存储/00-存储方案对比.html`
+- [x] 新建 `learn/javascript/06-浏览器API/fetch与跨域.html`
+- [x] 新建 `learn/javascript/06-浏览器API/浏览器渲染与性能.html`
+- [x] 新建 `learn/javascript/07-进阶/垃圾回收.html`
+- [x] 新建 `learn/javascript/08-面试题/手写/` 下 6 个手写 demo
+- [x] 更新 `learn/javascript/README.md` 目录表与推荐顺序说明
 
 ---
 
 ## 一、高优先级：基础高频
 
-### 1. `javascript/01-基础/类型转换.html`
+### 1. `learn/javascript/01-基础/类型转换.html`
 
 覆盖：
 
@@ -76,7 +76,7 @@ flowchart TB
 - `NaN` 判断：`Number.isNaN`、`isNaN`、`Object.is`
 - 推荐实践：业务比较优先 `===`，默认值优先按场景选择 `??`
 
-### 2. `javascript/01-基础/数组方法.html`
+### 2. `learn/javascript/01-基础/数组方法.html`
 
 覆盖：
 
@@ -86,7 +86,7 @@ flowchart TB
 - `sort` 默认字典序陷阱
 - 面试常写：去重、扁平化、`reduce` 分组统计
 
-### 3. `javascript/08-面试题/手写/`
+### 3. `learn/javascript/08-面试题/手写/`
 
 本轮从原计划 5 个扩展为 6 个，因为 `call/apply/bind` 通常是同组高频题。
 
@@ -107,15 +107,15 @@ flowchart TB
 
 ### 4. DOM 事件模型
 
-- `javascript/06-浏览器API/事件模型/01-事件循环.html`
+- `learn/javascript/06-浏览器API/事件模型/01-事件循环.html`
   - 原 `event.html` 改名，避免和 DOM 事件流混淆
   - 内容仍聚焦同步任务、微任务、宏任务、Promise、async/await、setTimeout
-- `javascript/06-浏览器API/事件模型/02-dom事件-冒泡捕获委托.html`
+- `learn/javascript/06-浏览器API/事件模型/02-dom事件-冒泡捕获委托.html`
   - 三层嵌套元素演示 capture / bubble 顺序
   - 对比 `stopPropagation` 与 `stopImmediatePropagation`
   - 用 `ul > li` 演示事件委托
 
-### 5. `javascript/06-浏览器API/存储/00-存储方案对比.html`
+### 5. `learn/javascript/06-浏览器API/存储/00-存储方案对比.html`
 
 覆盖：
 
@@ -125,7 +125,7 @@ flowchart TB
 - `localStorage`、`sessionStorage`、`document.cookie` 可运行读写 demo
 - IndexedDB 指向现有 localforage 系列，不重复大段封装
 
-### 6. `javascript/04-ES6+/解构展开与模板字符串.html`
+### 6. `learn/javascript/04-ES6+/解构展开与模板字符串.html`
 
 覆盖：
 
@@ -136,7 +136,7 @@ flowchart TB
 - 模板字符串、标签模板
 - 可选链 `?.` 与空值合并 `??`
 
-### 7. `javascript/04-ES6+/模块化/CommonJS-vs-ESM.html`
+### 7. `learn/javascript/04-ES6+/模块化/CommonJS-vs-ESM.html`
 
 覆盖：
 
@@ -146,7 +146,7 @@ flowchart TB
 - 导出值与实时绑定差异
 - tree-shaking 与现代前端默认选择
 
-### 8. `javascript/06-浏览器API/fetch与跨域.html`
+### 8. `learn/javascript/06-浏览器API/fetch与跨域.html`
 
 覆盖：
 
@@ -161,7 +161,7 @@ flowchart TB
 
 ## 三、中低优先级：进阶原理
 
-### 9. `javascript/07-进阶/垃圾回收.html`
+### 9. `learn/javascript/07-进阶/垃圾回收.html`
 
 覆盖：
 
@@ -171,7 +171,7 @@ flowchart TB
 - WeakMap / WeakSet 不阻止对象回收
 - 开发实践：解除事件、定时器、大对象引用
 
-### 10. `javascript/06-浏览器API/浏览器渲染与性能.html`
+### 10. `learn/javascript/06-浏览器API/浏览器渲染与性能.html`
 
 覆盖：
 

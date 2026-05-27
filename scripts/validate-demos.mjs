@@ -17,7 +17,15 @@ import { tmpdir } from "node:os";
 
 const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
 
-const SECTIONS = ["javascript", "css", "vue2", "vue3", "react", "demos", "typescript"];
+const SECTIONS = [
+  join("learn", "javascript"),
+  join("learn", "css"),
+  join("learn", "vue2"),
+  join("learn", "vue3"),
+  join("learn", "react"),
+  join("learn", "demos"),
+  join("learn", "typescript"),
+];
 const SKIP_DIRS = new Set(["libs", "lib", "node_modules", ".git", "scripts"]);
 
 const errors = [];

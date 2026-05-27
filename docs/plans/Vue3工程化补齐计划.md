@@ -1,6 +1,6 @@
 # Vue3 工程化补齐计划
 
-> 仓库 `vue3/src/` 共 **39** 个 demo，完整清单见 [`vue3/README.md`](vue3/README.md)。
+> 仓库 `learn/vue3/src/` 共 **39** 个 demo，完整清单见 [`learn/vue3/README.md`](../../learn/vue3/README.md)。
 
 ## 目标
 
@@ -12,7 +12,7 @@
 - [x] 根目录遗留 `生命周期钩子.html` → `03-生命周期与组合式/04-全量钩子与KeepAlive.html`
 - [x] 新建 `07-路由状态工程化/04-Vite工程化面试点.html`
 - [x] 新建 `07-路由状态工程化/05-script-setup编译宏.html`
-- [x] 更新 `vue3/README.md`，移除「根目录补充示例」
+- [x] 更新 `learn/vue3/README.md`，移除「根目录补充示例」
 
 ## 验证方式
 

@@ -70,12 +70,12 @@ async function patchReadme(readmePath, scanRoot) {
 }
 
 const tasks = [
-  ["javascript/README.md", "javascript"],
-  ["css/README.md", "css"],
-  ["vue2/README.md", join("vue2", "src")],
-  ["vue3/README.md", join("vue3", "src")],
-  ["react/README.md", join("react", "src")],
-  ["typescript/README.md", "typescript"],
+  ["learn/javascript/README.md", join("learn", "javascript")],
+  ["learn/css/README.md", join("learn", "css")],
+  ["learn/vue2/README.md", join("learn", "vue2", "src")],
+  ["learn/vue3/README.md", join("learn", "vue3", "src")],
+  ["learn/react/README.md", join("learn", "react", "src")],
+  ["learn/typescript/README.md", join("learn", "typescript")],
 ];
 
 for (const [readme, scan] of tasks) {

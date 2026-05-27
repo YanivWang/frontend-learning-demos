@@ -15,13 +15,13 @@ open index.html
 
 | 分类 | 路径 | demo 数量 | 说明文档 |
 |---|---|---:|---|
-| JavaScript | `javascript/` | 120 | [`javascript/README.md`](javascript/README.md) |
-| CSS | `css/` | 36 | [`css/README.md`](css/README.md) |
-| Vue 2 | `vue2/src/` | 57 | [`vue2/README.md`](vue2/README.md) |
-| Vue 3 | `vue3/src/` | 39 | [`vue3/README.md`](vue3/README.md) |
-| React 18 | `react/src/` | 52 | [`react/README.md`](react/README.md) |
-| TypeScript | `typescript/` | 4 | [`typescript/README.md`](typescript/README.md) |
-| 综合 Demo | `demos/` | 4 | [`demos/README.md`](demos/README.md) |
+| JavaScript | `learn/javascript/` | 120 | [`learn/javascript/README.md`](learn/javascript/README.md) |
+| CSS | `learn/css/` | 36 | [`learn/css/README.md`](learn/css/README.md) |
+| Vue 2 | `learn/vue2/src/` | 57 | [`learn/vue2/README.md`](learn/vue2/README.md) |
+| Vue 3 | `learn/vue3/src/` | 39 | [`learn/vue3/README.md`](learn/vue3/README.md) |
+| React 18 | `learn/react/src/` | 52 | [`learn/react/README.md`](learn/react/README.md) |
+| TypeScript | `learn/typescript/` | 4 | [`learn/typescript/README.md`](learn/typescript/README.md) |
+| 综合 Demo | `learn/demos/` | 4 | [`learn/demos/README.md`](learn/demos/README.md) |
 | **合计** | — | **312** | 各 demo 均有统一头注释（见 [`CONVENTIONS.md`](CONVENTIONS.md) §4） |
 
 ## 目录结构
@@ -32,21 +32,20 @@ open index.html
 ├── manifest.json            # demo 结构化清单（自动生成）
 ├── README.md                # 本文件
 ├── CONVENTIONS.md           # 目录与命名约定（每次想动结构前先读它）
-├── REVIEW-PLAN.md           # 全量审查与演进记录
-├── JS面试知识补齐计划.md     # JavaScript 面试知识点补齐记录
-├── CSS面试知识补齐计划.md    # CSS 现代特性补齐记录
-├── Vue3工程化补齐计划.md     # Vue3 工程化补齐记录
-├── TypeScript面试知识补齐计划.md
+├── docs/
+│   ├── plans/               # 面试知识点 / 工程化补齐计划
+│   └── reviews/             # 全量审查与演进记录
 ├── .github/workflows/ci.yml # CI：validate-demos + build-index
 ├── .gitignore .editorconfig
 │
-├── javascript/              # 纯 JavaScript（详见 javascript/README.md）
-├── css/                     # CSS（含 07-现代特性）
-├── vue2/                    # Vue 2.7.16
-├── vue3/                    # Vue 3.5.34
-├── react/                   # React 18.3.1（function-components + class-components）
-├── typescript/              # TypeScript 面试基础
-├── demos/                   # 综合 Demo（drag / svg / viewpager）
+├── learn/                   # 学习 demo 主目录
+│   ├── javascript/          # 纯 JavaScript（详见 learn/javascript/README.md）
+│   ├── css/                 # CSS（含 07-现代特性）
+│   ├── vue2/                # Vue 2.7.16
+│   ├── vue3/                # Vue 3.5.34
+│   ├── react/               # React 18.3.1（function-components + class-components）
+│   ├── typescript/          # TypeScript 面试基础
+│   └── demos/               # 综合 Demo（drag / svg / viewpager）
 │
 └── scripts/
     ├── build-index.mjs      # 扫描生成 index.html / manifest.json

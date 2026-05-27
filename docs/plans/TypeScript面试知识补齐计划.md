@@ -1,6 +1,6 @@
 # TypeScript 面试知识补齐计划
 
-> 仓库新增顶层 `typescript/` 模块，共 **4** 个 demo，完整清单见 [`typescript/README.md`](typescript/README.md)。
+> 仓库新增 `learn/typescript/` 模块，共 **4** 个 demo，完整清单见 [`learn/typescript/README.md`](../../learn/typescript/README.md)。
 
 ## 目标
 
@@ -8,12 +8,12 @@
 
 ## 完成清单
 
-- [x] 新建 `typescript/01-基础/01-类型注解与推断.html`
-- [x] 新建 `typescript/01-基础/02-interface与type.html`
-- [x] 新建 `typescript/01-基础/03-泛型基础.html`
-- [x] 新建 `typescript/02-进阶/01-类型收窄.html`
-- [x] 新建 `typescript/README.md`
-- [x] `build-index` / `sync-readmes` / `validate-demos` 纳入 `typescript/`
+- [x] 新建 `learn/typescript/01-基础/01-类型注解与推断.html`
+- [x] 新建 `learn/typescript/01-基础/02-interface与type.html`
+- [x] 新建 `learn/typescript/01-基础/03-泛型基础.html`
+- [x] 新建 `learn/typescript/02-进阶/01-类型收窄.html`
+- [x] 新建 `learn/typescript/README.md`
+- [x] `build-index` / `sync-readmes` / `validate-demos` 纳入 `learn/typescript/`
 
 ## 验证方式
 

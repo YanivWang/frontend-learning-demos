@@ -2,7 +2,7 @@
 
 按学习顺序编号的纯 JS 知识点 demo，共 **120** 个 `.html` 文件。每个文件都可以直接在浏览器打开，无需构建。
 
-每个 demo 在 `<!DOCTYPE html>` 前有统一头注释（`分类` / `主题` / `要点`），详见 [`../CONVENTIONS.md`](../CONVENTIONS.md) §4。
+每个 demo 在 `<!DOCTYPE html>` 前有统一头注释（`分类` / `主题` / `要点`），详见 [`../../CONVENTIONS.md`](../../CONVENTIONS.md) §4。
 
 ## 目录概览
 
@@ -25,7 +25,7 @@
 - `08-面试题/作用域` 可以在学完 `02` 后作复盘。
 - `08-面试题/手写` 建议分阶段刷：学完 this 后看 call/apply/bind，学完对象与原型后看 new/instanceof，学完 Promise 后看手写 Promise。
 
-更细的补齐记录见 [`../JS面试知识补齐计划.md`](../JS面试知识补齐计划.md)。
+更细的补齐记录见 [`../../docs/plans/JS面试知识补齐计划.md`](../../docs/plans/JS面试知识补齐计划.md)。
 
 ## 完整 demo 清单
 

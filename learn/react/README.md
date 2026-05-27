@@ -1,6 +1,6 @@
 # React 18
 
-按学习顺序编号的 React 18 demo。`react/src/` 下共 **52** 个 `.html`（函数组件 **33** + 类组件 **19**）。
+按学习顺序编号的 React 18 demo。`learn/react/src/` 下共 **52** 个 `.html`（函数组件 **33** + 类组件 **19**）。
 
 打开任意 `src/class-components/*.html` 或 `src/function-components/*.html` 即可，无需构建。脚本通过 `<script src="../../libs/...">` 引用 React / Babel 运行时。
 
@@ -79,7 +79,7 @@
 
 ## 面试覆盖范围
 
-当前 `react/src` 已覆盖 React 基础面试中的常见主干：
+当前 `learn/react/src` 已覆盖 React 基础面试中的常见主干：
 
 - 基础渲染：JSX、React 元素、`createRoot`、元素不可变、条件渲染
 - 组件基础：函数组件、class 组件、`props`、`state`、生命周期、refs、PureComponent、HOC

@@ -1,6 +1,6 @@
 # 综合 Demo
 
-不属于单一知识点的小项目 / 交互实验。共 **4** 个 `.html`，均已具备与 [`CONVENTIONS.md`](../CONVENTIONS.md) §4 一致的头注释。
+不属于单一知识点的小项目 / 交互实验。共 **4** 个 `.html`，均已具备与 [`CONVENTIONS.md`](../../CONVENTIONS.md) §4 一致的头注释。
 
 第三方运行时见 [`libs/README.md`](libs/README.md)（Tailwind 浏览器版、Font Awesome 等）。
 

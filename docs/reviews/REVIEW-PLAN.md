@@ -6,7 +6,7 @@
 
 ## 阶段 A：全量审查修复并补注释（已完成）
 
-- [x] `javascript/` **120** · `css/` **33** · `vue2/` **57** · `vue3/` **37** · `react/` **53** · `demos/` **4**
+- [x] `learn/javascript/` **120** · `learn/css/` **33** · `learn/vue2/` **57** · `learn/vue3/` **37** · `learn/react/` **53** · `learn/demos/` **4**
 - [x] 每个 demo 统一头注释（`分类` / `主题` / `要点`）
 - [x] 运行时 bug、过时 API、注释与代码不一致已修复
 
@@ -16,7 +16,7 @@
 - [x] **Vue2**：全目录 `NN-` 编号重命名（含 `asyncZJ` → `07-异步组件`、`testRef` → `13-ref引用` 等）；`生命周期.html` → `生命周期/01-八个钩子速记.html`；响应式原理 / 路由与状态 / 组件 / 源码简读 全部对齐
 - [x] **Vue3**：根目录遗留文件迁入编号目录；新增 Vite / script setup 宏 demo
 - [x] **CSS**：新增 `07-现代特性/`（`:has`、`@layer`、Container Queries）
-- [x] **TypeScript**：新建顶层 `typescript/` 模块（4 个 demo）
+- [x] **TypeScript**：新建 `learn/typescript/` 模块（4 个 demo）
 - [x] **CI**：`.github/workflows/ci.yml` + `scripts/validate-demos.mjs`（头注释、内联脚本语法、manifest 数量与重复 href）
 
 ## 维护命令
@@ -27,7 +27,7 @@ node scripts/sync-readmes.mjs
 node scripts/validate-demos.mjs
 ```
 
-约定见 [`CONVENTIONS.md`](CONVENTIONS.md)。补齐计划见根目录 `*补齐计划.md`。
+约定见 [`../../CONVENTIONS.md`](../../CONVENTIONS.md)。补齐计划见 [`../plans/`](../plans/)。
 
 ## 保留的教学设计（非 bug）
 

@@ -10,7 +10,7 @@
 node scripts/build-index.mjs
 ```
 
-**扫描范围**：`javascript/`、`css/`、`vue2/`、`vue3/`、`react/`、`demos/` 下的 `.html`；跳过 `libs/`、`lib/`、根 `index.html`。
+**扫描范围**：`learn/javascript/`、`learn/css/`、`learn/vue2/`、`learn/vue3/`、`learn/react/`、`learn/demos/` 下的 `.html`；跳过 `libs/`、`lib/`、根 `index.html`。
 
 **什么时候运行**：
 
@@ -25,11 +25,12 @@ node scripts/build-index.mjs
 
 读取各 demo 头注释中的 **主题** 行，更新以下 README 中 `<!-- DEMO_TABLE_START -->` … `<!-- DEMO_TABLE_END -->` 之间的完整 demo 清单表：
 
-- `javascript/README.md`
-- `css/README.md`
-- `vue2/README.md`
-- `vue3/README.md`
-- `react/README.md`
+- `learn/javascript/README.md`
+- `learn/css/README.md`
+- `learn/vue2/README.md`
+- `learn/vue3/README.md`
+- `learn/react/README.md`
+- `learn/typescript/README.md`
 
 ```bash
 node scripts/sync-readmes.mjs
