@@ -2,15 +2,15 @@
   分类: vue3 / 02-响应式与副作用
   主题: toRef / toRefs
   要点:
-    - toRef 可以把响应式对象的某个属性转成 ref
-    - toRefs 可以把整个响应式对象的属性批量转成 ref
-    - 常用于 composable 返回值和 props 解构
+    - toRef 把响应式对象的某个属性包装成与源属性联动的 ref
+    - toRefs 批量把响应式对象的可枚举属性转换为 ref
+    - toRefs 只会处理调用时已存在的属性，新增属性要单独 toRef
+    - 常用于 composable 返回值、props 解构和跨函数传递单个属性
   面试:
-    - toRef / toRefs的核心概念是什么
-    - toRef / toRefs在实际项目里怎么用
-    - toRef / toRefs有哪些常见坑或易错点
-    - toRef / toRefs和相近 API 如何区分选型
-    - 面试中如何简洁讲清 toRef / toRefs
+    - toRef 和 ref(state.foo) 有什么区别？
+    - toRefs 适合解决什么解构问题？
+    - toRefs 为什么不适合处理未来新增属性？
+    - props 解构时为什么常提到 toRef / toRefs？
 -->
 
 <!doctype html>
@@ -37,15 +37,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>toRef 可以把响应式对象的某个属性转成 <code>ref</code>。</li>
-          <li>toRefs 可以把整个响应式对象的属性批量转成 <code>ref</code>。</li>
-          <li>常用于 composable 返回值和 props 解构。</li>
+          <li><code>toRef(state, "count")</code> 会创建一个与 <code>state.count</code> 双向联动的 ref；修改 <code>countRef</code> 会写回源对象，修改源对象也会更新 <code>countRef</code>。</li>
+          <li><code>toRefs(state)</code> 会把响应式对象当前可枚举属性批量转换成 ref，适合在返回对象或解构时保留每个属性的响应性。</li>
+          <li><code>ref(state.count)</code> 只是用当前值创建新的 ref，不会和 <code>state.count</code> 保持连接；这是它和 <code>toRef</code> 最容易混淆的地方。</li>
+          <li><code>toRefs</code> 只处理调用时已经存在的属性，后续新增属性不会自动出现在返回结果里；需要为可能不存在的单个属性建立连接时，用 <code>toRef(state, "maybeKey")</code>。</li>
+          <li>本页还演示了嵌套对象属性：<code>name</code> 来自当前 <code>state.user</code> 的 <code>name</code>。如果项目会整体替换 <code>state.user</code>，需要重新设计状态结构或改用计算属性，避免绑定到旧对象。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>toRef 可以把响应式对象的某个属性转成 ref？</strong> toRef 可以把响应式对象的某个属性转成 <code>ref</code>；toRefs 可以把整个响应式对象的属性批量转成 <code>ref</code></li>
-          <li><strong>toRefs 可以把整个响应式对象的属性批量转成 ref？</strong> toRef 可以把响应式对象的某个属性转成 <code>ref</code>；toRefs 可以把整个响应式对象的属性批量转成 <code>ref</code></li>
-          <li><strong>常用于 composable 返回值和 props 解构？</strong> 常用于 composable 返回值和 props 解构</li>
+          <li><strong>toRef 和 ref(state.foo) 有什么区别？</strong> 结论是 <code>toRef</code> 保持与源属性联动，<code>ref(state.foo)</code> 只复制当前值。原因是 <code>toRef</code> 的 getter/setter 仍读写源对象属性。项目里要把响应式对象的单个字段传给函数或组件时，应优先考虑 <code>toRef</code>。</li>
+          <li><strong>toRefs 适合解决什么解构问题？</strong> 先结论：它适合让调用方解构响应式对象后仍保留响应性。原因是直接解构会绕过代理 getter，而 <code>toRefs</code> 返回的是一组 ref。composable 返回多个状态字段时，常用 <code>return { ...toRefs(state), action }</code>。</li>
+          <li><strong>toRefs 为什么不适合处理未来新增属性？</strong> 结论是 <code>toRefs</code> 只为调用时已有的可枚举属性创建 ref。原因是它不是持续监听对象结构变化的工具。项目中如果某个 key 可能稍后才出现，应提前初始化字段，或对该字段单独使用 <code>toRef</code>。</li>
+          <li><strong>props 解构时为什么常提到 toRef / toRefs？</strong> 结论是直接解构 props 可能丢失响应性，而 <code>toRef</code>/<code>toRefs</code> 可以保留与 props 字段的连接。原因是 props 本身是响应式只读对象。边界是 props 不应在子组件里直接写回，派生值用 <code>computed</code>，修改请求通过 emit 交给父组件。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/api/reactivity-utilities.html#toref" target="_blank" rel="noreferrer">Vue 3 官方 API：toRef()</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-utilities.html#torefs" target="_blank" rel="noreferrer">Vue 3 官方 API：toRefs()</a></li>
+          <li><a href="https://vuejs.org/guide/reusability/composables.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Composables</a></li>
         </ul>
       </div>
     </section>

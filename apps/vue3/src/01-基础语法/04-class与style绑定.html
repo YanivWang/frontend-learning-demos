@@ -2,15 +2,15 @@
   分类: vue3 / 01-基础语法
   主题: class / style 绑定
   要点:
-    - :class 支持字符串、数组、对象
-    - :style 支持对象和数组
-    - 动态样式适合表达状态，不适合堆复杂业务规则
+    - :class 支持字符串、对象、数组，常用对象写法表达状态开关
+    - :style 支持对象和数组，属性名可用 camelCase 或 kebab-case
+    - 静态样式仍交给 CSS 类，动态绑定只承载与状态相关的差异
+    - 复杂样式规则应抽成计算属性或语义化 class，避免模板堆逻辑
   面试:
-    - class / style 绑定的核心概念是什么
-    - class / style 绑定在实际项目里怎么用
-    - class / style 绑定有哪些常见坑或易错点
-    - class / style 绑定和相近 API 如何区分选型
-    - 面试中如何简洁讲清 class / style 绑定
+    - :class 的对象写法和数组写法各适合什么场景？
+    - :style 与 CSS class 应该如何分工？
+    - 动态样式为什么不适合承载复杂业务规则？
+    - 组件上绑定 class 和 style 时会如何合并？
 -->
 
 <!doctype html>
@@ -42,15 +42,23 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>:class 支持字符串、数组、对象。</li>
-          <li>:style 支持对象和数组。</li>
-          <li>动态样式适合表达状态，不适合堆复杂业务规则。</li>
+          <li><code>:class</code> 可以绑定字符串、对象或数组；对象写法适合“某个状态是否启用某个类”，数组写法适合组合多个来源的类名。</li>
+          <li><code>:style</code> 可以绑定对象或数组，样式属性既可写 <code>fontSize</code>，也可写 <code>'font-size'</code>；本页用对象表达字号，用数组合并基础样式和强调色。</li>
+          <li>静态视觉规则优先写在 CSS 类里，动态绑定只表达状态差异，例如选中、危险、强调、尺寸等；这样更容易复用、覆盖和排查样式来源。</li>
+          <li>复杂业务判断不要直接塞进模板里的 <code>:class</code> 或 <code>:style</code>，应抽成 <code>computed</code>、方法或语义化状态字段，避免模板变成规则引擎。</li>
+          <li>绑定到组件上的 <code>class</code> 和 <code>style</code> 会作为透传 attribute 合并到组件根元素；多根组件或显式控制透传时，需要额外确认落点。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>动态样式适合表达状态？</strong> 动态样式适合表达状态，不适合堆复杂业务规则</li>
-          <li><strong>class / style 绑定的核心概念是什么？</strong> :class 支持字符串、数组、对象</li>
-          <li><strong>class / style 绑定在实际项目里怎么用？</strong> :class 支持字符串、数组、对象</li>
+          <li><strong>:class 的对象写法和数组写法各适合什么场景？</strong> 结论是对象写法适合按布尔状态开关类名，数组写法适合组合基础类、条件类和外部传入类。原因是对象强调“是否启用”，数组强调“按顺序合并多个来源”。项目里常用数组包对象，例如 <code>[baseClass, { active: isActive }]</code>。</li>
+          <li><strong>:style 与 CSS class 应该如何分工？</strong> 先结论：可复用和可维护的视觉规则用 CSS class，真正依赖运行时变量的少量值用 <code>:style</code>。原因是内联样式优先级高、复用差，也不方便媒体查询和伪类。动态尺寸、坐标、主题变量适合内联绑定，状态样式更适合类名。</li>
+          <li><strong>动态样式为什么不适合承载复杂业务规则？</strong> 结论是模板可读性和可测试性会迅速下降。原因是复杂条件混在 HTML 属性里不易复用，也容易和 CSS 优先级互相影响。项目中应把规则沉到计算属性或状态模型里，让模板只表达结果。</li>
+          <li><strong>组件上绑定 class 和 style 时会如何合并？</strong> 结论是默认会作为透传 attribute 合并到子组件根元素。原因是 Vue 会保留父组件传入的普通 attribute，包括 <code>class</code> 和 <code>style</code>。边界是多根组件、禁用继承或手动绑定 <code>$attrs</code> 时，需要明确这些样式落在哪个元素上。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/essentials/class-and-style.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Class and Style Bindings</a></li>
+          <li><a href="https://vuejs.org/guide/components/attrs.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Fallthrough Attributes</a></li>
         </ul>
       </div>
     </section>

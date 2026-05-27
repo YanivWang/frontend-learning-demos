@@ -2,15 +2,15 @@
   分类: vue3 / 02-响应式与副作用
   主题: onWatcherCleanup（Vue 3.5+）
   要点:
-    - 在 watch 回调内注册清理函数，下次触发或停止 watch 时自动执行
-    - 适合在 watch 里开定时器、订阅、AbortController 等副作用
-    - watchEffect 仍可用第一个参数 onCleanup；onWatcherCleanup 主要补 watch 场景
+    - onWatcherCleanup 是 Vue 3.5+ API，本仓库 Vue 版本为 3.5.34，可直接运行
+    - 在 watch 同步回调内注册清理函数，下次触发或停止 watcher 前自动执行
+    - 适合取消旧请求、清理定时器、解绑订阅，避免异步结果覆盖新状态
+    - 3.5 前或跨版本代码可继续使用 watch 回调参数中的 onCleanup
   面试:
-    - onWatcherCleanup（Vue 3.5+）的核心概念是什么
-    - onWatcherCleanup（Vue 3.5+）在实际项目里怎么用
-    - onWatcherCleanup（Vue 3.5+）有哪些常见坑或易错点
-    - onWatcherCleanup（Vue 3.5+）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 onWatcherCleanup（Vue 3.5+）
+    - onWatcherCleanup 解决 watch 中哪类异步竞态？
+    - onWatcherCleanup 为什么必须在 watch 同步执行阶段调用？
+    - Vue 3.5 前如何写等价的 watcher 清理逻辑？
+    - watch 清理函数和组件 onUnmounted 的职责有什么区别？
 -->
 
 <!doctype html>
@@ -39,16 +39,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>在 <code>watch</code> 回调内注册清理函数，下次触发或停止 <code>watch</code> 时自动执行。</li>
-          <li>适合在 <code>watch</code> 里开定时器、订阅、AbortController 等副作用。</li>
-          <li>watchEffect 仍可用第一个参数 onCleanup；onWatcherCleanup 主要补 <code>watch</code> 场景。</li>
-          <li>在 <code>watch</code> 回调内注册清理函数，下次触发或停止 <code>watch</code> 时自动执行（补充）。</li>
+          <li><code>onWatcherCleanup()</code> 是 Vue 3.5+ 提供的 watcher 清理 API；当前 vendored Vue 为 3.5.34，因此示例可以直接从全局 <code>Vue</code> 解构并运行。</li>
+          <li>它必须在 <code>watch</code> 或 <code>watchEffect</code> 的同步执行阶段调用，用来注册“本轮 watcher 失效时”的清理函数；下一次触发 watcher 或 watcher 被停止前会执行清理。</li>
+          <li>示例中切换 id 会先清理上一个 id 的 <code>setInterval</code>，再开始新 id 的定时器。这类模式也常用于 <code>AbortController</code> 取消旧请求，避免慢响应覆盖新状态。</li>
+          <li>如果清理逻辑写在 <code>await</code> 之后，当前活跃 watcher 已经丢失，<code>onWatcherCleanup()</code> 不能再关联到本轮 watcher；异步请求应先创建控制器并同步注册清理，再发起请求。</li>
+          <li>Vue 3.5 之前可使用 <code>watch(source, (value, oldValue, onCleanup) =&gt; {})</code> 的第三个参数，<code>watchEffect</code> 也有 <code>onCleanup</code> 参数。跨版本库代码优先保留参数写法。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>在 watch 回调内注册清理函数？</strong> 在 <code>watch</code> 回调内注册清理函数，下次触发或停止 <code>watch</code> 时自动执行；适合在 <code>watch</code> 里开定时器、订阅、AbortController 等副作用</li>
-          <li><strong>适合在 watch 里开定时器、订阅、AbortController 等副作用？</strong> 适合在 <code>watch</code> 里开定时器、订阅、AbortController 等副作用</li>
-          <li><strong>watchEffect 仍可用第一个参数 onCleanup？</strong> 在 <code>watch</code> 回调内注册清理函数，下次触发或停止 <code>watch</code> 时自动执行；适合在 <code>watch</code> 里开定时器、订阅、AbortController 等副作用</li>
+          <li><strong><code>onWatcherCleanup</code> 解决什么问题？</strong> 结论是它解决 watcher 每次重新运行前的旧副作用清理问题。原因是 watch 常用于请求、订阅和定时器，源变化后旧任务可能继续回调。项目里最典型场景是取消旧请求，避免旧响应覆盖最新筛选条件。</li>
+          <li><strong>为什么必须同步调用？</strong> 结论是必须在 watcher 回调同步阶段注册。原因是 Vue 依赖当前活跃 watcher 记录清理函数，<code>await</code> 之后已经不再处于同一个同步追踪上下文。异步场景应先注册 <code>AbortController</code> 的清理，再执行请求。</li>
+          <li><strong>Vue 3.5 前怎么写？</strong> 结论是使用 <code>watch</code> 回调的第三个 <code>onCleanup</code> 参数，或 <code>watchEffect</code> 的参数。原因是这些参数在旧版本已存在且语义一致。组件库要兼容 Vue 3.4 或更早版本时，不应直接依赖 <code>onWatcherCleanup</code>。</li>
+          <li><strong>它和 <code>onUnmounted</code> 的职责有什么区别？</strong> 结论是 watcher cleanup 管“本轮监听失效”，<code>onUnmounted</code> 管“组件实例销毁”。原因是同一组件内 watcher 可能运行很多轮。请求竞态、搜索联想、路由参数变化等场景应优先按 watcher 轮次清理。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/api/reactivity-core.html#onwatchercleanup" target="_blank" rel="noreferrer">Vue 3 API：onWatcherCleanup()</a></li>
+          <li><a href="https://vuejs.org/guide/essentials/watchers.html#side-effect-cleanup" target="_blank" rel="noreferrer">Vue 3 Guide：Watcher Side Effect Cleanup</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/AbortController" target="_blank" rel="noreferrer">MDN：AbortController</a></li>
         </ul>
       </div>
     </section>

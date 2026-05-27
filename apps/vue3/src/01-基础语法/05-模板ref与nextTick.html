@@ -2,15 +2,15 @@
   分类: vue3 / 01-基础语法
   主题: 模板 ref / nextTick
   要点:
-    - 模板 ref 常用于访问 DOM 或子组件暴露的方法
-    - DOM 更新不是同步完成，读取更新后的 DOM 要等 nextTick
-    - 面试常问：数据改了为什么马上拿不到最新 DOM
+    - 模板 ref 用于访问 DOM 或子组件实例，挂载前通常是 null
+    - Vue 会异步批量刷新 DOM，状态修改后同步读取可能还是旧 DOM
+    - nextTick 等待本轮 DOM 更新完成，适合测量尺寸、滚动和聚焦
+    - 不要把模板 ref 当成主要状态来源，优先用响应式数据驱动视图
   面试:
-    - 模板 ref / nextTick的核心概念是什么
-    - 模板 ref / nextTick在实际项目里怎么用
-    - 模板 ref / nextTick有哪些常见坑或易错点
-    - 模板 ref / nextTick和相近 API 如何区分选型
-    - 面试中如何简洁讲清 模板 ref / nextTick
+    - 数据变了为什么同步读取 DOM 还是旧值？
+    - nextTick 适合解决什么问题，不适合解决什么问题？
+    - 模板 ref 什么时候可能是 null？
+    - 什么时候应该用响应式状态而不是直接操作 DOM？
 -->
 
 <!doctype html>
@@ -39,16 +39,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>模板 <code>ref</code> 常用于访问 DOM 或子组件暴露的方法。</li>
-          <li>DOM 更新不是同步完成，读取更新后的 DOM 要等 nextTick。</li>
-          <li>面试常问：数据改了为什么马上拿不到最新 DOM。</li>
-          <li>模板 <code>ref</code> 常用于访问 DOM 或子组件暴露的方法（补充）。</li>
+          <li>模板 <code>ref</code> 是逃逸口，常用于访问 DOM、调用子组件暴露的方法、聚焦输入框或测量元素尺寸；它不应该替代响应式状态成为主要数据来源。</li>
+          <li>Vue 会把同一轮状态变更合并到异步 DOM 更新队列中，状态赋值后立即读取 DOM，可能读到更新前的文本、尺寸或滚动位置。</li>
+          <li><code>nextTick()</code> 返回一个 Promise，等待当前刷新队列把 DOM 更新完成；本页按钮先同步读取旧文本，再在 <code>await nextTick()</code> 后读取新文本。</li>
+          <li>模板 ref 在组件挂载前、条件分支未渲染、列表项卸载后都可能是 <code>null</code>，访问时应根据生命周期和条件渲染做判断。</li>
+          <li><code>nextTick</code> 只保证 Vue 本轮 DOM patch 完成，不保证图片加载、CSS 动画结束或网络请求完成；这些场景要监听对应事件或 Promise。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>模板 ref 常用于访问 DOM 或子组件暴露的方法？</strong> 模板 <code>ref</code> 常用于访问 DOM 或子组件暴露的方法</li>
-          <li><strong>DOM 更新不是同步完成？</strong> 模板 <code>ref</code> 常用于访问 DOM 或子组件暴露的方法；DOM 更新不是同步完成，读取更新后的 DOM 要等 nextTick</li>
-          <li><strong>模板 ref / nextTick的核心概念是什么？</strong> 模板 <code>ref</code> 常用于访问 DOM 或子组件暴露的方法</li>
+          <li><strong>数据变了为什么同步读取 DOM 还是旧值？</strong> 结论是 Vue 的 DOM 更新是异步批量执行的。原因是同一轮多次状态修改会被合并，减少重复渲染。项目里修改状态后要测量高度、滚到底部或读取文本，应等待 <code>nextTick()</code>。</li>
+          <li><strong>nextTick 适合解决什么问题，不适合解决什么问题？</strong> 先结论：它适合等待 Vue 完成本轮 DOM 更新，不适合等待外部异步资源。原因是它只和 Vue 更新队列有关。图片加载、接口返回、动画结束要分别用 <code>load</code>、请求 Promise 或动画事件处理。</li>
+          <li><strong>模板 ref 什么时候可能是 null？</strong> 结论是挂载前、分支未渲染或节点被卸载后都可能为空。原因是 ref 的值由真实渲染结果赋值，不是声明后立即可用。项目里访问 DOM ref 通常放在 <code>onMounted</code> 之后，或在事件中做空值判断。</li>
+          <li><strong>什么时候应该用响应式状态而不是直接操作 DOM？</strong> 结论是凡是能由数据描述的 UI 都应优先用响应式状态。原因是直接改 DOM 会绕过 Vue 的渲染模型，下一次 patch 可能覆盖手动修改。只有聚焦、测量、滚动、第三方 DOM 库接入这类命令式需求才使用模板 ref。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/essentials/template-refs.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Template Refs</a></li>
+          <li><a href="https://vuejs.org/api/general.html#nexttick" target="_blank" rel="noreferrer">Vue 3 官方文档：nextTick()</a></li>
+          <li><a href="https://vuejs.org/guide/essentials/reactivity-fundamentals.html#dom-update-timing" target="_blank" rel="noreferrer">Vue 3 官方文档：DOM Update Timing</a></li>
         </ul>
       </div>
     </section>

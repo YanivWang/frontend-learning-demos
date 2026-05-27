@@ -469,7 +469,7 @@
 
 ### 07-源码简读
 
-- [源码阅读前置-Symbol](/apps/vue2/src/07-%E6%BA%90%E7%A0%81%E7%AE%80%E8%AF%BB/01-%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E5%89%8D%E7%BD%AE-Symbol.html) — Vue2 源码阅读前置知识占位（Symbol）
+- [源码阅读前置-Symbol](/apps/vue2/src/07-%E6%BA%90%E7%A0%81%E7%AE%80%E8%AF%BB/01-%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E5%89%8D%E7%BD%AE-Symbol.html) — Vue2 源码阅读前置：Symbol 与源码标记
 
 ## Vue 3
 

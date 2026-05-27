@@ -2,15 +2,15 @@
   分类: vue3 / 03-生命周期与组合式
   主题: composable 组合式函数
   要点:
-    - composable 是以 useXxx 命名的状态逻辑复用函数
-    - 可以组合 ref、computed、watch、生命周期钩子
-    - 每次调用默认创建独立状态，共享状态要显式设计
+    - composable 是封装有状态逻辑的函数，通常以 useXxx 命名并返回响应式状态
+    - composable 可以组合 ref、computed、watch 和生命周期钩子，调用方无需继承或混入
+    - 每次调用默认创建独立状态，共享状态需要把响应式对象提升到函数外或使用 store
+    - DOM 事件、订阅和异步任务必须在 composable 内成对注册与清理
   面试:
-    - composable 组合式函数的核心概念是什么
-    - composable 组合式函数在实际项目里怎么用
-    - composable 组合式函数有哪些常见坑或易错点
-    - composable 组合式函数和相近 API 如何区分选型
-    - 面试中如何简洁讲清 composable 组合式函数
+    - composable 和 mixin 相比解决了哪些复用问题？
+    - composable 默认独立状态还是共享状态，如何控制？
+    - 在 composable 中添加 DOM 事件为什么必须清理？
+    - composable 何时应升级为 Pinia store 或业务服务？
 -->
 
 <!doctype html>
@@ -39,15 +39,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>composable 是以 useXxx 命名的状态逻辑复用函数。</li>
-          <li>可以组合 <code>ref</code>、<code>computed</code>、<code>watch</code>、生命周期钩子。</li>
-          <li>每次调用默认创建独立状态，共享状态要显式设计。</li>
+          <li>composable 是封装“有状态逻辑”的普通函数，通常以 <code>useXxx</code> 命名。它可以返回 <code>ref</code>、<code>computed</code>、方法和派生状态，让组件专注渲染。</li>
+          <li>示例中的 <code>useMousePosition()</code> 同时组合了 <code>ref</code>、<code>computed</code>、<code>watch</code>、<code>onMounted</code> 和 <code>onUnmounted</code>，展示了组合式函数能封装完整行为而不依赖 mixin。</li>
+          <li>每次调用 composable 默认都会重新创建函数内部状态，因此多个组件调用通常彼此独立。若要共享状态，需要把响应式对象提升到函数外，或使用 Pinia / provide-inject 等明确的共享机制。</li>
+          <li>涉及 DOM 事件、定时器、订阅和异步请求时，composable 必须同时设计清理路径。示例在挂载时监听 <code>mousemove</code>，卸载时移除监听，避免组件销毁后仍更新状态。</li>
+          <li>常见坑是返回 reactive 对象后被调用方解构导致响应丢失，或在 composable 中隐藏过多业务副作用。实践中通常返回 refs 或用 <code>toRefs</code> 保持可组合性。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>composable 是以 useXxx 命名的状态逻辑复用函数？</strong> composable 是以 useXxx 命名的状态逻辑复用函数；可以组合 <code>ref</code>、<code>computed</code>、<code>watch</code>、生命周期钩子</li>
-          <li><strong>可以组合 ref、computed、watch、生命周期钩子？</strong> 可以组合 <code>ref</code>、<code>computed</code>、<code>watch</code>、生命周期钩子</li>
-          <li><strong>每次调用默认创建独立状态？</strong> 每次调用默认创建独立状态，共享状态要显式设计</li>
+          <li><strong>composable 和 mixin 相比优势是什么？</strong> 结论是 composable 的来源、依赖和返回值更明确。原因是它是普通函数调用，可以通过参数和返回值表达契约，不会像 mixin 那样隐式合并选项并产生命名冲突。项目里可测试性和类型推导也更好。</li>
+          <li><strong>composable 的状态默认共享吗？</strong> 结论是不共享，函数内部创建的状态每次调用都是新实例。原因是普通函数执行会重新创建局部变量。若要共享，应显式把状态放在模块作用域、store 或 provide 中，避免调用方误判生命周期。</li>
+          <li><strong>为什么 DOM 事件必须清理？</strong> 结论是因为浏览器事件监听不受 Vue 响应式系统自动管理。原因是监听器持有回调引用，组件卸载后仍可能触发。示例用 <code>onUnmounted</code> 移除 <code>mousemove</code>，真实项目中的滚动、resize、媒体查询监听也一样。</li>
+          <li><strong>什么时候升级为 store？</strong> 结论是当状态跨多组件共享、需要调试持久化或有明确业务领域时，优先使用 Pinia 等 store。原因是 composable 更适合局部可复用逻辑，过多全局状态藏在 composable 中会让数据流不清晰。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/reusability/composables.html" target="_blank" rel="noreferrer">Vue 3 Guide：Composables</a></li>
+          <li><a href="https://vuejs.org/guide/reusability/composables.html#mouse-tracker-example" target="_blank" rel="noreferrer">Vue 3 Guide：Mouse Tracker Example</a></li>
+          <li><a href="https://vuejs.org/api/composition-api-lifecycle.html#onunmounted" target="_blank" rel="noreferrer">Vue 3 API：onUnmounted()</a></li>
         </ul>
       </div>
     </section>

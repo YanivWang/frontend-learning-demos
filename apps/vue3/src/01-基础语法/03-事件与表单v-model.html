@@ -2,15 +2,15 @@
   分类: vue3 / 01-基础语法
   主题: 事件绑定 / 表单 v-model
   要点:
-    - @click 是 v-on:click 的缩写
-    - v-model 本质是值绑定 + 事件更新
-    - 表单修饰符常见有 .trim / .number / .lazy
+    - @click 是 v-on:click 的缩写，事件处理函数运行在组件上下文
+    - v-model 在原生表单上根据控件类型展开为值绑定和更新事件
+    - .trim、.number、.lazy 会改变输入同步和类型转换时机
+    - 表单提交要处理空值、非法值和未同意协议等失败路径
   面试:
-    - 事件绑定 / 表单 v-model的核心概念是什么
-    - 事件绑定 / 表单 v-model在实际项目里怎么用
-    - 事件绑定 / 表单 v-model有哪些常见坑或易错点
-    - 事件绑定 / 表单 v-model和相近 API 如何区分选型
-    - 面试中如何简洁讲清 事件绑定 / 表单 v-model
+    - v-model 在原生表单上本质是什么？
+    - .trim、.number、.lazy 分别改变了什么行为？
+    - 为什么表单不能只依赖前端 v-model 类型转换？
+    - 用户输入展示时如何避免 XSS 风险？
 -->
 
 <!doctype html>
@@ -38,15 +38,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>@click 是 v-on:click 的缩写。</li>
-          <li><code>v-model</code> 本质是值绑定 + 事件更新。</li>
-          <li>表单修饰符常见有 .trim / .number / .lazy。</li>
+          <li><code>@click</code> 是 <code>v-on:click</code> 的缩写，事件处理函数可以直接修改响应式状态；需要原生事件对象时可以传 <code>$event</code> 或在函数参数中接收。</li>
+          <li><code>v-model</code> 在原生表单上会按控件类型绑定值并监听更新事件：文本框通常是 <code>value</code> + <code>input</code>，复选框会处理布尔值或数组，选择框会同步选中项。</li>
+          <li><code>.trim</code> 会在同步时去掉首尾空白，<code>.number</code> 会尝试转成数字，<code>.lazy</code> 会从实时 <code>input</code> 改为 <code>change</code> 时同步；本页备注框需要失焦后才更新。</li>
+          <li>用户输入必须有失败路径：本页提交时检查空用户名、非法年龄和未同意协议；真实项目还要做服务端校验，因为前端状态和 DOM 都可以被绕过。</li>
+          <li>本页用插值和 <code>&lt;pre&gt;{{ form }}&lt;/pre&gt;</code> 展示输入，Vue 会按文本转义；如果改用 <code>v-html</code> 渲染用户输入，就会引入 XSS 风险。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>@click 是 v-on？</strong> @click 是 v-on:click 的缩写</li>
-          <li><strong>v-model 本质是值绑定 + 事件更新？</strong> <code>v-model</code> 本质是值绑定 + 事件更新</li>
-          <li><strong>表单修饰符常见有 .trim / .number / .lazy？</strong> 表单修饰符常见有 .trim / .number / .lazy</li>
+          <li><strong>v-model 在原生表单上本质是什么？</strong> 结论是语法糖，本质是把表单值绑定到状态，并在用户输入时更新状态。原因是不同控件的值来源和事件不同，Vue 会替你处理文本框、复选框、单选框和选择框的差异。边界是自定义组件的 <code>v-model</code> 依赖 props 和 emits 约定，和原生表单展开规则不同。</li>
+          <li><strong>.trim、.number、.lazy 分别改变了什么行为？</strong> 先结论：<code>.trim</code> 清理首尾空白，<code>.number</code> 尝试类型转换，<code>.lazy</code> 改变同步时机。原因是表单输入默认都是字符串且通常实时同步。项目里搜索框常保持实时输入，备注或低频字段可以用 <code>.lazy</code> 减少更新频率。</li>
+          <li><strong>为什么表单不能只依赖前端 v-model 类型转换？</strong> 结论是前端转换只改善交互，不是可信校验。原因是空输入、无法解析的数字、脚本篡改请求都可能绕过页面逻辑。项目中应同时做前端提示和服务端校验，并明确失败提示。</li>
+          <li><strong>用户输入展示时如何避免 XSS 风险？</strong> 结论是默认使用插值或 <code>v-text</code> 展示文本，不把用户输入传给 <code>v-html</code>。原因是 Vue 的文本插值会转义 HTML，而 <code>v-html</code> 会按 HTML 解析。只有经过可信白名单消毒的富文本才考虑使用 <code>v-html</code>。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/essentials/event-handling.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Event Handling</a></li>
+          <li><a href="https://vuejs.org/guide/essentials/forms.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Form Input Bindings</a></li>
+          <li><a href="https://vuejs.org/guide/best-practices/security.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Security</a></li>
         </ul>
       </div>
     </section>
@@ -94,6 +103,14 @@
           const lazyNote = ref("初始备注");
 
           function submit() {
+            if (!form.name) {
+              result.value = "请输入用户名";
+              return;
+            }
+            if (!Number.isFinite(form.age) || form.age <= 0) {
+              result.value = "请输入有效年龄";
+              return;
+            }
             result.value = form.agree ? `${form.name} 已提交` : "请先同意协议";
           }
 

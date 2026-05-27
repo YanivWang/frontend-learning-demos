@@ -2,16 +2,15 @@
   分类: vue3 / 02-响应式与副作用
   主题: ref / shallowRef / reactive 三种响应式 API 对比
   要点:
-    - ref 返回 { value: ... } 包装；JS 中读写必须 .value，模板中自动解包
-    - reactive 返回的是「Proxy 响应式对象」，访问字段无 .value，但解构会丢响应
-    - shallowRef 只对 .value 的赋值「整体替换」做响应，内部嵌套字段不再追踪
-    - 须从 Vue 解构 reactive；JS 中访问 ref 必须 .value（模板中自动解包）
+    - ref 用 .value 包装任意值，模板顶层自动解包，适合基本类型和可替换对象
+    - reactive 返回深层 Proxy 对象，适合稳定对象模型，但解构会丢失响应式连接
+    - shallowRef 只追踪 .value 整体替换，适合大对象、外部实例或手动刷新场景
+    - 选型核心是状态形态、是否需要整体替换、是否要避免深层代理成本
   面试:
-    - ref / shallowRef / reactive 三种响应式 API 对比的核心概念是什么
-    - ref / shallowRef / reactive 三种响应式 API 对比在实际项目里怎么用
-    - ref / shallowRef / reactive 三种响应式 API 对比有哪些常见坑或易错点
-    - ref / shallowRef / reactive 三种响应式 API 对比和相近 API 如何区分选型
-    - 面试中如何简洁讲清 ref / shallowRef / reactive 三种响应式 API 对比
+    - ref 和 reactive 在 JS、模板、解构场景下有什么差异？
+    - shallowRef 为什么改内部字段不更新，什么时候应该整体替换？
+    - reactive 对象解构后如何保留响应式？
+    - 业务状态选 ref、reactive 还是 shallowRef 的判断依据是什么？
 -->
 
 <!doctype html>
@@ -38,17 +37,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>ref</code> 返回 { value: ... } 包装；JS 中读写必须 .value，模板中自动解包。</li>
-          <li><code>reactive</code> 返回的是「<code>Proxy</code> 响应式对象」，访问字段无 .value，但解构会丢响应。</li>
-          <li>shallowRef 只对 .value 的赋值「整体替换」做响应，内部嵌套字段不再追踪。</li>
-          <li>须从 Vue 解构 <code>reactive</code>；JS 中访问 <code>ref</code> 必须 .value（模板中自动解包）。</li>
+          <li><code>ref()</code> 返回带 <code>.value</code> 的响应式包装。JavaScript 中读写必须使用 <code>.value</code>，模板里顶层 ref 会自动解包，所以示例中模板直接写 <code>{{ message }}</code>。</li>
+          <li><code>ref()</code> 包裹对象时，默认会把对象深层转为响应式；示例中的 <code>objRef.form.name</code> 改动会更新视图。</li>
+          <li><code>reactive()</code> 返回深层响应式 <code>Proxy</code>，访问字段不需要 <code>.value</code>。它适合形状稳定的对象，但直接解构属性会断开代理访问，跨函数传递字段时应使用 <code>toRef()</code> / <code>toRefs()</code>。</li>
+          <li><code>shallowRef()</code> 只追踪 <code>.value</code> 本身的替换，不递归代理内部对象。示例中改内部 <code>form.name</code> 不会稳定更新，整体替换 <code>.value</code> 才会触发视图。</li>
+          <li>现代 Vue 3 项目常用 <code>ref</code> 表达可替换状态，用 <code>reactive</code> 表达聚合对象，用 <code>shallowRef</code> 包裹大对象、外部实例或需要手动控制刷新的状态。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>ref 返回 { value？</strong> <code>ref</code> 返回 { value: ... } 包装；JS 中读写必须 .value，模板中自动解包；须从 Vue 解构 <code>reactive</code>；JS 中访问 <code>ref</code> 必须 .value（模板中自动解包）</li>
-          <li><strong>reactive 返回的是「Proxy 响应式对象」？</strong> <code>reactive</code> 返回的是「<code>Proxy</code> 响应式对象」，访问字段无 .value，但解构会丢响应；须从 Vue 解构 <code>reactive</code>；JS 中访问 <code>ref</code> 必须 .value（模板中自动解包）</li>
-          <li><strong>shallowRef 只对 .value 的赋值「整体替换」做响应？</strong> shallowRef 只对 .value 的赋值「整体替换」做响应，内部嵌套字段不再追踪</li>
-          <li><strong>须从 Vue 解构 reactive？</strong> 须从 Vue 解构 <code>reactive</code>；JS 中访问 <code>ref</code> 必须 .value（模板中自动解包）</li>
+          <li><strong><code>ref</code> 和 <code>reactive</code> 最大差异是什么？</strong> 结论是 <code>ref</code> 是值容器，<code>reactive</code> 是对象代理。原因是 <code>ref</code> 通过 <code>.value</code> 追踪读写，<code>reactive</code> 通过 Proxy 拦截属性访问。项目里基本类型、需要整体替换的对象常用 <code>ref</code>，稳定对象模型常用 <code>reactive</code>。</li>
+          <li><strong><code>shallowRef</code> 为什么改内部字段不更新？</strong> 结论是它只追踪 <code>.value</code> 的引用变化。原因是内部对象不会递归转成响应式代理。项目里如果用它存大对象或第三方实例，应通过整体替换、<code>triggerRef</code> 或额外版本号驱动视图。</li>
+          <li><strong><code>reactive</code> 解构后如何保留响应式？</strong> 结论是不要直接解构普通属性，应该使用 <code>toRef</code> 或 <code>toRefs</code>。原因是直接解构得到的是当前值，不再经过原代理的 get/set。组合式函数返回 reactive 字段时尤其容易踩坑。</li>
+          <li><strong>业务状态如何选型？</strong> 结论是先看状态形态和更新方式。需要替换就用 <code>ref</code>，对象字段稳定且整体作为模型使用可用 <code>reactive</code>，不希望深层代理或对象很大时用 <code>shallowRef</code>。边界是 shallow API 会牺牲自动深层更新能力。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/api/reactivity-core.html#ref" target="_blank" rel="noreferrer">Vue 3 API：ref()</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-core.html#reactive" target="_blank" rel="noreferrer">Vue 3 API：reactive()</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-advanced.html#shallowref" target="_blank" rel="noreferrer">Vue 3 API：shallowRef()</a></li>
+          <li><a href="https://vuejs.org/guide/essentials/reactivity-fundamentals.html" target="_blank" rel="noreferrer">Vue 3 Guide：Reactivity Fundamentals</a></li>
         </ul>
       </div>
     </section>

@@ -2,15 +2,15 @@
   分类: vue3 / 01-基础语法
   主题: v-if / v-show / v-for / key
   要点:
-    - v-if 是条件渲染，会创建和销毁 DOM
-    - v-show 是 display 切换，适合频繁显示隐藏
-    - v-for 必须给稳定 key，避免复用错误
+    - v-if 按条件创建或销毁分支，适合切换不频繁或成本较高的内容
+    - v-show 只切换 display，适合频繁显示隐藏但初始仍会渲染
+    - v-for 更新列表时依赖稳定 key 复用 DOM 和组件状态
+    - 不要在同一元素上混用 v-if 与 v-for，先过滤数据再渲染
   面试:
-    - v-if / v-show / v-for / key的核心概念是什么
-    - v-if / v-show / v-for / key在实际项目里怎么用
-    - v-if / v-show / v-for / key有哪些常见坑或易错点
-    - v-if / v-show / v-for / key和相近 API 如何区分选型
-    - 面试中如何简洁讲清 v-if / v-show / v-for / key
+    - v-if 和 v-show 如何按切换频率选型？
+    - v-for 的 key 为什么不能随便用 index？
+    - v-if 和 v-for 为什么不建议写在同一个元素上？
+    - 列表反转或插入时稳定 key 解决了什么问题？
 -->
 
 <!doctype html>
@@ -39,16 +39,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>v-if</code> 是条件渲染，会创建和销毁 DOM。</li>
-          <li>v-show 是 display 切换，适合频繁显示隐藏。</li>
-          <li><code>v-for</code> 必须给稳定 <code>key</code>，避免复用错误。</li>
-          <li><code>v-if</code> 是条件渲染，会创建和销毁 DOM（补充）。</li>
+          <li><code>v-if</code> 是真正的条件渲染，条件为假时分支不会保留在 DOM 中，重新变真时会重新创建节点和子组件状态。</li>
+          <li><code>v-show</code> 会始终渲染元素，只通过 <code>display</code> 控制可见性；它初始渲染成本更高，但频繁切换时通常比反复创建销毁更稳定。</li>
+          <li><code>v-for</code> 渲染列表时应提供稳定、唯一、可预测的 <code>key</code>，让 Vue 在插入、删除、反转时正确移动已有节点，而不是错误复用表单值或组件内部状态。</li>
+          <li>不建议把 <code>v-if</code> 和 <code>v-for</code> 写在同一个元素上；Vue3 中 <code>v-if</code> 优先级更高，可能读不到 <code>v-for</code> 的局部变量。需要过滤时先用计算属性得到列表。</li>
+          <li>本页通过“新增一项”和“反转列表”演示稳定 <code>item.id</code> 的意义；如果改成数组下标作为 key，列表顺序变化时更容易出现状态和 DOM 复用错位。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>v-if 是条件渲染？</strong> <code>v-if</code> 是条件渲染，会创建和销毁 DOM</li>
-          <li><strong>v-show 是 display 切换？</strong> v-show 是 display 切换，适合频繁显示隐藏</li>
-          <li><strong>v-for 必须给稳定 key？</strong> <code>v-for</code> 必须给稳定 <code>key</code>，避免复用错误</li>
+          <li><strong>v-if 和 v-show 如何按切换频率选型？</strong> 结论是低频切换、条件不满足时不需要渲染的内容用 <code>v-if</code>，高频显示隐藏用 <code>v-show</code>。原因是 <code>v-if</code> 有创建销毁成本，<code>v-show</code> 有初始渲染成本但切换只是 CSS。项目里权限区块、异步加载内容常用 <code>v-if</code>，下拉面板或标签页可考虑 <code>v-show</code>。</li>
+          <li><strong>v-for 的 key 为什么不能随便用 index？</strong> 先结论：会增删、排序、反转的列表不要用下标 key。原因是下标会跟着位置变化，Vue 可能把旧节点和组件状态复用到错误数据上。只有纯静态、不会重排的展示列表，使用 index 的风险才相对可控。</li>
+          <li><strong>v-if 和 v-for 为什么不建议写在同一个元素上？</strong> 结论是优先级和作用域容易造成误解，Vue3 中 <code>v-if</code> 优先于 <code>v-for</code>。原因是条件表达式可能访问不到循环变量，逻辑也难以维护。项目里应先用计算属性过滤列表，或把 <code>v-if</code> 放到包裹层上。</li>
+          <li><strong>列表反转或插入时稳定 key 解决了什么问题？</strong> 结论是稳定 key 帮 Vue 识别“同一条数据”而不是“同一个位置”。原因是 diff 时可以移动已有节点并保留正确状态。表单行、可编辑列表、动画列表都必须特别注意这一点。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/essentials/conditional.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Conditional Rendering</a></li>
+          <li><a href="https://vuejs.org/guide/essentials/list.html" target="_blank" rel="noreferrer">Vue 3 官方文档：List Rendering</a></li>
+          <li><a href="https://vuejs.org/api/built-in-special-attributes.html#key" target="_blank" rel="noreferrer">Vue 3 官方文档：Special Attributes - key</a></li>
         </ul>
       </div>
     </section>

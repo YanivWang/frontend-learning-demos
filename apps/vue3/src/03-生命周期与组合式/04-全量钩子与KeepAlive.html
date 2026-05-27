@@ -2,16 +2,15 @@
   分类: vue3 / 03-生命周期与组合式
   主题: Composition API 中的全部生命周期钩子
   要点:
-    - setup 替代 beforeCreate / created；钩子统一以 onXxx 形式注册
-    - 关键钩子：onBeforeMount / onMounted / onBeforeUpdate / onUpdated / onBeforeUnmount / onUnmounted
-    - keep-alive 专属：onActivated / onDeactivated
-    - 须从 Vue 解构全部用到的 onXxx 钩子；正确拼写是 onUnmounted（非 onUnMounted）
+    - setup 覆盖创建阶段初始化，Composition API 钩子统一用 onXxx 注册
+    - 挂载、更新、卸载钩子对应 DOM 首次渲染、patch 前后和组件销毁阶段
+    - KeepAlive 缓存组件不会立即卸载，会额外触发 onActivated / onDeactivated
+    - 钩子拼写和注册时机必须准确，onUnmounted 不能写成 onUnMounted
   面试:
-    - Composition API 中的全部生命周期钩子的核心概念是什么
-    - Composition API 中的全部生命周期钩子在实际项目里怎么用
-    - Composition API 中的全部生命周期钩子有哪些常见坑或易错点
-    - Composition API 中的全部生命周期钩子和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Composition API 中的全部生命周期钩子
+    - Vue 3 全量生命周期钩子如何按阶段记忆？
+    - KeepAlive 下为什么会触发 activated / deactivated 而不是每次 mounted / unmounted？
+    - onUpdated 中更新状态有什么风险？
+    - onUnmounted 和 onDeactivated 清理资源的边界是什么？
 -->
 
 <!doctype html>
@@ -39,16 +38,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>setup 替代 beforeCreate / created；钩子统一以 onXxx 形式注册。</li>
-          <li>关键钩子：onBeforeMount / onMounted / onBeforeUpdate / onUpdated / onBeforeUnmount / onUnmounted。</li>
-          <li>keep-alive 专属：onActivated / onDeactivated。</li>
-          <li>须从 Vue 解构全部用到的 onXxx 钩子；正确拼写是 onUnmounted（非 onUnMounted）。</li>
+          <li><code>setup()</code> 承担创建阶段初始化，Composition API 生命周期统一以 <code>onXxx</code> 函数注册，并且要在 <code>setup</code> 同步阶段调用。</li>
+          <li>挂载阶段是 <code>onBeforeMount</code> / <code>onMounted</code>，更新阶段是 <code>onBeforeUpdate</code> / <code>onUpdated</code>，卸载阶段是 <code>onBeforeUnmount</code> / <code>onUnmounted</code>。</li>
+          <li>示例中根组件和缓存子组件都会把钩子写入日志，点击切换能看到 DOM 挂载、响应式更新和组件隐藏之间的差异。</li>
+          <li><code>&lt;KeepAlive&gt;</code> 缓存的组件被切走时不会立即销毁，而是触发 <code>onDeactivated</code>；再次显示时触发 <code>onActivated</code>。只有缓存被移除或容器卸载时才进入 unmount 阶段。</li>
+          <li>常见坑包括把 <code>onUnmounted</code> 写成 <code>onUnMounted</code>、忘记从 <code>Vue</code> 解构钩子、在 <code>onUpdated</code> 中无条件改状态造成循环更新，以及把暂停逻辑误放到卸载清理里。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>setup 替代 beforeCreate / created？</strong> setup 替代 beforeCreate / created；钩子统一以 onXxx 形式注册</li>
-          <li><strong>keep-alive 专属？</strong> keep-alive 专属：onActivated / onDeactivated</li>
-          <li><strong>须从 Vue 解构全部用到的 onXxx 钩子？</strong> 须从 Vue 解构全部用到的 onXxx 钩子；正确拼写是 onUnmounted（非 onUnMounted）</li>
+          <li><strong>Vue 3 生命周期如何按阶段记忆？</strong> 结论是创建逻辑在 <code>setup</code>，之后按挂载、更新、卸载三组 before / after 钩子记忆。原因是 Composition API 用函数注册替代 Options API 的同名选项。项目里依赖 DOM 的逻辑放 mounted，资源释放放 unmounted。</li>
+          <li><strong><code>KeepAlive</code> 为什么触发 activated / deactivated？</strong> 结论是缓存组件切换时实例被保留，不会每次销毁重建。原因是 <code>KeepAlive</code> 保存组件实例和状态，再次显示时激活缓存。项目里计时器、轮询、媒体播放等应在 deactivated 暂停，在 activated 恢复。</li>
+          <li><strong><code>onUpdated</code> 里能改状态吗？</strong> 结论是不应无条件修改会触发本组件更新的状态。原因是 updated 已经在 DOM patch 之后，继续改同一依赖可能形成更新循环。需要响应 DOM 变化时，优先明确触发条件或使用 <code>watch</code> / <code>nextTick</code>。</li>
+          <li><strong><code>onUnmounted</code> 和 <code>onDeactivated</code> 怎么分工？</strong> 结论是 unmounted 做最终释放，deactivated 做缓存组件临时停用。原因是 KeepAlive 组件停用后还可能回来。项目里 WebSocket 可在 unmounted 关闭，页面不可见时的轮询可在 deactivated 暂停。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/api/composition-api-lifecycle.html" target="_blank" rel="noreferrer">Vue 3 API：Composition API Lifecycle Hooks</a></li>
+          <li><a href="https://vuejs.org/guide/built-ins/keep-alive.html" target="_blank" rel="noreferrer">Vue 3 Guide：KeepAlive</a></li>
+          <li><a href="https://vuejs.org/api/built-in-components.html#keepalive" target="_blank" rel="noreferrer">Vue 3 API：&lt;KeepAlive&gt;</a></li>
         </ul>
       </div>
     </section>

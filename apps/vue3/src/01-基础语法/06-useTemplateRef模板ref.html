@@ -2,15 +2,15 @@
   分类: vue3 / 01-基础语法
   主题: useTemplateRef（Vue 3.5+）
   要点:
-    - useTemplateRef('key') 替代 ref(null) + 模板 ref="key" 的手动配对
-    - 必须在 setup 同步执行期间调用，模板 ref 属性名需与参数一致
-    - 返回只读 ref，赋值由模板绑定完成；挂载后 .value 才是 DOM
+    - useTemplateRef 是 Vue 3.5+ API，本仓库 vue.global.js 为 3.5.x
+    - useTemplateRef('key') 通过字符串 key 关联模板 ref，减少手动 ref(null) 配对
+    - 只能在 setup 同步阶段为当前组件创建，挂载后 .value 才指向 DOM 或组件实例
+    - Vue 3.4 及更早版本仍使用 ref(null) + 同名模板 ref 写法
   面试:
-    - useTemplateRef（Vue 3.5+）的核心概念是什么
-    - useTemplateRef（Vue 3.5+）在实际项目里怎么用
-    - useTemplateRef（Vue 3.5+）有哪些常见坑或易错点
-    - useTemplateRef（Vue 3.5+）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 useTemplateRef（Vue 3.5+）
+    - useTemplateRef 相比 ref(null) 解决了什么问题？
+    - useTemplateRef 的版本边界是什么？
+    - useTemplateRef 为什么要在 setup 同步阶段调用？
+    - 模板 ref 指向 DOM 和子组件时分别要注意什么？
 -->
 
 <!doctype html>
@@ -40,16 +40,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>useTemplateRef('<code>key</code>') 替代 <code>ref</code>(<code>null</code>) + 模板 <code>ref</code>=&quot;<code>key</code>&quot; 的手动配对。</li>
-          <li>必须在 setup 同步执行期间调用，模板 <code>ref</code> 属性名需与参数一致。</li>
-          <li>返回只读 <code>ref</code>，赋值由模板绑定完成；挂载后 .value 才是 DOM。</li>
-          <li>useTemplateRef('<code>key</code>') 替代 <code>ref</code>(<code>null</code>) + 模板 <code>ref</code>=&quot;<code>key</code>&quot; 的手动配对（补充）。</li>
+          <li><code>useTemplateRef()</code> 是 Vue 3.5+ 提供的模板 ref 辅助 API；本仓库当前 <code>vue.global.js</code> 是 3.5.x，所以示例可以直接运行。</li>
+          <li>它通过 <code>useTemplateRef("myInput")</code> 与模板中的 <code>ref="myInput"</code> 建立关联，减少 <code>const myInput = ref(null)</code> 与字符串 ref 手动配对时的命名分散。</li>
+          <li><code>useTemplateRef()</code> 必须在 <code>setup()</code> 同步执行期间调用，用来绑定当前组件实例；异步回调或普通工具函数里调用会缺少当前组件上下文。</li>
+          <li>返回值由模板渲染结果赋值，挂载前通常为 <code>null</code>；访问 DOM 要放在 <code>onMounted</code> 后或用户事件中，并做好条件渲染导致为空的边界处理。</li>
+          <li>如果项目仍在 Vue 3.4 或更早版本，继续使用 <code>ref(null)</code> + 模板 <code>ref</code> 的旧写法；不要为了一个窄 API 强行升级整个项目。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>useTemplateRef('key') 替代 ref(null) + 模板？</strong> useTemplateRef('<code>key</code>') 替代 <code>ref</code>(<code>null</code>) + 模板 <code>ref</code>=&quot;<code>key</code>&quot; 的手动配对</li>
-          <li><strong>必须在 setup 同步执行期间调用？</strong> 必须在 setup 同步执行期间调用，模板 <code>ref</code> 属性名需与参数一致</li>
-          <li><strong>useTemplateRef（Vue 3.5+）的核心概念是什么？</strong> useTemplateRef('<code>key</code>') 替代 <code>ref</code>(<code>null</code>) + 模板 <code>ref</code>=&quot;<code>key</code>&quot; 的手动配对</li>
+          <li><strong>useTemplateRef 相比 ref(null) 解决了什么问题？</strong> 结论是它把“模板 ref 名称”和“setup 中的 ref 对象”显式关联起来，减少手动初始化和命名错位。原因是旧写法需要同时维护 <code>ref(null)</code> 变量和模板字符串。边界是它仍然只是模板 ref，不改变 DOM 访问时机和空值风险。</li>
+          <li><strong>useTemplateRef 的版本边界是什么？</strong> 先结论：它是 Vue 3.5+ API，Vue 3.4 及更早版本不能直接使用。原因是该函数在 3.5 才进入官方 API。项目里要先确认运行时版本；如果库或业务仍锁在旧版本，应保留 <code>ref(null)</code> 写法。</li>
+          <li><strong>useTemplateRef 为什么要在 setup 同步阶段调用？</strong> 结论是它需要当前组件实例来登记模板 ref。原因是模板 ref 的归属和赋值都依赖正在创建的组件上下文。异步回调中调用时当前实例可能不存在，Vue 会警告且无法关联模板。</li>
+          <li><strong>模板 ref 指向 DOM 和子组件时分别要注意什么？</strong> 指向 DOM 时拿到的是原生元素，适合聚焦、测量和滚动；指向子组件时拿到组件公开实例。使用 <code>&lt;script setup&gt;</code> 的子组件默认私有，需要通过 <code>defineExpose</code> 暴露可调用能力。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/essentials/template-refs.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Template Refs</a></li>
+          <li><a href="https://vuejs.org/api/composition-api-helpers.html#usetemplateref" target="_blank" rel="noreferrer">Vue 3 官方 API：useTemplateRef()</a></li>
+          <li><a href="https://vuejs.org/api/sfc-script-setup.html#defineexpose" target="_blank" rel="noreferrer">Vue 3 官方文档：defineExpose()</a></li>
         </ul>
       </div>
     </section>

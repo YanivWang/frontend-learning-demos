@@ -2,15 +2,15 @@
   分类: vue3 / 04-组件通信
   主题: attrs / 属性透传
   要点:
-    - 未声明为 props 的属性会进入 attrs
-    - 单根组件默认会把 attrs 透传到根元素
-    - inheritAttrs: false 可以关闭自动透传
+    - fallthrough attributes 是未被声明为 props 或 emits 的 class、style、普通属性和监听器
+    - 单根组件默认把 attrs 自动透传到根元素，class / style 会与根元素合并
+    - inheritAttrs: false 可关闭自动透传，再用 v-bind="$attrs" 精准落到内部元素
+    - 多根组件不会自动决定透传目标，必须显式绑定 $attrs 避免警告和属性丢失
   面试:
-    - attrs / 属性透传的核心概念是什么
-    - attrs / 属性透传在实际项目里怎么用
-    - attrs / 属性透传有哪些常见坑或易错点
-    - attrs / 属性透传和相近 API 如何区分选型
-    - 面试中如何简洁讲清 attrs / 属性透传
+    - Vue 3 中哪些内容会进入 $attrs？
+    - 单根组件和多根组件的属性透传差异是什么？
+    - inheritAttrs: false 适合解决哪类组件封装问题？
+    - 为什么组件事件需要用 emits 声明，和 attrs 有什么关系？
 -->
 
 <!doctype html>
@@ -41,15 +41,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>未声明为 props 的属性会进入 attrs。</li>
-          <li>单根组件默认会把 attrs 透传到根元素。</li>
-          <li>inheritAttrs: false 可以关闭自动透传。</li>
+          <li>Vue 3 把传给组件但未被 <code>props</code> 或 <code>emits</code> 声明接收的内容称为 fallthrough attributes，可通过 <code>$attrs</code> 访问，包括 <code>class</code>、<code>style</code>、普通属性和未声明事件监听器。</li>
+          <li>单根组件会默认把 <code>$attrs</code> 透传到根元素。示例中的 <code>DefaultButton</code> 没有显式写 <code>v-bind="$attrs"</code>，但 <code>class</code>、<code>data-id</code> 和 <code>@click</code> 仍会落到内部 <code>button</code>。</li>
+          <li><code>inheritAttrs: false</code> 可以关闭自动透传，让封装组件决定属性落点。示例中的 <code>BaseButton</code> 手动把 <code>$attrs</code> 绑定到内部 <code>button</code>，这是按钮、输入框、表单项等基础组件常用写法。</li>
+          <li>多根组件没有唯一根元素，Vue 不会自动判断 attrs 应该落到哪里，必须显式 <code>v-bind="$attrs"</code>，否则容易出现运行时警告或属性没有生效。</li>
+          <li>Vue 3 中监听器也属于 attrs 的一部分；声明 <code>emits</code> 可以告诉 Vue 哪些是组件自定义事件，避免它们被误透传到 DOM 根元素。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>未声明为 props 的属性会进入 attrs？</strong> 未声明为 props 的属性会进入 attrs</li>
-          <li><strong>单根组件默认会把 attrs 透传到根元素？</strong> 单根组件默认会把 attrs 透传到根元素</li>
-          <li><strong>inheritAttrs？</strong> inheritAttrs: false 可以关闭自动透传</li>
+          <li><strong>哪些内容会进入 <code>$attrs</code>？</strong> 结论是未被 props 或 emits 消费的属性和监听器会进入 <code>$attrs</code>。原因是 Vue 要把调用方传来的额外信息透传给组件内部 DOM。项目里常见的是 <code>class</code>、<code>style</code>、<code>aria-*</code>、<code>data-*</code> 和原生事件监听。</li>
+          <li><strong>单根和多根组件透传有什么差异？</strong> 结论是单根组件会自动透传到根元素，多根组件需要显式选择目标。原因是多根组件没有唯一根节点，Vue 无法替你判断属性语义。封装布局组件时要主动把 <code>$attrs</code> 绑定到正确元素。</li>
+          <li><strong><code>inheritAttrs: false</code> 解决什么问题？</strong> 结论是解决“调用方属性不应该落在组件根元素”这一类封装问题。原因是基础组件常有外层 wrapper，真正的可点击或可输入元素在内部。项目里按钮、输入框、弹窗触发器常用它控制属性落点。</li>
+          <li><strong><code>emits</code> 和 attrs 有什么关系？</strong> 结论是声明过的自定义事件不会作为 fallthrough listener 继续透传。原因是 Vue 3 需要区分组件事件和原生 DOM 监听。组件库若不声明 emits，可能导致监听器落到根 DOM 上，产生重复触发或语义混乱。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/components/attrs.html" target="_blank" rel="noreferrer">Vue 3 Guide：Fallthrough Attributes</a></li>
+          <li><a href="https://vuejs.org/api/options-misc.html#inheritattrs" target="_blank" rel="noreferrer">Vue 3 API：inheritAttrs</a></li>
+          <li><a href="https://vuejs.org/guide/components/events.html#declaring-emitted-events" target="_blank" rel="noreferrer">Vue 3 Guide：Declaring Emitted Events</a></li>
         </ul>
       </div>
     </section>

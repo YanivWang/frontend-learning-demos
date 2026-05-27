@@ -1,16 +1,16 @@
 <!--
   分类: vue2 / 07-源码简读
-  主题: Vue2 源码阅读前置知识占位（Symbol）
+  主题: Vue2 源码阅读前置：Symbol 与源码标记
   要点:
-    - 仅做占位，演示 Symbol 在源码中常用于「私有标记」
-    - 同目录的 vue.js 是官方 2.x 源码副本，第三方文件按 CONVENTIONS §5 不修改
-    - 想看实际响应式实现，参考 ../响应式原理/index.html 的手写版
+    - Symbol 生成唯一值，适合做不会与普通字符串冲突的内部标记
+    - Vue2 源码阅读要区分语言前置、运行时能力检测和框架响应式实现
+    - Vue2 已进入历史版本语境，新项目优先 Vue3，维护项目仍需读懂 2.x 行为
+    - 同目录 vue.js 是官方 2.x 源码副本，按第三方运行时文件处理不直接修改
   面试:
-    - Vue2 源码阅读前置知识占位（Symbol）的核心概念是什么
-    - Vue2 源码阅读前置知识占位（Symbol）在实际项目里怎么用
-    - Vue2 源码阅读前置知识占位（Symbol）有哪些常见坑或易错点
-    - Vue2 源码阅读前置知识占位（Symbol）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Vue2 源码阅读前置知识占位（Symbol）
+    - Symbol 为什么适合作为源码内部标记？
+    - 阅读 Vue2 源码时如何区分语言能力和框架机制？
+    - Symbol 属性为什么不等于真正私有字段？
+    - 维护 Vue2 项目时如何说明 Vue2 与 Vue3 的选型边界？
 -->
 
 <!doctype html>
@@ -25,21 +25,29 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>Vue2 源码阅读前置知识占位（Symbol）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <h1>Vue2 源码阅读前置：Symbol 与源码标记</h1>
+      <p class="hint">打开控制台查看 Symbol 的唯一性；本页用于进入 Vue2 源码前先补齐语言层前置知识。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>仅做占位，演示 <code>Symbol</code> 在源码中常用于「私有标记」。</li>
-          <li>同目录的 vue.js 是官方 2.x 源码副本，第三方文件按 CONVENTIONS §5 不修改。</li>
-          <li>想看实际响应式实现，参考 ../响应式原理/index.html 的手写版。</li>
-          <li>仅做占位，演示 <code>Symbol</code> 在源码中常用于「私有标记」（补充）。</li>
+          <li><code>Symbol()</code> 每次都会创建唯一值，即使描述字符串相同也不相等，常用于避免对象属性名与业务字符串发生冲突。</li>
+          <li>Symbol 属性默认不会出现在 <code>for...in</code>、<code>Object.keys()</code> 和 JSON 序列化结果中，但仍可通过 <code>Object.getOwnPropertySymbols()</code> 或 <code>Reflect.ownKeys()</code> 读取，所以它不是安全意义上的私有字段。</li>
+          <li>阅读 Vue2 源码时，先把语言前置和框架机制分开：Symbol、数组方法、闭包、原型链属于 JavaScript 能力；<code>Observer</code>、<code>Dep</code>、<code>Watcher</code> 才是 Vue2 响应式链路。</li>
+          <li>同目录 <code>vue.js</code> 是官方 2.x 运行时源码副本，按第三方运行时文件处理；本页只演示前置概念，实际响应式行为应结合 Vue2 官方响应式文档和源码阅读。</li>
+          <li>Vue2 已进入历史版本语境，新项目通常优先 Vue3；但维护老项目、排查响应式限制或阅读第三方库兼容代码时，仍需要理解 Vue2 源码中的能力检测与内部标记写法。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>同目录的 vue.js 是官方 2.x 源码副本？</strong> 同目录的 vue.js 是官方 2.x 源码副本，第三方文件按 CONVENTIONS §5 不修改</li>
-          <li><strong>想看实际响应式实现？</strong> 想看实际响应式实现，参考 ../响应式原理/index.html 的手写版</li>
-          <li><strong>Vue2 源码阅读前置知识占位（Symbol）的核心概念是什么？</strong> 仅做占位，演示 <code>Symbol</code> 在源码中常用于「私有标记」；同目录的 vue.js 是官方 2.x 源码副本，第三方文件按 CONVENTIONS §5 不修改</li>
+          <li><strong>Symbol 为什么适合作为源码内部标记？</strong> 结论是它能生成唯一属性键，降低与用户字段或普通字符串常量冲突的概率。原因是每次调用 <code>Symbol()</code> 都返回新的唯一值，并且 Symbol 键不会被常规枚举 API 遍历到。边界是 Symbol 不是安全私有，调试工具和反射 API 仍能看到它。</li>
+          <li><strong>阅读 Vue2 源码时如何区分语言能力和框架机制？</strong> 先结论：语言能力是源码的表达工具，框架机制才是 Vue 行为本身。比如 Symbol、闭包、原型链帮助组织代码，而 Vue2 的响应式核心仍是基于 <code>Object.defineProperty</code> 的依赖收集和派发更新。项目排障时不要把语言语法误判为 Vue 的响应式限制。</li>
+          <li><strong>Symbol 属性为什么不等于真正私有字段？</strong> 结论是它只能降低命名冲突和常规枚举暴露，不提供访问控制。原因是 <code>Object.getOwnPropertySymbols()</code> 与 <code>Reflect.ownKeys()</code> 可以取到 Symbol 键。需要强私有语义时，现代 JavaScript 更常用类私有字段或模块闭包。</li>
+          <li><strong>维护 Vue2 项目时如何说明版本边界？</strong> 先说明 Vue2 已是历史版本，新增项目通常优先 Vue3。继续维护 Vue2 时，源码阅读重点放在响应式限制、渲染更新和兼容性行为上；如果要迁移，需要特别核对 Vue2 与 Vue3 在响应式实现、生命周期和全局 API 上的差异。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Symbol" target="_blank" rel="noreferrer">MDN：Symbol</a></li>
+          <li><a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/getOwnPropertySymbols" target="_blank" rel="noreferrer">MDN：Object.getOwnPropertySymbols()</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/reactivity.html" target="_blank" rel="noreferrer">Vue 2 官方文档：Reactivity in Depth</a></li>
         </ul>
       </div>
     </section>

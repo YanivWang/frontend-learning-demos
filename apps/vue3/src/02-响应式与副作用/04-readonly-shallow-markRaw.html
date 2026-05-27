@@ -2,15 +2,15 @@
   分类: vue3 / 02-响应式与副作用
   主题: readonly / shallowReactive / markRaw
   要点:
-    - readonly 用于暴露只读状态，避免外部误改
-    - shallowReactive 只代理第一层
-    - markRaw 标记对象不需要转成响应式
+    - readonly 返回深只读代理，阻止通过暴露对象直接写入，但源响应式对象更新仍会同步
+    - shallowReactive 只代理根层属性，嵌套对象保持原样，适合边界清晰的大对象
+    - markRaw 会让对象跳过响应式转换，常用于第三方实例、类实例或不希望代理的对象
+    - shallow 与 raw API 混用会制造响应式边界，团队需要明确哪些字段不会自动触发视图
   面试:
-    - readonly / shallowReactive / markRaw的核心概念是什么
-    - readonly / shallowReactive / markRaw在实际项目里怎么用
-    - readonly / shallowReactive / markRaw有哪些常见坑或易错点
-    - readonly / shallowReactive / markRaw和相近 API 如何区分选型
-    - 面试中如何简洁讲清 readonly / shallowReactive / markRaw
+    - readonly 为什么不是深拷贝，也不能当权限系统使用？
+    - shallowReactive 修改嵌套字段为什么通常不触发视图更新？
+    - markRaw 适合包裹哪些第三方对象，风险是什么？
+    - readonly、shallowReactive、markRaw 分别解决什么响应式边界问题？
 -->
 
 <!doctype html>
@@ -39,15 +39,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>readonly 用于暴露只读状态，避免外部误改。</li>
-          <li>shallowReactive 只代理第一层。</li>
-          <li>markRaw 标记对象不需要转成响应式。</li>
+          <li><code>readonly()</code> 返回原对象的只读代理：通过只读代理写入会被阻止并在开发环境给出警告，但修改源 <code>reactive</code> 对象时，只读视图仍会同步更新。</li>
+          <li><code>readonly()</code> 是深只读代理，不是深拷贝，也不是安全权限边界；如果外部仍持有源对象引用，仍然可以从源对象修改数据。</li>
+          <li><code>shallowReactive()</code> 只让根层属性成为响应式，嵌套对象不会继续转换为响应式代理。示例中直接改 <code>shallow.nested.count</code> 不会稳定触发视图，替换 <code>shallow.nested</code> 才是推荐写法。</li>
+          <li><code>markRaw()</code> 标记对象永远跳过响应式转换，适合图表实例、编辑器实例、地图对象、复杂类实例等不应被代理的第三方对象。</li>
+          <li>shallow 与 raw API 都是在创建响应式边界：它们能减少代理成本和意外副作用，但也会让“为什么视图不更新”更难排查，应该只放在边界清晰的对象上。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>readonly 用于暴露只读状态？</strong> readonly 用于暴露只读状态，避免外部误改</li>
-          <li><strong>shallowReactive 只代理第一层？</strong> shallowReactive 只代理第一层</li>
-          <li><strong>markRaw 标记对象不需要转成响应式？</strong> markRaw 标记对象不需要转成响应式</li>
+          <li><strong><code>readonly</code> 为什么不是深拷贝？</strong> 结论是它返回只读代理，不复制数据。原因是代理仍指向同一份源对象，所以源对象更新会反映到只读视图。项目里常用它向外暴露不可直接写的状态，但不能替代权限控制或不可变数据持久化。</li>
+          <li><strong><code>shallowReactive</code> 的嵌套字段为什么不更新？</strong> 结论是它只追踪根层属性访问与赋值。原因是 Vue 不会把嵌套对象递归转成响应式代理。实际项目里如果用了 shallow API，更新嵌套数据时应整体替换根层字段，或者改回 <code>reactive</code>。</li>
+          <li><strong><code>markRaw</code> 适合什么对象？</strong> 结论是适合第三方实例、DOM 相关对象、复杂类实例或大对象缓存。原因是这些对象通常不需要被 Vue 代理，代理还可能破坏实例身份或带来成本。边界是被标记对象内部字段变更不会触发视图，需要额外状态或事件驱动刷新。</li>
+          <li><strong>三者如何选型？</strong> 结论是 <code>readonly</code> 管“外部不要写”，<code>shallowReactive</code> 管“只追踪第一层”，<code>markRaw</code> 管“完全不要代理”。面试回答要补充边界：它们都不是默认推荐状态建模方式，只有性能、第三方实例或封装边界明确时才使用。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/api/reactivity-core.html#readonly" target="_blank" rel="noreferrer">Vue 3 API：readonly()</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-advanced.html#shallowreactive" target="_blank" rel="noreferrer">Vue 3 API：shallowReactive()</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-advanced.html#markraw" target="_blank" rel="noreferrer">Vue 3 API：markRaw()</a></li>
         </ul>
       </div>
     </section>

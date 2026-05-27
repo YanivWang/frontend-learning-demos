@@ -2,15 +2,15 @@
   分类: vue3 / 03-生命周期与组合式
   主题: Composition API 生命周期钩子
   要点:
-    - setup 阶段等价覆盖 beforeCreate / created 的能力
-    - 常用钩子：onMounted / onUpdated / onUnmounted
-    - keep-alive 组件会额外触发 onActivated / onDeactivated
+    - setup 在组件创建时同步执行，Composition API 不再提供 beforeCreate / created 钩子
+    - onMounted 适合访问已挂载 DOM，onUpdated 适合读取更新后的 DOM
+    - onUnmounted 用于释放事件监听、定时器、订阅等组件级副作用
+    - 生命周期钩子必须在 setup 同步阶段注册，异步回调里注册会丢失组件上下文
   面试:
-    - Composition API 生命周期钩子的核心概念是什么
-    - Composition API 生命周期钩子在实际项目里怎么用
-    - Composition API 生命周期钩子有哪些常见坑或易错点
-    - Composition API 生命周期钩子和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Composition API 生命周期钩子
+    - Vue 3 中 beforeCreate / created 的逻辑应放在哪里？
+    - onMounted、onUpdated、onUnmounted 各适合处理什么事情？
+    - 为什么生命周期钩子要在 setup 同步阶段注册？
+    - 组件卸载时哪些副作用需要在 onUnmounted 中清理？
 -->
 
 <!doctype html>
@@ -39,15 +39,23 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>setup 阶段等价覆盖 beforeCreate / created 的能力。</li>
-          <li>常用钩子：onMounted / onUpdated / onUnmounted。</li>
-          <li>keep-alive 组件会额外触发 onActivated / onDeactivated。</li>
+          <li><code>setup()</code> 会在组件创建阶段执行，早于挂载，Composition API 中 <code>beforeCreate</code> / <code>created</code> 的大多数初始化逻辑都应直接写在 <code>setup</code> 顶层。</li>
+          <li><code>onBeforeMount</code> / <code>onMounted</code> 对应挂载前后。需要访问真实 DOM、初始化依赖 DOM 的第三方库时，应放在 <code>onMounted</code> 之后。</li>
+          <li><code>onBeforeUpdate</code> / <code>onUpdated</code> 对应响应式更新引发的 DOM patch 前后。读更新后的 DOM 可放在 <code>onUpdated</code>，但不要在其中无条件修改状态，否则可能造成更新循环。</li>
+          <li><code>onBeforeUnmount</code> / <code>onUnmounted</code> 用于组件销毁前后清理资源，比如事件监听、定时器、订阅、外部实例和未完成任务。</li>
+          <li>生命周期注册函数必须在 <code>setup</code> 同步阶段调用，这样 Vue 才能把钩子绑定到当前组件实例；异步回调里临时注册通常不是可靠模式。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>setup 阶段等价覆盖 beforeCreate / created 的能力？</strong> setup 阶段等价覆盖 beforeCreate / created 的能力</li>
-          <li><strong>keep-alive 组件会额外触发 onActivated / onDeact？</strong> keep-alive 组件会额外触发 onActivated / onDeactivated</li>
-          <li><strong>Composition API 生命周期钩子的核心概念是什么？</strong> setup 阶段等价覆盖 beforeCreate / created 的能力；常用钩子：onMounted / onUpdated / onUnmounted</li>
+          <li><strong>Vue 3 中 <code>created</code> 逻辑放哪里？</strong> 结论是大多直接放在 <code>setup</code> 顶层。原因是 <code>setup</code> 已经覆盖创建阶段初始化能力，并且可以创建响应式状态和注册副作用。边界是依赖 DOM 的逻辑仍要等到 <code>onMounted</code>。</li>
+          <li><strong><code>onMounted</code>、<code>onUpdated</code>、<code>onUnmounted</code> 怎么分工？</strong> 结论是 mounted 做 DOM 就绪后的初始化，updated 做更新后 DOM 读取或同步，unmounted 做资源释放。原因是它们分别对应渲染生命周期的不同阶段。项目里第三方图表初始化和销毁常成对写在 mounted / unmounted。</li>
+          <li><strong>为什么钩子要同步注册？</strong> 结论是为了绑定当前组件实例。原因是 Vue 在 <code>setup</code> 同步执行期间维护当前实例上下文，钩子注册依赖这个上下文。异步之后再注册，可能没有可关联的实例。</li>
+          <li><strong>卸载时要清理什么？</strong> 结论是清理 Vue 无法自动接管的外部资源。包括 <code>addEventListener</code>、<code>setInterval</code>、WebSocket、第三方实例和手动订阅。否则隐藏或路由切换后回调仍可能执行。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/api/composition-api-lifecycle.html" target="_blank" rel="noreferrer">Vue 3 API：Composition API Lifecycle Hooks</a></li>
+          <li><a href="https://vuejs.org/guide/essentials/lifecycle.html" target="_blank" rel="noreferrer">Vue 3 Guide：Lifecycle Hooks</a></li>
         </ul>
       </div>
     </section>

@@ -2,15 +2,15 @@
   分类: vue3 / 02-响应式与副作用
   主题: ref / reactive / 解构丢响应
   要点:
-    - ref 适合基本类型，也可以包对象
-    - reactive 只能代理对象类型
-    - reactive 直接解构会丢响应，需要 toRefs
+    - ref 用 .value 包装任意值，模板中会自动解包
+    - reactive 返回对象代理，只能接收对象类型并保持同一代理引用
+    - 直接解构 reactive 会拿到普通值快照，toRefs 可保留属性响应性
+    - 组合式 API 返回状态时要按调用方解构方式选择 ref 或 toRefs
   面试:
-    - ref / reactive / 解构丢响应的核心概念是什么
-    - ref / reactive / 解构丢响应在实际项目里怎么用
-    - ref / reactive / 解构丢响应有哪些常见坑或易错点
-    - ref / reactive / 解构丢响应和相近 API 如何区分选型
-    - 面试中如何简洁讲清 ref / reactive / 解构丢响应
+    - ref 和 reactive 如何选型？
+    - reactive 直接解构为什么会丢响应？
+    - 为什么不要整体替换 reactive 代理对象？
+    - composable 返回对象时如何避免调用方解构丢响应？
 -->
 
 <!doctype html>
@@ -69,16 +69,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>ref</code> 适合基本类型，也可以包对象。</li>
-          <li><code>reactive</code> 只能代理对象类型。</li>
-          <li><code>reactive</code> 直接解构会丢响应，需要 toRefs。</li>
-          <li><code>ref</code> 适合基本类型，也可以包对象（补充）。</li>
+          <li><code>ref()</code> 用 <code>.value</code> 保存响应式值，适合基本类型，也可以包装对象；模板里会自动解包，所以本页显示 <code>{{ count }}</code> 而不是 <code>{{ count.value }}</code>。</li>
+          <li><code>reactive()</code> 返回对象的 Proxy，只能接收对象、数组、Map、Set 等对象类型；它的响应性依赖代理访问，通常应保持同一个代理引用。</li>
+          <li>直接从 <code>reactive</code> 对象解构属性会得到当前值快照，本页 <code>nameSnapshot</code> 不会随 <code>user.name</code> 更新，因为后续访问不再经过代理的 getter。</li>
+          <li><code>toRefs(user)</code> 会把每个属性转换成与源对象属性联动的 ref，本页 <code>name</code> 会跟着 <code>user.name</code> 变化，适合在返回对象或解构时保留响应性。</li>
+          <li>现代 Vue3 项目常用“独立基本状态用 <code>ref</code>、成组对象状态用 <code>reactive</code>、跨函数返回时用 <code>toRef</code>/<code>toRefs</code> 保持连接”的组合。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>ref 适合基本类型？</strong> <code>ref</code> 适合基本类型，也可以包对象</li>
-          <li><strong>reactive 只能代理对象类型？</strong> <code>reactive</code> 只能代理对象类型；<code>reactive</code> 直接解构会丢响应，需要 toRefs</li>
-          <li><strong>reactive 直接解构会丢响应？</strong> <code>reactive</code> 只能代理对象类型；<code>reactive</code> 直接解构会丢响应，需要 toRefs</li>
+          <li><strong>ref 和 reactive 如何选型？</strong> 结论是基本类型和需要整体替换的值优先 <code>ref</code>，成组对象状态可用 <code>reactive</code>。原因是 <code>ref</code> 通过 <code>.value</code> 持有值，替换天然清晰；<code>reactive</code> 通过 Proxy 拦截对象属性读写。项目里表单对象常用 <code>reactive</code>，计数、开关、当前 id 常用 <code>ref</code>。</li>
+          <li><strong>reactive 直接解构为什么会丢响应？</strong> 先结论：解构会把属性当前值取出来，后续读写不再经过原代理。原因是 Vue 的依赖收集发生在代理 getter 上，而普通变量没有 getter。需要解构给模板或调用方时，用 <code>toRefs</code> 保留每个属性与源对象的连接。</li>
+          <li><strong>为什么不要整体替换 reactive 代理对象？</strong> 结论是替换变量会断开已有引用和依赖关系。原因是其他地方持有的是旧代理对象，重新赋值只改变当前局部变量指向。项目中要么修改代理对象的属性，要么一开始用 <code>ref({ ... })</code> 承载可整体替换的数据。</li>
+          <li><strong>composable 返回对象时如何避免调用方解构丢响应？</strong> 结论是返回多个 <code>ref</code>，或对 <code>reactive</code> 对象使用 <code>toRefs</code> 后返回。原因是调用方很常见会写对象解构。边界是如果希望调用方保持对象整体语义，也可以返回整个 <code>reactive</code> 对象并文档化不要直接解构。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/essentials/reactivity-fundamentals.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Reactivity Fundamentals</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-core.html#ref" target="_blank" rel="noreferrer">Vue 3 官方 API：ref() / reactive()</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-utilities.html#torefs" target="_blank" rel="noreferrer">Vue 3 官方 API：toRefs()</a></li>
         </ul>
       </div>
     </section>

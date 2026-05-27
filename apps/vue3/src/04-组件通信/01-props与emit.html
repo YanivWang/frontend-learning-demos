@@ -2,15 +2,15 @@
   分类: vue3 / 04-组件通信
   主题: props / emit
   要点:
-    - props 负责父传子
-    - emit 负责子通知父
-    - 子组件不应直接修改 props
+    - props 表达父到子的输入契约，Vue 3 中子组件收到的是只读 props
+    - emit 表达子到父的事件契约，父组件负责更新自己的状态
+    - 单向数据流让状态来源可追踪，子组件不要直接修改 props
+    - emits 选项可声明事件名并校验 payload，避免事件散落成隐式约定
   面试:
-    - props / emit的核心概念是什么
-    - props / emit在实际项目里怎么用
-    - props / emit有哪些常见坑或易错点
-    - props / emit和相近 API 如何区分选型
-    - 面试中如何简洁讲清 props / emit
+    - Vue 父子组件为什么强调 props down、events up？
+    - 子组件为什么不能直接修改 props，应该怎么改？
+    - emits 选项在 Vue 3 中有什么价值？
+    - props / emit 与 v-model、provide-inject、store 如何选型？
 -->
 
 <!doctype html>
@@ -37,15 +37,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>props 负责父传子。</li>
-          <li>emit 负责子通知父。</li>
-          <li>子组件不应直接修改 props。</li>
+          <li><code>props</code> 是父组件传给子组件的输入契约。Vue 3 中 props 在子组件内是只读的，子组件应该把它当作外部输入，而不是本地可随意修改的状态。</li>
+          <li><code>emit</code> 是子组件通知父组件的事件契约。示例中子组件点击按钮只触发 <code>increase</code> 事件，真正的 <code>count++</code> 发生在父组件。</li>
+          <li>这种 <strong>props down, events up</strong> 的单向数据流让状态来源可追踪：父组件拥有状态，子组件描述意图，父组件决定如何更新。</li>
+          <li>Vue 3 推荐声明 <code>emits</code>，这样组件的自定义事件会更清晰，也能避免未声明事件被当作透传监听器落到根元素上；复杂场景还可以校验 payload。</li>
+          <li>常见坑是子组件直接改 props、把本地临时状态和父级状态混在一起，或用层层 emit 穿透太深的组件树。跨层共享状态可考虑 provide-inject 或 Pinia。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>props 负责父传子？</strong> props 负责父传子；子组件不应直接修改 props</li>
-          <li><strong>emit 负责子通知父？</strong> emit 负责子通知父</li>
-          <li><strong>子组件不应直接修改 props？</strong> 子组件不应直接修改 props</li>
+          <li><strong>为什么强调 props down、events up？</strong> 结论是为了保持单向数据流。原因是父组件拥有状态，子组件只接收输入并发出事件，状态变化来源更容易追踪。项目里表单项、按钮、列表项等可复用子组件都应遵守这个约定。</li>
+          <li><strong>子组件想改 props 怎么办？</strong> 结论是不要直接修改 props，而是 emit 事件让父组件更新，或在子组件内基于 props 初始化本地状态。原因是 props 是父级数据，直接改会破坏数据流并触发警告。双向绑定语义可封装为 <code>v-model</code>。</li>
+          <li><strong><code>emits</code> 选项有什么价值？</strong> 结论是它声明组件会发出的自定义事件。原因是 Vue 3 会据此区分组件事件和透传监听器，也便于校验 payload 和生成类型提示。组件库中应把公开事件写成明确契约。</li>
+          <li><strong>props / emit 与其他通信方式怎么选？</strong> 结论是父子近距离通信用 props / emit，表单双向语义用 <code>v-model</code>，跨层依赖用 provide-inject，全局业务状态用 store。边界是不要为了避免一两层传递就过早引入全局状态。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/components/props.html" target="_blank" rel="noreferrer">Vue 3 Guide：Props</a></li>
+          <li><a href="https://vuejs.org/guide/components/events.html" target="_blank" rel="noreferrer">Vue 3 Guide：Component Events</a></li>
+          <li><a href="https://vuejs.org/api/options-state.html#emits" target="_blank" rel="noreferrer">Vue 3 API：emits</a></li>
         </ul>
       </div>
     </section>
