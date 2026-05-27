@@ -2,7 +2,7 @@
 
 本仓库是「前端语法 / 框架学习 Demo 库」，每个 `.html` 都可以直接在浏览器打开。本文规定目录与命名规范，保持仓库长期清爽。
 
-当前仓库共 **348** 个可索引 demo（`javascript` 124 · `css` 39 · `vue2` 57 · `vue3` 41 · `react18` 53 · `react19` 11 · `typescript` 18 · `demos` 5），统计以 `node scripts/validate-demos.mjs` 输出为准。
+当前仓库共 **346** 个可索引 demo（`javascript` 124 · `css` 39 · `vue2` 57 · `vue3` 41 · `react18` 53 · `react19` 11 · `typescript` 18 · `demos` 3），统计以 `node scripts/validate-demos.mjs` 输出为准。
 
 ## 1. 顶层目录
 
@@ -15,7 +15,7 @@
 | `apps/react18/` | React 18 demo | 内含 `libs/` 与 `src/`（`function-components` + `class-components`） |
 | `apps/react19/` | React 19 新特性与面试 demo | 内含 React 19 运行时（`umd-react`）与 `src/`（`01-基础语法` + `02-面试题`） |
 | `apps/typescript/` | TypeScript 面试基础 / 进阶 / 工程与框架 demo | 按 `01-基础` / `02-进阶` / `03-工程与框架` 编号 |
-| `apps/demos/` | 综合性 / 交互小项目 | `drag`、`svg`、`viewpager` 等 |
+| `apps/demos/` | 综合性 / 交互小项目 | `drag`、`viewpager` 等 |
 | `scripts/` | 仓库工具脚本 | `build-index.mjs`、`sync-readmes.mjs`、`validate-demos.mjs` 等 |
 
 ## 2. 目录命名规则
@@ -63,7 +63,7 @@
 
 每个框架 / 第三方运行时统一放在所属目录下的 `libs/`：
 
-- `apps/react18/libs/`、`apps/vue2/libs/`、`apps/vue3/libs/`、`packages/shared/libs/`、`apps/demos/libs/`、`apps/css/05-响应式/libs/`
+- `apps/react18/libs/`、`apps/vue2/libs/`、`apps/vue3/libs/`、`packages/shared/libs/`、`apps/css/05-响应式/libs/`
 - **跨模块通用库**（axios、lodash、js-cookie 等）统一放在 `packages/shared/libs/`，demo 用相对路径 `../../../../packages/shared/libs/<file>` 引用（相对 `apps/vue2|vue3/src/<分类>/`）
 - demo 内嵌的小库放在 demo 同级的 `lib/`（注意是单数）
 - **每个第三方文件**首行必须有注释，写明：**名称 + 版本号 + 官方下载地址 + 下载日期**

@@ -31,7 +31,7 @@ const SECTION_DESC = {
   "Vue 2": "响应式原理、基础语法、组件、路由与状态",
   "Vue 3": "基础语法、响应式、组件通信、内置组件、路由状态、原理性能",
   "React 18": "函数组件 33 + 类组件 19：JSX、Hooks、setState、生命周期、面试考点",
-  "综合 Demo": "拖拽 / SVG / ViewPager 等小项目",
+  "综合 Demo": "拖拽 / ViewPager 等小项目",
   TypeScript: "基础语法、进阶类型、工程配置、Vue3/React 组件类型",
 };
 

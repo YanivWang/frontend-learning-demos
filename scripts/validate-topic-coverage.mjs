@@ -31,8 +31,6 @@ const REQUIRED = [
   // TypeScript 扩展
   { file: "apps/typescript/02-进阶/06-手写Utility-Types练习.html", keywords: ["Partial", "Pick", "Omit"] },
   { file: "apps/typescript/03-工程与框架/04-React表单与Vue-emits类型.html", keywords: ["ChangeEvent", "defineEmits", "表单"] },
-  // Demos
-  { file: "apps/demos/todo/01-todo-本地状态.html", keywords: ["todo", "localStorage"] },
 ];
 
 async function main() {

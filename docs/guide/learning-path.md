@@ -34,4 +34,4 @@
 
 ## 综合 Demo
 
-完成基础语法后，可尝试 `apps/demos/` 下的拖拽、SVG、ViewPager 等小项目。
+完成基础语法后，可尝试 `apps/demos/` 下的拖拽、ViewPager 等小项目。

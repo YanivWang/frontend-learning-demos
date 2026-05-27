@@ -2,7 +2,7 @@
 
 # Demo 索引
 
-共 **348** 个可运行 demo。点击链接打开对应 HTML 页面。
+共 **346** 个可运行 demo。点击链接打开对应 HTML 页面。
 
 ## JavaScript
 
@@ -611,20 +611,12 @@
 
 ## 综合 Demo
 
-拖拽 / SVG / ViewPager 等小项目
+拖拽 / ViewPager 等小项目
 
 ### drag
 
 - [drag-原生](/apps/demos/drag/01-drag-%E5%8E%9F%E7%94%9F.html) — 原生 HTML5 拖拽 API（drag &amp; drop）
 - [drag-HTML5拖放复制](/apps/demos/drag/02-drag-HTML5%E6%8B%96%E6%94%BE%E5%A4%8D%E5%88%B6.html) — HTML5 拖放复制（带 UI 反馈）
-
-### svg
-
-- [SVG-基础](/apps/demos/svg/01-SVG-%E5%9F%BA%E7%A1%80.html) — SVG 基础元素（矩形 / 圆形 / 文本）
-
-### todo
-
-- [todo-本地状态](/apps/demos/todo/01-todo-%E6%9C%AC%E5%9C%B0%E7%8A%B6%E6%80%81.html) — Todo 本地状态与 localStorage 持久化
 
 ### viewpager
 

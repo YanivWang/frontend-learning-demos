@@ -20,7 +20,7 @@ const PRIORITY_HREFS = [
   "apps/vue3/src/07-路由状态工程化/06-Router与Pinia可运行示例.html",
   "apps/react18/src/function-components/34-React19新特性概览.html",
   "apps/typescript/mini-project/index.html",
-  "apps/demos/todo/01-todo-本地状态.html",
+  "apps/demos/drag/01-drag-原生.html",
 ];
 
 async function loadManifestPaths() {

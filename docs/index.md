@@ -31,6 +31,6 @@ features:
 | Vue 2 / Vue 3 | `apps/vue2/` `apps/vue3/` | 框架语法与原理 |
 | React 18 | `apps/react18/` | 函数组件 + 类组件 |
 | TypeScript | `apps/typescript/` | 基础、进阶、工程化 |
-| 综合 Demo | `apps/demos/` | 拖拽、SVG、ViewPager 等 |
+| 综合 Demo | `apps/demos/` | 拖拽、ViewPager 等 |
 
 左侧 **Demo 分类** 侧边栏由 `manifest.json` 自动生成，新增 demo 后运行 `npm run build:index` 即可更新。

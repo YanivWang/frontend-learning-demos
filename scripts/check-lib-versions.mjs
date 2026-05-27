@@ -15,7 +15,6 @@ const LIB_ROOTS = [
   "apps/vue2/libs",
   "apps/vue3/libs",
   "packages/shared/libs",
-  "apps/demos/libs",
 ];
 const SKIP = new Set(["README.md"]);
 const errors = [];

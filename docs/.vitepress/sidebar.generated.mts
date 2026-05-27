@@ -1898,26 +1898,6 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         ]
       },
       {
-        "text": "svg",
-        "collapsed": true,
-        "items": [
-          {
-            "text": "SVG-基础",
-            "link": "/apps/demos/svg/01-SVG-%E5%9F%BA%E7%A1%80.html"
-          }
-        ]
-      },
-      {
-        "text": "todo",
-        "collapsed": true,
-        "items": [
-          {
-            "text": "todo-本地状态",
-            "link": "/apps/demos/todo/01-todo-%E6%9C%AC%E5%9C%B0%E7%8A%B6%E6%80%81.html"
-          }
-        ]
-      },
-      {
         "text": "viewpager",
         "collapsed": true,
         "items": [

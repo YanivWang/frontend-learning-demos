@@ -5,8 +5,6 @@
     - 拖动元素 dragstart 时 setData，目标区 dragover 必须 preventDefault 才能 drop
     - 用 cloneNode(true) 复制源节点；移除原 draggable / id，避免「副本也可拖」
     - 通过 setTimeout(0) 添加 dragging 类，绕过浏览器对源图像的截屏
-  说明:
-    - 依赖本地 libs 的 Tailwind / FontAwesome，可离线打开
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -14,82 +12,127 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HTML5 拖放复制示例</title>
-    <!-- 引入Tailwind CSS -->
-    <script src="../libs/tailwindcss.js"></script>
-    <!-- 引入Font Awesome -->
-    <link href="../libs/css/font-awesome.min.css" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#4F46E5',
-                        secondary: '#10B981',
-                        neutral: '#9CA3AF',
-                    },
-                }
-            }
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 24px;
+            font-family: system-ui, sans-serif;
+            background: #f5f5f5;
+            color: #333;
         }
-    </script>
-    
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .draggable-item {
-                @apply bg-primary text-white p-4 rounded-lg cursor-move transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105;
-            }
-            .drop-area {
-                @apply border-2 border-dashed border-neutral rounded-xl min-h-[250px] p-6 transition-all duration-300;
-            }
-            .drop-area-active {
-                @apply border-primary bg-indigo-50;
-            }
-            .dragging {
-                @apply opacity-70 scale-95;
-            }
-            .cloned-item {
-                @apply bg-secondary text-white p-4 rounded-lg shadow-md transition-all duration-300;
-            }
+        .container { max-width: 960px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 32px; }
+        header h1 { margin: 0 0 8px; font-size: 1.5rem; }
+        header p { margin: 0; color: #666; font-size: 0.95rem; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
         }
+        @media (max-width: 640px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .panel h2 {
+            margin: 0 0 16px;
+            font-size: 1.1rem;
+            color: #444;
+        }
+
+        .draggable-item {
+            background: #4f46e5;
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 6px;
+            cursor: move;
+            margin-bottom: 12px;
+        }
+        .draggable-item:last-child { margin-bottom: 0; }
+        .draggable-item h3 { margin: 0; font-size: 1rem; font-weight: 600; }
+        .draggable-item p { margin: 4px 0 0; font-size: 0.85rem; opacity: 0.9; }
+
+        .dragging { opacity: 0.6; }
+
+        .drop-area {
+            border: 2px dashed #bbb;
+            border-radius: 8px;
+            min-height: 220px;
+            padding: 16px;
+        }
+        .drop-area-active {
+            border-color: #4f46e5;
+            background: #eef2ff;
+        }
+        .drop-hint {
+            text-align: center;
+            color: #999;
+            padding: 48px 16px;
+        }
+
+        .cloned-item {
+            background: #10b981;
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        .cloned-item h3 { margin: 0; font-size: 1rem; font-weight: 600; }
+        .cloned-item p { margin: 4px 0 0; font-size: 0.85rem; opacity: 0.9; }
+
+        .delete-btn {
+            margin-top: 8px;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            background: #fff;
+            color: #10b981;
+            cursor: pointer;
+        }
+        .delete-btn:hover { background: #f0f0f0; }
+
+        .hidden { display: none; }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen p-6 md:p-10">
-    <div class="max-w-6xl mx-auto">
-        <header class="mb-10 text-center">
-            <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-gray-800 mb-3">HTML5 拖放复制示例</h1>
-            <p class="text-gray-600 max-w-2xl mx-auto">将左侧的元素拖动到右侧的放置区域，原始元素会保留，放置区域会创建一个副本</p>
+<body>
+    <div class="container">
+        <header>
+            <h1>HTML5 拖放复制示例</h1>
+            <p>将左侧的元素拖动到右侧的放置区域，原始元素会保留，放置区域会创建一个副本</p>
         </header>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- 可拖动元素区域 -->
-            <div class="bg-white rounded-xl p-6 shadow-sm">
-                <h2 class="text-xl font-semibold text-gray-700 mb-5 flex items-center">
-                    <i class="fa fa-arrows mr-2 text-primary"></i>可拖动元素
-                </h2>
-                <div id="draggables-container" class="space-y-4">
+
+        <div class="grid">
+            <div class="panel">
+                <h2>可拖动元素</h2>
+                <div id="draggables-container">
                     <div class="draggable-item" draggable="true" data-item-id="1">
-                        <h3 class="font-medium">元素 1</h3>
-                        <p class="text-sm opacity-90 mt-1">这是可拖动的元素</p>
+                        <h3>元素 1</h3>
+                        <p>这是可拖动的元素</p>
                     </div>
                     <div class="draggable-item" draggable="true" data-item-id="2">
-                        <h3 class="font-medium">元素 2</h3>
-                        <p class="text-sm opacity-90 mt-1">拖到右侧区域复制</p>
+                        <h3>元素 2</h3>
+                        <p>拖到右侧区域复制</p>
                     </div>
                     <div class="draggable-item" draggable="true" data-item-id="3">
-                        <h3 class="font-medium">元素 3</h3>
-                        <p class="text-sm opacity-90 mt-1">释放即可创建副本</p>
+                        <h3>元素 3</h3>
+                        <p>释放即可创建副本</p>
                     </div>
                 </div>
             </div>
-            
-            <!-- 放置区域 -->
-            <div class="bg-white rounded-xl p-6 shadow-sm">
-                <h2 class="text-xl font-semibold text-gray-700 mb-5 flex items-center">
-                    <i class="fa fa-download mr-2 text-secondary"></i>放置区域
-                </h2>
+
+            <div class="panel">
+                <h2>放置区域</h2>
                 <div id="drop-target" class="drop-area">
-                    <div class="drop-hint text-center text-neutral">
-                        <i class="fa fa-long-arrow-down text-3xl mb-3"></i>
+                    <div class="drop-hint">
                         <p>将元素拖放到这里</p>
                     </div>
                 </div>
@@ -98,88 +141,65 @@
     </div>
 
     <script>
-        // 获取DOM元素
         const draggableItems = document.querySelectorAll('.draggable-item');
         const dropTarget = document.getElementById('drop-target');
         const dropHint = document.querySelector('.drop-hint');
-        
-        // 为每个可拖动元素添加事件监听
+
         draggableItems.forEach(item => {
-            // 开始拖动
             item.addEventListener('dragstart', (e) => {
-                // 存储被拖动元素的ID
                 e.dataTransfer.setData('text/plain', item.getAttribute('data-item-id'));
-                // 设置拖动效果为复制
                 e.dataTransfer.effectAllowed = 'copy';
-                
-                // 添加拖动中的视觉效果
                 setTimeout(() => {
                     item.classList.add('dragging');
                 }, 0);
             });
-            
-            // 结束拖动
+
             item.addEventListener('dragend', () => {
-                // 移除拖动视觉效果
                 item.classList.remove('dragging');
             });
         });
-        
-        // 为放置区域添加事件监听
-        // 阻止默认行为，允许放置
+
         dropTarget.addEventListener('dragover', (e) => {
             e.preventDefault();
-            // 设置放置效果为复制
             e.dataTransfer.dropEffect = 'copy';
-            // 添加放置区域激活状态
             dropTarget.classList.add('drop-area-active');
         });
-        
-        // 离开放置区域时移除激活状态
+
         dropTarget.addEventListener('dragleave', () => {
             dropTarget.classList.remove('drop-area-active');
         });
-        
-        // 处理放置事件
+
         dropTarget.addEventListener('drop', (e) => {
             e.preventDefault();
-            // 移除放置区域激活状态
             dropTarget.classList.remove('drop-area-active');
-            
-            // 获取被拖动元素的ID
+
             const itemId = e.dataTransfer.getData('text/plain');
             const originalItem = document.querySelector(`[data-item-id="${itemId}"]`);
-            
+
             if (originalItem) {
-                // 隐藏提示信息
                 dropHint.classList.add('hidden');
-                
-                // 创建原始元素的副本
+
                 const clonedItem = originalItem.cloneNode(true);
-                // 修改副本的样式和属性
                 clonedItem.classList.remove('draggable-item');
                 clonedItem.classList.add('cloned-item');
                 clonedItem.removeAttribute('draggable');
                 clonedItem.setAttribute('data-cloned', 'true');
-                
-                // 为副本添加删除按钮
+
                 const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'mt-3 text-xs bg-white text-secondary px-2 py-1 rounded hover:bg-gray-100 transition-colors';
-                deleteBtn.innerHTML = '<i class="fa fa-trash-o mr-1"></i>删除副本';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.textContent = '删除副本';
                 deleteBtn.addEventListener('click', () => {
                     clonedItem.remove();
-                    // 检查放置区域是否为空，为空则显示提示
                     if (dropTarget.querySelectorAll('[data-cloned="true"]').length === 0) {
                         dropHint.classList.remove('hidden');
                     }
                 });
                 clonedItem.appendChild(deleteBtn);
-                
-                // 添加到放置区域并添加动画效果
+
                 dropTarget.appendChild(clonedItem);
                 clonedItem.style.opacity = '0';
-                clonedItem.style.transform = 'translateY(20px)';
-                
+                clonedItem.style.transform = 'translateY(12px)';
+
                 setTimeout(() => {
                     clonedItem.style.opacity = '1';
                     clonedItem.style.transform = 'translateY(0)';
@@ -198,7 +218,7 @@
   </style>
   <a href="/">目录</a>
   <a href="./01-drag-%E5%8E%9F%E7%94%9F.html">← drag-原生</a>
-  <a href="../svg/01-SVG-%E5%9F%BA%E7%A1%80.html">SVG-基础 →</a>
+  <a href="../viewpager/01-viewpager-%E7%BF%BB%E9%A1%B5%E4%B8%8E%E7%BC%93%E5%8A%A8.html">viewpager-翻页与缓动 →</a>
 </footer>
 <!-- DEMO_NAV_END -->
 </body>
