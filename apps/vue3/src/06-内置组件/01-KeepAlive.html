@@ -2,15 +2,16 @@
   分类: vue3 / 06-内置组件
   主题: KeepAlive
   要点:
-    - KeepAlive 缓存动态组件实例
-    - 被缓存组件切换时触发 activated / deactivated
-    - 适合 tab、详情页返回保留状态等场景
+    - KeepAlive 缓存动态组件实例，避免切换时销毁和重建
+    - 缓存组件切入切出会触发 activated / deactivated 生命周期
+    - include、exclude、max 可控制缓存命中范围和容量
+    - 适合 tab、详情返回、表单草稿等需要保留局部状态的场景
   面试:
-    - KeepAlive的核心概念是什么
-    - KeepAlive在实际项目里怎么用
-    - KeepAlive有哪些常见坑或易错点
-    - KeepAlive和相近 API 如何区分选型
-    - 面试中如何简洁讲清 KeepAlive
+    - KeepAlive 缓存的到底是 DOM 还是组件实例？
+    - activated / deactivated 和 mounted / unmounted 有什么区别？
+    - include、exclude、max 分别解决什么缓存边界？
+    - 哪些页面状态适合 KeepAlive，哪些不应该缓存？
+    - KeepAlive 和浏览器缓存、Pinia 状态保留有什么区别？
 -->
 
 <!doctype html>
@@ -39,15 +40,23 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>KeepAlive 缓存动态组件实例。</li>
-          <li>被缓存组件切换时触发 activated / deactivated。</li>
-          <li>适合 tab、详情页返回保留状态等场景。</li>
+          <li><code>KeepAlive</code> 是 Vue 内置组件，用来缓存被包裹的动态组件实例；本页 Tab 输入框切走再回来，文本仍会保留。</li>
+          <li>缓存命中时组件不会重新执行普通挂载流程，而是在重新显示和离开缓存树时触发 <code>activated</code> / <code>deactivated</code>，适合恢复定时器、订阅或滚动位置。</li>
+          <li><code>include</code>、<code>exclude</code> 按组件名筛选缓存对象，<code>max</code> 控制最大缓存数量；大型页面应避免无上限缓存导致内存上涨。</li>
+          <li>适合缓存 tab、详情页返回、搜索条件、表单草稿等局部 UI 状态；不适合缓存强实时数据、权限敏感页面或必须每次重新拉取的流程。</li>
+          <li>KeepAlive 保留的是组件实例状态，不等于 HTTP 缓存或全局 store；跨路由、跨刷新或多页面共享状态仍需要路由策略、Pinia 或持久化方案配合。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>KeepAlive 缓存动态组件实例？</strong> KeepAlive 缓存动态组件实例</li>
-          <li><strong>被缓存组件切换时触发 activated / deactivated？</strong> 被缓存组件切换时触发 activated / deactivated</li>
-          <li><strong>适合 tab、详情页返回保留状态等场景？</strong> 适合 tab、详情页返回保留状态等场景</li>
+          <li><strong>KeepAlive 缓存的到底是什么？</strong> 结论是缓存组件实例及其响应式状态，而不是简单把 DOM 隐藏起来。原因是 Vue 会把离开的组件实例放入缓存，回来时复用实例。边界是外部数据是否重新请求取决于你的生命周期和路由逻辑。</li>
+          <li><strong>activated / deactivated 和 mounted / unmounted 有什么区别？</strong> 缓存组件第一次创建仍会 mounted，后续切入切出触发 activated / deactivated，而不是反复 mounted / unmounted。适合在 activated 恢复订阅，在 deactivated 暂停副作用。真正离开缓存或缓存被淘汰时才会 unmounted。</li>
+          <li><strong>怎么控制 KeepAlive 缓存范围？</strong> 使用 <code>include</code>、<code>exclude</code> 按组件 name 匹配，用 <code>max</code> 限制数量。原因是缓存越多占用越高，且 stale 状态越难管理。项目里常结合路由 meta 决定哪些页面缓存。</li>
+          <li><strong>什么时候不应该用 KeepAlive？</strong> 实时行情、权限状态敏感页面、一次性提交流程和必须重新初始化的页面不适合盲目缓存。否则用户可能看到过期数据或残留表单。更稳的做法是缓存 UI 状态，同时在 activated 中按需刷新关键数据。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/built-ins/keep-alive.html" target="_blank" rel="noreferrer">Vue 官方指南：KeepAlive</a></li>
+          <li><a href="https://vuejs.org/api/composition-api-lifecycle.html#onactivated" target="_blank" rel="noreferrer">Vue API：onActivated / onDeactivated</a></li>
         </ul>
       </div>
     </section>

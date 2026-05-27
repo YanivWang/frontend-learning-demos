@@ -2,15 +2,16 @@
   分类: vue3 / 06-内置组件
   主题: Suspense
   要点:
-    - Suspense 用于协调异步依赖和 loading fallback
-    - async setup 或异步组件可触发等待
-    - 真实项目中常配合异步组件、数据预取使用
+    - Suspense 协调组件树中的异步依赖，在等待期间渲染 fallback
+    - async setup 和异步组件都可以让 Suspense 进入 pending 状态
+    - Suspense 在 Vue 3 中仍标记为实验性 API，项目落地要确认版本风险
+    - Suspense 不是错误边界，异步失败需要 errorCaptured 或组件自身错误 UI 处理
   面试:
-    - Suspense的核心概念是什么
-    - Suspense在实际项目里怎么用
-    - Suspense有哪些常见坑或易错点
-    - Suspense和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Suspense
+    - Suspense 解决的 pending 边界是什么？
+    - async setup 和 defineAsyncComponent 如何触发 Suspense？
+    - Suspense 为什么不能当错误边界使用？
+    - Suspense 与组件内部 loading 状态如何选型？
+    - 使用 Suspense 时需要说明哪些实验性和 SSR 边界？
 -->
 
 <!doctype html>
@@ -36,16 +37,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>Suspense</code> 用于协调异步依赖和 loading fallback。</li>
-          <li><code>async</code> setup 或异步组件可触发等待。</li>
-          <li>真实项目中常配合异步组件、数据预取使用。</li>
-          <li><code>Suspense</code> 用于协调异步依赖和 loading fallback（补充）。</li>
+          <li><code>Suspense</code> 是 Vue 内置组件，用来等待默认插槽中的异步依赖；等待期间渲染 <code>#fallback</code>，依赖完成后再显示默认内容。</li>
+          <li>本页 <code>AsyncPanel</code> 使用 <code>async setup()</code> 并等待 800ms，因此首次渲染会先显示“加载中...”，再显示异步内容。</li>
+          <li><code>async setup</code>、异步组件都可能成为 Suspense 依赖；多个依赖在同一个 Suspense 边界内时，fallback 会覆盖整个边界。</li>
+          <li>Vue 官方仍将 <code>Suspense</code> 标记为实验性特性，API 未来可能调整；业务项目应确认当前 Vue 版本、SSR 框架支持和团队约定。</li>
+          <li>Suspense 主要处理 pending，不负责吞掉错误；加载失败应通过组件自身错误状态、<code>defineAsyncComponent</code> 的 <code>errorComponent</code>，或 <code>onErrorCaptured</code> / <code>errorCaptured</code> 处理。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Suspense 用于协调异步依赖和 loading fallback？</strong> <code>Suspense</code> 用于协调异步依赖和 loading fallback</li>
-          <li><strong>async setup 或异步组件可触发等待？</strong> <code>async</code> setup 或异步组件可触发等待</li>
-          <li><strong>真实项目中常配合异步组件、数据预取使用？</strong> 真实项目中常配合异步组件、数据预取使用</li>
+          <li><strong>Suspense 解决的 pending 边界是什么？</strong> 结论是把一组异步组件或 <code>async setup</code> 的等待过程收敛到一个 fallback UI。原因是没有 Suspense 时，每个组件要自己管理 loading。边界是 fallback 覆盖的是整个 Suspense 默认插槽，不适合所有局部小 loading 都集中处理。</li>
+          <li><strong>async setup 如何触发 Suspense？</strong> 当组件 <code>setup</code> 返回 Promise 时，父级 Suspense 会等待它 resolve 后再展示默认内容。本页通过定时 Promise 模拟数据准备。项目中如果没有 Suspense 包裹，异步 setup 的渲染体验和框架集成要额外确认。</li>
+          <li><strong>Suspense 能不能当错误边界？</strong> 不能，Suspense 主要处理等待状态，不是 React Error Boundary 那类错误边界。异步失败要由组件捕获、异步组件配置 <code>errorComponent</code>，或通过错误捕获钩子处理。否则用户可能只看到控制台错误或空白区域。</li>
+          <li><strong>Suspense 和组件内部 loading 怎么选？</strong> 需要统一包住一组异步依赖时用 Suspense，单个按钮、局部列表刷新或需要细粒度重试时用组件内部 loading 更灵活。SSR、路由数据预取和实验性 API 风险也会影响选型。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/built-ins/suspense.html" target="_blank" rel="noreferrer">Vue 官方指南：Suspense</a></li>
+          <li><a href="https://vuejs.org/guide/components/async.html" target="_blank" rel="noreferrer">Vue 官方指南：异步组件</a></li>
+          <li><a href="https://vuejs.org/api/composition-api-lifecycle.html#onerrorcaptured" target="_blank" rel="noreferrer">Vue API：onErrorCaptured</a></li>
         </ul>
       </div>
     </section>

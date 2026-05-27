@@ -2,15 +2,16 @@
   分类: vue3 / 04-组件通信
   主题: defineModel（Vue 3.4+）
   要点:
-    - defineModel 是 <script setup> 编译宏，简化组件 v-model 双向绑定
-    - 编译后等价于 modelValue prop + update:modelValue emit 的 computed 读写
-    - 全局构建无 SFC 编译器，本页用可运行等价写法 + SFC 片段对照
+    - defineModel 是 Vue 3.4+ 的 <script setup> 编译宏，用于声明组件 v-model
+    - 默认模型对应 modelValue / update:modelValue，命名模型对应 prop 名和 update:prop 事件
+    - 返回值是可读写 ref，可配置 required、default、get、set 和 modifiers
+    - 全局构建不能直接运行宏，本页用 computed 等价写法对照编译结果
   面试:
-    - defineModel（Vue 3.4+）的核心概念是什么
-    - defineModel（Vue 3.4+）在实际项目里怎么用
-    - defineModel（Vue 3.4+）有哪些常见坑或易错点
-    - defineModel（Vue 3.4+）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 defineModel（Vue 3.4+）
+    - defineModel 和手写 modelValue / emits 是什么关系？
+    - Vue 3.4+ 之前如何实现同样的组件 v-model？
+    - defineModel 的 default 为什么可能造成父子不同步？
+    - 命名模型、修饰符和 get/set 适合哪些组件场景？
+    - 为什么本页不能直接在全局构建里调用 defineModel？
 -->
 
 <!doctype html>
@@ -40,16 +41,23 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>defineModel</code> 是 &lt;<code>script setup</code>&gt; 编译宏，简化组件 <code>v-model</code> 双向绑定。</li>
-          <li>编译后等价于 modelValue prop + update:modelValue emit 的 <code>computed</code> 读写。</li>
-          <li>全局构建无 SFC 编译器，本页用可运行等价写法 + SFC 片段对照。</li>
-          <li><code>defineModel</code> 是 &lt;<code>script setup</code>&gt; 编译宏，简化组件 <code>v-model</code> 双向绑定（补充）。</li>
+          <li><code>defineModel</code> 是 Vue 3.4+ 的 SFC <code>&lt;script setup&gt;</code> 编译宏，声明一个 prop 和对应的 <code>update:xxx</code> 事件，并返回可读写的模型 <code>ref</code>。</li>
+          <li>默认 <code>defineModel()</code> 对应 <code>modelValue</code> / <code>update:modelValue</code>，<code>defineModel('title')</code> 对应 <code>title</code> / <code>update:title</code>；本页用 <code>computed</code> getter / setter 演示等价运行时行为。</li>
+          <li>宏只能在 SFC 编译阶段被识别，浏览器全局构建没有 SFC 编译器，所以 HTML demo 不能直接调用 <code>defineModel</code>，只能展示等价实现和代码片段。</li>
+          <li>可以给模型声明 <code>required</code>、<code>default</code>、类型，以及通过 <code>get</code> / <code>set</code> 处理修饰符；例如输入组件可在 setter 中实现 trim 或格式转换。</li>
+          <li>注意官方文档提示：子组件模型设置 <code>default</code> 而父组件绑定值是 <code>undefined</code> 时，可能出现父子初始值不同步；组件库中要明确默认值策略。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>defineModel 是 &lt;script setup&gt; 编译宏？</strong> <code>defineModel</code> 是 &lt;<code>script setup</code>&gt; 编译宏，简化组件 <code>v-model</code> 双向绑定</li>
-          <li><strong>编译后等价于 modelValue prop + update？</strong> 编译后等价于 modelValue prop + update:modelValue emit 的 <code>computed</code> 读写</li>
-          <li><strong>全局构建无 SFC 编译器？</strong> 全局构建无 SFC 编译器，本页用可运行等价写法 + SFC 片段对照</li>
+          <li><strong>defineModel 和手写 modelValue / emits 是什么关系？</strong> 结论是语义等价，<code>defineModel</code> 是编译期语法糖。它减少重复声明 prop、emit 和 computed setter 的样板代码，但运行时仍是父组件传值、子组件发出 <code>update</code> 事件。边界是 Vue 3.4+ 才能使用，低版本要手写。</li>
+          <li><strong>为什么说 defineModel 返回的是可写 ref？</strong> 因为模板或脚本给这个 ref 赋值时，编译结果会 emit 对应的 <code>update:xxx</code> 事件。这样子组件写起来像本地状态，实际仍让父组件更新数据源。项目中要避免把它误解成子组件私有状态。</li>
+          <li><strong>defineModel 的 default 有什么坑？</strong> 结论是可能造成父子值短暂不一致。原因是子组件 default 会让本地模型有初始值，而父组件绑定的 ref 仍可能是 <code>undefined</code>。表单组件中应让父组件初始化值，或在文档中明确 default 的同步边界。</li>
+          <li><strong>什么时候继续手写 props / emits？</strong> 当项目还在 Vue 3.3 或更早版本、组件不是 SFC <code>&lt;script setup&gt;</code>、或需要非常显式的运行时声明时继续手写。组件库若面向多个 Vue 版本，也要确认构建链是否支持该宏。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/components/v-model.html" target="_blank" rel="noreferrer">Vue 官方指南：组件 v-model 与 defineModel</a></li>
+          <li><a href="https://vuejs.org/api/sfc-script-setup.html#definemodel" target="_blank" rel="noreferrer">Vue API：defineModel 编译宏</a></li>
         </ul>
       </div>
     </section>

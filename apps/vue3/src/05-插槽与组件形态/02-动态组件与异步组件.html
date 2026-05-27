@@ -2,15 +2,16 @@
   分类: vue3 / 05-插槽与组件形态
   主题: 动态组件 / 异步组件
   要点:
-    - component :is 可动态切换组件
-    - defineAsyncComponent 用于异步加载组件
-    - keep-alive 常和动态组件配合缓存状态
+    - component :is 按组件名或组件对象动态渲染当前组件
+    - KeepAlive 可缓存动态组件实例，切换后保留本地状态
+    - defineAsyncComponent 把加载器包装成异步组件，适合代码分割和延迟加载
+    - 异步组件要处理 loading、error、timeout、重试和重复切换边界
   面试:
-    - 动态组件 / 异步组件的核心概念是什么
-    - 动态组件 / 异步组件在实际项目里怎么用
-    - 动态组件 / 异步组件有哪些常见坑或易错点
-    - 动态组件 / 异步组件和相近 API 如何区分选型
-    - 面试中如何简洁讲清 动态组件 / 异步组件
+    - component :is 和 v-if 切换组件有什么区别？
+    - KeepAlive 为什么常与动态组件一起使用？
+    - defineAsyncComponent 的 loading 和 error 边界如何处理？
+    - 异步组件和路由懒加载、Suspense 如何配合？
+    - 动态切换组件时 key、缓存和状态保留有哪些坑？
 -->
 
 <!doctype html>
@@ -39,15 +40,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>component :is 可动态切换组件。</li>
-          <li>defineAsyncComponent 用于异步加载组件。</li>
-          <li>keep-alive 常和动态组件配合缓存状态。</li>
+          <li><code>&lt;component :is="current"&gt;</code> 会根据字符串组件名或组件对象渲染当前组件，适合 tab、步骤面板、运行时可配置区域，比多段 <code>v-if</code> 更集中。</li>
+          <li>动态组件默认切走会卸载实例；本页包上 <code>&lt;keep-alive&gt;</code> 后，资料面板的计数和设置面板的主题会在切换后保留。</li>
+          <li><code>defineAsyncComponent</code> 接收 loader，把异步加载结果包装成普通组件；真实项目常配合 <code>import()</code> 做代码分割，本页用 Promise 模拟网络或 chunk 加载延迟。</li>
+          <li>异步组件必须考虑失败路径：加载中展示 <code>loadingComponent</code>，加载失败展示 <code>errorComponent</code>，必要时配置 <code>timeout</code>、<code>onError</code> 重试或上报。</li>
+          <li>动态切换时要确认组件名、缓存策略和 <code>key</code> 是否符合预期；缓存太多会占内存，不缓存则会丢本地表单、滚动或临时状态。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>component？</strong> component :is 可动态切换组件</li>
-          <li><strong>defineAsyncComponent 用于异步加载组件？</strong> defineAsyncComponent 用于异步加载组件</li>
-          <li><strong>keep-alive 常和动态组件配合缓存状态？</strong> keep-alive 常和动态组件配合缓存状态</li>
+          <li><strong>component :is 和 v-if 切换组件有什么区别？</strong> 结论是两者都能切换 UI，但 <code>component :is</code> 更适合把“当前组件类型”建模成状态。原因是组件名或组件对象可以来自配置、路由元信息或 tab 列表。边界是简单两三段条件渲染用 <code>v-if</code> 更直观，不必过度抽象。</li>
+          <li><strong>为什么 KeepAlive 常配合动态组件？</strong> 因为动态组件切换会触发卸载和重建，用户输入、计数、滚动等本地状态会丢失。<code>KeepAlive</code> 缓存实例后可以在 tab 或详情返回场景保留状态。边界是缓存会占内存，需要用 include、exclude、max 或路由策略控制范围。</li>
+          <li><strong>defineAsyncComponent 要处理哪些失败边界？</strong> 结论是至少要考虑加载中、加载失败、超时、重试和用户重复切换。原因是真实 chunk 可能因网络、部署版本不一致或权限失败而加载不到。项目里应提供错误 UI、上报日志，并在必要时允许用户重试。</li>
+          <li><strong>异步组件和 Suspense 怎么配合？</strong> 异步组件负责定义加载器和错误策略，<code>Suspense</code> 负责协调组件树中的异步依赖和 fallback。局部懒加载只需要 <code>defineAsyncComponent</code> 时可以不用 Suspense；多个异步依赖要统一 loading 边界时再引入 Suspense。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/essentials/component-basics.html#dynamic-components" target="_blank" rel="noreferrer">Vue 官方指南：动态组件</a></li>
+          <li><a href="https://vuejs.org/guide/components/async.html" target="_blank" rel="noreferrer">Vue 官方指南：异步组件</a></li>
+          <li><a href="https://vuejs.org/guide/built-ins/keep-alive.html" target="_blank" rel="noreferrer">Vue 官方指南：KeepAlive</a></li>
         </ul>
       </div>
     </section>
@@ -60,6 +70,7 @@
         <button @click="current = 'ProfilePanel'">资料</button>
         <button @click="current = 'SettingPanel'">设置</button>
         <button @click="current = 'AsyncPanel'">异步面板</button>
+        <button @click="current = 'BrokenAsyncPanel'">失败面板</button>
         <p>异步加载状态：{{ asyncStatus }}</p>
         <keep-alive>
           <component :is="current"></component>
@@ -114,10 +125,28 @@
         loadingComponent: {
           template: `<p>异步组件加载中...</p>`,
         },
+        errorComponent: {
+          template: `<p>异步组件加载失败，请稍后重试。</p>`,
+        },
+        timeout: 2000,
+      });
+
+      const BrokenAsyncPanel = defineAsyncComponent({
+        loader: () =>
+        new Promise((resolve, reject) => {
+          setTimeout(() => reject(new Error("模拟 chunk 加载失败")), 500);
+        }),
+        loadingComponent: {
+          template: `<p>失败面板加载中...</p>`,
+        },
+        errorComponent: {
+          template: `<p>加载失败：已展示 errorComponent。</p>`,
+        },
+        delay: 0,
       });
 
       createApp({
-        components: { ProfilePanel, SettingPanel, AsyncPanel },
+        components: { ProfilePanel, SettingPanel, AsyncPanel, BrokenAsyncPanel },
         setup() {
           const current = ref("ProfilePanel");
           const asyncStatus = ref("未请求");
@@ -126,6 +155,7 @@
 
           watch(current, (value) => {
             if (value === "AsyncPanel") asyncStatus.value = "已触发 defineAsyncComponent";
+            if (value === "BrokenAsyncPanel") asyncStatus.value = "模拟异步组件加载失败";
           });
 
           return { current, asyncStatus, asyncSnippet };

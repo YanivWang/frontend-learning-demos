@@ -2,15 +2,16 @@
   分类: vue3 / 06-内置组件
   主题: Transition
   要点:
-    - Transition 给条件渲染或动态组件添加进出场过渡
-    - Vue 会自动添加 enter/leave 相关 class
-    - 常见于弹窗、下拉、路由页面切换
+    - Transition 为单个条件渲染元素或动态组件添加进入、离开过渡
+    - Vue 会按 name 自动切换 enter / leave 阶段 class
+    - CSS transition / animation 和 JavaScript 钩子都可驱动过渡
+    - 过渡结束时机、单根元素、性能属性和用户减少动画偏好是常见边界
   面试:
-    - Transition的核心概念是什么
-    - Transition在实际项目里怎么用
-    - Transition有哪些常见坑或易错点
-    - Transition和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Transition
+    - Transition 的 enter / leave class 生命周期是什么？
+    - v-if、v-show、动态组件使用 Transition 有什么差异？
+    - CSS transition 和 animation 混用时 Vue 如何判断结束？
+    - 为什么动画应优先使用 transform 和 opacity？
+    - Transition 和 TransitionGroup 应该如何选型？
 -->
 
 <!doctype html>
@@ -39,16 +40,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>Transition</code> 给条件渲染或动态组件添加进出场过渡。</li>
-          <li>Vue 会自动添加 enter/leave 相关 class。</li>
-          <li>常见于弹窗、下拉、路由页面切换。</li>
-          <li><code>Transition</code> 给条件渲染或动态组件添加进出场过渡（补充）。</li>
+          <li><code>Transition</code> 包裹单个条件渲染元素、<code>v-show</code> 元素、动态组件或组件根节点，为进入和离开过程添加过渡能力。</li>
+          <li>设置 <code>name="fade"</code> 后，Vue 会自动添加 <code>fade-enter-from</code>、<code>fade-enter-active</code>、<code>fade-enter-to</code>、<code>fade-leave-from</code>、<code>fade-leave-active</code>、<code>fade-leave-to</code> 等阶段 class。</li>
+          <li>本页用 <code>opacity</code> 和 <code>transform</code> 做进出场，因为它们通常可由合成线程处理，比频繁动画 <code>height</code>、<code>top</code> 这类布局属性更稳。</li>
+          <li>如果同时使用 CSS transition 和 animation，或过渡嵌套在内部元素上，可能需要显式设置 <code>type</code> 或 <code>duration</code>，避免 Vue 过早判定过渡结束。</li>
+          <li>真实交互还要考虑快速连续点击、离开动画未结束又进入、用户开启减少动画偏好，以及列表动画应改用 <code>TransitionGroup</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Transition 给条件渲染或动态组件添加进出场过渡？</strong> <code>Transition</code> 给条件渲染或动态组件添加进出场过渡</li>
-          <li><strong>Vue 会自动添加 enter/leave 相关 class？</strong> Vue 会自动添加 enter/leave 相关 class</li>
-          <li><strong>常见于弹窗、下拉、路由页面切换？</strong> 常见于弹窗、下拉、路由页面切换</li>
+          <li><strong>Transition 的 enter / leave class 生命周期是什么？</strong> 结论是 Vue 在插入和移除元素时自动添加不同阶段的 class。进入阶段从 <code>*-enter-from</code> 到 <code>*-enter-to</code>，活跃期间保留 <code>*-enter-active</code>；离开阶段同理。边界是 name、CSS 类名和实际过渡属性必须匹配，否则看不到动画。</li>
+          <li><strong>v-if、v-show、动态组件使用 Transition 有什么差异？</strong> <code>v-if</code> 会触发真实插入和移除，<code>v-show</code> 切换 display，动态组件切换组件实例。Transition 都能介入，但状态保留、生命周期和 DOM 是否销毁不同。项目中弹窗常用 <code>v-if</code> 或 <code>v-show</code>，tab 组件切换还要考虑 KeepAlive。</li>
+          <li><strong>为什么动画优先用 transform 和 opacity？</strong> 因为这两个属性通常不触发布局重排，浏览器更容易合成优化。动画 <code>height</code>、<code>width</code>、<code>top</code> 可能引发布局和绘制成本。边界是仍要控制元素数量和阴影、滤镜等昂贵效果。</li>
+          <li><strong>Transition 和 TransitionGroup 怎么选？</strong> 单个元素、单个组件或路由页面切换用 <code>Transition</code>。列表增删、排序和多个节点移动用 <code>TransitionGroup</code>，并且每项必须有稳定 key。不要用 Transition 包多个兄弟节点来做列表动画。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/built-ins/transition.html" target="_blank" rel="noreferrer">Vue 官方指南：Transition</a></li>
+          <li><a href="https://vuejs.org/guide/built-ins/transition-group.html" target="_blank" rel="noreferrer">Vue 官方指南：TransitionGroup</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transition" target="_blank" rel="noreferrer">MDN：CSS transitions</a></li>
         </ul>
       </div>
     </section>

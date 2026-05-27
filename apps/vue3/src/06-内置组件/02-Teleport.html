@@ -2,15 +2,16 @@
   分类: vue3 / 06-内置组件
   主题: Teleport
   要点:
-    - Teleport 可以把组件模板的一部分渲染到 DOM 其他位置
-    - 常用于弹窗、浮层、通知
-    - 逻辑层级仍属于原组件，DOM 位置被移动
+    - Teleport 把组件模板片段渲染到指定 DOM 容器，解决浮层受父级布局限制的问题
+    - 逻辑组件树不变，props、emit、provide / inject 仍按原组件关系工作
+    - 常用于弹窗、抽屉、通知、全局浮层和 body 级遮罩
+    - 目标容器、禁用状态、SSR 与可访问性是落地时的关键边界
   面试:
-    - Teleport的核心概念是什么
-    - Teleport在实际项目里怎么用
-    - Teleport有哪些常见坑或易错点
-    - Teleport和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Teleport
+    - Teleport 改变的是 DOM 位置还是组件父子关系？
+    - 为什么弹窗常需要 Teleport 到 body？
+    - Teleport 的 to 目标不存在会有什么风险？
+    - 多个 Teleport 指向同一容器时如何管理层级？
+    - Teleport 和纯 CSS fixed / z-index 分别解决什么问题？
 -->
 
 <!doctype html>
@@ -38,15 +39,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Teleport 可以把组件模板的一部分渲染到 DOM 其他位置。</li>
-          <li>常用于弹窗、浮层、通知。</li>
-          <li>逻辑层级仍属于原组件，DOM 位置被移动。</li>
+          <li><code>Teleport</code> 可以把组件模板的一部分移动到指定 DOM 容器渲染；本页弹窗逻辑写在 <code>#app</code> 内，但实际 DOM 被挂到 <code>body</code> 下。</li>
+          <li>它只改变真实 DOM 插入位置，不改变 Vue 组件逻辑层级，所以弹窗仍能读取当前组件的 <code>open</code> 状态并触发原组件中的关闭逻辑。</li>
+          <li>弹窗、抽屉、通知、全局浮层常用 Teleport，因为它们容易受父级 <code>overflow</code>、<code>transform</code>、层叠上下文和定位规则影响。</li>
+          <li><code>to</code> 指向的目标容器必须存在；多个 Teleport 指向同一容器时会按挂载顺序追加，需要额外管理 z-index、焦点、滚动锁定和关闭交互。</li>
+          <li>本页是最小交互示例，真实弹窗还应处理 Esc 关闭、焦点陷阱、背景不可滚动、ARIA 角色以及点击遮罩的边界。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Teleport 可以把组件模板的一部分渲染到 DOM 其他位置？</strong> Teleport 可以把组件模板的一部分渲染到 DOM 其他位置</li>
-          <li><strong>常用于弹窗、浮层、通知？</strong> 常用于弹窗、浮层、通知</li>
-          <li><strong>逻辑层级仍属于原组件？</strong> 逻辑层级仍属于原组件，DOM 位置被移动</li>
+          <li><strong>Teleport 改变的是 DOM 位置还是组件父子关系？</strong> 结论是只改变 DOM 位置，组件父子关系和响应式上下文不变。原因是 Vue 仍在原组件树中管理这段模板，只是在渲染阶段把节点插入目标容器。边界是 CSS 选择器、布局和事件冒泡会按真实 DOM 位置表现。</li>
+          <li><strong>为什么弹窗常 Teleport 到 body？</strong> 因为弹窗需要脱离局部容器的 overflow、定位和层叠上下文限制。挂到 body 后更容易统一处理遮罩、z-index 和全局浮层栈。项目里仍要补充滚动锁定、焦点管理和可访问性，不能只靠 Teleport。</li>
+          <li><strong>Teleport 的 to 目标不存在怎么办？</strong> 结论是目标容器必须在挂载时可用，否则渲染会失败或产生警告。真实项目通常准备固定的 <code>#modal-root</code>，或在目标未就绪时延迟渲染。SSR 场景还要保证服务端和客户端结构可匹配。</li>
+          <li><strong>Teleport 和 CSS fixed / z-index 的区别是什么？</strong> CSS 只能尝试在当前位置调整视觉层级，Teleport 直接改变节点所在容器。遇到父级 transform、overflow hidden 或复杂 stacking context 时，Teleport 更可靠。但它不替代浮层状态管理和交互细节。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/built-ins/teleport.html" target="_blank" rel="noreferrer">Vue 官方指南：Teleport</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_positioned_layout/Understanding_z-index/Stacking_context" target="_blank" rel="noreferrer">MDN：Stacking context</a></li>
+          <li><a href="https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/" target="_blank" rel="noreferrer">WAI-ARIA APG：Modal Dialog Pattern</a></li>
         </ul>
       </div>
     </section>

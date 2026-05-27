@@ -2,15 +2,16 @@
   分类: vue3 / 04-组件通信
   主题: props 解构保持响应式（Vue 3.5+）
   要点:
-    - Vue 3.5 在 <script setup> 中对 defineProps 解构会编译为保持响应式的引用
-    - 普通 setup(props) 里直接解构 props 仍会丢响应（基本类型变成快照）
-    - 全局构建可运行对比：直接解构 vs toRefs(props) vs 模板直接用 props.xxx
+    - Vue 3.5+ 的 <script setup> 会把 defineProps 解构访问编译回 props.xxx
+    - 普通 setup(props) 直接解构基本类型仍是快照，会丢失后续 prop 更新
+    - toRefs(props)、toRef(props, key) 或直接访问 props.xxx 是运行时保持响应式的写法
+    - 默认值和函数传参要区分编译期解构能力与运行时 ref 语义
   面试:
-    - props 解构保持响应式（Vue 3.5+）的核心概念是什么
-    - props 解构保持响应式（Vue 3.5+）在实际项目里怎么用
-    - props 解构保持响应式（Vue 3.5+）有哪些常见坑或易错点
-    - props 解构保持响应式（Vue 3.5+）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 props 解构保持响应式（Vue 3.5+）
+    - Vue 3.5+ 的响应式 props 解构到底改变了什么？
+    - 为什么普通 setup(props) 直接解构仍会丢响应？
+    - toRefs(props) 和 defineProps 解构应该如何选？
+    - Vue 3.4 及以下项目如何避免 props 解构陷阱？
+    - 把解构后的 prop 传给函数或 watch 时有什么边界？
 -->
 
 <!doctype html>
@@ -41,16 +42,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue 3.5 在 &lt;<code>script setup</code>&gt; 中对 <code>defineProps</code> 解构会编译为保持响应式的引用。</li>
-          <li>普通 setup(props) 里直接解构 props 仍会丢响应（基本类型变成快照）。</li>
-          <li>全局构建可运行对比：直接解构 vs toRefs(props) vs 模板直接用 props.xxx。</li>
-          <li>Vue 3.5 在 &lt;<code>script setup</code>&gt; 中对 <code>defineProps</code> 解构会编译为保持响应式的引用（补充）。</li>
+          <li>Vue 3.5+ 在同一个 <code>&lt;script setup&gt;</code> 代码块中，会把从 <code>defineProps</code> 解构出来的变量访问编译为 <code>props.xxx</code>，因此读取时仍能追踪 prop 更新。</li>
+          <li>普通 <code>setup(props)</code> 是运行时代码，<code>const { label } = props</code> 会把基本类型取成当前快照；本页点击按钮后可看到直接解构面板不再更新。</li>
+          <li><code>toRefs(props)</code> 会把每个 prop 包成 ref，适合普通 setup、组合式函数传参或 Vue 3.4 及以下项目；模板直接使用 <code>props.label</code> 也是稳定写法。</li>
+          <li>Vue 3.5 的编译期解构不是通用 JavaScript 能力，离开 SFC 编译上下文、传给普通函数或在老版本中都不能假定它保持响应式。</li>
+          <li>watch 或组合式函数需要追踪 prop 时，优先传 getter，例如 <code>() =&gt; props.label</code>，或传 <code>toRef(props, 'label')</code>；不要把解构快照当作响应式源。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue 3.5 在 &lt;script setup&gt; 中对 defineProps？</strong> Vue 3.5 在 &lt;<code>script setup</code>&gt; 中对 <code>defineProps</code> 解构会编译为保持响应式的引用</li>
-          <li><strong>普通 setup(props) 里直接解构 props 仍会丢响应（基本类型变成？</strong> 普通 setup(props) 里直接解构 props 仍会丢响应（基本类型变成快照）</li>
-          <li><strong>全局构建可运行对比？</strong> 全局构建可运行对比：直接解构 vs toRefs(props) vs 模板直接用 props.xxx</li>
+          <li><strong>Vue 3.5+ 的响应式 props 解构改变了什么？</strong> 结论是只改变 <code>&lt;script setup&gt;</code> 中 <code>defineProps</code> 解构变量的编译结果。编译器会把变量访问改写成 <code>props.xxx</code>，所以父组件更新 prop 后子组件读取仍是最新值。边界是这不是普通 JS 解构语义，也不是全局构建能直接演示的运行时能力。</li>
+          <li><strong>为什么普通 setup 直接解构仍会丢响应？</strong> 因为普通解构发生在运行时，只把当前 prop 值赋给局部常量。基本类型后续不会自动跟随父组件变化，对象虽然引用还在，但替换整个对象也会出现快照问题。普通 setup 中应保留 <code>props.xxx</code> 或使用 <code>toRefs</code>。</li>
+          <li><strong>toRefs(props) 和 defineProps 解构怎么选？</strong> Vue 3.5+ 的 SFC 内部本地读取可以用响应式解构，代码简洁。需要传入组合式函数、支持 Vue 3.4 及以下，或在普通 setup 里工作时用 <code>toRef</code> / <code>toRefs</code> 更明确。团队要按项目 Vue 版本统一约定。</li>
+          <li><strong>watch props 时最稳的写法是什么？</strong> 结论是传 getter 或 ref 源，例如 <code>watch(() =&gt; props.label, ...)</code>。原因是 watch 需要可追踪的响应式源，直接传解构后的普通值只会拿到一次快照。封装组合式函数时也应明确参数是 getter、ref 还是普通值。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/components/props.html#reactive-props-destructure" target="_blank" rel="noreferrer">Vue 官方指南：响应式 Props 解构</a></li>
+          <li><a href="https://vuejs.org/api/sfc-script-setup.html#defineprops-defineemits" target="_blank" rel="noreferrer">Vue API：defineProps / defineEmits 编译宏</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-utilities.html#torefs" target="_blank" rel="noreferrer">Vue API：toRefs</a></li>
         </ul>
       </div>
     </section>

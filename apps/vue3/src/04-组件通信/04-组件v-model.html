@@ -2,15 +2,16 @@
   分类: vue3 / 04-组件通信
   主题: 组件 v-model
   要点:
-    - Vue3 组件 v-model 默认使用 modelValue / update:modelValue
-    - 支持多个 v-model，如 v-model:title
-    - 子组件仍然通过 emit 通知父组件更新
+    - Vue 3 组件 v-model 默认展开为 modelValue prop 和 update:modelValue 事件
+    - v-model:subtitle 这类参数可在同一组件上声明多个双向绑定
+    - 子组件不能直接改 prop，必须 emit update 事件让父组件更新单一数据源
+    - 输入值、修饰符和类型转换要由组件契约显式处理
   面试:
-    - 组件 v-model的核心概念是什么
-    - 组件 v-model在实际项目里怎么用
-    - 组件 v-model有哪些常见坑或易错点
-    - 组件 v-model和相近 API 如何区分选型
-    - 面试中如何简洁讲清 组件 v-model
+    - Vue 3 组件 v-model 编译后等价于什么？
+    - 多个 v-model 如何避免字段名和事件名写错？
+    - 为什么子组件不能直接修改 modelValue？
+    - v-model 和普通 props / emit 在组件设计中怎么选？
+    - 表单组件如何处理空值、类型和修饰符边界？
 -->
 
 <!doctype html>
@@ -37,16 +38,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue3 组件 <code>v-model</code> 默认使用 modelValue / update:modelValue。</li>
-          <li>支持多个 <code>v-model</code>，如 <code>v-model</code>:title。</li>
-          <li>子组件仍然通过 emit 通知父组件更新。</li>
-          <li>Vue3 组件 <code>v-model</code> 默认使用 modelValue / update:modelValue（补充）。</li>
+          <li>Vue 3 组件上的默认 <code>v-model</code> 等价于传入 <code>modelValue</code>，并监听 <code>update:modelValue</code>；本页 <code>SmartForm</code> 用输入事件触发父组件更新。</li>
+          <li><code>v-model:subtitle</code> 会展开为 <code>subtitle</code> prop 和 <code>update:subtitle</code> 事件，因此同一组件可以暴露多个独立模型，适合表单组件拆分主值、副值或配置项。</li>
+          <li>子组件接收的 prop 是只读输入，不能直接修改；正确做法是声明 <code>emits</code> 并发出 <code>update:xxx</code>，让父组件作为单一数据源决定是否接受新值。</li>
+          <li>组件 v-model 只是父子同步协议，不会自动处理输入校验、空字符串、数字转换、去空格或 IME 输入边界；这些应通过组件 props、修饰符或内部校验明确约定。</li>
+          <li>用户输入通过模板插值显示时会被 Vue 转义为文本；如果把输入拼进 <code>v-html</code> 或第三方 DOM API，就需要额外处理 XSS 风险。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue3 组件 v-model 默认使用 modelValue / update？</strong> Vue3 组件 <code>v-model</code> 默认使用 modelValue / update:modelValue</li>
-          <li><strong>支持多个 v-model？</strong> 支持多个 <code>v-model</code>，如 <code>v-model</code>:title</li>
-          <li><strong>子组件仍然通过 emit 通知父组件更新？</strong> 子组件仍然通过 emit 通知父组件更新</li>
+          <li><strong>Vue 3 组件 v-model 编译后等价于什么？</strong> 结论是默认等价于 <code>:modelValue="x"</code> 加 <code>@update:modelValue="x = $event"</code>。原因是 Vue 把双向绑定拆成单向数据输入和事件输出，仍保持父组件拥有状态。边界是组件必须按约定声明 prop 和 emit，否则绑定不会形成预期同步。</li>
+          <li><strong>多个 v-model 怎么实现？</strong> 结论是使用带参数写法，例如本页的 <code>v-model:subtitle</code>。它会匹配 <code>subtitle</code> prop 与 <code>update:subtitle</code> 事件，适合一个组件暴露多个可编辑字段。项目里要统一命名，避免 prop 名、事件名和文档不一致。</li>
+          <li><strong>为什么子组件不能直接修改 modelValue？</strong> 结论是 prop 属于父组件数据源，子组件直接写会破坏单向数据流并触发警告。通过 emit 更新能让父组件参与校验、拒绝或转换数据。复杂表单中还要定义空值、非法值、提交失败时的回滚策略。</li>
+          <li><strong>什么时候用 v-model，什么时候用普通 props / emit？</strong> 可编辑表单值、开关状态、选择器值优先用 v-model，因为语义是“父子同步一个模型”。一次性动作、保存、删除、加载失败等事件用普通 emit 更清晰。只读展示仍用 props，不要为了省事件把所有通信都包装成 v-model。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/components/v-model.html" target="_blank" rel="noreferrer">Vue 官方指南：组件 v-model</a></li>
+          <li><a href="https://vuejs.org/guide/components/events.html" target="_blank" rel="noreferrer">Vue 官方指南：组件事件</a></li>
+          <li><a href="https://vuejs.org/guide/best-practices/security.html#html-injection" target="_blank" rel="noreferrer">Vue 官方指南：安全与 HTML 注入</a></li>
         </ul>
       </div>
     </section>
