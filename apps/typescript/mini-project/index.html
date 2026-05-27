@@ -2,16 +2,15 @@
 分类: typescript / mini-project
   主题: TypeScript mini-project 与 tsc --noEmit
   要点:
-    - 本目录含真实 .ts 与 tsconfig.json strict 配置
-    - 运行 npm run validate:tsc 执行 tsc --noEmit 校验类型
-    - 与 HTML demo 的「TS 展示 + JS 运行」互补
-    - 修改 src/user.ts 中注释的错误示例可观察编译失败
+    - 本目录用真实 .ts、tsconfig.json 和 npm 脚本演示可落地的类型检查闭环
+    - tsc --noEmit 只做类型检查不产物输出，适合 CI、pre-commit 和学习验证
+    - strict、noImplicitAny、strictNullChecks、noUnusedLocals 分别覆盖隐式 any、空值和死代码风险
+    - import type 只导入类型，配合 bundler 模块解析减少运行时代码误解
   面试:
-    - TypeScript mini-project 与 tsc --noEmit的核心概念是什么
-    - TypeScript mini-project 与 tsc --noEmit在实际项目里怎么用
-    - TypeScript mini-project 与 tsc --noEmit有哪些常见坑或易错点
-    - TypeScript mini-project 与 tsc --noEmit和相近 API 如何区分选型
-    - 面试中如何简洁讲清 TypeScript mini-project 与 tsc --noEmit
+    - tsc --noEmit 在工程里解决什么问题？
+    - strict 模式为什么比单个类型注解更重要？
+    - import type 和普通 import 在类型检查项目中有什么区别？
+    - 类型检查通过是否等于运行时一定正确？
 -->
 
 <!doctype html>
@@ -32,21 +31,30 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>TypeScript mini-project</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">本页对应一个真实 TypeScript 小工程，重点不是浏览器交互，而是用 <code>tsc --noEmit</code> 验证源码和配置。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>本目录含真实 .ts 与 tsconfig.json strict 配置。</li>
-          <li>运行 npm run validate:tsc 执行 tsc --noEmit 校验类型。</li>
-          <li>与 HTML demo 的「TS 展示 + JS 运行」互补。</li>
-          <li>修改 src/user.ts 中注释的错误示例可观察编译失败。</li>
+          <li>这个 mini-project 用真实文件演示 TypeScript 工程闭环：<code>src/user.ts</code> 定义领域类型和函数，<code>src/index.ts</code> 通过 <code>import type</code> 引入类型，通过普通 <code>import</code> 引入运行时代码，<code>tsconfig.json</code> 决定编译器如何检查。</li>
+          <li><code>tsc --noEmit -p tsconfig.json</code> 会读取项目配置并执行完整类型检查，但不会写入 <code>dist</code>。这适合放进 CI 或本仓库的 <code>npm run validate:tsc</code>，用来证明示例源码仍能在 strict 规则下通过。</li>
+          <li><code>strict</code> 是一组严格检查的总开关，本项目还显式打开 <code>noImplicitAny</code>、<code>strictNullChecks</code> 和 <code>noUnusedLocals</code>。它们分别帮助发现未标注的宽泛参数、可能为空的访问，以及重构后遗留的未使用变量。</li>
+          <li><code>moduleResolution: "bundler"</code> 面向现代打包器解析模型；示例里 <code>import type { User }</code> 表示只在类型层使用 <code>User</code>，避免读者误以为该导入一定会变成运行时代码。</li>
+          <li>常见坑是把类型检查当成运行时测试。<code>formatUser</code> 能保证传入值符合 <code>User</code> 的静态形状，但外部 JSON、接口返回、用户输入和构建产物仍需要运行时校验、单元测试或端到端验证补齐。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>本目录含真实 .ts 与 tsconfig.json strict 配置？</strong> 本目录含真实 .ts 与 tsconfig.json strict 配置</li>
-          <li><strong>运行 npm run validate？</strong> 运行 npm run validate:tsc 执行 tsc --noEmit 校验类型</li>
-          <li><strong>与 HTML demo 的「TS 展示 + JS 运行」互补？</strong> 与 HTML demo 的「TS 展示 + JS 运行」互补</li>
-          <li><strong>修改 src/user.ts 中注释的错误示例可观察编译失败？</strong> 修改 src/user.ts 中注释的错误示例可观察编译失败</li>
+          <li><strong><code>tsc --noEmit</code> 在工程里解决什么问题？</strong> 结论是它把 TypeScript 当作类型检查器使用，不生成 JS 产物。原因是很多项目已经由 Vite、Webpack、Babel 或 swc 负责转译，仍需要独立命令保证类型没有退化。项目里通常把它放在 CI、提交前检查或发布前验证中。</li>
+          <li><strong>为什么推荐开启 <code>strict</code>？</strong> 结论是 strict 比零散类型注解更能建立工程级安全基线。原因是它会系统性收紧隐式 <code>any</code>、空值、函数参数等规则，让错误在改代码时暴露。边界是迁移老项目可以分阶段开启，但新项目应默认 strict。</li>
+          <li><strong><code>import type</code> 和普通 <code>import</code> 有什么区别？</strong> 结论是 <code>import type</code> 只服务类型系统，普通 <code>import</code> 表示运行时也需要这个模块值。原因是 TypeScript 会在 emit 阶段擦除类型导入，清晰区分后能减少循环依赖和副作用误判。项目里类型和函数来自同一文件时，也建议像本例一样分开写。</li>
+          <li><strong>类型检查通过是否等于程序没有 bug？</strong> 结论是否定的，类型检查只证明代码满足静态契约。原因是接口返回、用户输入、时间、网络失败和权限状态都发生在运行时。真实项目还要配合运行时 schema 校验、单元测试、集成测试和错误监控。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/intro.html">TypeScript Handbook：TypeScript 入门与类型检查定位</a></li>
+          <li><a href="https://www.typescriptlang.org/tsconfig/#noEmit">TSConfig Reference：noEmit</a></li>
+          <li><a href="https://www.typescriptlang.org/tsconfig/#strict">TSConfig Reference：strict</a></li>
+          <li><a href="https://www.typescriptlang.org/tsconfig/#moduleResolution">TSConfig Reference：moduleResolution</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html">TypeScript 3.8 Release Notes：type-only imports and exports</a></li>
         </ul>
       </div>
     </section>
@@ -55,8 +63,18 @@
     <!-- PAGE_DOM_START -->
     <p>目录 <code>apps/typescript/mini-project/</code> 包含可编译的 TypeScript 源码。</p>
     <pre>npm run validate:tsc
-      # 等价于在该目录执行 tsc --noEmit -p tsconfig.json</pre>
-      <p>源码：<code>src/user.ts</code>、<code>src/index.ts</code> · 配置：<code>tsconfig.json</code>（<code>strict: true</code>）</p>
+# 等价于：
+npx --yes -p typescript@5.8.3 tsc --noEmit -p apps/typescript/mini-project/tsconfig.json</pre>
+    <p>源码：<code>src/user.ts</code>、<code>src/index.ts</code> · 配置：<code>tsconfig.json</code>（<code>strict: true</code>）</p>
+    <pre>// src/user.ts
+export type User = { id: number; name: string; email?: string };
+
+export function formatUser(u: User): string {
+  return u.email ? `${u.name} &lt;${u.email}&gt;` : u.name;
+}
+
+// 取消下面这行注释，validate:tsc 应报错：
+// const bad: User = { id: "x", name: 1 };</pre>
     <!-- PAGE_DOM_END -->
 
     <!-- NAV_START -->

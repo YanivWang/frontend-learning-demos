@@ -2,16 +2,15 @@
 分类: typescript / 03-工程与框架
   主题: React 表单事件与 Vue defineEmits 类型
   要点:
-    - React：ChangeEvent&lt;HTMLInputElement&gt;、FormEvent 泛型参数
-    - Vue3：defineEmits&lt;{ submit: [payload: FormData] }&gt;() 元组写法
-    - 表单 value 类型与 DOM 元素类型对应
-    - 面试：事件处理器类型比 any 更安全
+    - React 表单事件应按元素写成 ChangeEvent<HTMLInputElement> 与 FormEvent<HTMLFormElement>
+    - Vue 3.3+ 可用 defineEmits 的具名元组语法描述事件名和 payload
+    - input.value 在 DOM 与 React 中都是 string，数字、布尔和文件需要显式转换或读取专用属性
+    - 前端类型只约束编译期，邮箱格式、空值和恶意输入仍要做运行时校验
   面试:
-    - React 表单事件与 Vue defineEmits 类型的核心概念是什么
-    - React 表单事件与 Vue defineEmits 类型在实际项目里怎么用
-    - React 表单事件与 Vue defineEmits 类型有哪些常见坑或易错点
-    - React 表单事件与 Vue defineEmits 类型和相近 API 如何区分选型
-    - 面试中如何简洁讲清 React 表单事件与 Vue defineEmits 类型
+    - React 表单事件为什么要把泛型写到具体 HTMLElement 上？
+    - Vue defineEmits 的对象元组写法比字符串数组多解决了什么问题？
+    - 表单类型安全和浏览器表单校验分别负责哪一层？
+    - 为什么不能用 any 或 EventTarget 直接读取 value？
 -->
 
 <!doctype html>
@@ -32,21 +31,31 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>框架表单类型片段</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <h1>React 表单事件与 Vue defineEmits 类型</h1>
+      <p class="hint">下方用原生表单模拟“提交事件 + emits payload”，重点看 TypeScript 类型如何约束框架边界。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>React：ChangeEvent&amp;lt;HTMLInputElement&amp;gt;、FormEvent 泛型参数。</li>
-          <li>Vue3：<code>defineEmits</code>&amp;lt;{ submit: [payload: FormData] }&amp;gt;() 元组写法。</li>
-          <li>表单 value 类型与 DOM 元素类型对应。</li>
-          <li>面试：事件处理器类型比 any 更安全。</li>
+          <li>React 的合成事件类型要绑定到真实元素：输入框变更常写 <code>React.ChangeEvent&lt;HTMLInputElement&gt;</code>，表单提交常写 <code>React.FormEvent&lt;HTMLFormElement&gt;</code>。这样 <code>currentTarget</code>、<code>target</code> 和表单控件属性才不会退化成宽泛的 <code>EventTarget</code>。</li>
+          <li>读取表单值时要理解 DOM 类型：<code>input.value</code> 永远是字符串，<code>type="number"</code> 也需要 <code>valueAsNumber</code> 或手动转换；复选框读 <code>checked</code>，文件读 <code>files</code>。类型标注不能替代这些运行时分支。</li>
+          <li>Vue 3 的 <code>defineEmits</code> 可以用类型参数声明事件契约；Vue 3.3+ 的具名元组写法如 <code>{ submit: [email: string]; cancel: [] }</code> 同时约束事件名、参数个数和 payload 类型，比字符串数组更适合组件库和表单组件。</li>
+          <li>推荐在 React 表单中优先使用 <code>currentTarget</code> 读取绑定了泛型的元素，避免从冒泡来源的 <code>target</code> 上直接假设类型；Vue 中则把校验后的值作为 emit payload，不把 DOM 事件对象泄漏给父组件。</li>
+          <li>涉及用户输入时，类型安全只覆盖编译期。邮箱格式、空字符串、重复提交、后端校验失败和 XSS 风险仍要在运行时处理；本页用 <code>checkValidity()</code> 拦截非法邮箱，并用 <code>textContent</code> 输出，避免把输入当 HTML 解析。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>表单 value 类型与 DOM 元素类型对应？</strong> 表单 value 类型与 DOM 元素类型对应</li>
-          <li><strong>React 表单事件与 Vue defineEmits 类型的核心概念是什么？</strong> React：ChangeEvent&amp;lt;HTMLInputElement&amp;gt;、FormEvent 泛型参数</li>
-          <li><strong>React 表单事件与 Vue defineEmits 类型在实际项目里怎么用？</strong> React：ChangeEvent&amp;lt;HTMLInputElement&amp;gt;、FormEvent 泛型参数</li>
+          <li><strong>React 表单事件为什么要写具体元素泛型？</strong> 结论是让事件对象携带准确的 DOM 元素能力，例如 <code>HTMLInputElement.value</code> 和 <code>HTMLFormElement.checkValidity()</code>。原因是基础的 <code>EventTarget</code> 不保证有 <code>value</code>，直接访问会丢失类型安全。项目里复杂表单通常把事件处理器类型写在函数签名上，并优先用 <code>currentTarget</code> 读取当前绑定元素。</li>
+          <li><strong>Vue defineEmits 的类型声明解决什么问题？</strong> 结论是把子组件对外发出的事件名和参数类型变成组件公共契约。原因是父组件监听事件时依赖这些 payload，字符串数组只能限制事件名，不能限制参数形状。边界是运行时仍可配合对象校验器做值校验，尤其是表单提交、上传和跨团队组件库。</li>
+          <li><strong>表单类型安全和浏览器校验如何分工？</strong> 结论是 TypeScript 负责“代码是否按约定读写”，浏览器约束验证和业务逻辑负责“用户输入是否有效”。原因是用户可以输入空值、非法邮箱或绕过前端，类型系统不会在运行时阻止。真实项目要同时处理前端提示、后端错误、重复提交和可访问性反馈。</li>
+          <li><strong>为什么不建议把事件参数写成 any？</strong> 结论是 <code>any</code> 会绕过表单控件差异，容易把 <code>checked</code>、<code>files</code>、<code>valueAsNumber</code> 混成一个字符串读取路径。原因是不同输入类型的 DOM API 不同，精确类型能让编辑器提前暴露错误。边界是封装通用表单库时可以用泛型或受控字段模型，而不是把每个 handler 都退回 <code>any</code>。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react-dom/components/input">React 文档：&lt;input&gt; 组件与受控输入</a></li>
+          <li><a href="https://react.dev/reference/react-dom/components/form">React 文档：&lt;form&gt; 组件与表单提交</a></li>
+          <li><a href="https://vuejs.org/guide/typescript/composition-api.html#typing-component-emits">Vue 文档：TypeScript 与 defineEmits 类型声明</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/functions.html">TypeScript Handbook：函数参数与回调类型</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/checkValidity">MDN：HTMLInputElement.checkValidity()</a></li>
         </ul>
       </div>
     </section>
@@ -54,29 +63,48 @@
 
     <!-- PAGE_DOM_START -->
     <pre>// React
-      function onChange(e: React.ChangeEvent&lt;HTMLInputElement&gt;) {
-      const value: string = e.target.value;
-      }
-      // Vue 3 script setup
-      const emit = defineEmits&lt;{
-      submit: [email: string];
-      cancel: [];
-      }&gt;();
-      emit('submit', email.value);</pre>
-      <h2>原生表单演示（等价逻辑）</h2>
-      <label>邮箱 <input type="email" id="email" value="demo@ex.com" /></label>
-      <button type="button" id="submit">submit emit</button>
-      <div id="log"></div>
+function onChange(e: React.ChangeEvent&lt;HTMLInputElement&gt;) {
+  const value: string = e.currentTarget.value;
+}
+
+function onSubmit(e: React.FormEvent&lt;HTMLFormElement&gt;) {
+  e.preventDefault();
+  if (!e.currentTarget.checkValidity()) return;
+}
+
+// Vue 3.3+ &lt;script setup&gt;
+const emit = defineEmits&lt;{
+  submit: [email: string];
+  cancel: [];
+}&gt;();
+
+emit("submit", email.value);</pre>
+    <h2>原生表单演示（等价逻辑）</h2>
+    <form id="demo-form">
+      <label>邮箱 <input type="email" id="email" value="demo@ex.com" required /></label>
+      <button type="submit">submit emit</button>
+    </form>
+    <div id="log"></div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      document.getElementById("submit").onclick = () => {
-        const email = document.getElementById("email").value;
-        document.getElementById("log").textContent =
-        "emit('submit', '" + email + "') — 类型为 string，与 ChangeEvent&lt;HTMLInputElement&gt;.target.value 一致";
-      };
+      const form = document.getElementById("demo-form");
+      const emailInput = document.getElementById("email");
+      const log = document.getElementById("log");
 
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (!emailInput.checkValidity()) {
+          emailInput.reportValidity();
+          log.textContent = "邮箱格式未通过浏览器约束验证，submit payload 不会发出。";
+          return;
+        }
+
+        const email = emailInput.value.trim();
+        log.textContent =
+          `emit("submit", ${JSON.stringify(email)}) - payload 类型为 string，输出使用 textContent。`;
+      });
     </script>
     <!-- SCRIPT_END -->
 
