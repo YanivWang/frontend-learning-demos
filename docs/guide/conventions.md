@@ -12,7 +12,7 @@
 | `apps/react18/` | React 18 demo |
 | `apps/typescript/` | TypeScript |
 | `apps/demos/` | 综合小项目 |
-| `docs-site/` | VitePress 文档站（唯一入口） |
+| `docs/` | VitePress 文档站（唯一入口） |
 
 ## 文件命名
 
@@ -39,7 +39,7 @@
 ## 不要手改
 
 - `manifest.json`
-- `docs-site/.vitepress/sidebar.generated.mts`
-- `docs-site/demos/index.md`（顶部有 AUTO-GENERATED 标记）
+- `docs/.vitepress/sidebar.generated.mts`
+- `docs/demos/index.md`（顶部有 AUTO-GENERATED 标记）
 
 改 demo 后运行 `npm run build:index` 即可。

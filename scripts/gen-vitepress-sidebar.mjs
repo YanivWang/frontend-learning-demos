@@ -22,8 +22,8 @@ for (const arg of args) {
   }
 }
 
-const OUT_SIDEBAR = join(ROOT, "docs-site/.vitepress/sidebar.generated.mts");
-const OUT_DEMOS_INDEX = join(ROOT, "docs-site/demos/index.md");
+const OUT_SIDEBAR = join(ROOT, "docs/.vitepress/sidebar.generated.mts");
+const OUT_DEMOS_INDEX = join(ROOT, "docs/demos/index.md");
 
 const SECTION_DESC = {
   JavaScript: "纯 JS 知识点 demo（按 01–09 编号分类）",
@@ -143,8 +143,8 @@ async function main() {
     return;
   }
 
-  await mkdir(join(ROOT, "docs-site/demos"), { recursive: true });
-  await mkdir(join(ROOT, "docs-site/.vitepress"), { recursive: true });
+  await mkdir(join(ROOT, "docs/demos"), { recursive: true });
+  await mkdir(join(ROOT, "docs/.vitepress"), { recursive: true });
   await writeFile(OUT_SIDEBAR, sidebarContent, "utf8");
   await writeFile(OUT_DEMOS_INDEX, demosIndexContent, "utf8");
   console.log(

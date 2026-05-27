@@ -19,7 +19,7 @@ npm run docs:build
 npm run docs:preview   # 或 npm run serve
 ```
 
-`serve` 会托管 `docs-site/.vitepress/dist/`（需先 `docs:build`），适合验证 Router / ES Module 等 demo。
+`serve` 会托管 `docs/.vitepress/dist/`（需先 `docs:build`），适合验证 Router / ES Module 等 demo。
 
 ## 直接打开单个 demo
 
@@ -45,7 +45,7 @@ npm run validate
 
 ```bash
 npm run docs:build
-# 产物：docs-site/.vitepress/dist/（含 apps/ demo）
+# 产物：docs/.vitepress/dist/（含 apps/ demo）
 ```
 
 GitHub Pages 子路径部署：

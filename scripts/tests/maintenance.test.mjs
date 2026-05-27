@@ -104,27 +104,27 @@ test("package.json exposes one-command maintenance scripts", () => {
 test("gen-vitepress-sidebar --check validates generated docs nav without rewriting", () => {
   const generatedFiles = {
     sidebar: readFileSync(
-      join(ROOT, "docs-site/.vitepress/sidebar.generated.mts"),
+      join(ROOT, "docs/.vitepress/sidebar.generated.mts"),
       "utf8"
     ),
-    demosIndex: readFileSync(join(ROOT, "docs-site/demos/index.md"), "utf8"),
+    demosIndex: readFileSync(join(ROOT, "docs/demos/index.md"), "utf8"),
   };
   try {
     const result = runScript(["scripts/gen-vitepress-sidebar.mjs", "--check"]);
     assert.equal(result.status, 0, result.stderr || result.stdout);
     assert.equal(
-      readFileSync(join(ROOT, "docs-site/.vitepress/sidebar.generated.mts"), "utf8"),
+      readFileSync(join(ROOT, "docs/.vitepress/sidebar.generated.mts"), "utf8"),
       generatedFiles.sidebar
     );
     assert.equal(
-      readFileSync(join(ROOT, "docs-site/demos/index.md"), "utf8"),
+      readFileSync(join(ROOT, "docs/demos/index.md"), "utf8"),
       generatedFiles.demosIndex
     );
   } finally {
     writeFileSync(
-      join(ROOT, "docs-site/.vitepress/sidebar.generated.mts"),
+      join(ROOT, "docs/.vitepress/sidebar.generated.mts"),
       generatedFiles.sidebar
     );
-    writeFileSync(join(ROOT, "docs-site/demos/index.md"), generatedFiles.demosIndex);
+    writeFileSync(join(ROOT, "docs/demos/index.md"), generatedFiles.demosIndex);
   }
 });

@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
-const DIST = join(ROOT, "docs-site/.vitepress/dist");
+const DIST = join(ROOT, "docs/.vitepress/dist");
 
 async function main() {
   await cp(join(ROOT, "apps"), join(DIST, "apps"), {

@@ -40,7 +40,7 @@ npm run serve
 ```text
 .
 ├── manifest.json            # demo 结构化清单（自动生成）
-├── docs-site/               # VitePress 文档站（唯一入口）
+├── docs/               # VitePress 文档站（唯一入口）
 ├── README.md                # 本文件
 ├── CONVENTIONS.md           # 目录与命名约定（每次想动结构前先读它）
 ├── package.json             # npm 维护命令（playwright 为可选 devDependency）
