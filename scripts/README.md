@@ -8,6 +8,7 @@
 
 ```bash
 node scripts/build-index.mjs
+node scripts/build-index.mjs --check
 ```
 
 **扫描范围**：`learn/javascript/`、`learn/css/`、`learn/vue2/`、`learn/vue3/`、`learn/react/`、`learn/demos/`、`learn/typescript/` 下的 `.html`；跳过 `libs/`、`lib/`、根 `index.html`。
@@ -20,6 +21,8 @@ node scripts/build-index.mjs
 - 调整目录结构
 
 详细约定见 [`../CONVENTIONS.md`](../CONVENTIONS.md)。
+
+`--check` 只比较当前 `index.html` / `manifest.json` 是否与脚本输出一致，不写文件，适合 CI。
 
 ## `sync-readmes.mjs`
 
@@ -34,9 +37,12 @@ node scripts/build-index.mjs
 
 ```bash
 node scripts/sync-readmes.mjs
+node scripts/sync-readmes.mjs --check
 ```
 
 **什么时候运行**：新增/改名/删除 demo 后，或与 `build-index.mjs` 一并执行；修改 demo **主题** 头注释后也应运行，以保持 README 与代码一致。
+
+`--check` 只检查各模块 README 的表格是否同步，不写文件。
 
 ## `gen-readme-tables.mjs`
 
@@ -51,15 +57,14 @@ node scripts/gen-readme-tables.mjs react
 
 ```bash
 # 改 demo 后
-node scripts/build-index.mjs
-node scripts/sync-readmes.mjs
-node scripts/validate-demos.mjs
-node scripts/validate-typescript-coverage.mjs
+npm run build:index
+npm run sync:readmes
+npm run validate
 ```
 
 ## `validate-demos.mjs`
 
-校验头注释完整性、普通 `<script>` 的 `node --check`、运行 `build-index` 并核对 manifest 数量与重复 href。
+校验头注释完整性、普通 `<script>` 的 `node --check`，并通过 `build-index --check` 核对 manifest 数量与重复 href。校验过程不写入生成文件。
 
 ```bash
 node scripts/validate-demos.mjs
@@ -73,4 +78,20 @@ CI（`.github/workflows/ci.yml`）在 push / PR 时自动执行。
 
 ```bash
 node scripts/validate-typescript-coverage.mjs
+```
+
+## `validate-browser-smoke.mjs`
+
+从 `manifest.json` 出发做静态浏览器冒烟检查：确认每个 demo 文件存在，HTML 里本地 `script` / `link` / `img` / 媒体资源存在，CSS `url(...)` 指向的本地资源也存在。
+
+```bash
+node scripts/validate-browser-smoke.mjs
+```
+
+## `scripts/tests/*.test.mjs`
+
+维护脚本的 Node 内置测试，重点防止校验命令把工作区弄脏。
+
+```bash
+npm test
 ```

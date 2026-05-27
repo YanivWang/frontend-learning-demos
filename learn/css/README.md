@@ -2,7 +2,7 @@
 
 按主题编号的 CSS demo，共 **36** 个 `.html` 文件，兼顾常用效果、CSS 面试基础与现代特性。每个 demo 可直接在浏览器打开。
 
-目录按 `01-基础` ~ `07-现代特性` 编号分类。`05-响应式/media-queries/` 下 `step1.html` → `final.html` 演示媒体查询的渐进增强；`05-响应式/libs/` 存放 IE8 及以下 polyfill（见 [`05-响应式/libs/README.md`](05-响应式/libs/README.md)）。
+目录按 `01-基础` ~ `07-现代特性` 编号分类。`05-响应式/media-queries/` 下 `01-基础布局.html` → `02-响应式最终页.html` 演示媒体查询的渐进增强；`05-响应式/libs/` 存放 IE8 及以下 polyfill（见 [`05-响应式/libs/README.md`](05-响应式/libs/README.md)）。
 
 ## 目录概览
 
@@ -12,7 +12,7 @@
 | `02-布局/` | Flex、Grid、BFC、清除浮动、定位、层叠上下文、常见布局题、rem 适配、瀑布流、滚动表格（`thead` 固定） |
 | `03-动画/` | Loading 四种、`@keyframes`、NProgress、光标闪烁、展开折叠（height / max-height / grid）、序列帧（精灵图） |
 | `04-视觉效果/` | 文本省略、图片处理、百分比圆环、3D 按钮、`drop-shadow`、`background-blend-mode`、Tooltip |
-| `05-响应式/` | Media Queries（含 step1 → final 演进对比）、rem + @media + vw / vh 综合适配 |
+| `05-响应式/` | Media Queries（含基础布局 → 响应式最终页演进对比）、rem + @media + vw / vh 综合适配 |
 | `06-性能/` | 重排、重绘、合成层、`transform` / `opacity` 动画性能、`will-change`、`contain` |
 | `07-现代特性/` | `:has()` 父选择器、`@layer` 层叠管理、Container Queries 容器查询 |
 
@@ -63,10 +63,10 @@
 | `03-动画/序列帧/index.html` | 用 background-position + steps() 播放精灵图 |
 | `03-动画/展开折叠/index.html` | height / max-height / grid 三种展开折叠方案 |
 | `03-动画/keyframes/index.html` | @keyframes 基础旋转动画 |
-| `03-动画/loading/load1.html` | 5 条竖条横向并排呼吸 loading |
-| `03-动画/loading/load2.html` | 5 条竖条交错弹跳的加载动画 |
-| `03-动画/loading/load3.html` | lds-ring 圆环旋转 loading |
-| `03-动画/loading/load4.html` | 文字逐字淡出的 loading 动画 |
+| `03-动画/loading/01-竖条呼吸.html` | 5 条竖条横向并排呼吸 loading |
+| `03-动画/loading/02-竖条弹跳.html` | 5 条竖条交错弹跳的加载动画 |
+| `03-动画/loading/03-圆环旋转.html` | lds-ring 圆环旋转 loading |
+| `03-动画/loading/04-文字淡出.html` | 文字逐字淡出的 loading 动画 |
 | `03-动画/nprogress/index.html` | NProgress 顶部进度条第三方库 |
 | `04-视觉效果/按钮/3dButton.html` | 渐变 + 下边框 + box-shadow 的 3D 按钮 |
 | `04-视觉效果/按钮/button.html` | 拟物 3D 按钮的按下动效 |
@@ -75,8 +75,8 @@
 | `04-视觉效果/background-blend-mode/index.html` | 背景叠加颜色 / 渐变的混合演示 |
 | `04-视觉效果/drop-shadow/index.html` | box-shadow vs filter: drop-shadow 对比 |
 | `04-视觉效果/tooltip/index.html` | 纯 CSS tooltip（上下左右四方向） |
-| `05-响应式/media-queries/final.html` | 响应式布局最终页（step1 基础上叠加 media-queries） |
-| `05-响应式/media-queries/step1.html` | 响应式布局基础页（仅加载 style.css，未引入 media-queries.css） |
+| `05-响应式/media-queries/01-基础布局.html` | 响应式布局基础页（仅加载 style.css，未引入 media-queries.css） |
+| `05-响应式/media-queries/02-响应式最终页.html` | 响应式布局最终页（基础布局上叠加 media-queries） |
 | `05-响应式/vw-vh/index.html` | rem + @media + vw / vh 综合响应式示例 |
 | `06-性能/渲染性能/index.html` | 重排、重绘、合成层与动画性能 |
 | `07-现代特性/01-has选择器/index.html` | :has() 父选择器与条件样式 |

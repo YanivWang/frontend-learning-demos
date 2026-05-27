@@ -15,18 +15,15 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Validate demos and regenerate index
-        run: node scripts/validate-demos.mjs
+      - name: Run maintenance tests
+        run: npm test
 
-      - name: Sync README demo tables
-        run: node scripts/sync-readmes.mjs
-
-      - name: Validate TypeScript coverage
-        run: node scripts/validate-typescript-coverage.mjs
+      - name: Validate demos, docs, coverage, and smoke checks
+        run: npm run validate
 
       - name: Check working tree clean after scripts
         run: |
           git diff --exit-code index.html manifest.json learn/javascript/README.md learn/css/README.md learn/vue2/README.md learn/vue3/README.md learn/react/README.md learn/typescript/README.md || (
-            echo "::error::index.html / manifest.json / 模块 README 与脚本输出不一致，请本地运行 node scripts/build-index.mjs && node scripts/sync-readmes.mjs"
+            echo "::error::index.html / manifest.json / 模块 README 与脚本输出不一致，请本地运行 npm run build:index && npm run sync:readmes"
             exit 1
           )

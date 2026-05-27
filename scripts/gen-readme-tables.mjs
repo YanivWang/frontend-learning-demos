@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * 从各 demo 的 HTML 头注释（分类 / 主题）生成 README 用的 Markdown 表格片段。
- * 运行：node scripts/gen-readme-tables.mjs [javascript|css|vue2|vue3|react]
+ * 运行：node scripts/gen-readme-tables.mjs [javascript|css|vue2|vue3|react|typescript]
  */
 
 import { readdir, readFile } from "node:fs/promises";
@@ -17,6 +17,7 @@ const CONFIG = {
   vue2: { scan: join("learn", "vue2", "src"), label: "learn/vue2/src" },
   vue3: { scan: join("learn", "vue3", "src"), label: "learn/vue3/src" },
   react: { scan: join("learn", "react", "src"), label: "learn/react/src" },
+  typescript: { scan: join("learn", "typescript"), label: "learn/typescript" },
 };
 
 function parseHeader(content) {
@@ -47,7 +48,7 @@ async function collect(dirAbs, rows) {
 async function main() {
   const key = process.argv[2];
   if (!key || !CONFIG[key]) {
-    console.error("用法: node scripts/gen-readme-tables.mjs <javascript|css|vue2|vue3|react>");
+    console.error("用法: node scripts/gen-readme-tables.mjs <javascript|css|vue2|vue3|react|typescript>");
     process.exit(1);
   }
   const { scan } = CONFIG[key];

@@ -13,11 +13,20 @@
  *   - 根目录 index.html 是输出目标，不参与扫描
  */
 
-import { readdir, stat, writeFile } from "node:fs/promises";
+import { readFile, readdir, stat, writeFile } from "node:fs/promises";
 import { join, relative, sep, posix } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
+const args = new Set(process.argv.slice(2));
+const isCheckMode = args.has("--check");
+
+for (const arg of args) {
+  if (arg !== "--check") {
+    console.error("用法: node scripts/build-index.mjs [--check]");
+    process.exit(1);
+  }
+}
 
 // 仓库子目录扫描配置（顺序即在导航页中的展示顺序）
 const SECTIONS = [
@@ -98,7 +107,11 @@ function relDirDisplay(dirAbs) {
 }
 
 async function main() {
-  const manifest = { generatedAt: new Date().toISOString(), sections: [] };
+  const manifest = {
+    schemaVersion: 1,
+    generatedBy: "scripts/build-index.mjs",
+    sections: [],
+  };
   const sectionsHtml = [];
 
   for (const sec of SECTIONS) {
@@ -143,17 +156,32 @@ async function main() {
   }
 
   const html = renderIndex(sectionsHtml.join("\n\n"), manifest);
-  await writeFile(join(ROOT, "index.html"), html, "utf8");
-  await writeFile(
-    join(ROOT, "manifest.json"),
-    JSON.stringify(manifest, null, 2) + "\n",
-    "utf8"
-  );
+  const manifestJson = JSON.stringify(manifest, null, 2) + "\n";
 
   const totalFiles = manifest.sections.reduce(
     (s, sec) => s + sec.groups.reduce((g, gr) => g + gr.items.length, 0),
     0
   );
+  if (isCheckMode) {
+    const currentIndex = await readFile(join(ROOT, "index.html"), "utf8");
+    const currentManifest = await readFile(join(ROOT, "manifest.json"), "utf8");
+    const changed = currentIndex !== html || currentManifest !== manifestJson;
+    if (changed) {
+      console.error(
+        "[build-index] 失败：index.html / manifest.json 与脚本输出不一致，请运行 node scripts/build-index.mjs"
+      );
+      process.exitCode = 1;
+      return;
+    }
+    console.log(
+      `[build-index] 通过：index.html / manifest.json 已同步，共 ${manifest.sections.length} 个分类、${totalFiles} 个 demo`
+    );
+    return;
+  }
+
+  await writeFile(join(ROOT, "index.html"), html, "utf8");
+  await writeFile(join(ROOT, "manifest.json"), manifestJson, "utf8");
+
   console.log(
     `[build-index] 已生成 index.html / manifest.json，共扫描 ${manifest.sections.length} 个分类、${totalFiles} 个 demo`
   );
@@ -194,7 +222,7 @@ function renderIndex(sectionsHtml, manifest) {
 <body>
   <h1>frontend-learning-demos</h1>
   <p class="hint">前端语法与框架复习 Demo · 打开任意链接即可学习 · <a href="README.md">README</a> · <a href="CONVENTIONS.md">命名约定</a></p>
-  <p class="meta">本页由 <code>scripts/build-index.mjs</code> 自动生成于 ${escapeHtml(manifest.generatedAt)}。不要手动编辑。</p>
+  <p class="meta">本页由 <code>${escapeHtml(manifest.generatedBy)}</code> 自动生成。不要手动编辑。</p>
 
 ${sectionsHtml}
 

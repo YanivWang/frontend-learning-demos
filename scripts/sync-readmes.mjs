@@ -9,6 +9,16 @@ import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
+const args = new Set(process.argv.slice(2));
+const isCheckMode = args.has("--check");
+
+for (const arg of args) {
+  if (arg !== "--check") {
+    console.error("用法: node scripts/sync-readmes.mjs [--check]");
+    process.exit(1);
+  }
+}
+
 const SKIP = new Set(["libs", "lib", "node_modules", ".git"]);
 
 const MARKER_START = "<!-- DEMO_TABLE_START -->";
@@ -64,8 +74,16 @@ async function patchReadme(readmePath, scanRoot) {
   if (!re.test(content)) {
     throw new Error(`${readmePath} 缺少 ${MARKER_START} / ${MARKER_END} 标记`);
   }
-  content = content.replace(re, table);
-  await writeFile(join(ROOT, readmePath), content, "utf8");
+  const nextContent = content.replace(re, table);
+  if (isCheckMode) {
+    if (nextContent !== content) {
+      throw new Error(`${readmePath} 与 demo 头注释不同步，请运行 node scripts/sync-readmes.mjs`);
+    }
+    console.log(`[sync-readmes] ${readmePath} 已同步（${rows.length} demos）`);
+    return;
+  }
+
+  await writeFile(join(ROOT, readmePath), nextContent, "utf8");
   console.log(`[sync-readmes] ${readmePath} ← ${rows.length} demos`);
 }
 
@@ -82,4 +100,4 @@ for (const [readme, scan] of tasks) {
   await patchReadme(readme, scan);
 }
 
-console.log("[sync-readmes] 完成");
+console.log(isCheckMode ? "[sync-readmes] 通过：README demo 清单均已同步" : "[sync-readmes] 完成");

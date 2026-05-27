@@ -35,7 +35,8 @@ open index.html
 ├── docs/
 │   ├── plans/               # 面试知识点 / 工程化补齐计划
 │   └── reviews/             # 全量审查与演进记录
-├── .github/workflows/ci.yml # CI：validate-demos + build-index
+├── package.json             # npm 维护命令（无第三方依赖）
+├── .github/workflows/ci.yml # CI：test + validate
 ├── .gitignore .editorconfig
 │
 ├── learn/                   # 学习 demo 主目录
@@ -51,6 +52,8 @@ open index.html
     ├── build-index.mjs      # 扫描生成 index.html / manifest.json
     ├── sync-readmes.mjs     # 同步各模块 README 的 demo 清单表
     ├── validate-demos.mjs   # 头注释 / 脚本语法 / manifest 一致性校验
+    ├── validate-browser-smoke.mjs
+    ├── validate-typescript-coverage.mjs
     └── gen-readme-tables.mjs
 ```
 
@@ -79,9 +82,16 @@ open index.html
 新增 / 改名 / 删除 demo 后，**必须运行**：
 
 ```bash
-node scripts/build-index.mjs
-node scripts/sync-readmes.mjs
-node scripts/validate-demos.mjs   # 本地校验（CI 同样会跑）
+npm run build:index
+npm run sync:readmes
+npm run validate      # 本地校验（CI 同样会跑）
+```
+
+只检查生成文件是否同步、不写入文件：
+
+```bash
+npm run check:index
+node scripts/sync-readmes.mjs --check
 ```
 
 完整规范见 [`CONVENTIONS.md`](CONVENTIONS.md)。

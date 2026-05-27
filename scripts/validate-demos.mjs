@@ -115,8 +115,8 @@ async function main() {
     await checkScripts(content, rel);
   }
 
-  // build-index 并检查 manifest 条目数与扫描文件数一致
-  const build = spawnSync(process.execPath, [join(ROOT, "scripts/build-index.mjs")], {
+  // build-index 只检查，不写入，避免校验过程污染工作区。
+  const build = spawnSync(process.execPath, [join(ROOT, "scripts/build-index.mjs"), "--check"], {
     cwd: ROOT,
     encoding: "utf8",
   });

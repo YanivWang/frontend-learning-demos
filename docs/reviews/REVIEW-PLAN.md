@@ -26,6 +26,7 @@ node scripts/build-index.mjs
 node scripts/sync-readmes.mjs
 node scripts/validate-demos.mjs
 node scripts/validate-typescript-coverage.mjs
+node scripts/validate-browser-smoke.mjs
 ```
 
 约定见 [`../../CONVENTIONS.md`](../../CONVENTIONS.md)。补齐计划见 [`../plans/`](../plans/)。
@@ -33,4 +34,4 @@ node scripts/validate-typescript-coverage.mjs
 ## 保留的教学设计（非 bug）
 
 - **反面教材**：`02-JSX-条件渲染短路` 的 `length && JSX` 渲染 `0`；abbr 中 `:bind:title` 错误示例
-- **缺失外链资源**：rem / media-queries 图片依赖在头注释中说明
+- **资源完整性**：rem / media-queries 已改为纯 CSS 离线演示，`validate-browser-smoke.mjs` 会检查本地资源引用

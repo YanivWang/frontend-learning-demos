@@ -73,9 +73,9 @@
 - `manifest.json` 与 `index.html` 同步生成，记录路径、标题、分组
 - 想新增 demo：直接放到对应目录，运行：
   ```bash
-  node scripts/build-index.mjs
-  node scripts/sync-readmes.mjs
-  node scripts/validate-demos.mjs
+  npm run build:index
+  npm run sync:readmes
+  npm run validate
   ```
 - 各模块 `README.md` 的学习顺序、面试覆盖范围可手写维护；`<!-- DEMO_TABLE_START -->` … `<!-- DEMO_TABLE_END -->` 之间的表格由脚本生成，**勿手改表格正文**
 

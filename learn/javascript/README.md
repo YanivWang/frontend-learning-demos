@@ -117,8 +117,8 @@
 | `06-浏览器API/浏览器渲染与性能.html` | 浏览器渲染流程、重排、重绘与性能优化 |
 | `06-浏览器API/事件模型/01-事件循环.html` | 事件循环综合（同步 + Promise + async/await + setTimeout） |
 | `06-浏览器API/事件模型/02-dom事件-冒泡捕获委托.html` | DOM 事件流：捕获、目标、冒泡与事件委托 |
-| `06-浏览器API/拖曳手柄/index.html` | 拖拽调整侧栏宽度（Vue3 + requestAnimationFrame 版） |
-| `06-浏览器API/拖曳手柄/indexV2.html` | 悬浮侧栏拖拽 V2（带圆角与外边距） |
+| `06-浏览器API/拖曳手柄/01-贴边侧栏拖拽.html` | 拖拽调整侧栏宽度（Vue3 + requestAnimationFrame 版） |
+| `06-浏览器API/拖曳手柄/02-悬浮侧栏拖拽.html` | 悬浮侧栏拖拽 V2（带圆角与外边距） |
 | `06-浏览器API/BOM/hash.html` | hash 路由的基本演示 |
 | `06-浏览器API/BOM/history.html` | history pushState / replaceState 与 popstate |
 | `06-浏览器API/DOM操作.html` | DOM 基础操作（选择 / 属性 / 数据集 / 类） |
