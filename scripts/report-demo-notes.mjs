@@ -106,7 +106,7 @@ async function main() {
       const refs = countSectionBullets(content, "参考资料");
       if (kp < 3) fileIssues.push(`正文「知识点要点」仅 ${kp} 条（建议 ≥3）`);
       if (iv < 3) fileIssues.push(`正文「面试考点」仅 ${iv} 条（建议 ≥3）`);
-      if (refs < 2) fileIssues.push(`正文「参考资料」仅 ${refs} 条（建议 ≥2）`);
+      if (refs < 1) fileIssues.push(`正文「参考资料」仅 ${refs} 条（至少 1 条权威来源；综合主题建议 2～5 条）`);
       if (TEMPLATE_INTERVIEW_RE.test(content)) {
         fileIssues.push("demo-notes 疑似仍含模板化面试问句");
       }

@@ -5,7 +5,7 @@
 
 **Goal:** 把全库 demo 从“形式上有注释”升级为“可用于复习、面试准备和找工作的可靠学习材料”。
 
-**Architecture:** 脚本只负责定位问题、检查结构和运行校验；学习内容必须人工审核，并和权威资料、可运行示例互相印证。每个 demo 都要做到头注释、复习区、示例代码三者一致。
+**Architecture:** 脚本只负责定位问题、检查结构和运行校验；学习内容必须人工审核，并和权威资料、可运行示例互相印证。每个 demo 都要做到头注释、复习区、示例代码、参考资料、运行验证五者一致。
 
 **Tech Stack:** 静态 HTML demo、VitePress 文档、Node.js 维护脚本、Playwright smoke check、MDN Web Docs、JavaScript.info、Vue 2 / Vue 3 官方文档、React 官方文档、TypeScript Handbook。
 
@@ -65,33 +65,52 @@
 - [x] 参考资料加入 MDN 事件冒泡、MDN `addEventListener`、MDN `innerHTML`、React 数组状态更新。
 - [x] `scripts/report-demo-notes.mjs` 能报告模板化问句和缺少「参考资料」的问题。
 
+## 当前基线与进度口径
+
+- [ ] 当前基线：`node scripts/report-demo-notes.mjs` 显示全库 `1/357` 达标，已达标页为 Todo 样板，其余 356 个 demo 仍需人工审核。
+- [ ] 全库范围以 `manifest.json` 为准；新增或删除 demo 后，先同步索引，再重新记录报告总数。
+- [ ] 每完成一个批次，在本文件追加或更新批次进度：已审核数量、仍失败数量、失败类型、人工抽查页面。
+- [ ] 一个 demo 只有同时满足“头注释、学习区、示例代码、参考资料、运行验证”五项，才算达标。
+
 ## 分批推进
 
-### 第一批：综合 demos + JavaScript 高频基础
+### 第一批：综合 demos + JavaScript 基础高频
 
 - [ ] 审核 `apps/demos/` 剩余 demo：拖拽、分步表单、hash-router、viewpager、virtual-list。
-- [ ] 审核 `apps/javascript/01-基础/`：变量、函数、数组、字符串、类型转换、正则、JSON、Date、parseInt、Symbol、Unicode。
+- [ ] 审核 `apps/javascript/01-基础/`：变量、函数、数组、字符串、类型转换、正则、JSON、Date、parseInt、Symbol、Unicode、严格模式、URI 编码、`eval`。
 - [ ] 审核 `apps/javascript/02-函数与作用域/`：作用域链、闭包、this、柯里化。
-- [ ] 审核 `apps/javascript/08-面试题/` 高频手写题：call/apply、bind、new、instanceof、Promise、EventEmitter、LRU、防抖节流。
+- [ ] 审核 `apps/javascript/03-对象与原型/`：对象创建、属性描述符、原型链、继承、class 与原型关系。
 
-### 第二批：React 18 / React 19
+### 第二批：JavaScript 进阶 + 高频手写题
+
+- [ ] 审核 `apps/javascript/04-ES6+/`：let/const、解构、模块、Promise、async/await、迭代器、生成器、Map/Set、Proxy 相关前置。
+- [ ] 审核 `apps/javascript/05-元编程/`：Proxy、Reflect、Symbol、属性拦截、元编程边界。
+- [ ] 审核 `apps/javascript/06-浏览器API/`：DOM、事件、存储、网络、History、URL、Observer、Web Worker 等浏览器能力。
+- [ ] 审核 `apps/javascript/07-进阶/`：事件循环、内存、性能、错误处理、模块化、异步控制等进阶主题。
+- [ ] 审核 `apps/javascript/08-面试题/` 高频手写题：call/apply、bind、new、instanceof、Promise、EventEmitter、LRU、防抖节流。
+- [ ] 审核 `apps/javascript/09-Canvas/`：Canvas 2D 绘制、坐标、像素、动画与性能。
+
+### 第三批：React 18 / React 19
 
 - [ ] React 18 函数组件：createRoot、JSX、props、state、Hooks、effects、ref、memo、key、Context、表单、Suspense。
 - [ ] React 18 class 组件：constructor/super、state/props、setState、生命周期、Context、错误边界。
 - [ ] React 19：Actions、`useActionState`、`useOptimistic`、`use()`、ref as prop、Transitions、RSC 边界。
-- [ ] 所有 React 内容优先对齐 `react.dev` 当前文档；过时 API 必须标注维护场景和替代方式。
+- [ ] React 18 与 React 19 不能混写成同一个“当前推荐写法”；需要在正文写清版本边界、适用场景和迁移注意点。
+- [ ] 所有 React 内容优先对齐 `react.dev` 当前文档；过时 API 或 class 维护场景必须补充 legacy 文档和现代替代方式。
 
-### 第三批：Vue 2 / Vue 3
+### 第四批：Vue 2 / Vue 3
 
 - [ ] Vue 2 基础语法、组件、路由、Vuex、生命周期。
 - [ ] Vue 2 响应式原理重点核对：`Object.defineProperty`、数组限制、`Vue.set`、data 代理、Watcher / Dep。
 - [ ] Vue 3 基础语法、组合式 API、生命周期、组件通信、内置组件。
 - [ ] Vue 3 响应式重点核对：`ref`、`reactive`、`toRef`、`toRefs`、`watch`、`computed`、`effectScope`、`nextTick`。
+- [ ] Vue 2 与 Vue 3 的响应式、生命周期、组件通信不要互相套用；每页都要明确当前 demo 的框架版本。
 
-### 第四批：TypeScript + CSS
+### 第五批：TypeScript + CSS
 
 - [ ] TypeScript 基础：类型推断、interface vs type、泛型、函数重载、元组、class、enum。
 - [ ] TypeScript 进阶：类型收窄、Utility Types、条件类型、`infer`、映射类型、模板字面量、`never` 穷尽检查。
+- [ ] TypeScript 工程与框架、`mini-project`：重点核对 tsconfig、模块解析、声明文件、框架类型推导、构建边界。
 - [ ] CSS 基础、布局、动画、视觉效果、响应式、性能、现代特性。
 - [ ] CSS 内容优先核对 MDN CSS、CSSWG 规范和浏览器兼容性说明。
 
@@ -99,12 +118,23 @@
 
 - [ ] 阅读当前 HTML：头注释、复习区、运行示例、导航和相关链接。
 - [ ] 判断 demo 的真实主题，确认示例是否真的在演示这个主题。
-- [ ] 查阅 2-5 个权威来源，记录到「参考资料」小节。
+- [ ] 查阅 1-5 个权威来源：窄 API 至少 1 个官方/规范来源，综合主题 2-5 个来源；记录资料支撑的关键断言。
 - [ ] 改写头注释「要点」和「面试」。
 - [ ] 改写「知识点要点」和「面试考点」。
-- [ ] 如示例不匹配，改示例代码；如涉及用户输入、异步、网络、存储、安全等场景，补充风险和边界。
+- [ ] 补齐或改写「参考资料」小节；每个链接都要能支撑正文中的具体知识点，不放泛泛首页。
+- [ ] 如示例不匹配，改示例代码；如涉及用户输入、异步、网络、存储、安全等场景，补充风险、失败路径和边界。
 - [ ] 运行该 demo 所在模块的局部检查。
-- [ ] 更新生成索引：优先运行不会造成无关 HTML churn 的脚本；确需运行 `npm run build:index` 时，检查 diff 并收回无关导航缩进改动。
+- [ ] 更新生成索引时优先使用下列精确脚本，避免无关 HTML churn：
+
+```bash
+node scripts/build-index.mjs
+node scripts/gen-vitepress-sidebar.mjs
+node scripts/sync-docs-index.mjs
+node scripts/gen-demo-search-index.mjs
+npm run check:index
+```
+
+- [ ] 只有在确认需要重新注入 demo 导航时才运行 `npm run build:index`；运行后必须检查 diff，收回与当前批次无关的 HTML 缩进或导航变动。
 
 ## 校验命令
 
@@ -131,12 +161,23 @@ npm run validate:smoke
 
 对于有用户输入、DOM 渲染或交互的 demo，至少抽查一次真实页面行为。比如 Todo 样板需要确认输入 `<img src=x onerror=alert(1)>` 时页面显示纯文本，而不是创建 `<img>` 节点。
 
+不同类型 demo 的最低抽查口径：
+
+- 表单类：空输入、非法输入、成功提交、错误提示是否清楚。
+- 路由类：初次打开、刷新、前进后退、未知路由 fallback。
+- 拖拽/手势类：鼠标拖动、边界位置、拖动结束状态。
+- 异步类：成功、失败、重复点击、竞态或取消场景。
+- 框架类：页面能渲染，控制台没有红色错误；状态更新、key、生命周期或 effect 行为与讲解一致。
+- 安全相关：用户输入必须验证是否被当纯文本处理，避免把演示代码变成错误示范。
+
 ## 验收标准
 
-- [ ] `node scripts/report-demo-notes.mjs` 对已审核批次不再报告模板化问句或缺少参考资料。
-- [ ] 已审核 demo 的头注释、复习区、示例代码、参考资料四者一致。
+- [ ] 当前批次的 `node scripts/report-demo-notes.mjs` 不再报告模板化问句或缺少参考资料；全库最终目标是当前 manifest 范围全部达标。
+- [ ] 已审核 demo 的头注释、复习区、示例代码、参考资料、运行验证五者一致。
+- [ ] 已审核 demo 不能留下未人工核对的脚本生成正文；如果使用脚本辅助迁移，必须逐页检查并改写。
 - [ ] `npm run validate:demos` 通过。
 - [ ] `npm run check:index` 通过。
 - [ ] `npm test` 通过。
 - [ ] `npm run validate` 通过。
 - [ ] 每个模块至少抽查 2-3 个页面，确认内容可以直接用于复习和面试回答。
+- [ ] `npm run validate` 如果因为 `npx` 或依赖下载触发网络问题，需要说明原因并在允许联网后重跑；不能把网络失败解释为代码通过。
