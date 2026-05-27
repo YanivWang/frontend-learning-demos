@@ -1,0 +1,58 @@
+<!--
+  分类: typescript / 03-工程与框架
+  主题: Vue3 与 React 中的组件 Props 类型
+  要点:
+    - Vue3 常用 defineProps<T>() / defineEmits<T>() 描述组件输入输出
+    - React 组件常直接给函数参数标 Props；React.FC<Props> 可用但不是必须
+    - 组件 Props 类型要表达业务约束，不只是把所有字段写成 string
+    - 面试常问 TS 如何提升组件边界、事件类型和表单数据可靠性
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TypeScript · Vue3 与 React 组件类型</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 920px; line-height: 1.6; }
+    pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
+    #out { background: #f6f8fa; color: #222; }
+  </style>
+</head>
+<body>
+  <h1>Vue3 / React 组件类型</h1>
+  <pre>// Vue3 &lt;script setup lang="ts"&gt;
+type UserCardProps = {
+  id: number;
+  name: string;
+  role?: "admin" | "guest";
+};
+const props = defineProps&lt;UserCardProps&gt;();
+
+// React
+type ButtonProps = {
+  variant: "primary" | "danger";
+  onClick: (event: React.MouseEvent&lt;HTMLButtonElement&gt;) =&gt; void;
+};
+const Button: React.FC&lt;ButtonProps&gt; = (props) =&gt; &lt;button /&gt;;</pre>
+
+  <pre id="out"></pre>
+
+  <script>
+    function renderUserCard(props) {
+      const role = props.role ?? "guest";
+      return `${props.name} (${role})`;
+    }
+
+    function createButton(props) {
+      return `[${props.variant}] button`;
+    }
+
+    document.getElementById("out").textContent = [
+      `Vue defineProps<T>() 的 Props 示例: ${renderUserCard({ id: 1, name: "Evan", role: "admin" })}`,
+      `React.FC<Props> 示例: ${createButton({ variant: "primary", onClick: () => {} })}`,
+      "面试重点：组件类型的价值在边界处，父组件传错 props、事件参数用错，都应尽早被 IDE/tsc 拦住。",
+    ].join("\n");
+  </script>
+</body>
+</html>

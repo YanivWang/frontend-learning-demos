@@ -27,7 +27,7 @@ const SECTIONS = [
   { dir: "learn/vue3",       title: "Vue 3",       desc: "基础语法、响应式、组件通信、内置组件、路由状态、原理性能" },
   { dir: "learn/react",      title: "React 18",    desc: "函数组件 33 + 类组件 19：JSX、Hooks、setState、生命周期、面试考点" },
   { dir: "learn/demos",      title: "综合 Demo",    desc: "拖拽 / SVG / ViewPager 等小项目" },
-  { dir: "learn/typescript", title: "TypeScript",  desc: "类型注解、interface/type、泛型、类型收窄" },
+  { dir: "learn/typescript", title: "TypeScript",  desc: "基础语法、进阶类型、工程配置、Vue3/React 组件类型" },
 ];
 
 // 这些子目录不参与扫描（视为运行时 / 工具库 / VCS / 依赖目录）

@@ -1,0 +1,53 @@
+<!--
+  分类: typescript / 02-进阶
+  主题: Utility Types：Partial、Pick、Omit、Record、Readonly、Required
+  要点:
+    - Utility Types 是 TS 内置类型工具，面试常要求说明用途并手写简化版
+    - Partial 把属性变可选，Required 把属性变必填，Readonly 把属性变只读
+    - Pick / Omit 用于从对象类型中选择或排除字段
+    - Record 常用于字典表、枚举映射和权限配置
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TypeScript · Utility Types</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 860px; line-height: 1.6; }
+    pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
+    #out { background: #f6f8fa; color: #222; }
+  </style>
+</head>
+<body>
+  <h1>Utility Types</h1>
+  <pre>interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: "admin" | "guest";
+}
+
+type UserPatch = Partial&lt;Pick&lt;User, "name" | "email"&gt;&gt;;
+type PublicUser = Omit&lt;User, "email"&gt;;
+type RoleLabels = Record&lt;User["role"], string&gt;;
+
+const roleLabels: RoleLabels = { admin: "管理员", guest: "访客" };</pre>
+
+  <pre id="out"></pre>
+
+  <script>
+    const user = { id: 1, name: "Ada", email: "ada@example.com", role: "admin" };
+    const patch = { name: "Ada Lovelace" };
+    const roleLabels = { admin: "管理员", guest: "访客" };
+    const publicUser = { id: user.id, name: patch.name ?? user.name, role: user.role };
+
+    document.getElementById("out").textContent = [
+      `Partial<Pick<User, ...>> 更新入参: ${JSON.stringify(patch)}`,
+      `Omit<User, "email"> 对外展示: ${JSON.stringify(publicUser)}`,
+      `Record<User["role"], string> 角色文案: ${roleLabels[user.role]}`,
+      "面试重点：能说用途，也要知道这些工具底层多基于 keyof、映射类型和条件类型。",
+    ].join("\n");
+  </script>
+</body>
+</html>

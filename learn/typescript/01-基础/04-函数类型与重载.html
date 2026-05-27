@@ -1,0 +1,66 @@
+<!--
+  分类: typescript / 01-基础
+  主题: 函数类型、可选参数、剩余参数与函数重载
+  要点:
+    - 函数类型同时约束参数和返回值，是 TS 面试最常追问的基础
+    - 可选参数必须处理 undefined；默认参数适合给运行时兜底
+    - 剩余参数用数组类型表达：...nums: number[]
+    - 函数重载用于“同一个函数名，多组调用签名”，实现签名要兼容所有重载
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TypeScript · 函数类型与重载</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 820px; line-height: 1.6; color: #222; }
+    pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
+    #out { background: #f6f8fa; color: #222; }
+  </style>
+</head>
+<body>
+  <h1>函数类型与函数重载</h1>
+  <pre>type Formatter = (value: number, unit?: string) =&gt; string;
+
+const formatPrice: Formatter = (value, unit = "CNY") =&gt; `${unit} ${value.toFixed(2)}`;
+
+function sum(...nums: number[]): number {
+  return nums.reduce((total, n) =&gt; total + n, 0);
+}
+
+function toArray(value: string): string[];
+function toArray(value: number): number[];
+function toArray(value: string | number): string[] | number[] {
+  return typeof value === "string" ? value.split("") : [value];
+}</pre>
+
+  <pre id="out"></pre>
+
+  <script>
+    /** @param {number} value @param {string=} unit */
+    function formatPrice(value, unit = "CNY") {
+      return `${unit} ${value.toFixed(2)}`;
+    }
+
+    /** @param {...number} nums */
+    function sum(...nums) {
+      return nums.reduce((total, n) => total + n, 0);
+    }
+
+    /** @param {string|number} value */
+    function toArray(value) {
+      return typeof value === "string" ? value.split("") : [value];
+    }
+
+    const lines = [
+      `可选参数 + 默认参数：${formatPrice(12)}`,
+      `剩余参数：sum(1, 2, 3) = ${sum(1, 2, 3)}`,
+      `函数重载 string 分支：${JSON.stringify(toArray("ts"))}`,
+      `函数重载 number 分支：${JSON.stringify(toArray(9))}`,
+      "面试重点：重载签名给调用者看，实现签名要覆盖所有分支。",
+    ];
+    document.getElementById("out").textContent = lines.join("\n");
+  </script>
+</body>
+</html>

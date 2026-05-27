@@ -10,7 +10,7 @@
 node scripts/build-index.mjs
 ```
 
-**扫描范围**：`learn/javascript/`、`learn/css/`、`learn/vue2/`、`learn/vue3/`、`learn/react/`、`learn/demos/` 下的 `.html`；跳过 `libs/`、`lib/`、根 `index.html`。
+**扫描范围**：`learn/javascript/`、`learn/css/`、`learn/vue2/`、`learn/vue3/`、`learn/react/`、`learn/demos/`、`learn/typescript/` 下的 `.html`；跳过 `libs/`、`lib/`、根 `index.html`。
 
 **什么时候运行**：
 
@@ -54,6 +54,7 @@ node scripts/gen-readme-tables.mjs react
 node scripts/build-index.mjs
 node scripts/sync-readmes.mjs
 node scripts/validate-demos.mjs
+node scripts/validate-typescript-coverage.mjs
 ```
 
 ## `validate-demos.mjs`
@@ -65,3 +66,11 @@ node scripts/validate-demos.mjs
 ```
 
 CI（`.github/workflows/ci.yml`）在 push / PR 时自动执行。
+
+## `validate-typescript-coverage.mjs`
+
+校验 `learn/typescript/` 是否覆盖 TypeScript 基础语法、进阶类型、工程配置与框架组件类型中的高频主题。
+
+```bash
+node scripts/validate-typescript-coverage.mjs
+```

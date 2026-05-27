@@ -1,0 +1,55 @@
+<!--
+  分类: typescript / 03-工程与框架
+  主题: .d.ts、declare module 与第三方库类型声明
+  要点:
+    - .d.ts 只描述类型，不放运行时实现
+    - declare module 可给没有类型的第三方包补声明
+    - declare global 可扩展 Window、ImportMetaEnv 等全局类型
+    - 面试要能区分类型声明、模块声明和真实 JS 实现
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TypeScript · 类型声明与模块</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 900px; line-height: 1.6; }
+    pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
+    #out { background: #f6f8fa; color: #222; }
+  </style>
+</head>
+<body>
+  <h1>类型声明与模块声明</h1>
+  <pre>// src/types/vendor.d.ts
+declare module "legacy-chart" {
+  export interface ChartOptions {
+    el: string;
+    data: number[];
+  }
+  export function renderChart(options: ChartOptions): void;
+}
+
+// src/types/env.d.ts
+declare global {
+  interface Window {
+    appVersion: string;
+  }
+}</pre>
+
+  <pre id="out"></pre>
+
+  <script>
+    window.appVersion = "1.0.0";
+    function renderChart(options) {
+      return `render ${options.data.length} points into ${options.el}`;
+    }
+
+    document.getElementById("out").textContent = [
+      `.d.ts 描述类型，本页 JS 提供真实实现: ${renderChart({ el: "#chart", data: [1, 2, 3] })}`,
+      `declare global 扩展 Window: appVersion = ${window.appVersion}`,
+      "面试重点：声明文件不会生成运行时代码；如果包本身不存在，declare module 也不会凭空创建实现。",
+    ].join("\n");
+  </script>
+</body>
+</html>
