@@ -2,16 +2,15 @@
   分类: vue3 / 07-路由状态工程化
   主题: Vue Router 4 + Pinia 可运行最小示例
   要点:
-    - 使用 hash 模式，file:// 与静态服务均可打开
-    - createRouter + createPinia 挂载到同一 app
-    - 路由守卫读取 Pinia 登录态，未登录跳转 /login
-    - 可运行示例替代纯代码片段，见同目录 01/02 面试点页
+    - 本页用 hash history 保证 file:// 与静态服务下都能演示路由跳转
+    - createPinia 和 createRouter 都作为插件安装到同一个 Vue app
+    - beforeEach 守卫读取 Pinia 登录态，未登录访问受保护页面时返回 /login
+    - 示例补充空用户名校验、未知路由 fallback 和退出后的重定向边界
   面试:
-    - Vue Router 4 + Pinia 可运行最小示例的核心概念是什么
-    - Vue Router 4 + Pinia 可运行最小示例在实际项目里怎么用
-    - Vue Router 4 + Pinia 可运行最小示例有哪些常见坑或易错点
-    - Vue Router 4 + Pinia 可运行最小示例和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Vue Router 4 + Pinia 可运行最小示例
+    - Router 守卫里读取 Pinia store 要注意什么安装顺序
+    - 为什么静态 demo 选择 createWebHashHistory
+    - 登录跳转如何避免无限重定向和空输入
+    - 前端登录态演示和真实安全鉴权有什么区别
 -->
 
 <!doctype html>
@@ -42,17 +41,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>使用 hash 模式，file:// 与静态服务均可打开。</li>
-          <li>createRouter + createPinia 挂载到同一 app。</li>
-          <li>路由守卫读取 Pinia 登录态，未登录跳转 /login。</li>
-          <li>可运行示例替代纯代码片段，见同目录 01/02 面试点页。</li>
+          <li>本页是真正可运行的 Router + Pinia 最小示例：<code>createPinia()</code> 和 <code>createRouter()</code> 都通过 <code>app.use()</code> 安装，组件里再通过 store 和 router 完成登录、跳转、退出。</li>
+          <li>示例使用 <code>createWebHashHistory()</code>，因为 hash 路径不会交给服务器解析，适合本仓库可直接用 <code>file://</code> 打开的 HTML；真实线上 history 模式需要服务端 fallback。</li>
+          <li><code>beforeEach</code> 守卫读取 <code>meta.requiresAuth</code> 与 Pinia 登录态，未登录访问 <code>/profile</code> 时返回 <code>"/login"</code>；返回值写法比混用 <code>next</code> 更不容易重复放行。</li>
+          <li>示例补了空用户名提示、退出后跳转登录页、未知路由 fallback，演示路由类 demo 的失败路径；用户名通过 Vue 文本插值显示，不会被当作 HTML 执行。</li>
+          <li>真实项目里前端登录态只负责体验层拦截，不能替代服务端权限校验；token 持久化、刷新、过期、XSS 风险和接口 401 处理都需要单独设计。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>使用 hash 模式？</strong> 使用 hash 模式，file:// 与静态服务均可打开</li>
-          <li><strong>createRouter + createPinia 挂载到同一 app？</strong> createRouter + createPinia 挂载到同一 app</li>
-          <li><strong>路由守卫读取 Pinia 登录态？</strong> 路由守卫读取 Pinia 登录态，未登录跳转 /login</li>
-          <li><strong>可运行示例替代纯代码片段？</strong> 可运行示例替代纯代码片段，见同目录 01/02 面试点页</li>
+          <li><strong>Router 守卫里读取 Pinia store 要注意什么？</strong> 结论是要确保 Pinia 已创建并在应用生命周期内作为插件安装，守卫执行时才能拿到正确的 active pinia。原因是 <code>useStore()</code> 依赖当前 Pinia 实例；边界是 SSR 或多个 app 场景应显式传入 pinia，避免状态串用。</li>
+          <li><strong>为什么这个 demo 选择 hash history？</strong> 结论是为了让文件协议和静态服务都能打开并刷新。原因是 hash 后面的路径不会发给服务器，避免刷新子路由时 404；项目上线如果能配置服务器回退，通常可以改用 history 模式获得更自然 URL。</li>
+          <li><strong>登录跳转如何避免无限重定向？</strong> 结论是守卫只拦截带 <code>requiresAuth</code> 的目标页，并把登录页排除在受保护集合外。原因是如果 <code>/login</code> 本身也触发同一重定向条件，会形成循环；项目里还要保存来源页、处理空输入和接口登录失败。</li>
+          <li><strong>前端登录态和真实鉴权有什么区别？</strong> 结论是前端状态只能改善导航体验，安全鉴权必须在后端接口完成。原因是用户可以修改本地状态或跳过前端路由；真实项目需要服务端校验 token、权限、过期时间，并在 401/403 时统一清理状态和重定向。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://router.vuejs.org/guide/essentials/history-mode.html" target="_blank" rel="noopener">Vue Router 官方指南：Different History modes</a></li>
+          <li><a href="https://router.vuejs.org/guide/advanced/navigation-guards.html" target="_blank" rel="noopener">Vue Router 官方指南：Navigation Guards</a></li>
+          <li><a href="https://pinia.vuejs.org/core-concepts/" target="_blank" rel="noopener">Pinia 官方文档：Core Concepts</a></li>
+          <li><a href="https://vuejs.org/guide/essentials/template-syntax.html#text-interpolation" target="_blank" rel="noopener">Vue 官方指南：Text Interpolation</a></li>
         </ul>
       </div>
     </section>
@@ -64,6 +71,7 @@
         <router-link to="/">首页</router-link>
         <router-link to="/profile">个人中心（需登录）</router-link>
         <router-link to="/login">登录</router-link>
+        <router-link to="/missing">不存在路径</router-link>
       </nav>
       <div class="box">
         <router-view></router-view>
@@ -94,17 +102,26 @@
         setup() {
           const userStore = useUserStore();
           const name = ref("demo");
+          const error = ref("");
           return {
             name,
+            error,
             submit() {
-              userStore.login(name.value);
+              const value = name.value.trim();
+              if (!value) {
+                error.value = "请输入用户名后再登录";
+                return;
+              }
+              error.value = "";
+              userStore.login(value);
               router.push("/profile");
             },
           };
         },
         template: `<h2>登录</h2>
         <input v-model="name" placeholder="用户名" />
-        <button type="button" @click="submit">登录并跳转</button>`,
+        <button type="button" @click="submit">登录并跳转</button>
+        <p v-if="error" style="color:#b42318">{{ error }}</p>`,
         };
         const Profile = {
           setup() {
@@ -115,6 +132,7 @@
           <p>欢迎，{{ userStore.token }}</p>
           <button type="button" @click="logout">退出</button>`,
           };
+          const NotFound = { template: "<h2>404</h2><p>没有匹配的路由，已进入 fallback 页面。</p>" };
 
           const router = createRouter({
             history: createWebHashHistory(),
@@ -122,6 +140,7 @@
               { path: "/", component: Home },
               { path: "/login", component: Login },
               { path: "/profile", component: Profile, meta: { requiresAuth: true } },
+              { path: "/:pathMatch(.*)*", component: NotFound },
             ],
           });
 

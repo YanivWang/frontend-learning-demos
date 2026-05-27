@@ -2,15 +2,15 @@
   分类: vue3 / 08-原理与性能面试
   主题: Vue2 与 Vue3 差异
   要点:
-    - 响应式从 defineProperty 变为 Proxy
-    - API 风格从 Options API 扩展到 Composition API
-    - createApp、Fragment、Teleport、Suspense、多个 v-model 等能力变化
+    - Vue3 的响应式底层改为 Proxy，补齐 Vue2 新增属性、数组索引和集合类型追踪限制
+    - Vue3 保留 Options API，同时用 Composition API 组织可复用逻辑
+    - createApp 让应用级配置隔离，Fragment、Teleport、Suspense 和多 v-model 改变组件能力边界
+    - Vue2 已进入历史/维护语境，新项目通常优先选 Vue3，迁移项目要逐项核对破坏性变更
   面试:
-    - Vue2 与 Vue3 差异的核心概念是什么
-    - Vue2 与 Vue3 差异在实际项目里怎么用
-    - Vue2 与 Vue3 差异有哪些常见坑或易错点
-    - Vue2 与 Vue3 差异和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Vue2 与 Vue3 差异
+    - 面试中如何按响应式、API 组织、应用创建和内置能力概括 Vue2 到 Vue3？
+    - Vue3 的 Composition API 是不是替代 Options API？
+    - createApp 相比 new Vue 改进了什么？
+    - Vue2 项目迁移 Vue3 时最容易踩哪些兼容性问题？
 -->
 
 <!doctype html>
@@ -38,15 +38,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>响应式从 defineProperty 变为 <code>Proxy</code>。</li>
-          <li>API 风格从 Options API 扩展到 Composition API。</li>
-          <li><code>createApp</code>、Fragment、Teleport、<code>Suspense</code>、多个 <code>v-model</code> 等能力变化。</li>
+          <li>响应式是最常被问到的底层差异：Vue2 主要依赖 <code>Object.defineProperty</code>，对新增属性、删除属性、数组索引等场景有历史限制；Vue3 基于 <code>Proxy</code> 与 <code>Reflect</code>，追踪对象操作更完整。</li>
+          <li>API 风格不是“Vue3 只能写 Composition API”。Vue3 仍支持 Options API，但 Composition API 更适合按业务能力组织逻辑、抽取 composable，并改善大型组件中 data/methods/watch 分散的问题。</li>
+          <li><code>createApp()</code> 改变了应用实例边界。插件、全局组件、mixin、config 等应用级配置挂在 app 上，不再像 Vue2 的全局 <code>Vue.use()</code> 那样容易污染多个根实例。</li>
+          <li>模板与组件能力也有明显变化：Vue3 支持 Fragment 多根节点、Teleport 脱离当前 DOM 层级渲染、<code>Suspense</code> 协调异步依赖，组件 <code>v-model</code> 默认改为 <code>modelValue</code> / <code>update:modelValue</code> 并支持多个绑定。</li>
+          <li>现代选型上，新项目通常优先 Vue3；维护 Vue2 老项目时要结合生态依赖、IE 兼容、构建链和迁移成本判断，不能只把 API 名称机械替换。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>响应式从 defineProperty 变为 Proxy？</strong> 响应式从 defineProperty 变为 <code>Proxy</code></li>
-          <li><strong>API 风格从 Options API 扩展到 Composition API？</strong> API 风格从 Options API 扩展到 Composition API</li>
-          <li><strong>createApp、Fragment、Teleport、Suspense、多个？</strong> <code>createApp</code>、Fragment、Teleport、<code>Suspense</code>、多个 <code>v-model</code> 等能力变化</li>
+          <li><strong>面试中如何概括 Vue2 到 Vue3 的差异？</strong> 结论是按响应式、API 组织、应用创建、模板能力和生态迁移五条线讲最清楚。原因是这些变化分别影响底层更新、代码组织、全局配置隔离、组件表达能力和实际升级成本。项目场景里还要补充当前是新项目选型还是老项目渐进迁移。</li>
+          <li><strong>Vue3 的 Composition API 是不是替代 Options API？</strong> 结论是不是，Vue3 保留 Options API，Composition API 是新增的逻辑组织方式。原因是 Options API 对简单页面仍直观，而 Composition API 更适合复用状态逻辑、类型推导和大型组件拆分。团队迁移时可以在 Vue3 中混用，但要避免一个组件里无规划地混杂两套组织方式。</li>
+          <li><strong>createApp 相比 new Vue 改进了什么？</strong> 结论是它把应用级能力挂到独立 app 实例上，减少全局污染。原因是插件、全局组件和配置不再修改同一个全局 Vue 构造器。多应用挂载、微前端或测试隔离场景下，这个边界比 Vue2 更清晰。</li>
+          <li><strong>Vue2 项目迁移 Vue3 时最容易踩哪些兼容性问题？</strong> 结论是不要只看响应式，还要核对 <code>v-model</code>、事件/attrs 透传、过滤器移除、生命周期命名、插件版本和构建工具链。原因是 Vue3 有明确的破坏性变更，很多问题出在组件契约和生态包上。实际项目通常先跑迁移构建或兼容版本，再分模块替换高风险 API。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/extras/composition-api-faq.html">Vue 官方文档：Composition API FAQ</a></li>
+          <li><a href="https://vuejs.org/guide/essentials/application.html">Vue 官方文档：Creating a Vue Application</a></li>
+          <li><a href="https://v3-migration.vuejs.org/">Vue 官方文档：Vue 3 Migration Guide</a></li>
+          <li><a href="https://vuejs.org/guide/built-ins/teleport.html">Vue 官方文档：Teleport</a></li>
+          <li><a href="https://v2.vuejs.org/lts/">Vue 2 官方文档：Vue 2 LTS / EOL 说明</a></li>
         </ul>
       </div>
     </section>

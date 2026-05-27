@@ -2,15 +2,15 @@
   分类: vue3 / 07-路由状态工程化
   主题: Pinia 核心面试点
   要点:
-    - Pinia 是 Vue3 推荐状态管理方案之一
-    - 常问 state/getters/actions、组合式 store、持久化、和 Vuex 的区别
-    - 可运行示例见 <code>06-Router与Pinia可运行示例.html</code>；本页保留面试代码片段
+    - Pinia 是 Vue 官方推荐的状态管理库，支持 Options Store 与 Setup Store
+    - state 必须可序列化且由函数返回，getters 派生状态，actions 承载同步或异步业务动作
+    - storeToRefs 可保留解构后的响应式，直接解构 state 会丢失响应式连接
+    - Pinia 不再强制 mutations，插件与持久化要注意敏感数据和 SSR 隔离
   面试:
-    - Pinia 核心面试点的核心概念是什么
-    - Pinia 核心面试点在实际项目里怎么用
-    - Pinia 核心面试点有哪些常见坑或易错点
-    - Pinia 核心面试点和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Pinia 核心面试点
+    - Pinia 和 Vuex 的核心差异是什么
+    - getters、actions、computed、composable 如何分工
+    - 为什么解构 Pinia store 要用 storeToRefs
+    - 登录态持久化应该放什么不应该放什么
 -->
 
 <!doctype html>
@@ -38,15 +38,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Pinia 是 Vue3 推荐状态管理方案之一。</li>
-          <li>常问 state/getters/actions、组合式 store、持久化、和 Vuex 的区别。</li>
-          <li>可运行示例见 &lt;code&gt;06-Router与Pinia可运行示例.html&lt;/code&gt;；本页保留面试代码片段。</li>
+          <li>Pinia 是 Vue 官方推荐的状态管理库，<code>defineStore</code> 可以写成 Options Store 或 Setup Store；本页代码片段演示 Options Store 的 <code>state</code>、<code>getters</code> 和 <code>actions</code>。</li>
+          <li><code>state</code> 应由函数返回，避免跨实例共享；<code>getters</code> 类似 store 级 computed，适合派生只读数据；<code>actions</code> 可以同步也可以异步，适合封装登录、请求和事务性状态变更。</li>
+          <li>Pinia 没有 Vuex 中必须经过 mutations 的限制，组件可以直接写 <code>store.count++</code>，也可以用 <code>$patch</code> 批量更新；面试时要说明这是 API 设计差异，不是“没有规范”。</li>
+          <li>从 store 解构 state 或 getters 时应使用 <code>storeToRefs(store)</code>，否则普通解构会拿到当前值而不是响应式引用；actions 是方法，可以直接解构。</li>
+          <li>持久化通常通过插件或订阅写入 storage，但 token、用户画像、权限缓存要区分敏感性和时效性；SSR 场景还要为每个请求创建独立 Pinia，避免状态串用户。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Pinia 是 Vue3 推荐状态管理方案之一？</strong> Pinia 是 Vue3 推荐状态管理方案之一；可运行示例见 &lt;code&gt;06-Router与Pinia可运行示例.html&lt;/code&gt;；本页保留面试代码片段</li>
-          <li><strong>常问 state/getters/actions、组合式 store、持久化、和？</strong> 常问 state/getters/actions、组合式 store、持久化、和 Vuex 的区别</li>
-          <li><strong>可运行示例见 &lt;code&gt;06-Router与Pinia可运行示例.html&lt;/？</strong> 可运行示例见 &lt;code&gt;06-Router与Pinia可运行示例.html&lt;/code&gt;；本页保留面试代码片段</li>
+          <li><strong>Pinia 和 Vuex 的核心差异是什么？</strong> 结论是 Pinia 更贴近组合式 API，去掉 mutations，类型推导和模块组织更自然。原因是每个 store 本身就是独立模块，actions 可直接处理异步和状态变更；边界是老 Vue 2/Vuex 项目维护时不必强迁，新 Vue 3 项目通常优先 Pinia。</li>
+          <li><strong>getters、actions、computed、composable 如何分工？</strong> 结论是跨组件共享的派生状态放 getters，共享业务动作放 actions，组件局部派生用 computed，非全局状态复用用 composable。原因是 store 是全局状态容器，过度把局部 UI 状态塞进 store 会增加耦合；项目里可按“是否跨页面共享、是否需要持久化或调试”判断。</li>
+          <li><strong>为什么解构 Pinia store 要用 storeToRefs？</strong> 结论是 state/getters 解构要用 <code>storeToRefs</code> 保持响应式。原因是普通对象解构会复制当前属性值，丢掉 proxy/getter 访问链；边界是 actions 是函数方法，不需要转成 ref，可以直接解构调用。</li>
+          <li><strong>登录态持久化应该注意什么？</strong> 结论是可以持久化必要的登录标识或刷新后恢复所需状态，但不要把高敏感或长期有效的凭据随意写入 localStorage。原因是本地存储可被同源脚本读取，XSS 风险会放大；项目里还要配合后端过期、刷新、权限接口和退出清理。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://pinia.vuejs.org/introduction.html" target="_blank" rel="noopener">Pinia 官方文档：Introduction</a></li>
+          <li><a href="https://pinia.vuejs.org/core-concepts/" target="_blank" rel="noopener">Pinia 官方文档：Core Concepts</a></li>
+          <li><a href="https://pinia.vuejs.org/core-concepts/actions.html" target="_blank" rel="noopener">Pinia 官方文档：Actions</a></li>
+          <li><a href="https://pinia.vuejs.org/core-concepts/#destructuring-from-a-store" target="_blank" rel="noopener">Pinia 官方文档：Destructuring from a Store</a></li>
         </ul>
       </div>
     </section>

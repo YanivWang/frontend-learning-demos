@@ -2,15 +2,15 @@
   分类: vue3 / 08-原理与性能面试
   主题: Proxy 响应式原理
   要点:
-    - Vue3 用 Proxy 拦截对象读取和修改
-    - 读取时 track 收集依赖，修改时 trigger 触发更新
-    - 相比 Vue2 defineProperty，Proxy 对新增属性、删除属性、数组索引更自然
+    - reactive 返回 Proxy 代理，读取属性时收集依赖，写入时触发相关 effect
+    - Vue3 的响应式能自然覆盖新增属性、删除属性、数组索引和集合类型变更
+    - 解构 reactive 对象会丢失属性访问拦截，需要用 toRefs、ref 或保持对象访问
+    - Proxy 代理身份不等于原始对象，比较、缓存和第三方实例要留意 toRaw、markRaw 边界
   面试:
-    - Proxy 响应式原理的核心概念是什么
-    - Proxy 响应式原理在实际项目里怎么用
-    - Proxy 响应式原理有哪些常见坑或易错点
-    - Proxy 响应式原理和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Proxy 响应式原理
+    - Vue3 的 reactive 为什么能监听新增属性和数组索引？
+    - track 与 trigger 分别发生在响应式对象的哪个阶段？
+    - reactive 对象为什么不建议直接解构后使用？
+    - Vue3 Proxy 响应式相比 Vue2 defineProperty 改进了什么，仍有哪些边界？
 -->
 
 <!doctype html>
@@ -39,16 +39,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue3 用 <code>Proxy</code> 拦截对象读取和修改。</li>
-          <li>读取时 track 收集依赖，修改时 trigger 触发更新。</li>
-          <li>相比 Vue2 defineProperty，<code>Proxy</code> 对新增属性、删除属性、数组索引更自然。</li>
-          <li>Vue3 用 <code>Proxy</code> 拦截对象读取和修改（补充）。</li>
+          <li><code>reactive()</code> 返回的是原对象的 <code>Proxy</code> 代理。组件渲染、<code>watchEffect()</code> 或计算属性读取代理属性时会被收集为依赖，后续写入同一属性时再触发对应更新。</li>
+          <li><code>Proxy</code> 能拦截属性读取、写入、删除、<code>in</code>、枚举和数组索引等操作，因此 Vue3 不需要像 Vue2 那样依赖 <code>Vue.set</code> 才能让新增属性进入响应式。</li>
+          <li>常见坑是“脱离代理访问”：直接解构 <code>reactive</code> 对象的基础类型属性后，后续读写不再经过代理；需要保留 <code>state.count</code> 访问，或用 <code>toRef()</code> / <code>toRefs()</code> 暴露属性。</li>
+          <li>代理对象与原始对象不是同一个引用，做严格相等比较、Map key、第三方实例缓存时要明确存的是代理还是原对象；不希望被深度代理的大对象可用 <code>markRaw()</code> 或 <code>shallowRef()</code> 管边界。</li>
+          <li>示例中的新增 <code>extra</code>、修改数组索引和 <code>push</code> 都会让 <code>watchEffect()</code> 重新执行，说明这些操作都能被 Vue3 的响应式系统追踪。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue3 用 Proxy 拦截对象读取和修改？</strong> Vue3 用 <code>Proxy</code> 拦截对象读取和修改；相比 Vue2 defineProperty，<code>Proxy</code> 对新增属性、删除属性、数组索引更自然</li>
-          <li><strong>读取时 track 收集依赖？</strong> 读取时 track 收集依赖，修改时 trigger 触发更新</li>
-          <li><strong>相比 Vue2 defineProperty？</strong> 相比 Vue2 defineProperty，<code>Proxy</code> 对新增属性、删除属性、数组索引更自然</li>
+          <li><strong>Vue3 的 reactive 为什么能监听新增属性和数组索引？</strong> 结论是因为 <code>reactive()</code> 基于 <code>Proxy</code> 代理对象级别的操作，而不是逐个属性改写 getter/setter。新增属性、删除属性和数组索引写入都会经过代理陷阱，所以能触发依赖更新。边界是只有通过代理对象操作才有效，绕过代理直接改原始对象不会通知视图。</li>
+          <li><strong>track 与 trigger 分别发生在什么时候？</strong> 结论是读取响应式属性时 track，写入或删除相关属性时 trigger。Vue 用这种“读时收集、写时通知”的模型把组件渲染和状态字段关联起来。项目里排查“为什么没更新”时，先看读取是否发生在响应式 effect 中，再看修改是否经过代理。</li>
+          <li><strong>reactive 对象为什么不建议直接解构后使用？</strong> 结论是解构出的基础类型值不再经过代理访问，后续变化无法继续被追踪。原因是响应式依赖建立在属性访问上，而不是变量名本身。组合式函数返回多个字段时，通常用 <code>toRefs()</code>、单独的 <code>ref()</code>，或让调用方保持对象访问。</li>
+          <li><strong>Vue3 Proxy 响应式相比 Vue2 defineProperty 改进了什么，仍有哪些边界？</strong> 结论是它改进了新增/删除属性、数组索引和集合类型的追踪，降低了很多 Vue2 时代的显式补丁成本。原因是 Proxy 能拦截对象操作本身。边界是代理身份与原对象不同，且不是所有外部实例都适合深度代理，图表实例、复杂类实例常用 <code>markRaw()</code> 隔离。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/extras/reactivity-in-depth.html">Vue 官方文档：Reactivity in Depth</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-core.html#reactive">Vue 官方 API：reactive()</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-advanced.html#toraw">Vue 官方 API：toRaw() / markRaw()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">MDN：Proxy</a></li>
         </ul>
       </div>
     </section>
@@ -77,15 +86,17 @@
         setup() {
           const state = reactive({ count: 0, list: [1, 2, 3] });
           const logs = ref([]);
+          const rawLogs = [];
 
           watchEffect(() => {
-            logs.value.push(
-            `effect 重新执行：count=${state.count} extra=${state.extra || ""} list=${state.list.join(",")}`
-          );
-        });
+            rawLogs.push(
+              `effect 重新执行：count=${state.count} extra=${state.extra || ""} list=${state.list.join(",")}`
+            );
+            logs.value = rawLogs.slice(-8);
+          });
 
-        return { state, logs };
-      },
+          return { state, logs };
+        },
       }).mount("#app");
 
     </script>

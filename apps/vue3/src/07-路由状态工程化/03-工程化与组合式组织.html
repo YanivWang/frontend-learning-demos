@@ -2,15 +2,15 @@
   分类: vue3 / 07-路由状态工程化
   主题: 工程化与组合式组织
   要点:
-    - Vue3 工程常见结构：views / components / composables / stores / router
-    - 组合式函数按业务能力拆分，而不是按生命周期拆分
-    - 工程化面试关注可维护性、类型、构建、性能和规范
+    - Vue 3 工程通常按路由页面、可复用组件、组合式函数、状态与服务层分层
+    - composable 应围绕可复用能力命名为 useXxx，而不是按 mounted/watch 等生命周期拆分
+    - 全局状态、局部状态、服务请求和纯工具函数需要明确边界，避免万能 useXxx
+    - 工程化面试要结合类型、目录约束、构建配置、测试与团队规范回答
   面试:
-    - 工程化与组合式组织的核心概念是什么
-    - 工程化与组合式组织在实际项目里怎么用
-    - 工程化与组合式组织有哪些常见坑或易错点
-    - 工程化与组合式组织和相近 API 如何区分选型
-    - 面试中如何简洁讲清 工程化与组合式组织
+    - Vue 3 项目目录为什么要按职责分层
+    - composable 和 store 的边界怎么划
+    - 为什么不建议按生命周期拆分组合式函数
+    - service、utils、components、views 在项目里如何分工
 -->
 
 <!doctype html>
@@ -38,15 +38,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue3 工程常见结构：views / components / composables / stores / router。</li>
-          <li>组合式函数按业务能力拆分，而不是按生命周期拆分。</li>
-          <li>工程化面试关注可维护性、类型、构建、性能和规范。</li>
+          <li>Vue 3 工程常见分层是 <code>views</code> 放路由页面、<code>components</code> 放可复用 UI、<code>composables</code> 放组合式逻辑、<code>stores</code> 放全局状态、<code>router</code> 放路由表与守卫、<code>services</code> 放请求封装。</li>
+          <li>组合式函数应围绕业务能力或技术能力命名为 <code>useXxx</code>，例如 <code>useUserSearch</code>、<code>usePolling</code>；它解决的是逻辑复用和关注点聚合，不是把一个组件按生命周期硬切成多个文件。</li>
+          <li>store 适合跨页面共享、需要调试或持久化的状态；composable 适合复用一段响应式逻辑；纯格式化、计算、校验优先放 <code>utils</code>，避免把所有函数都包装成 Hook 风格。</li>
+          <li>工程化组织要配合 TypeScript 类型、路径别名、ESLint/Prettier、单元测试和目录约束，否则目录命名只是形式，无法阻止状态泄漏和隐式依赖。</li>
+          <li>常见坑包括循环依赖、composable 在组件外错误依赖当前实例、store 承载过多临时 UI 状态、请求层直接操作组件状态，以及路由页面和基础组件互相引用。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue3 工程常见结构？</strong> Vue3 工程常见结构：views / components / composables / stores / router</li>
-          <li><strong>组合式函数按业务能力拆分？</strong> 组合式函数按业务能力拆分，而不是按生命周期拆分</li>
-          <li><strong>工程化面试关注可维护性、类型、构建、性能和规范？</strong> 工程化面试关注可维护性、类型、构建、性能和规范</li>
+          <li><strong>Vue 3 项目目录为什么要按职责分层？</strong> 结论是分层是为了降低协作成本和依赖混乱，不是为了追求目录数量。原因是路由页面、基础组件、业务逻辑、请求层和全局状态的变化频率不同；边界是小 demo 可以扁平一些，大项目要用约定和 lint/code review 保证单向依赖。</li>
+          <li><strong>composable 和 store 的边界怎么划？</strong> 结论是 composable 复用逻辑，store 保存跨组件共享状态。原因是 composable 每次调用可以创建独立状态，也可以组合生命周期和监听；store 是全局容器，适合登录态、购物车、权限等共享数据。项目里不要把一次性表单输入都放进 store。</li>
+          <li><strong>为什么不建议按生命周期拆分组合式函数？</strong> 结论是组合式 API 推荐按关注点组织代码。原因是一个业务能力往往同时需要 state、computed、watch 和生命周期，按 mounted/watch 拆分会把同一能力打散；边界是底层工具型 composable 可以只暴露某个生命周期相关能力。</li>
+          <li><strong>service、utils、components、views 如何分工？</strong> 结论是 service 负责外部 I/O，utils 负责无副作用纯函数，components 负责 UI 复用，views 负责路由页面编排。原因是这样可测试、可替换、可定位问题；项目里若 service 直接改 Pinia 或组件状态，需要明确这是业务层设计而非通用工具。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/reusability/composables.html" target="_blank" rel="noopener">Vue 官方指南：Composables</a></li>
+          <li><a href="https://vuejs.org/guide/scaling-up/sfc.html" target="_blank" rel="noopener">Vue 官方指南：Single-File Components</a></li>
+          <li><a href="https://vuejs.org/guide/scaling-up/state-management.html" target="_blank" rel="noopener">Vue 官方指南：State Management</a></li>
+          <li><a href="https://vuejs.org/style-guide/" target="_blank" rel="noopener">Vue 官方文档：Style Guide</a></li>
         </ul>
       </div>
     </section>

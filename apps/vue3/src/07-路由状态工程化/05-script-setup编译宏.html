@@ -2,16 +2,15 @@
   分类: vue3 / 07-路由状态工程化
   主题: script setup 编译宏与工程约定
   要点:
-    - defineProps / defineEmits / defineExpose 是编译宏，无需 import，只在 SFC 编译期生效
-    - defineModel（3.4+）简化组件 v-model，等价 props + emit update:modelValue
-    - withDefaults(defineProps&lt;...&gt;(), { ... }) 为 TS  props 提供默认值
-    - 宏只能在 .vue 的 script setup 顶层使用；本 demo 用等价运行时 API 演示行为
+    - script setup 会被编译成组件 setup，顶层绑定可直接暴露给模板
+    - defineProps、defineEmits、defineExpose、withDefaults 是编译宏，无需 import 且只能在 SFC 编译期使用
+    - defineModel 在 Vue 3.4+ 可简化组件 v-model，语义等价于 prop + update 事件
+    - 本 HTML 不能真正编译 SFC 宏，因此用运行时 props/emits 演示 defineModel 等价行为
   面试:
-    - script setup 编译宏与工程约定的核心概念是什么
-    - script setup 编译宏与工程约定在实际项目里怎么用
-    - script setup 编译宏与工程约定有哪些常见坑或易错点
-    - script setup 编译宏与工程约定和相近 API 如何区分选型
-    - 面试中如何简洁讲清 script setup 编译宏与工程约定
+    - script setup 和普通 setup 有什么编译层差异
+    - defineProps/defineEmits 为什么不能在运行时随便调用
+    - defineModel 适合替代哪些 v-model 样板代码
+    - withDefaults、响应式 props 解构和版本边界怎么说明
 -->
 
 <!doctype html>
@@ -38,17 +37,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>defineProps</code> / <code>defineEmits</code> / defineExpose 是编译宏，无需 <code>import</code>，只在 SFC 编译期生效。</li>
-          <li><code>defineModel</code>（3.4+）简化组件 <code>v-model</code>，等价 props + emit update:modelValue。</li>
-          <li>withDefaults(<code>defineProps</code>&amp;lt;...&amp;gt;(), { ... }) 为 TS props 提供默认值。</li>
-          <li>宏只能在 .vue 的 <code>script setup</code> 顶层使用；本 demo 用等价运行时 API 演示行为。</li>
+          <li><code>&lt;script setup&gt;</code> 是 SFC 编译期语法糖，会被编译为组件的 <code>setup()</code>；顶层变量、函数和导入可直接在模板中使用，不需要手动 <code>return</code>。</li>
+          <li><code>defineProps</code>、<code>defineEmits</code>、<code>defineExpose</code>、<code>withDefaults</code> 都是编译宏，无需导入，且必须在 <code>&lt;script setup&gt;</code> 顶层使用；它们不是浏览器全局函数。</li>
+          <li><code>defineModel</code> 在 Vue 3.4+ 可声明组件的 <code>v-model</code> 绑定，默认对应 <code>modelValue</code> 与 <code>update:modelValue</code>，也支持命名 model 和修饰符；本 demo 的子组件用运行时 props/emits 展示等价行为。</li>
+          <li>TypeScript props 默认值可用 <code>withDefaults(defineProps&lt;Props&gt;(), defaults)</code>；Vue 3.5+ 还支持响应式 props 解构并可直接写默认值，低版本需要注意解构会丢响应式语义。</li>
+          <li>常见坑是把宏写进条件分支、函数内部或普通 <code>&lt;script&gt;</code>，以及在非 SFC 的 CDN HTML 中直接调用宏；真实工程必须交给 Vue SFC 编译器处理。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>defineProps / defineEmits / defineExpose？</strong> <code>defineProps</code> / <code>defineEmits</code> / defineExpose 是编译宏，无需 <code>import</code>，只在 SFC 编译期生效；<code>defineModel</code>（3.4+）简化组件 <code>v-model</code>，等价 props + emit update:modelValue</li>
-          <li><strong>defineModel（3.4+）简化组件 v-model？</strong> <code>defineProps</code> / <code>defineEmits</code> / defineExpose 是编译宏，无需 <code>import</code>，只在 SFC 编译期生效；<code>defineModel</code>（3.4+）简化组件 <code>v-model</code>，等价 props + emit update:modelValue</li>
-          <li><strong>withDefaults(defineProps&amp;lt？</strong> withDefaults(<code>defineProps</code>&amp;lt;...&amp;gt;(), { ... }) 为 TS props 提供默认值</li>
-          <li><strong>宏只能在 .vue 的 script setup 顶层使用？</strong> 宏只能在 .vue 的 <code>script setup</code> 顶层使用；本 demo 用等价运行时 API 演示行为</li>
+          <li><strong>script setup 和普通 setup 有什么差异？</strong> 结论是运行语义仍是组件 setup，但 <code>&lt;script setup&gt;</code> 在编译期减少样板代码并自动暴露顶层绑定给模板。原因是 SFC 编译器会改写这段代码；边界是它只存在于 <code>.vue</code> SFC 编译流程，不能在普通 HTML script 中直接运行。</li>
+          <li><strong>defineProps/defineEmits 为什么不能随便调用？</strong> 结论是它们是编译宏，不是运行时 API。原因是编译器需要静态分析 props、emits 和类型声明，所以要求位于顶层且不能依赖运行时条件；项目里如果需要动态逻辑，应在声明后用普通 JS 处理。</li>
+          <li><strong>defineModel 适合替代哪些样板代码？</strong> 结论是 Vue 3.4+ 中可用它替代手写 <code>modelValue</code> prop 与 <code>update:modelValue</code> emit。原因是组件 v-model 的协议固定，编译宏能生成等价声明；边界是低于 3.4 的项目仍要手写 props/emits，复杂校验仍需清楚声明模型名称、类型和默认值。</li>
+          <li><strong>withDefaults 与响应式 props 解构怎么说明版本边界？</strong> 结论是 Vue 3.4 及更早版本的 TS props 默认值常用 <code>withDefaults</code>，Vue 3.5+ 的响应式 props 解构可直接写默认值。原因是 3.5 编译器会把同一 <code>&lt;script setup&gt;</code> 内的解构访问改写为 <code>props.xxx</code>；边界是跨版本教程和库代码要标明最低 Vue 版本。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/api/sfc-script-setup.html" target="_blank" rel="noopener">Vue 官方 API：script setup</a></li>
+          <li><a href="https://vuejs.org/api/sfc-script-setup.html#defineprops-defineemits" target="_blank" rel="noopener">Vue 官方 API：defineProps 与 defineEmits</a></li>
+          <li><a href="https://vuejs.org/api/sfc-script-setup.html#definemodel" target="_blank" rel="noopener">Vue 官方 API：defineModel</a></li>
+          <li><a href="https://vuejs.org/guide/components/props.html#reactive-props-destructure" target="_blank" rel="noopener">Vue 官方指南：Reactive Props Destructure</a></li>
         </ul>
       </div>
     </section>

@@ -2,15 +2,15 @@
   分类: vue3 / 08-原理与性能面试
   主题: 调度器 / nextTick
   要点:
-    - Vue 会批量合并同一轮状态更新
-    - DOM 更新被放入异步刷新队列
-    - nextTick 等待这轮刷新完成
+    - Vue 会把同一轮同步状态变更批量合并，避免每次赋值都立刻更新 DOM
+    - 组件更新任务进入异步刷新队列，当前同步代码读到的 DOM 仍可能是旧值
+    - nextTick 返回 Promise 或接收回调，用于等待本轮 DOM patch 完成
+    - nextTick 只保证 Vue 当前刷新队列结束，不等同于等待图片加载、网络请求或浏览器绘制完成
   面试:
-    - 调度器 / nextTick的核心概念是什么
-    - 调度器 / nextTick在实际项目里怎么用
-    - 调度器 / nextTick有哪些常见坑或易错点
-    - 调度器 / nextTick和相近 API 如何区分选型
-    - 面试中如何简洁讲清 调度器 / nextTick
+    - Vue 为什么连续修改三次状态通常只触发一次 DOM 更新？
+    - nextTick 解决的是哪个时序问题？
+    - nextTick 和 setTimeout、requestAnimationFrame 有什么边界差异？
+    - 项目里哪些场景需要 await nextTick，哪些不应该滥用？
 -->
 
 <!doctype html>
@@ -39,15 +39,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue 会批量合并同一轮状态更新。</li>
-          <li>DOM 更新被放入异步刷新队列。</li>
-          <li>nextTick 等待这轮刷新完成。</li>
+          <li>Vue 的状态变更不会每次都同步 patch DOM，而是交给调度器排队。连续多次修改同一个响应式状态时，组件更新会被去重并合并到同一轮刷新中。</li>
+          <li>因此在同一个同步函数里，刚改完状态就读取模板对应 DOM，常会读到旧文本；等待 <code>await nextTick()</code> 后，才能读到本轮 Vue DOM 更新后的结果。</li>
+          <li><code>nextTick()</code> 可以接收回调，也可以返回 Promise，组合式 API 中更推荐 <code>await nextTick()</code>，让“改状态 -> 等 DOM -> 读尺寸/聚焦/滚动”的流程更清晰。</li>
+          <li>不要把 <code>nextTick</code> 当成通用延时器。它只等待 Vue 刷新队列完成，不保证网络请求完成、图片解码完成，也不等价于浏览器下一帧绘制；动画测量可能还需要 <code>requestAnimationFrame</code>。</li>
+          <li>示例连续执行三次 <code>count.value++</code>，同步日志中的 DOM 仍是旧值，<code>nextTick</code> 后才显示合并后的新值，用来观察调度器批处理效果。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue 会批量合并同一轮状态更新？</strong> Vue 会批量合并同一轮状态更新</li>
-          <li><strong>DOM 更新被放入异步刷新队列？</strong> DOM 更新被放入异步刷新队列</li>
-          <li><strong>nextTick 等待这轮刷新完成？</strong> nextTick 等待这轮刷新完成</li>
+          <li><strong>Vue 为什么连续修改三次状态通常只触发一次 DOM 更新？</strong> 结论是 Vue 会通过调度器批量合并同一轮同步更新，并对组件更新任务去重。原因是立即逐次 patch DOM 成本高，也会产生中间态 DOM。边界是不同异步任务之间会进入不同刷新轮次，不能简单理解为“所有更新永远合并一次”。</li>
+          <li><strong>nextTick 解决的是哪个时序问题？</strong> 结论是它用于等待 Vue 当前状态变更对应的 DOM 更新完成。原因是状态写入是同步的，但 DOM patch 被延后到刷新队列。项目里修改数据后要读取 DOM 尺寸、滚动到底部或聚焦新出现的输入框，才需要 <code>await nextTick()</code>。</li>
+          <li><strong>nextTick 和 setTimeout、requestAnimationFrame 有什么边界差异？</strong> 结论是 <code>nextTick</code> 等 Vue 的更新队列，<code>setTimeout</code> 等宏任务，<code>requestAnimationFrame</code> 更接近下一帧绘制前的回调。原因是它们服务的调度层不同。需要读 Vue 更新后的 DOM 用 <code>nextTick</code>，需要配合视觉帧或动画测量时再考虑 <code>requestAnimationFrame</code>。</li>
+          <li><strong>项目里哪些场景不应该滥用 nextTick？</strong> 结论是普通业务状态流转不需要每次更新后都写 <code>nextTick</code>。原因是 Vue 模板会自动响应状态变化，过度等待会让逻辑变慢且掩盖状态设计问题。只有后续逻辑真的依赖“已 patch 的 DOM”时，才把它作为明确的时序边界。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/api/general.html#nexttick">Vue 官方 API：nextTick()</a></li>
+          <li><a href="https://vuejs.org/guide/essentials/reactivity-fundamentals.html#dom-update-timing">Vue 官方文档：DOM Update Timing</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame">MDN：requestAnimationFrame()</a></li>
         </ul>
       </div>
     </section>

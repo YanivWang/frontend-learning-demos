@@ -2,16 +2,15 @@
   分类: vue3 / 07-路由状态工程化
   主题: Vite 工程化结构与面试要点
   要点:
-    - Vite 开发期基于 ESM + esbuild 预构建，生产构建走 Rollup，冷启动快于 Webpack
-    - 典型目录：src/views、components、composables、stores、router、assets、api
-    - 环境变量 import.meta.env.VITE_* 需在 .env 中 VITE_ 前缀暴露给客户端
-    - 路由/组件懒加载：() => import('./views/Home.vue') 配合 defineAsyncComponent
+    - Vite 开发期利用原生 ESM 按需服务源码，并用 esbuild 做依赖预构建
+    - 生产构建默认基于 Rollup，路由懒加载和动态 import 会形成异步 chunk
+    - import.meta.env 只暴露 VITE_ 前缀变量，不能把密钥放进客户端环境变量
+    - Vue 工程目录要区分 views、components、composables、stores、router、services
   面试:
-    - Vite 工程化结构与面试要点的核心概念是什么
-    - Vite 工程化结构与面试要点在实际项目里怎么用
-    - Vite 工程化结构与面试要点有哪些常见坑或易错点
-    - Vite 工程化结构与面试要点和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Vite 工程化结构与面试要点
+    - Vite 为什么开发启动通常比传统全量打包快
+    - Vite 开发期和生产构建为什么不是同一套实现
+    - import.meta.env.VITE_ 前缀解决了什么边界
+    - 路由懒加载、defineAsyncComponent 和 chunk 拆分如何配合
 -->
 
 <!doctype html>
@@ -41,16 +40,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vite 开发期基于 ESM + esbuild 预构建，生产构建走 Rollup，冷启动快于 Webpack。</li>
-          <li>典型目录：src/views、components、composables、stores、router、assets、api。</li>
-          <li>环境变量 <code>import</code>.meta.env.VITE_* 需在 .env 中 VITE_ 前缀暴露给客户端。</li>
-          <li>路由/组件懒加载：() =&gt; <code>import</code>('./views/Home.vue') 配合 defineAsyncComponent。</li>
+          <li>Vite 开发服务器把源码作为原生 ESM 按需提供给浏览器，不需要冷启动时打包完整应用；第三方依赖会用 esbuild 预构建成更适合浏览器加载的模块。</li>
+          <li>生产构建默认使用 Rollup，是因为生产环境仍需要 tree-shaking、代码分割、资源哈希、压缩和兼容性处理；所以面试中不能简单说“Vite 等于不打包”。</li>
+          <li><code>import.meta.env</code> 暴露构建时环境信息，只有 <code>VITE_</code> 前缀变量会进入客户端 bundle；API 密钥、数据库密码等服务端秘密不能放在这里。</li>
+          <li>Vue 工程常见目录是 <code>views</code>、<code>components</code>、<code>composables</code>、<code>stores</code>、<code>router</code>、<code>assets</code>、<code>services</code>，目录约定应服务于依赖边界和团队协作。</li>
+          <li>路由懒加载使用 <code>() =&gt; import('@/views/Home.vue')</code>，组件级异步加载可用 <code>defineAsyncComponent</code>；拆包后要关注加载失败、重复 chunk、首屏关键路径和预加载策略。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vite 开发期基于 ESM + esbuild 预构建？</strong> Vite 开发期基于 ESM + esbuild 预构建，生产构建走 Rollup，冷启动快于 Webpack</li>
-          <li><strong>环境变量 import.meta.env.VITE_* 需在 .env 中 VI？</strong> 环境变量 <code>import</code>.meta.env.VITE_* 需在 .env 中 VITE_ 前缀暴露给客户端</li>
-          <li><strong>Vite 工程化结构与面试要点的核心概念是什么？</strong> Vite 开发期基于 ESM + esbuild 预构建，生产构建走 Rollup，冷启动快于 Webpack</li>
+          <li><strong>Vite 为什么开发启动通常更快？</strong> 结论是 Vite 开发期不先打完整应用，而是按浏览器请求即时转换源码。原因是现代浏览器支持原生 ESM，Vite 只需预构建依赖并按需处理业务模块；边界是首次访问某个页面仍会触发该模块转换，超大项目还要关注依赖预构建缓存和插件成本。</li>
+          <li><strong>Vite 开发期和生产构建为什么不是同一套实现？</strong> 结论是开发期优先反馈速度，生产期优先产物质量。原因是开发服务器面向按需加载和 HMR，生产构建需要 Rollup 做 tree-shaking、chunk、hash 和压缩；项目里要分别调试 dev server 配置和 build 配置，不能只看开发环境表现。</li>
+          <li><strong>import.meta.env.VITE_ 前缀解决了什么边界？</strong> 结论是它明确哪些变量允许暴露给客户端。原因是前端环境变量会被打进浏览器代码，不具备保密性；边界是 <code>VITE_API_BASE</code> 这类公开配置可以放，私钥、数据库密码和服务端 token 不能放。</li>
+          <li><strong>路由懒加载和异步组件如何配合？</strong> 结论是页面级拆包优先用路由动态 import，局部重组件再用 <code>defineAsyncComponent</code>。原因是路由天然是用户导航边界，适合拆成独立 chunk；边界是首屏关键组件不要过度懒加载，异步组件要提供 loading/error 体验。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vite.dev/guide/why.html" target="_blank" rel="noopener">Vite 官方指南：Why Vite</a></li>
+          <li><a href="https://vite.dev/guide/features.html" target="_blank" rel="noopener">Vite 官方指南：Features</a></li>
+          <li><a href="https://vite.dev/guide/env-and-mode.html" target="_blank" rel="noopener">Vite 官方指南：Env Variables and Modes</a></li>
+          <li><a href="https://vite.dev/guide/build.html" target="_blank" rel="noopener">Vite 官方指南：Building for Production</a></li>
         </ul>
       </div>
     </section>

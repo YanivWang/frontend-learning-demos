@@ -2,15 +2,15 @@
   分类: vue3 / 07-路由状态工程化
   主题: Vue Router 4 核心面试点
   要点:
-    - Vue Router 4 是 Vue3 常用路由方案
-    - 常问 createRouter、history 模式、动态路由、导航守卫、懒加载
-    - 可运行示例见 <code>06-Router与Pinia可运行示例.html</code>；本页保留面试代码片段
+    - Vue Router 4 通过 createRouter 注册路由表，并在组件树中提供 route / router 上下文
+    - history 模式决定 URL 形态与刷新回退成本，hash 模式更适合静态文件 demo
+    - 动态路由、meta、导航守卫和路由懒加载是业务路由面试高频组合
+    - 守卫应返回重定向、false 或 Promise，避免重复 next 与无限重定向
   面试:
-    - Vue Router 4 核心面试点的核心概念是什么
-    - Vue Router 4 核心面试点在实际项目里怎么用
-    - Vue Router 4 核心面试点有哪些常见坑或易错点
-    - Vue Router 4 核心面试点和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Vue Router 4 核心面试点
+    - createWebHistory 和 createWebHashHistory 怎么选
+    - beforeEach 守卫里为什么推荐 return 而不是混用 next
+    - 路由 meta 鉴权的边界在哪里
+    - 路由懒加载如何影响首屏包体和失败兜底
 -->
 
 <!doctype html>
@@ -38,15 +38,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue Router 4 是 Vue3 常用路由方案。</li>
-          <li>常问 createRouter、history 模式、动态路由、导航守卫、懒加载。</li>
-          <li>可运行示例见 &lt;code&gt;06-Router与Pinia可运行示例.html&lt;/code&gt;；本页保留面试代码片段。</li>
+          <li>Vue Router 4 是 Vue 3 官方路由库，核心入口是 <code>createRouter({ history, routes })</code>；安装到 app 后，<code>&lt;router-view&gt;</code> 渲染匹配组件，<code>&lt;router-link&gt;</code> 生成可导航链接。</li>
+          <li><code>createWebHistory()</code> 生成干净 URL，但刷新任意子路径时服务端必须回退到入口 HTML；<code>createWebHashHistory()</code> 把路径放在 <code>#</code> 后面，静态托管和 <code>file://</code> demo 更稳。</li>
+          <li>动态路由参数放在 <code>/users/:id</code>，页面组件应监听同一组件复用时的参数变化；鉴权、标题、权限码等跨页面信息通常放在 <code>route.meta</code>。</li>
+          <li>导航守卫可以返回路径、路由对象、<code>false</code> 或 Promise；Vue Router 4 仍兼容 <code>next</code>，但项目里应避免混用返回值和 <code>next</code>，否则容易重复放行或卡住导航。</li>
+          <li>路由懒加载用 <code>() =&gt; import('./views/Home.vue')</code> 让打包器拆分页面代码；真实项目还要考虑加载失败、权限重定向循环和未知路由 fallback。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue Router 4 是 Vue3 常用路由方案？</strong> Vue Router 4 是 Vue3 常用路由方案</li>
-          <li><strong>常问 createRouter、history 模式、动态路由、导航守卫、懒加载？</strong> 常问 createRouter、history 模式、动态路由、导航守卫、懒加载</li>
-          <li><strong>可运行示例见 &lt;code&gt;06-Router与Pinia可运行示例.html&lt;/？</strong> 可运行示例见 &lt;code&gt;06-Router与Pinia可运行示例.html&lt;/code&gt;；本页保留面试代码片段</li>
+          <li><strong>createWebHistory 和 createWebHashHistory 怎么选？</strong> 结论是正式 SPA 更常用 <code>createWebHistory</code>，静态 demo 或无法配置服务器回退时选 hash。原因是 history 模式 URL 更自然，但刷新 <code>/users/1</code> 需要服务端返回入口页；hash 模式不会把 <code>#</code> 后路径发给服务器，边界是 SEO、分享 URL 形态和旧系统托管能力。</li>
+          <li><strong>beforeEach 守卫里为什么推荐 return？</strong> 结论是 Vue Router 4 推荐通过返回值控制导航，比如返回 <code>"/login"</code> 重定向或 <code>false</code> 取消。原因是返回值语义清晰且能配合 async/await；只有兼容旧写法时才用第三个参数 <code>next</code>，边界是不要在同一个守卫里既 <code>return</code> 又多次 <code>next()</code>。</li>
+          <li><strong>路由 meta 鉴权的边界在哪里？</strong> 结论是 <code>meta.requiresAuth</code> 适合做前端体验层拦截，不等于安全授权。原因是前端路由和状态都可被用户篡改；项目里必须由后端接口再次校验权限，前端只负责减少误入、保存跳转来源和展示无权限页。</li>
+          <li><strong>路由懒加载如何影响首屏？</strong> 结论是页面级懒加载能降低首屏 bundle，但会把首次进入页面的成本转为异步加载。原因是动态 <code>import()</code> 会生成独立 chunk；边界是核心首屏不要过度拆分，异步组件加载失败要有重试、错误提示或兜底页。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://router.vuejs.org/guide/" target="_blank" rel="noopener">Vue Router 官方指南：Getting Started</a></li>
+          <li><a href="https://router.vuejs.org/guide/essentials/history-mode.html" target="_blank" rel="noopener">Vue Router 官方指南：Different History modes</a></li>
+          <li><a href="https://router.vuejs.org/guide/advanced/navigation-guards.html" target="_blank" rel="noopener">Vue Router 官方指南：Navigation Guards</a></li>
+          <li><a href="https://router.vuejs.org/guide/advanced/lazy-loading.html" target="_blank" rel="noopener">Vue Router 官方指南：Lazy Loading Routes</a></li>
         </ul>
       </div>
     </section>

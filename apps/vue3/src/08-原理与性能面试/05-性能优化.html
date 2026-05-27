@@ -2,15 +2,15 @@
   分类: vue3 / 08-原理与性能面试
   主题: Vue3 性能优化
   要点:
-    - 性能优化先定位瓶颈，再选手段
-    - 常见方向：减少渲染、拆包懒加载、缓存、列表虚拟化、避免无意义响应式
-    - Vue3 提供 v-once、v-memo、shallowRef、markRaw 等工具
+    - Vue3 性能优化先区分加载性能和更新性能，再用 DevTools 或指标定位瓶颈
+    - 模板层可用 v-once、v-memo、稳定 props 和 key 减少不必要更新
+    - 响应式层可用 shallowRef、shallowReactive、markRaw 控制大型对象和第三方实例追踪成本
+    - 大列表、异步组件和代码分割要同时考虑首屏、交互、内存和失败边界
   面试:
-    - Vue3 性能优化的核心概念是什么
-    - Vue3 性能优化在实际项目里怎么用
-    - Vue3 性能优化有哪些常见坑或易错点
-    - Vue3 性能优化和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Vue3 性能优化
+    - Vue3 性能优化应该先从哪些指标和瓶颈入手？
+    - v-once、v-memo 分别适合什么场景？
+    - shallowRef 和 markRaw 如何降低响应式开销，边界是什么？
+    - 大列表和异步组件优化时要补哪些失败路径和用户体验？
 -->
 
 <!doctype html>
@@ -38,15 +38,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>性能优化先定位瓶颈，再选手段。</li>
-          <li>常见方向：减少渲染、拆包懒加载、缓存、列表虚拟化、避免无意义响应式。</li>
-          <li>Vue3 提供 v-once、v-memo、shallowRef、markRaw 等工具。</li>
+          <li>性能优化先判断瓶颈类型：加载慢看包体积、网络、懒加载和缓存；交互卡顿看组件更新范围、长任务、大列表和响应式追踪成本。没有指标时不要先堆优化 API。</li>
+          <li>模板层减少更新：<code>v-once</code> 适合真正静态内容，只渲染一次；<code>v-memo</code> 适合大列表局部跳过更新，依赖数组必须覆盖会影响该节点输出的状态。</li>
+          <li>组件层常见做法是让 props 尽量稳定、拆分高频更新区域、为列表提供稳定 key，并避免把昂贵计算直接写在模板里；必要时用 <code>computed</code> 缓存派生结果。</li>
+          <li>响应式层控制追踪深度：<code>shallowRef()</code> 只追踪 <code>.value</code> 整体替换，<code>markRaw()</code> 跳过对象代理，适合大 JSON、图表实例、编辑器实例等不需要深度响应式的对象。</li>
+          <li>异步组件、路由级拆包和虚拟列表能明显改善首屏或大列表体验，但要补 loading、error、重试、空数据、滚动位置和可访问性边界，避免优化后把失败路径藏起来。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>性能优化先定位瓶颈？</strong> 性能优化先定位瓶颈，再选手段</li>
-          <li><strong>Vue3 提供 v-once、v-memo、shallowRef、markRaw？</strong> Vue3 提供 v-once、v-memo、shallowRef、markRaw 等工具</li>
-          <li><strong>Vue3 性能优化的核心概念是什么？</strong> Vue3 提供 v-once、v-memo、shallowRef、markRaw 等工具</li>
+          <li><strong>Vue3 性能优化应该先从哪些指标和瓶颈入手？</strong> 结论是先量化加载性能和更新性能，再决定优化手段。原因是包体积、网络瀑布、长任务、组件重复渲染和大列表卡顿对应的解法不同。项目里通常先用浏览器 Performance、Vue DevTools、构建分析和真实用户指标定位，再做局部优化。</li>
+          <li><strong>v-once、v-memo 分别适合什么场景？</strong> 结论是 <code>v-once</code> 用于永远不再变化的静态片段，<code>v-memo</code> 用于依赖没变时跳过子树更新。原因是二者都在牺牲一部分响应式更新灵活性换取渲染成本下降。边界是依赖写漏会导致视图不更新，所以应优先用于明确稳定或可测量的热点区域。</li>
+          <li><strong>shallowRef 和 markRaw 如何降低响应式开销，边界是什么？</strong> 结论是 <code>shallowRef</code> 减少深层属性追踪，<code>markRaw</code> 直接让对象跳过代理。原因是大型不可变数据或第三方实例通常不需要 Vue 深度观察。边界是内部字段变化不会自动触发视图，必须通过整体替换、额外版本号或实例自身事件同步 UI。</li>
+          <li><strong>大列表和异步组件优化时要补哪些失败路径和用户体验？</strong> 结论是大列表优先虚拟滚动或分页，异步组件优先路由级拆包和明确 loading/error。原因是它们分别降低 DOM 数量和首屏包体积。边界是虚拟列表要处理动态高度、键盘访问和滚动恢复，异步加载要处理网络失败、重试和骨架屏，不能只写 happy path。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/best-practices/performance.html">Vue 官方文档：Performance Best Practices</a></li>
+          <li><a href="https://vuejs.org/api/built-in-directives.html#v-once">Vue 官方 API：v-once</a></li>
+          <li><a href="https://vuejs.org/api/built-in-directives.html#v-memo">Vue 官方 API：v-memo</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-advanced.html#shallowref">Vue 官方 API：shallowRef()</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-advanced.html#markraw">Vue 官方 API：markRaw()</a></li>
         </ul>
       </div>
     </section>
@@ -72,7 +83,8 @@
         <p>markRaw 对象 name：{{ rawChart.name }}，视图侧版本：{{ rawViewVersion }}</p>
         <button @click="mutateShallowNested">改 shallowRef 嵌套字段（通常不触发视图）</button>
         <button @click="replaceShallowValue">整体替换 shallowRef.value</button>
-        <button @click="mutateRawChart">改 markRaw 字段（通常不触发视图）</button>
+        <button @click="mutateRawChart">只改 markRaw 字段（不会主动刷新视图）</button>
+        <button @click="forceRawRender">触发一次视图刷新</button>
         <p>{{ reactiveNote }}</p>
       </div>
     </div>
@@ -111,13 +123,18 @@
 
           function mutateRawChart() {
             rawChart.name = rawChart.name === "ECharts 实例" ? "已改但未追踪" : "ECharts 实例";
-            reactiveNote.value = "已改 markRaw 字段；若 name 未变，说明修改未被响应式系统追踪。";
+            console.info("markRaw 字段已修改，但没有响应式状态变化时不会主动刷新视图：", rawChart.name);
+          }
+
+          function forceRawRender() {
+            rawViewVersion.value++;
+            reactiveNote.value = "已触发一次响应式刷新；此时模板会重新读取 markRaw 对象的最新字段。";
           }
 
           return {
             count, createdAt, list,
             heavyRefVersion, rawChart, rawViewVersion, reactiveNote,
-            mutateShallowNested, replaceShallowValue, mutateRawChart,
+            mutateShallowNested, replaceShallowValue, mutateRawChart, forceRawRender,
           };
         },
       }).mount("#app");
