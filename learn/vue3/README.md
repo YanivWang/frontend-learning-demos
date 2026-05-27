@@ -17,7 +17,7 @@ Vue 3.5.x 时代的 demo（`libs/vue.global.js` 为 **3.5.34**，全局构建）
 
 ## 依赖
 
-`libs/` 目录内置 Vue 3 全家桶运行时，版本见 [`libs/README.md`](libs/README.md)。
+`libs/` 目录保留 Vue 3 核心运行时和常见生态预置库，版本见 [`libs/README.md`](libs/README.md)。
 
 | 文件 | 版本 |
 |---|---|
@@ -28,7 +28,7 @@ Vue 3.5.x 时代的 demo（`libs/vue.global.js` 为 **3.5.34**，全局构建）
 | `lodash.min.js` | 4.18.1 |
 | `js.cookie.min.js` | 3.0.7 |
 
-说明：Router / Pinia 相关 demo 目前仍以面试代码片段和概念说明为主；如需可运行示例，可按需引入 `vue-router.global.js`、`pinia.iife.js` 等库文件。
+说明：当前可运行 Vue3 demo 只实际引用 `vue.global.js`；Router / Pinia 相关 demo 目前仍以面试代码片段和概念说明为主，预置库先保留，后续改成可运行示例时再接入对应 `<script src>`。
 
 ## 完整 demo 清单
 

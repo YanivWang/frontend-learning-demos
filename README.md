@@ -20,9 +20,9 @@ open index.html
 | Vue 2 | `learn/vue2/src/` | 57 | [`learn/vue2/README.md`](learn/vue2/README.md) |
 | Vue 3 | `learn/vue3/src/` | 39 | [`learn/vue3/README.md`](learn/vue3/README.md) |
 | React 18 | `learn/react/src/` | 52 | [`learn/react/README.md`](learn/react/README.md) |
-| TypeScript | `learn/typescript/` | 4 | [`learn/typescript/README.md`](learn/typescript/README.md) |
+| TypeScript | `learn/typescript/` | 15 | [`learn/typescript/README.md`](learn/typescript/README.md) |
 | 综合 Demo | `learn/demos/` | 4 | [`learn/demos/README.md`](learn/demos/README.md) |
-| **合计** | — | **312** | 各 demo 均有统一头注释（见 [`CONVENTIONS.md`](CONVENTIONS.md) §4） |
+| **合计** | — | **323** | 各 demo 均有统一头注释（见 [`CONVENTIONS.md`](CONVENTIONS.md) §4） |
 
 ## 目录结构
 
@@ -44,7 +44,7 @@ open index.html
 │   ├── vue2/                # Vue 2.7.16
 │   ├── vue3/                # Vue 3.5.34
 │   ├── react/               # React 18.3.1（function-components + class-components）
-│   ├── typescript/          # TypeScript 面试基础
+│   ├── typescript/          # TypeScript 面试基础 / 进阶 / 工程与框架
 │   └── demos/               # 综合 Demo（drag / svg / viewpager）
 │
 └── scripts/
@@ -62,7 +62,7 @@ open index.html
 
 ### TypeScript
 
-`01-基础 → 02-进阶`（建议在 JavaScript `04-ES6+` 之后）
+`01-基础 → 02-进阶 → 03-工程与框架`（建议在 JavaScript `04-ES6+` 之后）
 
 ### 框架
 

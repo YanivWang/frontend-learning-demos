@@ -2,7 +2,7 @@
 
 本仓库是「前端语法 / 框架学习 Demo 库」，每个 `.html` 都可以直接在浏览器打开。本文规定目录与命名规范，保持仓库长期清爽。
 
-当前仓库共 **312** 个可索引 demo（`javascript` 120 · `css` 36 · `vue2` 57 · `vue3` 39 · `react` 52 · `typescript` 4 · `demos` 4），统计以 `node scripts/validate-demos.mjs` 输出为准。
+当前仓库共 **323** 个可索引 demo（`javascript` 120 · `css` 36 · `vue2` 57 · `vue3` 39 · `react` 52 · `typescript` 15 · `demos` 4），统计以 `node scripts/validate-demos.mjs` 输出为准。
 
 ## 1. 顶层目录
 
@@ -12,7 +12,7 @@
 | `learn/css/` | CSS 布局 / 动画 / 视觉 / 响应式 / 性能 / 现代特性 | 按 `01-` ~ `07-` 编号分类 |
 | `learn/vue2/` `learn/vue3/` | Vue 框架 demo | 内含 `libs/`（运行时）与 `src/`（demo） |
 | `learn/react/` | React 18 demo | 内含 `libs/` 与 `src/`（`function-components` + `class-components`） |
-| `learn/typescript/` | TypeScript 面试基础 demo | 按 `01-基础` / `02-进阶` 编号 |
+| `learn/typescript/` | TypeScript 面试基础 / 进阶 / 工程与框架 demo | 按 `01-基础` / `02-进阶` / `03-工程与框架` 编号 |
 | `learn/demos/` | 综合性 / 交互小项目 | `drag`、`svg`、`viewpager` 等 |
 | `scripts/` | 仓库工具脚本 | `build-index.mjs`、`sync-readmes.mjs`、`validate-demos.mjs` 等 |
 | `docs/` | 计划与审查文档 | `plans/` 放补齐计划，`reviews/` 放审查记录 |
@@ -21,7 +21,7 @@
 
 - **一级分类目录**：保留中文短语，加 `NN-` 编号前缀（`01-基础`、`03-动画`；CSS 从 `01-基础` 起）。
 - **二级专题子目录**：纯中文（`正则/`、`闭包/`、`异步/`）；编号可省略。
-- **每个分类目录都应有一份 `README.md`** 作为目录索引；`learn/javascript` / `learn/css` / `learn/vue2` / `learn/vue3` / `learn/react` 的 README 内含由 `sync-readmes.mjs` 维护的完整 demo 清单表。
+- **每个分类目录都应有一份 `README.md`** 作为目录索引；`learn/javascript` / `learn/css` / `learn/vue2` / `learn/vue3` / `learn/react` / `learn/typescript` 的 README 内含由 `sync-readmes.mjs` 维护的完整 demo 清单表。
 
 ## 3. 文件命名规则
 
@@ -38,7 +38,7 @@
 4. **不使用拼音首字母**（`FZ` `ZJ`）；要么写全中文，要么写英文全称
 5. **同主题多个 demo** 用「主题-子点」格式：`Promise-基础.html` `Promise-并发.html` `Promise-串行.html`，而不是 `test1.html` `test2.html`
 
-## 4. 元数据头注释（推荐，当前 312 个 demo 均已具备）
+## 4. 元数据头注释（推荐，当前 323 个 demo 均已具备）
 
 每个 demo 在 `<!DOCTYPE html>` 之前加入注释，方便检索与生成 README 清单：
 
