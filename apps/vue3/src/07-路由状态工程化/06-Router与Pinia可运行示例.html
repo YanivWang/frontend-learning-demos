@@ -14,46 +14,47 @@
     - 面试中如何简洁讲清 Vue Router 4 + Pinia 可运行最小示例
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vue3 · Router + Pinia 可运行</title>
-  <script src="../../libs/vue.global.js"></script>
-  <script src="../../libs/vue-router.global.js"></script>
-  <script src="../../libs/pinia.iife.js"></script>
-  <style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · Router + Pinia 可运行</title>
+    <script src="../../libs/vue.global.js"></script>
+    <script src="../../libs/vue-router.global.js"></script>
+    <script src="../../libs/pinia.iife.js"></script>
+    <style>
     body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; color: #202124; }
     nav { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
     nav a { color: #0969da; text-decoration: none; }
     nav a.router-link-active { font-weight: 700; text-decoration: underline; }
     .box { border: 1px solid #ddd; border-radius: 10px; padding: 16px; max-width: 520px; }
     button { padding: 6px 12px; margin: 4px 4px 4px 0; cursor: pointer; }
-  </style>
+    </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vue Router 4 + Pinia 可运行最小示例</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>使用 hash 模式，file:// 与静态服务均可打开。</li>
-      <li>createRouter + createPinia 挂载到同一 app。</li>
-      <li>路由守卫读取 Pinia 登录态，未登录跳转 /login。</li>
-      <li>可运行示例替代纯代码片段，见同目录 01/02 面试点页。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>使用 hash 模式？</strong> 使用 hash 模式，file:// 与静态服务均可打开</li>
-      <li><strong>createRouter + createPinia 挂载到同一 app？</strong> createRouter + createPinia 挂载到同一 app</li>
-      <li><strong>路由守卫读取 Pinia 登录态？</strong> 路由守卫读取 Pinia 登录态，未登录跳转 /login</li>
-      <li><strong>可运行示例替代纯代码片段？</strong> 可运行示例替代纯代码片段，见同目录 01/02 面试点页</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>使用 hash 模式，file:// 与静态服务均可打开。</li>
+          <li>createRouter + createPinia 挂载到同一 app。</li>
+          <li>路由守卫读取 Pinia 登录态，未登录跳转 /login。</li>
+          <li>可运行示例替代纯代码片段，见同目录 01/02 面试点页。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>使用 hash 模式？</strong> 使用 hash 模式，file:// 与静态服务均可打开</li>
+          <li><strong>createRouter + createPinia 挂载到同一 app？</strong> createRouter + createPinia 挂载到同一 app</li>
+          <li><strong>路由守卫读取 Pinia 登录态？</strong> 路由守卫读取 Pinia 登录态，未登录跳转 /login</li>
+          <li><strong>可运行示例替代纯代码片段？</strong> 可运行示例替代纯代码片段，见同目录 01/02 面试点页</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -73,71 +74,75 @@
   </div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    const { createApp, ref } = Vue;
-    const { createRouter, createWebHashHistory } = VueRouter;
-    const { createPinia, defineStore } = Pinia;
-
-    const useUserStore = defineStore("user", {
+      const { createApp, ref } = Vue;
+      const { createRouter, createWebHashHistory } = VueRouter;
+      const { createPinia, defineStore } = Pinia;
+      
+      const useUserStore = defineStore("user", {
       state: () => ({ token: "" }),
       getters: { isLogin: (s) => Boolean(s.token) },
       actions: {
-        login(name) { this.token = "token-" + name; },
-        logout() { this.token = ""; },
+      login(name) { this.token = "token-" + name; },
+      logout() { this.token = ""; },
       },
-    });
-
-    const Home = { template: "<h2>首页</h2><p>Hash 路由 + Pinia 全局状态演示。</p>" };
-    const Login = {
+      });
+      
+      const Home = { template: "<h2>首页</h2><p>Hash 路由 + Pinia 全局状态演示。</p>" };
+      const Login = {
       setup() {
-        const userStore = useUserStore();
-        const name = ref("demo");
-        return {
-          name,
-          submit() {
-            userStore.login(name.value);
-            router.push("/profile");
-          },
-        };
+      const userStore = useUserStore();
+      const name = ref("demo");
+      return {
+      name,
+      submit() {
+      userStore.login(name.value);
+      router.push("/profile");
+      },
+      };
       },
       template: `<h2>登录</h2>
-        <input v-model="name" placeholder="用户名" />
-        <button type="button" @click="submit">登录并跳转</button>`,
-    };
-    const Profile = {
+      <input v-model="name" placeholder="用户名" />
+      <button type="button" @click="submit">登录并跳转</button>`,
+      };
+      const Profile = {
       setup() {
-        const userStore = useUserStore();
-        return { userStore, logout: () => { userStore.logout(); router.push("/login"); } };
+      const userStore = useUserStore();
+      return { userStore, logout: () => { userStore.logout(); router.push("/login"); } };
       },
       template: `<h2>个人中心</h2>
-        <p>欢迎，{{ userStore.token }}</p>
-        <button type="button" @click="logout">退出</button>`,
-    };
-
-    const router = createRouter({
+      <p>欢迎，{{ userStore.token }}</p>
+      <button type="button" @click="logout">退出</button>`,
+      };
+      
+      const router = createRouter({
       history: createWebHashHistory(),
       routes: [
-        { path: "/", component: Home },
-        { path: "/login", component: Login },
-        { path: "/profile", component: Profile, meta: { requiresAuth: true } },
+      { path: "/", component: Home },
+      { path: "/login", component: Login },
+      { path: "/profile", component: Profile, meta: { requiresAuth: true } },
       ],
-    });
-
-    router.beforeEach((to) => {
+      });
+      
+      router.beforeEach((to) => {
       const userStore = useUserStore();
       if (to.meta.requiresAuth && !userStore.isLogin) return "/login";
-    });
-
-    const pinia = createPinia();
-    const app = createApp({
+      });
+      
+      const pinia = createPinia();
+      const app = createApp({
       setup() {
-        const userStore = useUserStore();
-        return { userStore };
+      const userStore = useUserStore();
+      return { userStore };
       },
-    });
-    app.use(pinia).use(router).mount("#app");
-  </script>
+      });
+      app.use(pinia).use(router).mount("#app");
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -149,16 +154,14 @@
         <a href="./07-Vitest%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E9%9D%A2%E8%AF%95%E7%82%B9.html">Vitest单元测试面试点 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

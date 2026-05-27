@@ -14,43 +14,44 @@
     - 面试中如何简洁讲清 并发渲染与 Transitions 面试
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>面试 · 并发与 Transition</title>
-  <script src="../../libs/react.development.js"></script>
-  <script src="../../libs/react-dom.development.js"></script>
-  <script src="../../libs/babel.min.js"></script>
-  <style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>面试 · 并发与 Transition</title>
+    <script src="../../libs/react.development.js"></script>
+    <script src="../../libs/react-dom.development.js"></script>
+    <script src="../../libs/babel.min.js"></script>
+    <style>
     body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 720px; line-height: 1.6; }
     input { padding: 0.4rem; width: 100%; max-width: 320px; }
     .slow-list { margin-top: 1rem; max-height: 200px; overflow: auto; font-size: 0.9rem; }
     .pending { color: #0969da; }
-  </style>
+    </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>并发渲染与 Transitions 面试</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>并发：可中断渲染，优先响应用户输入（时间切片 + 优先级）。</li>
-      <li>useTransition：isPending + startTransition 包裹低优先级更新。</li>
-      <li>React 19 Actions 常在 startTransition 内执行，isPending 与 useActionState 的 pending 呼应。</li>
-      <li>面试区分：紧急更新（输入）vs 过渡更新（筛选、路由、提交反馈）。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>useTransition？</strong> useTransition：isPending + startTransition 包裹低优先级更新；React 19 Actions 常在 startTransition 内执行，isPending 与 useActionState 的 pending 呼应</li>
-      <li><strong>React 19 Actions 常在 startTransition 内执行？</strong> React 19 Actions 常在 startTransition 内执行，isPending 与 useActionState 的 pending 呼应</li>
-      <li><strong>并发渲染与 Transitions 面试的核心概念是什么？</strong> 并发：可中断渲染，优先响应用户输入（时间切片 + 优先级）；useTransition：isPending + startTransition 包裹低优先级更新</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>并发：可中断渲染，优先响应用户输入（时间切片 + 优先级）。</li>
+          <li>useTransition：isPending + startTransition 包裹低优先级更新。</li>
+          <li>React 19 Actions 常在 startTransition 内执行，isPending 与 useActionState 的 pending 呼应。</li>
+          <li>面试区分：紧急更新（输入）vs 过渡更新（筛选、路由、提交反馈）。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>useTransition？</strong> useTransition：isPending + startTransition 包裹低优先级更新；React 19 Actions 常在 startTransition 内执行，isPending 与 useActionState 的 pending 呼应</li>
+          <li><strong>React 19 Actions 常在 startTransition 内执行？</strong> React 19 Actions 常在 startTransition 内执行，isPending 与 useActionState 的 pending 呼应</li>
+          <li><strong>并发渲染与 Transitions 面试的核心概念是什么？</strong> 并发：可中断渲染，优先响应用户输入（时间切片 + 优先级）；useTransition：isPending + startTransition 包裹低优先级更新</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -58,54 +59,59 @@
 <div id="root"></div>
 
     
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script type="text/babel">
-    const { useMemo, useState, useTransition } = React;
-
-    function slowFilter(text) {
+      const { useMemo, useState, useTransition } = React;
+      
+      function slowFilter(text) {
       const items = [];
       for (let i = 0; i < 8000; i++) {
-        if (String(i).includes(text)) items.push("item-" + i);
+      if (String(i).includes(text)) items.push("item-" + i);
       }
       return items.slice(0, 40);
-    }
-
-    function App() {
+      }
+      
+      function App() {
       const [query, setQuery] = useState("");
       const [deferredQuery, setDeferredQuery] = useState("");
       const [isPending, startTransition] = useTransition();
-
+      
       const list = useMemo(
-        () => slowFilter(deferredQuery),
-        [deferredQuery]
+      () => slowFilter(deferredQuery),
+      [deferredQuery]
       );
-
+      
       const onChange = (e) => {
-        const value = e.target.value;
-        setQuery(value);
-        startTransition(() => {
-          setDeferredQuery(value);
-        });
+      const value = e.target.value;
+      setQuery(value);
+      startTransition(() => {
+      setDeferredQuery(value);
+      });
       };
-
+      
       return (
-        <section>
-          <h1>useTransition 保持输入流畅</h1>
-
-          <p>输入框（紧急更新）与下方列表（过渡更新）分离。</p>
-          <input value={query} onChange={onChange} placeholder="过滤数字，如 12" />
-          {isPending && <p className="pending">列表更新中（isPending）…</p>}
-          <ul className="slow-list">
-            {list.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-          <p><strong>面试答法：</strong>startTransition 标记低优先级；Actions 默认在 transition 中运行，避免阻塞输入。</p>
-        </section>
+      <section>
+      <h1>useTransition 保持输入流畅</h1>
+      
+      <p>输入框（紧急更新）与下方列表（过渡更新）分离。</p>
+      <input value={query} onChange={onChange} placeholder="过滤数字，如 12" />
+      {isPending && <p className="pending">列表更新中（isPending）…</p>}
+      <ul className="slow-list">
+      {list.map((item) => (
+      <li key={item}>{item}</li>
+      ))}
+      </ul>
+      <p><strong>面试答法：</strong>startTransition 标记低优先级；Actions 默认在 transition 中运行，避免阻塞输入。</p>
+      </section>
       );
-    }
-
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-  </script>
+      }
+      
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
@@ -116,16 +122,15 @@
         <a href="./04-%E9%94%99%E8%AF%AF%E8%BE%B9%E7%95%8C%E4%B8%8E%E7%8A%B6%E6%80%81%E8%BE%B9%E7%95%8C.html">错误边界与状态边界 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
   
 </body>
 </html>

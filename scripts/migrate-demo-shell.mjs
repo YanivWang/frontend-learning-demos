@@ -3,7 +3,7 @@
  * 全库 demo 迁移：对标 apps/javascript/01-基础/字符串方法.html
  *   - demo-shell.css + body.demo-page
  *   - section.demo-block--notes（h1 + hint + div.demo-notes）
- *   - SCRIPT / RUN 区块标记
+ *   - SCRIPT 区块标记（无 RUN / demo-log）
  *   - footer.demo-block--nav（无内联样式）
  *
  * 运行：node scripts/migrate-demo-shell.mjs [--dry-run]
@@ -328,12 +328,8 @@ function migrateOne(content, abs, rel) {
 
   const notesBlock = buildNotesBlock(h1, hint, notesInner, theme, rel, content);
   const middle = extractMiddleContent(next);
-  const runBlock =
-    hadDemoOutput && !isFrameworkDemo(rel) ? buildRunBlock(true) : "";
-  const demoLogTag =
-    hadDemoOutput && !isFrameworkDemo(rel)
-      ? `    <script src="${relFromFile(dirname(abs), DEMO_LOG)}"></script>`
-      : "";
+  const runBlock = "";
+  const demoLogTag = "";
   const navBlock = migrateNavBlock(nav);
 
   next = rebuildBody(next, {

@@ -13,109 +13,100 @@
     - 面试中如何简洁讲清 三种 Promise 串行写法对比
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Promise 串行三种写法</title>
     <link rel="stylesheet" href="../../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>三种 Promise 串行写法对比</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>new <code>Promise</code>(resolve=&gt;resolve()).then(f1).then(f2)：起步显式。</li>
-      <li><code>Promise</code>.resolve().then(f1).then(f2)：最简洁，推荐。</li>
-      <li>new <code>Promise</code>(f1).then(f2)：把 f1 当 executor，f1 必须遵循 (resolve, reject) 签名。</li>
-      <li>new <code>Promise</code>(resolve=&gt;resolve()).then(f1).then(f2)：起步显式（补充）。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>new Promise(resolve=&gt;resolve()).then(f1)？</strong> new <code>Promise</code>(resolve=&gt;resolve()).then(f1).then(f2)：起步显式；new <code>Promise</code>(f1).then(f2)：把 f1 当 executor，f1 必须遵循 (resolve, reject) 签名</li>
-      <li><strong>Promise.resolve().then(f1).then(f2)？</strong> new <code>Promise</code>(resolve=&gt;resolve()).then(f1).then(f2)：起步显式；<code>Promise</code>.resolve().then(f1).then(f2)：最简洁，推荐</li>
-      <li><strong>new Promise(f1).then(f2)？</strong> new <code>Promise</code>(resolve=&gt;resolve()).then(f1).then(f2)：起步显式；new <code>Promise</code>(f1).then(f2)：把 f1 当 executor，f1 必须遵循 (resolve, reject) 签名</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>new <code>Promise</code>(resolve=&gt;resolve()).then(f1).then(f2)：起步显式。</li>
+          <li><code>Promise</code>.resolve().then(f1).then(f2)：最简洁，推荐。</li>
+          <li>new <code>Promise</code>(f1).then(f2)：把 f1 当 executor，f1 必须遵循 (resolve, reject) 签名。</li>
+          <li>new <code>Promise</code>(resolve=&gt;resolve()).then(f1).then(f2)：起步显式（补充）。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>new Promise(resolve=&gt;resolve()).then(f1)？</strong> new <code>Promise</code>(resolve=&gt;resolve()).then(f1).then(f2)：起步显式；new <code>Promise</code>(f1).then(f2)：把 f1 当 executor，f1 必须遵循 (resolve, reject) 签名</li>
+          <li><strong>Promise.resolve().then(f1).then(f2)？</strong> new <code>Promise</code>(resolve=&gt;resolve()).then(f1).then(f2)：起步显式；<code>Promise</code>.resolve().then(f1).then(f2)：最简洁，推荐</li>
+          <li><strong>new Promise(f1).then(f2)？</strong> new <code>Promise</code>(resolve=&gt;resolve()).then(f1).then(f2)：起步显式；new <code>Promise</code>(f1).then(f2)：把 f1 当 executor，f1 必须遵循 (resolve, reject) 签名</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
-    const delay = 300;
-
-    function f1() {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                console.log("p1");
-                resolve("one");
-            }, delay);
-        });
-    }
-
-    function f2() {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                console.log("p2");
-                resolve("two");
-            }, delay);
-        });
-    }
-
-    function f3() {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                console.log("p3");
-                resolve("three");
-            }, delay);
-        });
-    }
-
-    // 1. 显式 new Promise 起步再链式 then
-    function serialStyle1() {
-        return new Promise((resolve) => {
-            resolve();
-        }).then(f1).then(f2).then(f3);
-    }
-
-    // 2. Promise.resolve() 起步（推荐）
-    function serialStyle2() {
-        return Promise.resolve().then(f1).then(f2).then(f3);
-    }
-
-    // 3. 把函数当作 executor 传入 new Promise（必须接收 resolve/reject）
-    function serialStyle3() {
-        function executor(resolve) {
-            setTimeout(() => {
-                console.log("p1 (executor)");
-                resolve();
-            }, delay);
-        }
-        return new Promise(executor).then(f2).then(f3);
-    }
-
-    // 默认演示写法 2；取消注释可对比另外两种
-    console.log("--- 写法 2: Promise.resolve().then(...) ---");
-    serialStyle2();
-
-    // serialStyle1();
-    // serialStyle3();
-</script>
+      const delay = 300;
+      
+      function f1() {
+      return new Promise((resolve) => {
+      setTimeout(() => {
+      console.log("p1");
+      resolve("one");
+      }, delay);
+      });
+      }
+      
+      function f2() {
+      return new Promise((resolve) => {
+      setTimeout(() => {
+      console.log("p2");
+      resolve("two");
+      }, delay);
+      });
+      }
+      
+      function f3() {
+      return new Promise((resolve) => {
+      setTimeout(() => {
+      console.log("p3");
+      resolve("three");
+      }, delay);
+      });
+      }
+      
+      // 1. 显式 new Promise 起步再链式 then
+      function serialStyle1() {
+      return new Promise((resolve) => {
+      resolve();
+      }).then(f1).then(f2).then(f3);
+      }
+      
+      // 2. Promise.resolve() 起步（推荐）
+      function serialStyle2() {
+      return Promise.resolve().then(f1).then(f2).then(f3);
+      }
+      
+      // 3. 把函数当作 executor 传入 new Promise（必须接收 resolve/reject）
+      function serialStyle3() {
+      function executor(resolve) {
+      setTimeout(() => {
+      console.log("p1 (executor)");
+      resolve();
+      }, delay);
+      }
+      return new Promise(executor).then(f2).then(f3);
+      }
+      
+      // 默认演示写法 2；取消注释可对比另外两种
+      console.log("--- 写法 2: Promise.resolve().then(...) ---");
+      serialStyle2();
+      
+      // serialStyle1();
+      // serialStyle3();
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -127,16 +118,14 @@
         <a href="../../class%E8%AF%A6%E8%A7%A3/%E6%8A%BD%E8%B1%A1%E5%9F%BA%E7%B1%BB.html">抽象基类 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

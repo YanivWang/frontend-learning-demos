@@ -13,6 +13,7 @@
     - 面试中如何简洁讲清 composable 组合式函数
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
   <head>
@@ -21,34 +22,34 @@
     <title>Vue3 · composable 组合式函数</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; padding: 6px 12px; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; max-height: 160px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+    body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+    button { margin-right: 8px; padding: 6px 12px; }
+    code, pre { background: #f6f8fa; border-radius: 6px; }
+    code { padding: 2px 5px; }
+    pre { padding: 12px; overflow: auto; max-height: 160px; }
+    .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
     </style>
-      <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
+  </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>composable 组合式函数</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>composable 是以 useXxx 命名的状态逻辑复用函数。</li>
-      <li>可以组合 <code>ref</code>、<code>computed</code>、<code>watch</code>、生命周期钩子。</li>
-      <li>每次调用默认创建独立状态，共享状态要显式设计。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>composable 是以 useXxx 命名的状态逻辑复用函数？</strong> composable 是以 useXxx 命名的状态逻辑复用函数；可以组合 <code>ref</code>、<code>computed</code>、<code>watch</code>、生命周期钩子</li>
-      <li><strong>可以组合 ref、computed、watch、生命周期钩子？</strong> 可以组合 <code>ref</code>、<code>computed</code>、<code>watch</code>、生命周期钩子</li>
-      <li><strong>每次调用默认创建独立状态？</strong> 每次调用默认创建独立状态，共享状态要显式设计</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>composable 是以 useXxx 命名的状态逻辑复用函数。</li>
+          <li>可以组合 <code>ref</code>、<code>computed</code>、<code>watch</code>、生命周期钩子。</li>
+          <li>每次调用默认创建独立状态，共享状态要显式设计。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>composable 是以 useXxx 命名的状态逻辑复用函数？</strong> composable 是以 useXxx 命名的状态逻辑复用函数；可以组合 <code>ref</code>、<code>computed</code>、<code>watch</code>、生命周期钩子</li>
+          <li><strong>可以组合 ref、computed、watch、生命周期钩子？</strong> 可以组合 <code>ref</code>、<code>computed</code>、<code>watch</code>、生命周期钩子</li>
+          <li><strong>每次调用默认创建独立状态？</strong> 每次调用默认创建独立状态，共享状态要显式设计</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -66,35 +67,39 @@
     </div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
       const { createApp, ref, computed, watch, onMounted, onUnmounted } = Vue;
-
+      
       function useMousePosition() {
-        const x = ref(0);
-        const y = ref(0);
-        const isNearOrigin = computed(() => x.value < 200 && y.value < 200);
-        const watchLogs = ref([]);
-
-        function update(event) {
-          x.value = event.clientX;
-          y.value = event.clientY;
-        }
-
-        watch(isNearOrigin, (near) => {
-          watchLogs.value.push(`isNearOrigin 变为 ${near ? "true" : "false"}（x=${x.value}, y=${y.value}）`);
-        });
-
-        onMounted(() => window.addEventListener("mousemove", update));
-        onUnmounted(() => window.removeEventListener("mousemove", update));
-
-        return { x, y, isNearOrigin, watchLogs };
+      const x = ref(0);
+      const y = ref(0);
+      const isNearOrigin = computed(() => x.value < 200 && y.value < 200);
+      const watchLogs = ref([]);
+      
+      function update(event) {
+      x.value = event.clientX;
+      y.value = event.clientY;
       }
-
+      
+      watch(isNearOrigin, (near) => {
+      watchLogs.value.push(`isNearOrigin 变为 ${near ? "true" : "false"}（x=${x.value}, y=${y.value}）`);
+      });
+      
+      onMounted(() => window.addEventListener("mousemove", update));
+      onUnmounted(() => window.removeEventListener("mousemove", update));
+      
+      return { x, y, isNearOrigin, watchLogs };
+      }
+      
       createApp({
-        setup() {
-          return useMousePosition();
-        },
+      setup() {
+      return useMousePosition();
+      },
       }).mount("#app");
     </script>
     <!-- SCRIPT_END -->
@@ -108,16 +113,14 @@
         <a href="./03-setup%E4%B8%8Escript-setup.html">setup与script-setup →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

@@ -13,50 +13,41 @@
     - 面试中如何简洁讲清 Notification 桌面通知
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>桌面通知 · Notification API</title>
-  <style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>桌面通知 · Notification API</title>
+    <style>
     body { font-family: system-ui, sans-serif; margin: 1.5rem; }
     button { padding: 8px 14px; margin-right: 8px; }
-  </style>
+    </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
   </head>
-<body class="demo-page">
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Notification 桌面通知</h1>
       <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>必须先 requestPermission 获取用户授权，且仅在 HTTPS/localhost 可用。</li>
-      <li>Notification.permission 三态：granted / denied / default。</li>
-      <li>浏览器与系统对通知样式各异；通知可设置 body / icon / tag。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>必须先 requestPermission 获取用户授权？</strong> 必须先 requestPermission 获取用户授权，且仅在 HTTPS/localhost 可用</li>
-      <li><strong>Notification.permission 三态？</strong> Notification.permission 三态：granted / denied / default</li>
-      <li><strong>浏览器与系统对通知样式各异？</strong> 浏览器与系统对通知样式各异；通知可设置 body / icon / tag</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>必须先 requestPermission 获取用户授权，且仅在 HTTPS/localhost 可用。</li>
+          <li>Notification.permission 三态：granted / denied / default。</li>
+          <li>浏览器与系统对通知样式各异；通知可设置 body / icon / tag。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>必须先 requestPermission 获取用户授权？</strong> 必须先 requestPermission 获取用户授权，且仅在 HTTPS/localhost 可用</li>
+          <li><strong>Notification.permission 三态？</strong> Notification.permission 三态：granted / denied / default</li>
+          <li><strong>浏览器与系统对通知样式各异？</strong> 浏览器与系统对通知样式各异；通知可设置 body / icon / tag</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
-
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../packages/shared/demo-log.js"></script>
 
 <p>需要用户授权；HTTPS 或 localhost 下才可用；不同浏览器 UI 差异较大。</p>
 
@@ -67,50 +58,54 @@
   <p>当前权限状态：<code id="status">unknown</code></p>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    const status = document.getElementById("status");
-    function refresh() {
+      const status = document.getElementById("status");
+      function refresh() {
       status.textContent = ("Notification" in window) ? Notification.permission : "不支持";
-    }
-    refresh();
-
-    function notify(title, options) {
+      }
+      refresh();
+      
+      function notify(title, options) {
       if (!("Notification" in window)) {
-        alert("此浏览器不支持桌面通知");
-        return;
+      alert("此浏览器不支持桌面通知");
+      return;
       }
       if (Notification.permission === "granted") {
-        return new Notification(title, options);
+      return new Notification(title, options);
       }
       if (Notification.permission !== "denied") {
-        Notification.requestPermission().then((perm) => {
-          refresh();
-          if (perm === "granted") new Notification(title, options);
-        });
+      Notification.requestPermission().then((perm) => {
+      refresh();
+      if (perm === "granted") new Notification(title, options);
+      });
       }
-    }
-
-    document.getElementById("ask").onclick = () => {
+      }
+      
+      document.getElementById("ask").onclick = () => {
       Notification.requestPermission().then(refresh);
-    };
-
-    document.getElementById("send").onclick = () => {
+      };
+      
+      document.getElementById("send").onclick = () => {
       notify("Hello!", { body: "这是一条桌面通知 " + new Date().toLocaleTimeString() });
-    };
-
-    let timer = null;
-    document.getElementById("repeat").onclick = () => {
+      };
+      
+      let timer = null;
+      document.getElementById("repeat").onclick = () => {
       if (timer) {
-        clearInterval(timer);
-        timer = null;
-        return;
+      clearInterval(timer);
+      timer = null;
+      return;
       }
       timer = setInterval(() => {
-        notify("循环通知", { body: "随机值 " + Math.random().toFixed(3) });
+      notify("循环通知", { body: "随机值 " + Math.random().toFixed(3) });
       }, 4000);
-    };
-  </script>
+      };
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -122,16 +117,14 @@
         <a href="./Performance-API.html">Performance-API →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

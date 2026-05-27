@@ -13,36 +13,37 @@
     - 面试中如何简洁讲清 Vuex actions 详解（载荷 / 异步 / Promise / 嵌套 dispatch）
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vuex · actions / 载荷 / 异步</title>
     <script src="../../libs/vue.js"></script>
     <script src="../../libs/es6-promise.auto.js"></script>
     <script src="../../libs/vuex.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vuex actions 详解（载荷 / 异步 / Promise / 嵌套 dispatch）</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>mutation 必须同步；action 可以包含异步逻辑，最后 commit 一个 mutation。</li>
-      <li>dispatch 也返回 <code>Promise</code>，可在组件里用 <code>await</code> 等异步流程。</li>
-      <li>state 需先声明 count 等字段，否则 mutation 自增会得到 NaN。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>mutation 必须同步？</strong> mutation 必须同步；action 可以包含异步逻辑，最后 commit 一个 mutation；state 需先声明 count 等字段，否则 mutation 自增会得到 NaN</li>
-      <li><strong>dispatch 也返回 Promise？</strong> dispatch 也返回 <code>Promise</code>，可在组件里用 <code>await</code> 等异步流程</li>
-      <li><strong>state 需先声明 count 等字段？</strong> state 需先声明 count 等字段，否则 mutation 自增会得到 NaN</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>mutation 必须同步；action 可以包含异步逻辑，最后 commit 一个 mutation。</li>
+          <li>dispatch 也返回 <code>Promise</code>，可在组件里用 <code>await</code> 等异步流程。</li>
+          <li>state 需先声明 count 等字段，否则 mutation 自增会得到 NaN。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>mutation 必须同步？</strong> mutation 必须同步；action 可以包含异步逻辑，最后 commit 一个 mutation；state 需先声明 count 等字段，否则 mutation 自增会得到 NaN</li>
+          <li><strong>dispatch 也返回 Promise？</strong> dispatch 也返回 <code>Promise</code>，可在组件里用 <code>await</code> 等异步流程</li>
+          <li><strong>state 需先声明 count 等字段？</strong> state 需先声明 count 等字段，否则 mutation 自增会得到 NaN</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -50,105 +51,109 @@
 <div id="app"></div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    const store = new Vuex.Store({
-        state: {
-            count: 0,
-            todos: [
-                { id: 1, text: '...', done: true },
-                { id: 2, text: '...', done: false }
-            ]
-        },
-        mutations: {
-            increment(state) {
-                state.count++;
-            },
-            incrementA(state, n) {
-                state.count += n;
-            },
-            incrementB(state, payload) {
-                state.count += payload.count;
-            },
-            someMutation(state) {
-                state.count++;
-            }
-        },
-        actions: {
-            increment(context) {
-                context.commit("increment");
-            },
-            incrementA({ commit }) {
-                commit('incrementA', 10);
-            },
-            incrementAsync({ commit }, payload) {
-                var amount = (payload && payload.amount) || 1;
-                setTimeout(function () {
-                    console.log("incrementAsync 完成，amount =", amount);
-                    commit('incrementA', amount);
-                }, 800);
-            },
-            checkout({ commit }) {
-                return new Promise(function (resolve) {
-                    setTimeout(function () {
-                        commit('someMutation');
-                        resolve();
-                    }, 500);
-                });
-            },
-            checkoutPlus({ dispatch, commit }) {
-                return dispatch('checkout').then(function () {
-                    commit('incrementB', { count: 1 });
-                });
-            }
-        },
-        getters: {}
-    });
-
-    store.commit('increment');
-    store.commit('incrementA', 10);
-    store.commit('incrementB', { count: 10 });
-
-    store.dispatch('incrementAsync', { amount: 10 });
-    store.dispatch({ type: 'incrementAsync', amount: 5 });
-
-    store.dispatch({ type: 'checkout' }).then(function () {
-        console.log('checkout 完成');
-    });
-
-    new Vue({
-        store,
-        data: function () {
-            return { status: '' };
-        },
-        computed: {
-            count: function () {
-                return this.$store.state.count;
-            }
-        },
-        template: `
-            <div>
-                <div>count: {{ count }}</div>
-                <div>{{ status }}</div>
-                <button @click="$store.commit('increment')">commit increment</button>
-                <button @click="dispatchAsync">dispatch incrementAsync({ amount: 3 })</button>
-                <button @click="runCheckout">await checkoutPlus</button>
-            </div>
-        `,
-        methods: {
-            dispatchAsync: function () {
-                this.$store.dispatch('incrementAsync', { amount: 3 });
-            },
-            runCheckout: async function () {
-                this.status = 'checkoutPlus 进行中…';
-                await this.$store.dispatch('checkoutPlus');
-                this.status = 'checkoutPlus 完成，count = ' + this.$store.state.count;
-            },
-            ...Vuex.mapActions(['increment', 'incrementA', 'incrementAsync']),
-            ...Vuex.mapActions({ add: 'increment' })
-        }
-    }).$mount("#app");
-</script>
+      const store = new Vuex.Store({
+      state: {
+      count: 0,
+      todos: [
+      { id: 1, text: '...', done: true },
+      { id: 2, text: '...', done: false }
+      ]
+      },
+      mutations: {
+      increment(state) {
+      state.count++;
+      },
+      incrementA(state, n) {
+      state.count += n;
+      },
+      incrementB(state, payload) {
+      state.count += payload.count;
+      },
+      someMutation(state) {
+      state.count++;
+      }
+      },
+      actions: {
+      increment(context) {
+      context.commit("increment");
+      },
+      incrementA({ commit }) {
+      commit('incrementA', 10);
+      },
+      incrementAsync({ commit }, payload) {
+      var amount = (payload && payload.amount) || 1;
+      setTimeout(function () {
+      console.log("incrementAsync 完成，amount =", amount);
+      commit('incrementA', amount);
+      }, 800);
+      },
+      checkout({ commit }) {
+      return new Promise(function (resolve) {
+      setTimeout(function () {
+      commit('someMutation');
+      resolve();
+      }, 500);
+      });
+      },
+      checkoutPlus({ dispatch, commit }) {
+      return dispatch('checkout').then(function () {
+      commit('incrementB', { count: 1 });
+      });
+      }
+      },
+      getters: {}
+      });
+      
+      store.commit('increment');
+      store.commit('incrementA', 10);
+      store.commit('incrementB', { count: 10 });
+      
+      store.dispatch('incrementAsync', { amount: 10 });
+      store.dispatch({ type: 'incrementAsync', amount: 5 });
+      
+      store.dispatch({ type: 'checkout' }).then(function () {
+      console.log('checkout 完成');
+      });
+      
+      new Vue({
+      store,
+      data: function () {
+      return { status: '' };
+      },
+      computed: {
+      count: function () {
+      return this.$store.state.count;
+      }
+      },
+      template: `
+      <div>
+      <div>count: {{ count }}</div>
+      <div>{{ status }}</div>
+      <button @click="$store.commit('increment')">commit increment</button>
+      <button @click="dispatchAsync">dispatch incrementAsync({ amount: 3 })</button>
+      <button @click="runCheckout">await checkoutPlus</button>
+      </div>
+      `,
+      methods: {
+      dispatchAsync: function () {
+      this.$store.dispatch('incrementAsync', { amount: 3 });
+      },
+      runCheckout: async function () {
+      this.status = 'checkoutPlus 进行中…';
+      await this.$store.dispatch('checkoutPlus');
+      this.status = 'checkoutPlus 完成，count = ' + this.$store.state.count;
+      },
+      ...Vuex.mapActions(['increment', 'incrementA', 'incrementAsync']),
+      ...Vuex.mapActions({ add: 'increment' })
+      }
+      }).$mount("#app");
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -160,16 +165,14 @@
         <a href="./14-Vuex-Module.html">Vuex-Module →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

@@ -13,6 +13,7 @@
     - 面试中如何简洁讲清 effectScope / 副作用清理
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
   <head>
@@ -21,35 +22,35 @@
     <title>Vue3 · effectScope 与副作用清理</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; padding: 6px 12px; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; max-height: 280px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; margin-bottom: 16px; }
+    body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+    button { margin-right: 8px; padding: 6px 12px; }
+    code, pre { background: #f6f8fa; border-radius: 6px; }
+    code { padding: 2px 5px; }
+    pre { padding: 12px; overflow: auto; max-height: 280px; }
+    .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; margin-bottom: 16px; }
     </style>
-      <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
+  </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>effectScope / 副作用清理</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li><code>watch</code> 会返回停止函数。</li>
-      <li>effectScope 可以统一收集和停止多个响应式副作用。</li>
-      <li>组件卸载时要清理定时器、监听器、订阅、请求等副作用。</li>
-      <li><code>watch</code> 会返回停止函数（补充）。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>watch 会返回停止函数？</strong> <code>watch</code> 会返回停止函数</li>
-      <li><strong>effectScope 可以统一收集和停止多个响应式副作用？</strong> effectScope 可以统一收集和停止多个响应式副作用</li>
-      <li><strong>组件卸载时要清理定时器、监听器、订阅、请求等副作用？</strong> 组件卸载时要清理定时器、监听器、订阅、请求等副作用</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>watch</code> 会返回停止函数。</li>
+          <li>effectScope 可以统一收集和停止多个响应式副作用。</li>
+          <li>组件卸载时要清理定时器、监听器、订阅、请求等副作用。</li>
+          <li><code>watch</code> 会返回停止函数（补充）。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>watch 会返回停止函数？</strong> <code>watch</code> 会返回停止函数</li>
+          <li><strong>effectScope 可以统一收集和停止多个响应式副作用？</strong> effectScope 可以统一收集和停止多个响应式副作用</li>
+          <li><strong>组件卸载时要清理定时器、监听器、订阅、请求等副作用？</strong> 组件卸载时要清理定时器、监听器、订阅、请求等副作用</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -80,61 +81,65 @@
     </div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
       const { createApp, ref, watch, effectScope } = Vue;
-
+      
       createApp({
-        setup() {
-          const count = ref(0);
-          const logs = ref([]);
-          const watchActive = ref(false);
-          const scopeActive = ref(false);
-          let stopWatchFn = null;
-          let scope = null;
-
-          function startWatch() {
-            if (watchActive.value) return;
-            stopWatchFn = watch(count, (value) => {
-              logs.value.push(`独立 watch：count = ${value}`);
-            });
-            watchActive.value = true;
-            logs.value.push("已开启独立 watch");
-          }
-
-          function stopWatch() {
-            if (!stopWatchFn) return;
-            stopWatchFn();
-            stopWatchFn = null;
-            watchActive.value = false;
-            logs.value.push("已调用 watch 停止函数");
-          }
-
-          function startScope() {
-            if (scope) return;
-            scope = effectScope();
-            scope.run(() => {
-              watch(count, (value) => {
-                logs.value.push(`scope 内 watch：count = ${value}`);
-              });
-            });
-            scopeActive.value = true;
-            logs.value.push("已开启 effectScope");
-          }
-
-          function stopScope() {
-            if (!scope) return;
-            scope.stop();
-            scope = null;
-            scopeActive.value = false;
-            logs.value.push("已停止 effectScope");
-          }
-
-          return {
-            count, logs, watchActive, scopeActive,
-            startWatch, stopWatch, startScope, stopScope,
-          };
-        },
+      setup() {
+      const count = ref(0);
+      const logs = ref([]);
+      const watchActive = ref(false);
+      const scopeActive = ref(false);
+      let stopWatchFn = null;
+      let scope = null;
+      
+      function startWatch() {
+      if (watchActive.value) return;
+      stopWatchFn = watch(count, (value) => {
+      logs.value.push(`独立 watch：count = ${value}`);
+      });
+      watchActive.value = true;
+      logs.value.push("已开启独立 watch");
+      }
+      
+      function stopWatch() {
+      if (!stopWatchFn) return;
+      stopWatchFn();
+      stopWatchFn = null;
+      watchActive.value = false;
+      logs.value.push("已调用 watch 停止函数");
+      }
+      
+      function startScope() {
+      if (scope) return;
+      scope = effectScope();
+      scope.run(() => {
+      watch(count, (value) => {
+      logs.value.push(`scope 内 watch：count = ${value}`);
+      });
+      });
+      scopeActive.value = true;
+      logs.value.push("已开启 effectScope");
+      }
+      
+      function stopScope() {
+      if (!scope) return;
+      scope.stop();
+      scope = null;
+      scopeActive.value = false;
+      logs.value.push("已停止 effectScope");
+      }
+      
+      return {
+      count, logs, watchActive, scopeActive,
+      startWatch, stopWatch, startScope, stopScope,
+      };
+      },
       }).mount("#app");
     </script>
     <!-- SCRIPT_END -->
@@ -148,16 +153,14 @@
         <a href="./06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html">onWatcherCleanup与watch清理 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

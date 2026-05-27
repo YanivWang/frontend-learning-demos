@@ -13,99 +13,90 @@
     - 面试中如何简洁讲清 Promise.all 并发 与 then 串行
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Promise.all 并发 与 then 串行</title>
     <link rel="stylesheet" href="../../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Promise.all 并发 与 then 串行</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li><code>Promise</code>.all：并发执行，总耗时 ≈ max(各任务耗时)；任一失败立刻 reject。</li>
-      <li>串行：.then(() =&gt; taskFn()) 返回新 <code>Promise</code>；不能直接 .then(promiseInstance)。</li>
-      <li>new <code>Promise</code>(executor) 的 executor 是同步执行的。</li>
-      <li><code>Promise</code>.all：并发执行，总耗时 ≈ max(各任务耗时)；任一失败立刻 reject（补充）。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>Promise.all？</strong> <code>Promise</code>.all：并发执行，总耗时 ≈ max(各任务耗时)；任一失败立刻 reject；串行：.then(() =&gt; taskFn()) 返回新 <code>Promise</code>；不能直接 .then(promiseInstance)</li>
-      <li><strong>new Promise(executor) 的 executor 是同步执行的？</strong> new <code>Promise</code>(executor) 的 executor 是同步执行的</li>
-      <li><strong>Promise.all 并发 与 then 串行的核心概念是什么？</strong> <code>Promise</code>.all：并发执行，总耗时 ≈ max(各任务耗时)；任一失败立刻 reject；串行：.then(() =&gt; taskFn()) 返回新 <code>Promise</code>；不能直接 .then(promiseInstance)</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>Promise</code>.all：并发执行，总耗时 ≈ max(各任务耗时)；任一失败立刻 reject。</li>
+          <li>串行：.then(() =&gt; taskFn()) 返回新 <code>Promise</code>；不能直接 .then(promiseInstance)。</li>
+          <li>new <code>Promise</code>(executor) 的 executor 是同步执行的。</li>
+          <li><code>Promise</code>.all：并发执行，总耗时 ≈ max(各任务耗时)；任一失败立刻 reject（补充）。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>Promise.all？</strong> <code>Promise</code>.all：并发执行，总耗时 ≈ max(各任务耗时)；任一失败立刻 reject；串行：.then(() =&gt; taskFn()) 返回新 <code>Promise</code>；不能直接 .then(promiseInstance)</li>
+          <li><strong>new Promise(executor) 的 executor 是同步执行的？</strong> new <code>Promise</code>(executor) 的 executor 是同步执行的</li>
+          <li><strong>Promise.all 并发 与 then 串行的核心概念是什么？</strong> <code>Promise</code>.all：并发执行，总耗时 ≈ max(各任务耗时)；任一失败立刻 reject；串行：.then(() =&gt; taskFn()) 返回新 <code>Promise</code>；不能直接 .then(promiseInstance)</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
-    // 把任务封装为「返回 Promise 的函数」，方便串行 then 调用
-    const taskP1 = () => new Promise((resolve) => {
-        setTimeout(function (param) {
-            console.log("p1");
-            resolve(param);
-        }, 1500, 'one');
-    });
-    const taskP2 = () => new Promise((resolve) => {
-        setTimeout(function (param) {
-            console.log("p2");
-            resolve(param);
-        }, 1000, 'two');
-    });
-    const taskP3 = () => new Promise((resolve) => {
-        setTimeout(function (param) {
-            console.log("p3");
-            resolve(param);
-        }, 2000, 'three');
-    });
-    const taskP4 = () => new Promise((resolve) => {
-        setTimeout(function (param) {
-            console.log("p4");
-            resolve(param);
-        }, 1000, 'four');
-    });
-
-    // 一：并发执行（Promise.all）
-    //    总耗时 ≈ max(各任务时长)，任一失败立刻 reject
-    console.log("all start...");
-    Promise.all([taskP1(), taskP2(), taskP3(), taskP4()]).then(values => {
-        console.log("values:", values);
-        console.log("all finish...");
-    }).catch(reason => {
-        console.log("reason:", reason);
-    });
-
-    // 二：串行执行
-    //    易错点：.then(p1) 期望传函数，传入 Promise 实例会被当成「忽略上一步返回值的函数」
-    //    解决：.then(() => p1Fn())，确保下一个任务是「返回新 Promise 的函数」
-    new Promise((resolve) => {
-        console.log("serial start...");
-        resolve();
-    })
-    .then(() => taskP1())
-    .then(() => taskP2())
-    .then(() => console.log("serial end..."));
-
-    console.log("script end...");
-</script>
+      // 把任务封装为「返回 Promise 的函数」，方便串行 then 调用
+      const taskP1 = () => new Promise((resolve) => {
+      setTimeout(function (param) {
+      console.log("p1");
+      resolve(param);
+      }, 1500, 'one');
+      });
+      const taskP2 = () => new Promise((resolve) => {
+      setTimeout(function (param) {
+      console.log("p2");
+      resolve(param);
+      }, 1000, 'two');
+      });
+      const taskP3 = () => new Promise((resolve) => {
+      setTimeout(function (param) {
+      console.log("p3");
+      resolve(param);
+      }, 2000, 'three');
+      });
+      const taskP4 = () => new Promise((resolve) => {
+      setTimeout(function (param) {
+      console.log("p4");
+      resolve(param);
+      }, 1000, 'four');
+      });
+      
+      // 一：并发执行（Promise.all）
+      //    总耗时 ≈ max(各任务时长)，任一失败立刻 reject
+      console.log("all start...");
+      Promise.all([taskP1(), taskP2(), taskP3(), taskP4()]).then(values => {
+      console.log("values:", values);
+      console.log("all finish...");
+      }).catch(reason => {
+      console.log("reason:", reason);
+      });
+      
+      // 二：串行执行
+      //    易错点：.then(p1) 期望传函数，传入 Promise 实例会被当成「忽略上一步返回值的函数」
+      //    解决：.then(() => p1Fn())，确保下一个任务是「返回新 Promise 的函数」
+      new Promise((resolve) => {
+      console.log("serial start...");
+      resolve();
+      })
+      .then(() => taskP1())
+      .then(() => taskP2())
+      .then(() => console.log("serial end..."));
+      
+      console.log("script end...");
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -117,16 +108,14 @@
         <a href="./02-Promise-%E4%B8%8E%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF.html">Promise-与事件循环 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

@@ -13,96 +13,87 @@
     - 面试中如何简洁讲清 手写 Promise.all
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>手写 Promise.all</title>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>手写 Promise.all</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>全部 resolve 才整体 resolve；任一 reject 立刻整体 reject。</li>
-      <li>易错点：用 retArray.length 判断完成数会失败（稀疏数组的 length 是「最大索引+1」）。</li>
-      <li>用独立计数器 doneCount 判断完成数，避免稀疏数组 length 陷阱。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>全部 resolve 才整体 resolve？</strong> 全部 resolve 才整体 resolve；任一 reject 立刻整体 reject</li>
-      <li><strong>用独立计数器 doneCount 判断完成数？</strong> 用独立计数器 doneCount 判断完成数，避免稀疏数组 length 陷阱</li>
-      <li><strong>手写 Promise.all的核心概念是什么？</strong> 全部 resolve 才整体 resolve；任一 reject 立刻整体 reject；易错点：用 retArray.length 判断完成数会失败（稀疏数组的 length 是「最大索引+1」）</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>全部 resolve 才整体 resolve；任一 reject 立刻整体 reject。</li>
+          <li>易错点：用 retArray.length 判断完成数会失败（稀疏数组的 length 是「最大索引+1」）。</li>
+          <li>用独立计数器 doneCount 判断完成数，避免稀疏数组 length 陷阱。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>全部 resolve 才整体 resolve？</strong> 全部 resolve 才整体 resolve；任一 reject 立刻整体 reject</li>
+          <li><strong>用独立计数器 doneCount 判断完成数？</strong> 用独立计数器 doneCount 判断完成数，避免稀疏数组 length 陷阱</li>
+          <li><strong>手写 Promise.all的核心概念是什么？</strong> 全部 resolve 才整体 resolve；任一 reject 立刻整体 reject；易错点：用 retArray.length 判断完成数会失败（稀疏数组的 length 是「最大索引+1」）</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
-    let p1 = new Promise((resolve) => {
-        setTimeout(() => resolve("p1 ok!"), 1500);
-    });
-
-    let p2 = new Promise((resolve) => {
-        setTimeout(() => resolve("p2 ok!"), 2000);
-    });
-
-    let p3 = new Promise((resolve) => {
-        setTimeout(() => resolve("p3 ok!"), 2000);
-    });
-
-    // 规则:
-    //   1.有一个失败就 reject
-    //   2.全部成功才 resolve
-    Promise.myAll = function (...args) {
-        return new Promise((resolve, reject) => {
-            const retArray = new Array(args.length);
-
-            // 边界：传空数组应立即 resolve([])
-            if (args.length === 0) {
-                resolve(retArray);
-                return;
-            }
-
-            // 用计数器 doneCount 代替 retArray.length，避免稀疏数组 length 判断陷阱
-            let doneCount = 0;
-            args.forEach((tempPromise, index) => {
-                // 包一层 Promise.resolve，容忍非 thenable 输入
-                Promise.resolve(tempPromise).then((res) => {
-                    retArray[index] = res;
-                    doneCount++;
-                    if (doneCount === args.length) {
-                        resolve(retArray);
-                    }
-                }).catch(reject);
-            });
-        });
-    };
-
-
-    Promise.myAll(p1, p2, p3).then(res => {
-        console.log("all resolved:", res);
-    }).catch(err => {
-        console.log("any rejected:", err);
-    });
-</script>
+      let p1 = new Promise((resolve) => {
+      setTimeout(() => resolve("p1 ok!"), 1500);
+      });
+      
+      let p2 = new Promise((resolve) => {
+      setTimeout(() => resolve("p2 ok!"), 2000);
+      });
+      
+      let p3 = new Promise((resolve) => {
+      setTimeout(() => resolve("p3 ok!"), 2000);
+      });
+      
+      // 规则:
+      //   1.有一个失败就 reject
+      //   2.全部成功才 resolve
+      Promise.myAll = function (...args) {
+      return new Promise((resolve, reject) => {
+      const retArray = new Array(args.length);
+      
+      // 边界：传空数组应立即 resolve([])
+      if (args.length === 0) {
+      resolve(retArray);
+      return;
+      }
+      
+      // 用计数器 doneCount 代替 retArray.length，避免稀疏数组 length 判断陷阱
+      let doneCount = 0;
+      args.forEach((tempPromise, index) => {
+      // 包一层 Promise.resolve，容忍非 thenable 输入
+      Promise.resolve(tempPromise).then((res) => {
+      retArray[index] = res;
+      doneCount++;
+      if (doneCount === args.length) {
+      resolve(retArray);
+      }
+      }).catch(reject);
+      });
+      });
+      };
+      
+      
+      Promise.myAll(p1, p2, p3).then(res => {
+      console.log("all resolved:", res);
+      }).catch(err => {
+      console.log("any rejected:", err);
+      });
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -114,16 +105,14 @@
         <a href="../%E8%B5%84%E6%BA%90%E9%A2%84%E5%8A%A0%E8%BD%BD/index.html">index →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

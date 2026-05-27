@@ -13,34 +13,35 @@
     - 面试中如何简洁讲清 Service Worker 基础注册
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Service Worker 基础</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Service Worker 基础</title>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
   </head>
-<body class="demo-page">
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Service Worker 注册</h1>
       <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>SW 独立线程，可拦截 <code>fetch</code>、做离线缓存（PWA 核心能力）。</li>
-      <li>必须在 HTTPS / localhost 下注册，且单独提供 sw.js。</li>
-      <li>注册晚于 load 事件可避免阻塞首屏关键资源。</li>
-      <li>SW 独立线程，可拦截 <code>fetch</code>、做离线缓存（PWA 核心能力）（补充）。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>必须在 HTTPS / localhost 下注册？</strong> 必须在 HTTPS / localhost 下注册，且单独提供 sw.js</li>
-      <li><strong>注册晚于 load 事件可避免阻塞首屏关键资源？</strong> 注册晚于 load 事件可避免阻塞首屏关键资源</li>
-      <li><strong>Service Worker 基础注册的核心概念是什么？</strong> SW 独立线程，可拦截 <code>fetch</code>、做离线缓存（PWA 核心能力）；必须在 HTTPS / localhost 下注册，且单独提供 sw.js</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>SW 独立线程，可拦截 <code>fetch</code>、做离线缓存（PWA 核心能力）。</li>
+          <li>必须在 HTTPS / localhost 下注册，且单独提供 sw.js。</li>
+          <li>注册晚于 load 事件可避免阻塞首屏关键资源。</li>
+          <li>SW 独立线程，可拦截 <code>fetch</code>、做离线缓存（PWA 核心能力）（补充）。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>必须在 HTTPS / localhost 下注册？</strong> 必须在 HTTPS / localhost 下注册，且单独提供 sw.js</li>
+          <li><strong>注册晚于 load 事件可避免阻塞首屏关键资源？</strong> 注册晚于 load 事件可避免阻塞首屏关键资源</li>
+          <li><strong>Service Worker 基础注册的核心概念是什么？</strong> SW 独立线程，可拦截 <code>fetch</code>、做离线缓存（PWA 核心能力）；必须在 HTTPS / localhost 下注册，且单独提供 sw.js</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -50,44 +51,48 @@
 
   <pre id="log" style="background:#f5f5f5;padding:1rem;border-radius:4px;"></pre>
 
-    <!-- SCRIPT_START -->
+    
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    const log = document.getElementById("log");
-    function append(s) { log.textContent += s + "\n"; }
-
-    // 1) 特性检测：in 操作符会沿原型链查找
-    if ("serviceWorker" in navigator) {
+      const log = document.getElementById("log");
+      function append(s) { log.textContent += s + "\n"; }
+      
+      // 1) 特性检测：in 操作符会沿原型链查找
+      if ("serviceWorker" in navigator) {
       // 2) 等页面 load 后再注册，避免争抢首屏资源
       window.addEventListener("load", () => {
-        navigator.serviceWorker
-          .register("./sw.js", { scope: "/" })
-          .then((registration) => {
-            append("✅ 注册成功，作用域：" + registration.scope);
-          })
-          .catch((err) => {
-            append("❌ 注册失败：" + err.message);
-          });
+      navigator.serviceWorker
+      .register("./sw.js", { scope: "/" })
+      .then((registration) => {
+      append("✅ 注册成功，作用域：" + registration.scope);
+      })
+      .catch((err) => {
+      append("❌ 注册失败：" + err.message);
       });
-    } else {
+      });
+      } else {
       append("当前浏览器不支持 Service Worker");
-    }
-
-    /*
+      }
+      
+      /*
       一个最小的 sw.js 示例：
-
-        const CACHE = 'v1';
-        self.addEventListener('install', (e) => {
-          e.waitUntil(
-            caches.open(CACHE).then((c) => c.addAll(['/', '/index.html']))
-          );
-        });
-        self.addEventListener('fetch', (e) => {
-          e.respondWith(
-            caches.match(e.request).then((r) => r || fetch(e.request))
-          );
-        });
-    */
-  </script>
+      
+      const CACHE = 'v1';
+      self.addEventListener('install', (e) => {
+      e.waitUntil(
+      caches.open(CACHE).then((c) => c.addAll(['/', '/index.html']))
+      );
+      });
+      self.addEventListener('fetch', (e) => {
+      e.respondWith(
+      caches.match(e.request).then((r) => r || fetch(e.request))
+      );
+      });
+      */
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -99,16 +104,14 @@
         <a href="./WebComponents.html">WebComponents →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

@@ -13,6 +13,7 @@
     - 面试中如何简洁讲清 props 解构保持响应式（Vue 3.5+）
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
   <head>
@@ -21,37 +22,37 @@
     <title>Vue3 · props 解构保持响应式</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; padding: 6px 12px; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 860px; }
-      .grid { display: grid; gap: 10px; }
-      .panel { padding: 10px; background: #fafafa; border-radius: 6px; }
+    body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+    button { margin-right: 8px; padding: 6px 12px; }
+    code, pre { background: #f6f8fa; border-radius: 6px; }
+    code { padding: 2px 5px; }
+    pre { padding: 12px; overflow: auto; }
+    .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 860px; }
+    .grid { display: grid; gap: 10px; }
+    .panel { padding: 10px; background: #fafafa; border-radius: 6px; }
     </style>
-      <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
+  </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>props 解构保持响应式（Vue 3.5+）</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>Vue 3.5 在 &lt;<code>script setup</code>&gt; 中对 <code>defineProps</code> 解构会编译为保持响应式的引用。</li>
-      <li>普通 setup(props) 里直接解构 props 仍会丢响应（基本类型变成快照）。</li>
-      <li>全局构建可运行对比：直接解构 vs toRefs(props) vs 模板直接用 props.xxx。</li>
-      <li>Vue 3.5 在 &lt;<code>script setup</code>&gt; 中对 <code>defineProps</code> 解构会编译为保持响应式的引用（补充）。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>Vue 3.5 在 &lt;script setup&gt; 中对 defineProps？</strong> Vue 3.5 在 &lt;<code>script setup</code>&gt; 中对 <code>defineProps</code> 解构会编译为保持响应式的引用</li>
-      <li><strong>普通 setup(props) 里直接解构 props 仍会丢响应（基本类型变成？</strong> 普通 setup(props) 里直接解构 props 仍会丢响应（基本类型变成快照）</li>
-      <li><strong>全局构建可运行对比？</strong> 全局构建可运行对比：直接解构 vs toRefs(props) vs 模板直接用 props.xxx</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>Vue 3.5 在 &lt;<code>script setup</code>&gt; 中对 <code>defineProps</code> 解构会编译为保持响应式的引用。</li>
+          <li>普通 setup(props) 里直接解构 props 仍会丢响应（基本类型变成快照）。</li>
+          <li>全局构建可运行对比：直接解构 vs toRefs(props) vs 模板直接用 props.xxx。</li>
+          <li>Vue 3.5 在 &lt;<code>script setup</code>&gt; 中对 <code>defineProps</code> 解构会编译为保持响应式的引用（补充）。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>Vue 3.5 在 &lt;script setup&gt; 中对 defineProps？</strong> Vue 3.5 在 &lt;<code>script setup</code>&gt; 中对 <code>defineProps</code> 解构会编译为保持响应式的引用</li>
+          <li><strong>普通 setup(props) 里直接解构 props 仍会丢响应（基本类型变成？</strong> 普通 setup(props) 里直接解构 props 仍会丢响应（基本类型变成快照）</li>
+          <li><strong>全局构建可运行对比？</strong> 全局构建可运行对比：直接解构 vs toRefs(props) vs 模板直接用 props.xxx</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -74,61 +75,65 @@
     </div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
       const { createApp, ref, toRefs } = Vue;
-
+      
       const BadDestructure = {
-        props: { label: String },
-        setup(props) {
-          const { label } = props;
-          return { label };
-        },
-        template: `
-          <div class="panel">
-            直接解构 props（会丢响应）：{{ label }}
-          </div>
-        `,
+      props: { label: String },
+      setup(props) {
+      const { label } = props;
+      return { label };
+      },
+      template: `
+      <div class="panel">
+      直接解构 props（会丢响应）：{{ label }}
+      </div>
+      `,
       };
-
+      
       const GoodToRefs = {
-        props: { label: String },
-        setup(props) {
-          const { label } = toRefs(props);
-          return { label };
-        },
-        template: `
-          <div class="panel">
-            toRefs(props)（保持响应）：{{ label }}
-          </div>
-        `,
+      props: { label: String },
+      setup(props) {
+      const { label } = toRefs(props);
+      return { label };
+      },
+      template: `
+      <div class="panel">
+      toRefs(props)（保持响应）：{{ label }}
+      </div>
+      `,
       };
-
+      
       const DirectProps = {
-        props: { label: String },
-        setup(props) {
-          return { props };
-        },
-        template: `
-          <div class="panel">
-            模板直接用 props.label（保持响应）：{{ props.label }}
-          </div>
-        `,
+      props: { label: String },
+      setup(props) {
+      return { props };
+      },
+      template: `
+      <div class="panel">
+      模板直接用 props.label（保持响应）：{{ props.label }}
+      </div>
+      `,
       };
-
+      
       createApp({
-        components: { BadDestructure, GoodToRefs, DirectProps },
-        setup() {
-          const label = ref("初始 label");
-          const sfcSnippet = [
-            "<!-- Vue 3.5+ script setup：解构后仍响应 -->",
-            "&lt;script setup&gt;",
-            "const { label } = defineProps({ label: String })",
-            "&lt;/script&gt;",
-            "<p>{{ label }}</p>",
-          ].join("\n");
-          return { label, sfcSnippet };
-        },
+      components: { BadDestructure, GoodToRefs, DirectProps },
+      setup() {
+      const label = ref("初始 label");
+      const sfcSnippet = [
+      "<!-- Vue 3.5+ script setup：解构后仍响应 -->",
+      "&lt;script setup&gt;",
+      "const { label } = defineProps({ label: String })",
+      "&lt;/script&gt;",
+      "<p>{{ label }}</p>",
+      ].join("\n");
+      return { label, sfcSnippet };
+      },
       }).mount("#app");
     </script>
     <!-- SCRIPT_END -->
@@ -142,16 +147,14 @@
         <a href="../05-%E6%8F%92%E6%A7%BD%E4%B8%8E%E7%BB%84%E4%BB%B6%E5%BD%A2%E6%80%81/01-%E9%BB%98%E8%AE%A4%E5%85%B7%E5%90%8D%E4%BD%9C%E7%94%A8%E5%9F%9F%E6%8F%92%E6%A7%BD.html">默认具名作用域插槽 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

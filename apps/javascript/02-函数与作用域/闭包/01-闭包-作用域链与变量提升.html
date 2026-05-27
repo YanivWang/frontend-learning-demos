@@ -13,99 +13,90 @@
     - 面试中如何简洁讲清 闭包的作用域链与变量提升
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>闭包 · 作用域链与变量提升</title>
-      <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
+  </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>闭包的作用域链与变量提升</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li><code>var</code> 在脚本顶层 → window 属性；<code>let</code>/const → 脚本作用域，不挂 window。</li>
-      <li>函数声明 + <code>var</code> 有声明提升；<code>let</code>/const 有暂时性死区。</li>
-      <li>闭包：内层函数引用外层变量，会延长外层变量的生命周期。</li>
-      <li><code>var</code> 在脚本顶层 → window 属性；<code>let</code>/const → 脚本作用域，不挂 window（补充）。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>var 在脚本顶层 → window 属性？</strong> <code>var</code> 在脚本顶层 → window 属性；<code>let</code>/const → 脚本作用域，不挂 window；函数声明 + <code>var</code> 有声明提升；<code>let</code>/const 有暂时性死区</li>
-      <li><strong>函数声明 + var 有声明提升？</strong> 函数声明 + <code>var</code> 有声明提升；<code>let</code>/const 有暂时性死区</li>
-      <li><strong>闭包的作用域链与变量提升的核心概念是什么？</strong> <code>var</code> 在脚本顶层 → window 属性；<code>let</code>/const → 脚本作用域，不挂 window；函数声明 + <code>var</code> 有声明提升；<code>let</code>/const 有暂时性死区</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>var</code> 在脚本顶层 → window 属性；<code>let</code>/const → 脚本作用域，不挂 window。</li>
+          <li>函数声明 + <code>var</code> 有声明提升；<code>let</code>/const 有暂时性死区。</li>
+          <li>闭包：内层函数引用外层变量，会延长外层变量的生命周期。</li>
+          <li><code>var</code> 在脚本顶层 → window 属性；<code>let</code>/const → 脚本作用域，不挂 window（补充）。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>var 在脚本顶层 → window 属性？</strong> <code>var</code> 在脚本顶层 → window 属性；<code>let</code>/const → 脚本作用域，不挂 window；函数声明 + <code>var</code> 有声明提升；<code>let</code>/const 有暂时性死区</li>
+          <li><strong>函数声明 + var 有声明提升？</strong> 函数声明 + <code>var</code> 有声明提升；<code>let</code>/const 有暂时性死区</li>
+          <li><strong>闭包的作用域链与变量提升的核心概念是什么？</strong> <code>var</code> 在脚本顶层 → window 属性；<code>let</code>/const → 脚本作用域，不挂 window；函数声明 + <code>var</code> 有声明提升；<code>let</code>/const 有暂时性死区</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
-
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../packages/shared/demo-log.js"></script>
 
     <!-- SCRIPT_START -->
     <script>
       //AAA:直接在script脚本顶层使用 var 声明的变量具有全局作用域(global scope)，会作为 window 对象的属性
       var globalVar = "globalVar1111";
-
+      
       //AAAA:直接在script脚本顶层使用 function 关键字声明的函数，具有全局作用域(global scope), 会作为 window 对象的属性
       function outerFn(x, y) {
-        //函数内部声明的变量，具有局部(本地)作用域(local scope)
-
-        console.log("this,", this); //函数的内部对象 this 指向调用它的那个对象
-        console.log("arguments,", arguments); //函数的内部对象 arguments，包含传递给函数的实际的参数
-        console.log("arguments callee", arguments.callee === outerFn); //arguments callee 属性执行当前函数本身(指向正在执行的函数自身)
-        console.log("globalVar,", globalVar);
-
-        console.log(outerVar);//undefined (由于var声明的变量会有变量提升，所以在赋值之前，直接使用，值是undefined)
-       // console.log(outerLet);//<没有可用的值> 存在死区，不可访问，访问会报错：Uncaught ReferenceError: Cannot access 'outerLet' before initialization
-
-        var outerVar = 1000;
-        let outerLet = 2000;
-
-        return function innerFn() {
-          console.log(outerVar);//闭包(嵌套函数)中引用的外部函数的作用域中的变量，存放在闭包作用域中
-          console.log(outerLet);
-
-          var innerVar = 100;
-          let innerLet = 200;
-
-          console.log(innerVar);
-          console.log(innerLet);
-
-          console.log("innerFn", innerFn);
-
-          return function innnnerFn(){
-            console.log(innerLet);
-            console.log(innerVar);
-
-            var nnnerVar = 123;
-            let nnnerLet = 456;
-
-            console.log(nnnerVar);
-            console.log(nnnerLet);
-
-            console.log("innnnerFn,", innnnerFn);
-          }
-        };
+      //函数内部声明的变量，具有局部(本地)作用域(local scope)
+      
+      console.log("this,", this); //函数的内部对象 this 指向调用它的那个对象
+      console.log("arguments,", arguments); //函数的内部对象 arguments，包含传递给函数的实际的参数
+      console.log("arguments callee", arguments.callee === outerFn); //arguments callee 属性执行当前函数本身(指向正在执行的函数自身)
+      console.log("globalVar,", globalVar);
+      
+      console.log(outerVar);//undefined (由于var声明的变量会有变量提升，所以在赋值之前，直接使用，值是undefined)
+      // console.log(outerLet);//<没有可用的值> 存在死区，不可访问，访问会报错：Uncaught ReferenceError: Cannot access 'outerLet' before initialization
+      
+      var outerVar = 1000;
+      let outerLet = 2000;
+      
+      return function innerFn() {
+      console.log(outerVar);//闭包(嵌套函数)中引用的外部函数的作用域中的变量，存放在闭包作用域中
+      console.log(outerLet);
+      
+      var innerVar = 100;
+      let innerLet = 200;
+      
+      console.log(innerVar);
+      console.log(innerLet);
+      
+      console.log("innerFn", innerFn);
+      
+      return function innnnerFn(){
+      console.log(innerLet);
+      console.log(innerVar);
+      
+      var nnnerVar = 123;
+      let nnnerLet = 456;
+      
+      console.log(nnnerVar);
+      console.log(nnnerLet);
+      
+      console.log("innnnerFn,", innnnerFn);
       }
-
+      };
+      }
+      
       //BBB：直接在script脚本顶层 使用 const 或者 let 声明的变量, 具有 脚本作用域(script scope)
       const innnnerFn = outerFn(1, 2, 3)();
       innnnerFn();
-
+      
       //BBB：直接在script脚本顶层使用 使用 const 或者 let 声明的变量，具有 脚本作用域(script scope)
       let scriptLet = "I am let";
     </script>
@@ -120,16 +111,14 @@
         <a href="./02-%E9%97%AD%E5%8C%85-%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E4%B8%8E%E4%BF%AE%E5%A4%8D.html">闭包-内存泄漏与修复 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

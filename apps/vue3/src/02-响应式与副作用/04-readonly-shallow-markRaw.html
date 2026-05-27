@@ -13,6 +13,7 @@
     - 面试中如何简洁讲清 readonly / shallowReactive / markRaw
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
   <head>
@@ -21,34 +22,34 @@
     <title>Vue3 · readonly/shallow/markRaw</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; padding: 6px 12px; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; margin-bottom: 16px; }
+    body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+    button { margin-right: 8px; padding: 6px 12px; }
+    code, pre { background: #f6f8fa; border-radius: 6px; }
+    code { padding: 2px 5px; }
+    pre { padding: 12px; overflow: auto; }
+    .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; margin-bottom: 16px; }
     </style>
-      <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
+  </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>readonly / shallowReactive / markRaw</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>readonly 用于暴露只读状态，避免外部误改。</li>
-      <li>shallowReactive 只代理第一层。</li>
-      <li>markRaw 标记对象不需要转成响应式。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>readonly 用于暴露只读状态？</strong> readonly 用于暴露只读状态，避免外部误改</li>
-      <li><strong>shallowReactive 只代理第一层？</strong> shallowReactive 只代理第一层</li>
-      <li><strong>markRaw 标记对象不需要转成响应式？</strong> markRaw 标记对象不需要转成响应式</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>readonly 用于暴露只读状态，避免外部误改。</li>
+          <li>shallowReactive 只代理第一层。</li>
+          <li>markRaw 标记对象不需要转成响应式。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>readonly 用于暴露只读状态？</strong> readonly 用于暴露只读状态，避免外部误改</li>
+          <li><strong>shallowReactive 只代理第一层？</strong> shallowReactive 只代理第一层</li>
+          <li><strong>markRaw 标记对象不需要转成响应式？</strong> markRaw 标记对象不需要转成响应式</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -86,44 +87,48 @@
     </div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
       const { createApp, reactive, shallowReactive, readonly, markRaw, ref } = Vue;
-
+      
       createApp({
-        setup() {
-          const deep = reactive({ nested: { count: 0 } });
-          const shallow = shallowReactive({ nested: { count: 0 } });
-          const readonlyDeep = readonly(deep);
-          const rawWidget = markRaw({ name: "第三方图表实例" });
-          const rawViewVersion = ref(0);
-          const note = ref("点击 shallow 嵌套字段时，通常不会触发视图更新；替换第一层对象才会触发。");
-
-          function replaceShallow() {
-            shallow.nested = { count: shallow.nested.count + 1 };
-            note.value = "已替换 shallow 第一层，视图应更新。";
-          }
-
-          function tryMutateReadonly() {
-            const before = readonlyDeep.nested.count;
-            readonlyDeep.nested.count = before + 100;
-            if (readonlyDeep.nested.count === before) {
-              note.value = `readonly 阻止直接修改：赋值被忽略，count 仍为 ${before}`;
-            } else {
-              note.value = "readonly 修改意外成功，请检查环境。";
-            }
-          }
-
-          function mutateRawWidget() {
-            rawWidget.name = rawWidget.name === "第三方图表实例" ? "已修改但未追踪" : "第三方图表实例";
-            note.value = "已修改 markRaw 对象字段；若上方 name 未变，说明它未被响应式追踪。";
-          }
-
-          return {
-            deep, shallow, readonlyDeep, rawWidget, rawViewVersion, note,
-            replaceShallow, tryMutateReadonly, mutateRawWidget,
-          };
-        },
+      setup() {
+      const deep = reactive({ nested: { count: 0 } });
+      const shallow = shallowReactive({ nested: { count: 0 } });
+      const readonlyDeep = readonly(deep);
+      const rawWidget = markRaw({ name: "第三方图表实例" });
+      const rawViewVersion = ref(0);
+      const note = ref("点击 shallow 嵌套字段时，通常不会触发视图更新；替换第一层对象才会触发。");
+      
+      function replaceShallow() {
+      shallow.nested = { count: shallow.nested.count + 1 };
+      note.value = "已替换 shallow 第一层，视图应更新。";
+      }
+      
+      function tryMutateReadonly() {
+      const before = readonlyDeep.nested.count;
+      readonlyDeep.nested.count = before + 100;
+      if (readonlyDeep.nested.count === before) {
+      note.value = `readonly 阻止直接修改：赋值被忽略，count 仍为 ${before}`;
+      } else {
+      note.value = "readonly 修改意外成功，请检查环境。";
+      }
+      }
+      
+      function mutateRawWidget() {
+      rawWidget.name = rawWidget.name === "第三方图表实例" ? "已修改但未追踪" : "第三方图表实例";
+      note.value = "已修改 markRaw 对象字段；若上方 name 未变，说明它未被响应式追踪。";
+      }
+      
+      return {
+      deep, shallow, readonlyDeep, rawWidget, rawViewVersion, note,
+      replaceShallow, tryMutateReadonly, mutateRawWidget,
+      };
+      },
       }).mount("#app");
     </script>
     <!-- SCRIPT_END -->
@@ -137,16 +142,14 @@
         <a href="./05-effectScope%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8%E6%B8%85%E7%90%86.html">effectScope与副作用清理 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

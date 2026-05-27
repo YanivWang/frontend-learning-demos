@@ -13,13 +13,14 @@
     - 面试中如何简洁讲清 浏览器渲染流程、重排、重绘与性能优化
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>浏览器渲染与性能</title>
-  <style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>浏览器渲染与性能</title>
+    <style>
     body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
     .stage { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
     .stage span { padding: 8px 10px; border: 1px solid #ddd; background: #f8f8f8; border-radius: 4px; }
@@ -28,41 +29,31 @@
     .item { padding: 8px; background: #eef7ff; border: 1px solid #cddfed; }
     .box { width: 80px; height: 80px; margin-top: 12px; background: #3d8bfd; transition: transform 240ms ease, opacity 240ms ease; }
     .box.move { transform: translateX(160px); opacity: 0.65; }
-  </style>
+    </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
   </head>
-<body class="demo-page">
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>浏览器渲染与性能</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>关键渲染路径：HTML -&gt; DOM，CSS -&gt; CSSOM，然后生成 Render Tree。</li>
-      <li>Layout 计算位置尺寸，Paint 绘制像素，Composite 合成图层。</li>
-      <li>批量 DOM 操作、读写分离、transform/opacity 动画可以减少性能压力。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>Layout 计算位置尺寸？</strong> Layout 计算位置尺寸，Paint 绘制像素，Composite 合成图层</li>
-      <li><strong>批量 DOM 操作、读写分离、transform/opacity 动画可以减少性？</strong> 批量 DOM 操作、读写分离、transform/opacity 动画可以减少性能压力</li>
-      <li><strong>浏览器渲染流程、重排、重绘与性能优化的核心概念是什么？</strong> 关键渲染路径：HTML -&gt; DOM，CSS -&gt; CSSOM，然后生成 Render Tree；Layout 计算位置尺寸，Paint 绘制像素，Composite 合成图层</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>关键渲染路径：HTML -&gt; DOM，CSS -&gt; CSSOM，然后生成 Render Tree。</li>
+          <li>Layout 计算位置尺寸，Paint 绘制像素，Composite 合成图层。</li>
+          <li>批量 DOM 操作、读写分离、transform/opacity 动画可以减少性能压力。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>Layout 计算位置尺寸？</strong> Layout 计算位置尺寸，Paint 绘制像素，Composite 合成图层</li>
+          <li><strong>批量 DOM 操作、读写分离、transform/opacity 动画可以减少性？</strong> 批量 DOM 操作、读写分离、transform/opacity 动画可以减少性能压力</li>
+          <li><strong>浏览器渲染流程、重排、重绘与性能优化的核心概念是什么？</strong> 关键渲染路径：HTML -&gt; DOM，CSS -&gt; CSSOM，然后生成 Render Tree；Layout 计算位置尺寸，Paint 绘制像素，Composite 合成图层</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
-
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../packages/shared/demo-log.js"></script>
 
 <div class="stage">
     <span>HTML</span>
@@ -89,48 +80,52 @@
   <div id="box" class="box"></div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    const list = document.getElementById("list");
-    const result = document.getElementById("result");
-    const box = document.getElementById("box");
-
-    function createItem(index) {
+      const list = document.getElementById("list");
+      const result = document.getElementById("result");
+      const box = document.getElementById("box");
+      
+      function createItem(index) {
       const div = document.createElement("div");
       div.className = "item";
       div.textContent = "item " + index;
       return div;
-    }
-
-    document.getElementById("badBtn").addEventListener("click", () => {
+      }
+      
+      document.getElementById("badBtn").addEventListener("click", () => {
       list.innerHTML = "";
       const start = performance.now();
       for (let i = 0; i < 100; i++) {
-        list.appendChild(createItem(i));
-        // 读布局属性会强制浏览器把前面的写入同步计算出来，频繁读写混合容易触发性能问题。
-        list.offsetHeight;
+      list.appendChild(createItem(i));
+      // 读布局属性会强制浏览器把前面的写入同步计算出来，频繁读写混合容易触发性能问题。
+      list.offsetHeight;
       }
       result.textContent = "逐个插入耗时：" + (performance.now() - start).toFixed(2) + "ms";
-    });
-
-    document.getElementById("goodBtn").addEventListener("click", () => {
+      });
+      
+      document.getElementById("goodBtn").addEventListener("click", () => {
       list.innerHTML = "";
       const start = performance.now();
       const fragment = document.createDocumentFragment();
       for (let i = 0; i < 100; i++) {
-        fragment.appendChild(createItem(i));
+      fragment.appendChild(createItem(i));
       }
       list.appendChild(fragment);
       result.textContent = "批量插入耗时：" + (performance.now() - start).toFixed(2) + "ms";
-    });
-
-    document.getElementById("animateBtn").addEventListener("click", () => {
+      });
+      
+      document.getElementById("animateBtn").addEventListener("click", () => {
       box.classList.toggle("move");
       result.textContent = "transform/opacity 通常走合成阶段，比频繁改 left/top 更适合动画。";
-    });
-
-    console.log("动画节流可以继续看 requestAnimation.html。");
-  </script>
+      });
+      
+      console.log("动画节流可以继续看 requestAnimation.html。");
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -142,16 +137,14 @@
         <a href="./DOM%E6%93%8D%E4%BD%9C.html">DOM操作 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

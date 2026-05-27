@@ -13,82 +13,73 @@
     - 面试中如何简洁讲清 通过 iterate 统计已用容量
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>获取已用容量</title>
-      <script src="lib/localforage.js"></script>
+    <script src="lib/localforage.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>通过 iterate 统计已用容量</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>iterate 回调中累计 <code>key</code>.length + JSON.stringify(value).length 估算字节数。</li>
-      <li>估算并非物理字节，但够用作业务粗略容量提示。</li>
-      <li>注意：JSON.stringify 不能正确序列化 Date/Blob 等，需要特殊处理。</li>
-      <li>iterate 回调中累计 <code>key</code>.length + JSON.stringify(value).length 估算字节数（补充）。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>iterate 回调中累计 key.length + JSON.stringif？</strong> iterate 回调中累计 <code>key</code>.length + JSON.stringify(value).length 估算字节数</li>
-      <li><strong>通过 iterate 统计已用容量的核心概念是什么？</strong> iterate 回调中累计 <code>key</code>.length + JSON.stringify(value).length 估算字节数；估算并非物理字节，但够用作业务粗略容量提示</li>
-      <li><strong>通过 iterate 统计已用容量在实际项目里怎么用？</strong> iterate 回调中累计 <code>key</code>.length + JSON.stringify(value).length 估算字节数；估算并非物理字节，但够用作业务粗略容量提示</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>iterate 回调中累计 <code>key</code>.length + JSON.stringify(value).length 估算字节数。</li>
+          <li>估算并非物理字节，但够用作业务粗略容量提示。</li>
+          <li>注意：JSON.stringify 不能正确序列化 Date/Blob 等，需要特殊处理。</li>
+          <li>iterate 回调中累计 <code>key</code>.length + JSON.stringify(value).length 估算字节数（补充）。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>iterate 回调中累计 key.length + JSON.stringif？</strong> iterate 回调中累计 <code>key</code>.length + JSON.stringify(value).length 估算字节数</li>
+          <li><strong>通过 iterate 统计已用容量的核心概念是什么？</strong> iterate 回调中累计 <code>key</code>.length + JSON.stringify(value).length 估算字节数；估算并非物理字节，但够用作业务粗略容量提示</li>
+          <li><strong>通过 iterate 统计已用容量在实际项目里怎么用？</strong> iterate 回调中累计 <code>key</code>.length + JSON.stringify(value).length 估算字节数；估算并非物理字节，但够用作业务粗略容量提示</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
-    console.log("进入..");
-    /*
-    async function testRemainCap() {
-        await localforage.setItem("name", "Join");
-        for (let i = 0; i < 10000; i++) {
-            await localforage.setItem("key_" + i, Math.random().toFixed(5));
-        }
-    }
-    testRemainCap().then(function () {
-        console.log("写入完毕..");
-    });*/
-
-    var time1 = new Date().getTime();
-
-    let totalSize = 0;
-    let iterNumber1 = 0;
-    localforage.iterate(function (value, key, iterNumber) {
-        totalSize = totalSize + key.length + JSON.stringify(value).length;
-        //iterNumber1 = iterNumber;
-        //console.log(iterNumber + " : " + totalSize);
-    }).then(function () {
-        var time2 = new Date().getTime();
-
-        console.log("用时：" + (time2 - time1)/1000 + "s");
-
-        //console.log("iterNumber:" + iterNumber1);
-        console.log("totalSize:" + totalSize/1024/1024 + "M");
-    }).catch(function (err) {
-        console.log("err:" + err);
-    })
-</script>
+      console.log("进入..");
+      /*
+      async function testRemainCap() {
+      await localforage.setItem("name", "Join");
+      for (let i = 0; i < 10000; i++) {
+      await localforage.setItem("key_" + i, Math.random().toFixed(5));
+      }
+      }
+      testRemainCap().then(function () {
+      console.log("写入完毕..");
+      });*/
+      
+      var time1 = new Date().getTime();
+      
+      let totalSize = 0;
+      let iterNumber1 = 0;
+      localforage.iterate(function (value, key, iterNumber) {
+      totalSize = totalSize + key.length + JSON.stringify(value).length;
+      //iterNumber1 = iterNumber;
+      //console.log(iterNumber + " : " + totalSize);
+      }).then(function () {
+      var time2 = new Date().getTime();
+      
+      console.log("用时：" + (time2 - time1)/1000 + "s");
+      
+      //console.log("iterNumber:" + iterNumber1);
+      console.log("totalSize:" + totalSize/1024/1024 + "M");
+      }).catch(function (err) {
+      console.log("err:" + err);
+      })
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -100,16 +91,14 @@
         <a href="./03-%E8%8E%B7%E5%8F%96%E5%89%A9%E4%BD%99%E5%AE%B9%E9%87%8F.html">获取剩余容量 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

@@ -1,68 +1,37 @@
 #!/usr/bin/env node
 /**
- * 为 JavaScript 01-基础 与 08-面试题/手写 demo 补齐：
+ * 为 JavaScript console demo 补齐：
  *   - <h1>（来自头注释「主题」）
- *   - 可见输出区 #demo-output
- *   - packages/shared/demo-log.js 引用
+ *   - DevTools hint
+ *   - SCRIPT 区块标记（由 format:all-demos 统一格式化）
  *
  * 运行：node scripts/enhance-js-console-demos.mjs
  */
 
 import { readdir, readFile, writeFile, stat } from "node:fs/promises";
-import { dirname, join, relative, sep } from "node:path";
+import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
-const DEMO_LOG = join(ROOT, "packages/shared/demo-log.js");
 const TARGET_DIRS = [join("apps", "javascript")];
-
-function toPosix(p) {
-  return p.split(sep).join("/");
-}
-
-function relDemoLog(fromAbs) {
-  let rel = relative(dirname(fromAbs), DEMO_LOG);
-  rel = toPosix(rel);
-  if (!rel.startsWith(".")) rel = `./${rel}`;
-  return rel.split("/").map(encodeURIComponent).join("/");
-}
 
 function parseTheme(content) {
   const m = content.match(/<!--\s*([\s\S]*?)\s*-->/);
   return (m?.[1].match(/主题:\s*(.+)/) || [])[1]?.trim() || "Demo";
 }
 
-function hasVisibleOutput(content) {
-  return (
-    /id\s*=\s*["']demo-output["']/i.test(content) ||
-    /id\s*=\s*["']log["']/i.test(content) ||
-    /class\s*=\s*["'][^"']*\bdemo-output\b/i.test(content) ||
-    /id\s*=\s*["']out["']/i.test(content)
-  );
-}
-
-function hasDemoLogScript(content) {
-  return /demo-log\.js/i.test(content);
-}
-
 function hasH1(content) {
   return /<h1[\s>]/i.test(content);
 }
 
-function injectShell(content, fromAbs, theme) {
+function injectShell(content, theme) {
   let next = content;
   const insertBlock = [];
 
   if (!hasH1(next)) {
     insertBlock.push(`  <h1>${theme}</h1>`);
     insertBlock.push(
-      `  <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>`
-    );
-  }
-
-  if (!hasVisibleOutput(next)) {
-    insertBlock.push(
-      `  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>`
+      `  <p class="hint">请打开 DevTools Console 查看输出。</p>`
     );
   }
 
@@ -70,24 +39,6 @@ function injectShell(content, fromAbs, theme) {
     next = next.replace(/<body([^>]*)>/i, (m, attrs) => {
       return `<body${attrs}>\n${insertBlock.join("\n")}`;
     });
-  }
-
-  if (!hasDemoLogScript(next)) {
-    const src = relDemoLog(fromAbs);
-    const tag = `  <script src="${src}"></script>`;
-    const scriptMatch = next.match(/<script(?![^>]*\bsrc\s*=)/i);
-    if (scriptMatch) {
-      next = next.replace(scriptMatch[0], `${tag}\n${scriptMatch[0]}`);
-    } else if (/<\/body>/i.test(next)) {
-      next = next.replace(/<\/body>/i, `${tag}\n</body>`);
-    }
-  }
-
-  if (!/<style[^>]*>[\s\S]*\.hint/i.test(next) && next.includes('class="hint"')) {
-    next = next.replace(
-      /<\/head>/i,
-      `  <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>\n</head>`
-    );
   }
 
   return next;
@@ -118,10 +69,9 @@ async function main() {
   for (const abs of files) {
     const before = await readFile(abs, "utf8");
     const theme = parseTheme(before);
-    const needs =
-      !hasH1(before) || !hasVisibleOutput(before) || !hasDemoLogScript(before);
+    const needs = !hasH1(before);
     if (!needs) continue;
-    const after = injectShell(before, abs, theme);
+    const after = injectShell(before, theme);
     if (after !== before) {
       await writeFile(abs, after, "utf8");
       updated++;

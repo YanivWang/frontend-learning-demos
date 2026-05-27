@@ -14,43 +14,44 @@
     - 面试中如何简洁讲清 Actions 与 useActionState
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>React 19 · useActionState</title>
-  <script src="../../libs/react.development.js"></script>
-  <script src="../../libs/react-dom.development.js"></script>
-  <script src="../../libs/babel.min.js"></script>
-  <style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React 19 · useActionState</title>
+    <script src="../../libs/react.development.js"></script>
+    <script src="../../libs/react-dom.development.js"></script>
+    <script src="../../libs/babel.min.js"></script>
+    <style>
     body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 640px; line-height: 1.6; }
     .box { border: 1px solid #ddd; border-radius: 10px; padding: 1rem 1.25rem; }
     .err { color: #cf222e; }
     input { padding: 0.4rem 0.6rem; margin-right: 0.5rem; }
-  </style>
+    </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Actions 与 useActionState</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>Action：可在 transition 中执行的异步函数；表单 action 与之配合。</li>
-      <li>useActionState(action, initialState) 返回 [state, formAction, isPending]。</li>
-      <li>action 签名 (previousState, formData) =&gt; nextState | <code>Promise</code>&lt;nextState&gt;。</li>
-      <li>提交时 isPending 为 true，适合禁用按钮与展示错误信息。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>useActionState(action？</strong> useActionState(action, initialState) 返回 [state, formAction, isPending]</li>
-      <li><strong>action 签名 (previousState？</strong> Action：可在 transition 中执行的异步函数；表单 action 与之配合；useActionState(action, initialState) 返回 [state, formAction, isPending]</li>
-      <li><strong>提交时 isPending 为 true？</strong> 提交时 isPending 为 true，适合禁用按钮与展示错误信息</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>Action：可在 transition 中执行的异步函数；表单 action 与之配合。</li>
+          <li>useActionState(action, initialState) 返回 [state, formAction, isPending]。</li>
+          <li>action 签名 (previousState, formData) =&gt; nextState | <code>Promise</code>&lt;nextState&gt;。</li>
+          <li>提交时 isPending 为 true，适合禁用按钮与展示错误信息。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>useActionState(action？</strong> useActionState(action, initialState) 返回 [state, formAction, isPending]</li>
+          <li><strong>action 签名 (previousState？</strong> Action：可在 transition 中执行的异步函数；表单 action 与之配合；useActionState(action, initialState) 返回 [state, formAction, isPending]</li>
+          <li><strong>提交时 isPending 为 true？</strong> 提交时 isPending 为 true，适合禁用按钮与展示错误信息</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -58,37 +59,42 @@
 <div id="root"></div>
 
     
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script type="text/babel">
-    const { useActionState } = React;
-
-    async function saveName(previousError, formData) {
+      const { useActionState } = React;
+      
+      async function saveName(previousError, formData) {
       const name = String(formData.get("name") || "").trim();
       await new Promise((r) => setTimeout(r, 700));
       if (!name) return "请输入名称";
       if (name.length < 2) return "名称至少 2 个字符";
       return null;
-    }
-
-    function NameForm() {
+      }
+      
+      function NameForm() {
       const [error, submitAction, isPending] = useActionState(saveName, null);
-
+      
       return (
-        <form className="box" action={submitAction}>
-          <h2>useActionState + 表单 action</h2>
-          <label>
-            名称：
-            <input name="name" placeholder="例如：小明" disabled={isPending} />
-          </label>
-          <button type="submit" disabled={isPending}>
-            {isPending ? "保存中…" : "保存"}
-          </button>
-          {error ? <p className="err">{error}</p> : <p>校验通过时 error 为 null</p>}
-        </form>
+      <form className="box" action={submitAction}>
+      <h2>useActionState + 表单 action</h2>
+      <label>
+      名称：
+      <input name="name" placeholder="例如：小明" disabled={isPending} />
+      </label>
+      <button type="submit" disabled={isPending}>
+      {isPending ? "保存中…" : "保存"}
+      </button>
+      {error ? <p className="err">{error}</p> : <p>校验通过时 error 为 null</p>}
+      </form>
       );
-    }
-
-    ReactDOM.createRoot(document.getElementById("root")).render(<NameForm />);
-  </script>
+      }
+      
+      ReactDOM.createRoot(document.getElementById("root")).render(<NameForm />);
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
@@ -99,16 +105,15 @@
         <a href="./04-useOptimistic%E4%B9%90%E8%A7%82%E6%9B%B4%E6%96%B0.html">useOptimistic乐观更新 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
   
 </body>
 </html>

@@ -13,6 +13,7 @@
     - 面试中如何简洁讲清 用 Performance 时间线观察大数组对响应式性能的影响
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
   <head>
@@ -21,31 +22,31 @@
     <title>响应式：大数组与 Performance timeline</title>
     <script src="../../libs/vue.js"></script>
     <style>
-      button { display: block; margin: 8px 0; }
-      pre { background: #f5f5f5; padding: 12px; max-height: 280px; overflow: auto; }
-      .warn { color: #c00; }
+    button { display: block; margin: 8px 0; }
+    pre { background: #f5f5f5; padding: 12px; max-height: 280px; overflow: auto; }
+    .warn { color: #c00; }
     </style>
-      <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
+  </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>用 Performance 时间线观察大数组对响应式性能的影响</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>易错点：原生 onclick=&quot;handleClickFn&quot; 无法访问 Vue methods；应该用 @click（v-on:click）。</li>
-      <li>百万次 push 到响应式数组会触发巨量依赖通知；应先在非响应式 buffer 处理完再整体赋值。</li>
-      <li>打开 Chrome DevTools → Performance 面板录制，可观察长 task 与 scripting 耗时。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>百万次 push 到响应式数组会触发巨量依赖通知？</strong> 百万次 push 到响应式数组会触发巨量依赖通知；应先在非响应式 buffer 处理完再整体赋值</li>
-      <li><strong>打开 Chrome DevTools → Performance 面板录制？</strong> 打开 Chrome DevTools → Performance 面板录制，可观察长 task 与 scripting 耗时</li>
-      <li><strong>用 Performance 时间线观察大数组对响应式性能的影响的核心概念是什么？</strong> 易错点：原生 onclick=&quot;handleClickFn&quot; 无法访问 Vue methods；应该用 @click（v-on:click）；百万次 push 到响应式数组会触发巨量依赖通知；应先在非响应式 buffer 处理完再整体赋值</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>易错点：原生 onclick=&quot;handleClickFn&quot; 无法访问 Vue methods；应该用 @click（v-on:click）。</li>
+          <li>百万次 push 到响应式数组会触发巨量依赖通知；应先在非响应式 buffer 处理完再整体赋值。</li>
+          <li>打开 Chrome DevTools → Performance 面板录制，可观察长 task 与 scripting 耗时。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>百万次 push 到响应式数组会触发巨量依赖通知？</strong> 百万次 push 到响应式数组会触发巨量依赖通知；应先在非响应式 buffer 处理完再整体赋值</li>
+          <li><strong>打开 Chrome DevTools → Performance 面板录制？</strong> 打开 Chrome DevTools → Performance 面板录制，可观察长 task 与 scripting 耗时</li>
+          <li><strong>用 Performance 时间线观察大数组对响应式性能的影响的核心概念是什么？</strong> 易错点：原生 onclick=&quot;handleClickFn&quot; 无法访问 Vue methods；应该用 @click（v-on:click）；百万次 push 到响应式数组会触发巨量依赖通知；应先在非响应式 buffer 处理完再整体赋值</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -66,42 +67,46 @@
     </div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
       new Vue({
-        el: "#app",
-        data() {
-          return {
-            message: "大数组响应式性能对比",
-            arr: [],
-            logs: []
-          };
-        },
-        mounted() {
-          console.log("vm._data:", this._data);
-          console.log("vm.data 不存在:", this.data);
-        },
-        methods: {
-          _log(msg) {
-            this.logs.unshift(new Date().toLocaleTimeString() + "  " + msg);
-          },
-          pushManyTimes() {
-            var t0 = performance.now();
-            var buffer = new Array(10000).fill("x");
-            for (var i = 0; i < buffer.length; i++) {
-              this.arr.push(buffer[i]);
-            }
-            var ms = (performance.now() - t0).toFixed(1);
-            this._log("循环 push 1 万次耗时 " + ms + "ms（打开 Performance 面板可录 timeline）");
-          },
-          assignWhole() {
-            var t0 = performance.now();
-            var buffer = new Array(10000).fill("x");
-            this.arr = buffer.slice();
-            var ms = (performance.now() - t0).toFixed(1);
-            this._log("整体赋值 1 万元素耗时 " + ms + "ms");
-          }
-        }
+      el: "#app",
+      data() {
+      return {
+      message: "大数组响应式性能对比",
+      arr: [],
+      logs: []
+      };
+      },
+      mounted() {
+      console.log("vm._data:", this._data);
+      console.log("vm.data 不存在:", this.data);
+      },
+      methods: {
+      _log(msg) {
+      this.logs.unshift(new Date().toLocaleTimeString() + "  " + msg);
+      },
+      pushManyTimes() {
+      var t0 = performance.now();
+      var buffer = new Array(10000).fill("x");
+      for (var i = 0; i < buffer.length; i++) {
+      this.arr.push(buffer[i]);
+      }
+      var ms = (performance.now() - t0).toFixed(1);
+      this._log("循环 push 1 万次耗时 " + ms + "ms（打开 Performance 面板可录 timeline）");
+      },
+      assignWhole() {
+      var t0 = performance.now();
+      var buffer = new Array(10000).fill("x");
+      this.arr = buffer.slice();
+      var ms = (performance.now() - t0).toFixed(1);
+      this._log("整体赋值 1 万元素耗时 " + ms + "ms");
+      }
+      }
       });
     </script>
     <!-- SCRIPT_END -->
@@ -115,16 +120,14 @@
         <a href="../03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/01-%E5%85%AB%E4%B8%AA%E9%92%A9%E5%AD%90%E9%80%9F%E8%AE%B0.html">八个钩子速记 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

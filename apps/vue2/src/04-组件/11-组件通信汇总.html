@@ -14,35 +14,36 @@
     - 面试中如何简洁讲清 Vue2 组件通信方式汇总
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vue2 组件通信方式汇总</title>
     <script src="../../libs/vue.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vue2 组件通信方式汇总</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>父子通信：props 下传，$emit 上抛。</li>
-      <li>跨层通信：<code>provide</code> / <code>inject</code>，适合稳定依赖，不推荐滥用成全局状态。</li>
-      <li>兄弟/远亲通信：事件总线 EventBus，小项目可用，大项目更推荐 Vuex。</li>
-      <li>透传属性/事件：$attrs / $listeners，常用于二次封装基础组件。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>Vue2 组件通信方式汇总的核心概念是什么？</strong> 兄弟/远亲通信：事件总线 EventBus，小项目可用，大项目更推荐 Vuex</li>
-      <li><strong>Vue2 组件通信方式汇总在实际项目里怎么用？</strong> 兄弟/远亲通信：事件总线 EventBus，小项目可用，大项目更推荐 Vuex</li>
-      <li><strong>Vue2 组件通信方式汇总有哪些常见坑或易错点？</strong> 兄弟/远亲通信：事件总线 EventBus，小项目可用，大项目更推荐 Vuex</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>父子通信：props 下传，$emit 上抛。</li>
+          <li>跨层通信：<code>provide</code> / <code>inject</code>，适合稳定依赖，不推荐滥用成全局状态。</li>
+          <li>兄弟/远亲通信：事件总线 EventBus，小项目可用，大项目更推荐 Vuex。</li>
+          <li>透传属性/事件：$attrs / $listeners，常用于二次封装基础组件。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>Vue2 组件通信方式汇总的核心概念是什么？</strong> 兄弟/远亲通信：事件总线 EventBus，小项目可用，大项目更推荐 Vuex</li>
+          <li><strong>Vue2 组件通信方式汇总在实际项目里怎么用？</strong> 兄弟/远亲通信：事件总线 EventBus，小项目可用，大项目更推荐 Vuex</li>
+          <li><strong>Vue2 组件通信方式汇总有哪些常见坑或易错点？</strong> 兄弟/远亲通信：事件总线 EventBus，小项目可用，大项目更推荐 Vuex</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -62,75 +63,79 @@
 </div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    const EventBus = new Vue();
-
-    Vue.component("base-button", {
-        inheritAttrs: false,
-        template: `
-            <button v-bind="$attrs" v-on="$listeners">
-                {{ $attrs['button-text'] || '按钮' }}
-            </button>
-        `
-    });
-
-    Vue.component("child-card", {
-        inject: ["theme"],
-        props: ["title"],
-        template: `
-            <section style="border:1px solid #ddd;padding:8px;margin-bottom:8px;">
-                <p>props title: {{ title }}</p>
-                <p>inject theme.color: {{ theme.color }}</p>
-                <button @click="$emit('rename', '子组件改名请求')">props + $emit</button>
-                <base-button v-bind="$attrs" @click="$emit('native-click')"></base-button>
-            </section>
-        `
-    });
-
-    Vue.component("sibling-a", {
-        template: `<button @click="send">兄弟 A 发送事件</button>`,
-        methods: {
-            send() {
-                EventBus.$emit("sibling-message", "来自兄弟 A");
-            }
-        }
-    });
-
-    Vue.component("sibling-b", {
-        template: `<p>兄弟 B 收到: {{ message }}</p>`,
-        data() {
-            return { message: "" };
-        },
-        created() {
-            EventBus.$on("sibling-message", this.onMessage);
-        },
-        beforeDestroy() {
-            EventBus.$off("sibling-message", this.onMessage);
-        },
-        methods: {
-            onMessage(message) {
-                this.message = message;
-            }
-        }
-    });
-
-    new Vue({
-        el: "#app",
-        provide() {
-            return {
-                theme: this.theme
-            };
-        },
-        data() {
-            return {
-                title: "父组件标题",
-                theme: { color: "blue" },
-                logs: []
-            };
-        }
-    });
-</script>
+      const EventBus = new Vue();
+      
+      Vue.component("base-button", {
+      inheritAttrs: false,
+      template: `
+      <button v-bind="$attrs" v-on="$listeners">
+      {{ $attrs['button-text'] || '按钮' }}
+      </button>
+      `
+      });
+      
+      Vue.component("child-card", {
+      inject: ["theme"],
+      props: ["title"],
+      template: `
+      <section style="border:1px solid #ddd;padding:8px;margin-bottom:8px;">
+      <p>props title: {{ title }}</p>
+      <p>inject theme.color: {{ theme.color }}</p>
+      <button @click="$emit('rename', '子组件改名请求')">props + $emit</button>
+      <base-button v-bind="$attrs" @click="$emit('native-click')"></base-button>
+      </section>
+      `
+      });
+      
+      Vue.component("sibling-a", {
+      template: `<button @click="send">兄弟 A 发送事件</button>`,
+      methods: {
+      send() {
+      EventBus.$emit("sibling-message", "来自兄弟 A");
+      }
+      }
+      });
+      
+      Vue.component("sibling-b", {
+      template: `<p>兄弟 B 收到: {{ message }}</p>`,
+      data() {
+      return { message: "" };
+      },
+      created() {
+      EventBus.$on("sibling-message", this.onMessage);
+      },
+      beforeDestroy() {
+      EventBus.$off("sibling-message", this.onMessage);
+      },
+      methods: {
+      onMessage(message) {
+      this.message = message;
+      }
+      }
+      });
+      
+      new Vue({
+      el: "#app",
+      provide() {
+      return {
+      theme: this.theme
+      };
+      },
+      data() {
+      return {
+      title: "父组件标题",
+      theme: { color: "blue" },
+      logs: []
+      };
+      }
+      });
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -142,16 +147,14 @@
         <a href="./12-%E5%8F%82%E6%95%B0%E8%A7%A3%E6%9E%84.html">参数解构 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

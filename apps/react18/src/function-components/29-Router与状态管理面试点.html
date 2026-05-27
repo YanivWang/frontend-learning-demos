@@ -14,38 +14,39 @@
     - 面试中如何简洁讲清 Router 与状态管理常见面试点
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>React · Router 与状态管理</title>
-  <script src="../../libs/react.development.js"></script>
-  <script src="../../libs/react-dom.development.js"></script>
-  <script src="../../libs/babel.min.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React · Router 与状态管理</title>
+    <script src="../../libs/react.development.js"></script>
+    <script src="../../libs/react-dom.development.js"></script>
+    <script src="../../libs/babel.min.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Router 与状态管理常见面试点</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>React Router 负责 URL 与页面组件的映射，常见概念有 BrowserRouter、Routes、Route、Link、useNavigate、useParams。</li>
-      <li>状态管理要先区分本地状态、跨组件状态、服务端缓存状态。</li>
-      <li>Redux/Zustand/Context 不是互相完全替代，选择取决于规模、协作和调试需求。</li>
-      <li>本文件不引入第三方库，用最小 demo 模拟路由与 store 思想。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>React Router 负责 URL 与页面组件的映射？</strong> React Router 负责 URL 与页面组件的映射，常见概念有 BrowserRouter、Routes、Route、Link、useNavigate、useParams</li>
-      <li><strong>状态管理要先区分本地状态、跨组件状态、服务端缓存状态？</strong> 状态管理要先区分本地状态、跨组件状态、服务端缓存状态</li>
-      <li><strong>Redux/Zustand/Context 不是互相完全替代？</strong> Redux/Zustand/Context 不是互相完全替代，选择取决于规模、协作和调试需求</li>
-      <li><strong>本文件不引入第三方库？</strong> 本文件不引入第三方库，用最小 demo 模拟路由与 store 思想</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>React Router 负责 URL 与页面组件的映射，常见概念有 BrowserRouter、Routes、Route、Link、useNavigate、useParams。</li>
+          <li>状态管理要先区分本地状态、跨组件状态、服务端缓存状态。</li>
+          <li>Redux/Zustand/Context 不是互相完全替代，选择取决于规模、协作和调试需求。</li>
+          <li>本文件不引入第三方库，用最小 demo 模拟路由与 store 思想。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>React Router 负责 URL 与页面组件的映射？</strong> React Router 负责 URL 与页面组件的映射，常见概念有 BrowserRouter、Routes、Route、Link、useNavigate、useParams</li>
+          <li><strong>状态管理要先区分本地状态、跨组件状态、服务端缓存状态？</strong> 状态管理要先区分本地状态、跨组件状态、服务端缓存状态</li>
+          <li><strong>Redux/Zustand/Context 不是互相完全替代？</strong> Redux/Zustand/Context 不是互相完全替代，选择取决于规模、协作和调试需求</li>
+          <li><strong>本文件不引入第三方库？</strong> 本文件不引入第三方库，用最小 demo 模拟路由与 store 思想</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -53,61 +54,66 @@
 <div id="root"></div>
 
     
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script type="text/babel">
-    const { createContext, useContext, useReducer, useState } = React;
-
-    const StoreContext = createContext(null);
-
-    function reducer(state, action) {
+      const { createContext, useContext, useReducer, useState } = React;
+      
+      const StoreContext = createContext(null);
+      
+      function reducer(state, action) {
       switch (action.type) {
-        case "login":
-          return { ...state, user: action.payload };
-        case "logout":
-          return { ...state, user: null };
-        default:
-          return state;
+      case "login":
+      return { ...state, user: action.payload };
+      case "logout":
+      return { ...state, user: null };
+      default:
+      return state;
       }
-    }
-
-    function Home() {
+      }
+      
+      function Home() {
       const store = useContext(StoreContext);
       return <p>首页，当前用户: {store.state.user || "未登录"}</p>;
-    }
-
-    function Profile() {
+      }
+      
+      function Profile() {
       const store = useContext(StoreContext);
       return (
-        <div>
-          <p>个人中心</p>
-          <button onClick={() => store.dispatch({ type: "login", payload: "Alice" })}>模拟登录</button>
-          <button onClick={() => store.dispatch({ type: "logout" })}>退出</button>
-        </div>
+      <div>
+      <p>个人中心</p>
+      <button onClick={() => store.dispatch({ type: "login", payload: "Alice" })}>模拟登录</button>
+      <button onClick={() => store.dispatch({ type: "logout" })}>退出</button>
+      </div>
       );
-    }
-
-    function App() {
+      }
+      
+      function App() {
       const [path, setPath] = useState("/home");
       const [state, dispatch] = useReducer(reducer, { user: null });
-
+      
       return (
-        <StoreContext.Provider value={{ state, dispatch }}>
-          <section>
-            <h1>Router 与状态管理面试点</h1>
-
-            <nav>
-              <button onClick={() => setPath("/home")}>Home</button>
-              <button onClick={() => setPath("/profile")}>Profile</button>
-            </nav>
-            {path === "/home" && <Home />}
-            {path === "/profile" && <Profile />}
-            <p>面试回答: 路由管理页面位置；状态管理管理跨组件共享数据；服务端数据缓存通常还会用 React Query/SWR 这类工具。</p>
-          </section>
-        </StoreContext.Provider>
+      <StoreContext.Provider value={{ state, dispatch }}>
+      <section>
+      <h1>Router 与状态管理面试点</h1>
+      
+      <nav>
+      <button onClick={() => setPath("/home")}>Home</button>
+      <button onClick={() => setPath("/profile")}>Profile</button>
+      </nav>
+      {path === "/home" && <Home />}
+      {path === "/profile" && <Profile />}
+      <p>面试回答: 路由管理页面位置；状态管理管理跨组件共享数据；服务端数据缓存通常还会用 React Query/SWR 这类工具。</p>
+      </section>
+      </StoreContext.Provider>
       );
-    }
-
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-  </script>
+      }
+      
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
@@ -118,16 +124,14 @@
         <a href="./30-%E5%87%BD%E6%95%B0-defaultProps%E4%B8%8EdisplayName.html">函数-defaultProps与displayName →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

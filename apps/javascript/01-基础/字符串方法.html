@@ -25,51 +25,21 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>字符串截取三兄弟 + 常用方法</h1>
-      <p class="hint">
-        三者都不会修改原字符串，但参数语义差异很大，是高频面试坑点。请打开
-        DevTools Console 查看输出。
-      </p>
+      <p class="hint">三者都不会修改原字符串，但参数语义差异很大，是高频面试坑点。请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>
-            <code>slice(start, end)</code>：推荐。支持负数索引；end
-            不含；start&gt;end 返回空串。
-          </li>
-          <li>
-            <code>substring(start, end)</code>：负数当 0；start&gt;end
-            自动交换起止。
-          </li>
-          <li>
-            <code>substr(start, length)</code>：已废弃，第二参数是长度而非 end。
-          </li>
-          <li>
-            字符串是原始类型，方法都不改原串，返回新串；<code
-              >new String()</code
-            >
-            是包装对象。
-          </li>
-          <li>
-            常用：includes、startsWith、endsWith、indexOf、replace、split、trim、padStart。
-          </li>
+          <li><code>slice(start, end)</code>：推荐。支持负数索引；end 不含；start&gt;end 返回空串。</li>
+          <li><code>substring(start, end)</code>：负数当 0；start&gt;end 自动交换起止。</li>
+          <li><code>substr(start, length)</code>：已废弃，第二参数是长度而非 end。</li>
+          <li>字符串是原始类型，方法都不改原串，返回新串；<code >new String()</code > 是包装对象。</li>
+          <li>常用：includes、startsWith、endsWith、indexOf、replace、split、trim、padStart。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li>
-            <strong>slice / substring / substr 区别？</strong> slice
-            最通用（负索引）；substring 交换起止；substr
-            按长度且已废弃。新项目只用 slice。
-          </li>
-          <li>
-            <strong>字符串不可变？</strong> 原始 string
-            不可改；修改操作返回新串。大量拼接用数组 join 或模板字符串，避免 +
-            循环。
-          </li>
-          <li>
-            <strong>包含子串？</strong> ES6 <code>includes</code>；需位置用
-            <code>indexOf !== -1</code>；正则用 <code>test</code> /
-            <code>match</code>。
-          </li>
+          <li><strong>slice / substring / substr 区别？</strong> slice 最通用（负索引）；substring 交换起止；substr 按长度且已废弃。新项目只用 slice。</li>
+          <li><strong>字符串不可变？</strong> 原始 string 不可改；修改操作返回新串。大量拼接用数组 join 或模板字符串，避免 + 循环。</li>
+          <li><strong>包含子串？</strong> ES6 <code>includes</code>；需位置用 <code>indexOf !== -1</code>；正则用 <code>test</code> / <code>match</code>。</li>
         </ul>
       </div>
     </section>
@@ -78,7 +48,7 @@
     <!-- SCRIPT_START -->
     <script>
       const str = "abcdefg";
-
+      
       // ============ 1. substr(start, length)：从 start 开始截取 length 个 ============
       //   ⚠️ 已被废弃，但还能用。负数 start 从末尾计；length < 0 当 0 处理
       console.log("substr(3,2):", str.substr(3, 2)); // 'de'
@@ -87,19 +57,19 @@
       console.log("substr(-3,2):", str.substr(-3, 2)); // 'ef'
       console.log("substr(3,0):", str.substr(3, 0)); // ''
       console.log("substr(3,-1):", str.substr(3, -1)); // ''
-
+      
       // ============ 2. slice(start, end)：[start, end)，支持负数 ============
       console.log("slice(3,5):", str.slice(3, 5)); // 'de'
       console.log("slice(-3,-1):", str.slice(-3, -1)); // 'ef'
       console.log("slice(5,3):", str.slice(5, 3)); // '' —— end < start 直接空
-
+      
       // ============ 3. substring(start, end)：[start, end)，但有"两个反常行为" ============
       //   ① 任何负数都当作 0
       //   ② start > end 时会自动交换
       console.log("substring(3,5):", str.substring(3, 5)); // 'de'
       console.log("substring(5,3):", str.substring(5, 3)); // 'de' —— 自动交换
       console.log("substring(-5,2):", str.substring(-5, 2)); // 'ab' —— -5 → 0
-
+      
       // ============ 4. 其他常用方法 ============
       console.log("concat:", "abc".concat("def")); // 'abcdef'
       console.log("repeat:", "ab".repeat(3)); // 'ababab'
@@ -109,25 +79,25 @@
       console.log("includes:", "abcdef".includes("cd")); // true
       console.log("startsWith:", "abcdef".startsWith("abc")); // true
       console.log("at(-1):", "abcdef".at(-1)); // 'f'
-
+      
       // ============ 5. 类数组访问 vs charAt ============
       console.log("str[2]:", str[2]); // 'c'
       console.log("str.charAt(2):", str.charAt(2)); // 'c'
       console.log("str[100]:", str[100]); // undefined
       console.log("str.charAt(100):", str.charAt(100)); // '' —— 越界返回空串
-
+      
       // ============ 6. 字符编码 ============
       console.log("charCodeAt:", "A".charCodeAt(0)); // 65
       console.log("fromCharCode:", String.fromCharCode(65)); // 'A'
       console.log("codePointAt:", "😀".codePointAt(0)); // 128512 —— 支持 emoji / 4 字节字符
-
+      
       // ============ 7. 排序：localeCompare 处理中英文混合 ============
       const arr = ["bd", "ab", "c", "aa", "be", "bf"];
       arr.sort((a, b) =>
-        a.length === b.length ? a.localeCompare(b) : a.length - b.length,
+      a.length === b.length ? a.localeCompare(b) : a.length - b.length,
       );
       console.log("混合排序:", arr.toString());
-
+      
       // ============ 8. 字符串原始值 vs new String() 包装对象 ============
       //   原始值 (primitive) 和包装对象不是同一种东西，==/=== 表现不同
       const str1 = "123qwe"; // 原始值
@@ -139,40 +109,40 @@
       console.log("str1.constructor:", str1.constructor); // ƒ String() —— 临时包装
       console.log("str2.constructor:", str2.constructor); // ƒ String()
       // 👉 实践中几乎不用 new String()，因为它带来的全是麻烦（typeof 不对、严格相等不通过）
-
+      
       // ============ 9. sort + Math.random 随机打乱 ============
       //   ⚠️ 不是均匀分布的"洗牌"，仅用于不严格场景；要均匀分布请用 Fisher-Yates
       const dice = [3, 7, 9, 8, 4];
       dice.sort(() => Math.random() - 0.5);
       console.log("随机打乱:", dice);
-
+      
       // 严格做法：Fisher-Yates shuffle
       function shuffle(a) {
-        for (let i = a.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [a[i], a[j]] = [a[j], a[i]];
-        }
-        return a;
+      for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
       }
       console.log("Fisher-Yates:", shuffle([1, 2, 3, 4, 5]));
-
+      
       // ============ 10. replace / match / search 与正则联用 ============
       const text = "123A456A789A";
-
+      
       // replace：默认只替换第一个；加 /g 全部替换
       console.log("replace 单个:", text.replace(/A/, "B")); // '123B456A789A'
       console.log("replace 全局:", text.replace(/A/g, "B")); // '123B456B789B'
-
+      
       // 用回调函数动态替换（参数：匹配文本、捕获组... 、位置、原串）
       console.log(
-        "replace 回调:",
-        text.replace(/(\d+)A/g, (_, n) => `[${n}]`),
+      "replace 回调:",
+      text.replace(/(\d+)A/g, (_, n) => `[${n}]`),
       );
       // '[123][456][789]'
-
+      
       // match：返回所有匹配数组（带 /g）
       console.log("match .A.:", text.match(/.A./g)); // ['3A4', '6A7', '9A'] —— 注意贪婪和重叠
-
+      
       // search：返回第一个匹配的下标，找不到返回 -1
       console.log("search A:", text.search(/A/)); // 3
       console.log("search Z:", text.search(/Z/)); // -1
@@ -184,9 +154,7 @@
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
-        <a href="/" data-demo-catalog data-file-catalog="../../index.html"
-          >目录</a
-        >
+        <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
         <a href="./encode-URI%E7%BC%96%E7%A0%81.html">相关 · encode-URI编码</a>
         <a href="./%E8%BF%90%E7%AE%97%E7%AC%A6.html">← 运算符</a>
         <a href="./arguments.html">arguments →</a>

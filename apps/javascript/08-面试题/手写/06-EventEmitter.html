@@ -13,104 +13,99 @@
     - 面试中如何简洁讲清 手写 EventEmitter
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>手写 EventEmitter</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>手写 EventEmitter</title>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
   </head>
-<body class="demo-page">
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>手写 EventEmitter</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>on 注册监听，emit 触发监听。</li>
-      <li>off 移除监听，once 注册一次性监听。</li>
-      <li>emit 时复制监听数组，避免执行过程中增删监听影响本轮派发。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>emit 时复制监听数组？</strong> on 注册监听，emit 触发监听；emit 时复制监听数组，避免执行过程中增删监听影响本轮派发</li>
-      <li><strong>手写 EventEmitter的核心概念是什么？</strong> on 注册监听，emit 触发监听；off 移除监听，once 注册一次性监听</li>
-      <li><strong>手写 EventEmitter在实际项目里怎么用？</strong> on 注册监听，emit 触发监听；off 移除监听，once 注册一次性监听</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>on 注册监听，emit 触发监听。</li>
+          <li>off 移除监听，once 注册一次性监听。</li>
+          <li>emit 时复制监听数组，避免执行过程中增删监听影响本轮派发。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>emit 时复制监听数组？</strong> on 注册监听，emit 触发监听；emit 时复制监听数组，避免执行过程中增删监听影响本轮派发</li>
+          <li><strong>手写 EventEmitter的核心概念是什么？</strong> on 注册监听，emit 触发监听；off 移除监听，once 注册一次性监听</li>
+          <li><strong>手写 EventEmitter在实际项目里怎么用？</strong> on 注册监听，emit 触发监听；off 移除监听，once 注册一次性监听</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../packages/shared/demo-log.js"></script>
-
 <p>打开控制台查看断言结果。</p>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    class EventEmitter {
+      class EventEmitter {
       constructor() {
-        this.events = Object.create(null);
+      this.events = Object.create(null);
       }
-
+      
       on(type, listener) {
-        if (!this.events[type]) this.events[type] = [];
-        this.events[type].push(listener);
-        return this;
+      if (!this.events[type]) this.events[type] = [];
+      this.events[type].push(listener);
+      return this;
       }
-
+      
       off(type, listener) {
-        const listeners = this.events[type];
-        if (!listeners) return this;
-        this.events[type] = listeners.filter(fn => fn !== listener && fn._origin !== listener);
-        return this;
+      const listeners = this.events[type];
+      if (!listeners) return this;
+      this.events[type] = listeners.filter(fn => fn !== listener && fn._origin !== listener);
+      return this;
       }
-
+      
       once(type, listener) {
-        const wrapper = (...args) => {
-          this.off(type, wrapper);
-          listener.apply(this, args);
-        };
-        wrapper._origin = listener;
-        return this.on(type, wrapper);
+      const wrapper = (...args) => {
+      this.off(type, wrapper);
+      listener.apply(this, args);
+      };
+      wrapper._origin = listener;
+      return this.on(type, wrapper);
       }
-
+      
       emit(type, ...args) {
-        const listeners = this.events[type];
-        if (!listeners || listeners.length === 0) return false;
-        listeners.slice().forEach(listener => listener.apply(this, args));
-        return true;
+      const listeners = this.events[type];
+      if (!listeners || listeners.length === 0) return false;
+      listeners.slice().forEach(listener => listener.apply(this, args));
+      return true;
       }
-    }
-
-    const bus = new EventEmitter();
-    const result = [];
-    function onMessage(value) {
+      }
+      
+      const bus = new EventEmitter();
+      const result = [];
+      function onMessage(value) {
       result.push("on:" + value);
-    }
-
-    bus.on("message", onMessage);
-    bus.once("message", value => result.push("once:" + value));
-
-    console.assert(bus.emit("message", 1) === true, "emit returns true when listeners exist");
-    console.assert(bus.emit("message", 2) === true, "second emit still has on listener");
-    bus.off("message", onMessage);
-    console.assert(bus.emit("message", 3) === false, "off removes listener");
-    console.assert(result.join("|") === "on:1|once:1|on:2", "on once off work");
-
-    console.log("result:", result);
-  </script>
+      }
+      
+      bus.on("message", onMessage);
+      bus.once("message", value => result.push("once:" + value));
+      
+      console.assert(bus.emit("message", 1) === true, "emit returns true when listeners exist");
+      console.assert(bus.emit("message", 2) === true, "second emit still has on listener");
+      bus.off("message", onMessage);
+      console.assert(bus.emit("message", 3) === false, "off removes listener");
+      console.assert(result.join("|") === "on:1|once:1|on:2", "on once off work");
+      
+      console.log("result:", result);
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -122,16 +117,14 @@
         <a href="./07-LRU%E7%BC%93%E5%AD%98.html">LRU缓存 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

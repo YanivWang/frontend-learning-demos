@@ -11,87 +11,78 @@
     - eval 和 new Function 区别？
   相关: 函数进阶, IIFE
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>eval / Global 对象</title>
-  <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>eval / Global 对象</title>
+    <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>eval 与 Global 对象（window）</h1>
-      <p class="hint">浏览器中不属于其它对象的属性和函数都挂在 <code>window</code> 上（Global 对象）。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>浏览器全局对象是 <code>window</code>；Node 是 <code>global</code>；ES2020 标准 <code>globalThis</code> 跨环境统一。</li>
-      <li>顶层 <code>var</code> 和 function 声明会成为 window 属性；let/const 不会。</li>
-      <li><code>eval(str)</code> 在运行时把字符串当 JS 执行，能访问外层词法变量。</li>
-      <li>严格模式 + 直接 eval 有独立词法环境；indirect eval（如 (0,eval)(s)）在全局执行。</li>
-      <li>风险：XSS 注入、CSP 禁止、引擎难以 JIT 优化、调试困难。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>全局对象？</strong> 宿主提供的根对象；浏览器 window。全局This 用 globalThis。模块顶层变量不在 window 上。</li>
-      <li><strong>eval 风险？</strong> 执行不可信字符串 → XSS；性能差；违反 CSP。替代：JSON.parse、Function 构造器（仍慎用）、配置 DSL。</li>
-      <li><strong>eval vs new Function？</strong> eval 共享调用处闭包；Function 只有全局作用域（+自身参数），不闭包外层 let。两者都不推荐在生产使用。</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>浏览器全局对象是 <code>window</code>；Node 是 <code>global</code>；ES2020 标准 <code>globalThis</code> 跨环境统一。</li>
+          <li>顶层 <code>var</code> 和 function 声明会成为 window 属性；let/const 不会。</li>
+          <li><code>eval(str)</code> 在运行时把字符串当 JS 执行，能访问外层词法变量。</li>
+          <li>严格模式 + 直接 eval 有独立词法环境；indirect eval（如 (0,eval)(s)）在全局执行。</li>
+          <li>风险：XSS 注入、CSP 禁止、引擎难以 JIT 优化、调试困难。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>全局对象？</strong> 宿主提供的根对象；浏览器 window。全局This 用 globalThis。模块顶层变量不在 window 上。</li>
+          <li><strong>eval 风险？</strong> 执行不可信字符串 → XSS；性能差；违反 CSP。替代：JSON.parse、Function 构造器（仍慎用）、配置 DSL。</li>
+          <li><strong>eval vs new Function？</strong> eval 共享调用处闭包；Function 只有全局作用域（+自身参数），不闭包外层 let。两者都不推荐在生产使用。</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
-    // ============ 1. window 上的全局工具 ============
-    console.log(window.Math.random());
-    console.log(window.Object === Object);  // true
-
-    // 数组的 Object.keys 返回下标字符串
-    const arr = ["name", "age", "address"];
-    console.log(Object.keys(arr)); // ['0', '1', '2']
-
-    // ============ 2. eval：把字符串当 JS 代码执行 ============
-    var a = 1, b = 2;
-    const c = eval("a + b");
-    console.log("eval('a+b') =", c); // 3
-
-    // eval 共享调用处的作用域链 —— 非严格模式下可以创建局部变量
-    eval("var p = { name: 'eval-created', age: 19 }");
-    console.log("eval 创建的 p:", p);
-
-    // ⚠️ 严格模式下，eval 中创建的变量外部访问不到
-    (function () {
+      // ============ 1. window 上的全局工具 ============
+      console.log(window.Math.random());
+      console.log(window.Object === Object);  // true
+      
+      // 数组的 Object.keys 返回下标字符串
+      const arr = ["name", "age", "address"];
+      console.log(Object.keys(arr)); // ['0', '1', '2']
+      
+      // ============ 2. eval：把字符串当 JS 代码执行 ============
+      var a = 1, b = 2;
+      const c = eval("a + b");
+      console.log("eval('a+b') =", c); // 3
+      
+      // eval 共享调用处的作用域链 —— 非严格模式下可以创建局部变量
+      eval("var p = { name: 'eval-created', age: 19 }");
+      console.log("eval 创建的 p:", p);
+      
+      // ⚠️ 严格模式下，eval 中创建的变量外部访问不到
+      (function () {
       "use strict";
       eval("var inner = 42");
       try {
-        console.log(inner); // ReferenceError
+      console.log(inner); // ReferenceError
       } catch (e) {
-        console.log("严格模式下 eval 内变量隔离:", e.message);
+      console.log("严格模式下 eval 内变量隔离:", e.message);
       }
-    })();
-
-    // ⚠️ 性能与安全：现代代码应避免 eval / new Function(...)
-    //    XSS 风险高、JIT 优化失效
-
-    // ============ 3. String() vs toString() ============
-    let u = undefined;
-    console.log(String(u));   // 'undefined'   —— String() 能处理 null/undefined
-    // u.toString();           // TypeError    —— null/undefined 没有 toString
-  </script>
+      })();
+      
+      // ⚠️ 性能与安全：现代代码应避免 eval / new Function(...)
+      //    XSS 风险高、JIT 优化失效
+      
+      // ============ 3. String() vs toString() ============
+      let u = undefined;
+      console.log(String(u));   // 'undefined'   —— String() 能处理 null/undefined
+      // u.toString();           // TypeError    —— null/undefined 没有 toString
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -105,16 +96,15 @@
         <a href="./IIFE.html">IIFE →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
   
 </body>
 </html>

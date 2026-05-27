@@ -13,178 +13,173 @@
     - 面试中如何简洁讲清 面试简化版 Promise
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>手写 Promise</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>手写 Promise</title>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
   </head>
-<body class="demo-page">
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>面试简化版 Promise</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li><code>Promise</code> 有 pending / fulfilled / rejected 三种状态，状态一旦改变不可逆。</li>
-      <li><code>then</code> 返回新 <code>Promise</code>，以支持链式调用。</li>
-      <li>回调异步执行；这里用 <code>queueMicrotask</code> 模拟微任务入队。</li>
-      <li><code>Promise</code> 有 pending / fulfilled / rejected 三种状态，状态一旦改变不可逆（补充）。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>Promise 有 pending / fulfilled / rejected？</strong> <code>Promise</code> 有 pending / fulfilled / rejected 三种状态，状态一旦改变不可逆；<code>then</code> 返回新 <code>Promise</code>，以支持链式调用</li>
-      <li><strong>then 返回新 Promise？</strong> <code>then</code> 返回新 <code>Promise</code>，以支持链式调用</li>
-      <li><strong>面试简化版 Promise的核心概念是什么？</strong> <code>Promise</code> 有 pending / fulfilled / rejected 三种状态，状态一旦改变不可逆；<code>then</code> 返回新 <code>Promise</code>，以支持链式调用</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>Promise</code> 有 pending / fulfilled / rejected 三种状态，状态一旦改变不可逆。</li>
+          <li><code>then</code> 返回新 <code>Promise</code>，以支持链式调用。</li>
+          <li>回调异步执行；这里用 <code>queueMicrotask</code> 模拟微任务入队。</li>
+          <li><code>Promise</code> 有 pending / fulfilled / rejected 三种状态，状态一旦改变不可逆（补充）。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>Promise 有 pending / fulfilled / rejected？</strong> <code>Promise</code> 有 pending / fulfilled / rejected 三种状态，状态一旦改变不可逆；<code>then</code> 返回新 <code>Promise</code>，以支持链式调用</li>
+          <li><strong>then 返回新 Promise？</strong> <code>then</code> 返回新 <code>Promise</code>，以支持链式调用</li>
+          <li><strong>面试简化版 Promise的核心概念是什么？</strong> <code>Promise</code> 有 pending / fulfilled / rejected 三种状态，状态一旦改变不可逆；<code>then</code> 返回新 <code>Promise</code>，以支持链式调用</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../packages/shared/demo-log.js"></script>
-
 <p>打开控制台查看断言结果。</p>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    const PENDING = "pending";
-    const FULFILLED = "fulfilled";
-    const REJECTED = "rejected";
-
-    class MyPromise {
+      const PENDING = "pending";
+      const FULFILLED = "fulfilled";
+      const REJECTED = "rejected";
+      
+      class MyPromise {
       constructor(executor) {
-        this.status = PENDING;
-        this.value = undefined;
-        this.reason = undefined;
-        this.onFulfilledCallbacks = [];
-        this.onRejectedCallbacks = [];
-
-        const resolve = value => {
-          if (this.status !== PENDING) return;
-          queueMicrotask(() => {
-            if (this.status !== PENDING) return;
-            this.status = FULFILLED;
-            this.value = value;
-            this.onFulfilledCallbacks.forEach(fn => fn());
-          });
-        };
-
-        const reject = reason => {
-          if (this.status !== PENDING) return;
-          queueMicrotask(() => {
-            if (this.status !== PENDING) return;
-            this.status = REJECTED;
-            this.reason = reason;
-            this.onRejectedCallbacks.forEach(fn => fn());
-          });
-        };
-
-        try {
-          executor(resolve, reject);
-        } catch (error) {
-          reject(error);
-        }
+      this.status = PENDING;
+      this.value = undefined;
+      this.reason = undefined;
+      this.onFulfilledCallbacks = [];
+      this.onRejectedCallbacks = [];
+      
+      const resolve = value => {
+      if (this.status !== PENDING) return;
+      queueMicrotask(() => {
+      if (this.status !== PENDING) return;
+      this.status = FULFILLED;
+      this.value = value;
+      this.onFulfilledCallbacks.forEach(fn => fn());
+      });
+      };
+      
+      const reject = reason => {
+      if (this.status !== PENDING) return;
+      queueMicrotask(() => {
+      if (this.status !== PENDING) return;
+      this.status = REJECTED;
+      this.reason = reason;
+      this.onRejectedCallbacks.forEach(fn => fn());
+      });
+      };
+      
+      try {
+      executor(resolve, reject);
+      } catch (error) {
+      reject(error);
       }
-
+      }
+      
       then(onFulfilled, onRejected) {
-        const realOnFulfilled = typeof onFulfilled === "function" ? onFulfilled : value => value;
-        const realOnRejected = typeof onRejected === "function" ? onRejected : reason => { throw reason; };
-
-        return new MyPromise((resolve, reject) => {
-          const fulfilledTask = () => {
-            queueMicrotask(() => {
-              try {
-                const result = realOnFulfilled(this.value);
-                resolvePromise(result, resolve, reject);
-              } catch (error) {
-                reject(error);
-              }
-            });
-          };
-
-          const rejectedTask = () => {
-            queueMicrotask(() => {
-              try {
-                const result = realOnRejected(this.reason);
-                resolvePromise(result, resolve, reject);
-              } catch (error) {
-                reject(error);
-              }
-            });
-          };
-
-          if (this.status === FULFILLED) {
-            fulfilledTask();
-          } else if (this.status === REJECTED) {
-            rejectedTask();
-          } else {
-            this.onFulfilledCallbacks.push(fulfilledTask);
-            this.onRejectedCallbacks.push(rejectedTask);
-          }
-        });
+      const realOnFulfilled = typeof onFulfilled === "function" ? onFulfilled : value => value;
+      const realOnRejected = typeof onRejected === "function" ? onRejected : reason => { throw reason; };
+      
+      return new MyPromise((resolve, reject) => {
+      const fulfilledTask = () => {
+      queueMicrotask(() => {
+      try {
+      const result = realOnFulfilled(this.value);
+      resolvePromise(result, resolve, reject);
+      } catch (error) {
+      reject(error);
       }
-
-      catch(onRejected) {
-        return this.then(null, onRejected);
+      });
+      };
+      
+      const rejectedTask = () => {
+      queueMicrotask(() => {
+      try {
+      const result = realOnRejected(this.reason);
+      resolvePromise(result, resolve, reject);
+      } catch (error) {
+      reject(error);
       }
-
-      finally(callback) {
-        return this.then(
-          value => MyPromise.resolve(callback()).then(() => value),
-          reason => MyPromise.resolve(callback()).then(() => { throw reason; })
-        );
-      }
-
-      static resolve(value) {
-        if (value instanceof MyPromise) return value;
-        return new MyPromise(resolve => resolve(value));
-      }
-
-      static reject(reason) {
-        return new MyPromise((resolve, reject) => reject(reason));
-      }
-    }
-
-    function resolvePromise(result, resolve, reject) {
-      if (result instanceof MyPromise) {
-        result.then(resolve, reject);
+      });
+      };
+      
+      if (this.status === FULFILLED) {
+      fulfilledTask();
+      } else if (this.status === REJECTED) {
+      rejectedTask();
       } else {
-        resolve(result);
+      this.onFulfilledCallbacks.push(fulfilledTask);
+      this.onRejectedCallbacks.push(rejectedTask);
       }
-    }
-
-    MyPromise.resolve(1)
+      });
+      }
+      
+      catch(onRejected) {
+      return this.then(null, onRejected);
+      }
+      
+      finally(callback) {
+      return this.then(
+      value => MyPromise.resolve(callback()).then(() => value),
+      reason => MyPromise.resolve(callback()).then(() => { throw reason; })
+      );
+      }
+      
+      static resolve(value) {
+      if (value instanceof MyPromise) return value;
+      return new MyPromise(resolve => resolve(value));
+      }
+      
+      static reject(reason) {
+      return new MyPromise((resolve, reject) => reject(reason));
+      }
+      }
+      
+      function resolvePromise(result, resolve, reject) {
+      if (result instanceof MyPromise) {
+      result.then(resolve, reject);
+      } else {
+      resolve(result);
+      }
+      }
+      
+      MyPromise.resolve(1)
       .then(value => value + 1)
       .then(value => {
-        console.assert(value === 2, "then chain passes value");
-        return new MyPromise(resolve => setTimeout(() => resolve(value + 1), 20));
+      console.assert(value === 2, "then chain passes value");
+      return new MyPromise(resolve => setTimeout(() => resolve(value + 1), 20));
       })
       .then(value => {
-        console.assert(value === 3, "then unwraps MyPromise result");
-        console.log("chain result:", value);
+      console.assert(value === 3, "then unwraps MyPromise result");
+      console.log("chain result:", value);
       });
-
-    MyPromise.reject("fail")
+      
+      MyPromise.reject("fail")
       .catch(reason => {
-        console.assert(reason === "fail", "catch receives rejection");
-        return "recovered";
+      console.assert(reason === "fail", "catch receives rejection");
+      return "recovered";
       })
       .finally(() => console.log("finally called"))
       .then(value => console.log("catch result:", value));
-  </script>
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -196,16 +191,14 @@
         <a href="./06-EventEmitter.html">EventEmitter →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

@@ -13,97 +13,92 @@
     - 面试中如何简洁讲清 手写 bind
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>手写 bind</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>手写 bind</title>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
   </head>
-<body class="demo-page">
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>手写 bind</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li><code>bind</code> 返回新函数，不会立即执行。</li>
-      <li>普通调用时 <code>this</code> 指向绑定对象；new 调用时 <code>this</code> 指向新实例，忽略绑定对象。</li>
-      <li>支持预置参数，并维护原函数 prototype 原型链。</li>
-      <li><code>bind</code> 返回新函数，不会立即执行（补充）。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>bind 返回新函数？</strong> <code>bind</code> 返回新函数，不会立即执行</li>
-      <li><strong>普通调用时 this 指向绑定对象？</strong> 普通调用时 <code>this</code> 指向绑定对象；new 调用时 <code>this</code> 指向新实例，忽略绑定对象</li>
-      <li><strong>手写 bind的核心概念是什么？</strong> <code>bind</code> 返回新函数，不会立即执行；普通调用时 <code>this</code> 指向绑定对象；new 调用时 <code>this</code> 指向新实例，忽略绑定对象</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>bind</code> 返回新函数，不会立即执行。</li>
+          <li>普通调用时 <code>this</code> 指向绑定对象；new 调用时 <code>this</code> 指向新实例，忽略绑定对象。</li>
+          <li>支持预置参数，并维护原函数 prototype 原型链。</li>
+          <li><code>bind</code> 返回新函数，不会立即执行（补充）。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>bind 返回新函数？</strong> <code>bind</code> 返回新函数，不会立即执行</li>
+          <li><strong>普通调用时 this 指向绑定对象？</strong> 普通调用时 <code>this</code> 指向绑定对象；new 调用时 <code>this</code> 指向新实例，忽略绑定对象</li>
+          <li><strong>手写 bind的核心概念是什么？</strong> <code>bind</code> 返回新函数，不会立即执行；普通调用时 <code>this</code> 指向绑定对象；new 调用时 <code>this</code> 指向新实例，忽略绑定对象</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../packages/shared/demo-log.js"></script>
-
 <p>打开控制台查看断言结果。</p>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    Function.prototype.myBind = function (thisArg, ...presetArgs) {
+      Function.prototype.myBind = function (thisArg, ...presetArgs) {
       if (typeof this !== "function") {
-        throw new TypeError("myBind must be called on a function");
+      throw new TypeError("myBind must be called on a function");
       }
-
+      
       const fn = this;
       function bound(...laterArgs) {
-        const isNewCall = this instanceof bound;
-        const context = isNewCall ? this : thisArg;
-        return fn.apply(context, presetArgs.concat(laterArgs));
+      const isNewCall = this instanceof bound;
+      const context = isNewCall ? this : thisArg;
+      return fn.apply(context, presetArgs.concat(laterArgs));
       }
-
+      
       // new bound() 创建的实例应能访问原函数 prototype 上的方法。
       if (fn.prototype) {
-        bound.prototype = Object.create(fn.prototype);
-        bound.prototype.constructor = bound;
+      bound.prototype = Object.create(fn.prototype);
+      bound.prototype.constructor = bound;
       }
-
+      
       return bound;
-    };
-
-    function say(prefix, suffix) {
+      };
+      
+      function say(prefix, suffix) {
       return prefix + this.name + suffix;
-    }
-    const user = { name: "Ada" };
-    const boundSay = say.myBind(user, "Hi, ");
-    console.assert(boundSay("!") === "Hi, Ada!", "normal bind call");
-
-    function Person(name) {
+      }
+      const user = { name: "Ada" };
+      const boundSay = say.myBind(user, "Hi, ");
+      console.assert(boundSay("!") === "Hi, Ada!", "normal bind call");
+      
+      function Person(name) {
       this.name = name;
-    }
-    Person.prototype.getName = function () {
+      }
+      Person.prototype.getName = function () {
       return this.name;
-    };
-
-    const BoundPerson = Person.myBind({ name: "Ignored" });
-    const p = new BoundPerson("Grace");
-    console.assert(p.name === "Grace", "new call ignores bound thisArg");
-    console.assert(p instanceof Person, "instance keeps original prototype chain");
-    console.assert(p.getName() === "Grace", "prototype method works");
-
-    console.log("boundSay:", boundSay("!"));
-    console.log("new BoundPerson:", p.getName(), p instanceof Person);
-  </script>
+      };
+      
+      const BoundPerson = Person.myBind({ name: "Ignored" });
+      const p = new BoundPerson("Grace");
+      console.assert(p.name === "Grace", "new call ignores bound thisArg");
+      console.assert(p instanceof Person, "instance keeps original prototype chain");
+      console.assert(p.getName() === "Grace", "prototype method works");
+      
+      console.log("boundSay:", boundSay("!"));
+      console.log("new BoundPerson:", p.getName(), p instanceof Person);
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -115,16 +110,14 @@
         <a href="./03-new.html">new →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

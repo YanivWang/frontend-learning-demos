@@ -86,16 +86,6 @@
   </section>
   <!-- NOTES_END -->
 
-  <!-- 可选：含 console 同步输出时 -->
-  <!-- RUN_START -->
-  <section class="demo-block demo-block--run" aria-label="运行输出">
-    <h2 class="demo-block__label">运行输出</h2>
-    <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-    <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-  </section>
-  <!-- RUN_END -->
-  <script src="../../../packages/shared/demo-log.js"></script>
-
   <!-- SCRIPT_START -->
   <script>/* demo 逻辑 */</script>
   <!-- SCRIPT_END -->
@@ -112,9 +102,10 @@
 - `<head>` 须引入 `demo-notes.css` 与 `demo-shell.css`
 - 运行 `npm run migrate:demo-shell` 可批量迁移为上述骨架
 - 运行 `npm run transform:all-demos` 可批量补齐头注释 `面试:`、`.demo-notes` 正文（不覆盖已有正文）
-- 纯 console 且无 `#demo-output` 的 demo（如 `字符串方法.html`）可省略 RUN 区块，hint 引导打开 DevTools
+- 运行 `npm run format:all-demos` 可批量对齐缩进并移除 demo-log / RUN 区块
+- 纯 console demo（如 `字符串方法.html`）省略 RUN 区块，hint 引导打开 DevTools
 
-- **JavaScript（含 console）**：须有复习区 `<h1>`；有 `#demo-output` 时用 RUN 区块 + `demo-log.js`，否则 SCRIPT 区块 + DevTools hint
+- **JavaScript（含 console）**：须有复习区 `<h1>`；使用 SCRIPT 区块 + DevTools hint，不引入 demo-log.js
 - **CSS / 可视化 demo**：须有复习区；演示区保留原有样式与交互
 - **Vue / React**：在 `#app` / `#root` 之前放复习区；`text/babel` 脚本用 SCRIPT 区块包裹
 

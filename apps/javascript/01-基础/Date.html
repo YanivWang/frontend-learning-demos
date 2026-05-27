@@ -11,107 +11,98 @@
     - 前端如何处理时区？
   相关: JSON
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Date / 时间工具</title>
-  <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Date / 时间工具</title>
+    <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Date 常用工具函数</h1>
-      <p class="hint">JavaScript 原生 Date 用法简单但容易踩坑（月份从 0 开始；getDate 是日不是星期…）。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li><code>getMonth()</code> 0～11；<code>getDay()</code> 0=周日；<code>getDate()</code> 是「日」不是星期。</li>
-      <li><code>new Date(y, m, 0)</code> 中 m 为 1-based 月份时，day=0 表示上个月的最后一天，即当月月末。</li>
-      <li>时间戳：<code>Date.now()</code>、<code>getTime()</code>；解析字符串推荐 ISO 8601。</li>
-      <li>格式化：优先 <code>Intl.DateTimeFormat</code> 或 dayjs/date-fns，避免手写 pad。</li>
-      <li>Date 是可变对象，运算前注意 clone；跨时区业务用 UTC 或专用库。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>Date 常见坑？</strong> 月份从 0 起；<code>new Date('2024-01-01')</code> 时区差异；直接改实例会 mutate。</li>
-      <li><strong>某月最后一天？</strong> <code>new Date(year, month, 0).getDate()</code>（month 为下一月 1-based）或 dayjs 的 endOf('month')。</li>
-      <li><strong>时区处理？</strong> 存储 UTC 时间戳；展示用 toLocaleString + timeZone；复杂场景用 Temporal（未来）或 dayjs timezone 插件。</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>getMonth()</code> 0～11；<code>getDay()</code> 0=周日；<code>getDate()</code> 是「日」不是星期。</li>
+          <li><code>new Date(y, m, 0)</code> 中 m 为 1-based 月份时，day=0 表示上个月的最后一天，即当月月末。</li>
+          <li>时间戳：<code>Date.now()</code>、<code>getTime()</code>；解析字符串推荐 ISO 8601。</li>
+          <li>格式化：优先 <code>Intl.DateTimeFormat</code> 或 dayjs/date-fns，避免手写 pad。</li>
+          <li>Date 是可变对象，运算前注意 clone；跨时区业务用 UTC 或专用库。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>Date 常见坑？</strong> 月份从 0 起；<code>new Date('2024-01-01')</code> 时区差异；直接改实例会 mutate。</li>
+          <li><strong>某月最后一天？</strong> <code>new Date(year, month, 0).getDate()</code>（month 为下一月 1-based）或 dayjs 的 endOf('month')。</li>
+          <li><strong>时区处理？</strong> 存储 UTC 时间戳；展示用 toLocaleString + timeZone；复杂场景用 Temporal（未来）或 dayjs timezone 插件。</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
-    // ============ 1. 基础获取 ============
-    const now = new Date();
-    console.log("getFullYear:", now.getFullYear());
-    console.log("getMonth:", now.getMonth(), "（0 表示一月，要 +1）");
-    console.log("getDate:", now.getDate(), "（号）");
-    console.log("getDay:", now.getDay(), "（星期，0 表示周日）");
-    console.log("getHours:", now.getHours());
-
-    // ============ 2. 月初 / 月末 ============
-    function padZero(n) {
+      // ============ 1. 基础获取 ============
+      const now = new Date();
+      console.log("getFullYear:", now.getFullYear());
+      console.log("getMonth:", now.getMonth(), "（0 表示一月，要 +1）");
+      console.log("getDate:", now.getDate(), "（号）");
+      console.log("getDay:", now.getDay(), "（星期，0 表示周日）");
+      console.log("getHours:", now.getHours());
+      
+      // ============ 2. 月初 / 月末 ============
+      function padZero(n) {
       n = String(n);
       return n.length < 2 ? "0" + n : n;
-    }
-
-    function getFirstDayOfMonth(year, month) {
+      }
+      
+      function getFirstDayOfMonth(year, month) {
       return `${year}-${padZero(month)}-01 00:00:00`;
-    }
-
-    function getLastDayOfMonth(year, month) {
+      }
+      
+      function getLastDayOfMonth(year, month) {
       // 关键：month 参数为 1-based（人类月份），new Date(year, month, 0) 得到该月最后一天
       // 例：getLastDayOfMonth(2019, 12) → new Date(2019, 12, 0) → 2019-12-31
       const d = new Date(year, month, 0);
       return `${year}-${padZero(month)}-${padZero(d.getDate())} 00:00:00`;
-    }
-
-    console.log("2019-12 首日:", getFirstDayOfMonth(2019, 12));
-    console.log("2019-12 末日:", getLastDayOfMonth(2019, 12));
-    console.log("2020-02 末日:", getLastDayOfMonth(2020, 2)); // 闰年 29 日
-    console.log("2021-02 末日:", getLastDayOfMonth(2021, 2)); // 平年 28 日
-
-    // ============ 3. 格式化（手写 vs Intl）============
-    function formatDate(d, fmt = "yyyy-MM-dd HH:mm:ss") {
+      }
+      
+      console.log("2019-12 首日:", getFirstDayOfMonth(2019, 12));
+      console.log("2019-12 末日:", getLastDayOfMonth(2019, 12));
+      console.log("2020-02 末日:", getLastDayOfMonth(2020, 2)); // 闰年 29 日
+      console.log("2021-02 末日:", getLastDayOfMonth(2021, 2)); // 平年 28 日
+      
+      // ============ 3. 格式化（手写 vs Intl）============
+      function formatDate(d, fmt = "yyyy-MM-dd HH:mm:ss") {
       const map = {
-        yyyy: d.getFullYear(),
-        MM: padZero(d.getMonth() + 1),
-        dd: padZero(d.getDate()),
-        HH: padZero(d.getHours()),
-        mm: padZero(d.getMinutes()),
-        ss: padZero(d.getSeconds()),
+      yyyy: d.getFullYear(),
+      MM: padZero(d.getMonth() + 1),
+      dd: padZero(d.getDate()),
+      HH: padZero(d.getHours()),
+      mm: padZero(d.getMinutes()),
+      ss: padZero(d.getSeconds()),
       };
       return fmt.replace(/yyyy|MM|dd|HH|mm|ss/g, (k) => map[k]);
-    }
-    console.log("formatDate:", formatDate(now));
-
-    // 现代 API：Intl.DateTimeFormat
-    console.log(
+      }
+      console.log("formatDate:", formatDate(now));
+      
+      // 现代 API：Intl.DateTimeFormat
+      console.log(
       "Intl 格式化:",
       new Intl.DateTimeFormat("zh-CN", { dateStyle: "long", timeStyle: "medium" }).format(now)
-    );
-
-    // ============ 4. 时间差 ============
-    const t1 = new Date("2025-01-01").getTime();
-    const t2 = new Date("2026-01-01").getTime();
-    const days = (t2 - t1) / (1000 * 60 * 60 * 24);
-    console.log("相差天数:", days);
-  </script>
+      );
+      
+      // ============ 4. 时间差 ============
+      const t1 = new Date("2025-01-01").getTime();
+      const t2 = new Date("2026-01-01").getTime();
+      const days = (t2 - t1) / (1000 * 60 * 60 * 24);
+      console.log("相差天数:", days);
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -124,16 +115,15 @@
         <a href="./encode-URI%E7%BC%96%E7%A0%81.html">encode-URI编码 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
   
 </body>
 </html>

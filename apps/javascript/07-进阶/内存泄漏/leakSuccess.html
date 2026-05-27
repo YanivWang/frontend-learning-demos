@@ -13,65 +13,60 @@
     - 面试中如何简洁讲清 通过手动置 null 释放闭包引用
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>内存泄漏 - 闭包置 null 释放</title>
-      <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
+  </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>通过手动置 null 释放闭包引用</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>inner 持有 outer 的局部变量 bigData，会阻止其回收。</li>
-      <li>把 inner 置为 <code>null</code> 后，闭包链断裂，GC 可回收。</li>
-      <li>用 DevTools 在置 <code>null</code> 前后做 Heap snapshot 对比可直观看到差异。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>inner 持有 outer 的局部变量 bigData？</strong> inner 持有 outer 的局部变量 bigData，会阻止其回收；把 inner 置为 <code>null</code> 后，闭包链断裂，GC 可回收</li>
-      <li><strong>把 inner 置为 null 后？</strong> 把 inner 置为 <code>null</code> 后，闭包链断裂，GC 可回收</li>
-      <li><strong>用 DevTools 在置 null 前后做 Heap snapshot 对比可？</strong> 用 DevTools 在置 <code>null</code> 前后做 Heap snapshot 对比可直观看到差异</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>inner 持有 outer 的局部变量 bigData，会阻止其回收。</li>
+          <li>把 inner 置为 <code>null</code> 后，闭包链断裂，GC 可回收。</li>
+          <li>用 DevTools 在置 <code>null</code> 前后做 Heap snapshot 对比可直观看到差异。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>inner 持有 outer 的局部变量 bigData？</strong> inner 持有 outer 的局部变量 bigData，会阻止其回收；把 inner 置为 <code>null</code> 后，闭包链断裂，GC 可回收</li>
+          <li><strong>把 inner 置为 null 后？</strong> 把 inner 置为 <code>null</code> 后，闭包链断裂，GC 可回收</li>
+          <li><strong>用 DevTools 在置 null 前后做 Heap snapshot 对比可？</strong> 用 DevTools 在置 <code>null</code> 前后做 Heap snapshot 对比可直观看到差异</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../packages/shared/demo-log.js"></script>
-
 <div>leakSuccess</div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
       function outer() {
-        const bigData = new Array(5000000).fill("11111"); // 创建一个大数组（约 5,000,000 元素）
-
-        return function () {
-          console.log("Closure is alive", bigData.length);
-        };
+      const bigData = new Array(5000000).fill("11111"); // 创建一个大数组（约 5,000,000 元素）
+      
+      return function () {
+      console.log("Closure is alive", bigData.length);
+      };
       }
       let inner = outer();
       // console.log("I am inner,", inner);
-
+      
       setTimeout(()=>{
-        console.log("手动解除闭包引用!");
-        inner = null;
+      console.log("手动解除闭包引用!");
+      inner = null;
       },15000)
     </script>
     <!-- SCRIPT_END -->
@@ -85,16 +80,14 @@
         <a href="./timeline.html">timeline →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

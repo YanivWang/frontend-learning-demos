@@ -13,46 +13,37 @@
     - 面试中如何简洁讲清 给 Worker 命名 + 用消息体分发不同任务
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Worker 命名与消息分发</title>
     <link rel="stylesheet" href="../../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>给 Worker 命名 + 用消息体分发不同任务</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>new Worker(path, { name }) 可标识不同 worker，便于 DevTools 调试。</li>
-      <li>主线程发送 {task, data}，子线程依据 task 字段调用对应函数。</li>
-      <li>易错点：直接在主线程跑大循环（startCount）会卡死 UI，应放到 worker。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>new Worker(path？</strong> new Worker(path, { name }) 可标识不同 worker，便于 DevTools 调试</li>
-      <li><strong>主线程发送 {task？</strong> 主线程发送 {task, data}，子线程依据 task 字段调用对应函数；易错点：直接在主线程跑大循环（startCount）会卡死 UI，应放到 worker</li>
-      <li><strong>给 Worker 命名 + 用消息体分发不同任务的核心概念是什么？</strong> new Worker(path, { name }) 可标识不同 worker，便于 DevTools 调试；主线程发送 {task, data}，子线程依据 task 字段调用对应函数</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>new Worker(path, { name }) 可标识不同 worker，便于 DevTools 调试。</li>
+          <li>主线程发送 {task, data}，子线程依据 task 字段调用对应函数。</li>
+          <li>易错点：直接在主线程跑大循环（startCount）会卡死 UI，应放到 worker。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>new Worker(path？</strong> new Worker(path, { name }) 可标识不同 worker，便于 DevTools 调试</li>
+          <li><strong>主线程发送 {task？</strong> 主线程发送 {task, data}，子线程依据 task 字段调用对应函数；易错点：直接在主线程跑大循环（startCount）会卡死 UI，应放到 worker</li>
+          <li><strong>给 Worker 命名 + 用消息体分发不同任务的核心概念是什么？</strong> new Worker(path, { name }) 可标识不同 worker，便于 DevTools 调试；主线程发送 {task, data}，子线程依据 task 字段调用对应函数</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
-
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../../packages/shared/demo-log.js"></script>
 
 <button onclick="startTaskA()">start</button>
 
@@ -63,52 +54,56 @@
 <button onclick="startCount()">count</button>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    //javascript是单线程的，同一个时刻，只能做一件事
-    //当进行密集型计算的时候，ui就无法响应
-    function pressHandle() {
-        console.log("press stat....");
-
-        let sum = 0;
-        for (let i = 0; i < 1000; i++) {
-            sum = sum + i;
-        }
-        console.log("press end....");
-    }
-
-    function startCount() {
-        console.log("count start....");
-        let count = 0;
-        for (let i = 0; i < 10000000000000; i++) {
-            count = count + i;
-        }
-        console.log("count end...." + count);
-    }
-
-    //msg format to work: {task: "A", data: "xxx"}
-    //msg format from work: {desc: "Task A finish...", data: data}
-    let work = new Worker("work.js", {name: 'hardWork1'});
-
-    function startTaskA() {
-        let msg = {task: "A", data: "1000"};
-        work.postMessage(msg);
-    }
-
-    function stopTaskA() {
-        work.terminate();
-    }
-
-    work.onmessage = function (e) {
-        let msg = e.data;
-        console.log("work msg: " + JSON.stringify(msg));
-
-        if (msg.task === 'A' && msg.state === 1) {
-            let msg = {task: "B", data: "10000000000"};
-            work.postMessage(msg);
-        }
-    }
-</script>
+      //javascript是单线程的，同一个时刻，只能做一件事
+      //当进行密集型计算的时候，ui就无法响应
+      function pressHandle() {
+      console.log("press stat....");
+      
+      let sum = 0;
+      for (let i = 0; i < 1000; i++) {
+      sum = sum + i;
+      }
+      console.log("press end....");
+      }
+      
+      function startCount() {
+      console.log("count start....");
+      let count = 0;
+      for (let i = 0; i < 10000000000000; i++) {
+      count = count + i;
+      }
+      console.log("count end...." + count);
+      }
+      
+      //msg format to work: {task: "A", data: "xxx"}
+      //msg format from work: {desc: "Task A finish...", data: data}
+      let work = new Worker("work.js", {name: 'hardWork1'});
+      
+      function startTaskA() {
+      let msg = {task: "A", data: "1000"};
+      work.postMessage(msg);
+      }
+      
+      function stopTaskA() {
+      work.terminate();
+      }
+      
+      work.onmessage = function (e) {
+      let msg = e.data;
+      console.log("work msg: " + JSON.stringify(msg));
+      
+      if (msg.task === 'A' && msg.state === 1) {
+      let msg = {task: "B", data: "10000000000"};
+      work.postMessage(msg);
+      }
+      }
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -120,16 +115,14 @@
         <a href="../../../07-%E8%BF%9B%E9%98%B6/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6.html">垃圾回收 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

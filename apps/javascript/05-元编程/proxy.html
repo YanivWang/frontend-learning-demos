@@ -13,106 +13,97 @@
     - 面试中如何简洁讲清 Proxy 代理与基本拦截器
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Proxy 与 Reflect</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Proxy 与 Reflect</title>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Proxy 代理与基本拦截器</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li><code>Proxy</code> 通过 handler 拦截目标对象的 get/set/has 等基础操作。</li>
-      <li>get(targetObj, property, proxyInstance) 三参数；set 多了 newValue。</li>
-      <li><code>Proxy</code> 实例无 __proto__，<code>instanceof</code> <code>Proxy</code> 不可用；<code>Reflect</code> 提供配套反射 API。</li>
-      <li><code>Proxy</code> 通过 handler 拦截目标对象的 get/set/has 等基础操作（补充）。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>Proxy 通过 handler 拦截目标对象的 get/set/has 等基础？</strong> <code>Proxy</code> 通过 handler 拦截目标对象的 get/set/has 等基础操作；<code>Proxy</code> 实例无 __proto__，<code>instanceof</code> <code>Proxy</code> 不可用；<code>Reflect</code> 提供配套反射 API</li>
-      <li><strong>get(targetObj？</strong> <code>Proxy</code> 通过 handler 拦截目标对象的 get/set/has 等基础操作；get(targetObj, property, proxyInstance) 三参数；set 多了 newValue</li>
-      <li><strong>Proxy 实例无 __proto__？</strong> <code>Proxy</code> 通过 handler 拦截目标对象的 get/set/has 等基础操作；<code>Proxy</code> 实例无 __proto__，<code>instanceof</code> <code>Proxy</code> 不可用；<code>Reflect</code> 提供配套反射 API</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>Proxy</code> 通过 handler 拦截目标对象的 get/set/has 等基础操作。</li>
+          <li>get(targetObj, property, proxyInstance) 三参数；set 多了 newValue。</li>
+          <li><code>Proxy</code> 实例无 __proto__，<code>instanceof</code> <code>Proxy</code> 不可用；<code>Reflect</code> 提供配套反射 API。</li>
+          <li><code>Proxy</code> 通过 handler 拦截目标对象的 get/set/has 等基础操作（补充）。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>Proxy 通过 handler 拦截目标对象的 get/set/has 等基础？</strong> <code>Proxy</code> 通过 handler 拦截目标对象的 get/set/has 等基础操作；<code>Proxy</code> 实例无 __proto__，<code>instanceof</code> <code>Proxy</code> 不可用；<code>Reflect</code> 提供配套反射 API</li>
+          <li><strong>get(targetObj？</strong> <code>Proxy</code> 通过 handler 拦截目标对象的 get/set/has 等基础操作；get(targetObj, property, proxyInstance) 三参数；set 多了 newValue</li>
+          <li><strong>Proxy 实例无 __proto__？</strong> <code>Proxy</code> 通过 handler 拦截目标对象的 get/set/has 等基础操作；<code>Proxy</code> 实例无 __proto__，<code>instanceof</code> <code>Proxy</code> 不可用；<code>Reflect</code> 提供配套反射 API</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
-    //被代理的目标对象
-    const person = {
+      //被代理的目标对象
+      const person = {
       name: "wangcheng",
       sayHello(){
-        console.log("我是", this.name);
+      console.log("我是", this.name);
       }
-    }
-    
-    //处理器对象：有一些属性比如set get函数
-    const handler = {
+      }
+      
+      //处理器对象：有一些属性比如set get函数
+      const handler = {
       //targetObj被代理的目标对象
       //property 当前对访问的属性
       //proxyInstance 创建的代理实例
       get(targetObj,property,proxyInstance){
-        console.log(targetObj === person);
-        console.log(property === "name");
-        console.log(proxyInstance === proxy);
-
-        return targetObj[property]
+      console.log(targetObj === person);
+      console.log(property === "name");
+      console.log(proxyInstance === proxy);
+      
+      return targetObj[property]
       },
       set(targetObj, property, newValue, proxyInstance){
-        console.log("targetObj>>", targetObj)
-        console.log("property>>", property)
-        console.log("newValue>>", newValue)
-
-        console.log("proxyInstance>>", proxyInstance)
-        
-        //如果用户传入的新的属性值，跟原来的属性值不一样，则将新值赋值给原来的属性
-        if(newValue !== targetObj[property]){
-          targetObj[property] = newValue;
-
-          //触发 dom 更新等一系列操作
-        }
-
-        //新值跟原来的值一样的话 do nothing
+      console.log("targetObj>>", targetObj)
+      console.log("property>>", property)
+      console.log("newValue>>", newValue)
+      
+      console.log("proxyInstance>>", proxyInstance)
+      
+      //如果用户传入的新的属性值，跟原来的属性值不一样，则将新值赋值给原来的属性
+      if(newValue !== targetObj[property]){
+      targetObj[property] = newValue;
+      
+      //触发 dom 更新等一系列操作
       }
-    }
-    
-    // Proxy 不能用 instanceof Proxy 判断（Proxy 不是构造函数）；代理对象仍走正常原型链
-    const proxy = new Proxy(person, handler); 
-    console.log(proxy.name);
-
-    //Uncaught TypeError: Function has non-object prototype 'undefined' in instanceof check
-    //不能用 proxy instanceof Proxy 判断
-   // console.log(proxy instanceof Proxy);
-
-   console.log(Reflect);
-   console.log(typeof Reflect);//object
-
-
-   proxy.name = "我是高杰"
-
-   console.log(proxy.name)
-   console.log(person.name)
-
-  </script>
+      
+      //新值跟原来的值一样的话 do nothing
+      }
+      }
+      
+      // Proxy 不能用 instanceof Proxy 判断（Proxy 不是构造函数）；代理对象仍走正常原型链
+      const proxy = new Proxy(person, handler); 
+      console.log(proxy.name);
+      
+      //Uncaught TypeError: Function has non-object prototype 'undefined' in instanceof check
+      //不能用 proxy instanceof Proxy 判断
+      // console.log(proxy instanceof Proxy);
+      
+      console.log(Reflect);
+      console.log(typeof Reflect);//object
+      
+      
+      proxy.name = "我是高杰"
+      
+      console.log(proxy.name)
+      console.log(person.name)
+      
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -124,16 +115,14 @@
         <a href="../06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%89%AA%E8%B4%B4%E6%9D%BF.html">剪贴板 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

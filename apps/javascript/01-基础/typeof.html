@@ -12,93 +12,84 @@
     - 如何精准判断数组、null、Date？
   相关: 变量, 类型转换
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>typeof / 精准类型检测</title>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>类型检测三板斧</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li><code>typeof</code> 适合快速区分原始类型与 object/function；数组、Date、null 等都会得到 <code>'object'</code>（function 除外）。</li>
-      <li><code>typeof null === 'object'</code> 是 ES 第一版遗留 bug，不要用 typeof 判 null。</li>
-      <li><code>instanceof</code> 沿原型链查找 <code>constructor.prototype</code>；字面量原始值不是包装对象实例，<code>"abc" instanceof String</code> 为 false。</li>
-      <li><code>instanceof</code> 不能跨 iframe/window（不同全局对象的原型链隔离）。</li>
-      <li><code>Object.prototype.toString.call(value)</code> 返回 <code>[object Type]</code>，可区分 Array、Date、RegExp、Null 等所有内置类型。</li>
-      <li>工程上常封装 <code>type(value)</code>：取 toString 结果 slice(8,-1).toLowerCase()。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>typeof null 为什么是 object？</strong> 早期用二进制 tag 表示类型，null 的 tag 与 object 相同。应使用 <code>value === null</code> 或 toString 判 null。</li>
-      <li><strong>instanceof 原理？</strong> 检查对象原型链上是否存在构造函数的 prototype。局限：可改 prototype、跨 realm 失效、原始值无效。</li>
-      <li><strong>如何精准判断数组？</strong> <code>Array.isArray(arr)</code> 最可靠；或 <code>Object.prototype.toString.call(arr) === '[object Array]'</code>。不要用 <code>typeof []</code>。</li>
-      <li><strong>三种方式怎么选？</strong> typeof 判原始类型/function；instanceof 判自定义类实例；toString 做通用精准检测或写工具库。</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>typeof</code> 适合快速区分原始类型与 object/function；数组、Date、null 等都会得到 <code>'object'</code>（function 除外）。</li>
+          <li><code>typeof null === 'object'</code> 是 ES 第一版遗留 bug，不要用 typeof 判 null。</li>
+          <li><code>instanceof</code> 沿原型链查找 <code>constructor.prototype</code>；字面量原始值不是包装对象实例，<code>"abc" instanceof String</code> 为 false。</li>
+          <li><code>instanceof</code> 不能跨 iframe/window（不同全局对象的原型链隔离）。</li>
+          <li><code>Object.prototype.toString.call(value)</code> 返回 <code>[object Type]</code>，可区分 Array、Date、RegExp、Null 等所有内置类型。</li>
+          <li>工程上常封装 <code>type(value)</code>：取 toString 结果 slice(8,-1).toLowerCase()。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>typeof null 为什么是 object？</strong> 早期用二进制 tag 表示类型，null 的 tag 与 object 相同。应使用 <code>value === null</code> 或 toString 判 null。</li>
+          <li><strong>instanceof 原理？</strong> 检查对象原型链上是否存在构造函数的 prototype。局限：可改 prototype、跨 realm 失效、原始值无效。</li>
+          <li><strong>如何精准判断数组？</strong> <code>Array.isArray(arr)</code> 最可靠；或 <code>Object.prototype.toString.call(arr) === '[object Array]'</code>。不要用 <code>typeof []</code>。</li>
+          <li><strong>三种方式怎么选？</strong> typeof 判原始类型/function；instanceof 判自定义类实例；toString 做通用精准检测或写工具库。</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
-    // ============ 1. typeof：粗粒度，只区分原始类型与对象/函数 ============
-    console.log(typeof undefined); // 'undefined'
-    console.log(typeof null);      // 'object'  ⚠️ 历史遗留 bug
-    console.log(typeof 0);         // 'number'
-    console.log(typeof NaN);       // 'number'
-    console.log(typeof "abc");     // 'string'
-    console.log(typeof true);      // 'boolean'
-    console.log(typeof Symbol());  // 'symbol'
-    console.log(typeof 1n);        // 'bigint'
-    console.log(typeof []);        // 'object'  数组也是 object
-    console.log(typeof {});        // 'object'
-    console.log(typeof /a/);       // 'object'
-    console.log(typeof function () {}); // 'function'
-
-    // ============ 2. instanceof：基于原型链，不能跨 iframe ============
-    console.log([] instanceof Array);     // true
-    console.log([] instanceof Object);    // true（数组也是对象）
-    console.log("abc" instanceof String); // false（字面量不是 String 实例）
-
-    // ============ 3. Object.prototype.toString.call —— 万能精准检测 ============
-    const getType = Object.prototype.toString;
-    console.log(getType.call("aaa"));        // '[object String]'
-    console.log(getType.call(111));          // '[object Number]'
-    console.log(getType.call(true));         // '[object Boolean]'
-    console.log(getType.call([]));           // '[object Array]'
-    console.log(getType.call({}));           // '[object Object]'
-    console.log(getType.call(null));         // '[object Null]'
-    console.log(getType.call(undefined));    // '[object Undefined]'
-    console.log(getType.call(function () {})); // '[object Function]'
-    console.log(getType.call(new Date()));   // '[object Date]'
-    console.log(getType.call(/a/));          // '[object RegExp]'
-
-    // 工具函数：返回类型字符串小写
-    function type(value) {
+      // ============ 1. typeof：粗粒度，只区分原始类型与对象/函数 ============
+      console.log(typeof undefined); // 'undefined'
+      console.log(typeof null);      // 'object'  ⚠️ 历史遗留 bug
+      console.log(typeof 0);         // 'number'
+      console.log(typeof NaN);       // 'number'
+      console.log(typeof "abc");     // 'string'
+      console.log(typeof true);      // 'boolean'
+      console.log(typeof Symbol());  // 'symbol'
+      console.log(typeof 1n);        // 'bigint'
+      console.log(typeof []);        // 'object'  数组也是 object
+      console.log(typeof {});        // 'object'
+      console.log(typeof /a/);       // 'object'
+      console.log(typeof function () {}); // 'function'
+      
+      // ============ 2. instanceof：基于原型链，不能跨 iframe ============
+      console.log([] instanceof Array);     // true
+      console.log([] instanceof Object);    // true（数组也是对象）
+      console.log("abc" instanceof String); // false（字面量不是 String 实例）
+      
+      // ============ 3. Object.prototype.toString.call —— 万能精准检测 ============
+      const getType = Object.prototype.toString;
+      console.log(getType.call("aaa"));        // '[object String]'
+      console.log(getType.call(111));          // '[object Number]'
+      console.log(getType.call(true));         // '[object Boolean]'
+      console.log(getType.call([]));           // '[object Array]'
+      console.log(getType.call({}));           // '[object Object]'
+      console.log(getType.call(null));         // '[object Null]'
+      console.log(getType.call(undefined));    // '[object Undefined]'
+      console.log(getType.call(function () {})); // '[object Function]'
+      console.log(getType.call(new Date()));   // '[object Date]'
+      console.log(getType.call(/a/));          // '[object RegExp]'
+      
+      // 工具函数：返回类型字符串小写
+      function type(value) {
       return Object.prototype.toString.call(value).slice(8, -1).toLowerCase();
-    }
-    console.log(type([])); // 'array'
-    console.log(type(/a/)); // 'regexp'
-    console.log(type(null)); // 'null'
-</script>
+      }
+      console.log(type([])); // 'array'
+      console.log(type(/a/)); // 'regexp'
+      console.log(type(null)); // 'null'
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -112,16 +103,15 @@
         <a href="./unicode-%E5%AD%97%E7%AC%A6%E7%AD%89%E4%BB%B7%E6%80%A7.html">unicode-字符等价性 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
   
 </body>
 </html>

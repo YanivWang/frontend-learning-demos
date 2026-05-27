@@ -13,75 +13,66 @@
     - 面试中如何简洁讲清 Proxy 的局限性
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Proxy 的局限</title>
-      <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
-</head>
+  </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Proxy 的局限性</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li><code>Proxy</code> 对依赖「内部槽位」的方法不透明，例如 Date.getDate 调用会丢失内部 <code>this</code>。</li>
-      <li>解决：在 get 拦截中显式 <code>bind</code> 原对象，或对方法做手动转发。</li>
-      <li><code>instanceof</code> 判断不一定可靠：Date 的内部检测会失败。</li>
-      <li><code>Proxy</code> 对依赖「内部槽位」的方法不透明，例如 Date.getDate 调用会丢失内部 <code>this</code>（补充）。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>Proxy 对依赖「内部槽位」的方法不透明？</strong> <code>Proxy</code> 对依赖「内部槽位」的方法不透明，例如 Date.getDate 调用会丢失内部 <code>this</code></li>
-      <li><strong>instanceof 判断不一定可靠？</strong> <code>instanceof</code> 判断不一定可靠：Date 的内部检测会失败</li>
-      <li><strong>Proxy 的局限性的核心概念是什么？</strong> <code>Proxy</code> 对依赖「内部槽位」的方法不透明，例如 Date.getDate 调用会丢失内部 <code>this</code></li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>Proxy</code> 对依赖「内部槽位」的方法不透明，例如 Date.getDate 调用会丢失内部 <code>this</code>。</li>
+          <li>解决：在 get 拦截中显式 <code>bind</code> 原对象，或对方法做手动转发。</li>
+          <li><code>instanceof</code> 判断不一定可靠：Date 的内部检测会失败。</li>
+          <li><code>Proxy</code> 对依赖「内部槽位」的方法不透明，例如 Date.getDate 调用会丢失内部 <code>this</code>（补充）。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>Proxy 对依赖「内部槽位」的方法不透明？</strong> <code>Proxy</code> 对依赖「内部槽位」的方法不透明，例如 Date.getDate 调用会丢失内部 <code>this</code></li>
+          <li><strong>instanceof 判断不一定可靠？</strong> <code>instanceof</code> 判断不一定可靠：Date 的内部检测会失败</li>
+          <li><strong>Proxy 的局限性的核心概念是什么？</strong> <code>Proxy</code> 对依赖「内部槽位」的方法不透明，例如 Date.getDate 调用会丢失内部 <code>this</code></li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
       const target = new Date();
-
+      
       const proxy = new Proxy(target, {});
       console.log(proxy instanceof Date); // true
-
+      
       target.getDate();
       console.log("target.getDate():", target.getDate());
-
+      
       try {
-        proxy.getDate();
+      proxy.getDate();
       } catch (e) {
-        console.log("空 handler 代理调用 getDate 报错:", e.message);
+      console.log("空 handler 代理调用 getDate 报错:", e.message);
       }
-
+      
       // 修复：get 拦截里对函数显式 bind 到原对象
       const proxyFixed = new Proxy(target, {
-        get(obj, prop) {
-          const value = Reflect.get(obj, prop, obj);
-          if (typeof value === "function") {
-            return value.bind(obj);
-          }
-          return value;
-        },
+      get(obj, prop) {
+      const value = Reflect.get(obj, prop, obj);
+      if (typeof value === "function") {
+      return value.bind(obj);
+      }
+      return value;
+      },
       });
-
+      
       console.log("修复后 proxyFixed.getDate():", proxyFixed.getDate());
     </script>
     <!-- SCRIPT_END -->
@@ -95,16 +86,14 @@
         <a href="./defineProperty.html">defineProperty →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

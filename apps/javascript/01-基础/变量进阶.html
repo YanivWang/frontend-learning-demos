@@ -12,6 +12,7 @@
     - 块级作用域在哪些场景容易踩坑？
   相关: 变量, 08-面试题/作用域
 -->
+
 <!doctype html>
 <html lang="zh-CN">
   <head>
@@ -20,75 +21,65 @@
     <title>变量进阶</title>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
-</head>
+  </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>var / let / const 变量提升与暂时性死区</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li><code>var</code> 在函数内提升到函数顶部，声明前访问得到 <code>undefined</code>，不会抛错。</li>
-      <li><code>let</code> / <code>const</code> 在词法上也会提升，但从块开始到声明语句之间是<strong>暂时性死区（TDZ）</strong>，访问会 <code>ReferenceError</code>。</li>
-      <li><code>const</code> 必须在声明时初始化；绑定不可改，但对象/数组的内容仍可变。</li>
-      <li>函数声明会被<strong>整体提升</strong>，函数名在声明前就是可用的函数对象（见下方 <code>typeof example2</code>）。</li>
-      <li>块级作用域对 <code>if</code>、<code>for</code>、<code>{}</code> 均生效；<code>var</code> 在 <code>if</code> 块内声明仍属于外层函数作用域。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>什么是暂时性死区？</strong> 从块级作用域开始到 <code>let/const</code> 声明执行前，变量已存在于词法环境但不可访问。这是规范行为，不是「没提升」。</li>
-      <li><strong>let 真的不提升吗？</strong> 会提升，只是 TDZ 内访问报错。与 var 的区别是：var 提升后值为 undefined；let/const 在 TDZ 内访问直接 ReferenceError。</li>
-      <li><strong>函数声明 vs 变量声明的提升？</strong> 同作用域内函数声明优先于 var；函数声明整体提升，var 只提升声明不赋值。经典题见 <a href="../08-面试题/作用域/06-var与function同名提升.html">var 与 function 同名提升</a>。</li>
-      <li><strong>块级作用域踩坑？</strong> <code>for (var i…)</code> 的 i 泄漏到外层；<code>for (let i…)</code> 每次迭代有独立绑定。闭包题见 <a href="../08-面试题/作用域/05-let-for循环闭包.html">let for 循环闭包</a>。</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>var</code> 在函数内提升到函数顶部，声明前访问得到 <code>undefined</code>，不会抛错。</li>
+          <li><code>let</code> / <code>const</code> 在词法上也会提升，但从块开始到声明语句之间是<strong>暂时性死区（TDZ）</strong>，访问会 <code>ReferenceError</code>。</li>
+          <li><code>const</code> 必须在声明时初始化；绑定不可改，但对象/数组的内容仍可变。</li>
+          <li>函数声明会被<strong>整体提升</strong>，函数名在声明前就是可用的函数对象（见下方 <code>typeof example2</code>）。</li>
+          <li>块级作用域对 <code>if</code>、<code>for</code>、<code>{}</code> 均生效；<code>var</code> 在 <code>if</code> 块内声明仍属于外层函数作用域。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>什么是暂时性死区？</strong> 从块级作用域开始到 <code>let/const</code> 声明执行前，变量已存在于词法环境但不可访问。这是规范行为，不是「没提升」。</li>
+          <li><strong>let 真的不提升吗？</strong> 会提升，只是 TDZ 内访问报错。与 var 的区别是：var 提升后值为 undefined；let/const 在 TDZ 内访问直接 ReferenceError。</li>
+          <li><strong>函数声明 vs 变量声明的提升？</strong> 同作用域内函数声明优先于 var；函数声明整体提升，var 只提升声明不赋值。经典题见 <a href="../08-面试题/作用域/06-var与function同名提升.html">var 与 function 同名提升</a>。</li>
+          <li><strong>块级作用域踩坑？</strong> <code>for (var i…)</code> 的 i 泄漏到外层；<code>for (let i…)</code> 每次迭代有独立绑定。闭包题见 <a href="../08-面试题/作用域/05-let-for循环闭包.html">let for 循环闭包</a>。</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
-  var gVar = 0;
-  const gConstVar = 1;
-
-  function example() {
-    // var 声明被提升，访问到 undefined（不抛错）
-    console.log(varVar);
-    var varVar = 1;
-
-    // let 在暂时性死区内访问会抛 ReferenceError
-    // console.log(letVar);
-    let letVar = 2;
-
-    // const 同样有暂时性死区
-    // console.log(constVar);
-    const constVar = 3;
-
-    // 函数声明同样会被整体提升：在声明语句之前就可访问
-    console.log(typeof example2); // 'function'
-
-    function example2() {
+      var gVar = 0;
+      const gConstVar = 1;
+      
+      function example() {
+      // var 声明被提升，访问到 undefined（不抛错）
+      console.log(varVar);
+      var varVar = 1;
+      
+      // let 在暂时性死区内访问会抛 ReferenceError
+      // console.log(letVar);
+      let letVar = 2;
+      
+      // const 同样有暂时性死区
+      // console.log(constVar);
+      const constVar = 3;
+      
+      // 函数声明同样会被整体提升：在声明语句之前就可访问
+      console.log(typeof example2); // 'function'
+      
+      function example2() {
       var varVar11 = 11;
       let letVar22 = 22;
-
+      
       console.log(varVar11);
       console.log(letVar22);
-    }
-    example2();
-}
-
-example();
- </script>
+      }
+      example2();
+      }
+      
+      example();
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -101,16 +92,14 @@ example();
         <a href="./%E5%87%BD%E6%95%B0.html">函数 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

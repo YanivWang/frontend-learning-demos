@@ -11,6 +11,7 @@
     - 什么时候不能用箭头函数？
   相关: 函数进阶, this指向
 -->
+
 <!doctype html>
 <html lang="zh-CN">
   <head>
@@ -19,73 +20,63 @@
     <title>箭头函数</title>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
-</head>
+  </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>箭头函数与普通函数差异</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>箭头函数是函数表达式，不能具名声明；语法简写：<code>(a,b) =&gt; a+b</code>、单参数可省略括号。</li>
-      <li>没有自己的 <code>this</code>，继承定义处外层非箭头函数的 <code>this</code>（词法 this）。</li>
-      <li>没有 <code>arguments</code>、没有 <code>prototype</code>、不能 <code>new</code>（不是构造函数）。</li>
-      <li>普通函数有 <code>prototype</code>，作为构造函数时实例的 <code>__proto__</code> 指向它。</li>
-      <li>收集可变参数用剩余参数 <code>...args</code>，是真数组。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>箭头函数 vs 普通函数？</strong> 箭头：无 own this/arguments/prototype，不可 new，语法简洁。普通：动态 this，有 prototype，可作构造函数。</li>
-      <li><strong>箭头函数 this 指向？</strong> 定义时外层（词法）作用域的 this，call/apply/bind 无法改变。对象方法、DOM 事件、需要动态 this 时勿用箭头。</li>
-      <li><strong>什么时候不能用箭头函数？</strong> 构造函数、需要 arguments、对象字面量方法（若需 this 指向对象）、Vue2 选项式 methods、类的方法需要 super 时等。</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>箭头函数是函数表达式，不能具名声明；语法简写：<code>(a,b) =&gt; a+b</code>、单参数可省略括号。</li>
+          <li>没有自己的 <code>this</code>，继承定义处外层非箭头函数的 <code>this</code>（词法 this）。</li>
+          <li>没有 <code>arguments</code>、没有 <code>prototype</code>、不能 <code>new</code>（不是构造函数）。</li>
+          <li>普通函数有 <code>prototype</code>，作为构造函数时实例的 <code>__proto__</code> 指向它。</li>
+          <li>收集可变参数用剩余参数 <code>...args</code>，是真数组。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>箭头函数 vs 普通函数？</strong> 箭头：无 own this/arguments/prototype，不可 new，语法简洁。普通：动态 this，有 prototype，可作构造函数。</li>
+          <li><strong>箭头函数 this 指向？</strong> 定义时外层（词法）作用域的 this，call/apply/bind 无法改变。对象方法、DOM 事件、需要动态 this 时勿用箭头。</li>
+          <li><strong>什么时候不能用箭头函数？</strong> 构造函数、需要 arguments、对象字面量方法（若需 this 指向对象）、Vue2 选项式 methods、类的方法需要 super 时等。</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
-
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../packages/shared/demo-log.js"></script>
 
     <!-- SCRIPT_START -->
     <script>
       // 箭头函数只能写成匿名函数表达式，不能像 function 那样具名声明
       const ArrowFunc = (x, y) => {
-        // 箭头函数内部没有 arguments；如需收集实参用剩余参数 ...args
-        // console.log(arguments); // Uncaught ReferenceError: arguments is not defined
-
-        console.log(x, y);
-
-        // 词法 this：由最近一层非箭头作用域决定，这里指向 window
-        console.log(this);
+      // 箭头函数内部没有 arguments；如需收集实参用剩余参数 ...args
+      // console.log(arguments); // Uncaught ReferenceError: arguments is not defined
+      
+      console.log(x, y);
+      
+      // 词法 this：由最近一层非箭头作用域决定，这里指向 window
+      console.log(this);
       };
-
+      
       ArrowFunc(1, 2);
-
+      
       // 箭头函数没有 prototype 属性
       console.log(ArrowFunc.prototype); // undefined
-
+      
       // console.log(ArrowFunc.prototype.constructor); // 报错：无法读取 undefined 的属性
-
+      
       // 易错点：箭头函数不能 new，否则 TypeError: ArrowFunc is not a constructor
       // const af1 = new ArrowFunc();
-
+      
       // 对比：普通函数声明既能调用也能 new
       function Person() {}
       console.log(Person.prototype);
-
+      
       console.log(Person.prototype.constructor === Person);
-
+      
       // Person 作为函数对象，其本身的构造器是 Function
       console.log(Person.constructor === Person.__proto__.constructor);
-
+      
       console.log(Person.constructor === Function);
     </script>
     <!-- SCRIPT_END -->
@@ -100,16 +91,14 @@
         <a href="./%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2.html">类型转换 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

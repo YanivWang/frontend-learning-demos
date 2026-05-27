@@ -14,37 +14,38 @@
     - 面试中如何简洁讲清 高阶组件 HOC（Higher-Order Component）
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>React · class 高阶组件 HOC</title>
-  <script src="../../libs/react.development.js"></script>
-  <script src="../../libs/react-dom.development.js"></script>
-  <script src="../../libs/babel.min.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React · class 高阶组件 HOC</title>
+    <script src="../../libs/react.development.js"></script>
+    <script src="../../libs/react-dom.development.js"></script>
+    <script src="../../libs/babel.min.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>高阶组件 HOC（Higher-Order Component）</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>HOC 是函数：接收组件，返回增强后的新组件（不修改原组件）。</li>
-      <li>常见用途: 注入 props、权限校验、日志、复用生命周期逻辑。</li>
-      <li>注意: 不要在内层 HOC 使用 <code>render</code> 里的箭头函数包装，以免破坏 <code>ref</code> 与 reconciliation。</li>
-      <li>Hooks 时代很多 HOC 场景可用自定义 Hook 替代，但面试仍常问 HOC 原理。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>Hooks 时代很多 HOC 场景可用自定义 Hook 替代？</strong> Hooks 时代很多 HOC 场景可用自定义 Hook 替代，但面试仍常问 HOC 原理</li>
-      <li><strong>高阶组件 HOC（Higher-Order Component）的核心概念是什么？</strong> HOC 是函数：接收组件，返回增强后的新组件（不修改原组件）；常见用途: 注入 props、权限校验、日志、复用生命周期逻辑</li>
-      <li><strong>高阶组件 HOC（Higher-Order Component）在实际项目里怎么用？</strong> HOC 是函数：接收组件，返回增强后的新组件（不修改原组件）；常见用途: 注入 props、权限校验、日志、复用生命周期逻辑</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>HOC 是函数：接收组件，返回增强后的新组件（不修改原组件）。</li>
+          <li>常见用途: 注入 props、权限校验、日志、复用生命周期逻辑。</li>
+          <li>注意: 不要在内层 HOC 使用 <code>render</code> 里的箭头函数包装，以免破坏 <code>ref</code> 与 reconciliation。</li>
+          <li>Hooks 时代很多 HOC 场景可用自定义 Hook 替代，但面试仍常问 HOC 原理。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>Hooks 时代很多 HOC 场景可用自定义 Hook 替代？</strong> Hooks 时代很多 HOC 场景可用自定义 Hook 替代，但面试仍常问 HOC 原理</li>
+          <li><strong>高阶组件 HOC（Higher-Order Component）的核心概念是什么？</strong> HOC 是函数：接收组件，返回增强后的新组件（不修改原组件）；常见用途: 注入 props、权限校验、日志、复用生命周期逻辑</li>
+          <li><strong>高阶组件 HOC（Higher-Order Component）在实际项目里怎么用？</strong> HOC 是函数：接收组件，返回增强后的新组件（不修改原组件）；常见用途: 注入 props、权限校验、日志、复用生命周期逻辑</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -52,83 +53,88 @@
 <div id="root"></div>
 
     
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script type="text/babel">
-    function withLoading(WrappedComponent) {
+      function withLoading(WrappedComponent) {
       class WithLoading extends React.Component {
-        render() {
-          const { loading, ...rest } = this.props;
-          if (loading) {
-            return <p>加载中...</p>;
-          }
-          return <WrappedComponent {...rest} />;
-        }
+      render() {
+      const { loading, ...rest } = this.props;
+      if (loading) {
+      return <p>加载中...</p>;
+      }
+      return <WrappedComponent {...rest} />;
+      }
       }
       WithLoading.displayName = `WithLoading(${WrappedComponent.displayName || WrappedComponent.name || "Component"})`;
       return WithLoading;
-    }
-
-    function withLogger(WrappedComponent) {
+      }
+      
+      function withLogger(WrappedComponent) {
       class WithLogger extends React.Component {
-        componentDidMount() {
-          console.log("[HOC] mounted:", WrappedComponent.name);
-        }
-
-        componentDidUpdate(prevProps) {
-          console.log("[HOC] updated:", WrappedComponent.name, prevProps, "->", this.props);
-        }
-
-        render() {
-          return <WrappedComponent {...this.props} />;
-        }
+      componentDidMount() {
+      console.log("[HOC] mounted:", WrappedComponent.name);
+      }
+      
+      componentDidUpdate(prevProps) {
+      console.log("[HOC] updated:", WrappedComponent.name, prevProps, "->", this.props);
+      }
+      
+      render() {
+      return <WrappedComponent {...this.props} />;
+      }
       }
       return WithLogger;
-    }
-
-    class UserProfile extends React.Component {
-      render() {
-        return (
-          <div>
-            <strong>{this.props.user.name}</strong>
-            <span> — {this.props.user.email}</span>
-          </div>
-        );
       }
-    }
-
-    const EnhancedProfile = withLogger(withLoading(UserProfile));
-
-    class App extends React.Component {
+      
+      class UserProfile extends React.Component {
+      render() {
+      return (
+      <div>
+      <strong>{this.props.user.name}</strong>
+      <span> — {this.props.user.email}</span>
+      </div>
+      );
+      }
+      }
+      
+      const EnhancedProfile = withLogger(withLoading(UserProfile));
+      
+      class App extends React.Component {
       constructor(props) {
-        super(props);
-        this.state = {
-          loading: true,
-          user: null
-        };
+      super(props);
+      this.state = {
+      loading: true,
+      user: null
+      };
       }
-
+      
       componentDidMount() {
-        setTimeout(() => {
-          this.setState({
-            loading: false,
-            user: { name: "Alice", email: "alice@example.com" }
-          });
-        }, 1500);
+      setTimeout(() => {
+      this.setState({
+      loading: false,
+      user: { name: "Alice", email: "alice@example.com" }
+      });
+      }, 1500);
       }
-
+      
       render() {
-        return (
-          <section>
-            <h1>高阶组件 HOC</h1>
-
-            <EnhancedProfile loading={this.state.loading} user={this.state.user} />
-            <p>面试回答: HOC 是组件逻辑复用模式，返回新组件；与 render props、Hook 是不同抽象层次。</p>
-          </section>
-        );
+      return (
+      <section>
+      <h1>高阶组件 HOC</h1>
+      
+      <EnhancedProfile loading={this.state.loading} user={this.state.user} />
+      <p>面试回答: HOC 是组件逻辑复用模式，返回新组件；与 render props、Hook 是不同抽象层次。</p>
+      </section>
+      );
       }
-    }
-
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-  </script>
+      }
+      
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
@@ -139,16 +145,14 @@
         <a href="./19-%E9%94%99%E8%AF%AF%E8%BE%B9%E7%95%8C%E4%B8%8E%E5%B8%B8%E8%A7%81%E4%BC%98%E5%8C%96%E6%B8%85%E5%8D%95.html">错误边界与常见优化清单 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

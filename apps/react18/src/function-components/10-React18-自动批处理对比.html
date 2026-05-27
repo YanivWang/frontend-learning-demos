@@ -14,38 +14,39 @@
     - 面试中如何简洁讲清 React 18 自动批处理对比
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>React · React 18 自动批处理</title>
-  <script src="../../libs/react.development.js"></script>
-  <script src="../../libs/react-dom.development.js"></script>
-  <script src="../../libs/babel.min.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React · React 18 自动批处理</title>
+    <script src="../../libs/react.development.js"></script>
+    <script src="../../libs/react-dom.development.js"></script>
+    <script src="../../libs/babel.min.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>React 18 自动批处理对比</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>React 18 <code>createRoot</code> 下，事件、<code>setTimeout</code>、<code>Promise</code> 等中的多次 setState 默认都会批处理。</li>
-      <li>批处理减少重复渲染，最终 state 仍按更新队列合并。</li>
-      <li>flushSync 可退出批处理，强制同步提交。</li>
-      <li>对比 class 05：原理一致，演示函数组件在异步回调中的批处理行为。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>React 18 createRoot 下？</strong> React 18 <code>createRoot</code> 下，事件、<code>setTimeout</code>、<code>Promise</code> 等中的多次 setState 默认都会批处理</li>
-      <li><strong>批处理减少重复渲染？</strong> React 18 <code>createRoot</code> 下，事件、<code>setTimeout</code>、<code>Promise</code> 等中的多次 setState 默认都会批处理；批处理减少重复渲染，最终 state 仍按更新队列合并</li>
-      <li><strong>flushSync 可退出批处理？</strong> flushSync 可退出批处理，强制同步提交</li>
-      <li><strong>对比 class 05？</strong> 对比 class 05：原理一致，演示函数组件在异步回调中的批处理行为</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>React 18 <code>createRoot</code> 下，事件、<code>setTimeout</code>、<code>Promise</code> 等中的多次 setState 默认都会批处理。</li>
+          <li>批处理减少重复渲染，最终 state 仍按更新队列合并。</li>
+          <li>flushSync 可退出批处理，强制同步提交。</li>
+          <li>对比 class 05：原理一致，演示函数组件在异步回调中的批处理行为。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>React 18 createRoot 下？</strong> React 18 <code>createRoot</code> 下，事件、<code>setTimeout</code>、<code>Promise</code> 等中的多次 setState 默认都会批处理</li>
+          <li><strong>批处理减少重复渲染？</strong> React 18 <code>createRoot</code> 下，事件、<code>setTimeout</code>、<code>Promise</code> 等中的多次 setState 默认都会批处理；批处理减少重复渲染，最终 state 仍按更新队列合并</li>
+          <li><strong>flushSync 可退出批处理？</strong> flushSync 可退出批处理，强制同步提交</li>
+          <li><strong>对比 class 05？</strong> 对比 class 05：原理一致，演示函数组件在异步回调中的批处理行为</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -53,59 +54,64 @@
 <div id="root"></div>
 
     
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script type="text/babel">
-    const { useEffect, useRef, useState } = React;
-    const { flushSync } = ReactDOM;
-
-    function App() {
+      const { useEffect, useRef, useState } = React;
+      const { flushSync } = ReactDOM;
+      
+      function App() {
       const [count, setCount] = useState(0);
       const [flag, setFlag] = useState(false);
       const [commitLog, setCommitLog] = useState([]);
       const renderCount = useRef(0);
-
+      
       renderCount.current += 1;
-
+      
       useEffect(() => {
-        setCommitLog(prev => [
-          ...prev.slice(-5),
-          "effect 执行: count=" + count + ", flag=" + String(flag)
-        ]);
+      setCommitLog(prev => [
+      ...prev.slice(-5),
+      "effect 执行: count=" + count + ", flag=" + String(flag)
+      ]);
       }, [count, flag]);
-
+      
       function batchInTimeout() {
-        setTimeout(() => {
-          console.log("setTimeout 内连续两次 setState（应批处理为一次渲染）");
-          setCount(prev => prev + 1);
-          setFlag(prev => !prev);
-        }, 0);
+      setTimeout(() => {
+      console.log("setTimeout 内连续两次 setState（应批处理为一次渲染）");
+      setCount(prev => prev + 1);
+      setFlag(prev => !prev);
+      }, 0);
       }
-
+      
       function noBatchWithFlushSync() {
-        flushSync(() => setCount(prev => prev + 1));
-        flushSync(() => setFlag(prev => !prev));
+      flushSync(() => setCount(prev => prev + 1));
+      flushSync(() => setFlag(prev => !prev));
       }
-
+      
       return (
-        <section>
-          <h1>React 18 自动批处理</h1>
-
-          <p>count: {count}，flag: {String(flag)}</p>
-          <p>当前 render 次数: {renderCount.current}</p>
-          <button onClick={batchInTimeout}>setTimeout 内批处理更新</button>
-          <button onClick={noBatchWithFlushSync}>flushSync 强制两次提交</button>
-          <p>commit 后 effect 日志（批处理时一次点击只应追加一条）:</p>
-          <ul>
-            {commitLog.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ul>
-          <p>面试回答: React 18 自动批处理覆盖更多场景；需要同步 DOM 时用 flushSync。</p>
-        </section>
+      <section>
+      <h1>React 18 自动批处理</h1>
+      
+      <p>count: {count}，flag: {String(flag)}</p>
+      <p>当前 render 次数: {renderCount.current}</p>
+      <button onClick={batchInTimeout}>setTimeout 内批处理更新</button>
+      <button onClick={noBatchWithFlushSync}>flushSync 强制两次提交</button>
+      <p>commit 后 effect 日志（批处理时一次点击只应追加一条）:</p>
+      <ul>
+      {commitLog.map((item, index) => (
+      <li key={index}>{item}</li>
+      ))}
+      </ul>
+      <p>面试回答: React 18 自动批处理覆盖更多场景；需要同步 DOM 时用 flushSync。</p>
+      </section>
       );
-    }
-
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-  </script>
+      }
+      
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
@@ -116,16 +122,14 @@
         <a href="./11-useEffect-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%AF%B9%E7%85%A7.html">useEffect-生命周期对照 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

@@ -13,100 +13,95 @@
     - 面试中如何简洁讲清 闭包导致的内存泄漏与修复手段
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>闭包 - 内存泄漏与修复</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>闭包 - 内存泄漏与修复</title>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>闭包导致的内存泄漏与修复手段</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>闭包持有外层变量引用，外层函数执行完毕这些变量也不会被回收。</li>
-      <li>解决：调用后手动置 <code>null</code>、或避免持久持有大对象的闭包。</li>
-      <li>配合 use strict 杜绝意外全局变量；定时器/事件监听记得清理。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>闭包持有外层变量引用？</strong> 闭包持有外层变量引用，外层函数执行完毕这些变量也不会被回收</li>
-      <li><strong>配合 use strict 杜绝意外全局变量？</strong> 配合 use strict 杜绝意外全局变量；定时器/事件监听记得清理</li>
-      <li><strong>闭包导致的内存泄漏与修复手段的核心概念是什么？</strong> 闭包持有外层变量引用，外层函数执行完毕这些变量也不会被回收；解决：调用后手动置 <code>null</code>、或避免持久持有大对象的闭包</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>闭包持有外层变量引用，外层函数执行完毕这些变量也不会被回收。</li>
+          <li>解决：调用后手动置 <code>null</code>、或避免持久持有大对象的闭包。</li>
+          <li>配合 use strict 杜绝意外全局变量；定时器/事件监听记得清理。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>闭包持有外层变量引用？</strong> 闭包持有外层变量引用，外层函数执行完毕这些变量也不会被回收</li>
+          <li><strong>配合 use strict 杜绝意外全局变量？</strong> 配合 use strict 杜绝意外全局变量；定时器/事件监听记得清理</li>
+          <li><strong>闭包导致的内存泄漏与修复手段的核心概念是什么？</strong> 闭包持有外层变量引用，外层函数执行完毕这些变量也不会被回收；解决：调用后手动置 <code>null</code>、或避免持久持有大对象的闭包</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../packages/shared/demo-log.js"></script>
-
 <button id="myBtn">click me</button>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    // 问题：闭包会引起内存泄漏，闭包引用的外层变量在外层函数调用完毕之后不会立即销毁
-    // 修复：
-    //   1) 让闭包执行完，断开后续引用
-    //   2) 手动将闭包引用赋值为 null
-    function outer(){
+      // 问题：闭包会引起内存泄漏，闭包引用的外层变量在外层函数调用完毕之后不会立即销毁
+      // 修复：
+      //   1) 让闭包执行完，断开后续引用
+      //   2) 手动将闭包引用赋值为 null
+      function outer(){
       let arr = new Array(10000).fill("data");
-
+      
       return function inner(){
-        console.log(arr.length);
+      console.log(arr.length);
       };
-    }
-
-    // 易错点：使用 const 后无法再赋 null；要释放引用需用 let
-    let inner = outer();
-    console.log(inner);
-
-    inner = null; // 释放引用，允许 GC 回收闭包链上的 arr
-
-    // 2.意外的全局变量会导致内存泄漏
-    //   未声明的变量直接赋值会被挂到全局对象上，函数结束也不会回收
-    //   解决：开启 "use strict"，意外赋值会抛 ReferenceError
-    function memoryLeak(){
+      }
+      
+      // 易错点：使用 const 后无法再赋 null；要释放引用需用 let
+      let inner = outer();
+      console.log(inner);
+      
+      inner = null; // 释放引用，允许 GC 回收闭包链上的 arr
+      
+      // 2.意外的全局变量会导致内存泄漏
+      //   未声明的变量直接赋值会被挂到全局对象上，函数结束也不会回收
+      //   解决：开启 "use strict"，意外赋值会抛 ReferenceError
+      function memoryLeak(){
       // leakArra = new Array(10000).fill("11111"); // 非严格模式下会变成全局变量
-    }
-
-    // 3.未清除的定时器
-    const timer = setInterval(()=>{
+      }
+      
+      // 3.未清除的定时器
+      const timer = setInterval(()=>{
       // 长期运行的定时器若组件卸载/页面切换未 clearInterval，也会持续持有闭包
-    }, 3000);
-    // 框架中的清理：react 的 useEffect 返回清理函数；vue 在 beforeUnmount 中清理
-
-    // 4.DOM 元素被移除，但事件监听未解绑（监听内又引用了 DOM 自身）
-    const arrTest = new Array(300).fill(0);
-    const myBtnEle = document.getElementById("myBtn");
-
-    // 正向引用：DOM 元素持有其事件监听函数的引用
-    myBtnEle.addEventListener("click", handleClick, false);
-    // 反向引用：handleClick 内部又引用了 DOM 元素本身，形成循环引用
-    function handleClick(){
+      }, 3000);
+      // 框架中的清理：react 的 useEffect 返回清理函数；vue 在 beforeUnmount 中清理
+      
+      // 4.DOM 元素被移除，但事件监听未解绑（监听内又引用了 DOM 自身）
+      const arrTest = new Array(300).fill(0);
+      const myBtnEle = document.getElementById("myBtn");
+      
+      // 正向引用：DOM 元素持有其事件监听函数的引用
+      myBtnEle.addEventListener("click", handleClick, false);
+      // 反向引用：handleClick 内部又引用了 DOM 元素本身，形成循环引用
+      function handleClick(){
       console.log(myBtnEle.id);
       console.log(arrTest);
-    }
-
-    // 解决：及时 removeEventListener
-    setTimeout(()=>{
+      }
+      
+      // 解决：及时 removeEventListener
+      setTimeout(()=>{
       myBtnEle.removeEventListener("click", handleClick);
-    }, 4000);
-  </script>
+      }, 4000);
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -118,16 +113,14 @@
         <a href="../this%E6%8C%87%E5%90%91/01-this-%E5%8A%A8%E6%80%81%E7%BB%91%E5%AE%9A.html">this-动态绑定 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

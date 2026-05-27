@@ -13,6 +13,7 @@
     - 面试中如何简洁讲清 动态组件 / 异步组件
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
   <head>
@@ -21,34 +22,34 @@
     <title>Vue3 · 动态组件与异步组件</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; padding: 6px 12px; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+    body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+    button { margin-right: 8px; padding: 6px 12px; }
+    code, pre { background: #f6f8fa; border-radius: 6px; }
+    code { padding: 2px 5px; }
+    pre { padding: 12px; overflow: auto; }
+    .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
     </style>
-      <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
+  </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>动态组件 / 异步组件</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>component :is 可动态切换组件。</li>
-      <li>defineAsyncComponent 用于异步加载组件。</li>
-      <li>keep-alive 常和动态组件配合缓存状态。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>component？</strong> component :is 可动态切换组件</li>
-      <li><strong>defineAsyncComponent 用于异步加载组件？</strong> defineAsyncComponent 用于异步加载组件</li>
-      <li><strong>keep-alive 常和动态组件配合缓存状态？</strong> keep-alive 常和动态组件配合缓存状态</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>component :is 可动态切换组件。</li>
+          <li>defineAsyncComponent 用于异步加载组件。</li>
+          <li>keep-alive 常和动态组件配合缓存状态。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>component？</strong> component :is 可动态切换组件</li>
+          <li><strong>defineAsyncComponent 用于异步加载组件？</strong> defineAsyncComponent 用于异步加载组件</li>
+          <li><strong>keep-alive 常和动态组件配合缓存状态？</strong> keep-alive 常和动态组件配合缓存状态</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -71,67 +72,71 @@
     </div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
       const { createApp, ref, watch, defineAsyncComponent } = Vue;
-
+      
       const ProfilePanel = {
-        setup() {
-          const visits = ref(0);
-          return { visits };
-        },
-        template: `
-          <p>资料面板 visits：{{ visits }}
-            <button @click="visits++">+1</button>
-            （切走后 KeepAlive 会保留 count）
-          </p>
-        `,
+      setup() {
+      const visits = ref(0);
+      return { visits };
+      },
+      template: `
+      <p>资料面板 visits：{{ visits }}
+      <button @click="visits++">+1</button>
+      （切走后 KeepAlive 会保留 count）
+      </p>
+      `,
       };
-
+      
       const SettingPanel = {
-        setup() {
-          const theme = ref("light");
-          return { theme };
-        },
-        template: `
-          <p>设置面板 theme：{{ theme }}
-            <button @click="theme = theme === 'light' ? 'dark' : 'light'">切换</button>
-          </p>
-        `,
+      setup() {
+      const theme = ref("light");
+      return { theme };
+      },
+      template: `
+      <p>设置面板 theme：{{ theme }}
+      <button @click="theme = theme === 'light' ? 'dark' : 'light'">切换</button>
+      </p>
+      `,
       };
-
+      
       const AsyncPanel = defineAsyncComponent({
-        loader: () =>
-          new Promise((resolve) => {
-            setTimeout(() => {
-              resolve({
-                setup() {
-                  const loadedAt = ref(new Date().toLocaleTimeString());
-                  return { loadedAt };
-                },
-                template: `<p>异步组件已加载，时间 {{ loadedAt }}</p>`,
-              });
-            }, 800);
-          }),
-        loadingComponent: {
-          template: `<p>异步组件加载中...</p>`,
-        },
+      loader: () =>
+      new Promise((resolve) => {
+      setTimeout(() => {
+      resolve({
+      setup() {
+      const loadedAt = ref(new Date().toLocaleTimeString());
+      return { loadedAt };
+      },
+      template: `<p>异步组件已加载，时间 {{ loadedAt }}</p>`,
       });
-
+      }, 800);
+      }),
+      loadingComponent: {
+      template: `<p>异步组件加载中...</p>`,
+      },
+      });
+      
       createApp({
-        components: { ProfilePanel, SettingPanel, AsyncPanel },
-        setup() {
-          const current = ref("ProfilePanel");
-          const asyncStatus = ref("未请求");
-          const asyncSnippet =
-            "const AsyncComp = defineAsyncComponent(() => import('./HeavyComp.vue'))";
-
-          watch(current, (value) => {
-            if (value === "AsyncPanel") asyncStatus.value = "已触发 defineAsyncComponent";
-          });
-
-          return { current, asyncStatus, asyncSnippet };
-        },
+      components: { ProfilePanel, SettingPanel, AsyncPanel },
+      setup() {
+      const current = ref("ProfilePanel");
+      const asyncStatus = ref("未请求");
+      const asyncSnippet =
+      "const AsyncComp = defineAsyncComponent(() => import('./HeavyComp.vue'))";
+      
+      watch(current, (value) => {
+      if (value === "AsyncPanel") asyncStatus.value = "已触发 defineAsyncComponent";
+      });
+      
+      return { current, asyncStatus, asyncSnippet };
+      },
       }).mount("#app");
     </script>
     <!-- SCRIPT_END -->
@@ -145,16 +150,14 @@
         <a href="../06-%E5%86%85%E7%BD%AE%E7%BB%84%E4%BB%B6/01-KeepAlive.html">KeepAlive →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

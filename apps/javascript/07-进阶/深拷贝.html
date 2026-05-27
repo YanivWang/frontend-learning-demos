@@ -13,126 +13,121 @@
     - 面试中如何简洁讲清 浅拷贝 vs 深拷贝
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>深拷贝 / 浅拷贝</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>深拷贝 / 浅拷贝</title>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
   </head>
-<body class="demo-page">
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>浅拷贝 vs 深拷贝</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>浅拷贝（<code>Object</code>.assign / 展开）只复制第一层；嵌套对象仍共享引用。</li>
-      <li>JSON.parse(JSON.stringify(x)) 不支持函数/Date/RegExp/Symbol/循环引用。</li>
-      <li>现代浏览器原生 structuredClone：支持 Date/RegExp/Map/Set/循环引用。</li>
-      <li>浅拷贝（<code>Object</code>.assign / 展开）只复制第一层；嵌套对象仍共享引用（补充）。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>浅拷贝（Object.assign / 展开）只复制第一层？</strong> 浅拷贝（<code>Object</code>.assign / 展开）只复制第一层；嵌套对象仍共享引用</li>
-      <li><strong>JSON.parse(JSON.stringify(x)) 不支持函数/Date？</strong> JSON.parse(JSON.stringify(x)) 不支持函数/Date/RegExp/Symbol/循环引用</li>
-      <li><strong>现代浏览器原生 structuredClone？</strong> 现代浏览器原生 structuredClone：支持 Date/RegExp/Map/Set/循环引用</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>浅拷贝（<code>Object</code>.assign / 展开）只复制第一层；嵌套对象仍共享引用。</li>
+          <li>JSON.parse(JSON.stringify(x)) 不支持函数/Date/RegExp/Symbol/循环引用。</li>
+          <li>现代浏览器原生 structuredClone：支持 Date/RegExp/Map/Set/循环引用。</li>
+          <li>浅拷贝（<code>Object</code>.assign / 展开）只复制第一层；嵌套对象仍共享引用（补充）。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>浅拷贝（Object.assign / 展开）只复制第一层？</strong> 浅拷贝（<code>Object</code>.assign / 展开）只复制第一层；嵌套对象仍共享引用</li>
+          <li><strong>JSON.parse(JSON.stringify(x)) 不支持函数/Date？</strong> JSON.parse(JSON.stringify(x)) 不支持函数/Date/RegExp/Symbol/循环引用</li>
+          <li><strong>现代浏览器原生 structuredClone？</strong> 现代浏览器原生 structuredClone：支持 Date/RegExp/Map/Set/循环引用</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../packages/shared/demo-log.js"></script>
-
 <p>核心区别：浅拷贝只复制第一层，引用类型（数组/对象/函数）仍然指向同一份；深拷贝递归复制每一层。</p>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    // ============ 1. 浅拷贝的几种写法 ============
-    const src = { a: 1, b: { c: 2 } };
-
-    const s1 = Object.assign({}, src);
-    const s2 = { ...src };
-    const s3 = Array.isArray(src) ? src.slice() : { ...src };
-
-    s1.b.c = 99;
-    console.log("浅拷贝改 s1.b.c 后，src.b.c =", src.b.c); // 99 —— 共享引用
-
-    // ============ 2. JSON 序列化（最简单但有坑）============
-    //   ❌ 不支持：函数、undefined、Symbol、Date(变字符串)、RegExp(变 {})、循环引用
-    function cloneJSON(obj) {
+      // ============ 1. 浅拷贝的几种写法 ============
+      const src = { a: 1, b: { c: 2 } };
+      
+      const s1 = Object.assign({}, src);
+      const s2 = { ...src };
+      const s3 = Array.isArray(src) ? src.slice() : { ...src };
+      
+      s1.b.c = 99;
+      console.log("浅拷贝改 s1.b.c 后，src.b.c =", src.b.c); // 99 —— 共享引用
+      
+      // ============ 2. JSON 序列化（最简单但有坑）============
+      //   ❌ 不支持：函数、undefined、Symbol、Date(变字符串)、RegExp(变 {})、循环引用
+      function cloneJSON(obj) {
       return JSON.parse(JSON.stringify(obj));
-    }
-    const d1 = cloneJSON({ a: 1, b: { c: 2 } });
-    d1.b.c = 99;
-    console.log("JSON 深拷贝后 src.b.c 不变 =", { a: 1, b: { c: 2 } }.b.c);
-
-    // ============ 3. 现代 API：structuredClone（推荐）============
-    //   原生、支持循环引用、支持 Date/RegExp/Map/Set/TypedArray，但仍不支持函数
-    if (typeof structuredClone === "function") {
+      }
+      const d1 = cloneJSON({ a: 1, b: { c: 2 } });
+      d1.b.c = 99;
+      console.log("JSON 深拷贝后 src.b.c 不变 =", { a: 1, b: { c: 2 } }.b.c);
+      
+      // ============ 3. 现代 API：structuredClone（推荐）============
+      //   原生、支持循环引用、支持 Date/RegExp/Map/Set/TypedArray，但仍不支持函数
+      if (typeof structuredClone === "function") {
       const obj = { a: 1, d: new Date(), r: /foo/, m: new Map([["x", 1]]) };
       const c = structuredClone(obj);
       console.log("structuredClone Date:", c.d instanceof Date, c.d.getTime() === obj.d.getTime());
       console.log("structuredClone RegExp:", c.r instanceof RegExp, c.r.source);
       console.log("structuredClone Map:", c.m instanceof Map, c.m.get("x"));
-    }
-
-    // ============ 4. 手写深拷贝（递归 + WeakMap 处理循环引用）============
-    function deepClone(value, hash = new WeakMap()) {
+      }
+      
+      // ============ 4. 手写深拷贝（递归 + WeakMap 处理循环引用）============
+      function deepClone(value, hash = new WeakMap()) {
       // ① 基本类型直接返回
       if (value === null || typeof value !== "object") return value;
-
+      
       // ② 处理 Date / RegExp
       if (value instanceof Date) return new Date(value);
       if (value instanceof RegExp) return new RegExp(value.source, value.flags);
-
+      
       // ③ 循环引用：用 WeakMap 记录已克隆对象
       if (hash.has(value)) return hash.get(value);
-
+      
       // ④ 处理数组 / Map / Set / 普通对象
       let result;
       if (Array.isArray(value)) result = [];
       else if (value instanceof Map) result = new Map();
       else if (value instanceof Set) result = new Set();
       else result = Object.create(Object.getPrototypeOf(value)); // 保留原型
-
+      
       hash.set(value, result);
-
+      
       if (value instanceof Map) {
-        value.forEach((v, k) => result.set(deepClone(k, hash), deepClone(v, hash)));
+      value.forEach((v, k) => result.set(deepClone(k, hash), deepClone(v, hash)));
       } else if (value instanceof Set) {
-        value.forEach((v) => result.add(deepClone(v, hash)));
+      value.forEach((v) => result.add(deepClone(v, hash)));
       } else {
-        // 拷贝 Symbol 键也别落下
-        Reflect.ownKeys(value).forEach((key) => {
-          result[key] = deepClone(value[key], hash);
-        });
+      // 拷贝 Symbol 键也别落下
+      Reflect.ownKeys(value).forEach((key) => {
+      result[key] = deepClone(value[key], hash);
+      });
       }
       return result;
-    }
-
-    // ============ 验证 ============
-    const a = { name: "瓜子", info: { age: 3 }, list: [1, [2, 3]] };
-    a.self = a; // 循环引用
-    const b = deepClone(a);
-    b.info.age = 99;
-    b.list[1][0] = 999;
-    console.log("a.info.age 不变 =", a.info.age);     // 3
-    console.log("a.list[1][0] 不变 =", a.list[1][0]); // 2
-    console.log("b.self === b ?", b.self === b);       // true 循环引用保留
-  </script>
+      }
+      
+      // ============ 验证 ============
+      const a = { name: "瓜子", info: { age: 3 }, list: [1, [2, 3]] };
+      a.self = a; // 循环引用
+      const b = deepClone(a);
+      b.info.age = 99;
+      b.list[1][0] = 999;
+      console.log("a.info.age 不变 =", a.info.age);     // 3
+      console.log("a.list[1][0] 不变 =", a.list[1][0]); // 2
+      console.log("b.self === b ?", b.self === b);       // true 循环引用保留
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -144,16 +139,14 @@
         <a href="./%E6%97%A0%E9%9A%9C%E7%A2%8D-a11y.html">无障碍-a11y →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

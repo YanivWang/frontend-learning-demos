@@ -11,80 +11,71 @@
     - escape 和 JSON 转义是一回事吗？
   相关: JSON, encode-URI编码
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>转义字符与 JSON</title>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>字符串中反斜杠转义与 JSON 序列化</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>JSON 规范要求 <code>" \ /</code> 及控制字符（\n \t 等）在字符串内用反斜杠转义。</li>
-      <li><code>JSON.stringify</code> 自动加转义；<code>JSON.parse</code> 还原为实际字符。</li>
-      <li>把 JSON 字符串再放进 HTML 属性或另一层 JSON 时，反斜杠本身也要再转义（双重 \\）。</li>
-      <li>JS 源码字符串、正则字面量、JSON 三者的转义规则各自独立，勿混用。</li>
-      <li><code>escape</code> 是 URI 时代的 API，与 JSON 转义无关，已废弃。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>JSON 哪些字符要转义？</strong> 双引号、反斜杠、以及 U+0000～U+001F 控制字符；unicode 可用 \uXXXX。</li>
-      <li><strong>为何双重反斜杠？</strong> 第一层 JSON 转义；第二层是字符串字面量或 HTML 属性转义。调试时看清「存储形式」vs「解析后形式」。</li>
-      <li><strong>escape vs JSON？</strong> 不同标准。JSON 用 \n \" 等；escape 产出 %uXXXX，已废弃。URL 编码用 encodeURIComponent。</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>JSON 规范要求 <code>" \ /</code> 及控制字符（\n \t 等）在字符串内用反斜杠转义。</li>
+          <li><code>JSON.stringify</code> 自动加转义；<code>JSON.parse</code> 还原为实际字符。</li>
+          <li>把 JSON 字符串再放进 HTML 属性或另一层 JSON 时，反斜杠本身也要再转义（双重 \\）。</li>
+          <li>JS 源码字符串、正则字面量、JSON 三者的转义规则各自独立，勿混用。</li>
+          <li><code>escape</code> 是 URI 时代的 API，与 JSON 转义无关，已废弃。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>JSON 哪些字符要转义？</strong> 双引号、反斜杠、以及 U+0000～U+001F 控制字符；unicode 可用 \uXXXX。</li>
+          <li><strong>为何双重反斜杠？</strong> 第一层 JSON 转义；第二层是字符串字面量或 HTML 属性转义。调试时看清「存储形式」vs「解析后形式」。</li>
+          <li><strong>escape vs JSON？</strong> 不同标准。JSON 用 \n \" 等；escape 产出 %uXXXX，已废弃。URL 编码用 encodeURIComponent。</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
-    // 给原型加方法仅作演示，实际生产应避免污染原生原型
-    String.prototype.escapeSpecialChars = function() {
-        return this.replace(/\\n/g, "\\n")
-            .replace(/\\'/g, "\\'")
-            .replace(/\\"/g, '\\"')
-            .replace(/\\&/g, "\\&")
-            .replace(/\\r/g, "\\r")
-            .replace(/\\t/g, "\\t")
-            .replace(/\\b/g, "\\b")
-            .replace(/\\f/g, "\\f");
-    };
-
-    let str = '{"hotRankNum":3,"index":1,"cgIndex":1,"pId":"67ac6749-4e44-4bb4-a81d-3f473e847948","title":"I feel like I just saw something I shouldn\'t have","type":"linkType","content":"<div><span class=\\"iconfont icon-link\\"></span><a href=\\"https://www.reddit.com\\">www.reddit.com</a></div>","cgName":"jp","upNum":2,"commentNum":1,"timeStamp":1570600685329,"uId":"uid1001","uName":"wangcheng","downNum":0}';
-    console.log("str:" + str);
-
-    let a = JSON.parse(str);
-    console.log(a);
-
-    let str2 = JSON.stringify(a);
-    console.log("str2:" + str2);
-
-    // 演示二次转义：当结果还要嵌入到另一段 JSON 字符串时，需要把 \" 再变成 \\\"
-    let str3 = JSON.stringify(a);
-    let reg = /\\"/g;
-    if (reg.test(str3)) {
-        str3 = str3.replace(reg, '\\\\"');
-    }
-    console.log("str3:" + str3);
-</script>
+      // 给原型加方法仅作演示，实际生产应避免污染原生原型
+      String.prototype.escapeSpecialChars = function() {
+      return this.replace(/\\n/g, "\\n")
+      .replace(/\\'/g, "\\'")
+      .replace(/\\"/g, '\\"')
+      .replace(/\\&/g, "\\&")
+      .replace(/\\r/g, "\\r")
+      .replace(/\\t/g, "\\t")
+      .replace(/\\b/g, "\\b")
+      .replace(/\\f/g, "\\f");
+      };
+      
+      let str = '{"hotRankNum":3,"index":1,"cgIndex":1,"pId":"67ac6749-4e44-4bb4-a81d-3f473e847948","title":"I feel like I just saw something I shouldn\'t have","type":"linkType","content":"<div><span class=\\"iconfont icon-link\\"></span><a href=\\"https://www.reddit.com\\">www.reddit.com</a></div>","cgName":"jp","upNum":2,"commentNum":1,"timeStamp":1570600685329,"uId":"uid1001","uName":"wangcheng","downNum":0}';
+      console.log("str:" + str);
+      
+      let a = JSON.parse(str);
+      console.log(a);
+      
+      let str2 = JSON.stringify(a);
+      console.log("str2:" + str2);
+      
+      // 演示二次转义：当结果还要嵌入到另一段 JSON 字符串时，需要把 \" 再变成 \\\"
+      let str3 = JSON.stringify(a);
+      let reg = /\\"/g;
+      if (reg.test(str3)) {
+      str3 = str3.replace(reg, '\\\\"');
+      }
+      console.log("str3:" + str3);
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -98,16 +89,15 @@
         <a href="./eval%E4%B8%8EGlobal.html">eval与Global →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
   
 </body>
 </html>

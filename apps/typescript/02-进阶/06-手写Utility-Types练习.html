@@ -14,39 +14,40 @@
     - 面试中如何简洁讲清 手写 Utility Types 练习
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>手写 Partial / Pick / Omit</title>
-  <style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>手写 Partial / Pick / Omit</title>
+    <style>
     body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 760px; line-height: 1.6; }
     pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; font-size: 0.85rem; overflow: auto; }
     #log { margin-top: 1rem; background: #f6f8fa; padding: 12px; border-radius: 8px; font-family: ui-monospace, monospace; white-space: pre-wrap; }
-  </style>
+    </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
   </head>
-<body class="demo-page">
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>手写 Utility Types（运行时等价演示）</h1>
       <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>Partial&amp;lt;T&amp;gt;：所有属性可选。</li>
-      <li>Pick&amp;lt;T, K&amp;gt; / Omit&amp;lt;T, K&amp;gt;：挑选或排除键。</li>
-      <li>实现思路：映射类型 + keyof + in。</li>
-      <li>面试：理解内置工具类型比背 API 更重要。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>Partial&amp;lt？</strong> Partial&amp;lt;T&amp;gt;：所有属性可选</li>
-      <li><strong>手写 Utility Types 练习的核心概念是什么？</strong> Partial&amp;lt;T&amp;gt;：所有属性可选；Pick&amp;lt;T, K&amp;gt; / Omit&amp;lt;T, K&amp;gt;：挑选或排除键</li>
-      <li><strong>手写 Utility Types 练习在实际项目里怎么用？</strong> Partial&amp;lt;T&amp;gt;：所有属性可选；Pick&amp;lt;T, K&amp;gt; / Omit&amp;lt;T, K&amp;gt;：挑选或排除键</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>Partial&amp;lt;T&amp;gt;：所有属性可选。</li>
+          <li>Pick&amp;lt;T, K&amp;gt; / Omit&amp;lt;T, K&amp;gt;：挑选或排除键。</li>
+          <li>实现思路：映射类型 + keyof + in。</li>
+          <li>面试：理解内置工具类型比背 API 更重要。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>Partial&amp;lt？</strong> Partial&amp;lt;T&amp;gt;：所有属性可选</li>
+          <li><strong>手写 Utility Types 练习的核心概念是什么？</strong> Partial&amp;lt;T&amp;gt;：所有属性可选；Pick&amp;lt;T, K&amp;gt; / Omit&amp;lt;T, K&amp;gt;：挑选或排除键</li>
+          <li><strong>手写 Utility Types 练习在实际项目里怎么用？</strong> Partial&amp;lt;T&amp;gt;：所有属性可选；Pick&amp;lt;T, K&amp;gt; / Omit&amp;lt;T, K&amp;gt;：挑选或排除键</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -59,29 +60,33 @@ type MyOmit&lt;T, K extends keyof T&gt; = Pick&lt;T, Exclude&lt;keyof T, K&gt;&g
   <div id="log"></div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    function myPick(obj, keys) {
+      function myPick(obj, keys) {
       return keys.reduce((acc, k) => {
-        if (k in obj) acc[k] = obj[k];
-        return acc;
+      if (k in obj) acc[k] = obj[k];
+      return acc;
       }, {});
-    }
-    function myOmit(obj, keys) {
+      }
+      function myOmit(obj, keys) {
       const omit = new Set(keys);
       return Object.fromEntries(Object.entries(obj).filter(([k]) => !omit.has(k)));
-    }
-
-    document.getElementById("run").onclick = () => {
+      }
+      
+      document.getElementById("run").onclick = () => {
       const user = { id: 1, name: "Ada", email: "a@ex.com", role: "admin" };
       const picked = myPick(user, ["id", "name"]);
       const omitted = myOmit(user, ["email", "role"]);
       document.getElementById("log").textContent =
-        "原对象: " + JSON.stringify(user, null, 2) + "\n\n" +
-        "Pick id,name: " + JSON.stringify(picked, null, 2) + "\n\n" +
-        "Omit email,role: " + JSON.stringify(omitted, null, 2);
-    };
-  </script>
+      "原对象: " + JSON.stringify(user, null, 2) + "\n\n" +
+      "Pick id,name: " + JSON.stringify(picked, null, 2) + "\n\n" +
+      "Omit email,role: " + JSON.stringify(omitted, null, 2);
+      };
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -93,16 +98,14 @@ type MyOmit&lt;T, K extends keyof T&gt; = Pick&lt;T, Exclude&lt;keyof T, K&gt;&g
         <a href="../03-%E5%B7%A5%E7%A8%8B%E4%B8%8E%E6%A1%86%E6%9E%B6/01-tsconfig-strict%E9%85%8D%E7%BD%AE.html">tsconfig-strict配置 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

@@ -11,66 +11,57 @@
     - 正则校验 URL 的局限？
   相关: encode-URI编码, 正则-URL路径匹配
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>正则 - URL 与图片格式</title>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>用正则识别 URL 与图片格式</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>URL 匹配通常分：协议 <code>https?</code>、主机、路径、query；复杂 URL 用 <code>URL</code> API 更可靠。</li>
-      <li>图片扩展名：<code>\.(jpg|jpeg|png|gif|webp)(?=\?|$)</code>；<code>i</code> 标志忽略大小写。</li>
-      <li>贪婪 <code>.*</code> 匹配长 query 时可能大量回溯；改用 <code>[^?#]+</code> 或非贪婪 <code>.*?</code>。</li>
-      <li>生产环境 URL 解析优先 <code>new URL(str)</code>，正则仅做轻量格式提示。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>URL 校验正则？</strong> 可写基础 pattern，但 RFC 复杂；推荐 URL 构造函数 + try/catch，正则辅助图片后缀等。</li>
-      <li><strong>贪婪量词风险？</strong> (.*)* 类嵌套可能导致 catastrophic backtracking；收紧字符集、用占有量词或 RE2 风格。</li>
-      <li><strong>正则局限？</strong> 难覆盖所有合法 URL、国际化域名、IPv6；安全校验必须配合 URL API 与白名单。</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>URL 匹配通常分：协议 <code>https?</code>、主机、路径、query；复杂 URL 用 <code>URL</code> API 更可靠。</li>
+          <li>图片扩展名：<code>\.(jpg|jpeg|png|gif|webp)(?=\?|$)</code>；<code>i</code> 标志忽略大小写。</li>
+          <li>贪婪 <code>.*</code> 匹配长 query 时可能大量回溯；改用 <code>[^?#]+</code> 或非贪婪 <code>.*?</code>。</li>
+          <li>生产环境 URL 解析优先 <code>new URL(str)</code>，正则仅做轻量格式提示。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>URL 校验正则？</strong> 可写基础 pattern，但 RFC 复杂；推荐 URL 构造函数 + try/catch，正则辅助图片后缀等。</li>
+          <li><strong>贪婪量词风险？</strong> (.*)* 类嵌套可能导致 catastrophic backtracking；收紧字符集、用占有量词或 RE2 风格。</li>
+          <li><strong>正则局限？</strong> 难覆盖所有合法 URL、国际化域名、IPv6；安全校验必须配合 URL API 与白名单。</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
-    let src = "https://preview.redd.it/auxxzvikl0p31.jpg?width=640&crop=smart&auto=webp&s=dfd4acbecca8da105f7adcaa4a3f540454aa2d17";
-
-    // URL 正则：协议 + 域名（至少包含一个 .）+ 可选路径 / 查询参数
-    let regUrl = /(http|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/;
-    if (regUrl.test(src)){
-        console.log("是链接");
-    }
-
-    // 把后缀转大写后用大写字母匹配，避免分别写 jpg|JPG|Jpg
-    let regImg = /.*(\.(BMP|JPG|JPEG|PNG|GIF)).*/;
-    if (regUrl.test(src) && regImg.test(src.toUpperCase())) {
-        console.log("成功!");
-    } else {
-        console.log("失败!");
-    }
-</script>
+      let src = "https://preview.redd.it/auxxzvikl0p31.jpg?width=640&crop=smart&auto=webp&s=dfd4acbecca8da105f7adcaa4a3f540454aa2d17";
+      
+      // URL 正则：协议 + 域名（至少包含一个 .）+ 可选路径 / 查询参数
+      let regUrl = /(http|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/;
+      if (regUrl.test(src)){
+      console.log("是链接");
+      }
+      
+      // 把后缀转大写后用大写字母匹配，避免分别写 jpg|JPG|Jpg
+      let regImg = /.*(\.(BMP|JPG|JPEG|PNG|GIF)).*/;
+      if (regUrl.test(src) && regImg.test(src.toUpperCase())) {
+      console.log("成功!");
+      } else {
+      console.log("失败!");
+      }
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -84,16 +75,14 @@
         <a href="./03-%E6%AD%A3%E5%88%99-%E5%85%A8%E7%89%B9%E6%80%A7.html">正则-全特性 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

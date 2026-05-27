@@ -14,38 +14,39 @@
     - 面试中如何简洁讲清 props 派生状态与 key 重置
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>React · props 派生状态与 key</title>
-  <script src="../../libs/react.development.js"></script>
-  <script src="../../libs/react-dom.development.js"></script>
-  <script src="../../libs/babel.min.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React · props 派生状态与 key</title>
+    <script src="../../libs/react.development.js"></script>
+    <script src="../../libs/react-dom.development.js"></script>
+    <script src="../../libs/babel.min.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>props 派生状态与 key 重置</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>避免 props 变化时用 <code>useEffect</code> 同步到 state（多余且易出 bug）。</li>
-      <li>能直接算的值在 <code>render</code> 里派生；需要重置整块 UI 时用 <code>key</code>。</li>
-      <li>对比 class 09 getDerivedStateFromProps：函数组件优先「派生计算」或 <code>key</code> 重置。</li>
-      <li>必须保留本地编辑态时，才在 props 变化时有选择地重置 state。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>避免 props 变化时用 useEffect 同步到 state（多余且易出？</strong> 避免 props 变化时用 <code>useEffect</code> 同步到 state（多余且易出 bug）</li>
-      <li><strong>能直接算的值在 render 里派生？</strong> 能直接算的值在 <code>render</code> 里派生；需要重置整块 UI 时用 <code>key</code></li>
-      <li><strong>对比 class 09 getDerivedStateFromProps？</strong> 对比 class 09 getDerivedStateFromProps：函数组件优先「派生计算」或 <code>key</code> 重置</li>
-      <li><strong>必须保留本地编辑态时？</strong> 必须保留本地编辑态时，才在 props 变化时有选择地重置 state</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>避免 props 变化时用 <code>useEffect</code> 同步到 state（多余且易出 bug）。</li>
+          <li>能直接算的值在 <code>render</code> 里派生；需要重置整块 UI 时用 <code>key</code>。</li>
+          <li>对比 class 09 getDerivedStateFromProps：函数组件优先「派生计算」或 <code>key</code> 重置。</li>
+          <li>必须保留本地编辑态时，才在 props 变化时有选择地重置 state。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>避免 props 变化时用 useEffect 同步到 state（多余且易出？</strong> 避免 props 变化时用 <code>useEffect</code> 同步到 state（多余且易出 bug）</li>
+          <li><strong>能直接算的值在 render 里派生？</strong> 能直接算的值在 <code>render</code> 里派生；需要重置整块 UI 时用 <code>key</code></li>
+          <li><strong>对比 class 09 getDerivedStateFromProps？</strong> 对比 class 09 getDerivedStateFromProps：函数组件优先「派生计算」或 <code>key</code> 重置</li>
+          <li><strong>必须保留本地编辑态时？</strong> 必须保留本地编辑态时，才在 props 变化时有选择地重置 state</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -53,44 +54,49 @@
 <div id="root"></div>
 
     
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script type="text/babel">
-    const { useState } = React;
-
-    function Editor({ userId, initialName }) {
+      const { useState } = React;
+      
+      function Editor({ userId, initialName }) {
       const [draft, setDraft] = useState(initialName);
       const displayLabel = "用户 " + userId + " 的草稿";
-
+      
       return (
-        <div style={{ border: "1px solid #ccc", padding: 12, marginTop: 8 }}>
-          <p>{displayLabel}</p>
-          <input value={draft} onChange={(e) => setDraft(e.target.value)} />
-          <p>当前草稿: {draft}</p>
-        </div>
+      <div style={{ border: "1px solid #ccc", padding: 12, marginTop: 8 }}>
+      <p>{displayLabel}</p>
+      <input value={draft} onChange={(e) => setDraft(e.target.value)} />
+      <p>当前草稿: {draft}</p>
+      </div>
       );
-    }
-
-    function App() {
+      }
+      
+      function App() {
       const [userId, setUserId] = useState(1);
       const users = {
-        1: "Alice",
-        2: "Bob",
-        3: "Carol"
+      1: "Alice",
+      2: "Bob",
+      3: "Carol"
       };
-
+      
       return (
-        <section>
-          <h1>props 派生状态与 key 重置</h1>
-
-          <button onClick={() => setUserId(prev => (prev % 3) + 1)}>切换用户 (id={userId})</button>
-          {/* key 变化会卸载旧 Editor、挂载新实例，draft 自动重置为新的 initialName */}
-          <Editor key={userId} userId={userId} initialName={users[userId]} />
-          <p>面试回答: 不要 mirror props 到 state；可派生就算，需重置整块状态用 key。</p>
-        </section>
+      <section>
+      <h1>props 派生状态与 key 重置</h1>
+      
+      <button onClick={() => setUserId(prev => (prev % 3) + 1)}>切换用户 (id={userId})</button>
+      {/* key 变化会卸载旧 Editor、挂载新实例，draft 自动重置为新的 initialName */}
+      <Editor key={userId} userId={userId} initialName={users[userId]} />
+      <p>面试回答: 不要 mirror props 到 state；可派生就算，需重置整块状态用 key。</p>
+      </section>
       );
-    }
-
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-  </script>
+      }
+      
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
@@ -101,16 +107,14 @@
         <a href="./34-React19%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%A7%88.html">React19新特性概览 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

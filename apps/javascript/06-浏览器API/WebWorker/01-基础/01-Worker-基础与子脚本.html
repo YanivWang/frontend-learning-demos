@@ -13,88 +13,83 @@
     - 面试中如何简洁讲清 Worker 基础与子脚本
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Worker 基础与子脚本</title>
     <link rel="stylesheet" href="../../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Worker 基础与子脚本</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>new Worker(path) 启动独立线程；主线程通过 postMessage/onmessage 通信。</li>
-      <li>数据采用结构化克隆传递，函数 / DOM 节点不可传。</li>
-      <li>用 worker.terminate() 主动结束；子线程内部用 self.close()。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>new Worker(path) 启动独立线程？</strong> new Worker(path) 启动独立线程；主线程通过 postMessage/onmessage 通信</li>
-      <li><strong>数据采用结构化克隆传递？</strong> 数据采用结构化克隆传递，函数 / DOM 节点不可传</li>
-      <li><strong>用 worker.terminate() 主动结束？</strong> 用 worker.terminate() 主动结束；子线程内部用 self.close()</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>new Worker(path) 启动独立线程；主线程通过 postMessage/onmessage 通信。</li>
+          <li>数据采用结构化克隆传递，函数 / DOM 节点不可传。</li>
+          <li>用 worker.terminate() 主动结束；子线程内部用 self.close()。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>new Worker(path) 启动独立线程？</strong> new Worker(path) 启动独立线程；主线程通过 postMessage/onmessage 通信</li>
+          <li><strong>数据采用结构化克隆传递？</strong> 数据采用结构化克隆传递，函数 / DOM 节点不可传</li>
+          <li><strong>用 worker.terminate() 主动结束？</strong> 用 worker.terminate() 主动结束；子线程内部用 self.close()</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../../packages/shared/demo-log.js"></script>
-
 <button onclick="press()">Press</button>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    function press(){
-        console.log("press start...");
-        let sum = 0;
-        for(let i = 0 ; i < 1000; i++){
-            sum = sum + i;
-        }
-        console.log("press end..." + sum);
-    }
-
-    //worker.js 就是Worker线程要执行的任务
-    //创建一个worker线程对象，用于供主线程操作worker线程
-    let worker = new Worker('worker.js');
-    worker.postMessage("hello worker!!!");//通过结构化克隆传递；函数、DOM 节点等不可克隆
-
-    //listen worker message
-    //指定监听函数
-    //event.data 获取子线程的传输的数据
-    worker.onmessage = function (event) {
-        console.log("received message: " + event.data);
-
-        doSomThing();
-    };
-
-    //主线程负责打开和关闭子线程
-    function doSomThing() {
-        console.log("do something!!!");
-
-        //主线程中关闭worker
-        worker.terminate();
-    }
-
-    worker.onerror = function (event) {
-        worker.terminate();
-        console.log("子线程发生错误： " + event.message);
-    }
-</script>
+      function press(){
+      console.log("press start...");
+      let sum = 0;
+      for(let i = 0 ; i < 1000; i++){
+      sum = sum + i;
+      }
+      console.log("press end..." + sum);
+      }
+      
+      //worker.js 就是Worker线程要执行的任务
+      //创建一个worker线程对象，用于供主线程操作worker线程
+      let worker = new Worker('worker.js');
+      worker.postMessage("hello worker!!!");//通过结构化克隆传递；函数、DOM 节点等不可克隆
+      
+      //listen worker message
+      //指定监听函数
+      //event.data 获取子线程的传输的数据
+      worker.onmessage = function (event) {
+      console.log("received message: " + event.data);
+      
+      doSomThing();
+      };
+      
+      //主线程负责打开和关闭子线程
+      function doSomThing() {
+      console.log("do something!!!");
+      
+      //主线程中关闭worker
+      worker.terminate();
+      }
+      
+      worker.onerror = function (event) {
+      worker.terminate();
+      console.log("子线程发生错误： " + event.message);
+      }
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -106,16 +101,14 @@
         <a href="../02-%E5%91%BD%E5%90%8D%E4%B8%8E%E6%B6%88%E6%81%AF%E5%88%86%E5%8F%91/01-Worker-%E5%91%BD%E5%90%8D%E4%B8%8E%E6%B6%88%E6%81%AF%E5%88%86%E5%8F%91.html">Worker-命名与消息分发 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

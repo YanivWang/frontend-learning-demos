@@ -1,58 +1,56 @@
 <!--
-分类: javascript / 06-浏览器API
+  分类: javascript / 06-浏览器API
   主题: Import Maps 浏览器原生模块映射
   难度: 进阶
   要点:
-    -   <script src="../../../packages/shared/demo-log.js"></script>
-<script type="importmap"> 将 bare specifier 映射到 URL
+    - <script type="importmap"> 将 bare specifier 映射到 URL
     - 配合 <script type="module"> 在零构建环境使用 npm 风格 import
     - 生产环境仍推荐 bundler；Import Maps 适合 demo / 渐进迁移
   面试:
-    - Import Maps 浏览器原生模块映射的核心概念是什么
-    - Import Maps 浏览器原生模块映射在实际项目里怎么用
-    - Import Maps 浏览器原生模块映射有哪些常见坑或易错点
-    - Import Maps 浏览器原生模块映射和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Import Maps 浏览器原生模块映射
-
+    - Import Maps 是什么？解决什么问题？
+    - importmap 与 type="module" 如何配合？
+    - 生产环境为什么仍推荐 bundler？
+  相关: HTTP缓存, IntersectionObserver
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Import Maps</title>
-  <style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Import Maps</title>
+    <style>
     body { font-family: system-ui, sans-serif; margin: 2rem; }
     #out { margin-top: 1rem; padding: 12px; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; }
-  </style>
-  <script type="importmap">
-  {
+    </style>
+    <script type="importmap">
+    {
     "imports": {
-      "utils/": "./lib/importmap-utils/"
+    "utils/": "./lib/importmap-utils/"
     }
-  }
-  </script>
+    }
+    </script>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
   </head>
-<body class="demo-page">
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Import Maps 模块映射</h1>
       <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>&lt;script src=&quot;../../../packages/shared/demo-log.js&quot;&gt;&lt;/script&gt;。</li>
-      <li>配合 &lt;script <code>type</code>=&quot;<code>module</code>&quot;&gt; 在零构建环境使用 npm 风格 <code>import</code>。</li>
-      <li>生产环境仍推荐 bundler；Import Maps 适合 demo / 渐进迁移。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>&lt;script type=&quot;importmap&quot;&gt; 将 bare specifi？</strong> &lt;script src=&quot;../../../packages/shared/demo-log.js&quot;&gt;&lt;/script&gt;；配合 &lt;script <code>type</code>=&quot;<code>module</code>&quot;&gt; 在零构建环境使用 npm 风格 <code>import</code></li>
-      <li><strong>配合 &lt;script type=&quot;module&quot;&gt; 在零构建环境使用 npm 风？</strong> 配合 &lt;script <code>type</code>=&quot;<code>module</code>&quot;&gt; 在零构建环境使用 npm 风格 <code>import</code></li>
-      <li><strong>生产环境仍推荐 bundler？</strong> 生产环境仍推荐 bundler；Import Maps 适合 demo / 渐进迁移</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>&lt;script type="importmap"&gt;</code> 将 bare specifier 映射到 URL。</li>
+          <li>配合 <code>&lt;script type="module"&gt;</code> 在零构建环境使用 npm 风格 <code>import</code>。</li>
+          <li>生产环境仍推荐 bundler；Import Maps 适合 demo / 渐进迁移。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>Import Maps 是什么？</strong> 浏览器原生模块映射，把 <code>import "pkg"</code> 解析到具体 URL，无需打包即可在 demo 中试用 npm 风格路径。</li>
+          <li><strong>与 type="module" 如何配合？</strong> 先声明 importmap，再加载 module 脚本；映射须在模块执行前解析完成。</li>
+          <li><strong>生产为何仍用 bundler？</strong> 兼容性、Tree-shaking、版本锁定与 CDN 策略；Import Maps 更适合渐进迁移或教学 demo。</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -61,11 +59,15 @@
   <div id="out" aria-live="polite"></div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script type="module">
-    import { greet } from "utils/greet.js";
-    document.getElementById("out").textContent = greet("Import Maps");
-  </script>
+      import { greet } from "utils/greet.js";
+      document.getElementById("out").textContent = greet("Import Maps");
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -73,20 +75,20 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+        <a href="./HTTP%E7%BC%93%E5%AD%98.html">相关 · HTTP缓存</a>
+        <a href="./IntersectionObserver.html">相关 · IntersectionObserver</a>
         <a href="./HTTP%E7%BC%93%E5%AD%98.html">← HTTP缓存</a>
         <a href="./IntersectionObserver.html">IntersectionObserver →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

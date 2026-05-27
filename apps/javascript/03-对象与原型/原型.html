@@ -13,78 +13,69 @@
     - 面试中如何简洁讲清 原型对象（prototype）与共享属性
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>原型对象</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>原型对象</title>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>原型对象（prototype）与共享属性</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>构造函数自带 prototype 对象，挂在其上的属性/方法被所有实例共享。</li>
-      <li>实例的 __proto__ 指向构造函数的 prototype。</li>
-      <li>prototype.constructor 反向指回构造函数，形成循环引用。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>构造函数自带 prototype 对象？</strong> 构造函数自带 prototype 对象，挂在其上的属性/方法被所有实例共享；实例的 __proto__ 指向构造函数的 prototype</li>
-      <li><strong>实例的 __proto__ 指向构造函数的 prototype？</strong> 实例的 __proto__ 指向构造函数的 prototype</li>
-      <li><strong>prototype.constructor 反向指回构造函数？</strong> 构造函数自带 prototype 对象，挂在其上的属性/方法被所有实例共享；实例的 __proto__ 指向构造函数的 prototype</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>构造函数自带 prototype 对象，挂在其上的属性/方法被所有实例共享。</li>
+          <li>实例的 __proto__ 指向构造函数的 prototype。</li>
+          <li>prototype.constructor 反向指回构造函数，形成循环引用。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>构造函数自带 prototype 对象？</strong> 构造函数自带 prototype 对象，挂在其上的属性/方法被所有实例共享；实例的 __proto__ 指向构造函数的 prototype</li>
+          <li><strong>实例的 __proto__ 指向构造函数的 prototype？</strong> 实例的 __proto__ 指向构造函数的 prototype</li>
+          <li><strong>prototype.constructor 反向指回构造函数？</strong> 构造函数自带 prototype 对象，挂在其上的属性/方法被所有实例共享；实例的 __proto__ 指向构造函数的 prototype</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
-    function Person(userId){
+      function Person(userId){
       this.userId = userId;//构造函数中通过给this.xx赋值，为实例动态添加属性，这些属性是实例自身特有的 
-    }
-
-    //每个构造函数(或者普通函数)都有一个prototype属性，是一个对象，称作原型对象，原型对象设计出来的作用就是为了
-    //变量和方法共享的，被构造函数的实例共享
-
-    //通过原型模式定义的属性和方法是所有实例共享的
-    Person.prototype.userName = "姓名"
-    Person.prototype.userAge = "年龄"
-    Person.prototype.skinColor = "肤色"
-    Person.prototype.sayHello = function(){
+      }
+      
+      //每个构造函数(或者普通函数)都有一个prototype属性，是一个对象，称作原型对象，原型对象设计出来的作用就是为了
+      //变量和方法共享的，被构造函数的实例共享
+      
+      //通过原型模式定义的属性和方法是所有实例共享的
+      Person.prototype.userName = "姓名"
+      Person.prototype.userAge = "年龄"
+      Person.prototype.skinColor = "肤色"
+      Person.prototype.sayHello = function(){
       console.log("你好呀!");
-    }
-
-    const p1 = new Person();
-    console.log(p1.skinColor);
-
-    const p2 = new Person();
-    console.log(p2.skinColor);
-    
-    //一旦一个函数被创建，那么它自动会被添加一个prototype属性指向原型对象，原型对象中一定会包含一个
-    //constructor属性，指向该构造函数本身
-    console.log(Person.prototype.constructor === p1.__proto__.constructor);
-
-    //循环引用
-    console.log(Person.prototype.constructor === Person); // true
-
-  </script>
+      }
+      
+      const p1 = new Person();
+      console.log(p1.skinColor);
+      
+      const p2 = new Person();
+      console.log(p2.skinColor);
+      
+      //一旦一个函数被创建，那么它自动会被添加一个prototype属性指向原型对象，原型对象中一定会包含一个
+      //constructor属性，指向该构造函数本身
+      console.log(Person.prototype.constructor === p1.__proto__.constructor);
+      
+      //循环引用
+      console.log(Person.prototype.constructor === Person); // true
+      
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -96,16 +87,14 @@
         <a href="./%E5%8E%9F%E5%9E%8B%E9%93%BE.html">原型链 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

@@ -14,13 +14,14 @@
     - 面试中如何简洁讲清 分步表单向导
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>分步表单向导</title>
-  <style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>分步表单向导</title>
+    <style>
     body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 480px; }
     .steps { display: flex; gap: 8px; margin-bottom: 1rem; font-size: 0.875rem; }
     .steps span { padding: 4px 10px; border-radius: 999px; background: #eee; }
@@ -31,28 +32,28 @@
     button { padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; background: #4f46e5; color: #fff; }
     button.secondary { background: #e5e7eb; color: #111; }
     pre { background: #f6f8fa; padding: 12px; border-radius: 8px; font-size: 0.8125rem; }
-  </style>
+    </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
   </head>
-<body class="demo-page">
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>分步表单</h1>
       <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>多步表单用 currentStep 状态驱动视图。</li>
-      <li>每步校验通过才允许 next。</li>
-      <li>最后一步汇总展示已填数据。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>多步表单用 currentStep 状态驱动视图？</strong> 多步表单用 currentStep 状态驱动视图</li>
-      <li><strong>每步校验通过才允许 next？</strong> 每步校验通过才允许 next</li>
-      <li><strong>最后一步汇总展示已填数据？</strong> 最后一步汇总展示已填数据</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>多步表单用 currentStep 状态驱动视图。</li>
+          <li>每步校验通过才允许 next。</li>
+          <li>最后一步汇总展示已填数据。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>多步表单用 currentStep 状态驱动视图？</strong> 多步表单用 currentStep 状态驱动视图</li>
+          <li><strong>每步校验通过才允许 next？</strong> 每步校验通过才允许 next</li>
+          <li><strong>最后一步汇总展示已填数据？</strong> 最后一步汇总展示已填数据</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -65,50 +66,54 @@
   </div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    const fields = [
+      const fields = [
       [{ key: "name", label: "姓名", required: true }],
       [{ key: "email", label: "邮箱", type: "email", required: true }],
       [{ key: "city", label: "城市", required: true }],
-    ];
-    let step = 0;
-    const data = {};
-    const stepsEl = document.getElementById("steps");
-    const form = document.getElementById("form");
-
-    function renderSteps() {
+      ];
+      let step = 0;
+      const data = {};
+      const stepsEl = document.getElementById("steps");
+      const form = document.getElementById("form");
+      
+      function renderSteps() {
       stepsEl.innerHTML = fields.map((_, i) => `<span class="${i === step ? "active" : ""}">步骤 ${i + 1}</span>`).join("");
-    }
-    function renderForm() {
+      }
+      function renderForm() {
       if (step >= fields.length) {
-        form.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre><p>提交完成（demo 仅展示数据）</p>`;
-        document.getElementById("next").textContent = "完成";
-        return;
+      form.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre><p>提交完成（demo 仅展示数据）</p>`;
+      document.getElementById("next").textContent = "完成";
+      return;
       }
       document.getElementById("next").textContent = step === fields.length - 1 ? "提交" : "下一步";
       form.innerHTML = fields[step].map((f) => `
-        <label for="${f.key}">${f.label}</label>
-        <input id="${f.key}" name="${f.key}" type="${f.type || "text"}" value="${data[f.key] || ""}" ${f.required ? "required" : ""} />`).join("");
-    }
-    function validate() {
+      <label for="${f.key}">${f.label}</label>
+      <input id="${f.key}" name="${f.key}" type="${f.type || "text"}" value="${data[f.key] || ""}" ${f.required ? "required" : ""} />`).join("");
+      }
+      function validate() {
       if (step >= fields.length) return true;
       for (const f of fields[step]) {
-        const v = form.querySelector(`#${f.key}`).value.trim();
-        if (f.required && !v) { alert(`请填写${f.label}`); return false; }
-        data[f.key] = v;
+      const v = form.querySelector(`#${f.key}`).value.trim();
+      if (f.required && !v) { alert(`请填写${f.label}`); return false; }
+      data[f.key] = v;
       }
       return true;
-    }
-    document.getElementById("next").onclick = () => {
+      }
+      document.getElementById("next").onclick = () => {
       if (step >= fields.length) return;
       if (!validate()) return;
       if (step === fields.length - 1) { step++; renderSteps(); renderForm(); return; }
       step++; renderSteps(); renderForm();
-    };
-    document.getElementById("prev").onclick = () => { if (step > 0) { step = Math.min(step, fields.length - 1); step--; renderSteps(); renderForm(); } };
-    renderSteps(); renderForm();
-  </script>
+      };
+      document.getElementById("prev").onclick = () => { if (step > 0) { step = Math.min(step, fields.length - 1); step--; renderSteps(); renderForm(); } };
+      renderSteps(); renderForm();
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -120,16 +125,14 @@
         <a href="../hash-router/01-hash-router-%E7%AE%80%E6%98%93%E8%B7%AF%E7%94%B1.html">hash-router-简易路由 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

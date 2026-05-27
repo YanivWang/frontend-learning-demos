@@ -13,35 +13,36 @@
     - 面试中如何简洁讲清 路由 props 解耦组件与 $route
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>vue-router · props 解耦</title>
     <script src="../../libs/vue.js"></script>
     <script src="../../libs/vue-router.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>路由 props 解耦组件与 $route</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>props: true → 把 route.params 注入组件 props，让组件不依赖 $route。</li>
-      <li>props: { ... } → 静态对象方式，组件得到固定 props。</li>
-      <li>props: (route) =&gt; ({ ... }) → 函数式，可计算/重命名 query / params。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>路由 props 解耦组件与 $route的核心概念是什么？</strong> props: true → 把 route.params 注入组件 props，让组件不依赖 $route；props: { ... } → 静态对象方式，组件得到固定 props</li>
-      <li><strong>路由 props 解耦组件与 $route在实际项目里怎么用？</strong> props: true → 把 route.params 注入组件 props，让组件不依赖 $route；props: { ... } → 静态对象方式，组件得到固定 props</li>
-      <li><strong>路由 props 解耦组件与 $route有哪些常见坑或易错点？</strong> props: true → 把 route.params 注入组件 props，让组件不依赖 $route；props: { ... } → 静态对象方式，组件得到固定 props</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>props: true → 把 route.params 注入组件 props，让组件不依赖 $route。</li>
+          <li>props: { ... } → 静态对象方式，组件得到固定 props。</li>
+          <li>props: (route) =&gt; ({ ... }) → 函数式，可计算/重命名 query / params。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>路由 props 解耦组件与 $route的核心概念是什么？</strong> props: true → 把 route.params 注入组件 props，让组件不依赖 $route；props: { ... } → 静态对象方式，组件得到固定 props</li>
+          <li><strong>路由 props 解耦组件与 $route在实际项目里怎么用？</strong> props: true → 把 route.params 注入组件 props，让组件不依赖 $route；props: { ... } → 静态对象方式，组件得到固定 props</li>
+          <li><strong>路由 props 解耦组件与 $route有哪些常见坑或易错点？</strong> props: true → 把 route.params 注入组件 props，让组件不依赖 $route；props: { ... } → 静态对象方式，组件得到固定 props</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -63,75 +64,79 @@
 </div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    const home = { template: "<div>home</div>" };
-
-    const userPropsTrue = {
-        props: ['id', 'postid'],
-        watch: {
-            $route: function () {
-                console.log('[props: true] 路由变化', this.$route.fullPath);
-            }
-        },
-        template: `<div>
-            <div><strong>props: true</strong></div>
-            <div>$route.params.id: {{ $route.params.id }}</div>
-            <div>props id: {{ id }}</div>
-            <div>props postid: {{ postid }}</div>
-        </div>`
-    };
-
-    const userStaticProps = {
-        props: ['newsletterPopup'],
-        template: `<div>
-            <div><strong>props: 静态对象</strong></div>
-            <div>newsletterPopup（固定 false）: {{ newsletterPopup }}</div>
-            <div>$route.params（静态 props 不会注入）: id={{ $route.params.id }}, postid={{ $route.params.postid }}</div>
-        </div>`
-    };
-
-    const userQueryProps = {
-        props: ['id', 'postid', 'keyword'],
-        template: `<div>
-            <div><strong>props: 函数式</strong></div>
-            <div>props id: {{ id }}</div>
-            <div>props postid: {{ postid }}</div>
-            <div>keyword（来自 query.q）: {{ keyword }}</div>
-        </div>`
-    };
-
-    const sideBar = {
-        props: ['sidebarLabel'],
-        template: "<div>sideBar — label: {{ sidebarLabel || 'default' }}</div>"
-    };
-
-    function calProps(route) {
-        return {
-            id: route.params.id,
-            postid: route.params.postid,
-            keyword: route.query.q
-        };
-    }
-
-    const routes = [
-        { path: "/", component: home },
-        { path: "/props-true/:id/post/:postid", component: userPropsTrue, props: true },
-        { path: "/props-static/:id/post/:postid", component: userStaticProps, props: { newsletterPopup: false } },
-        { path: "/props-fn/:id/post/:postid", component: userQueryProps, props: calProps },
-        {
-            path: "/props-named/:id/post/:postid",
-            components: { default: userPropsTrue, sideBar: sideBar },
-            props: { default: true, sideBar: { sidebarLabel: '命名视图 sidebar' } }
-        }
-    ];
-
-    const router = new VueRouter({ routes });
-    var wm = new Vue({ router }).$mount('#app');
-
-    // 同一路由不同 params 会复用组件，应 watch $route 或使用 beforeRouteUpdate
-    console.log(wm);
-</script>
+      const home = { template: "<div>home</div>" };
+      
+      const userPropsTrue = {
+      props: ['id', 'postid'],
+      watch: {
+      $route: function () {
+      console.log('[props: true] 路由变化', this.$route.fullPath);
+      }
+      },
+      template: `<div>
+      <div><strong>props: true</strong></div>
+      <div>$route.params.id: {{ $route.params.id }}</div>
+      <div>props id: {{ id }}</div>
+      <div>props postid: {{ postid }}</div>
+      </div>`
+      };
+      
+      const userStaticProps = {
+      props: ['newsletterPopup'],
+      template: `<div>
+      <div><strong>props: 静态对象</strong></div>
+      <div>newsletterPopup（固定 false）: {{ newsletterPopup }}</div>
+      <div>$route.params（静态 props 不会注入）: id={{ $route.params.id }}, postid={{ $route.params.postid }}</div>
+      </div>`
+      };
+      
+      const userQueryProps = {
+      props: ['id', 'postid', 'keyword'],
+      template: `<div>
+      <div><strong>props: 函数式</strong></div>
+      <div>props id: {{ id }}</div>
+      <div>props postid: {{ postid }}</div>
+      <div>keyword（来自 query.q）: {{ keyword }}</div>
+      </div>`
+      };
+      
+      const sideBar = {
+      props: ['sidebarLabel'],
+      template: "<div>sideBar — label: {{ sidebarLabel || 'default' }}</div>"
+      };
+      
+      function calProps(route) {
+      return {
+      id: route.params.id,
+      postid: route.params.postid,
+      keyword: route.query.q
+      };
+      }
+      
+      const routes = [
+      { path: "/", component: home },
+      { path: "/props-true/:id/post/:postid", component: userPropsTrue, props: true },
+      { path: "/props-static/:id/post/:postid", component: userStaticProps, props: { newsletterPopup: false } },
+      { path: "/props-fn/:id/post/:postid", component: userQueryProps, props: calProps },
+      {
+      path: "/props-named/:id/post/:postid",
+      components: { default: userPropsTrue, sideBar: sideBar },
+      props: { default: true, sideBar: { sidebarLabel: '命名视图 sidebar' } }
+      }
+      ];
+      
+      const router = new VueRouter({ routes });
+      var wm = new Vue({ router }).$mount('#app');
+      
+      // 同一路由不同 params 会复用组件，应 watch $route 或使用 beforeRouteUpdate
+      console.log(wm);
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -143,16 +148,14 @@
         <a href="./10-%E5%AF%BC%E8%88%AA%E5%AE%88%E5%8D%AB.html">导航守卫 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

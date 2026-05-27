@@ -13,13 +13,14 @@
     - 面试中如何简洁讲清 DOM 事件流：捕获、目标、冒泡与事件委托
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DOM 事件冒泡捕获委托</title>
-  <style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DOM 事件冒泡捕获委托</title>
+    <style>
     body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
     .panel { display: grid; grid-template-columns: minmax(260px, 420px) 1fr; gap: 16px; align-items: start; }
     .outer, .middle, .inner { padding: 20px; border: 2px solid #777; border-radius: 4px; }
@@ -29,29 +30,29 @@
     button { margin: 4px 6px 4px 0; padding: 6px 10px; }
     li { cursor: pointer; margin: 4px 0; }
     #log { min-height: 180px; padding: 10px; border: 1px solid #ddd; background: #fafafa; white-space: pre-line; }
-  </style>
+    </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
   </head>
-<body class="demo-page">
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>DOM 事件流：捕获、冒泡、委托</h1>
       <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li><code>addEventListener</code> 第三个参数 true 表示捕获阶段监听。</li>
-      <li><code>stopPropagation</code> 阻止事件继续传播；stopImmediatePropagation 还会阻止同元素后续监听器。</li>
-      <li>事件委托把子元素点击统一交给父元素处理，适合动态列表。</li>
-      <li><code>addEventListener</code> 第三个参数 true 表示捕获阶段监听（补充）。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>addEventListener 第三个参数 true 表示捕获阶段监听？</strong> <code>addEventListener</code> 第三个参数 true 表示捕获阶段监听</li>
-      <li><strong>stopPropagation 阻止事件继续传播？</strong> <code>stopPropagation</code> 阻止事件继续传播；stopImmediatePropagation 还会阻止同元素后续监听器</li>
-      <li><strong>事件委托把子元素点击统一交给父元素处理？</strong> 事件委托把子元素点击统一交给父元素处理，适合动态列表</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>addEventListener</code> 第三个参数 true 表示捕获阶段监听。</li>
+          <li><code>stopPropagation</code> 阻止事件继续传播；stopImmediatePropagation 还会阻止同元素后续监听器。</li>
+          <li>事件委托把子元素点击统一交给父元素处理，适合动态列表。</li>
+          <li><code>addEventListener</code> 第三个参数 true 表示捕获阶段监听（补充）。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>addEventListener 第三个参数 true 表示捕获阶段监听？</strong> <code>addEventListener</code> 第三个参数 true 表示捕获阶段监听</li>
+          <li><strong>stopPropagation 阻止事件继续传播？</strong> <code>stopPropagation</code> 阻止事件继续传播；stopImmediatePropagation 还会阻止同元素后续监听器</li>
+          <li><strong>事件委托把子元素点击统一交给父元素处理？</strong> 事件委托把子元素点击统一交给父元素处理，适合动态列表</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -84,71 +85,75 @@
     </section>
   </div>
 
-    <!-- SCRIPT_START -->
+    
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    const logBox = document.getElementById("log");
-    const nodes = document.querySelectorAll(".outer, .middle, .inner");
-    let mode = "normal";
-
-    function log(text) {
+      const logBox = document.getElementById("log");
+      const nodes = document.querySelectorAll(".outer, .middle, .inner");
+      let mode = "normal";
+      
+      function log(text) {
       logBox.textContent += "\n" + text;
-    }
-
-    function resetLog(title) {
+      }
+      
+      function resetLog(title) {
       logBox.textContent = title;
-    }
-
-    function bindEventFlow() {
+      }
+      
+      function bindEventFlow() {
       nodes.forEach(node => {
-        const name = node.dataset.name;
-
-        node.addEventListener("click", function () {
-          log("capture: " + name);
-        }, true);
-
-        node.addEventListener("click", function (event) {
-          log("bubble-1: " + name);
-
-          if (mode === "stop" && name === "middle") {
-            log("middle 执行 stopPropagation");
-            event.stopPropagation();
-          }
-
-          if (mode === "immediate" && name === "inner") {
-            log("inner 执行 stopImmediatePropagation");
-            event.stopImmediatePropagation();
-          }
-        });
-
-        node.addEventListener("click", function () {
-          log("bubble-2: " + name);
-        });
+      const name = node.dataset.name;
+      
+      node.addEventListener("click", function () {
+      log("capture: " + name);
+      }, true);
+      
+      node.addEventListener("click", function (event) {
+      log("bubble-1: " + name);
+      
+      if (mode === "stop" && name === "middle") {
+      log("middle 执行 stopPropagation");
+      event.stopPropagation();
+      }
+      
+      if (mode === "immediate" && name === "inner") {
+      log("inner 执行 stopImmediatePropagation");
+      event.stopImmediatePropagation();
+      }
       });
-    }
-
-    bindEventFlow();
-
-    document.getElementById("normalBtn").addEventListener("click", () => {
+      
+      node.addEventListener("click", function () {
+      log("bubble-2: " + name);
+      });
+      });
+      }
+      
+      bindEventFlow();
+      
+      document.getElementById("normalBtn").addEventListener("click", () => {
       mode = "normal";
       resetLog("已切换：正常传播。点击 inner。");
-    });
-
-    document.getElementById("stopBtn").addEventListener("click", () => {
+      });
+      
+      document.getElementById("stopBtn").addEventListener("click", () => {
       mode = "stop";
       resetLog("已切换：middle 冒泡阶段 stopPropagation。点击 inner。");
-    });
-
-    document.getElementById("immediateBtn").addEventListener("click", () => {
+      });
+      
+      document.getElementById("immediateBtn").addEventListener("click", () => {
       mode = "immediate";
       resetLog("已切换：inner 冒泡阶段 stopImmediatePropagation。点击 inner。");
-    });
-
-    document.getElementById("todoList").addEventListener("click", event => {
+      });
+      
+      document.getElementById("todoList").addEventListener("click", event => {
       const item = event.target.closest("li");
       if (!item) return;
       resetLog("事件委托：父级 ul 捕获到 li 点击，id=" + item.dataset.id + "，文本=" + item.textContent);
-    });
-  </script>
+      });
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -160,16 +165,14 @@
         <a href="./03-Node%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E5%AF%B9%E6%AF%94.html">Node与浏览器事件循环对比 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

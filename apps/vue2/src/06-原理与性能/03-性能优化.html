@@ -15,37 +15,38 @@
     - 面试中如何简洁讲清 Vue2 常见性能优化
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vue2 常见性能优化</title>
     <script src="../../libs/vue.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vue2 常见性能优化</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>列表渲染使用稳定 <code>key</code>，避免 index <code>key</code> 导致错误复用。</li>
-      <li>大列表可分页、虚拟滚动，或先在非响应式临时变量中处理后整体赋值。</li>
-      <li><code>computed</code> 适合有缓存的派生数据，methods 每次渲染都会重新执行。</li>
-      <li>keep-alive 可缓存频繁切换的组件，但缓存过多也会占内存。</li>
-      <li>路由组件可懒加载，减少首屏加载体积。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>列表渲染使用稳定 key？</strong> 列表渲染使用稳定 <code>key</code>，避免 index <code>key</code> 导致错误复用</li>
-      <li><strong>大列表可分页、虚拟滚动？</strong> 大列表可分页、虚拟滚动，或先在非响应式临时变量中处理后整体赋值</li>
-      <li><strong>computed 适合有缓存的派生数据？</strong> <code>computed</code> 适合有缓存的派生数据，methods 每次渲染都会重新执行</li>
-      <li><strong>keep-alive 可缓存频繁切换的组件？</strong> keep-alive 可缓存频繁切换的组件，但缓存过多也会占内存</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>列表渲染使用稳定 <code>key</code>，避免 index <code>key</code> 导致错误复用。</li>
+          <li>大列表可分页、虚拟滚动，或先在非响应式临时变量中处理后整体赋值。</li>
+          <li><code>computed</code> 适合有缓存的派生数据，methods 每次渲染都会重新执行。</li>
+          <li>keep-alive 可缓存频繁切换的组件，但缓存过多也会占内存。</li>
+          <li>路由组件可懒加载，减少首屏加载体积。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>列表渲染使用稳定 key？</strong> 列表渲染使用稳定 <code>key</code>，避免 index <code>key</code> 导致错误复用</li>
+          <li><strong>大列表可分页、虚拟滚动？</strong> 大列表可分页、虚拟滚动，或先在非响应式临时变量中处理后整体赋值</li>
+          <li><strong>computed 适合有缓存的派生数据？</strong> <code>computed</code> 适合有缓存的派生数据，methods 每次渲染都会重新执行</li>
+          <li><strong>keep-alive 可缓存频繁切换的组件？</strong> keep-alive 可缓存频繁切换的组件，但缓存过多也会占内存</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -65,46 +66,50 @@
 </div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    new Vue({
-        el: "#app",
-        data() {
-            return {
-                list: [],
-                toggle: false,
-                logs: []
-            };
-        },
-        computed: {
-            visibleTotal() {
-                console.count("computed visibleTotal");
-                return this.list.length;
-            }
-        },
-        methods: {
-            createListBad() {
-                this.list = [];
-                for (let i = 0; i < 1000; i++) {
-                    this.list.push({ id: i, text: "item-" + i });
-                }
-                this.logs.push("逐个 push 会触发大量响应式通知，真实项目大数据量要谨慎");
-            },
-            createListGood() {
-                const next = [];
-                for (let i = 0; i < 1000; i++) {
-                    next.push({ id: i, text: "item-" + i });
-                }
-                this.list = next;
-                this.logs.push("先在普通数组中处理，再整体赋值，更新成本更可控");
-            },
-            visibleTotalByMethod() {
-                console.count("methods visibleTotalByMethod");
-                return this.list.length;
-            }
-        }
-    });
-</script>
+      new Vue({
+      el: "#app",
+      data() {
+      return {
+      list: [],
+      toggle: false,
+      logs: []
+      };
+      },
+      computed: {
+      visibleTotal() {
+      console.count("computed visibleTotal");
+      return this.list.length;
+      }
+      },
+      methods: {
+      createListBad() {
+      this.list = [];
+      for (let i = 0; i < 1000; i++) {
+      this.list.push({ id: i, text: "item-" + i });
+      }
+      this.logs.push("逐个 push 会触发大量响应式通知，真实项目大数据量要谨慎");
+      },
+      createListGood() {
+      const next = [];
+      for (let i = 0; i < 1000; i++) {
+      next.push({ id: i, text: "item-" + i });
+      }
+      this.list = next;
+      this.logs.push("先在普通数组中处理，再整体赋值，更新成本更可控");
+      },
+      visibleTotalByMethod() {
+      console.count("methods visibleTotalByMethod");
+      return this.list.length;
+      }
+      }
+      });
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -116,16 +121,14 @@
         <a href="../07-%E6%BA%90%E7%A0%81%E7%AE%80%E8%AF%BB/01-%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E5%89%8D%E7%BD%AE-Symbol.html">源码阅读前置-Symbol →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

@@ -13,111 +13,106 @@
     - 面试中如何简洁讲清 MutationObserver 监听 DOM 变化
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MutationObserver</title>
-      <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
-</head>
+  </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>MutationObserver 监听 DOM 变化</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>回调在微任务队列中批量执行，多次变更会合并触发一次。</li>
-      <li>config 中的 subtree:true 会扩大监听到所有后代，开销较大。</li>
-      <li>易错点：在回调中再修改 DOM 容易死循环；observer.disconnect 用完要解绑。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>回调在微任务队列中批量执行？</strong> 回调在微任务队列中批量执行，多次变更会合并触发一次</li>
-      <li><strong>config 中的 subtree？</strong> config 中的 subtree:true 会扩大监听到所有后代，开销较大；易错点：在回调中再修改 DOM 容易死循环；observer.disconnect 用完要解绑</li>
-      <li><strong>MutationObserver 监听 DOM 变化的核心概念是什么？</strong> 回调在微任务队列中批量执行，多次变更会合并触发一次；config 中的 subtree:true 会扩大监听到所有后代，开销较大</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>回调在微任务队列中批量执行，多次变更会合并触发一次。</li>
+          <li>config 中的 subtree:true 会扩大监听到所有后代，开销较大。</li>
+          <li>易错点：在回调中再修改 DOM 容易死循环；observer.disconnect 用完要解绑。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>回调在微任务队列中批量执行？</strong> 回调在微任务队列中批量执行，多次变更会合并触发一次</li>
+          <li><strong>config 中的 subtree？</strong> config 中的 subtree:true 会扩大监听到所有后代，开销较大；易错点：在回调中再修改 DOM 容易死循环；observer.disconnect 用完要解绑</li>
+          <li><strong>MutationObserver 监听 DOM 变化的核心概念是什么？</strong> 回调在微任务队列中批量执行，多次变更会合并触发一次；config 中的 subtree:true 会扩大监听到所有后代，开销较大</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../packages/shared/demo-log.js"></script>
-
 <div id="app" class="app"></div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
       //new MutationObserver 创建并返回一个突变观察器 => 它会在触发指定 DOM 事件时，调用指定的回调函数
       //MutationObserver 对DOM的观察不会立即启动，而是必须调用observe()方法，来确定监听哪一部分的DOM以及要响应哪些更改
       
       //重点: 在回调函数中尽量避免进行复杂操作或再次触发 DOM 变化（可能导致无限循环）
       //执行时机: 回调函数在微任务队列中执行，所有 DOM 变化完成后才会触发
-
+      
       //多个连续的 DOM 变化会被合并为一次回调执行
-
+      
       //mutationsList 变化记录的数组，每个记录描述一次具体变化
       //observer 当前 MutationObserver 实例本身
-
+      
       //回调函数是异步执行的，会在所有 DOM 变化完成后批量触发（而非每次变化立即执行），避免频繁触发导致性能问题；
       function callback(mutationList, observer) {
-        // debugger
-        mutationList.forEach((mutation) => {
-          console.log(mutation.addedNodes); 
-          console.log(mutation.removedNodes); 
-
-          //mutation.target 发生变化的目标节点
-          switch (mutation.type) {//mutation.type 获取发生变动的类型(子节点变动，节点属性变动 文本内容变化)
-            case "childList":
-              /* 从树上添加或移除一个或更多的子节点；参见 mutation.addedNodes 与
-           mutation.removedNodes */
-              console.log("A child node has been added or removed.");
-
-              break;
-            case "attributes":
-              /* mutation.target 中某节点的一个属性值被更改；该属性名称在 mutation.attributeName 中，
-           该属性之前的值为 mutation.oldValue */
-              console.log("节点" + mutation.target.tagName + "的属性" + mutation.attributeName + "被更改，" + "原来的值是" + mutation.oldValue + "新值" + mutation.target.className);
-
-              break;
-          }
-        });
+      // debugger
+      mutationList.forEach((mutation) => {
+      console.log(mutation.addedNodes); 
+      console.log(mutation.removedNodes); 
+      
+      //mutation.target 发生变化的目标节点
+      switch (mutation.type) {//mutation.type 获取发生变动的类型(子节点变动，节点属性变动 文本内容变化)
+      case "childList":
+      /* 从树上添加或移除一个或更多的子节点；参见 mutation.addedNodes 与
+      mutation.removedNodes */
+      console.log("A child node has been added or removed.");
+      
+      break;
+      case "attributes":
+      /* mutation.target 中某节点的一个属性值被更改；该属性名称在 mutation.attributeName 中，
+      该属性之前的值为 mutation.oldValue */
+      console.log("节点" + mutation.target.tagName + "的属性" + mutation.attributeName + "被更改，" + "原来的值是" + mutation.oldValue + "新值" + mutation.target.className);
+      
+      break;
       }
-
+      });
+      }
+      
       //回调函数会在被指定的节点或者子树以及以及配置项有DOM变动时调用
       const observer = new MutationObserver(callback);
-
+      
       const config = {
-        attributes: true, // 观察属性变化
-        childList: true, // 观察目标节点 子节点的变化，是否有添加或者删除
-        subtree: true, // 观察所有后代节点 => 避免过度使用 subtree: true，这会增加观察范围和计算量
-        characterData: true, // 观察文本内容变化
-        attributeOldValue: true, // 记录属性变化前的值
-        characterDataOldValue: true, // 记录文本变化前的值
+      attributes: true, // 观察属性变化
+      childList: true, // 观察目标节点 子节点的变化，是否有添加或者删除
+      subtree: true, // 观察所有后代节点 => 避免过度使用 subtree: true，这会增加观察范围和计算量
+      characterData: true, // 观察文本内容变化
+      attributeOldValue: true, // 记录属性变化前的值
+      characterDataOldValue: true, // 记录文本变化前的值
       };
-
+      
       //开始观察DOM
       const appDom = document.querySelector("#app");
       observer.observe(appDom, config);
-
+      
       //模拟 DOM 修改
       setTimeout(() => {
-        appDom.textContent = "内容更新";
-
-        setTimeout(()=>{
-          appDom.className = "appNew";
-        },5000)
+      appDom.textContent = "内容更新";
+      
+      setTimeout(()=>{
+      appDom.className = "appNew";
+      },5000)
       }, 3000);
     </script>
     <!-- SCRIPT_END -->
@@ -131,16 +126,14 @@
         <a href="./Notification.html">Notification →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

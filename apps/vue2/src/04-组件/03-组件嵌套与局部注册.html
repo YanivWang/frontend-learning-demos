@@ -12,38 +12,39 @@
     - 全局组件 vs 局部组件 + 子组件嵌套使用和相近 API 如何区分选型
     - 面试中如何简洁讲清 全局组件 vs 局部组件 + 子组件嵌套使用
 
--->
+-->
+
 <!doctype html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>全局 / 局部组件与子组件嵌套</title>
-    <script src="../../libs/vue.js"></script>
-    <style>
-        section { border: 1px solid #ddd; padding: 8px; margin-bottom: 12px; }
-    </style>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>全局 / 局部组件与子组件嵌套</title>
+    <script src="../../libs/vue.js"></script>
+    <style>
+    section { border: 1px solid #ddd; padding: 8px; margin-bottom: 12px; }
+    </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>全局组件 vs 局部组件 + 子组件嵌套使用</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>Vue.component 全局注册，所有 Vue 实例和子组件都能直接用。</li>
-      <li>局部注册的组件不会向「子组件树」自动透传，需要在子组件内再次声明 components。</li>
-      <li>全局注册必须在 new Vue() 之前，否则模板编译阶段还找不到组件。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>Vue.component 全局注册？</strong> Vue.component 全局注册，所有 Vue 实例和子组件都能直接用；全局注册必须在 new Vue() 之前，否则模板编译阶段还找不到组件</li>
-      <li><strong>局部注册的组件不会向「子组件树」自动透传？</strong> 局部注册的组件不会向「子组件树」自动透传，需要在子组件内再次声明 components</li>
-      <li><strong>全局注册必须在 new Vue() 之前？</strong> Vue.component 全局注册，所有 Vue 实例和子组件都能直接用；全局注册必须在 new Vue() 之前，否则模板编译阶段还找不到组件</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>Vue.component 全局注册，所有 Vue 实例和子组件都能直接用。</li>
+          <li>局部注册的组件不会向「子组件树」自动透传，需要在子组件内再次声明 components。</li>
+          <li>全局注册必须在 new Vue() 之前，否则模板编译阶段还找不到组件。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>Vue.component 全局注册？</strong> Vue.component 全局注册，所有 Vue 实例和子组件都能直接用；全局注册必须在 new Vue() 之前，否则模板编译阶段还找不到组件</li>
+          <li><strong>局部注册的组件不会向「子组件树」自动透传？</strong> 局部注册的组件不会向「子组件树」自动透传，需要在子组件内再次声明 components</li>
+          <li><strong>全局注册必须在 new Vue() 之前？</strong> Vue.component 全局注册，所有 Vue 实例和子组件都能直接用；全局注册必须在 new Vue() 之前，否则模板编译阶段还找不到组件</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -65,68 +66,72 @@
 </div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    //所有全局注册的行为，都必须发生在根Vue实例创建之前
-    //全局注册一个组件
-    //组件名称必须是：短横线连接，且全部小写
-    //1.当注册一个组件注册后，它可以用在其注册后的所有的Vue根实例中，包括在根实例中使用的子组件中
-    Vue.component('load-page-a', {
-        props: ['post'],
-        template: `<div style="margin-left:16px;border-left:2px solid #409eff;padding-left:8px;">
-                     <div>AAA（全局组件）</div>
-                     <div>{{post.title}}</div>
-                     <div>{{post.content}}</div>
-                  </div>`
-    });
-
-    //传入组件名称和一个对象，组件名就是该组件的名称，对象是该组件的实体
-    Vue.component('load-page-b', {
-        props: ['post'],
-        template: `<div style="margin-bottom:8px;">
-                     <div>BBB（全局组件，内嵌全局 A）</div>
-                     <div>{{post.title}}</div>
-                     <div>{{post.content}}</div>
-                     <load-page-a v-bind:post="post"></load-page-a>
-                  </div>`
-    });
-
-    //2.注册局部组件(局部注册的组件：在根实例的子组件中是不可用的，比如下面的 loadPageD不能用在loadPageC中)
-    var loadPageC = {
-        props: ['post'],
-        template: `<div style="margin-left:16px;border-left:2px solid #67c23a;padding-left:8px;">
-                     <div>CCC（局部组件 C）</div>
-                     <div>{{post.title}} — {{post.content}}</div>
-                  </div>`
-    };
-
-    //3.如果想让loadPageD中可以使用loadPageC，则需要，在 loadPageD 的 components 里再次声明
-    var loadPageD = {
-        props: ['post'],
-        template: `<div style="margin-bottom:8px;">
-                     <div>DDD（局部组件 D，内嵌局部 C）</div>
-                     <div>{{post.title}}</div>
-                     <load-page-c v-bind:post="post"></load-page-c>
-                  </div>`,
-        components: {
-            'load-page-c': loadPageC
-        }
-    };
-
-    //new Vue()中的el的表达式获取的dom元素：作为了根实例的template
-    var vm = new Vue({
-        el: "#app",
-        data: {
-            postList: [
-                {"title": '标题1', "content": '我是内容1'},
-                {"title": '标题2', "content": '我是内容2'}
-            ]
-        },
-        components: {
-            'load-page-d': loadPageD
-        }
-    });
-</script>
+      //所有全局注册的行为，都必须发生在根Vue实例创建之前
+      //全局注册一个组件
+      //组件名称必须是：短横线连接，且全部小写
+      //1.当注册一个组件注册后，它可以用在其注册后的所有的Vue根实例中，包括在根实例中使用的子组件中
+      Vue.component('load-page-a', {
+      props: ['post'],
+      template: `<div style="margin-left:16px;border-left:2px solid #409eff;padding-left:8px;">
+      <div>AAA（全局组件）</div>
+      <div>{{post.title}}</div>
+      <div>{{post.content}}</div>
+      </div>`
+      });
+      
+      //传入组件名称和一个对象，组件名就是该组件的名称，对象是该组件的实体
+      Vue.component('load-page-b', {
+      props: ['post'],
+      template: `<div style="margin-bottom:8px;">
+      <div>BBB（全局组件，内嵌全局 A）</div>
+      <div>{{post.title}}</div>
+      <div>{{post.content}}</div>
+      <load-page-a v-bind:post="post"></load-page-a>
+      </div>`
+      });
+      
+      //2.注册局部组件(局部注册的组件：在根实例的子组件中是不可用的，比如下面的 loadPageD不能用在loadPageC中)
+      var loadPageC = {
+      props: ['post'],
+      template: `<div style="margin-left:16px;border-left:2px solid #67c23a;padding-left:8px;">
+      <div>CCC（局部组件 C）</div>
+      <div>{{post.title}} — {{post.content}}</div>
+      </div>`
+      };
+      
+      //3.如果想让loadPageD中可以使用loadPageC，则需要，在 loadPageD 的 components 里再次声明
+      var loadPageD = {
+      props: ['post'],
+      template: `<div style="margin-bottom:8px;">
+      <div>DDD（局部组件 D，内嵌局部 C）</div>
+      <div>{{post.title}}</div>
+      <load-page-c v-bind:post="post"></load-page-c>
+      </div>`,
+      components: {
+      'load-page-c': loadPageC
+      }
+      };
+      
+      //new Vue()中的el的表达式获取的dom元素：作为了根实例的template
+      var vm = new Vue({
+      el: "#app",
+      data: {
+      postList: [
+      {"title": '标题1', "content": '我是内容1'},
+      {"title": '标题2', "content": '我是内容2'}
+      ]
+      },
+      components: {
+      'load-page-d': loadPageD
+      }
+      });
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -138,16 +143,14 @@
         <a href="./04-props%E4%B8%8E%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6.html">props与动态组件 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

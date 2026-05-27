@@ -13,51 +13,42 @@
     - 面试中如何简洁讲清 防抖（debounce）与节流（throttle）
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>防抖 / 节流</title>
-  <style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>防抖 / 节流</title>
+    <style>
     body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
     .box { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; min-height: 36px; }
     input { padding: 6px 8px; width: 240px; }
-  </style>
+    </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
   </head>
-<body class="demo-page">
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>防抖（debounce）/ 节流（throttle）</h1>
       <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>debounce：每次触发都重置定时器，沉默超过 wait 才真正执行（场景：搜索建议）。</li>
-      <li>throttle（时间戳版）：每 wait ms 最多执行一次（场景：scroll/mousemove）。</li>
-      <li>throttle（定时器版）：trailing 调用，等到 wait 末尾再执行一次。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>throttle（时间戳版）？</strong> throttle（时间戳版）：每 wait ms 最多执行一次（场景：scroll/mousemove）；throttle（定时器版）：trailing 调用，等到 wait 末尾再执行一次</li>
-      <li><strong>throttle（定时器版）？</strong> throttle（时间戳版）：每 wait ms 最多执行一次（场景：scroll/mousemove）；throttle（定时器版）：trailing 调用，等到 wait 末尾再执行一次</li>
-      <li><strong>防抖（debounce）与节流（throttle）的核心概念是什么？</strong> debounce：每次触发都重置定时器，沉默超过 wait 才真正执行（场景：搜索建议）；throttle（时间戳版）：每 wait ms 最多执行一次（场景：scroll/mousemove）</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>debounce：每次触发都重置定时器，沉默超过 wait 才真正执行（场景：搜索建议）。</li>
+          <li>throttle（时间戳版）：每 wait ms 最多执行一次（场景：scroll/mousemove）。</li>
+          <li>throttle（定时器版）：trailing 调用，等到 wait 末尾再执行一次。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>throttle（时间戳版）？</strong> throttle（时间戳版）：每 wait ms 最多执行一次（场景：scroll/mousemove）；throttle（定时器版）：trailing 调用，等到 wait 末尾再执行一次</li>
+          <li><strong>throttle（定时器版）？</strong> throttle（时间戳版）：每 wait ms 最多执行一次（场景：scroll/mousemove）；throttle（定时器版）：trailing 调用，等到 wait 末尾再执行一次</li>
+          <li><strong>防抖（debounce）与节流（throttle）的核心概念是什么？</strong> debounce：每次触发都重置定时器，沉默超过 wait 才真正执行（场景：搜索建议）；throttle（时间戳版）：每 wait ms 最多执行一次（场景：scroll/mousemove）</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
-
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../packages/shared/demo-log.js"></script>
 
 <h3>1. 防抖：触发 n 次只在最后一次后执行（适合：搜索建议、按钮防连点）</h3>
   <input id="searchInput" placeholder="输入关键词搜索..." />
@@ -67,56 +58,60 @@
   <div class="box" id="throttleBox">移动鼠标试试...</div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    // ===== 防抖 =====
-    // 关键点：每次触发都重置定时器；只有"沉默"超过 wait 才会真正执行
-    function debounce(fn, wait) {
+      // ===== 防抖 =====
+      // 关键点：每次触发都重置定时器；只有"沉默"超过 wait 才会真正执行
+      function debounce(fn, wait) {
       let timer = null;
       return function (...args) {
-        clearTimeout(timer);
-        timer = setTimeout(() => fn.apply(this, args), wait);
+      clearTimeout(timer);
+      timer = setTimeout(() => fn.apply(this, args), wait);
       };
-    }
-
-    // ===== 节流（时间戳版）=====
-    function throttle(fn, wait) {
+      }
+      
+      // ===== 节流（时间戳版）=====
+      function throttle(fn, wait) {
       let last = 0;
       return function (...args) {
-        const now = Date.now();
-        if (now - last >= wait) {
-          last = now;
-          fn.apply(this, args);
-        }
+      const now = Date.now();
+      if (now - last >= wait) {
+      last = now;
+      fn.apply(this, args);
+      }
       };
-    }
-
-    // ===== 节流（定时器版，trailing 调用）=====
-    function throttleTimer(fn, wait) {
+      }
+      
+      // ===== 节流（定时器版，trailing 调用）=====
+      function throttleTimer(fn, wait) {
       let timer = null;
       return function (...args) {
-        if (timer) return;
-        timer = setTimeout(() => {
-          fn.apply(this, args);
-          timer = null;
-        }, wait);
+      if (timer) return;
+      timer = setTimeout(() => {
+      fn.apply(this, args);
+      timer = null;
+      }, wait);
       };
-    }
-
-    // ===== 测试：防抖 =====
-    const debounceBox = document.getElementById("debounceBox");
-    const handleSearch = debounce(function (e) {
+      }
+      
+      // ===== 测试：防抖 =====
+      const debounceBox = document.getElementById("debounceBox");
+      const handleSearch = debounce(function (e) {
       debounceBox.textContent = "搜索：" + e.target.value + "（" + new Date().toLocaleTimeString() + "）";
-    }, 500);
-    document.getElementById("searchInput").addEventListener("input", handleSearch);
-
-    // ===== 测试：节流 =====
-    const throttleBox = document.getElementById("throttleBox");
-    const handleMove = throttle(function (e) {
+      }, 500);
+      document.getElementById("searchInput").addEventListener("input", handleSearch);
+      
+      // ===== 测试：节流 =====
+      const throttleBox = document.getElementById("throttleBox");
+      const handleMove = throttle(function (e) {
       throttleBox.textContent = `(${e.clientX}, ${e.clientY}) at ${Date.now()}`;
-    }, 300);
-    document.addEventListener("mousemove", handleMove);
-  </script>
+      }, 300);
+      document.addEventListener("mousemove", handleMove);
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -128,16 +123,14 @@
         <a href="./%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA.html">加权随机 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

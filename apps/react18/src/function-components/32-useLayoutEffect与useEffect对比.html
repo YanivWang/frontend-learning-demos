@@ -14,38 +14,39 @@
     - 面试中如何简洁讲清 useLayoutEffect 与 useEffect 对比
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>React · useLayoutEffect 对比</title>
-  <script src="../../libs/react.development.js"></script>
-  <script src="../../libs/react-dom.development.js"></script>
-  <script src="../../libs/babel.min.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React · useLayoutEffect 对比</title>
+    <script src="../../libs/react.development.js"></script>
+    <script src="../../libs/react-dom.development.js"></script>
+    <script src="../../libs/babel.min.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>useLayoutEffect 与 useEffect 对比</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li><code>useEffect</code> 在浏览器绘制后异步执行，不阻塞视觉更新。</li>
-      <li>useLayoutEffect 在 DOM 变更后、浏览器绘制前同步执行。</li>
-      <li>需要同步读/写 DOM 布局（测量尺寸、避免闪烁）时用 useLayoutEffect。</li>
-      <li>大多数数据请求、订阅等副作用用 <code>useEffect</code> 即可。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>useEffect 在浏览器绘制后异步执行？</strong> <code>useEffect</code> 在浏览器绘制后异步执行，不阻塞视觉更新；useLayoutEffect 在 DOM 变更后、浏览器绘制前同步执行</li>
-      <li><strong>useLayoutEffect 在 DOM 变更后、浏览器绘制前同步执行？</strong> <code>useEffect</code> 在浏览器绘制后异步执行，不阻塞视觉更新；useLayoutEffect 在 DOM 变更后、浏览器绘制前同步执行</li>
-      <li><strong>需要同步读/写 DOM 布局（测量尺寸、避免闪烁）时用 useLayoutEff？</strong> 需要同步读/写 DOM 布局（测量尺寸、避免闪烁）时用 useLayoutEffect</li>
-      <li><strong>大多数数据请求、订阅等副作用用 useEffect 即可？</strong> 大多数数据请求、订阅等副作用用 <code>useEffect</code> 即可</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>useEffect</code> 在浏览器绘制后异步执行，不阻塞视觉更新。</li>
+          <li>useLayoutEffect 在 DOM 变更后、浏览器绘制前同步执行。</li>
+          <li>需要同步读/写 DOM 布局（测量尺寸、避免闪烁）时用 useLayoutEffect。</li>
+          <li>大多数数据请求、订阅等副作用用 <code>useEffect</code> 即可。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>useEffect 在浏览器绘制后异步执行？</strong> <code>useEffect</code> 在浏览器绘制后异步执行，不阻塞视觉更新；useLayoutEffect 在 DOM 变更后、浏览器绘制前同步执行</li>
+          <li><strong>useLayoutEffect 在 DOM 变更后、浏览器绘制前同步执行？</strong> <code>useEffect</code> 在浏览器绘制后异步执行，不阻塞视觉更新；useLayoutEffect 在 DOM 变更后、浏览器绘制前同步执行</li>
+          <li><strong>需要同步读/写 DOM 布局（测量尺寸、避免闪烁）时用 useLayoutEff？</strong> 需要同步读/写 DOM 布局（测量尺寸、避免闪烁）时用 useLayoutEffect</li>
+          <li><strong>大多数数据请求、订阅等副作用用 useEffect 即可？</strong> 大多数数据请求、订阅等副作用用 <code>useEffect</code> 即可</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -53,67 +54,72 @@
 <div id="root"></div>
 
     
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script type="text/babel">
-    const { useEffect, useLayoutEffect, useRef, useState } = React;
-
-    function Tooltip({ text }) {
+      const { useEffect, useLayoutEffect, useRef, useState } = React;
+      
+      function Tooltip({ text }) {
       const boxRef = useRef(null);
       const [top, setTop] = useState(0);
-
+      
       // 绘制前调整位置，避免 tooltip 先出现在错误位置再跳动
       useLayoutEffect(() => {
-        if (!boxRef.current) return;
-        const rect = boxRef.current.getBoundingClientRect();
-        if (rect.bottom > window.innerHeight - 40) {
-          setTop(-48);
-        } else {
-          setTop(24);
-        }
+      if (!boxRef.current) return;
+      const rect = boxRef.current.getBoundingClientRect();
+      if (rect.bottom > window.innerHeight - 40) {
+      setTop(-48);
+      } else {
+      setTop(24);
+      }
       }, [text]);
-
+      
       useEffect(() => {
-        console.log("useEffect: 绘制完成后执行，适合请求/订阅");
+      console.log("useEffect: 绘制完成后执行，适合请求/订阅");
       }, [text]);
-
+      
       return (
-        <div style={{ position: "relative", marginTop: 120 }}>
-          <button>布局锚点</button>
-          <div
-            ref={boxRef}
-            style={{
-              position: "absolute",
-              top,
-              left: 0,
-              background: "#333",
-              color: "#fff",
-              padding: "4px 8px",
-              borderRadius: 4
-            }}
-          >
-            {text}
-          </div>
-        </div>
+      <div style={{ position: "relative", marginTop: 120 }}>
+      <button>布局锚点</button>
+      <div
+      ref={boxRef}
+      style={{
+      position: "absolute",
+      top,
+      left: 0,
+      background: "#333",
+      color: "#fff",
+      padding: "4px 8px",
+      borderRadius: 4
+      }}
+      >
+      {text}
+      </div>
+      </div>
       );
-    }
-
-    function App() {
+      }
+      
+      function App() {
       const [text, setText] = useState("短提示");
-
+      
       return (
-        <section>
-          <h1>useLayoutEffect 与 useEffect</h1>
-
-          <button onClick={() => setText(text === "短提示" ? "这是一段更长的提示文字" : "短提示")}>
-            切换 tooltip 文案
-          </button>
-          <Tooltip text={text} />
-          <p>面试回答: useLayoutEffect 同步阻塞绘制，仅用于 DOM 测量/同步布局；其余用 useEffect。</p>
-        </section>
+      <section>
+      <h1>useLayoutEffect 与 useEffect</h1>
+      
+      <button onClick={() => setText(text === "短提示" ? "这是一段更长的提示文字" : "短提示")}>
+      切换 tooltip 文案
+      </button>
+      <Tooltip text={text} />
+      <p>面试回答: useLayoutEffect 同步阻塞绘制，仅用于 DOM 测量/同步布局；其余用 useEffect。</p>
+      </section>
       );
-    }
-
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-  </script>
+      }
+      
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
@@ -124,16 +130,14 @@
         <a href="./33-props%E6%B4%BE%E7%94%9F%E7%8A%B6%E6%80%81%E4%B8%8Ekey%E9%87%8D%E7%BD%AE.html">props派生状态与key重置 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

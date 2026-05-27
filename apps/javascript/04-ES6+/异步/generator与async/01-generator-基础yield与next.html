@@ -13,93 +13,84 @@
     - 面试中如何简洁讲清 generator 基础：yield 与 next
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>generator 基础 yield 与 next</title>
     <link rel="stylesheet" href="../../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>generator 基础：yield 与 next</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>function* 定义生成器，调用后返回「迭代器对象」，函数体不会立即执行。</li>
-      <li>每次 .next() 推进到下一个 yield，返回 { value, done }。</li>
-      <li>普通对象没有默认迭代器；<code>Array</code> / <code>Map</code> / <code>Set</code> / String 等内置可迭代对象有 <code>Symbol</code>.iterator。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>function* 定义生成器？</strong> function* 定义生成器，调用后返回「迭代器对象」，函数体不会立即执行</li>
-      <li><strong>每次 .next() 推进到下一个 yield？</strong> 每次 .next() 推进到下一个 yield，返回 { value, done }</li>
-      <li><strong>普通对象没有默认迭代器？</strong> 普通对象没有默认迭代器；<code>Array</code> / <code>Map</code> / <code>Set</code> / String 等内置可迭代对象有 <code>Symbol</code>.iterator</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>function* 定义生成器，调用后返回「迭代器对象」，函数体不会立即执行。</li>
+          <li>每次 .next() 推进到下一个 yield，返回 { value, done }。</li>
+          <li>普通对象没有默认迭代器；<code>Array</code> / <code>Map</code> / <code>Set</code> / String 等内置可迭代对象有 <code>Symbol</code>.iterator。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>function* 定义生成器？</strong> function* 定义生成器，调用后返回「迭代器对象」，函数体不会立即执行</li>
+          <li><strong>每次 .next() 推进到下一个 yield？</strong> 每次 .next() 推进到下一个 yield，返回 { value, done }</li>
+          <li><strong>普通对象没有默认迭代器？</strong> 普通对象没有默认迭代器；<code>Array</code> / <code>Map</code> / <code>Set</code> / String 等内置可迭代对象有 <code>Symbol</code>.iterator</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
-    // function* 声明一个 generator 函数
-    function* generator1() {
-        // yield 定义不同的内部状态
-        yield 'wang';
-        yield 'cheng';
-        return 'ending';
-    }
-
-    // 调用 generator 函数返回「迭代器对象」，并不会立即执行函数体
-    // 每次调用 .next() 推进到下一个 yield，返回 { value, done }
-    var hw = generator1();
-
-    console.log(hw.next()); // { value: 'wang',  done: false }
-    console.log(hw.next()); // { value: 'cheng', done: false }
-    console.log(hw.next()); // { value: 'ending',done: true }
-    console.log(hw.next()); // { value: undefined, done: true }
-
-    // 普通对象没有默认迭代器；用 Symbol.iterator 手动实现可迭代对象
-    let a = {
-        from: 1,
-        to: 3,
-        [Symbol.iterator]() {
-            let current = this.from;
-            const last = this.to;
-            return {
-                next() {
-                    return current <= last
-                        ? { value: current++, done: false }
-                        : { value: undefined, done: true };
-                }
-            };
-        }
-    };
-
-    const it = a[Symbol.iterator]();
-    console.log(it.next()); // { value: 1, done: false }
-    console.log(it.next()); // { value: 2, done: false }
-    console.log(it.next()); // { value: 3, done: false }
-    console.log(it.next()); // { value: undefined, done: true }
-
-    // 实现 Symbol.iterator 后可以直接用 for..of / 展开运算
-    for (const n of a) console.log('for..of', n);
-    console.log('spread', [...a]);
-</script>
+      // function* 声明一个 generator 函数
+      function* generator1() {
+      // yield 定义不同的内部状态
+      yield 'wang';
+      yield 'cheng';
+      return 'ending';
+      }
+      
+      // 调用 generator 函数返回「迭代器对象」，并不会立即执行函数体
+      // 每次调用 .next() 推进到下一个 yield，返回 { value, done }
+      var hw = generator1();
+      
+      console.log(hw.next()); // { value: 'wang',  done: false }
+      console.log(hw.next()); // { value: 'cheng', done: false }
+      console.log(hw.next()); // { value: 'ending',done: true }
+      console.log(hw.next()); // { value: undefined, done: true }
+      
+      // 普通对象没有默认迭代器；用 Symbol.iterator 手动实现可迭代对象
+      let a = {
+      from: 1,
+      to: 3,
+      [Symbol.iterator]() {
+      let current = this.from;
+      const last = this.to;
+      return {
+      next() {
+      return current <= last
+      ? { value: current++, done: false }
+      : { value: undefined, done: true };
+      }
+      };
+      }
+      };
+      
+      const it = a[Symbol.iterator]();
+      console.log(it.next()); // { value: 1, done: false }
+      console.log(it.next()); // { value: 2, done: false }
+      console.log(it.next()); // { value: 3, done: false }
+      console.log(it.next()); // { value: undefined, done: true }
+      
+      // 实现 Symbol.iterator 后可以直接用 for..of / 展开运算
+      for (const n of a) console.log('for..of', n);
+      console.log('spread', [...a]);
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -111,16 +102,14 @@
         <a href="./02-async-await-%E4%B8%B2%E8%A1%8C%E6%B5%81%E7%A8%8B.html">async-await-串行流程 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

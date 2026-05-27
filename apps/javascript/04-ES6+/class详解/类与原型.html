@@ -13,91 +13,82 @@
     - 面试中如何简洁讲清 类的字段、方法与原型对象关系
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>类与原型</title>
-      <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
+  </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>类的字段、方法与原型对象关系</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>公有/私有实例字段「每实例一份」；实例方法挂在 prototype 上「所有实例共享」。</li>
-      <li>在 constructor 里给 <code>this</code> 赋方法，每个实例会各持有一份，浪费内存。</li>
-      <li>私有字段只能在类体外通过类内部代码访问，且只能用 <code>this</code>.#field。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>公有/私有实例字段「每实例一份」？</strong> 公有/私有实例字段「每实例一份」；实例方法挂在 prototype 上「所有实例共享」</li>
-      <li><strong>在 constructor 里给 this 赋方法？</strong> 在 constructor 里给 <code>this</code> 赋方法，每个实例会各持有一份，浪费内存</li>
-      <li><strong>私有字段只能在类体外通过类内部代码访问？</strong> 私有字段只能在类体外通过类内部代码访问，且只能用 <code>this</code>.#field</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>公有/私有实例字段「每实例一份」；实例方法挂在 prototype 上「所有实例共享」。</li>
+          <li>在 constructor 里给 <code>this</code> 赋方法，每个实例会各持有一份，浪费内存。</li>
+          <li>私有字段只能在类体外通过类内部代码访问，且只能用 <code>this</code>.#field。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>公有/私有实例字段「每实例一份」？</strong> 公有/私有实例字段「每实例一份」；实例方法挂在 prototype 上「所有实例共享」</li>
+          <li><strong>在 constructor 里给 this 赋方法？</strong> 在 constructor 里给 <code>this</code> 赋方法，每个实例会各持有一份，浪费内存</li>
+          <li><strong>私有字段只能在类体外通过类内部代码访问？</strong> 私有字段只能在类体外通过类内部代码访问，且只能用 <code>this</code>.#field</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
-
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../packages/shared/demo-log.js"></script>
 
     <!-- SCRIPT_START -->
     <script>
       // 除了 # 修饰的私有字段，其他都是公有的；静态字段也参与原型继承
       class Person {
-        static userType = "whitePerson";
-        static #userTypeName = "wp";
-
-        // 公有/私有实例字段：每个实例各一份
-        userAge = 18;
-        #userAgeName = 18;
-
-        // constructor：new 时被调用；不写则使用默认空构造器
-        constructor(userName, weight) {
-          // super(userName); // 没有父类不能 super()
-
-          this.userName = userName;
-
-          // 私有字段不能通过赋值临时创建，必须在类体中预先声明
-          // this.#weight = weight;
-
-          // 反面：把方法挂在 this 上，每个实例都会有一份独立函数对象
-          this.sayhello = function(){};
-        }
-
-        // 推荐：实例方法挂 prototype 上，由所有实例共享
-        eat() {
-          // 实例方法里访问私有字段须用 this.#field
-          console.log("this.#userAgeName", this.#userAgeName);
-          console.log("I am eatting!");
-        }
+      static userType = "whitePerson";
+      static #userTypeName = "wp";
+      
+      // 公有/私有实例字段：每个实例各一份
+      userAge = 18;
+      #userAgeName = 18;
+      
+      // constructor：new 时被调用；不写则使用默认空构造器
+      constructor(userName, weight) {
+      // super(userName); // 没有父类不能 super()
+      
+      this.userName = userName;
+      
+      // 私有字段不能通过赋值临时创建，必须在类体中预先声明
+      // this.#weight = weight;
+      
+      // 反面：把方法挂在 this 上，每个实例都会有一份独立函数对象
+      this.sayhello = function(){};
       }
-
+      
+      // 推荐：实例方法挂 prototype 上，由所有实例共享
+      eat() {
+      // 实例方法里访问私有字段须用 this.#field
+      console.log("this.#userAgeName", this.#userAgeName);
+      console.log("I am eatting!");
+      }
+      }
+      
       console.log(Person);
       console.log(typeof Person);
-
+      
       const p1 = new Person();
       p1.eat();
-
+      
       // 实例访问类静态属性返回 undefined（静态只能用类名访问）
       console.log("p1.userType", p1.userType);
-
+      
       // 类外部无法直接访问实例的私有字段
       // console.log("p1.#userAgeName", p1.#userAgeName);
-
+      
       console.log("Person.userType", Person.userType);
     </script>
     <!-- SCRIPT_END -->
@@ -111,16 +102,14 @@
         <a href="./%E7%A7%81%E6%9C%89%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0.html">私有构造函数 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

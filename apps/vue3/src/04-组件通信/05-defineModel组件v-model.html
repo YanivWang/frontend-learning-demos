@@ -13,6 +13,7 @@
     - 面试中如何简洁讲清 defineModel（Vue 3.4+）
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
   <head>
@@ -21,36 +22,36 @@
     <title>Vue3 · defineModel 组件 v-model</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      input { padding: 6px 10px; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 820px; }
-      .grid { display: grid; gap: 12px; }
+    body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+    input { padding: 6px 10px; }
+    code, pre { background: #f6f8fa; border-radius: 6px; }
+    code { padding: 2px 5px; }
+    pre { padding: 12px; overflow: auto; }
+    .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 820px; }
+    .grid { display: grid; gap: 12px; }
     </style>
-      <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
+  </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>defineModel（Vue 3.4+）</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li><code>defineModel</code> 是 &lt;<code>script setup</code>&gt; 编译宏，简化组件 <code>v-model</code> 双向绑定。</li>
-      <li>编译后等价于 modelValue prop + update:modelValue emit 的 <code>computed</code> 读写。</li>
-      <li>全局构建无 SFC 编译器，本页用可运行等价写法 + SFC 片段对照。</li>
-      <li><code>defineModel</code> 是 &lt;<code>script setup</code>&gt; 编译宏，简化组件 <code>v-model</code> 双向绑定（补充）。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>defineModel 是 &lt;script setup&gt; 编译宏？</strong> <code>defineModel</code> 是 &lt;<code>script setup</code>&gt; 编译宏，简化组件 <code>v-model</code> 双向绑定</li>
-      <li><strong>编译后等价于 modelValue prop + update？</strong> 编译后等价于 modelValue prop + update:modelValue emit 的 <code>computed</code> 读写</li>
-      <li><strong>全局构建无 SFC 编译器？</strong> 全局构建无 SFC 编译器，本页用可运行等价写法 + SFC 片段对照</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>defineModel</code> 是 &lt;<code>script setup</code>&gt; 编译宏，简化组件 <code>v-model</code> 双向绑定。</li>
+          <li>编译后等价于 modelValue prop + update:modelValue emit 的 <code>computed</code> 读写。</li>
+          <li>全局构建无 SFC 编译器，本页用可运行等价写法 + SFC 片段对照。</li>
+          <li><code>defineModel</code> 是 &lt;<code>script setup</code>&gt; 编译宏，简化组件 <code>v-model</code> 双向绑定（补充）。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>defineModel 是 &lt;script setup&gt; 编译宏？</strong> <code>defineModel</code> 是 &lt;<code>script setup</code>&gt; 编译宏，简化组件 <code>v-model</code> 双向绑定</li>
+          <li><strong>编译后等价于 modelValue prop + update？</strong> 编译后等价于 modelValue prop + update:modelValue emit 的 <code>computed</code> 读写</li>
+          <li><strong>全局构建无 SFC 编译器？</strong> 全局构建无 SFC 编译器，本页用可运行等价写法 + SFC 片段对照</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -70,69 +71,73 @@
     </div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
       const { createApp, ref, computed } = Vue;
-
+      
       // defineModel() 编译后的等价运行时写法
       function useVModel(props, emit, key = "modelValue") {
-        const event = key === "modelValue" ? "update:modelValue" : `update:${key}`;
-        return computed({
-          get: () => props[key],
-          set: (value) => emit(event, value),
-        });
+      const event = key === "modelValue" ? "update:modelValue" : `update:${key}`;
+      return computed({
+      get: () => props[key],
+      set: (value) => emit(event, value),
+      });
       }
-
+      
       const ModelInput = {
-        props: { modelValue: String },
-        emits: ["update:modelValue"],
-        setup(props, { emit }) {
-          const model = useVModel(props, emit);
-          return { model };
-        },
-        template: `
-          <label>
-            默认 defineModel 等价：
-            <input v-model="model" />
-          </label>
-        `,
+      props: { modelValue: String },
+      emits: ["update:modelValue"],
+      setup(props, { emit }) {
+      const model = useVModel(props, emit);
+      return { model };
+      },
+      template: `
+      <label>
+      默认 defineModel 等价：
+      <input v-model="model" />
+      </label>
+      `,
       };
-
+      
       const NamedModelInput = {
-        props: { title: String },
-        emits: ["update:title"],
-        setup(props, { emit }) {
-          const model = useVModel(props, emit, "title");
-          return { model };
-        },
-        template: `
-          <label>
-            命名 defineModel('title') 等价：
-            <input v-model="model" />
-          </label>
-        `,
+      props: { title: String },
+      emits: ["update:title"],
+      setup(props, { emit }) {
+      const model = useVModel(props, emit, "title");
+      return { model };
+      },
+      template: `
+      <label>
+      命名 defineModel('title') 等价：
+      <input v-model="model" />
+      </label>
+      `,
       };
-
+      
       createApp({
-        components: { ModelInput, NamedModelInput },
-        setup() {
-          const title = ref("Vue 3.4 defineModel");
-          const subtitle = ref("命名 v-model:title");
-          const sfcSnippet = [
-            "<!-- 默认模型 -->",
-            "&lt;script setup&gt;",
-            "const model = defineModel()",
-            "&lt;/script&gt;",
-            '<input v-model="model" />',
-            "",
-            "<!-- 命名模型 -->",
-            "&lt;script setup&gt;",
-            "const title = defineModel('title')",
-            "&lt;/script&gt;",
-            '<input v-model="title" />',
-          ].join("\n");
-          return { title, subtitle, sfcSnippet };
-        },
+      components: { ModelInput, NamedModelInput },
+      setup() {
+      const title = ref("Vue 3.4 defineModel");
+      const subtitle = ref("命名 v-model:title");
+      const sfcSnippet = [
+      "<!-- 默认模型 -->",
+      "&lt;script setup&gt;",
+      "const model = defineModel()",
+      "&lt;/script&gt;",
+      '<input v-model="model" />',
+      "",
+      "<!-- 命名模型 -->",
+      "&lt;script setup&gt;",
+      "const title = defineModel('title')",
+      "&lt;/script&gt;",
+      '<input v-model="title" />',
+      ].join("\n");
+      return { title, subtitle, sfcSnippet };
+      },
       }).mount("#app");
     </script>
     <!-- SCRIPT_END -->
@@ -146,16 +151,14 @@
         <a href="./06-props%E8%A7%A3%E6%9E%84%E4%BF%9D%E6%8C%81%E5%93%8D%E5%BA%94%E5%BC%8F.html">props解构保持响应式 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

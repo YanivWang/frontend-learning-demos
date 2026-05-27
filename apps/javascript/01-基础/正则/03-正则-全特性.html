@@ -11,108 +11,99 @@
     - 命名捕获组有什么用？
   相关: 正则-URL路径匹配, 正则-去标点
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>正则表达式全特性</title>
-  <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>正则表达式全特性</title>
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-  <style>
+    <style>
     body { font-family: system-ui, monospace; margin: 1.5rem; line-height: 1.7; }
     code { background: #f5f5f5; padding: 1px 4px; border-radius: 3px; }
     .hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; font-family: system-ui, sans-serif; }
-  </style>
-</head>
-<body class="demo-page">
+    </style>
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>正则表达式全特性演示</h1>
-      <p class="hint">结构：<code>/pattern/flags</code> 或 <code>new RegExp(pattern, flags)</code>。下方同步输出 + Console 均可查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li><strong>flags</strong>：i 忽略大小写；g 全局+lastIndex；m 多行 ^$；s dotAll；u Unicode；y sticky。</li>
-      <li>量词 * + ? {n,m} 默认贪婪；加 ? 变非贪婪（懒惰）。</li>
-      <li>捕获 () 提取分组；非捕获 (?:)；命名 (?&lt;name&gt;…)。</li>
-      <li>零宽断言：(?=) 前瞻；(?!) 负前瞻；(?&lt;=) 后顾；(?&lt;!) 负后顾——只判断不消耗字符。</li>
-      <li>边界 \b 单词边界；\B 非边界。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>常用 flags？</strong> i/g/m 最常见；u 处理 Unicode；y 从 lastIndex 粘性匹配。g 影响 test/exec 的 lastIndex。</li>
-      <li><strong>lookahead vs lookbehind？</strong> (?=pattern) 后面是 pattern；(?&lt;=pattern) 前面是 pattern。都不消耗输入字符。</li>
-      <li><strong>命名捕获？</strong> (?&lt;year&gt;\d{4}) 结果在 match.groups.year，比 <body> 可读、不怕分组顺序变化。</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li><strong>flags</strong>：i 忽略大小写；g 全局+lastIndex；m 多行 ^$；s dotAll；u Unicode；y sticky。</li>
+          <li>量词 * + ? {n,m} 默认贪婪；加 ? 变非贪婪（懒惰）。</li>
+          <li>捕获 () 提取分组；非捕获 (?:)；命名 (?&lt;name&gt;…)。</li>
+          <li>零宽断言：(?=) 前瞻；(?!) 负前瞻；(?&lt;=) 后顾；(?&lt;!) 负后顾——只判断不消耗字符。</li>
+          <li>边界 \b 单词边界；\B 非边界。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>常用 flags？</strong> i/g/m 最常见；u 处理 Unicode；y 从 lastIndex 粘性匹配。g 影响 test/exec 的 lastIndex。</li>
+          <li><strong>lookahead vs lookbehind？</strong> (?=pattern) 后面是 pattern；(?&lt;=pattern) 前面是 pattern。都不消耗输入字符。</li>
+          <li><strong>命名捕获？</strong> (?&lt;year&gt;\d{4}) 结果在 match.groups.year，比 <body> 可读、不怕分组顺序变化。</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
-    // ============ 1. 修饰符（flags）============
-    // i 忽略大小写  g 全局  m 多行  s 让 . 匹配换行  u Unicode  y 粘性匹配
-    const testStr = "gergre123MMffMmm \n 435g4y6gmmgg";
-    const reg = /m/ig;
-    console.log("match(/m/ig):", testStr.match(reg));   // 全部命中
-    console.log("search(/m/ig):", testStr.search(reg));  // 第一个命中下标
-    console.log("replace:", testStr.replace(/m/ig, "A"));
-
-    // ============ 2. 量词 ============
-    // ? 0~1 次   * 0~∞   + 1~∞   {n} 恰好 n 次   {n,m} n~m 次
-    console.log("/zo*/ on 'zod':", "zod".match(/zo*/));      // ['zo']
-    console.log("/zo{3,}/:", "zod".match(/zo{3,}/));         // null
-    console.log("/zo{1,3}/:", "zoooooo".match(/zo{1,3}/));   // ['zooo']
-
-    // ============ 3. 字符组 / 分组 / 选择 ============
-    console.log("/b(a|h)g/g:", "bagbhg".match(/b(a|h)g/g)); // ['bag', 'bhg']
-    console.log("/a[bed]c/:", "abc aec adc".match(/a[bed]c/gi));
-
-    // ============ 4. 贪婪 vs 非贪婪 ============
-    const html = "<h1 class='t'><span>hi</span></h1>";
-    console.log("贪婪 <h1.*>:", html.match(/<h1.*>/)?.[0]);    // 整个
-    console.log("非贪婪 <h1.*?>:", html.match(/<h1.*?>/)?.[0]); // 只到第一个 >
-
-    // ============ 5. 边界 ============
-    // ^ 行首  $ 行尾  \b 单词边界  \B 非单词边界
-    console.log("/^a.*d$/:", "abbo oodd".match(/^a.*d$/)); // 匹配整串
-    console.log("\\b 边界:", "Chaptercha chafr".match(/\bCha/gi));
-    console.log("\\B 非边界:", "Chapter aptitude".match(/\Bapt/g));
-
-    // ============ 6. 元字符 ============
-    // \d 数字   \D 非数字   \w 字母数字下划线   \W 非\w
-    // \s 空白   \S 非空白   .  除 \n 外任意字符
-    // 想匹配"任意字符（含换行）"：[\s\S] 或 [\w\W] 或 (.|\n)
-    console.log("\\d+:", "abc123def".match(/\d+/g));
-
-    // ============ 7. 反向引用 \1 \2 ============
-    // 查找重复单词
-    const dup = "Is is the cost of of gasoline going up up up";
-    console.log("重复单词:", dup.match(/\b([a-z]+) \1\b/ig));
-
-    // ============ 8. exec / test 的游标问题 ============
-    // 带 g 修饰符的正则会维护 lastIndex —— 多次调用 test/exec 时要小心
-    const g = /\d+/g;
-    console.log(g.test("abc123"), g.lastIndex); // true, 6
-    console.log(g.test("abc123"), g.lastIndex); // false, 0 —— 第二次从 6 之后找不到
-    console.log(g.test("abc123"), g.lastIndex); // true, 6
-
-    // ============ 9. 命名捕获组（ES2018）============
-    const date = "2025-12-31";
-    const m = date.match(/(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/);
-    console.log("命名捕获:", m.groups); // { year: '2025', month: '12', day: '31' }
-  </script>
+      // ============ 1. 修饰符（flags）============
+      // i 忽略大小写  g 全局  m 多行  s 让 . 匹配换行  u Unicode  y 粘性匹配
+      const testStr = "gergre123MMffMmm \n 435g4y6gmmgg";
+      const reg = /m/ig;
+      console.log("match(/m/ig):", testStr.match(reg));   // 全部命中
+      console.log("search(/m/ig):", testStr.search(reg));  // 第一个命中下标
+      console.log("replace:", testStr.replace(/m/ig, "A"));
+      
+      // ============ 2. 量词 ============
+      // ? 0~1 次   * 0~∞   + 1~∞   {n} 恰好 n 次   {n,m} n~m 次
+      console.log("/zo*/ on 'zod':", "zod".match(/zo*/));      // ['zo']
+      console.log("/zo{3,}/:", "zod".match(/zo{3,}/));         // null
+      console.log("/zo{1,3}/:", "zoooooo".match(/zo{1,3}/));   // ['zooo']
+      
+      // ============ 3. 字符组 / 分组 / 选择 ============
+      console.log("/b(a|h)g/g:", "bagbhg".match(/b(a|h)g/g)); // ['bag', 'bhg']
+      console.log("/a[bed]c/:", "abc aec adc".match(/a[bed]c/gi));
+      
+      // ============ 4. 贪婪 vs 非贪婪 ============
+      const html = "<h1 class='t'><span>hi</span></h1>";
+      console.log("贪婪 <h1.*>:", html.match(/<h1.*>/)?.[0]);    // 整个
+      console.log("非贪婪 <h1.*?>:", html.match(/<h1.*?>/)?.[0]); // 只到第一个 >
+      
+      // ============ 5. 边界 ============
+      // ^ 行首  $ 行尾  \b 单词边界  \B 非单词边界
+      console.log("/^a.*d$/:", "abbo oodd".match(/^a.*d$/)); // 匹配整串
+      console.log("\\b 边界:", "Chaptercha chafr".match(/\bCha/gi));
+      console.log("\\B 非边界:", "Chapter aptitude".match(/\Bapt/g));
+      
+      // ============ 6. 元字符 ============
+      // \d 数字   \D 非数字   \w 字母数字下划线   \W 非\w
+      // \s 空白   \S 非空白   .  除 \n 外任意字符
+      // 想匹配"任意字符（含换行）"：[\s\S] 或 [\w\W] 或 (.|\n)
+      console.log("\\d+:", "abc123def".match(/\d+/g));
+      
+      // ============ 7. 反向引用 \1 \2 ============
+      // 查找重复单词
+      const dup = "Is is the cost of of gasoline going up up up";
+      console.log("重复单词:", dup.match(/\b([a-z]+) \1\b/ig));
+      
+      // ============ 8. exec / test 的游标问题 ============
+      // 带 g 修饰符的正则会维护 lastIndex —— 多次调用 test/exec 时要小心
+      const g = /\d+/g;
+      console.log(g.test("abc123"), g.lastIndex); // true, 6
+      console.log(g.test("abc123"), g.lastIndex); // false, 0 —— 第二次从 6 之后找不到
+      console.log(g.test("abc123"), g.lastIndex); // true, 6
+      
+      // ============ 9. 命名捕获组（ES2018）============
+      const date = "2025-12-31";
+      const m = date.match(/(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/);
+      console.log("命名捕获:", m.groups); // { year: '2025', month: '12', day: '31' }
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -126,16 +117,14 @@
         <a href="./04-%E6%AD%A3%E5%88%99-%E5%8E%BB%E6%A0%87%E7%82%B9.html">正则-去标点 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

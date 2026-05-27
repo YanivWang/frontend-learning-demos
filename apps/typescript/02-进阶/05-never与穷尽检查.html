@@ -14,40 +14,41 @@
     - 面试中如何简洁讲清 never、穷尽检查与 assertNever
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TypeScript · never 与穷尽检查</title>
-  <style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TypeScript · never 与穷尽检查</title>
+    <style>
     body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 860px; line-height: 1.6; }
     pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
     #out { background: #f6f8fa; color: #222; }
-  </style>
+    </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
   </head>
-<body class="demo-page">
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>never 与穷尽检查</h1>
       <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>never 表示不可能出现的类型，常见于抛错函数、死循环和被完全收窄后的分支。</li>
-      <li>discriminated <code>union</code> 配合 switch 可以做穷尽检查。</li>
-      <li>assertNever 可以在新增联合成员但漏改分支时让编译器报错。</li>
-      <li>面试常问 never 和 void 的区别：void 是无返回值，never 是不会正常返回。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>never 表示不可能出现的类型？</strong> never 表示不可能出现的类型，常见于抛错函数、死循环和被完全收窄后的分支；面试常问 never 和 void 的区别：void 是无返回值，never 是不会正常返回</li>
-      <li><strong>discriminated union 配合 switch 可以做穷尽检查？</strong> discriminated <code>union</code> 配合 switch 可以做穷尽检查</li>
-      <li><strong>assertNever 可以在新增联合成员但漏改分支时让编译器报错？</strong> assertNever 可以在新增联合成员但漏改分支时让编译器报错</li>
-      <li><strong>面试常问 never 和 void 的区别？</strong> 面试常问 never 和 void 的区别：void 是无返回值，never 是不会正常返回</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>never 表示不可能出现的类型，常见于抛错函数、死循环和被完全收窄后的分支。</li>
+          <li>discriminated <code>union</code> 配合 switch 可以做穷尽检查。</li>
+          <li>assertNever 可以在新增联合成员但漏改分支时让编译器报错。</li>
+          <li>面试常问 never 和 void 的区别：void 是无返回值，never 是不会正常返回。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>never 表示不可能出现的类型？</strong> never 表示不可能出现的类型，常见于抛错函数、死循环和被完全收窄后的分支；面试常问 never 和 void 的区别：void 是无返回值，never 是不会正常返回</li>
+          <li><strong>discriminated union 配合 switch 可以做穷尽检查？</strong> discriminated <code>union</code> 配合 switch 可以做穷尽检查</li>
+          <li><strong>assertNever 可以在新增联合成员但漏改分支时让编译器报错？</strong> assertNever 可以在新增联合成员但漏改分支时让编译器报错</li>
+          <li><strong>面试常问 never 和 void 的区别？</strong> 面试常问 never 和 void 的区别：void 是无返回值，never 是不会正常返回</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -71,29 +72,33 @@ function reducer(state: number, action: Action): number {
   <pre id="out"></pre>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    function assertNever(action) {
+      function assertNever(action) {
       throw new Error(`Unhandled action: ${JSON.stringify(action)}`);
-    }
-
-    function reducer(state, action) {
-      switch (action.type) {
-        case "increment":
-          return state + action.payload;
-        case "reset":
-          return 0;
-        default:
-          return assertNever(action);
       }
-    }
-
-    document.getElementById("out").textContent = [
+      
+      function reducer(state, action) {
+      switch (action.type) {
+      case "increment":
+      return state + action.payload;
+      case "reset":
+      return 0;
+      default:
+      return assertNever(action);
+      }
+      }
+      
+      document.getElementById("out").textContent = [
       `increment: ${reducer(1, { type: "increment", payload: 2 })}`,
       `reset: ${reducer(3, { type: "reset" })}`,
       "面试重点：新增 action 后忘记写 case，assertNever(action) 会让 TS 在 default 分支暴露问题。",
-    ].join("\n");
-  </script>
+      ].join("\n");
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -105,16 +110,14 @@ function reducer(state: number, action: Action): number {
         <a href="./06-%E6%89%8B%E5%86%99Utility-Types%E7%BB%83%E4%B9%A0.html">手写Utility-Types练习 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

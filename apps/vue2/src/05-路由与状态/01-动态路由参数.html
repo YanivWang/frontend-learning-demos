@@ -13,35 +13,36 @@
     - 面试中如何简洁讲清 动态路径参数 :id 与 $route.params
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>vue-router · 动态路径参数</title>
     <script src="../../libs/vue.js"></script>
     <script src="../../libs/vue-router.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>动态路径参数 :id 与 $route.params</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>path: &quot;/user/:id&quot; 中冒号声明参数，匹配后填入 <code>this</code>.$route.params.id。</li>
-      <li>同路由不同参数复用组件时，生命周期钩子不会重新执行；用 <code>watch</code> $route 监听。</li>
-      <li>解耦建议：通过 props: true 把 params 注入 props，组件就不依赖 $route。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>同路由不同参数复用组件时？</strong> 同路由不同参数复用组件时，生命周期钩子不会重新执行；用 <code>watch</code> $route 监听</li>
-      <li><strong>动态路径参数 :id 与 $route.params的核心概念是什么？</strong> path: &quot;/user/:id&quot; 中冒号声明参数，匹配后填入 <code>this</code>.$route.params.id；同路由不同参数复用组件时，生命周期钩子不会重新执行；用 <code>watch</code> $route 监听</li>
-      <li><strong>动态路径参数 :id 与 $route.params在实际项目里怎么用？</strong> path: &quot;/user/:id&quot; 中冒号声明参数，匹配后填入 <code>this</code>.$route.params.id；同路由不同参数复用组件时，生命周期钩子不会重新执行；用 <code>watch</code> $route 监听</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>path: &quot;/user/:id&quot; 中冒号声明参数，匹配后填入 <code>this</code>.$route.params.id。</li>
+          <li>同路由不同参数复用组件时，生命周期钩子不会重新执行；用 <code>watch</code> $route 监听。</li>
+          <li>解耦建议：通过 props: true 把 params 注入 props，组件就不依赖 $route。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>同路由不同参数复用组件时？</strong> 同路由不同参数复用组件时，生命周期钩子不会重新执行；用 <code>watch</code> $route 监听</li>
+          <li><strong>动态路径参数 :id 与 $route.params的核心概念是什么？</strong> path: &quot;/user/:id&quot; 中冒号声明参数，匹配后填入 <code>this</code>.$route.params.id；同路由不同参数复用组件时，生命周期钩子不会重新执行；用 <code>watch</code> $route 监听</li>
+          <li><strong>动态路径参数 :id 与 $route.params在实际项目里怎么用？</strong> path: &quot;/user/:id&quot; 中冒号声明参数，匹配后填入 <code>this</code>.$route.params.id；同路由不同参数复用组件时，生命周期钩子不会重新执行；用 <code>watch</code> $route 监听</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -64,56 +65,60 @@
 </div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    console.log("111");
-
-    const home = {
-        template: "<div>home</div>"
-    };
-
-    //在组件中使用$route会使之与对应的路由形成高度耦合，从而使组件只能在某些特定的URL上使用，限制了灵活性
-    //使用prop将组件和路由解耦
-    const user = {
-        watch: {
-            $route: function (to, from) {
-                console.log("111");
-            }
-        },
-        template: `<div>
-                      <span>user</span>
-                      <span>id:{{$route.params.id}}</span>
-                   </div>`
-    };
-
-    //2.定义路由
-    //component: 1.一个组件  2.Vue.extend()创建的组件构造器
-    const routes = [
-        {
-            path: "/", component: home
-        },
-        {
-            path: "/user/:id/post/:postid", component: user//使用:标记一个路径参数，当匹配到一个路由，参数值，将会被设置到this.$route.params
-        }
-    ];
-
-    //3.创建router实例，然后传入"router"配置
-    const router = new VueRouter({
-        routes
-    });
-
-    //4.创建和挂载根实例
-    //通过为根实例注入路由器：我们可以在任何组件内通过this.$router访问路由器  this.$route访问当前的路由
-    var wm = new Vue({
-        router
-    }).$mount('#app');
-
-
-    //5.注意：当使用的路由参数，从/user/wangcheng/post/123  /user/wangcheng/post/456，匹配到的是同一个组件的话，
-    //原来的组件会被复用，意味着组件的生命周期钩子不会再被调用，可以使用watch来监控路由的变化
-
-    console.log(wm);
-</script>
+      console.log("111");
+      
+      const home = {
+      template: "<div>home</div>"
+      };
+      
+      //在组件中使用$route会使之与对应的路由形成高度耦合，从而使组件只能在某些特定的URL上使用，限制了灵活性
+      //使用prop将组件和路由解耦
+      const user = {
+      watch: {
+      $route: function (to, from) {
+      console.log("111");
+      }
+      },
+      template: `<div>
+      <span>user</span>
+      <span>id:{{$route.params.id}}</span>
+      </div>`
+      };
+      
+      //2.定义路由
+      //component: 1.一个组件  2.Vue.extend()创建的组件构造器
+      const routes = [
+      {
+      path: "/", component: home
+      },
+      {
+      path: "/user/:id/post/:postid", component: user//使用:标记一个路径参数，当匹配到一个路由，参数值，将会被设置到this.$route.params
+      }
+      ];
+      
+      //3.创建router实例，然后传入"router"配置
+      const router = new VueRouter({
+      routes
+      });
+      
+      //4.创建和挂载根实例
+      //通过为根实例注入路由器：我们可以在任何组件内通过this.$router访问路由器  this.$route访问当前的路由
+      var wm = new Vue({
+      router
+      }).$mount('#app');
+      
+      
+      //5.注意：当使用的路由参数，从/user/wangcheng/post/123  /user/wangcheng/post/456，匹配到的是同一个组件的话，
+      //原来的组件会被复用，意味着组件的生命周期钩子不会再被调用，可以使用watch来监控路由的变化
+      
+      console.log(wm);
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -125,16 +130,14 @@
         <a href="./02-%E5%91%BD%E5%90%8D%E8%B7%AF%E7%94%B1.html">命名路由 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

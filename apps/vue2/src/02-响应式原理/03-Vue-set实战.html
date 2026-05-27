@@ -14,36 +14,37 @@
     - 面试中如何简洁讲清 Vue.$set 与 Object.assign 实战
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vue.$set 与 Object.assign</title>
     <script src="../../libs/vue.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vue.$set 与 Object.assign 实战</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>Vue2 不能检测「新增属性」与「数组下标赋值」，需要 Vue.set / <code>this</code>.$set 触发响应。</li>
-      <li><code>Object</code>.assign(target, source) 原地合并到已有响应式对象（如 <code>this</code>.person）仍保持响应式。</li>
-      <li>对需要整体替换的模型（如 <code>this</code>.dog），用 <code>Object</code>.assign({}, target, source) 生成新对象再赋值。</li>
-      <li>演示 defineProperty 访问器：每次访问 deerObj.weight 都会触发 set/get。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>Vue2 不能检测「新增属性」与「数组下标赋值」？</strong> Vue2 不能检测「新增属性」与「数组下标赋值」，需要 Vue.set / <code>this</code>.$set 触发响应</li>
-      <li><strong>Object.assign(target？</strong> <code>Object</code>.assign(target, source) 原地合并到已有响应式对象（如 <code>this</code>.person）仍保持响应式；对需要整体替换的模型（如 <code>this</code>.dog），用 <code>Object</code>.assign({}, target, source) 生成新对象再赋值</li>
-      <li><strong>对需要整体替换的模型（如 this.dog）？</strong> 对需要整体替换的模型（如 <code>this</code>.dog），用 <code>Object</code>.assign({}, target, source) 生成新对象再赋值</li>
-      <li><strong>演示 defineProperty 访问器？</strong> 演示 defineProperty 访问器：每次访问 deerObj.weight 都会触发 set/get</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>Vue2 不能检测「新增属性」与「数组下标赋值」，需要 Vue.set / <code>this</code>.$set 触发响应。</li>
+          <li><code>Object</code>.assign(target, source) 原地合并到已有响应式对象（如 <code>this</code>.person）仍保持响应式。</li>
+          <li>对需要整体替换的模型（如 <code>this</code>.dog），用 <code>Object</code>.assign({}, target, source) 生成新对象再赋值。</li>
+          <li>演示 defineProperty 访问器：每次访问 deerObj.weight 都会触发 set/get。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>Vue2 不能检测「新增属性」与「数组下标赋值」？</strong> Vue2 不能检测「新增属性」与「数组下标赋值」，需要 Vue.set / <code>this</code>.$set 触发响应</li>
+          <li><strong>Object.assign(target？</strong> <code>Object</code>.assign(target, source) 原地合并到已有响应式对象（如 <code>this</code>.person）仍保持响应式；对需要整体替换的模型（如 <code>this</code>.dog），用 <code>Object</code>.assign({}, target, source) 生成新对象再赋值</li>
+          <li><strong>对需要整体替换的模型（如 this.dog）？</strong> 对需要整体替换的模型（如 <code>this</code>.dog），用 <code>Object</code>.assign({}, target, source) 生成新对象再赋值</li>
+          <li><strong>演示 defineProperty 访问器？</strong> 演示 defineProperty 访问器：每次访问 deerObj.weight 都会触发 set/get</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -74,68 +75,72 @@
 </div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    new Vue({
-        el: '#app',
-        data: {
-            msg: 'response',
-            person: {
-                name: "wc"
-            },
-            dog: {
-                name: "laifu"
-            }
-        },
-        mounted: function () {
-            this._refreshPage();
-        },
-        methods: {
-            _refreshPage: function () {
-                let deerObj = {
-                    name: "deer"
-                };
-                //存储描述符: 一对set get 构成
-                Object.defineProperty(deerObj, "weight", {
-                    set: function () {
-                        console.log("set deerObj...");
-                    },
-                    get: function () {
-                        console.log("get deerObj...");
-                    }
-                });
-
-                console.log(deerObj.weight);
-                deerObj.weight = 40;
-                console.log(deerObj.weight);
-            },
-
-            onClick: function () {
-                console.log("onClick...");
-
-                //this.person.age = 18;
-                this.$set(this.person, "age", 18);
-
-                //Object.assign 方法只会从源对象中拷贝其自身的并且是可枚举的属性
-                //Object.assign 拷贝不会跳过值为null或者undefined
-                //let target = Object.assign(target, ...source);
-                let newObj = Object.assign(this.person, {
-                    "height": 172, "weight": "50kg", address: {
-                        "city": "beijing",
-                        "province": "hubei"
-                    }
-                });
-                console.log(JSON.stringify(this.person));
-
-                //将需要添加属性的模型和新增的属性对象，一起合并成一个新的对象，并且返回这个对象
-                this.dog = Object.assign({}, this.dog, {
-                    "city": "beijing",
-                    "province": "hubei"
-                })
-            }
-        }
-    });
-</script>
+      new Vue({
+      el: '#app',
+      data: {
+      msg: 'response',
+      person: {
+      name: "wc"
+      },
+      dog: {
+      name: "laifu"
+      }
+      },
+      mounted: function () {
+      this._refreshPage();
+      },
+      methods: {
+      _refreshPage: function () {
+      let deerObj = {
+      name: "deer"
+      };
+      //存储描述符: 一对set get 构成
+      Object.defineProperty(deerObj, "weight", {
+      set: function () {
+      console.log("set deerObj...");
+      },
+      get: function () {
+      console.log("get deerObj...");
+      }
+      });
+      
+      console.log(deerObj.weight);
+      deerObj.weight = 40;
+      console.log(deerObj.weight);
+      },
+      
+      onClick: function () {
+      console.log("onClick...");
+      
+      //this.person.age = 18;
+      this.$set(this.person, "age", 18);
+      
+      //Object.assign 方法只会从源对象中拷贝其自身的并且是可枚举的属性
+      //Object.assign 拷贝不会跳过值为null或者undefined
+      //let target = Object.assign(target, ...source);
+      let newObj = Object.assign(this.person, {
+      "height": 172, "weight": "50kg", address: {
+      "city": "beijing",
+      "province": "hubei"
+      }
+      });
+      console.log(JSON.stringify(this.person));
+      
+      //将需要添加属性的模型和新增的属性对象，一起合并成一个新的对象，并且返回这个对象
+      this.dog = Object.assign({}, this.dog, {
+      "city": "beijing",
+      "province": "hubei"
+      })
+      }
+      }
+      });
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -147,16 +152,14 @@
         <a href="./04-%E6%95%B0%E7%BB%84%E5%93%8D%E5%BA%94%E5%BC%8F%E9%99%90%E5%88%B6.html">数组响应式限制 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

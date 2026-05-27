@@ -13,94 +13,89 @@
     - 面试中如何简洁讲清 手写 call / apply
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>手写 call / apply</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>手写 call / apply</title>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
   </head>
-<body class="demo-page">
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>手写 call / apply</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li><code>call</code>/apply 都是立即调用函数，并显式指定 <code>this</code>。</li>
-      <li>核心做法：把函数临时挂到 thisArg 对象上，再调用并删除。</li>
-      <li><code>null</code>/undefined 的 thisArg 在非严格模式下指向 globalThis。</li>
-      <li><code>call</code>/apply 都是立即调用函数，并显式指定 <code>this</code>（补充）。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>call/apply 都是立即调用函数？</strong> <code>call</code>/apply 都是立即调用函数，并显式指定 <code>this</code></li>
-      <li><strong>null/undefined 的 thisArg 在非严格模式下指向 globa？</strong> <code>null</code>/undefined 的 thisArg 在非严格模式下指向 globalThis</li>
-      <li><strong>手写 call / apply的核心概念是什么？</strong> <code>call</code>/apply 都是立即调用函数，并显式指定 <code>this</code>；核心做法：把函数临时挂到 thisArg 对象上，再调用并删除</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>call</code>/apply 都是立即调用函数，并显式指定 <code>this</code>。</li>
+          <li>核心做法：把函数临时挂到 thisArg 对象上，再调用并删除。</li>
+          <li><code>null</code>/undefined 的 thisArg 在非严格模式下指向 globalThis。</li>
+          <li><code>call</code>/apply 都是立即调用函数，并显式指定 <code>this</code>（补充）。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>call/apply 都是立即调用函数？</strong> <code>call</code>/apply 都是立即调用函数，并显式指定 <code>this</code></li>
+          <li><strong>null/undefined 的 thisArg 在非严格模式下指向 globa？</strong> <code>null</code>/undefined 的 thisArg 在非严格模式下指向 globalThis</li>
+          <li><strong>手写 call / apply的核心概念是什么？</strong> <code>call</code>/apply 都是立即调用函数，并显式指定 <code>this</code>；核心做法：把函数临时挂到 thisArg 对象上，再调用并删除</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../packages/shared/demo-log.js"></script>
-
 <p>打开控制台查看断言结果。</p>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    Function.prototype.myCall = function (thisArg, ...args) {
+      Function.prototype.myCall = function (thisArg, ...args) {
       if (typeof this !== "function") {
-        throw new TypeError("myCall must be called on a function");
+      throw new TypeError("myCall must be called on a function");
       }
-
+      
       const context = thisArg == null ? globalThis : Object(thisArg);
       const key = Symbol("fn");
       context[key] = this;
       const result = context[key](...args);
       delete context[key];
       return result;
-    };
-
-    Function.prototype.myApply = function (thisArg, args) {
+      };
+      
+      Function.prototype.myApply = function (thisArg, args) {
       if (typeof this !== "function") {
-        throw new TypeError("myApply must be called on a function");
+      throw new TypeError("myApply must be called on a function");
       }
       if (args != null && typeof args[Symbol.iterator] !== "function") {
-        throw new TypeError("args must be array-like or iterable");
+      throw new TypeError("args must be array-like or iterable");
       }
-
+      
       const context = thisArg == null ? globalThis : Object(thisArg);
       const key = Symbol("fn");
       context[key] = this;
       const result = args == null ? context[key]() : context[key](...args);
       delete context[key];
       return result;
-    };
-
-    function introduce(prefix, suffix) {
+      };
+      
+      function introduce(prefix, suffix) {
       return prefix + this.name + suffix;
-    }
-
-    const user = { name: "Ada" };
-    console.assert(introduce.myCall(user, "Hi, ", "!") === "Hi, Ada!", "myCall supports args");
-    console.assert(introduce.myApply(user, ["Hello, ", "."]) === "Hello, Ada.", "myApply supports array args");
-    console.assert(Math.max.myApply(null, [1, 8, 3]) === 8, "myApply works with native functions");
-
-    console.log("myCall:", introduce.myCall(user, "Hi, ", "!"));
-    console.log("myApply:", introduce.myApply(user, ["Hello, ", "."]));
-  </script>
+      }
+      
+      const user = { name: "Ada" };
+      console.assert(introduce.myCall(user, "Hi, ", "!") === "Hi, Ada!", "myCall supports args");
+      console.assert(introduce.myApply(user, ["Hello, ", "."]) === "Hello, Ada.", "myApply supports array args");
+      console.assert(Math.max.myApply(null, [1, 8, 3]) === 8, "myApply works with native functions");
+      
+      console.log("myCall:", introduce.myCall(user, "Hi, ", "!"));
+      console.log("myApply:", introduce.myApply(user, ["Hello, ", "."]));
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -112,16 +107,14 @@
         <a href="./02-bind.html">bind →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

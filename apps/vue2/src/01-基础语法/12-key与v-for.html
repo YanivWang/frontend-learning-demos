@@ -12,35 +12,36 @@
     - key 复用控制 + v-for 遍历数组/对象和相近 API 如何区分选型
     - 面试中如何简洁讲清 key 复用控制 + v-for 遍历数组/对象
 
--->
+-->
+
 <!doctype html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>v-for + key 复用控制</title>
-    <script src="../../libs/vue.js"></script>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>v-for + key 复用控制</title>
+    <script src="../../libs/vue.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>key 复用控制 + v-for 遍历数组/对象</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>Vue 复用 input 等元素会保留旧值；给元素加 :<code>key</code> 可强制让其被「视为不同元素」。</li>
-      <li><code>v-for</code> 既能遍历数组 (item, index)，也能遍历对象 (value, <code>key</code>, index)。</li>
-      <li><code>v-for</code> 遍历数组/对象时建议写 :<code>key</code>（稳定 id）；本页同时演示「无 <code>key</code> 复用」与「有 <code>key</code> 强制重建」。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>Vue 复用 input 等元素会保留旧值？</strong> Vue 复用 input 等元素会保留旧值；给元素加 :<code>key</code> 可强制让其被「视为不同元素」</li>
-      <li><strong>v-for 既能遍历数组 (item？</strong> <code>v-for</code> 既能遍历数组 (item, index)，也能遍历对象 (value, <code>key</code>, index)；<code>v-for</code> 遍历数组/对象时建议写 :<code>key</code>（稳定 id）；本页同时演示「无 <code>key</code> 复用」与「有 <code>key</code> 强制重建」</li>
-      <li><strong>v-for 遍历数组/对象时建议写？</strong> <code>v-for</code> 既能遍历数组 (item, index)，也能遍历对象 (value, <code>key</code>, index)；<code>v-for</code> 遍历数组/对象时建议写 :<code>key</code>（稳定 id）；本页同时演示「无 <code>key</code> 复用」与「有 <code>key</code> 强制重建」</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>Vue 复用 input 等元素会保留旧值；给元素加 :<code>key</code> 可强制让其被「视为不同元素」。</li>
+          <li><code>v-for</code> 既能遍历数组 (item, index)，也能遍历对象 (value, <code>key</code>, index)。</li>
+          <li><code>v-for</code> 遍历数组/对象时建议写 :<code>key</code>（稳定 id）；本页同时演示「无 <code>key</code> 复用」与「有 <code>key</code> 强制重建」。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>Vue 复用 input 等元素会保留旧值？</strong> Vue 复用 input 等元素会保留旧值；给元素加 :<code>key</code> 可强制让其被「视为不同元素」</li>
+          <li><strong>v-for 既能遍历数组 (item？</strong> <code>v-for</code> 既能遍历数组 (item, index)，也能遍历对象 (value, <code>key</code>, index)；<code>v-for</code> 遍历数组/对象时建议写 :<code>key</code>（稳定 id）；本页同时演示「无 <code>key</code> 复用」与「有 <code>key</code> 强制重建」</li>
+          <li><strong>v-for 遍历数组/对象时建议写？</strong> <code>v-for</code> 既能遍历数组 (item, index)，也能遍历对象 (value, <code>key</code>, index)；<code>v-for</code> 遍历数组/对象时建议写 :<code>key</code>（稳定 id）；本页同时演示「无 <code>key</code> 复用」与「有 <code>key</code> 强制重建」</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -118,38 +119,42 @@
 </div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    var vm = new Vue({
-        el: "#main",
-        data: {
-            loginType: 'username',
-            loginTypeWithKey: 'username',
-            showFlag: true,
-            peoples: [
-                {name: "张三", age: 20},
-                {name: "join", age: 20},
-                {name: "kaka", age: 20}
-            ],
-            unitList: {
-                0: "基础一",
-                8: "基础二",
-                9: "基础三"
-            }
-        },
-        methods: {
-            triggleShowHandle: function () {
-                this.showFlag = !this.showFlag;
-            },
-            triggleLoginTypeHandle: function () {
-                this.loginType = this.loginType === 'username' ? 'email' : 'username';
-            },
-            triggleLoginTypeWithKeyHandle: function () {
-                this.loginTypeWithKey = this.loginTypeWithKey === 'username' ? 'email' : 'username';
-            }
-        }
-    });
-</script>
+      var vm = new Vue({
+      el: "#main",
+      data: {
+      loginType: 'username',
+      loginTypeWithKey: 'username',
+      showFlag: true,
+      peoples: [
+      {name: "张三", age: 20},
+      {name: "join", age: 20},
+      {name: "kaka", age: 20}
+      ],
+      unitList: {
+      0: "基础一",
+      8: "基础二",
+      9: "基础三"
+      }
+      },
+      methods: {
+      triggleShowHandle: function () {
+      this.showFlag = !this.showFlag;
+      },
+      triggleLoginTypeHandle: function () {
+      this.loginType = this.loginType === 'username' ? 'email' : 'username';
+      },
+      triggleLoginTypeWithKeyHandle: function () {
+      this.loginTypeWithKey = this.loginTypeWithKey === 'username' ? 'email' : 'username';
+      }
+      }
+      });
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -161,16 +166,14 @@
         <a href="./13-ref%E5%BC%95%E7%94%A8.html">ref引用 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

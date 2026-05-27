@@ -14,37 +14,38 @@
     - 面试中如何简洁讲清 条件渲染中的「短路求值」陷阱
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
+  <head>
     <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>React · JSX 短路渲染陷阱</title>
     <script src="../../libs/react.development.js"></script>
     <script src="../../libs/react-dom.development.js"></script>
     <script src="../../libs/babel.min.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>条件渲染中的「短路求值」陷阱</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>{falsyValue &amp;&amp; &lt;X/&gt;} 只有当 falsyValue 为 false / <code>null</code> / <code>undefined</code> 时不渲染。</li>
-      <li>反面教材：{arr.length &amp;&amp; &lt;X/&gt;} 当 arr.length === 0 时短路返回 0，会被渲染成「0」文本节点。</li>
-      <li>安全写法：{arr.length &gt; 0 &amp;&amp; &lt;X/&gt;} 或 {Boolean(arr.length) &amp;&amp; &lt;X/&gt;}。</li>
-      <li>React 18 统一用 <code>createRoot</code>(...).render(...)，ReactDOM.render 已废弃。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>{falsyValue &amp;&amp; &lt;X/&gt;} 只有当 falsyValue 为 fa？</strong> {falsyValue &amp;&amp; &lt;X/&gt;} 只有当 falsyValue 为 false / <code>null</code> / <code>undefined</code> 时不渲染</li>
-      <li><strong>React 18 统一用 createRoot(...).render(...)？</strong> React 18 统一用 <code>createRoot</code>(...).render(...)，ReactDOM.render 已废弃</li>
-      <li><strong>条件渲染中的「短路求值」陷阱的核心概念是什么？</strong> {falsyValue &amp;&amp; &lt;X/&gt;} 只有当 falsyValue 为 false / <code>null</code> / <code>undefined</code> 时不渲染；反面教材：{arr.length &amp;&amp; &lt;X/&gt;} 当 arr.length === 0 时短路返回 0，会被渲染成「0」文本节点</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>{falsyValue &amp;&amp; &lt;X/&gt;} 只有当 falsyValue 为 false / <code>null</code> / <code>undefined</code> 时不渲染。</li>
+          <li>反面教材：{arr.length &amp;&amp; &lt;X/&gt;} 当 arr.length === 0 时短路返回 0，会被渲染成「0」文本节点。</li>
+          <li>安全写法：{arr.length &gt; 0 &amp;&amp; &lt;X/&gt;} 或 {Boolean(arr.length) &amp;&amp; &lt;X/&gt;}。</li>
+          <li>React 18 统一用 <code>createRoot</code>(...).render(...)，ReactDOM.render 已废弃。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>{falsyValue &amp;&amp; &lt;X/&gt;} 只有当 falsyValue 为 fa？</strong> {falsyValue &amp;&amp; &lt;X/&gt;} 只有当 falsyValue 为 false / <code>null</code> / <code>undefined</code> 时不渲染</li>
+          <li><strong>React 18 统一用 createRoot(...).render(...)？</strong> React 18 统一用 <code>createRoot</code>(...).render(...)，ReactDOM.render 已废弃</li>
+          <li><strong>条件渲染中的「短路求值」陷阱的核心概念是什么？</strong> {falsyValue &amp;&amp; &lt;X/&gt;} 只有当 falsyValue 为 false / <code>null</code> / <code>undefined</code> 时不渲染；反面教材：{arr.length &amp;&amp; &lt;X/&gt;} 当 arr.length === 0 时短路返回 0，会被渲染成「0」文本节点</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -52,30 +53,35 @@
 <div id="root"></div>
 
     
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script type="text/babel">
-    const arr = [];
-    const element = (<div>
-        {
-            // 反面教材：arr.length 为 0 时，{0 && ...} 整体得 0，React 会把它当文本渲染出来
-            arr.length && (<div>我是京东物流</div>)
-        }
-        {
-            undefined && (<div>我是京东物流</div>)
-        }
-        {
-            null && (<div>我是京东物流</div>)
-        }
-        {
-            false && (<div>我是京东物流</div>)
-        }
-
-        {/* 推荐写法：用比较运算符把值显式转 boolean，避免 0 被渲染 */}
-        { arr.length > 0 && (<div>正确写法：长度大于 0 才渲染</div>) }
-    </div>)
-
-    // React 18 使用 createRoot 渲染
-    ReactDOM.createRoot(document.getElementById('root')).render(element);
-</script>
+      const arr = [];
+      const element = (<div>
+      {
+      // 反面教材：arr.length 为 0 时，{0 && ...} 整体得 0，React 会把它当文本渲染出来
+      arr.length && (<div>我是京东物流</div>)
+      }
+      {
+      undefined && (<div>我是京东物流</div>)
+      }
+      {
+      null && (<div>我是京东物流</div>)
+      }
+      {
+      false && (<div>我是京东物流</div>)
+      }
+      
+      {/* 推荐写法：用比较运算符把值显式转 boolean，避免 0 被渲染 */}
+      { arr.length > 0 && (<div>正确写法：长度大于 0 才渲染</div>) }
+      </div>)
+      
+      // React 18 使用 createRoot 渲染
+      ReactDOM.createRoot(document.getElementById('root')).render(element);
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
@@ -86,16 +92,14 @@
         <a href="./03-%E5%85%83%E7%B4%A0%E4%B8%8E%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6.html">元素与函数组件 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

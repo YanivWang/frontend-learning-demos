@@ -14,13 +14,14 @@
     - 面试中如何简洁讲清 HTTP 强缓存与协商缓存
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HTTP 缓存 · 强缓存与协商缓存</title>
-  <style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTTP 缓存 · 强缓存与协商缓存</title>
+    <style>
     body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 760px; line-height: 1.65; color: #222; }
     table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 0.9rem; }
     th, td { border: 1px solid #ddd; padding: 8px 10px; text-align: left; }
@@ -28,29 +29,29 @@
     pre { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 8px; overflow: auto; font-size: 0.85rem; }
     button { padding: 8px 14px; margin: 4px 4px 4px 0; cursor: pointer; }
     #log { margin-top: 1rem; padding: 12px; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; min-height: 3rem; }
-  </style>
+    </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
   </head>
-<body class="demo-page">
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>HTTP 强缓存 vs 协商缓存</h1>
       <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>强缓存：Cache-Control / Expires，命中时不发请求（200 from disk cache）。</li>
-      <li>协商缓存：ETag / Last-Modified，发条件请求 304 Not Modified。</li>
-      <li>面试常问：no-cache vs no-store；private vs public。</li>
-      <li>实践：HTML 入口短缓存 + 带 hash 静态资源 immutable 长缓存。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>HTTP 强缓存与协商缓存的核心概念是什么？</strong> 强缓存：Cache-Control / Expires，命中时不发请求（200 from disk cache）；协商缓存：ETag / Last-Modified，发条件请求 304 Not Modified</li>
-      <li><strong>HTTP 强缓存与协商缓存在实际项目里怎么用？</strong> 强缓存：Cache-Control / Expires，命中时不发请求（200 from disk cache）；协商缓存：ETag / Last-Modified，发条件请求 304 Not Modified</li>
-      <li><strong>HTTP 强缓存与协商缓存有哪些常见坑或易错点？</strong> 强缓存：Cache-Control / Expires，命中时不发请求（200 from disk cache）；协商缓存：ETag / Last-Modified，发条件请求 304 Not Modified</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>强缓存：Cache-Control / Expires，命中时不发请求（200 from disk cache）。</li>
+          <li>协商缓存：ETag / Last-Modified，发条件请求 304 Not Modified。</li>
+          <li>面试常问：no-cache vs no-store；private vs public。</li>
+          <li>实践：HTML 入口短缓存 + 带 hash 静态资源 immutable 长缓存。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>HTTP 强缓存与协商缓存的核心概念是什么？</strong> 强缓存：Cache-Control / Expires，命中时不发请求（200 from disk cache）；协商缓存：ETag / Last-Modified，发条件请求 304 Not Modified</li>
+          <li><strong>HTTP 强缓存与协商缓存在实际项目里怎么用？</strong> 强缓存：Cache-Control / Expires，命中时不发请求（200 from disk cache）；协商缓存：ETag / Last-Modified，发条件请求 304 Not Modified</li>
+          <li><strong>HTTP 强缓存与协商缓存有哪些常见坑或易错点？</strong> 强缓存：Cache-Control / Expires，命中时不发请求（200 from disk cache）；协商缓存：ETag / Last-Modified，发条件请求 304 Not Modified</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -78,31 +79,35 @@
   <button type="button" id="btn-200">缓存失效 200 新内容</button>
   <div id="log"></div>
 
-    <!-- SCRIPT_START -->
+    
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    const cache = { etag: '"abc123"', body: "v1 内容", maxAge: 60, storedAt: Date.now() };
-    const log = document.getElementById("log");
-    function write(msg) { log.textContent += msg + "\n"; }
-
-    document.getElementById("btn-strong").onclick = () => {
+      const cache = { etag: '"abc123"', body: "v1 内容", maxAge: 60, storedAt: Date.now() };
+      const log = document.getElementById("log");
+      function write(msg) { log.textContent += msg + "\n"; }
+      
+      document.getElementById("btn-strong").onclick = () => {
       log.textContent = "";
       const age = (Date.now() - cache.storedAt) / 1000;
       if (age < cache.maxAge) write(`[强缓存] age=${age.toFixed(0)}s < max-age → 200 (from disk cache)\n不发送请求`);
       else write("[强缓存] 已过期，进入协商缓存流程");
-    };
-    document.getElementById("btn-304").onclick = () => {
+      };
+      document.getElementById("btn-304").onclick = () => {
       log.textContent = "";
       write("请求: If-None-Match: " + cache.etag);
       write("响应: 304 Not Modified → 使用本地副本");
-    };
-    document.getElementById("btn-200").onclick = () => {
+      };
+      document.getElementById("btn-200").onclick = () => {
       log.textContent = "";
       cache.body = "v2 新内容 @ " + new Date().toLocaleTimeString();
       cache.etag = '"xyz' + Date.now() + '"';
       cache.storedAt = Date.now();
       write("响应: 200 OK\n新 ETag: " + cache.etag + "\nBody: " + cache.body);
-    };
-  </script>
+      };
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -114,16 +119,14 @@
         <a href="./ImportMaps.html">ImportMaps →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

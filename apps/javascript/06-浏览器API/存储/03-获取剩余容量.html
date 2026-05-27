@@ -13,80 +13,71 @@
     - 面试中如何简洁讲清 用 localforage.iterate 估算剩余容量
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>获取剩余容量</title>
-      <script src="lib/localforage.js"></script>
+    <script src="lib/localforage.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>用 localforage.iterate 估算剩余容量</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>localforage.iterate 遍历所有键值对，每条调用回调。</li>
-      <li>单条占用 ≈ <code>key</code>.length + JSON.stringify(value).length（字符数近似估算）。</li>
-      <li>iterate 返回 <code>Promise</code>，配合 <code>await</code> 写成顺序代码，便于读。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>localforage.iterate 遍历所有键值对？</strong> localforage.iterate 遍历所有键值对，每条调用回调</li>
-      <li><strong>单条占用 ≈ key.length + JSON.stringify(value？</strong> 单条占用 ≈ <code>key</code>.length + JSON.stringify(value).length（字符数近似估算）</li>
-      <li><strong>iterate 返回 Promise？</strong> localforage.iterate 遍历所有键值对，每条调用回调；iterate 返回 <code>Promise</code>，配合 <code>await</code> 写成顺序代码，便于读</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>localforage.iterate 遍历所有键值对，每条调用回调。</li>
+          <li>单条占用 ≈ <code>key</code>.length + JSON.stringify(value).length（字符数近似估算）。</li>
+          <li>iterate 返回 <code>Promise</code>，配合 <code>await</code> 写成顺序代码，便于读。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>localforage.iterate 遍历所有键值对？</strong> localforage.iterate 遍历所有键值对，每条调用回调</li>
+          <li><strong>单条占用 ≈ key.length + JSON.stringify(value？</strong> 单条占用 ≈ <code>key</code>.length + JSON.stringify(value).length（字符数近似估算）</li>
+          <li><strong>iterate 返回 Promise？</strong> localforage.iterate 遍历所有键值对，每条调用回调；iterate 返回 <code>Promise</code>，配合 <code>await</code> 写成顺序代码，便于读</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
-    console.log("获取剩余空间..");
-
-    /* 测试用：往本地写一堆数据，注释掉避免每次打开都写盘
-    async function testRemainCap() {
-        await localforage.setItem("name", "Join");
-        for (let i = 0; i < 10000; i++) {
-            await localforage.setItem("key_" + i, {["key_" + i] : Math.random().toFixed(5)});
-        }
-    }
-    testRemainCap().then(function () {
-        console.log("写入完毕..");
-    });
-    */
-
-    // 用 localforage.iterate 遍历已有条目，累加字符数近似估算已用空间
-    const MAX_SIZE_MB = 50;
-    (async function getRemainSize(){
-        let currentBytes = 0;
-        try {
-            await localforage.iterate(function (value, key) {
-                currentBytes += key.length + JSON.stringify(value).length;
-            });
-            const remainMB = MAX_SIZE_MB - currentBytes / 1024 / 1024;
-            console.log("currentMB:", (currentBytes / 1024 / 1024).toFixed(4));
-            console.log("remainMB:", remainMB.toFixed(4));
-        } catch (err) {
-            console.error("iterate error:", err);
-        }
-    })();
-</script>
+      console.log("获取剩余空间..");
+      
+      /* 测试用：往本地写一堆数据，注释掉避免每次打开都写盘
+      async function testRemainCap() {
+      await localforage.setItem("name", "Join");
+      for (let i = 0; i < 10000; i++) {
+      await localforage.setItem("key_" + i, {["key_" + i] : Math.random().toFixed(5)});
+      }
+      }
+      testRemainCap().then(function () {
+      console.log("写入完毕..");
+      });
+      */
+      
+      // 用 localforage.iterate 遍历已有条目，累加字符数近似估算已用空间
+      const MAX_SIZE_MB = 50;
+      (async function getRemainSize(){
+      let currentBytes = 0;
+      try {
+      await localforage.iterate(function (value, key) {
+      currentBytes += key.length + JSON.stringify(value).length;
+      });
+      const remainMB = MAX_SIZE_MB - currentBytes / 1024 / 1024;
+      console.log("currentMB:", (currentBytes / 1024 / 1024).toFixed(4));
+      console.log("remainMB:", remainMB.toFixed(4));
+      } catch (err) {
+      console.error("iterate error:", err);
+      }
+      })();
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -98,16 +89,14 @@
         <a href="./04-%E5%B0%81%E8%A3%85-%E8%8E%B7%E5%8F%96%E5%AD%98%E5%82%A8%E5%AE%B9%E9%87%8F.html">封装-获取存储容量 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

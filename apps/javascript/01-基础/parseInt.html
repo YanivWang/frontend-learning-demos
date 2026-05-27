@@ -11,90 +11,81 @@
     - radix 不传会怎样？
   相关: 数组方法, 类型转换
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>parseInt</title>
-  <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>parseInt</title>
+    <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>parseInt(string, radix) 全面演示</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li><code>parseInt(str, radix)</code> 从左解析整数，遇到非法字符停止；忽略前导空白。</li>
-      <li><strong>务必传 radix</strong>（通常 10）；不传时以 0x 开头按 16，某些旧行为对 0 开头按 8（现代浏览器多按 10）。</li>
-      <li><code>Number(str)</code> 要求整个字符串是合法数字，否则 NaN；与 parseInt 部分解析不同。</li>
-      <li><code>parseInt('')</code> → NaN；<code>Number('')</code> → 0。</li>
-      <li><code>map(parseInt)</code> 坑：map 回调是 (value, index)，parseInt 第二参是 radix。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>parseInt vs Number？</strong> parseInt 部分解析、只取整数；Number 全串转换、支持小数/科学计数。空串：parseInt→NaN，Number→0。</li>
-      <li><strong>[1,2,3].map(parseInt)？</strong> 等价 parseInt('1',0)、parseInt('2',1)、parseInt('3',2)；radix 1 和 2 非法导致 NaN。应 <code>.map(n =&gt; parseInt(n, 10))</code>。</li>
-      <li><strong>radix 不传？</strong> 依赖字符串前缀启发式，不可预测。生产环境始终写 radix 10（或 16 等明确进制）。</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>parseInt(str, radix)</code> 从左解析整数，遇到非法字符停止；忽略前导空白。</li>
+          <li><strong>务必传 radix</strong>（通常 10）；不传时以 0x 开头按 16，某些旧行为对 0 开头按 8（现代浏览器多按 10）。</li>
+          <li><code>Number(str)</code> 要求整个字符串是合法数字，否则 NaN；与 parseInt 部分解析不同。</li>
+          <li><code>parseInt('')</code> → NaN；<code>Number('')</code> → 0。</li>
+          <li><code>map(parseInt)</code> 坑：map 回调是 (value, index)，parseInt 第二参是 radix。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>parseInt vs Number？</strong> parseInt 部分解析、只取整数；Number 全串转换、支持小数/科学计数。空串：parseInt→NaN，Number→0。</li>
+          <li><strong>[1,2,3].map(parseInt)？</strong> 等价 parseInt('1',0)、parseInt('2',1)、parseInt('3',2)；radix 1 和 2 非法导致 NaN。应 <code>.map(n =&gt; parseInt(n, 10))</code>。</li>
+          <li><strong>radix 不传？</strong> 依赖字符串前缀启发式，不可预测。生产环境始终写 radix 10（或 16 等明确进制）。</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
-    // ============ 1. 基本用法：parseInt 从字符串左侧开始解析整数 ============
-    //   规则：忽略前导空白 → 读取连续数字字符（含可选 + - 符号）→ 遇到非法字符停止
-    console.log(parseInt("934"));      // 934
-    console.log(parseInt("934vvv"));   // 934 —— 后面非法字符被丢弃
-    console.log(parseInt("78vv67v"));  // 78  —— 只取最前面那段
-    console.log(parseInt("vv67v"));    // NaN —— 第一个字符就是非法的
-    console.log(parseInt(" 10 "));     // 10  —— 前导空白被自动 trim
-    console.log(parseInt("010"));      // 10  —— 现代浏览器不再当成八进制
-    console.log(parseInt("010abc"));   // 10
-
-    // ============ 2. radix 参数：明确进制，强烈推荐总是显式传入 ============
-    console.log(parseInt("10", 2));   // 2  —— 二进制
-    console.log(parseInt("10", 8));   // 8  —— 八进制
-    console.log(parseInt("10", 16));  // 16 —— 十六进制
-    console.log(parseInt("0x10"));    // 16 —— 自动识别 0x 前缀
-    console.log(parseInt("0x10", 16));// 16
-    console.log(parseInt("0x10", 10));// 0  —— 强制十进制时，'x' 让解析停下来
-
-    // ============ 3. 经典面试题：[1, 2, 3].map(parseInt) ============
-    //   ⚠️ map(callback) 实际传给 callback 三个参数：(value, index, array)
-    //   所以等价于：
-    //     parseInt("1", 0, ...)  → radix=0 视为 10 → 1
-    //     parseInt("2", 1, ...)  → radix=1 非法    → NaN
-    //     parseInt("3", 2, ...)  → radix=2，'3' 不是合法二进制字符 → NaN
-    console.log(["1", "2", "3"].map(parseInt)); // [1, NaN, NaN]
-
-    // 正确写法：用箭头函数显式只传 1 个参数
-    console.log(["1", "2", "3"].map((v) => parseInt(v, 10))); // [1, 2, 3]
-    // 或直接 Number / 一元 +
-    console.log(["1", "2", "3"].map(Number));                  // [1, 2, 3]
-
-    // ============ 4. parseInt vs Number ============
-    //   parseInt：从左开始扫描，遇非法就停 → "12abc" → 12
-    //   Number  ：必须整体合法，否则 NaN    → "12abc" → NaN
-    console.log(parseInt("12abc"), Number("12abc")); // 12, NaN
-    console.log(parseInt(""), Number(""));            // NaN, 0
-    console.log(parseInt(true), Number(true));        // NaN, 1
-    console.log(parseInt(null), Number(null));        // NaN, 0
-  </script>
+      // ============ 1. 基本用法：parseInt 从字符串左侧开始解析整数 ============
+      //   规则：忽略前导空白 → 读取连续数字字符（含可选 + - 符号）→ 遇到非法字符停止
+      console.log(parseInt("934"));      // 934
+      console.log(parseInt("934vvv"));   // 934 —— 后面非法字符被丢弃
+      console.log(parseInt("78vv67v"));  // 78  —— 只取最前面那段
+      console.log(parseInt("vv67v"));    // NaN —— 第一个字符就是非法的
+      console.log(parseInt(" 10 "));     // 10  —— 前导空白被自动 trim
+      console.log(parseInt("010"));      // 10  —— 现代浏览器不再当成八进制
+      console.log(parseInt("010abc"));   // 10
+      
+      // ============ 2. radix 参数：明确进制，强烈推荐总是显式传入 ============
+      console.log(parseInt("10", 2));   // 2  —— 二进制
+      console.log(parseInt("10", 8));   // 8  —— 八进制
+      console.log(parseInt("10", 16));  // 16 —— 十六进制
+      console.log(parseInt("0x10"));    // 16 —— 自动识别 0x 前缀
+      console.log(parseInt("0x10", 16));// 16
+      console.log(parseInt("0x10", 10));// 0  —— 强制十进制时，'x' 让解析停下来
+      
+      // ============ 3. 经典面试题：[1, 2, 3].map(parseInt) ============
+      //   ⚠️ map(callback) 实际传给 callback 三个参数：(value, index, array)
+      //   所以等价于：
+      //     parseInt("1", 0, ...)  → radix=0 视为 10 → 1
+      //     parseInt("2", 1, ...)  → radix=1 非法    → NaN
+      //     parseInt("3", 2, ...)  → radix=2，'3' 不是合法二进制字符 → NaN
+      console.log(["1", "2", "3"].map(parseInt)); // [1, NaN, NaN]
+      
+      // 正确写法：用箭头函数显式只传 1 个参数
+      console.log(["1", "2", "3"].map((v) => parseInt(v, 10))); // [1, 2, 3]
+      // 或直接 Number / 一元 +
+      console.log(["1", "2", "3"].map(Number));                  // [1, 2, 3]
+      
+      // ============ 4. parseInt vs Number ============
+      //   parseInt：从左开始扫描，遇非法就停 → "12abc" → 12
+      //   Number  ：必须整体合法，否则 NaN    → "12abc" → NaN
+      console.log(parseInt("12abc"), Number("12abc")); // 12, NaN
+      console.log(parseInt(""), Number(""));            // NaN, 0
+      console.log(parseInt(true), Number(true));        // NaN, 1
+      console.log(parseInt(null), Number(null));        // NaN, 0
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -108,16 +99,15 @@
         <a href="./symbol.html">symbol →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
   
 </body>
 </html>

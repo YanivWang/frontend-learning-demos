@@ -14,42 +14,43 @@
     - 面试中如何简洁讲清 use() 读取 Promise 与 Context
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>React 19 · use()</title>
-  <script src="../../libs/react.development.js"></script>
-  <script src="../../libs/react-dom.development.js"></script>
-  <script src="../../libs/babel.min.js"></script>
-  <style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React 19 · use()</title>
+    <script src="../../libs/react.development.js"></script>
+    <script src="../../libs/react-dom.development.js"></script>
+    <script src="../../libs/babel.min.js"></script>
+    <style>
     body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 720px; line-height: 1.6; }
     .box { border: 1px solid #ddd; border-radius: 10px; padding: 1rem; margin: 1rem 0; }
-  </style>
+    </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>use() 读取 Promise 与 Context</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>use(usable)：在 <code>render</code> 中读取 <code>Promise</code> 或 Context（React 19 新 Hook）。</li>
-      <li>读取 <code>Promise</code> 时组件会挂起，需外层 <code>Suspense</code> 提供 fallback。</li>
-      <li>可在条件分支中调用 use()（与 <code>useState</code> 等 Hook 规则不同）。</li>
-      <li>读取 Context 时可直接 use(Context)，等价于 useContext。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>use(usable)？</strong> use(usable)：在 <code>render</code> 中读取 <code>Promise</code> 或 Context（React 19 新 Hook）；可在条件分支中调用 use()（与 <code>useState</code> 等 Hook 规则不同）</li>
-      <li><strong>读取 Promise 时组件会挂起？</strong> use(usable)：在 <code>render</code> 中读取 <code>Promise</code> 或 Context（React 19 新 Hook）；读取 <code>Promise</code> 时组件会挂起，需外层 <code>Suspense</code> 提供 fallback</li>
-      <li><strong>可在条件分支中调用 use()（与 useState 等 Hook 规则不同）？</strong> 可在条件分支中调用 use()（与 <code>useState</code> 等 Hook 规则不同）</li>
-      <li><strong>读取 Context 时可直接 use(Context)？</strong> use(usable)：在 <code>render</code> 中读取 <code>Promise</code> 或 Context（React 19 新 Hook）；读取 <code>Promise</code> 时组件会挂起，需外层 <code>Suspense</code> 提供 fallback</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>use(usable)：在 <code>render</code> 中读取 <code>Promise</code> 或 Context（React 19 新 Hook）。</li>
+          <li>读取 <code>Promise</code> 时组件会挂起，需外层 <code>Suspense</code> 提供 fallback。</li>
+          <li>可在条件分支中调用 use()（与 <code>useState</code> 等 Hook 规则不同）。</li>
+          <li>读取 Context 时可直接 use(Context)，等价于 useContext。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>use(usable)？</strong> use(usable)：在 <code>render</code> 中读取 <code>Promise</code> 或 Context（React 19 新 Hook）；可在条件分支中调用 use()（与 <code>useState</code> 等 Hook 规则不同）</li>
+          <li><strong>读取 Promise 时组件会挂起？</strong> use(usable)：在 <code>render</code> 中读取 <code>Promise</code> 或 Context（React 19 新 Hook）；读取 <code>Promise</code> 时组件会挂起，需外层 <code>Suspense</code> 提供 fallback</li>
+          <li><strong>可在条件分支中调用 use()（与 useState 等 Hook 规则不同）？</strong> 可在条件分支中调用 use()（与 <code>useState</code> 等 Hook 规则不同）</li>
+          <li><strong>读取 Context 时可直接 use(Context)？</strong> use(usable)：在 <code>render</code> 中读取 <code>Promise</code> 或 Context（React 19 新 Hook）；读取 <code>Promise</code> 时组件会挂起，需外层 <code>Suspense</code> 提供 fallback</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -57,59 +58,64 @@
 <div id="root"></div>
 
     
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script type="text/babel">
-    const { Suspense, use, useState } = React;
-
-    const ThemeContext = React.createContext("light");
-
-    function fetchMessage() {
+      const { Suspense, use, useState } = React;
+      
+      const ThemeContext = React.createContext("light");
+      
+      function fetchMessage() {
       return new Promise((resolve) => {
-        setTimeout(() => resolve("来自 Promise 的数据 @ " + new Date().toLocaleTimeString()), 600);
+      setTimeout(() => resolve("来自 Promise 的数据 @ " + new Date().toLocaleTimeString()), 600);
       });
-    }
-
-    function DataPanel({ messagePromise }) {
+      }
+      
+      function DataPanel({ messagePromise }) {
       const message = use(messagePromise);
       return <p>Promise 结果：{message}</p>;
-    }
-
-    function ThemePanel() {
+      }
+      
+      function ThemePanel() {
       const theme = use(ThemeContext);
       return <p>Context 主题：{theme}</p>;
-    }
-
-    function App() {
+      }
+      
+      function App() {
       const [promise, setPromise] = useState(null);
       const [theme, setTheme] = useState("light");
-
+      
       return (
-        <section>
-          <h1>use() 两种用法</h1>
-
-          <div className="box">
-            <ThemeContext.Provider value={theme}>
-              <ThemePanel />
-              <button type="button" onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}>
-                切换主题
-              </button>
-            </ThemeContext.Provider>
-          </div>
-          <div className="box">
-            <button type="button" onClick={() => setPromise(fetchMessage())}>
-              加载 Promise
-            </button>
-            {promise && (
-              <Suspense fallback={<p>Promise 挂起中…</p>}>
-                <DataPanel messagePromise={promise} />
-              </Suspense>
-            )}
-          </div>
-        </section>
+      <section>
+      <h1>use() 两种用法</h1>
+      
+      <div className="box">
+      <ThemeContext.Provider value={theme}>
+      <ThemePanel />
+      <button type="button" onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}>
+      切换主题
+      </button>
+      </ThemeContext.Provider>
+      </div>
+      <div className="box">
+      <button type="button" onClick={() => setPromise(fetchMessage())}>
+      加载 Promise
+      </button>
+      {promise && (
+      <Suspense fallback={<p>Promise 挂起中…</p>}>
+      <DataPanel messagePromise={promise} />
+      </Suspense>
+      )}
+      </div>
+      </section>
       );
-    }
-
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-  </script>
+      }
+      
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
@@ -120,16 +126,15 @@
         <a href="./06-ref%E4%BD%9C%E4%B8%BAprop%E4%BC%A0%E9%80%92.html">ref作为prop传递 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
   
 </body>
 </html>

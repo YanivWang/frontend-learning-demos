@@ -14,38 +14,39 @@
     - 面试中如何简洁讲清 闭包与依赖数组陷阱
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>React · 闭包与依赖数组</title>
-  <script src="../../libs/react.development.js"></script>
-  <script src="../../libs/react-dom.development.js"></script>
-  <script src="../../libs/babel.min.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React · 闭包与依赖数组</title>
+    <script src="../../libs/react.development.js"></script>
+    <script src="../../libs/react-dom.development.js"></script>
+    <script src="../../libs/babel.min.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>闭包与依赖数组陷阱</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>函数组件每次渲染都有自己的 state 快照和函数闭包。</li>
-      <li>effect / callback 使用了外部变量，就应该放入依赖数组。</li>
-      <li>故意不放依赖会产生 stale closure，也就是读到旧状态。</li>
-      <li>如果只需要基于旧状态更新，函数式 setState 可以减少依赖。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>函数组件每次渲染都有自己的 state 快照和函数闭包？</strong> 函数组件每次渲染都有自己的 state 快照和函数闭包</li>
-      <li><strong>effect / callback 使用了外部变量？</strong> effect / callback 使用了外部变量，就应该放入依赖数组</li>
-      <li><strong>故意不放依赖会产生 stale closure？</strong> 故意不放依赖会产生 stale closure，也就是读到旧状态</li>
-      <li><strong>如果只需要基于旧状态更新？</strong> 如果只需要基于旧状态更新，函数式 setState 可以减少依赖</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>函数组件每次渲染都有自己的 state 快照和函数闭包。</li>
+          <li>effect / callback 使用了外部变量，就应该放入依赖数组。</li>
+          <li>故意不放依赖会产生 stale closure，也就是读到旧状态。</li>
+          <li>如果只需要基于旧状态更新，函数式 setState 可以减少依赖。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>函数组件每次渲染都有自己的 state 快照和函数闭包？</strong> 函数组件每次渲染都有自己的 state 快照和函数闭包</li>
+          <li><strong>effect / callback 使用了外部变量？</strong> effect / callback 使用了外部变量，就应该放入依赖数组</li>
+          <li><strong>故意不放依赖会产生 stale closure？</strong> 故意不放依赖会产生 stale closure，也就是读到旧状态</li>
+          <li><strong>如果只需要基于旧状态更新？</strong> 如果只需要基于旧状态更新，函数式 setState 可以减少依赖</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -53,42 +54,47 @@
 <div id="root"></div>
 
     
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script type="text/babel">
-    const { useEffect, useState } = React;
-
-    function App() {
+      const { useEffect, useState } = React;
+      
+      function App() {
       const [count, setCount] = useState(0);
       const [message, setMessage] = useState("");
-
+      
       useEffect(() => {
-        // 这个 effect 依赖 count；count 改变时重新执行，message 才能同步。
-        setMessage("当前 count 是 " + count);
+      // 这个 effect 依赖 count；count 改变时重新执行，message 才能同步。
+      setMessage("当前 count 是 " + count);
       }, [count]);
-
+      
       function alertLater() {
-        const capturedCount = count;
-        setTimeout(() => {
-          alert("点击按钮那一刻的 count 是: " + capturedCount);
-        }, 1000);
+      const capturedCount = count;
+      setTimeout(() => {
+      alert("点击按钮那一刻的 count 是: " + capturedCount);
+      }, 1000);
       }
-
+      
       return (
-        <section>
-          <h1>闭包与依赖数组</h1>
-
-          <p>count: {count}</p>
-          <p>{message}</p>
-          <button onClick={() => setCount(prev => prev + 1)}>+1</button>
-          <button onClick={alertLater}>1 秒后弹出当前快照</button>
-          <p>
-            面试回答: 函数组件中的函数会捕获本次渲染的变量；依赖数组写错时，effect 可能一直使用旧闭包。
-          </p>
-        </section>
+      <section>
+      <h1>闭包与依赖数组</h1>
+      
+      <p>count: {count}</p>
+      <p>{message}</p>
+      <button onClick={() => setCount(prev => prev + 1)}>+1</button>
+      <button onClick={alertLater}>1 秒后弹出当前快照</button>
+      <p>
+      面试回答: 函数组件中的函数会捕获本次渲染的变量；依赖数组写错时，effect 可能一直使用旧闭包。
+      </p>
+      </section>
       );
-    }
-
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-  </script>
+      }
+      
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
@@ -99,16 +105,14 @@
         <a href="./19-%E5%88%97%E8%A1%A8key%E4%B8%8Ediff.html">列表key与diff →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

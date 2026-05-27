@@ -11,47 +11,38 @@
     - 用户名校验要注意什么？
   相关: unicode
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Unicode 字符等价性</title>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Unicode 字符等价性（NFC / NFD）</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>Unicode 允许多种编码表示同一「字符」（如 é 可以是单码点或 e+组合重音）。</li>
-      <li>NFC（组合形式）与 NFD（分解形式）是两种标准规范化；<code>str.normalize('NFC')</code> 统一后再比较。</li>
-      <li>全角/半角、不同空格（NBSP）也会导致 === 失败。</li>
-      <li>用户输入清洗流程：trim → 折叠连续空白 → normalize → 再比较/入库。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>相同外观为何不相等？</strong> 不同 Unicode 码点序列（组合字符 vs 预组合字符）。需 normalize 后比较。</li>
-      <li><strong>normalize 作用？</strong> 将字符串转为 NFC/NFD 等规范形式，便于搜索、去重、数据库唯一约束。</li>
-      <li><strong>用户名校验？</strong> 不能只做 ===；要 normalize、考虑大小写/全半角、防 homoglyph 攻击（国际化产品）。</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>Unicode 允许多种编码表示同一「字符」（如 é 可以是单码点或 e+组合重音）。</li>
+          <li>NFC（组合形式）与 NFD（分解形式）是两种标准规范化；<code>str.normalize('NFC')</code> 统一后再比较。</li>
+          <li>全角/半角、不同空格（NBSP）也会导致 === 失败。</li>
+          <li>用户输入清洗流程：trim → 折叠连续空白 → normalize → 再比较/入库。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>相同外观为何不相等？</strong> 不同 Unicode 码点序列（组合字符 vs 预组合字符）。需 normalize 后比较。</li>
+          <li><strong>normalize 作用？</strong> 将字符串转为 NFC/NFD 等规范形式，便于搜索、去重、数据库唯一约束。</li>
+          <li><strong>用户名校验？</strong> 不能只做 ===；要 normalize、考虑大小写/全半角、防 homoglyph 攻击（国际化产品）。</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
-
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../packages/shared/demo-log.js"></script>
 
 <div>ぎ</div>
 <div>ぎ</div>
@@ -60,38 +51,42 @@
 <button onclick="submitHandle()">比较</button>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    // 字面上一样的 "ぎ"，可能由不同 Unicode 码点序列构成（组合形 vs 预组合形）
-    var code1 = "ぎ";
-    var code2 = "ぎ";
-
-    if (code1 === code2) {
-        console.log("ぎ: 相等");
-    } else {
-        console.log("ぎ: 不相等，normalize 后:", code1.normalize("NFC") === code2.normalize("NFC"));
-    }
-
-    // 两个看上去一模一样的「郵便番号」，可能由不同 Unicode 序列构成
-    var foo = "郵便番号";
-    var bar = "郵便番号";
-
-    if (foo === bar) {
-        console.log("郵便番号: 相等");
-    } else {
-        console.log("郵便番号: 看起来一样实际不等，normalize 后:", foo.normalize("NFC") === bar.normalize("NFC"));
-    }
-
-    function submitHandle() {
-        var textarea = document.getElementsByTagName("textarea")[0];
-        var value = textarea.value.trim().replace(/\s+/g, " ");
-        var parts = value.split(" ");
-        if (parts.length >= 2) {
-            console.log("原始比较:", parts[0] === parts[1]);
-            console.log("normalize 后:", parts[0].normalize("NFC") === parts[1].normalize("NFC"));
-        }
-    }
-</script>
+      // 字面上一样的 "ぎ"，可能由不同 Unicode 码点序列构成（组合形 vs 预组合形）
+      var code1 = "ぎ";
+      var code2 = "ぎ";
+      
+      if (code1 === code2) {
+      console.log("ぎ: 相等");
+      } else {
+      console.log("ぎ: 不相等，normalize 后:", code1.normalize("NFC") === code2.normalize("NFC"));
+      }
+      
+      // 两个看上去一模一样的「郵便番号」，可能由不同 Unicode 序列构成
+      var foo = "郵便番号";
+      var bar = "郵便番号";
+      
+      if (foo === bar) {
+      console.log("郵便番号: 相等");
+      } else {
+      console.log("郵便番号: 看起来一样实际不等，normalize 后:", foo.normalize("NFC") === bar.normalize("NFC"));
+      }
+      
+      function submitHandle() {
+      var textarea = document.getElementsByTagName("textarea")[0];
+      var value = textarea.value.trim().replace(/\s+/g, " ");
+      var parts = value.split(" ");
+      if (parts.length >= 2) {
+      console.log("原始比较:", parts[0] === parts[1]);
+      console.log("normalize 后:", parts[0].normalize("NFC") === parts[1].normalize("NFC"));
+      }
+      }
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -104,16 +99,15 @@
         <a href="./unicode.html">unicode →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
   
 </body>
 </html>

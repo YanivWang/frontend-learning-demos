@@ -13,81 +13,72 @@
     - 面试中如何简洁讲清 封装获取存储容量（已用 / 剩余）
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>封装获取存储容量</title>
-      <script src="lib/localforage.js"></script>
+    <script src="lib/localforage.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>封装获取存储容量（已用 / 剩余）</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>把 iterate 的回调累加结果挂在对象上传递（闭包写法 + 引用传递）。</li>
-      <li>用 <code>async</code>/await 把异步流水线写成同步风格。</li>
-      <li>易错点：MAX_SIZE 仅是「业务约定」上限，并非浏览器真实配额。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>把 iterate 的回调累加结果挂在对象上传递（闭包写法 + 引用传递）？</strong> 把 iterate 的回调累加结果挂在对象上传递（闭包写法 + 引用传递）</li>
-      <li><strong>用 async/await 把异步流水线写成同步风格？</strong> 用 <code>async</code>/await 把异步流水线写成同步风格</li>
-      <li><strong>封装获取存储容量（已用 / 剩余）的核心概念是什么？</strong> 把 iterate 的回调累加结果挂在对象上传递（闭包写法 + 引用传递）；用 <code>async</code>/await 把异步流水线写成同步风格</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>把 iterate 的回调累加结果挂在对象上传递（闭包写法 + 引用传递）。</li>
+          <li>用 <code>async</code>/await 把异步流水线写成同步风格。</li>
+          <li>易错点：MAX_SIZE 仅是「业务约定」上限，并非浏览器真实配额。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>把 iterate 的回调累加结果挂在对象上传递（闭包写法 + 引用传递）？</strong> 把 iterate 的回调累加结果挂在对象上传递（闭包写法 + 引用传递）</li>
+          <li><strong>用 async/await 把异步流水线写成同步风格？</strong> 用 <code>async</code>/await 把异步流水线写成同步风格</li>
+          <li><strong>封装获取存储容量（已用 / 剩余）的核心概念是什么？</strong> 把 iterate 的回调累加结果挂在对象上传递（闭包写法 + 引用传递）；用 <code>async</code>/await 把异步流水线写成同步风格</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
-    console.log("进入...");
-
-    function _getStorageSize(cSizeObj) {
-        return localforage.iterate(function (value, key) {
-            cSizeObj.currentSize = cSizeObj.currentSize + key.length + JSON.stringify(value).length;
-        })
-    }
-
-    async function getStorageInfoSync() {
-        const MAX_SIZE = 50;
-
-        let cSizeObj = {
-            currentSize: 0
-        };
-        await _getStorageSize(cSizeObj);
-
-        let currentSize = cSizeObj.currentSize / 1024 / 1024;
-        let remainSize = MAX_SIZE - currentSize;
-        return {
-            currentSize: currentSize,
-            remainSize: remainSize
-        }
-    }
-
-    async function test() {
-        let currentSizeObj = await getStorageInfoSync();
-        console.log("currentSizeObj:" + JSON.stringify(currentSizeObj));
-    }
-
-    test();
-</script>
+      console.log("进入...");
+      
+      function _getStorageSize(cSizeObj) {
+      return localforage.iterate(function (value, key) {
+      cSizeObj.currentSize = cSizeObj.currentSize + key.length + JSON.stringify(value).length;
+      })
+      }
+      
+      async function getStorageInfoSync() {
+      const MAX_SIZE = 50;
+      
+      let cSizeObj = {
+      currentSize: 0
+      };
+      await _getStorageSize(cSizeObj);
+      
+      let currentSize = cSizeObj.currentSize / 1024 / 1024;
+      let remainSize = MAX_SIZE - currentSize;
+      return {
+      currentSize: currentSize,
+      remainSize: remainSize
+      }
+      }
+      
+      async function test() {
+      let currentSizeObj = await getStorageInfoSync();
+      console.log("currentSizeObj:" + JSON.stringify(currentSizeObj));
+      }
+      
+      test();
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -99,16 +90,14 @@
         <a href="./05-%E6%B5%8B%E8%AF%95%E6%9C%80%E5%A4%A7%E5%AE%B9%E9%87%8F.html">测试最大容量 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

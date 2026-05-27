@@ -13,113 +13,104 @@
     - 面试中如何简洁讲清 async 错误重试机制
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>async 错误重试机制</title>
     <link rel="stylesheet" href="../../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>async 错误重试机制</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>try/catch 包 <code>await</code>，可捕获 reject 的 <code>Promise</code>，避免后续中断。</li>
-      <li>失败后重置中间结果数组，循环重试 N 次。</li>
-      <li>注意外层 count 与 syncFun 内的 count 是不同作用域的变量，避免命名混淆。</li>
-      <li>try/catch 包 <code>await</code>，可捕获 reject 的 <code>Promise</code>，避免后续中断（补充）。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>try/catch 包 await？</strong> try/catch 包 <code>await</code>，可捕获 reject 的 <code>Promise</code>，避免后续中断</li>
-      <li><strong>失败后重置中间结果数组？</strong> 失败后重置中间结果数组，循环重试 N 次</li>
-      <li><strong>注意外层 count 与 syncFun 内的 count 是不同作用域的变量？</strong> 注意外层 count 与 syncFun 内的 count 是不同作用域的变量，避免命名混淆</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>try/catch 包 <code>await</code>，可捕获 reject 的 <code>Promise</code>，避免后续中断。</li>
+          <li>失败后重置中间结果数组，循环重试 N 次。</li>
+          <li>注意外层 count 与 syncFun 内的 count 是不同作用域的变量，避免命名混淆。</li>
+          <li>try/catch 包 <code>await</code>，可捕获 reject 的 <code>Promise</code>，避免后续中断（补充）。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>try/catch 包 await？</strong> try/catch 包 <code>await</code>，可捕获 reject 的 <code>Promise</code>，避免后续中断</li>
+          <li><strong>失败后重置中间结果数组？</strong> 失败后重置中间结果数组，循环重试 N 次</li>
+          <li><strong>注意外层 count 与 syncFun 内的 count 是不同作用域的变量？</strong> 注意外层 count 与 syncFun 内的 count 是不同作用域的变量，避免命名混淆</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
-    let count = 0;
-
-    function syncFun(initParam) {
-        console.log(initParam);
-
-        count++;
-        console.log("call...:" + count);
-        return new Promise(function (resolve, reject) {
-            setTimeout(function () {
-                let rand = parseInt(Math.random() * 2);
-                if (rand > 0) {
-                    resolve(rand);
-                } else {
-                    reject("save err");
-                }
-            }, 1000)
-        });
-    }
-
-    //实现错误多次重复尝试
-    let errCount = 0;
-    async function setData(methodArray, paramArray) {
-        console.log("参数长度：" + arguments.length);
-
-        let count = 20;
-        let dataArray = [];
-        for (let i = 0; i < count; i++) {
-            try {
-                dataArray = [];
-                //try里面实际上是同步的代码
-                let res = 0;
-                for (let j = 0; j < methodArray.length; j++) {
-                    if (paramArray && paramArray[j]) {
-                        res = await methodArray[j](paramArray[j]);//await语句如果失败，会立即终止执行
-                        dataArray.push(res);
-                    }
-                }
-                console.log("success");
-                break;
-            } catch (e) {
-                console.log("err:" + (++errCount));
-            }
-        }
-
-        return dataArray;
-    }
-
-    let methodArray = [];
-    methodArray.push(syncFun);
-    methodArray.push(syncFun);
-    methodArray.push(syncFun);
-
-    let paramArray = [];
-    paramArray.push("data1");
-    paramArray.push("data2");
-    paramArray.push("data3");
-
-    setData(methodArray, paramArray).then(function (data) {
-        console.log("final..." + data);
-    }).catch(function () {
-        console.log("failure...");
-    })
-</script>
+      let count = 0;
+      
+      function syncFun(initParam) {
+      console.log(initParam);
+      
+      count++;
+      console.log("call...:" + count);
+      return new Promise(function (resolve, reject) {
+      setTimeout(function () {
+      let rand = parseInt(Math.random() * 2);
+      if (rand > 0) {
+      resolve(rand);
+      } else {
+      reject("save err");
+      }
+      }, 1000)
+      });
+      }
+      
+      //实现错误多次重复尝试
+      let errCount = 0;
+      async function setData(methodArray, paramArray) {
+      console.log("参数长度：" + arguments.length);
+      
+      let count = 20;
+      let dataArray = [];
+      for (let i = 0; i < count; i++) {
+      try {
+      dataArray = [];
+      //try里面实际上是同步的代码
+      let res = 0;
+      for (let j = 0; j < methodArray.length; j++) {
+      if (paramArray && paramArray[j]) {
+      res = await methodArray[j](paramArray[j]);//await语句如果失败，会立即终止执行
+      dataArray.push(res);
+      }
+      }
+      console.log("success");
+      break;
+      } catch (e) {
+      console.log("err:" + (++errCount));
+      }
+      }
+      
+      return dataArray;
+      }
+      
+      let methodArray = [];
+      methodArray.push(syncFun);
+      methodArray.push(syncFun);
+      methodArray.push(syncFun);
+      
+      let paramArray = [];
+      paramArray.push("data1");
+      paramArray.push("data2");
+      paramArray.push("data3");
+      
+      setData(methodArray, paramArray).then(function (data) {
+      console.log("final..." + data);
+      }).catch(function () {
+      console.log("failure...");
+      })
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -131,16 +122,14 @@
         <a href="./05-async-await-%E8%A1%A8%E8%BE%BE%E5%BC%8F%E4%B8%8E%E5%BC%82%E5%B8%B8.html">async-await-表达式与异常 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

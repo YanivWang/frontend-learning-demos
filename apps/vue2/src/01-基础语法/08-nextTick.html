@@ -13,34 +13,35 @@
     - 面试中如何简洁讲清 nextTick 与异步 DOM 更新队列
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>nextTick 与异步 DOM 更新队列</title>
     <script src="../../libs/vue.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>nextTick 与异步 DOM 更新队列</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>Vue2 修改响应式数据后，不会立刻同步更新 DOM，而是把 watcher 放入异步队列。</li>
-      <li>同一轮事件循环内多次修改同一个数据，会被合并成一次 DOM 更新。</li>
-      <li>需要在数据变化后读取最新 DOM 时，用 <code>this</code>.$nextTick(callback) 或 Vue.nextTick(callback)。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>Vue2 修改响应式数据后？</strong> Vue2 修改响应式数据后，不会立刻同步更新 DOM，而是把 watcher 放入异步队列；需要在数据变化后读取最新 DOM 时，用 <code>this</code>.$nextTick(callback) 或 Vue.nextTick(callback)</li>
-      <li><strong>同一轮事件循环内多次修改同一个数据？</strong> 同一轮事件循环内多次修改同一个数据，会被合并成一次 DOM 更新</li>
-      <li><strong>需要在数据变化后读取最新 DOM 时？</strong> 需要在数据变化后读取最新 DOM 时，用 <code>this</code>.$nextTick(callback) 或 Vue.nextTick(callback)</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>Vue2 修改响应式数据后，不会立刻同步更新 DOM，而是把 watcher 放入异步队列。</li>
+          <li>同一轮事件循环内多次修改同一个数据，会被合并成一次 DOM 更新。</li>
+          <li>需要在数据变化后读取最新 DOM 时，用 <code>this</code>.$nextTick(callback) 或 Vue.nextTick(callback)。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>Vue2 修改响应式数据后？</strong> Vue2 修改响应式数据后，不会立刻同步更新 DOM，而是把 watcher 放入异步队列；需要在数据变化后读取最新 DOM 时，用 <code>this</code>.$nextTick(callback) 或 Vue.nextTick(callback)</li>
+          <li><strong>同一轮事件循环内多次修改同一个数据？</strong> 同一轮事件循环内多次修改同一个数据，会被合并成一次 DOM 更新</li>
+          <li><strong>需要在数据变化后读取最新 DOM 时？</strong> 需要在数据变化后读取最新 DOM 时，用 <code>this</code>.$nextTick(callback) 或 Vue.nextTick(callback)</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -54,40 +55,44 @@
 </div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    new Vue({
-        el: "#app",
-        data() {
-            return {
-                message: "旧文本",
-                count: 0,
-                log: []
-            };
-        },
-        methods: {
-            changeMessage() {
-                this.log = [];
-                this.message = "新文本";
-
-                this.log.push("同步读取 DOM: " + this.$refs.text.textContent);
-
-                this.$nextTick(() => {
-                    this.log.push("nextTick 后读取 DOM: " + this.$refs.text.textContent);
-                });
-            },
-            batchUpdate() {
-                this.count++;
-                this.count++;
-                this.count++;
-
-                this.$nextTick(() => {
-                    this.log.push("连续修改 3 次后，DOM 只在本轮末尾统一刷新: count = " + this.count);
-                });
-            }
-        }
-    });
-</script>
+      new Vue({
+      el: "#app",
+      data() {
+      return {
+      message: "旧文本",
+      count: 0,
+      log: []
+      };
+      },
+      methods: {
+      changeMessage() {
+      this.log = [];
+      this.message = "新文本";
+      
+      this.log.push("同步读取 DOM: " + this.$refs.text.textContent);
+      
+      this.$nextTick(() => {
+      this.log.push("nextTick 后读取 DOM: " + this.$refs.text.textContent);
+      });
+      },
+      batchUpdate() {
+      this.count++;
+      this.count++;
+      this.count++;
+      
+      this.$nextTick(() => {
+      this.log.push("连续修改 3 次后，DOM 只在本轮末尾统一刷新: count = " + this.count);
+      });
+      }
+      }
+      });
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -99,16 +104,14 @@
         <a href="./09-%E4%BA%8B%E4%BB%B6%E4%BF%AE%E9%A5%B0%E7%AC%A6.html">事件修饰符 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

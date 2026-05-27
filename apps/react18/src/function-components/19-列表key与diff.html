@@ -14,38 +14,39 @@
     - 面试中如何简洁讲清 列表 key 与 diff
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>React · 列表 key 与 diff</title>
-  <script src="../../libs/react.development.js"></script>
-  <script src="../../libs/react-dom.development.js"></script>
-  <script src="../../libs/babel.min.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React · 列表 key 与 diff</title>
+    <script src="../../libs/react.development.js"></script>
+    <script src="../../libs/react-dom.development.js"></script>
+    <script src="../../libs/babel.min.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>列表 key 与 diff</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li><code>key</code> 帮助 React 在同级列表中识别元素身份。</li>
-      <li><code>key</code> 不会作为 props 传给组件。</li>
-      <li>稳定唯一的业务 id 通常优于 index。</li>
-      <li>用 index 作为 <code>key</code> 时，列表插入、删除、排序可能导致状态错位。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>key 帮助 React 在同级列表中识别元素身份？</strong> <code>key</code> 帮助 React 在同级列表中识别元素身份；<code>key</code> 不会作为 props 传给组件</li>
-      <li><strong>key 不会作为 props 传给组件？</strong> <code>key</code> 帮助 React 在同级列表中识别元素身份；<code>key</code> 不会作为 props 传给组件</li>
-      <li><strong>稳定唯一的业务 id 通常优于 index？</strong> 稳定唯一的业务 id 通常优于 index</li>
-      <li><strong>用 index 作为 key 时？</strong> 用 index 作为 <code>key</code> 时，列表插入、删除、排序可能导致状态错位</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>key</code> 帮助 React 在同级列表中识别元素身份。</li>
+          <li><code>key</code> 不会作为 props 传给组件。</li>
+          <li>稳定唯一的业务 id 通常优于 index。</li>
+          <li>用 index 作为 <code>key</code> 时，列表插入、删除、排序可能导致状态错位。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>key 帮助 React 在同级列表中识别元素身份？</strong> <code>key</code> 帮助 React 在同级列表中识别元素身份；<code>key</code> 不会作为 props 传给组件</li>
+          <li><strong>key 不会作为 props 传给组件？</strong> <code>key</code> 帮助 React 在同级列表中识别元素身份；<code>key</code> 不会作为 props 传给组件</li>
+          <li><strong>稳定唯一的业务 id 通常优于 index？</strong> 稳定唯一的业务 id 通常优于 index</li>
+          <li><strong>用 index 作为 key 时？</strong> 用 index 作为 <code>key</code> 时，列表插入、删除、排序可能导致状态错位</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -53,57 +54,62 @@
 <div id="root"></div>
 
     
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script type="text/babel">
-    const { useState } = React;
-
-    function TodoItem({ todo }) {
+      const { useState } = React;
+      
+      function TodoItem({ todo }) {
       const [checked, setChecked] = useState(false);
-
+      
       return (
-        <li>
-          <label>
-            <input type="checkbox" checked={checked} onChange={e => setChecked(e.target.checked)} />
-            {todo.text}（组件内部 checked: {String(checked)}）
-          </label>
-        </li>
+      <li>
+      <label>
+      <input type="checkbox" checked={checked} onChange={e => setChecked(e.target.checked)} />
+      {todo.text}（组件内部 checked: {String(checked)}）
+      </label>
+      </li>
       );
-    }
-
-    function App() {
-      const [todos, setTodos] = useState([
-        { id: 1, text: "学习 JSX" },
-        { id: 2, text: "学习 state" },
-        { id: 3, text: "学习 Hooks" }
-      ]);
-
-      function addAtHead() {
-        const nextId = Date.now();
-        setTodos([{ id: nextId, text: "新任务 " + nextId }, ...todos]);
       }
-
+      
+      function App() {
+      const [todos, setTodos] = useState([
+      { id: 1, text: "学习 JSX" },
+      { id: 2, text: "学习 state" },
+      { id: 3, text: "学习 Hooks" }
+      ]);
+      
+      function addAtHead() {
+      const nextId = Date.now();
+      setTodos([{ id: nextId, text: "新任务 " + nextId }, ...todos]);
+      }
+      
       return (
-        <section>
-          <h1>列表 key 与 diff</h1>
-
-          <button onClick={addAtHead}>从头部插入</button>
-
-          <h2>正确: 使用稳定 id 作为 key</h2>
-          <ul>
-            {todos.map(todo => <TodoItem key={todo.id} todo={todo} />)}
-          </ul>
-
-          <h2>反例: index key 在插入时可能造成状态错位</h2>
-          <ul>
-            {todos.map((todo, index) => <TodoItem key={index} todo={todo} />)}
-          </ul>
-
-          <p>面试回答: key 是 diff 的身份标识；列表会增删排序时，不要用 index 当 key。</p>
-        </section>
+      <section>
+      <h1>列表 key 与 diff</h1>
+      
+      <button onClick={addAtHead}>从头部插入</button>
+      
+      <h2>正确: 使用稳定 id 作为 key</h2>
+      <ul>
+      {todos.map(todo => <TodoItem key={todo.id} todo={todo} />)}
+      </ul>
+      
+      <h2>反例: index key 在插入时可能造成状态错位</h2>
+      <ul>
+      {todos.map((todo, index) => <TodoItem key={index} todo={todo} />)}
+      </ul>
+      
+      <p>面试回答: key 是 diff 的身份标识；列表会增删排序时，不要用 index 当 key。</p>
+      </section>
       );
-    }
-
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-  </script>
+      }
+      
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
@@ -114,16 +120,14 @@
         <a href="./20-%E5%8F%97%E6%8E%A7%E4%B8%8E%E9%9D%9E%E5%8F%97%E6%8E%A7%E8%A1%A8%E5%8D%95.html">受控与非受控表单 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

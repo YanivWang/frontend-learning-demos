@@ -13,52 +13,47 @@
     - 面试中如何简洁讲清 WeakMap 弱引用映射
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WeakMap</title>
-      <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
+  </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>WeakMap 弱引用映射</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>键必须是对象，且 <code>WeakMap</code> 对键是弱引用，不会阻止垃圾回收。</li>
-      <li>没有 keys/values/entries/forEach 等迭代方法，无法枚举。</li>
-      <li>典型场景：给已有对象关联私有数据，且对象被回收时数据自动清理。</li>
-      <li>键必须是对象，且 <code>WeakMap</code> 对键是弱引用，不会阻止垃圾回收（补充）。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>没有 keys/values/entries/forEach 等迭代方法？</strong> 没有 keys/values/entries/forEach 等迭代方法，无法枚举</li>
-      <li><strong>WeakMap 弱引用映射的核心概念是什么？</strong> 键必须是对象，且 <code>WeakMap</code> 对键是弱引用，不会阻止垃圾回收</li>
-      <li><strong>WeakMap 弱引用映射在实际项目里怎么用？</strong> 键必须是对象，且 <code>WeakMap</code> 对键是弱引用，不会阻止垃圾回收</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>键必须是对象，且 <code>WeakMap</code> 对键是弱引用，不会阻止垃圾回收。</li>
+          <li>没有 keys/values/entries/forEach 等迭代方法，无法枚举。</li>
+          <li>典型场景：给已有对象关联私有数据，且对象被回收时数据自动清理。</li>
+          <li>键必须是对象，且 <code>WeakMap</code> 对键是弱引用，不会阻止垃圾回收（补充）。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>没有 keys/values/entries/forEach 等迭代方法？</strong> 没有 keys/values/entries/forEach 等迭代方法，无法枚举</li>
+          <li><strong>WeakMap 弱引用映射的核心概念是什么？</strong> 键必须是对象，且 <code>WeakMap</code> 对键是弱引用，不会阻止垃圾回收</li>
+          <li><strong>WeakMap 弱引用映射在实际项目里怎么用？</strong> 键必须是对象，且 <code>WeakMap</code> 对键是弱引用，不会阻止垃圾回收</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../packages/shared/demo-log.js"></script>
-
 <button id="myButton">click me</button>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
       // WeakMap 键不属于「强引用」，不会阻止 GC
       // 只要键被回收，对应键值对就一起消失
@@ -66,45 +61,45 @@
       // wm.set(1, 123);        // 报错：Invalid value used as weak map key
       // wm.set("2", {});       // 报错：原始类型也不行
       wm.set({}, { address: "北京奶东村" });
-
+      
       // wm.entries           // WeakMap 不存在迭代方法
       console.log(wm);
-
+      
       setTimeout(() => {
-        console.log(wm);
+      console.log(wm);
       }, 3000);
-
+      
       // 场景 1：实现类的私有变量
       const privateData = new WeakMap();
-
+      
       class MyClass {
-        constructor() {
-          privateData.set(this, {
-            secret: "这是私有数据",
-          });
-        }
-        getSecret() {
-          return privateData.get(this).secret;
-        }
+      constructor() {
+      privateData.set(this, {
+      secret: "这是私有数据",
+      });
       }
-
+      getSecret() {
+      return privateData.get(this).secret;
+      }
+      }
+      
       const instance = new MyClass();
       console.log(instance.getSecret());
       // 通过外部 key 取不到，但只要类内部能拿到 this 这个键，就能访问
       console.log(privateData.get({})); // undefined
-
+      
       // 场景 2：给 DOM 节点关联元数据；节点被移除时元数据可自动回收
       const elementStates = new WeakMap();
       const button = document.getElementById("myButton");
-
+      
       elementStates.set(button, {
-        clickCount: 0,
+      clickCount: 0,
       });
-
+      
       button.addEventListener("click", function () {
-        const state = elementStates.get(this);
-        state.clickCount++;
-        console.log(`按钮被点击了 ${state.clickCount} 次`);
+      const state = elementStates.get(this);
+      state.clickCount++;
+      console.log(`按钮被点击了 ${state.clickCount} 次`);
       });
     </script>
     <!-- SCRIPT_END -->
@@ -118,16 +113,14 @@
         <a href="./WeakSet.html">WeakSet →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

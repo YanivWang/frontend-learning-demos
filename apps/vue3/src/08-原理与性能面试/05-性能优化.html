@@ -13,6 +13,7 @@
     - 面试中如何简洁讲清 Vue3 性能优化
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
   <head>
@@ -21,33 +22,33 @@
     <title>Vue3 · 性能优化</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; padding: 6px 12px; }
-      code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 860px; margin-bottom: 16px; }
-      li { margin: 6px 0; }
+    body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+    button { margin-right: 8px; padding: 6px 12px; }
+    code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
+    .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 860px; margin-bottom: 16px; }
+    li { margin: 6px 0; }
     </style>
-      <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
+  </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vue3 性能优化</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>性能优化先定位瓶颈，再选手段。</li>
-      <li>常见方向：减少渲染、拆包懒加载、缓存、列表虚拟化、避免无意义响应式。</li>
-      <li>Vue3 提供 v-once、v-memo、shallowRef、markRaw 等工具。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>性能优化先定位瓶颈？</strong> 性能优化先定位瓶颈，再选手段</li>
-      <li><strong>Vue3 提供 v-once、v-memo、shallowRef、markRaw？</strong> Vue3 提供 v-once、v-memo、shallowRef、markRaw 等工具</li>
-      <li><strong>Vue3 性能优化的核心概念是什么？</strong> Vue3 提供 v-once、v-memo、shallowRef、markRaw 等工具</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>性能优化先定位瓶颈，再选手段。</li>
+          <li>常见方向：减少渲染、拆包懒加载、缓存、列表虚拟化、避免无意义响应式。</li>
+          <li>Vue3 提供 v-once、v-memo、shallowRef、markRaw 等工具。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>性能优化先定位瓶颈？</strong> 性能优化先定位瓶颈，再选手段</li>
+          <li><strong>Vue3 提供 v-once、v-memo、shallowRef、markRaw？</strong> Vue3 提供 v-once、v-memo、shallowRef、markRaw 等工具</li>
+          <li><strong>Vue3 性能优化的核心概念是什么？</strong> Vue3 提供 v-once、v-memo、shallowRef、markRaw 等工具</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -82,48 +83,52 @@
     </div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
       const { createApp, ref, shallowRef, markRaw } = Vue;
-
+      
       createApp({
-        setup() {
-          const count = ref(0);
-          const createdAt = new Date().toLocaleTimeString();
-          const list = ref([
-            { id: 1, text: "稳定 key", done: true },
-            { id: 2, text: "避免无意义重渲染", done: false },
-            { id: 3, text: "按需加载", done: true },
-          ]);
-
-          const heavy = shallowRef({ meta: { version: 1, tags: ["a", "b", "c"] } });
-          const heavyRefVersion = ref(heavy.value.meta.version);
-          const rawChart = markRaw({ name: "ECharts 实例" });
-          const rawViewVersion = ref(0);
-          const reactiveNote = ref("大对象或第三方实例可用 shallowRef / markRaw 降低响应式追踪成本。");
-
-          function mutateShallowNested() {
-            heavy.value.meta.version++;
-            reactiveNote.value = "已改 shallowRef 嵌套字段；若上方版本未变，说明未追踪内部变更。";
-          }
-
-          function replaceShallowValue() {
-            heavy.value = { meta: { version: heavy.value.meta.version + 1, tags: ["x"] } };
-            heavyRefVersion.value = heavy.value.meta.version;
-            reactiveNote.value = "已整体替换 shallowRef.value，版本号应更新。";
-          }
-
-          function mutateRawChart() {
-            rawChart.name = rawChart.name === "ECharts 实例" ? "已改但未追踪" : "ECharts 实例";
-            reactiveNote.value = "已改 markRaw 字段；若 name 未变，说明修改未被响应式系统追踪。";
-          }
-
-          return {
-            count, createdAt, list,
-            heavyRefVersion, rawChart, rawViewVersion, reactiveNote,
-            mutateShallowNested, replaceShallowValue, mutateRawChart,
-          };
-        },
+      setup() {
+      const count = ref(0);
+      const createdAt = new Date().toLocaleTimeString();
+      const list = ref([
+      { id: 1, text: "稳定 key", done: true },
+      { id: 2, text: "避免无意义重渲染", done: false },
+      { id: 3, text: "按需加载", done: true },
+      ]);
+      
+      const heavy = shallowRef({ meta: { version: 1, tags: ["a", "b", "c"] } });
+      const heavyRefVersion = ref(heavy.value.meta.version);
+      const rawChart = markRaw({ name: "ECharts 实例" });
+      const rawViewVersion = ref(0);
+      const reactiveNote = ref("大对象或第三方实例可用 shallowRef / markRaw 降低响应式追踪成本。");
+      
+      function mutateShallowNested() {
+      heavy.value.meta.version++;
+      reactiveNote.value = "已改 shallowRef 嵌套字段；若上方版本未变，说明未追踪内部变更。";
+      }
+      
+      function replaceShallowValue() {
+      heavy.value = { meta: { version: heavy.value.meta.version + 1, tags: ["x"] } };
+      heavyRefVersion.value = heavy.value.meta.version;
+      reactiveNote.value = "已整体替换 shallowRef.value，版本号应更新。";
+      }
+      
+      function mutateRawChart() {
+      rawChart.name = rawChart.name === "ECharts 实例" ? "已改但未追踪" : "ECharts 实例";
+      reactiveNote.value = "已改 markRaw 字段；若 name 未变，说明修改未被响应式系统追踪。";
+      }
+      
+      return {
+      count, createdAt, list,
+      heavyRefVersion, rawChart, rawViewVersion, reactiveNote,
+      mutateShallowNested, replaceShallowValue, mutateRawChart,
+      };
+      },
       }).mount("#app");
     </script>
     <!-- SCRIPT_END -->
@@ -137,16 +142,14 @@
         <a href="../../../react18/src/class-components/01-class-%E5%BF%85%E9%A1%BBsuper.html">class-必须super →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

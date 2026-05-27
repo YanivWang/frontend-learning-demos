@@ -12,11 +12,12 @@
     - 面试中如何简洁讲清 Vuex Module 演示（按模块拆分 store）
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vuex · Module 模块化拆分 store</title>
     <script src="../../libs/vue.js"></script>
     <!--vuex 依赖 Promise；老浏览器需先加载 polyfill-->
@@ -24,26 +25,26 @@
     <script src="../../libs/vuex.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vuex Module 演示（按模块拆分 store）</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>moduleA（count 计数）、moduleB（user 信息），通过 namespaced 隔离。</li>
-      <li>访问 moduleA 的 state.count：store.state.moduleA.count；mutations/actions/getters 同理。</li>
-      <li>moduleA（count 计数）、moduleB（user 信息），通过 namespaced 隔离。</li>
-      <li>访问 moduleA 的 state.count：store.state.moduleA.count；mutations/actions/getters 同理。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>moduleA（count 计数）、moduleB（user 信息）？</strong> moduleA（count 计数）、moduleB（user 信息），通过 namespaced 隔离；访问 moduleA 的 state.count：store.state.moduleA.count；mutations/actions/getters 同理</li>
-      <li><strong>访问 moduleA 的 state.count？</strong> 访问 moduleA 的 state.count：store.state.moduleA.count；mutations/actions/getters 同理</li>
-      <li><strong>Vuex Module 演示（按模块拆分 store）的核心概念是什么？</strong> moduleA（count 计数）、moduleB（user 信息），通过 namespaced 隔离；访问 moduleA 的 state.count：store.state.moduleA.count；mutations/actions/getters 同理</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>moduleA（count 计数）、moduleB（user 信息），通过 namespaced 隔离。</li>
+          <li>访问 moduleA 的 state.count：store.state.moduleA.count；mutations/actions/getters 同理。</li>
+          <li>moduleA（count 计数）、moduleB（user 信息），通过 namespaced 隔离。</li>
+          <li>访问 moduleA 的 state.count：store.state.moduleA.count；mutations/actions/getters 同理。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>moduleA（count 计数）、moduleB（user 信息）？</strong> moduleA（count 计数）、moduleB（user 信息），通过 namespaced 隔离；访问 moduleA 的 state.count：store.state.moduleA.count；mutations/actions/getters 同理</li>
+          <li><strong>访问 moduleA 的 state.count？</strong> 访问 moduleA 的 state.count：store.state.moduleA.count；mutations/actions/getters 同理</li>
+          <li><strong>Vuex Module 演示（按模块拆分 store）的核心概念是什么？</strong> moduleA（count 计数）、moduleB（user 信息），通过 namespaced 隔离；访问 moduleA 的 state.count：store.state.moduleA.count；mutations/actions/getters 同理</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -52,79 +53,83 @@
 </div>
 
     
-        <!-- SCRIPT_START -->
+        
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script>
-    //由于使用单一状态树，应用的所有状态都会被集中到一个对象中。当应用非常复杂的时候，store对象就可能变的非常臃肿
-    //使用Vuex的module功能，可以将store对象分割成模块。
-    //每个模块拥有自己的state，mutation，action，getter
-    //甚至是嵌套子模块——从上至下进行同样方式的分割
-
-    // 模块 A：计数器
-    const moduleA = {
-        namespaced: true,
-        state: () => ({ count: 0 }),
-        mutations: {
-            increment(state, n = 1) { state.count += n; }
-        },
-        actions: {
-            incrementAsync({ commit }, n = 1) {
-                setTimeout(() => commit('increment', n), 500);
-            }
-        },
-        getters: {
-            doubleCount: (state) => state.count * 2
-        }
-    };
-
-    // 模块 B：用户信息
-    const moduleB = {
-        namespaced: true,
-        state: () => ({ name: 'guest' }),
-        mutations: {
-            setName(state, name) { state.name = name; }
-        }
-    };
-
-    const store = new Vuex.Store({
-        modules: {
-            moduleA,
-            moduleB
-        }
-    });
-
-    // 访问模块 state：注意带模块名前缀
-    console.log('moduleA.count:', store.state.moduleA.count);
-    console.log('moduleB.name :', store.state.moduleB.name);
-
-    // 提交「带命名空间」的 mutation / 派发 action
-    store.commit('moduleA/increment', 5);
-    store.dispatch('moduleA/incrementAsync', 3);
-    store.commit('moduleB/setName', 'wangcheng');
-
-    new Vue({
-        data() {
-            return {}
-        },
-        store,
-        computed: {
-            // 使用 mapState 第二个参数 namespaced 简化跨模块访问
-            ...Vuex.mapState('moduleA', { aCount: 'count' }),
-            ...Vuex.mapState('moduleB', { bName: 'name' }),
-            ...Vuex.mapGetters('moduleA', ['doubleCount'])
-        },
-        template: `
-            <div>
-               <div>moduleA.count: {{ aCount }}（doubleCount: {{ doubleCount }}）</div>
-               <div>moduleB.name : {{ bName }}</div>
-            </div>
-        `,
-        methods: {
-            // 命名空间下的 actions 也可以用 mapActions(namespace, [...]) 映射
-            ...Vuex.mapActions('moduleA', ['incrementAsync'])
-        }
-    }).$mount("#app");
-
-</script>
+      //由于使用单一状态树，应用的所有状态都会被集中到一个对象中。当应用非常复杂的时候，store对象就可能变的非常臃肿
+      //使用Vuex的module功能，可以将store对象分割成模块。
+      //每个模块拥有自己的state，mutation，action，getter
+      //甚至是嵌套子模块——从上至下进行同样方式的分割
+      
+      // 模块 A：计数器
+      const moduleA = {
+      namespaced: true,
+      state: () => ({ count: 0 }),
+      mutations: {
+      increment(state, n = 1) { state.count += n; }
+      },
+      actions: {
+      incrementAsync({ commit }, n = 1) {
+      setTimeout(() => commit('increment', n), 500);
+      }
+      },
+      getters: {
+      doubleCount: (state) => state.count * 2
+      }
+      };
+      
+      // 模块 B：用户信息
+      const moduleB = {
+      namespaced: true,
+      state: () => ({ name: 'guest' }),
+      mutations: {
+      setName(state, name) { state.name = name; }
+      }
+      };
+      
+      const store = new Vuex.Store({
+      modules: {
+      moduleA,
+      moduleB
+      }
+      });
+      
+      // 访问模块 state：注意带模块名前缀
+      console.log('moduleA.count:', store.state.moduleA.count);
+      console.log('moduleB.name :', store.state.moduleB.name);
+      
+      // 提交「带命名空间」的 mutation / 派发 action
+      store.commit('moduleA/increment', 5);
+      store.dispatch('moduleA/incrementAsync', 3);
+      store.commit('moduleB/setName', 'wangcheng');
+      
+      new Vue({
+      data() {
+      return {}
+      },
+      store,
+      computed: {
+      // 使用 mapState 第二个参数 namespaced 简化跨模块访问
+      ...Vuex.mapState('moduleA', { aCount: 'count' }),
+      ...Vuex.mapState('moduleB', { bName: 'name' }),
+      ...Vuex.mapGetters('moduleA', ['doubleCount'])
+      },
+      template: `
+      <div>
+      <div>moduleA.count: {{ aCount }}（doubleCount: {{ doubleCount }}）</div>
+      <div>moduleB.name : {{ bName }}</div>
+      </div>
+      `,
+      methods: {
+      // 命名空间下的 actions 也可以用 mapActions(namespace, [...]) 映射
+      ...Vuex.mapActions('moduleA', ['incrementAsync'])
+      }
+      }).$mount("#app");
+      
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -136,16 +141,14 @@
         <a href="./15-Promise%E5%89%8D%E7%BD%AE%E5%9B%9E%E9%A1%BE.html">Promise前置回顾 →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

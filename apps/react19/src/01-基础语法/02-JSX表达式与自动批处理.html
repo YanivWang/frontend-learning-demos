@@ -14,42 +14,43 @@
     - 面试中如何简洁讲清 JSX 表达式与 React 19 自动批处理
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>React 19 · JSX 与批处理</title>
-  <script src="../../libs/react.development.js"></script>
-  <script src="../../libs/react-dom.development.js"></script>
-  <script src="../../libs/babel.min.js"></script>
-  <style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React 19 · JSX 与批处理</title>
+    <script src="../../libs/react.development.js"></script>
+    <script src="../../libs/react-dom.development.js"></script>
+    <script src="../../libs/babel.min.js"></script>
+    <style>
     body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 760px; line-height: 1.6; }
     .warn { color: #9a6700; background: #fff8c5; padding: 0.5rem 0.75rem; border-radius: 6px; }
     button { margin-right: 0.5rem; margin-top: 0.5rem; }
-  </style>
+    </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>JSX 表达式与 React 19 自动批处理</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li><code>JSX</code> 花括号内可写任意 JavaScript 表达式（变量、三元、函数调用）。</li>
-      <li>注意 &amp;&amp; 短路：0、空字符串可能被渲染到 DOM。</li>
-      <li>React 19 在 <code>createRoot</code> 下对 <code>setTimeout</code>、<code>Promise</code> 等中的 setState 默认批处理。</li>
-      <li>需要同步读 DOM 时仍可用 flushSync 退出批处理。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>JSX 花括号内可写任意 JavaScript 表达式（变量、三元、函数调用）？</strong> <code>JSX</code> 花括号内可写任意 JavaScript 表达式（变量、三元、函数调用）</li>
-      <li><strong>React 19 在 createRoot 下对 setTimeout、Prom？</strong> React 19 在 <code>createRoot</code> 下对 <code>setTimeout</code>、<code>Promise</code> 等中的 setState 默认批处理</li>
-      <li><strong>需要同步读 DOM 时仍可用 flushSync 退出批处理？</strong> 需要同步读 DOM 时仍可用 flushSync 退出批处理</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>JSX</code> 花括号内可写任意 JavaScript 表达式（变量、三元、函数调用）。</li>
+          <li>注意 &amp;&amp; 短路：0、空字符串可能被渲染到 DOM。</li>
+          <li>React 19 在 <code>createRoot</code> 下对 <code>setTimeout</code>、<code>Promise</code> 等中的 setState 默认批处理。</li>
+          <li>需要同步读 DOM 时仍可用 flushSync 退出批处理。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>JSX 花括号内可写任意 JavaScript 表达式（变量、三元、函数调用）？</strong> <code>JSX</code> 花括号内可写任意 JavaScript 表达式（变量、三元、函数调用）</li>
+          <li><strong>React 19 在 createRoot 下对 setTimeout、Prom？</strong> React 19 在 <code>createRoot</code> 下对 <code>setTimeout</code>、<code>Promise</code> 等中的 setState 默认批处理</li>
+          <li><strong>需要同步读 DOM 时仍可用 flushSync 退出批处理？</strong> 需要同步读 DOM 时仍可用 flushSync 退出批处理</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -57,52 +58,57 @@
 <div id="root"></div>
 
     
+            
+                
+                
+                <!-- SCRIPT_START -->
     <script type="text/babel">
-    const { useRef, useState } = React;
-    const { flushSync } = ReactDOM;
-
-    function App() {
+      const { useRef, useState } = React;
+      const { flushSync } = ReactDOM;
+      
+      function App() {
       const [count, setCount] = useState(0);
       const [flag, setFlag] = useState(false);
       const renders = useRef(0);
       renders.current += 1;
-
+      
       const batchInTimeout = () => {
-        setTimeout(() => {
-          setCount((c) => c + 1);
-          setFlag((f) => !f);
-        }, 0);
+      setTimeout(() => {
+      setCount((c) => c + 1);
+      setFlag((f) => !f);
+      }, 0);
       };
-
+      
       const noBatch = () => {
-        flushSync(() => setCount((c) => c + 1));
-        flushSync(() => setFlag((f) => !f));
+      flushSync(() => setCount((c) => c + 1));
+      flushSync(() => setFlag((f) => !f));
       };
-
+      
       const items = ["A", "B"];
       const empty = 0;
-
+      
       return (
-        <section>
-          <h1>JSX 表达式</h1>
-
-          <p>列表长度展示：{items.length} 项</p>
-          <p className="warn">
-            陷阱演示：{empty && <span>不会显示</span>}
-            {empty} ← 上面 length 为 0 时，&& 左侧为 0 会渲染数字 0
-          </p>
-          <p>三元安全写法：{items.length ? items.join("、") : "暂无"}</p>
-
-          <h2>自动批处理（React 19）</h2>
-          <p>count={count}，flag={String(flag)}，本组件 render 次数={renders.current}</p>
-          <button type="button" onClick={batchInTimeout}>setTimeout 内两次 setState</button>
-          <button type="button" onClick={noBatch}>flushSync 两次提交</button>
-        </section>
+      <section>
+      <h1>JSX 表达式</h1>
+      
+      <p>列表长度展示：{items.length} 项</p>
+      <p className="warn">
+      陷阱演示：{empty && <span>不会显示</span>}
+      {empty} ← 上面 length 为 0 时，&& 左侧为 0 会渲染数字 0
+      </p>
+      <p>三元安全写法：{items.length ? items.join("、") : "暂无"}</p>
+      
+      <h2>自动批处理（React 19）</h2>
+      <p>count={count}，flag={String(flag)}，本组件 render 次数={renders.current}</p>
+      <button type="button" onClick={batchInTimeout}>setTimeout 内两次 setState</button>
+      <button type="button" onClick={noBatch}>flushSync 两次提交</button>
+      </section>
       );
-    }
-
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-  </script>
+      }
+      
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
@@ -113,16 +119,15 @@
         <a href="./03-Actions%E4%B8%8EuseActionState.html">Actions与useActionState →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
   
 </body>
 </html>

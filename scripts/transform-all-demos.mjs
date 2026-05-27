@@ -3,7 +3,7 @@
  * 全库 demo 改造：对标 apps/javascript/01-基础/变量进阶.html
  *   - 头注释补齐 面试:
  *   - demo-notes.css + section.demo-notes（展开版知识点 + 面试答法）
- *   - console 类 demo 补齐 h1 / hint / #demo-output / demo-log.js
+ *   - console 类 demo 补齐 h1 / hint / SCRIPT 标记
  *   - 迁移 Vue/React 内「面试回答」到 .demo-notes
  *
  * 运行：node scripts/transform-all-demos.mjs [--dry-run]
@@ -45,7 +45,7 @@ const SECTIONS = [
 ];
 
 const HINT_CONSOLE =
-  '  <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>';
+  '  <p class="hint">请打开 DevTools Console 查看输出。</p>';
 const HINT_VISUAL =
   '  <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>';
 const HINT_FRAMEWORK =
@@ -117,27 +117,12 @@ function injectShell(content, abs, theme, rel) {
     }
   }
 
-  if (hasConsoleDemo(next) && !hasVisibleOutput(next) && !isFrameworkDemo(rel)) {
-    blocks.push('  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>');
-  }
-
   if (blocks.length) {
     const mountRe = /(<body[^>]*>)\s*(<div[^>]+id\s*=\s*["'](?:app|root)["'])/i;
     if (mountRe.test(next)) {
       next = next.replace(mountRe, `$1\n${blocks.join("\n")}\n  $2`);
     } else {
       next = next.replace(/<body([^>]*)>/i, `<body$1>\n${blocks.join("\n")}`);
-    }
-  }
-
-  if (hasConsoleDemo(next) && !hasDemoLog(next) && !isFrameworkDemo(rel)) {
-    const src = relFromFile(dirname(abs), DEMO_LOG);
-    const tag = `  <script src="${src}"></script>`;
-    const scriptMatch = next.match(/<script(?![^>]*\bsrc\s*=)(?![^>]*\btype\s*=\s*["']text\/babel["'])/i);
-    if (scriptMatch) {
-      next = next.replace(scriptMatch[0], `${tag}\n${scriptMatch[0]}`);
-    } else if (/<\/body>/i.test(next)) {
-      next = next.replace(/<\/body>/i, `${tag}\n</body>`);
     }
   }
 

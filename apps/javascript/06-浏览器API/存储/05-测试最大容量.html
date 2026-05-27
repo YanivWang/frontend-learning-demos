@@ -13,78 +13,69 @@
     - 面试中如何简洁讲清 测试 localforage 最大可写容量
 
 -->
+
 <!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>测试最大容量</title>
-      <script src="lib/localforage.js"></script>
+    <script src="lib/localforage.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-</head>
-<body class="demo-page">
+  </head>
+  <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>测试 localforage 最大可写容量</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li>不同浏览器、不同后端（IndexedDB/WebSQL/localStorage）限制差异巨大。</li>
-      <li>一次写入巨大数组可触发 QuotaExceededError，需要 try/catch。</li>
-      <li>JS 字符串按 UTF-16 存储，一个字符约 2 字节（emoji 等更多）。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>不同浏览器、不同后端（IndexedDB/WebSQL/localStorage？</strong> 不同浏览器、不同后端（IndexedDB/WebSQL/localStorage）限制差异巨大</li>
-      <li><strong>一次写入巨大数组可触发 QuotaExceededError？</strong> 一次写入巨大数组可触发 QuotaExceededError，需要 try/catch</li>
-      <li><strong>JS 字符串按 UTF-16 存储？</strong> JS 字符串按 UTF-16 存储，一个字符约 2 字节（emoji 等更多）</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li>不同浏览器、不同后端（IndexedDB/WebSQL/localStorage）限制差异巨大。</li>
+          <li>一次写入巨大数组可触发 QuotaExceededError，需要 try/catch。</li>
+          <li>JS 字符串按 UTF-16 存储，一个字符约 2 字节（emoji 等更多）。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>不同浏览器、不同后端（IndexedDB/WebSQL/localStorage？</strong> 不同浏览器、不同后端（IndexedDB/WebSQL/localStorage）限制差异巨大</li>
+          <li><strong>一次写入巨大数组可触发 QuotaExceededError？</strong> 一次写入巨大数组可触发 QuotaExceededError，需要 try/catch</li>
+          <li><strong>JS 字符串按 UTF-16 存储？</strong> JS 字符串按 UTF-16 存储，一个字符约 2 字节（emoji 等更多）</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
-    // 压测：约 550 万次 push，每条 testStr 为 10 个字符，用于探测 IndexedDB 配额上限
-    localforage.clear().then(function () {
-        localforage.keys().then(function (keys) {
-            console.log("keys:" + keys);
-
-            //纯净版测试
-            var startTime = new Date().getTime();
-            var array = [];
-            var testStr = "ABCDEFGEFG";
-            for (var i = 0; i < 10000 * 100 * 5.5; i++) {
-                array.push(testStr);
-            }
-            localforage.setItem("bigData", array).then(function (value) {
-                // 粗估字符数：元素个数 × 每条字符串长度，再换算为 MB（非精确字节数）
-                console.log(value.length * testStr.length / 1024 / 1024 + "m");
-
-                var endTime = new Date().getTime();
-                console.log("用时：" + (endTime - startTime) / 1000 + " s");
-            }).catch(function (err) {
-                console.log("存储错误：" + err);
-            });
-        });
-    }).catch(function (err) {
-        console.log("清空错误：" + err);
-    });
-
-
-</script>
+      // 压测：约 550 万次 push，每条 testStr 为 10 个字符，用于探测 IndexedDB 配额上限
+      localforage.clear().then(function () {
+      localforage.keys().then(function (keys) {
+      console.log("keys:" + keys);
+      
+      //纯净版测试
+      var startTime = new Date().getTime();
+      var array = [];
+      var testStr = "ABCDEFGEFG";
+      for (var i = 0; i < 10000 * 100 * 5.5; i++) {
+      array.push(testStr);
+      }
+      localforage.setItem("bigData", array).then(function (value) {
+      // 粗估字符数：元素个数 × 每条字符串长度，再换算为 MB（非精确字节数）
+      console.log(value.length * testStr.length / 1024 / 1024 + "m");
+      
+      var endTime = new Date().getTime();
+      console.log("用时：" + (endTime - startTime) / 1000 + " s");
+      }).catch(function (err) {
+      console.log("存储错误：" + err);
+      });
+      });
+      }).catch(function (err) {
+      console.log("清空错误：" + err);
+      });
+      
+      
+    </script>
     <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
@@ -96,16 +87,14 @@
         <a href="./06-%E5%AD%98%E5%82%A8%E6%96%87%E4%BB%B6-FileReader.html">存储文件-FileReader →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>

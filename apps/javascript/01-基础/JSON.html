@@ -11,6 +11,7 @@
     - 如何实现深拷贝？JSON 方式的局限？
   相关: 深拷贝
 -->
+
 <!doctype html>
 <html lang="zh-CN">
   <head>
@@ -19,85 +20,75 @@
     <title>JSON.stringify</title>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
-</head>
+  </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>JSON.stringify 进阶用法</h1>
-      <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
-<h2>知识点要点</h2>
-    <ul>
-      <li><code>JSON.stringify(value, replacer?, space?)</code> 仅支持 object、array、string、number、boolean、null。</li>
-      <li>replacer 为数组时作属性白名单；为函数时按 (key, value) 返回值，返回 undefined 则忽略该属性。</li>
-      <li>undefined、function、Symbol 在对象中会被忽略；数组中变成 null；Date 变 ISO 字符串。</li>
-      <li>循环引用会抛 TypeError；NaN/Infinity 变成 null。</li>
-      <li><code>JSON.parse</code> 不能解析 trailing comma、单引号等非标准 JSON。</li>
-    </ul>
-    <h2>面试考点</h2>
-    <ul>
-      <li><strong>JSON.stringify 限制？</strong> 不支持 function、undefined、Symbol、循环引用；Date 变字符串；Map/Set 需自行转换。</li>
-      <li><strong>replacer 用法？</strong> 数组过滤字段；函数自定义序列化（如 Date 转时间戳）。</li>
-      <li><strong>JSON 深拷贝？</strong> <code>JSON.parse(JSON.stringify(obj))</code> 简单但丢函数/Date/undefined/循环引用。完整方案见手写深拷贝。</li>
-    </ul>
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>JSON.stringify(value, replacer?, space?)</code> 仅支持 object、array、string、number、boolean、null。</li>
+          <li>replacer 为数组时作属性白名单；为函数时按 (key, value) 返回值，返回 undefined 则忽略该属性。</li>
+          <li>undefined、function、Symbol 在对象中会被忽略；数组中变成 null；Date 变 ISO 字符串。</li>
+          <li>循环引用会抛 TypeError；NaN/Infinity 变成 null。</li>
+          <li><code>JSON.parse</code> 不能解析 trailing comma、单引号等非标准 JSON。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>JSON.stringify 限制？</strong> 不支持 function、undefined、Symbol、循环引用；Date 变字符串；Map/Set 需自行转换。</li>
+          <li><strong>replacer 用法？</strong> 数组过滤字段；函数自定义序列化（如 Date 转时间戳）。</li>
+          <li><strong>JSON 深拷贝？</strong> <code>JSON.parse(JSON.stringify(obj))</code> 简单但丢函数/Date/undefined/循环引用。完整方案见手写深拷贝。</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
-    <!-- RUN_START -->
-    <section class="demo-block demo-block--run" aria-label="运行输出">
-      <h2 class="demo-block__label">运行输出</h2>
-      <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
-      <p class="demo-run-empty">（暂无同步输出，请打开 DevTools Console。）</p>
-    </section>
-    <!-- RUN_END -->
-
-    <script src="../../../packages/shared/demo-log.js"></script>
-
     <!-- SCRIPT_START -->
     <script>
       let book = {
-        title: "Professional JavaScript",
-        authors: ["Nicholas C. Zakas", "Matt Frisbie"],
-        edition: 4,
-        year: 2017,
+      title: "Professional JavaScript",
+      authors: ["Nicholas C. Zakas", "Matt Frisbie"],
+      edition: 4,
+      year: 2017,
       };
-
+      
       // replacer 是函数：可以改写或丢弃属性（return undefined 即丢弃该字段）
       let jsonText111 = JSON.stringify(
-        book,
-        (key, value) => {
-          switch (key) {
-            case "authors":
-              return value.join(",");
-            case "year":
-              return 5000;
-            case "edition":
-              return undefined;
-            default:
-              return value;
-          }
-        },
-        4
+      book,
+      (key, value) => {
+      switch (key) {
+      case "authors":
+      return value.join(",");
+      case "year":
+      return 5000;
+      case "edition":
+      return undefined;
+      default:
+      return value;
+      }
+      },
+      4
       );
-
+      
       let jsonText222 = JSON.stringify(book);
       console.log("jsonText111 \n>>>", jsonText111);
       console.log("jsonText222 \n>>>", jsonText222);
-
+      
       // 各种特殊值在 stringify 时的行为
       let jsObj = {
-        sum: (a, b) => a + b,   // 函数：被忽略（对象属性）/ 数组中变 null
-        name: "calcutor",
-        wc: undefined,           // undefined：被忽略
-        address: "",
-        date: new Date(),        // Date：调用 toJSON()，输出 ISO 字符串
-        reg: new RegExp("abc", "g"), // RegExp：序列化为 {} 空对象
-        symbol: Symbol(),        // Symbol：被忽略
-        nan: NaN,                // NaN/Infinity：输出 null
-        infinity: Infinity
+      sum: (a, b) => a + b,   // 函数：被忽略（对象属性）/ 数组中变 null
+      name: "calcutor",
+      wc: undefined,           // undefined：被忽略
+      address: "",
+      date: new Date(),        // Date：调用 toJSON()，输出 ISO 字符串
+      reg: new RegExp("abc", "g"), // RegExp：序列化为 {} 空对象
+      symbol: Symbol(),        // Symbol：被忽略
+      nan: NaN,                // NaN/Infinity：输出 null
+      infinity: Infinity
       };
-
+      
       let jsonText333 = JSON.stringify(jsObj, null, 3);
       console.log("jsonText333 \n>>>", jsonText333);
     </script>
@@ -113,16 +104,14 @@
         <a href="./parseInt.html">parseInt →</a>
       </nav>
       <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
     </footer>
     <!-- NAV_END -->
-  
-  
 </body>
 </html>
