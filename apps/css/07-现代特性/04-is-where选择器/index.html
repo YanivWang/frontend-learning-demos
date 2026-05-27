@@ -2,16 +2,15 @@
 分类: css / 07-现代特性 / 04-is-where选择器
   主题: :is() 与 :where() 及特异性
   要点:
-    - :is() 特异性 = 参数中最具体选择器的特异性
-    - :where() 特异性恒为 0，适合重置样式而不抬高优先级
-    - 简化复杂选择器列表，避免重复写父级
-    - 与 :not() 组合可表达「排除某些子元素」
+    - :is() 合并多个候选选择器，特异性取参数列表中最高的一项
+    - :where() 匹配能力类似 :is()，但自身特异性恒为 0
+    - 两者都能减少重复父级选择器，并使用 forgiving selector list
+    - :is(#id, .class) 会把整条规则权重抬高，:where() 更适合 reset 和基础样式
   面试:
-    - :is() 与 :where() 及特异性的核心概念是什么
-    - :is() 与 :where() 及特异性在实际项目里怎么用
-    - :is() 与 :where() 及特异性有哪些常见坑或易错点
-    - :is() 与 :where() 及特异性和相近 API 如何区分选型
-    - 面试中如何简洁讲清 :is() 与 :where() 及特异性
+    - :is() 和 :where() 的共同点与根本区别是什么？
+    - 为什么 :where() 很适合写 reset、base 或设计系统默认样式？
+    - :is() 参数里出现 ID 选择器为什么可能造成覆盖困难？
+    - :is()、:where()、普通选择器列表在可维护性上怎么取舍？
 -->
 
 <!doctype html>
@@ -39,16 +38,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>:is() 特异性 = 参数中最具体选择器的特异性。</li>
-          <li>:where() 特异性恒为 0，适合重置样式而不抬高优先级。</li>
-          <li>简化复杂选择器列表，避免重复写父级。</li>
-          <li>与 :not() 组合可表达「排除某些子元素」。</li>
+          <li><code>:is()</code> 和 <code>:where()</code> 都是函数式伪类，可以把多个候选选择器写进同一个参数列表，减少 <code>.demo article h2, .demo article h3, .demo article strong</code> 这类重复父级。</li>
+          <li><code>:is()</code> 的特异性不是固定值，而是取参数列表中最高特异性的选择器。本页 <code>:is(h2, h3, strong)</code> 只包含类型选择器，所以权重较低；如果写成 <code>:is(#hero, .title)</code>，整条规则会按 ID 权重参与级联。</li>
+          <li><code>:where()</code> 的匹配能力类似 <code>:is()</code>，但自身特异性恒为 0。它适合写 reset、base、主题默认值和设计系统低优先级规则，让业务选择器更容易覆盖。</li>
+          <li>两者使用 forgiving selector list：参数列表里某个选择器无效时，浏览器可以忽略无效分支，而不是让整条选择器列表全部失效。实践中仍应避免把实验性选择器混入核心样式，兼容性要单独核对。</li>
+          <li>选择器写短不代表优先级更低。项目里需要“合并写法但保留真实权重”时用 <code>:is()</code>；需要“命中很多元素但不抢覆盖权”时用 <code>:where()</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>简化复杂选择器列表？</strong> 简化复杂选择器列表，避免重复写父级</li>
-          <li><strong>:is() 与 :where() 及特异性的核心概念是什么？</strong> :is() 特异性 = 参数中最具体选择器的特异性</li>
-          <li><strong>:is() 与 :where() 及特异性在实际项目里怎么用？</strong> :is() 特异性 = 参数中最具体选择器的特异性</li>
+          <li><strong>:is() 和 :where() 的共同点与根本区别是什么？</strong> 结论是二者都能把多个候选选择器合并到一个函数式伪类里，根本区别是特异性计算。原因是 <code>:is()</code> 取参数中最高权重，<code>:where()</code> 永远是 0。项目里组件状态选择器常用 <code>:is()</code> 简化书写，低优先级默认样式常用 <code>:where()</code>。</li>
+          <li><strong>为什么 :where() 很适合写 reset、base 或设计系统默认样式？</strong> 结论是它能扩大命中范围但不抬高覆盖成本。原因是 <code>:where(p, li)</code> 的特异性为 0，后续普通元素、类选择器更容易覆盖它。边界是源码顺序仍会在同等特异性时生效，不能把它当成完全“无影响”的样式。</li>
+          <li><strong>:is() 参数里出现 ID 选择器为什么可能造成覆盖困难？</strong> 结论是参数中最高特异性会代表整个 <code>:is()</code>。原因是 <code>:is(#hero, .card)</code> 会让匹配 <code>.card</code> 的分支也按 ID 级别参与级联。项目里不要为了少写几行把 ID 和普通类混在同一个 <code>:is()</code>，否则后续覆盖可能不得不加重选择器。</li>
+          <li><strong>:is()、:where()、普通选择器列表在可维护性上怎么取舍？</strong> 结论是普通列表最直观，<code>:is()</code> 适合消除重复上下文，<code>:where()</code> 适合低权重批量命中。原因是三者的可读性和级联影响不同。团队样式规范里应明确 reset/base 优先用 <code>:where()</code>，组件强匹配再用 <code>:is()</code>。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/:is">MDN: :is()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/:where">MDN: :where()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_cascade/Specificity">MDN: Specificity</a></li>
+          <li><a href="https://drafts.csswg.org/selectors-4/#matches">Selectors Level 4: The Matches-Any Pseudo-class :is()</a></li>
         </ul>
       </div>
     </section>
@@ -65,7 +73,7 @@
       </article>
     </div>
     <div class="override-test card">
-      <p>这条 p 先被 <code>p { color: red }</code> 命中，但 <code>:where(p)</code> 特异性更低；最终绿色来自后面的 :where 规则（演示特异性 0 可被覆盖）。</p>
+      <p>这条 p 同时被 <code>.override-test p</code> 和后面的 <code>.override-test :where(p)</code> 命中；最终仍是红色，因为 <code>:where(p)</code> 自身特异性为 0，整条规则权重低于普通后代选择器。</p>
     </div>
     <h2>面试对比</h2>
     <ul>

@@ -2,15 +2,15 @@
   分类: vue2 / 01-基础语法
   主题: v-if / v-else / v-show / <template v-if>
   要点:
-    - v-if 真值才会渲染节点，false 时连 DOM 都没有；切换有开销
-    - v-show 始终在 DOM 中，仅切换 display；适合频繁切换
-    - <template v-if> 用来「不增加额外包裹元素」批量条件渲染一组节点
+    - v-if / v-else 根据条件创建或销毁真实 DOM，初始条件为假时不会渲染节点
+    - v-show 始终渲染节点，只通过 display 切换显示隐藏，适合频繁切换
+    - <template v-if> 可在不增加额外包裹元素的情况下条件渲染一组节点
+    - v-if 初始成本低但切换成本高，v-show 初始成本高但切换成本低
   面试:
-    - v-if / v-else / v-show / <template v-if>的核心概念是什么
-    - v-if / v-else / v-show / <template v-if>在实际项目里怎么用
-    - v-if / v-else / v-show / <template v-if>有哪些常见坑或易错点
-    - v-if / v-else / v-show / <template v-if>和相近 API 如何区分选型
-    - 面试中如何简洁讲清 v-if / v-else / v-show / <template v-if>
+    - v-if 和 v-show 的根本区别是什么？
+    - 为什么频繁切换的弹层更适合 v-show，权限控制更适合 v-if？
+    - <template v-if> 解决了什么结构问题？
+    - v-if 和 v-for 同用时为什么要谨慎？
 -->
 
 <!doctype html>
@@ -26,21 +26,30 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1 v-show="showFlag">Hello!</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <h1>v-if / v-show 条件渲染</h1>
+      <p class="hint">点击下方按钮，观察 v-if 节点被创建/销毁，v-show 节点始终存在但切换 display。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>v-if</code> 真值才会渲染节点，false 时连 DOM 都没有；切换有开销。</li>
-          <li>v-show 始终在 DOM 中，仅切换 display；适合频繁切换。</li>
-          <li>&lt;template <code>v-if</code>&gt; 用来「不增加额外包裹元素」批量条件渲染一组节点。</li>
-          <li><code>v-if</code> 真值才会渲染节点，false 时连 DOM 都没有；切换有开销（补充）。</li>
+          <li><code>v-if</code> 是真实条件渲染：条件为假时，对应元素、子组件和事件监听器都不会创建；条件从假变真时才创建 DOM。</li>
+          <li><code>v-show</code> 不会销毁节点，它始终渲染在 DOM 中，只是在条件为假时添加类似 <code>display: none</code> 的内联样式。它适合 Tab、下拉层、提示块等频繁切换场景。</li>
+          <li><code>v-if</code> 支持和 <code>v-else</code>、<code>v-else-if</code> 组成互斥分支。本页按钮切换 <code>showFlag</code>，可以看到 <code>v-if</code> 与 <code>v-else</code> 两块内容互相替换。</li>
+          <li><code>&lt;template v-if&gt;</code> 可以条件渲染一组兄弟节点，但不会在最终 DOM 中增加额外包裹元素。它适合需要保持语义结构干净的列表、表格或多个并列节点。</li>
+          <li>选型口诀是：初始不一定渲染、切换不频繁、涉及权限或昂贵子组件，用 <code>v-if</code>；需要频繁显示隐藏且保留内部状态，用 <code>v-show</code>。同时避免在同一个元素上混用复杂 <code>v-if</code> 和 <code>v-for</code>，可先用 computed 过滤列表。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>v-if 真值才会渲染节点？</strong> <code>v-if</code> 真值才会渲染节点，false 时连 DOM 都没有；切换有开销；&lt;template <code>v-if</code>&gt; 用来「不增加额外包裹元素」批量条件渲染一组节点</li>
-          <li><strong>v-show 始终在 DOM 中？</strong> v-show 始终在 DOM 中，仅切换 display；适合频繁切换</li>
-          <li><strong>&lt;template v-if&gt; 用来「不增加额外包裹元素」批量条件渲染一组节点？</strong> &lt;template <code>v-if</code>&gt; 用来「不增加额外包裹元素」批量条件渲染一组节点</li>
+          <li><strong>v-if 和 v-show 的根本区别是什么？</strong> 结论是 <code>v-if</code> 控制是否创建 DOM，<code>v-show</code> 控制已创建 DOM 的显示隐藏。原因是 <code>v-if</code> 条件为假时不会渲染节点，<code>v-show</code> 只改 <code>display</code>。项目里权限块、重组件用 <code>v-if</code>，高频切换 UI 用 <code>v-show</code>。</li>
+          <li><strong>为什么频繁切换的弹层更适合 v-show，权限控制更适合 v-if？</strong> 结论是频繁切换要降低反复创建销毁成本，权限控制要避免不该存在的节点被渲染。原因是 <code>v-show</code> 初始渲染成本更高但切换便宜，<code>v-if</code> 初始惰性但切换成本高。项目里还要结合内部状态是否需要保留来判断。</li>
+          <li><strong>&lt;template v-if&gt; 解决了什么结构问题？</strong> 结论是它能条件渲染一组节点而不额外生成包裹元素。原因是 <code>template</code> 是编译时容器，最终不会出现在 DOM 中。项目里表格行、列表项片段、多个并列控件需要一起出现或消失时很有用。</li>
+          <li><strong>v-if 和 v-for 同用时为什么要谨慎？</strong> 结论是同元素上混用会让条件判断和列表渲染耦合，既影响可读性也可能带来不必要的遍历。原因是 Vue 2 中 <code>v-for</code> 优先级高于 <code>v-if</code>，每一项都会先进入循环再判断条件。项目里通常用 computed 先过滤数组，再用 <code>v-for</code> 渲染结果。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/conditional.html">Vue 2 Guide: Conditional Rendering</a></li>
+          <li><a href="https://v2.vuejs.org/v2/api/#v-if">Vue 2 API: v-if</a></li>
+          <li><a href="https://v2.vuejs.org/v2/api/#v-show">Vue 2 API: v-show</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/list.html#v-for-with-v-if">Vue 2 Guide: v-for with v-if</a></li>
         </ul>
       </div>
     </section>
@@ -50,7 +59,8 @@
     <div id="app1">
       <div v-if="showFlag">你能看见我 if语句</div>
       <div v-else>你能看见我， else语句</div>
-      <button v-on:click="triggle">triggle</button>
+      <div v-show="showFlag">我是 v-show 节点：隐藏时仍保留在 DOM 中</div>
+      <button v-on:click="toggleVisible">toggle visible</button>
       <!--在template元素上使用v-if 来渲染分组: template是一个不可见的包裹元素 -->
       <template v-if="showFlag">
         <ul>
@@ -74,12 +84,8 @@
           showFlag: false
         },
         methods: {
-          triggle: function () {
-            if (this.showFlag) {
-              this.showFlag = false;
-            } else {
-              this.showFlag = true;
-            }
+          toggleVisible: function () {
+            this.showFlag = !this.showFlag;
           }
         }
       });

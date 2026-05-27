@@ -2,16 +2,15 @@
 分类: css / 07-现代特性 / 05-view-transitions
   主题: View Transitions API（CSS 部分）
   要点:
-    - document.startViewTransition() 触发默认交叉淡入淡出
-    - ::view-transition-old / ::view-transition-new 可自定义动画
-    - 适合 SPA 路由切换、主题切换、列表 reorder
-    - 不支持时 @supports 降级为普通 transition
+    - document.startViewTransition() 在 DOM 更新前后截图并生成过渡动画
+    - ::view-transition-old(root) 与 ::view-transition-new(root) 可调整默认快照动画
+    - 适合主题切换、SPA 路由切换和局部状态切换，但要提供不支持时的即时更新
+    - CSS @supports 只能检查样式能力，脚本仍要判断 document.startViewTransition
   面试:
-    - View Transitions API（CSS 部分）的核心概念是什么
-    - View Transitions API（CSS 部分）在实际项目里怎么用
-    - View Transitions API（CSS 部分）有哪些常见坑或易错点
-    - View Transitions API（CSS 部分）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 View Transitions API（CSS 部分）
+    - View Transitions API 解决的不是哪类普通 CSS transition 问题？
+    - startViewTransition 的 DOM 更新回调为什么必须可快速完成？
+    - ::view-transition-old/new 和 view-transition-name 分别控制什么？
+    - View Transitions 在兼容性、可访问性和失败路径上要怎么降级？
 -->
 
 <!doctype html>
@@ -42,20 +41,29 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>View Transitions</h1>
-      <p class="hint"></p>
+      <p class="hint">点击下方色块切换状态。支持 View Transitions 的浏览器会对旧状态和新状态做快照过渡，不支持时直接切换颜色。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>document.startViewTransition() 触发默认交叉淡入淡出。</li>
-          <li>::view-transition-old / ::view-transition-new 可自定义动画。</li>
-          <li>适合 SPA 路由切换、主题切换、列表 reorder。</li>
-          <li>不支持时 @supports 降级为普通 transition。</li>
+          <li>View Transitions API 的核心是把一次 DOM 状态变更包装起来：浏览器捕获旧状态快照，执行更新回调，再捕获新状态快照，随后用 CSS 动画在两张快照之间过渡。</li>
+          <li><code>document.startViewTransition(updateCallback)</code> 是脚本入口。本页点击色块时先计算下一个颜色，再把背景色与文本更新放进回调；支持的浏览器执行快照过渡，不支持时直接调用同一个更新函数。</li>
+          <li><code>::view-transition-old(root)</code> 和 <code>::view-transition-new(root)</code> 是默认根过渡的伪元素，可设置动画时长、动画曲线或自定义关键帧。更细粒度的元素过渡需要给元素设置 <code>view-transition-name</code>。</li>
+          <li>它适合主题切换、SPA 路由切换、卡片展开和列表重排这类“DOM 结构或状态已经变了，但希望视觉连续”的场景；普通 hover、按钮反馈、单个属性变化仍用 <code>transition</code> 或 <code>animation</code> 更轻量。</li>
+          <li>失败路径必须显式处理：CSS 的 <code>@supports (view-transition-name: none)</code> 只能保护样式，脚本仍要判断 <code>document.startViewTransition</code> 是否存在；更新回调不要做慢网络请求，用户开启减少动态效果时也应避免过度动画。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>document.startViewTransition() 触发默认交叉淡入淡？</strong> document.startViewTransition() 触发默认交叉淡入淡出</li>
-          <li><strong>适合 SPA 路由切换、主题切换、列表 reorder？</strong> 适合 SPA 路由切换、主题切换、列表 reorder</li>
-          <li><strong>不支持时 @supports 降级为普通 transition？</strong> 不支持时 @supports 降级为普通 transition</li>
+          <li><strong>View Transitions API 解决的不是哪类普通 CSS transition 问题？</strong> 结论是它解决的是 DOM 更新前后两个视觉状态之间的连续过渡，不是单个 CSS 属性从 A 到 B 的基础动画。原因是普通 <code>transition</code> 需要同一个元素的可插值属性连续变化，而路由切换或结构重排常常会替换节点。项目里页面切换、主题切换可考虑它，按钮 hover 仍用普通过渡。</li>
+          <li><strong>startViewTransition 的 DOM 更新回调为什么必须可快速完成？</strong> 结论是回调应该只做同步或很短的状态提交。原因是浏览器需要在旧快照和新快照之间建立动画，回调太慢会让交互卡顿或让过渡时机不可控。项目里网络请求应在过渡前完成，或先展示 loading 状态再触发过渡。</li>
+          <li><strong>::view-transition-old/new 和 view-transition-name 分别控制什么？</strong> 结论是前者控制过渡快照伪元素的动画，后者给具体元素命名以建立更细粒度的共享元素过渡。原因是默认 root 过渡只能处理整页快照，命名后浏览器才能把旧元素和新元素对应起来。项目里只做淡入淡出可用 root，复杂卡片迁移再加命名。</li>
+          <li><strong>View Transitions 在兼容性、可访问性和失败路径上要怎么降级？</strong> 结论是页面功能不能依赖动画存在。原因是并非所有浏览器都支持该 API，用户也可能偏好减少动态效果。项目里脚本要检测 <code>document.startViewTransition</code>，CSS 用 <code>@supports</code> 包住伪元素样式，不支持时直接完成 DOM 更新。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API">MDN: View Transition API</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/startViewTransition">MDN: Document.startViewTransition()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/::view-transition-old">MDN: ::view-transition-old()</a></li>
+          <li><a href="https://drafts.csswg.org/css-view-transitions-1/">CSS View Transitions Module Level 1</a></li>
         </ul>
       </div>
     </section>
@@ -63,19 +71,21 @@
 
     <!-- PAGE_DOM_START -->
     <p>点击色块切换颜色，支持 View Transitions 的浏览器会有平滑过渡。</p>
+    <p id="support" class="hint" aria-live="polite"></p>
     <div class="panel" id="box">点击</div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
       const box = document.getElementById("box");
+      const support = document.getElementById("support");
       const colors = ["#0969da", "#8250df", "#1a7f37", "#bf8700"];
       let i = 0;
       box.style.background = colors[0];
-      document.getElementById("support").textContent =
-      typeof document.startViewTransition === "function"
-      ? "✅ 当前浏览器支持 startViewTransition"
-      : "⚠️ 不支持 View Transitions，将直接切换背景色";
+      support.textContent =
+        typeof document.startViewTransition === "function"
+          ? "当前浏览器支持 startViewTransition，将使用快照过渡。"
+          : "当前浏览器不支持 View Transitions，将直接切换背景色。";
 
       box.onclick = () => {
         i = (i + 1) % colors.length;

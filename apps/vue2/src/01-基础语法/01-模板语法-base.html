@@ -1,16 +1,17 @@
 <!--
   分类: vue2 / 01-基础语法
-  主题: Vue 五大基础特性合集
+  主题: Vue 2 基础指令与响应式绑定合集
   要点:
-    - {{ }} 插值 / v-bind 属性 / v-if 条件 / v-for 列表 / v-on 事件 / v-model 双向
-    - 同一页面用六个独立 Vue 实例分别演示，避免相互干扰
-    - 一个 Vue 实例只能挂载在一个 el 上；data 字段会被代理到实例
+    - Mustache 插值渲染文本，v-bind 绑定属性，v-on 绑定事件，v-model 绑定表单输入
+    - v-if 控制条件渲染，v-for 渲染列表且应提供稳定 key
+    - Vue 2 实例通过 el 挂载单个根容器，data 字段会代理到实例并参与响应式更新
+    - 本页用多个小实例隔离演示，真实项目通常以组件拆分而不是堆多个根实例
   面试:
-    - Vue 五大基础特性合集的核心概念是什么
-    - Vue 五大基础特性合集在实际项目里怎么用
-    - Vue 五大基础特性合集有哪些常见坑或易错点
-    - Vue 五大基础特性合集和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Vue 五大基础特性合集
+    - Vue 2 模板里的插值、指令和响应式数据是什么关系？
+    - v-bind、v-on、v-model 分别解决哪类绑定问题？
+    - v-if 和 v-for 在基础 demo 中各自承担什么职责？
+    - 为什么 v-for 列表项建议提供稳定 key？
+    - 多个 Vue 根实例演示和真实组件化项目有什么区别？
 -->
 
 <!doctype html>
@@ -26,21 +27,32 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>Vue 五大基础特性合集</h1>
+      <h1>Vue 2 基础指令与响应式绑定合集</h1>
       <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>{{ }} 插值 / v-<code>bind</code> 属性 / <code>v-if</code> 条件 / <code>v-for</code> 列表 / v-on 事件 / <code>v-model</code> 双向。</li>
-          <li>同一页面用六个独立 Vue 实例分别演示，避免相互干扰。</li>
-          <li>一个 Vue 实例只能挂载在一个 el 上；data 字段会被代理到实例。</li>
-          <li>{{ }} 插值 / v-<code>bind</code> 属性 / <code>v-if</code> 条件 / <code>v-for</code> 列表 / v-on 事件 / <code>v-model</code> 双向（补充）。</li>
+          <li>Vue 2 模板把声明式 DOM 和实例数据连接起来：<code>{{ msg }}</code> 渲染文本，<code>v-bind</code> 绑定 HTML 属性，<code>v-on</code> 绑定事件，<code>v-model</code> 在表单控件和状态之间建立双向绑定。</li>
+          <li><code>v-if</code> 根据表达式结果决定节点是否渲染，<code>v-for</code> 根据数组渲染列表。本页列表给每个 <code>li</code> 增加 <code>:key</code>，让 Vue 在更新列表时能稳定复用或移动节点。</li>
+          <li>Vue 2 实例通过 <code>el</code> 挂载到一个 DOM 容器，<code>data</code> 中的字段会被代理到实例上并转换为响应式数据。事件方法里修改 <code>this.msg</code> 后，依赖它的模板会自动更新。</li>
+          <li>本页为了教学把六个知识点拆成六个根实例，避免演示互相影响。真实项目里更常见的做法是一个根实例挂载应用，再用组件拆分功能区域。</li>
+          <li>常见坑包括：插值只能用于文本内容，属性要用 <code>v-bind</code>；列表不要省略稳定 <code>key</code>；<code>v-model</code> 只负责表单值同步，不等于表单校验或提交逻辑。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>{{ }} 插值 / v-bind 属性 / v-if 条件 / v-for 列？</strong> {{ }} 插值 / v-<code>bind</code> 属性 / <code>v-if</code> 条件 / <code>v-for</code> 列表 / v-on 事件 / <code>v-model</code> 双向</li>
-          <li><strong>同一页面用六个独立 Vue 实例分别演示？</strong> 同一页面用六个独立 Vue 实例分别演示，避免相互干扰</li>
-          <li><strong>一个 Vue 实例只能挂载在一个 el 上？</strong> 一个 Vue 实例只能挂载在一个 el 上；data 字段会被代理到实例</li>
+          <li><strong>Vue 2 模板里的插值、指令和响应式数据是什么关系？</strong> 结论是模板声明“数据如何映射到 DOM”，指令声明特殊绑定行为，响应式系统负责在数据变化后更新视图。原因是 Vue 会代理 <code>data</code> 字段并追踪模板依赖。项目里应修改状态而不是手写 DOM 操作。</li>
+          <li><strong>v-bind、v-on、v-model 分别解决哪类绑定问题？</strong> 结论是 <code>v-bind</code> 绑定属性，<code>v-on</code> 监听事件，<code>v-model</code> 封装表单值和输入事件的双向同步。原因是文本、属性、事件和表单输入属于不同 DOM 通道。项目里普通属性用 <code>:</code>，事件用 <code>@</code>，表单控件再考虑 <code>v-model</code>。</li>
+          <li><strong>v-if 和 v-for 在基础 demo 中各自承担什么职责？</strong> 结论是 <code>v-if</code> 做条件渲染，<code>v-for</code> 做列表渲染。原因是前者根据真假创建或销毁节点，后者根据集合生成重复节点。项目里两者同用在复杂列表时要注意优先级和可读性，通常先过滤数据再渲染。</li>
+          <li><strong>为什么 v-for 列表项建议提供稳定 key？</strong> 结论是稳定 <code>key</code> 能帮助 Vue 识别每个节点的身份。原因是列表更新时框架需要判断复用、移动还是销毁节点，缺少 key 可能导致局部状态或表单输入错位。项目里优先使用业务唯一 id，不要用会变化的索引当 key。</li>
+          <li><strong>多个 Vue 根实例演示和真实组件化项目有什么区别？</strong> 结论是多个根实例适合隔离教学，真实项目通常一个根实例加组件树。原因是组件树更利于状态流、复用和调试。项目里只有在迁移老页面或局部增强静态页面时，才会在同页挂多个独立实例。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/syntax.html">Vue 2 Guide: Template Syntax</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/events.html">Vue 2 Guide: Event Handling</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/forms.html">Vue 2 Guide: Form Input Bindings</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/list.html">Vue 2 Guide: List Rendering</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/conditional.html">Vue 2 Guide: Conditional Rendering</a></li>
         </ul>
       </div>
     </section>
@@ -56,7 +68,7 @@
     </div>
     <div id="app_4">
       <ol>
-        <li v-for="item in peoples">{{item.name}}:{{item.age}}</li>
+        <li v-for="item in peoples" :key="item.name">{{item.name}}:{{item.age}}</li>
       </ol>
     </div>
     <div id="app_5">

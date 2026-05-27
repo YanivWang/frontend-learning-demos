@@ -2,15 +2,15 @@
   分类: vue2 / 01-基础语法
   主题: Mustache 插值 / v-html / v-bind / v-once
   要点:
-    - {{ msg }} 会自动 HTML 转义；v-html 不转义（小心 XSS）
-    - HTML 特性不能用 mustache，必须用 v-bind:attr 或 :attr
-    - 表达式必须是单个表达式，禁用语句和控制流；只能访问 Vue 实例 data
+    - Mustache 插值会输出转义后的文本，v-html 会写入真实 HTML，不能渲染不可信内容
+    - HTML 特性不能用 Mustache，必须用 v-bind:attr 或 :attr 绑定
+    - 模板表达式只能是单个 JavaScript 表达式，应避免赋值、随机数等渲染副作用
+    - v-once 只渲染一次，适合稳定静态内容，不适合需要响应更新的数据
   面试:
-    - Mustache 插值 / v-html / v-bind / v-once的核心概念是什么
-    - Mustache 插值 / v-html / v-bind / v-once在实际项目里怎么用
-    - Mustache 插值 / v-html / v-bind / v-once有哪些常见坑或易错点
-    - Mustache 插值 / v-html / v-bind / v-once和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Mustache 插值 / v-html / v-bind / v-once
+    - Mustache 插值和 v-html 的安全边界有什么不同？
+    - 为什么 HTML 属性不能写 {{ msg }}，而要用 v-bind？
+    - Vue 2 模板表达式为什么只能写单个表达式？
+    - v-once 适合什么场景，不适合什么场景？
 -->
 
 <!doctype html>
@@ -31,15 +31,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>{{ msg }} 会自动 HTML 转义；<code>v-html</code> 不转义（小心 XSS）。</li>
-          <li>HTML 特性不能用 mustache，必须用 v-<code>bind</code>:attr 或 :attr。</li>
-          <li>表达式必须是单个表达式，禁用语句和控制流；只能访问 Vue 实例 data。</li>
+          <li><code>{{ msg }}</code> 是文本插值，Vue 会把内容作为普通文本输出并进行 HTML 转义。本页 <code>{{ htmlStr }}</code> 会显示字符串本身，而不会把其中的标签当成 DOM 执行。</li>
+          <li><code>v-html</code> 会把表达式结果作为真实 HTML 写入元素，相当于绕过文本转义。它只适合渲染可信、已清洗的 HTML；不要把用户输入、接口返回的富文本或评论直接交给 <code>v-html</code>，否则容易产生 XSS 风险。</li>
+          <li>HTML 属性不能用 Mustache 插值，<code>title="{{ msg }}"</code> 这类写法会被当成普通字符串。属性、布尔属性、class、style 等都应使用 <code>v-bind:title="msg"</code> 或缩写 <code>:title="msg"</code>。</li>
+          <li>Vue 2 模板表达式支持 JavaScript 表达式，但不是完整语句：可以写 <code>count + 1</code>、三元表达式和方法调用，不能写 <code>if</code>、<code>for</code> 或变量声明。表达式应尽量保持纯净，避免在渲染时赋值修改状态。</li>
+          <li><code>v-once</code> 会让节点及其子节点只渲染一次，后续数据变化不再更新。它适合稳定的静态内容或性能优化点，不适合展示会随状态变化的业务字段。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>{{ msg }} 会自动 HTML 转义？</strong> {{ msg }} 会自动 HTML 转义；<code>v-html</code> 不转义（小心 XSS）</li>
-          <li><strong>HTML 特性不能用 mustache？</strong> {{ msg }} 会自动 HTML 转义；<code>v-html</code> 不转义（小心 XSS）；HTML 特性不能用 mustache，必须用 v-<code>bind</code>:attr 或 :attr</li>
-          <li><strong>表达式必须是单个表达式？</strong> 表达式必须是单个表达式，禁用语句和控制流；只能访问 Vue 实例 data</li>
+          <li><strong>Mustache 插值和 v-html 的安全边界有什么不同？</strong> 结论是 Mustache 输出转义文本，<code>v-html</code> 输出真实 HTML。原因是文本插值不会把字符串解析成标签，而 <code>v-html</code> 会写入元素的 HTML 内容。项目里默认用 Mustache，只有可信富文本才考虑 <code>v-html</code>，并且要先做服务端或可信库清洗。</li>
+          <li><strong>为什么 HTML 属性不能写 {{ msg }}，而要用 v-bind？</strong> 结论是 Mustache 只用于文本内容，属性绑定必须用 <code>v-bind</code>。原因是浏览器先按 HTML 解析属性，Vue 不会把属性里的双大括号当成动态绑定。项目里动态 <code>title</code>、<code>disabled</code>、<code>class</code>、<code>style</code> 都应使用 <code>:</code> 缩写。</li>
+          <li><strong>Vue 2 模板表达式为什么只能写单个表达式？</strong> 结论是模板表达式用于声明“这个位置的值如何计算”，不是写业务流程控制。原因是渲染函数需要可重复执行的表达式，语句、循环和副作用会让模板难维护。项目里复杂逻辑放到 computed、methods 或预处理后的数据里。</li>
+          <li><strong>v-once 适合什么场景，不适合什么场景？</strong> 结论是 <code>v-once</code> 适合渲染后不会变化的内容，不适合响应式业务数据。原因是它会跳过后续更新以节省渲染成本。项目里可用于静态说明、固定标题或一次性快照，不能用于需要随状态刷新的一般字段。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/syntax.html">Vue 2 Guide: Template Syntax</a></li>
+          <li><a href="https://v2.vuejs.org/v2/api/#v-html">Vue 2 API: v-html</a></li>
+          <li><a href="https://v2.vuejs.org/v2/api/#v-bind">Vue 2 API: v-bind</a></li>
+          <li><a href="https://v2.vuejs.org/v2/api/#v-once">Vue 2 API: v-once</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/security.html">Vue 2 Guide: Security</a></li>
         </ul>
       </div>
     </section>
@@ -97,7 +108,7 @@
       <!--{{custom}}-->
       <!--指令的值预期是单个js表达式-->
       <!--指令的职责是，当表达式值改变时，将其产生的连带影响，响应式的作用于DOM中-->
-      <div v-bind:title="msg = msg.slice(0,1)">{{msg}}</div>
+      <div v-bind:title="msg.slice(0, 1)">{{msg}}</div>
       <div>
         seen: {{seen}}
         <div v-if="seen">能看到我</div>

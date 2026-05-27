@@ -191,3 +191,6 @@ npm run validate:smoke
 - 2026-05-27：完成 `apps/css/05-响应式/media-queries/01-基础布局.html`、`02-响应式最终页.html`、`apps/css/05-响应式/vw-vh/index.html` 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `164/357` 提升到 `167/357`，下一处失败为 `apps/css/06-性能/01-重排重绘/index.html`。
 - 2026-05-27：完成 `apps/css/06-性能/01-重排重绘/index.html`、`02-合成层/index.html`、`03-content-visibility/index.html` 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `167/357` 提升到 `170/357`，下一处失败为 `apps/css/07-现代特性/01-has选择器/index.html`。
 - 2026-05-27：完成 `apps/css/07-现代特性/01-has选择器/index.html`、`02-layer层叠管理/index.html`、`03-container-queries容器查询/index.html` 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `170/357` 提升到 `173/357`，下一处失败为 `apps/css/07-现代特性/04-is-where选择器/index.html`。
+- 2026-05-27：完成 `apps/css/07-现代特性/04-is-where选择器/index.html`、`05-view-transitions/index.html`、`06-subgrid/index.html` 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `173/357` 提升到 `176/357`，下一处失败为 `apps/css/index.html`。
+- 2026-05-27：完成 `apps/css/index.html` 的权威化审核，并补齐现代特性 04-06 的入口链接；`node scripts/report-demo-notes.mjs` 从 `176/357` 提升到 `177/357`，下一处失败为 `apps/vue2/src/01-基础语法/01-模板语法-base.html`。
+- 2026-05-27：完成 `apps/vue2/src/01-基础语法/01-模板语法-base.html`、`02-模板插值与指令.html`、`03-v-if-v-show.html` 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `177/357` 提升到 `180/357`，下一处失败为 `apps/vue2/src/01-基础语法/04-bindClass.html`。

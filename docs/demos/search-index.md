@@ -389,7 +389,7 @@
 
 ### 01-基础语法
 
-- [模板语法-base](/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/01-%E6%A8%A1%E6%9D%BF%E8%AF%AD%E6%B3%95-base.html) — Vue 五大基础特性合集
+- [模板语法-base](/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/01-%E6%A8%A1%E6%9D%BF%E8%AF%AD%E6%B3%95-base.html) — Vue 2 基础指令与响应式绑定合集
 - [模板插值与指令](/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/02-%E6%A8%A1%E6%9D%BF%E6%8F%92%E5%80%BC%E4%B8%8E%E6%8C%87%E4%BB%A4.html) — Mustache 插值 / v-html / v-bind / v-once
 - [v-if-v-show](/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/03-v-if-v-show.html) — v-if / v-else / v-show / &lt;template v-if&gt;
 - [bindClass](/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/04-bindClass.html) — v-bind:class 三种写法（对象 / 对象引用 / 数组）
