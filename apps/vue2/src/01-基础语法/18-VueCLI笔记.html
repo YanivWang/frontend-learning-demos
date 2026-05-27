@@ -2,15 +2,16 @@
   分类: vue2 / 01-基础语法
   主题: Vue CLI 知识点速查（笔记型）
   要点:
-    - 整理 @vue/cli / @vue/cli-service 等核心包概念
-    - 仅作文字注释，不含可运行代码
-    - 适合作为「Vue CLI 是什么」的速记表
+    - Vue CLI 包含全局脚手架 @vue/cli、项目内服务 @vue/cli-service 与插件体系
+    - vue-cli-service 基于 webpack / webpack-dev-server，提供 serve、build、inspect 等命令
+    - Vue CLI 已进入维护模式；新 Vue 项目官方推荐 create-vue / Vite
+    - 本页是笔记型 demo，无运行代码；重点是理解历史 Vue 2 工程链路
   面试:
-    - Vue CLI 知识点速查（笔记型）的核心概念是什么
-    - Vue CLI 知识点速查（笔记型）在实际项目里怎么用
-    - Vue CLI 知识点速查（笔记型）有哪些常见坑或易错点
-    - Vue CLI 知识点速查（笔记型）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Vue CLI 知识点速查（笔记型）
+    - @vue/cli 和 @vue/cli-service 的职责有什么区别？
+    - Vue CLI 插件为什么能改造项目能力？
+    - vue-cli-service inspect 有什么排查价值？
+    - 现在新项目还应该选择 Vue CLI 吗？
+    - 维护 Vue 2 老项目时 Vue CLI 和 Vite 怎么取舍？
 -->
 
 <!doctype html>
@@ -26,19 +27,29 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vue CLI 知识点速查（笔记型）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">这是笔记型 demo，没有交互示例；重点复习 Vue CLI 在 Vue 2 历史项目中的工程职责。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>整理 @vue/cli / @vue/cli-service 等核心包概念。</li>
-          <li>仅作文字注释，不含可运行代码。</li>
-          <li>适合作为「Vue CLI 是什么」的速记表。</li>
+          <li><code>@vue/cli</code> 是全局命令行脚手架，负责创建项目、调用插件和提供图形化管理入口；安装后会暴露 <code>vue</code> 命令。</li>
+          <li><code>@vue/cli-service</code> 是项目内运行时依赖，封装 webpack、webpack-dev-server 与默认配置，常见命令是 <code>serve</code>、<code>build</code>、<code>inspect</code>。</li>
+          <li>Vue CLI 插件通常包含 generator 与 runtime plugin：前者生成或修改项目文件，后者调整 webpack 配置、注入命令或扩展项目能力。</li>
+          <li>Vue CLI 适合维护历史 Vue 2 / webpack 项目；官方文档已经标注 Vue CLI 维护模式，新 Vue 项目推荐使用 <code>create-vue</code> 搭配 Vite。</li>
+          <li>排查构建问题时不要只看表层配置，先用 <code>vue-cli-service inspect</code> 输出最终 webpack 配置，再判断 loader、plugin、alias、publicPath 是否符合预期。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>整理 @vue/cli / @vue/cli-service 等核心包概念？</strong> 整理 @vue/cli / @vue/cli-service 等核心包概念</li>
-          <li><strong>适合作为「Vue CLI 是什么」的速记表？</strong> 适合作为「Vue CLI 是什么」的速记表</li>
-          <li><strong>Vue CLI 知识点速查（笔记型）的核心概念是什么？</strong> 适合作为「Vue CLI 是什么」的速记表</li>
+          <li><strong>@vue/cli 和 @vue/cli-service 的区别是什么？</strong> 结论是前者偏全局脚手架，后者偏项目内构建服务。原因是 <code>@vue/cli</code> 负责创建和管理项目，而 <code>@vue/cli-service</code> 才真正参与本项目的开发服务器、构建和配置解析。项目里排查命令失败时，要先看失败发生在全局 <code>vue</code> 命令阶段还是项目内 service 阶段。</li>
+          <li><strong>Vue CLI 插件为什么能扩展项目？</strong> 结论是插件通过 generator 改文件、通过 runtime plugin 改服务配置或命令。这样能把 Babel、Router、Vuex、ESLint 等能力拆成可组合插件。边界是插件越多，最终 webpack 配置越不直观，所以要用 <code>inspect</code> 看合并结果。</li>
+          <li><strong>现在新项目还应该用 Vue CLI 吗？</strong> 结论是通常不建议新项目首选 Vue CLI，官方推荐 <code>create-vue</code> 和 Vite。原因是 Vue CLI 已处于维护模式，现代 Vue 3 工程链路围绕 Vite 优化。例外是存量 Vue 2 / webpack 项目、企业内部模板和历史插件依赖暂时无法迁移时，可以继续维护。</li>
+          <li><strong>Vue CLI 构建问题怎么定位？</strong> 结论是先确认命令、Node 版本和最终 webpack 配置。原因是 CLI 把许多配置封装在 service 和插件中，源码里不一定能直接看到最终 loader/plugin。项目场景里常用 <code>vue-cli-service inspect</code>、<code>publicPath</code>、环境变量和插件版本来缩小问题范围。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://cli.vuejs.org/guide/" target="_blank" rel="noreferrer">Vue CLI 官方文档：Guide</a></li>
+          <li><a href="https://cli.vuejs.org/guide/cli-service.html" target="_blank" rel="noreferrer">Vue CLI 官方文档：CLI Service</a></li>
+          <li><a href="https://cli.vuejs.org/dev-guide/plugin-dev.html" target="_blank" rel="noreferrer">Vue CLI 官方文档：Plugin Development Guide</a></li>
+          <li><a href="https://vuejs.org/guide/quick-start.html" target="_blank" rel="noreferrer">Vue 官方文档：Quick Start（create-vue / Vite）</a></li>
         </ul>
       </div>
     </section>

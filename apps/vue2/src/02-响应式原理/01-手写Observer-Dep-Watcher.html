@@ -2,15 +2,16 @@
   分类: vue2 / 02-响应式原理
   主题: 手写 Vue2 响应式核心（Observer / Dep / Watcher / Computed）
   要点:
-    - Observer 劫持 data，通过 Object.defineProperty 给每个字段挂 getter/setter
-    - Dep 收集依赖、通知更新；Watcher 用 Dep.target 在 getter 中订阅自己
-    - Computed 是 lazy Watcher：dirty 为 true 时才重新执行 getter，否则用缓存
+    - Vue2 初始化 data 时递归用 Object.defineProperty 把字段转换成 getter/setter
+    - getter 负责依赖收集，setter 负责通知依赖；Dep.target 表示当前正在求值的 Watcher
+    - render watcher、user watcher、computed watcher 都依赖同一套“读取收集、写入通知”模型
+    - computed 是 lazy watcher，依赖变化先标记 dirty，下次读取才重新计算
   面试:
-    - 手写 Vue2 响应式核心（Observer / Dep / Watcher / Computed）的核心概念是什么
-    - 手写 Vue2 响应式核心（Observer / Dep / Watcher / Computed）在实际项目里怎么用
-    - 手写 Vue2 响应式核心（Observer / Dep / Watcher / Computed）有哪些常见坑或易错点
-    - 手写 Vue2 响应式核心（Observer / Dep / Watcher / Computed）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 手写 Vue2 响应式核心（Observer / Dep / Watcher / Computed）
+    - Vue2 响应式为什么要在初始化时遍历 data？
+    - Dep 和 Watcher 分别解决什么问题？
+    - computed 为什么可以缓存，watch 为什么适合副作用？
+    - 手写响应式和真实 Vue2 实现有哪些边界差距？
+    - Vue2 defineProperty 响应式相比 Vue3 Proxy 有什么限制？
 -->
 
 <!doctype html>
@@ -30,15 +31,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Observer 劫持 data，通过 <code>Object</code>.defineProperty 给每个字段挂 getter/setter。</li>
-          <li>Dep 收集依赖、通知更新；Watcher 用 Dep.target 在 getter 中订阅自己。</li>
-          <li>Computed 是 lazy Watcher：dirty 为 true 时才重新执行 getter，否则用缓存。</li>
+          <li>Vue2 的响应式入口是观察 <code>data</code>：把普通对象的每个已有字段转换成 getter/setter。这样模板渲染、计算属性或侦听器读取字段时能被追踪，字段写入时能通知更新。</li>
+          <li><code>Dep</code> 是依赖容器，保存“谁依赖了这个属性”；<code>Watcher</code> 是订阅者，代表一次渲染、一个 <code>watch</code> 回调或一个计算属性求值。读取时通过 <code>Dep.target</code> 建立当前 watcher 与属性 dep 的关系。</li>
+          <li>普通 watcher 在依赖变化时立即重新取值并触发回调；computed watcher 是 <code>lazy</code> 的，依赖变化只把 <code>dirty</code> 设为 true，下次访问计算属性时才重新执行 getter。</li>
+          <li>真实 Vue2 还要处理 watcher 栈、重复依赖去重、异步更新队列、数组方法拦截、删除属性、组件渲染 watcher 等细节；本页是教学版模型，不等价于完整源码。</li>
+          <li>常见限制来自 <code>Object.defineProperty</code>：新增对象属性和数组索引/长度变化无法自动被拦截，需要 <code>Vue.set</code>、<code>splice</code> 或整体替换。Vue 3 改用 Proxy 后这类边界明显减少，但 Vue2 存量项目仍要掌握。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Observer 劫持 data？</strong> Observer 劫持 data，通过 <code>Object</code>.defineProperty 给每个字段挂 getter/setter</li>
-          <li><strong>Dep 收集依赖、通知更新？</strong> Dep 收集依赖、通知更新；Watcher 用 Dep.target 在 getter 中订阅自己</li>
-          <li><strong>Computed 是 lazy Watcher？</strong> Computed 是 lazy Watcher：dirty 为 true 时才重新执行 getter，否则用缓存</li>
+          <li><strong>Vue2 响应式为什么要初始化时遍历 data？</strong> 结论是因为 <code>Object.defineProperty</code> 只能拦截已经定义好的属性。Vue2 必须在实例创建时把 <code>data</code> 中已有字段转换成 getter/setter，后续读取和写入才能被追踪。边界是运行时新增属性默认不响应，必须用 <code>Vue.set</code> 或替换对象。</li>
+          <li><strong>Dep 和 Watcher 分别负责什么？</strong> 结论是 Dep 管“这个属性有哪些订阅者”，Watcher 管“某段逻辑依赖了哪些属性并如何更新”。原因是 getter 阶段只有当前正在执行的 watcher 才知道自己依赖谁，setter 阶段属性自己的 dep 才知道该通知谁。项目里 render、watch、computed 都可以理解成不同类型的 watcher。</li>
+          <li><strong>computed 为什么能缓存？</strong> 结论是 computed 背后是 lazy watcher。它不会在依赖变化时立刻重新计算，而是标记 dirty，等模板或代码下一次读取它时再求值并缓存。边界是 computed getter 必须保持同步、无副作用；异步请求和外部写入更适合 watch。</li>
+          <li><strong>手写版和真实 Vue2 有哪些差距？</strong> 结论是教学版只演示核心链路，真实 Vue2 还包含依赖去重、异步批量更新、数组拦截、组件生命周期和错误处理。原因是框架要在复杂组件树中控制更新成本。面试回答时不要把几十行教学代码说成完整 Vue 源码。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/reactivity.html" target="_blank" rel="noreferrer">Vue 2 官方文档：Reactivity in Depth</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/computed.html" target="_blank" rel="noreferrer">Vue 2 官方文档：Computed Properties and Watchers</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty" target="_blank" rel="noreferrer">MDN：Object.defineProperty()</a></li>
+          <li><a href="https://vuejs.org/guide/extras/reactivity-in-depth.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Reactivity in Depth</a></li>
         </ul>
       </div>
     </section>
@@ -163,10 +174,11 @@
             this.dirty = true;
           } else {
             // 原有更新逻辑
-            const newValue = this.getter(); //读取最新的值
+            const oldValue = this.value;
+            const newValue = this.get(); //读取最新的值，并重新收集依赖
             if (newValue !== this.value) {
               this.value = newValue; //内部缓存最新的值
-              this.callback?.(newValue); //触发回调函数
+              this.callback?.(newValue, oldValue); //触发回调函数
             }
           }
         }
@@ -216,8 +228,15 @@
         //三: 处理 computed
         let _computed = vm.$options.computed;
         Object.keys(_computed).forEach((ckey) => {
-          // 将计算属性挂到 vm.xx 上，便于通过组件实例直接访问
-          vm[ckey] = new Computed(_computed[ckey].bind(vm)).get();
+          const computedRef = new Computed(_computed[ckey].bind(vm));
+          // 将计算属性挂到 vm.xx 上，访问时才触发 lazy watcher 求值
+          Object.defineProperty(vm, ckey, {
+            enumerable: true,
+            configurable: true,
+            get() {
+              return computedRef.get();
+            }
+          });
         });
       }
 

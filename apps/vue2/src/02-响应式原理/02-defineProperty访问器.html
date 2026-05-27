@@ -2,14 +2,15 @@
   分类: vue2 / 02-响应式原理
   主题: Object.defineProperty 实现访问器属性（Vue2 响应式核心）
   要点:
-    - 把同名属性改成 getter/setter，必须用「闭包私有变量」做真正存储，否则 set/get 内部访问 this.name 会再次触发自身，形成栈溢出
-    - Vue2 数据响应式正是借此对每个字段挂上 getter/setter 并通知 Dep
+    - Object.defineProperty 可把普通属性改成访问器属性，用 get/set 拦截读取和写入
+    - 访问器属性不能同时配置 value/writable；真正的值通常放在闭包变量或另一个存储槽中
+    - 在 getter/setter 内再次读写同名属性会递归触发自身，可能造成最大调用栈溢出
+    - Vue2 用 defineProperty 为 data 中已有字段挂 getter/setter，但新增属性有响应式限制
   面试:
-    - Object.defineProperty 实现访问器属性（Vue2 响应式核心）的核心概念是什么
-    - Object.defineProperty 实现访问器属性（Vue2 响应式核心）在实际项目里怎么用
-    - Object.defineProperty 实现访问器属性（Vue2 响应式核心）有哪些常见坑或易错点
-    - Object.defineProperty 实现访问器属性（Vue2 响应式核心）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Object.defineProperty 实现访问器属性（Vue2 响应式核心）
+    - 数据属性和访问器属性有什么区别？
+    - getter/setter 里为什么不能直接读写 this.name？
+    - Vue2 为什么能用 defineProperty 做响应式？
+    - defineProperty 响应式有哪些天然限制？
 -->
 
 <!doctype html>
@@ -29,16 +30,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>把同名属性改成 getter/setter，必须用「闭包私有变量」做真正存储，否则 set/get 内部访问 <code>this</code>.name 会再次触发自身，形成栈溢出。</li>
-          <li>Vue2 数据响应式正是借此对每个字段挂上 getter/setter 并通知 Dep。</li>
-          <li>把同名属性改成 getter/setter，必须用「闭包私有变量」做真正存储，否则 set/get 内部访问 <code>this</code>.name 会再次触发自身，形成栈溢出。</li>
-          <li>Vue2 数据响应式正是借此对每个字段挂上 getter/setter 并通知 Dep。</li>
+          <li><code>Object.defineProperty(obj, key, descriptor)</code> 可以精确控制属性描述符。数据属性使用 <code>value/writable</code>，访问器属性使用 <code>get/set</code>，两组不能混用。</li>
+          <li>访问器属性本身不自动存值，示例用闭包变量 <code>_name</code> 保存真实值。setter 中如果写 <code>this.name = newValue</code>，会再次触发同一个 setter，最终造成递归和栈溢出。</li>
+          <li>Vue2 的响应式就是在初始化时把 <code>data</code> 中已有字段转换为访问器属性：getter 收集依赖，setter 比较新旧值后通知 watcher 更新。</li>
+          <li><code>defineProperty</code> 的边界是“只能拦截已经定义过的属性”。运行时新增对象字段、删除字段、直接改数组索引和 length 都需要 Vue2 额外 API 或数组方法配合。</li>
+          <li>现代普通业务代码更常用对象字面量 <code>get/set</code> 或类访问器；只有需要改描述符、兼容旧框架原理或元编程时，才直接使用 <code>Object.defineProperty</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>把同名属性改成 getter/setter？</strong> 把同名属性改成 getter/setter，必须用「闭包私有变量」做真正存储，否则 set/get 内部访问 <code>this</code>.name 会再次触发自身，形成栈溢出</li>
-          <li><strong>Vue2 数据响应式正是借此对每个字段挂上 getter/setter 并通知？</strong> Vue2 数据响应式正是借此对每个字段挂上 getter/setter 并通知 Dep</li>
-          <li><strong>Object.defineProperty 实现访问器属性（Vue2 响应式核心）的核心概念是什么？</strong> 把同名属性改成 getter/setter，必须用「闭包私有变量」做真正存储，否则 set/get 内部访问 <code>this</code>.name 会再次触发自身，形成栈溢出；Vue2 数据响应式正是借此对每个字段挂上 getter/setter 并通知 Dep</li>
+          <li><strong>数据属性和访问器属性有什么区别？</strong> 结论是数据属性直接保存值，访问器属性通过 getter/setter 计算或拦截值。原因是二者使用不同的属性描述符字段，<code>value/writable</code> 不能和 <code>get/set</code> 同时出现。项目里做普通数据建模多用数据属性，做拦截、校验、响应式原理演示才用访问器属性。</li>
+          <li><strong>getter/setter 里为什么不能直接读写同名属性？</strong> 结论是会递归触发自身。setter 中执行 <code>this.name = value</code> 等于再次调用 <code>name</code> 的 setter，getter 中读 <code>this.name</code> 也会再次调用 getter。正确做法是把真实值放到闭包变量、Symbol key 或另一个不冲突的字段里。</li>
+          <li><strong>Vue2 为什么能用 defineProperty 做响应式？</strong> 结论是 Vue2 通过 getter 收集依赖，通过 setter 通知更新。原因是模板渲染或 computed 读取数据时会触发 getter，Vue 能记录当前 watcher；数据写入触发 setter 后，就能通知这些 watcher。边界是这要求属性在初始化时已经存在。</li>
+          <li><strong>defineProperty 相比 Proxy 的限制是什么？</strong> 结论是它是逐属性拦截，不能天然感知新增/删除属性和数组索引变化。原因是每个 key 都要单独定义描述符。Vue2 因此需要 <code>Vue.set</code> 和数组变更方法；Vue3 的 Proxy 能从对象层面拦截更多操作。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty" target="_blank" rel="noreferrer">MDN：Object.defineProperty()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get" target="_blank" rel="noreferrer">MDN：get 访问器语法</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/reactivity.html" target="_blank" rel="noreferrer">Vue 2 官方文档：Reactivity in Depth</a></li>
         </ul>
       </div>
     </section>

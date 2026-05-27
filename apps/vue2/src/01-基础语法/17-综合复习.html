@@ -2,15 +2,16 @@
   分类: vue2 / 01-基础语法
   主题: 综合复习（computed / methods / watch / 局部组件 / 简写）
   要点:
-    - computed 缓存依赖；methods 每次必执行；同名属性 vs 方法书写方式不同（{{ x }} vs {{ x() }}）
-    - 局部组件 components: { Foo, Bar } 是 ES2015 简写，等价于 { Foo: Foo, Bar: Bar }
-    - 子组件中若想用其他局部组件，必须在子组件的 components 里再次声明
+    - computed 适合从响应式依赖派生值；methods 适合事件动作或每次都要重新执行的逻辑
+    - watch 适合在数据变化后执行异步请求、日志、持久化等副作用，不应用来替代简单派生值
+    - components: { Foo } 是对象属性简写；局部组件只在声明它的组件作用域内可用
+    - Vue 2 仍可维护历史项目，新项目应优先选择 Vue 3 与 Vite 生态
   面试:
-    - 综合复习（computed / methods / watch / 局部组件 / 简写）的核心概念是什么
-    - 综合复习（computed / methods / watch / 局部组件 / 简写）在实际项目里怎么用
-    - 综合复习（computed / methods / watch / 局部组件 / 简写）有哪些常见坑或易错点
-    - 综合复习（computed / methods / watch / 局部组件 / 简写）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 综合复习（computed / methods / watch / 局部组件 / 简写）
+    - computed、methods、watch 分别适合什么场景？
+    - 为什么 computed 在模板中不用加括号，而 methods 必须调用？
+    - Vue 2 局部组件注册的作用域边界是什么？
+    - methods 和 computed 同名会带来什么问题？
+    - 维护 Vue 2 项目时如何说明与 Vue 3 新项目选型的边界？
 -->
 
 <!doctype html>
@@ -32,16 +33,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>computed</code> 缓存依赖；methods 每次必执行；同名属性 vs 方法书写方式不同（{{ x }} vs {{ x() }}）。</li>
-          <li>局部组件 components: { Foo, Bar } 是 ES2015 简写，等价于 { Foo: Foo, Bar: Bar }。</li>
-          <li>子组件中若想用其他局部组件，必须在子组件的 components 里再次声明。</li>
-          <li><code>computed</code> 缓存依赖；methods 每次必执行；同名属性 vs 方法书写方式不同（{{ x }} vs {{ x() }}）（补充）。</li>
+          <li><code>computed</code> 声明的是可缓存的派生状态，模板中写 <code>{{ reverseMsg }}</code> 即可读取；只有它依赖的响应式数据变化时才会重新求值。</li>
+          <li><code>methods</code> 声明的是方法，模板里要写 <code>{{ reversMsgMethod() }}</code> 才会调用；每次渲染都会重新执行，所以不要把纯派生状态长期写成方法。</li>
+          <li><code>watch</code> 观察某个响应式数据的变化，适合异步请求、日志、持久化、昂贵计算的调度等副作用；如果只是把 <code>msg</code> 反转给模板显示，优先用 <code>computed</code>。</li>
+          <li><code>components: { componenta }</code> 是 ES2015 对象属性简写，等价于 <code>{ componenta: componenta }</code>；局部注册只影响当前组件模板，子组件要使用另一个局部组件时必须在自己的 <code>components</code> 中再次声明。</li>
+          <li>避免在同一个 Vue 2 选项对象里让 <code>computed</code> 与 <code>methods</code> 使用同名 key，否则模板读取时会出现覆盖或警告；Vue 2 已进入历史版本语境，维护旧项目可继续理解这些规则，新项目通常优先 Vue 3。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>computed 缓存依赖？</strong> <code>computed</code> 缓存依赖；methods 每次必执行；同名属性 vs 方法书写方式不同（{{ x }} vs {{ x() }}）；局部组件 components: { Foo, Bar } 是 ES2015 简写，等价于 { Foo: Foo, Bar: Bar }</li>
-          <li><strong>局部组件 components？</strong> 局部组件 components: { Foo, Bar } 是 ES2015 简写，等价于 { Foo: Foo, Bar: Bar }；子组件中若想用其他局部组件，必须在子组件的 components 里再次声明</li>
-          <li><strong>子组件中若想用其他局部组件？</strong> 子组件中若想用其他局部组件，必须在子组件的 components 里再次声明</li>
+          <li><strong>computed、methods、watch 怎么选？</strong> 结论是派生值用 <code>computed</code>，用户动作或普通函数逻辑用 <code>methods</code>，数据变化后的副作用用 <code>watch</code>。原因是 <code>computed</code> 有依赖缓存，<code>methods</code> 每次渲染都会执行，<code>watch</code> 能拿到新旧值并承载异步或外部影响。项目里常见边界是：列表筛选结果用 computed，点击提交用 method，搜索词变化后防抖请求接口用 watch。</li>
+          <li><strong>为什么 computed 不加括号而 methods 要加括号？</strong> 结论是 <code>computed</code> 暴露成实例上的属性，<code>methods</code> 暴露成实例上的函数。Vue 会为计算属性创建 getter 并在访问时按依赖缓存结果，而方法只有被调用才执行。易错点是把同一个名字同时放进 <code>computed</code> 和 <code>methods</code>，会让模板含义变得不清楚。</li>
+          <li><strong>局部组件注册的作用域是什么？</strong> 结论是局部组件只对注册它的那个组件模板可见。原因是 <code>components</code> 选项属于当前组件的解析上下文，不会自动向子组件继续传播。项目里如果 <code>componentb</code> 的模板要渲染 <code>componenta</code>，就要在 <code>componentb.components</code> 再注册一次。</li>
+          <li><strong>维护 Vue 2 时如何回答新项目选型？</strong> 结论是 Vue 2 规则仍然值得维护旧系统时掌握，但新项目通常应优先 Vue 3 与 Vite。原因是 Vue 2 已进入 EOL 后的历史版本语境，生态与官方推荐都转向 Vue 3。边界是存量项目迁移要评估依赖、IE 兼容和构建链，而不是只因为语法熟悉就继续新开 Vue 2。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/computed.html" target="_blank" rel="noreferrer">Vue 2 官方文档：Computed Properties and Watchers</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/components-registration.html" target="_blank" rel="noreferrer">Vue 2 官方文档：Component Registration</a></li>
+          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noreferrer">Vue 2 官方说明：Vue 2 EOL</a></li>
         </ul>
       </div>
     </section>
@@ -56,10 +65,10 @@
       <h1>method:{{reversMsgMethod()}}</h1>
       <h1>method:{{reversMsgMethod()}}</h1>
       <h1>method:{{reversMsgMethod()}}</h1>
-      <h1>now:{{now}}</h1>
-      <h1>now:{{now}}</h1>
-      <h1>now:{{now()}}</h1>
-      <h1>now:{{now()}}</h1>
+      <h1>computed now:{{nowLabel}}</h1>
+      <h1>computed now:{{nowLabel}}</h1>
+      <h1>method now:{{nowMethod()}}</h1>
+      <h1>method now:{{nowMethod()}}</h1>
       <componenta></componenta>
       <componentb></componentb>
       <input v-model="msg">
@@ -112,7 +121,7 @@
       //局部注册的组件：在 Vue 的根实例的子组件中是不可用的，如果想让组件 componenta 在 componentb 中可用，需要采用如下的写法
       //在ES2015+中，在对象中放一个变量，其实是componenta:componenta的缩写
       var componentb = {
-        template:"<div>组件B</div>",
+        template:"<div>组件B 内部复用：<componenta></componenta></div>",
         components: {
           componenta
         }
@@ -144,7 +153,7 @@
             return this.msg.split("").reverse().join("");
           },
 
-          now: function () {
+          nowLabel: function () {
             return Date.now();
           }
         },
@@ -155,7 +164,7 @@
             return this.msg.split("").reverse().join("");
           },
 
-          now: function () {
+          nowMethod: function () {
             return Date.now()
           }
         },
