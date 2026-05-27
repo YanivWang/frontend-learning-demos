@@ -36,9 +36,15 @@
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>URL 校验正则？</strong> 可写基础 pattern，但 RFC 复杂；推荐 URL 构造函数 + try/catch，正则辅助图片后缀等。</li>
-          <li><strong>贪婪量词风险？</strong> (.*)* 类嵌套可能导致 catastrophic backtracking；收紧字符集、用占有量词或 RE2 风格。</li>
-          <li><strong>正则局限？</strong> 难覆盖所有合法 URL、国际化域名、IPv6；安全校验必须配合 URL API 与白名单。</li>
+          <li><strong>如何写 URL 校验正则？</strong> 结论是可以写基础格式提示，但不应把复杂 URL 合法性完全交给正则。原因是协议、IPv6、国际化域名、编码和 query 都很复杂；项目里优先用 <code>new URL()</code> 解析，再用白名单限制协议和域名。</li>
+          <li><strong>贪婪量词有什么风险？</strong> <code>.*</code> 或嵌套量词在长字符串上可能导致大量回溯。边界是简单后缀匹配应收紧为 <code>\.(jpg|png)(?=\?|$)</code> 这类规则，而不是整串贪婪吞掉再回退。</li>
+          <li><strong>正则校验 URL 的局限是什么？</strong> 正则只能说明“看起来像”，不能说明资源可信或可访问。安全场景必须配合 URL API、协议白名单、域名白名单和服务端校验，不能只靠前端正则。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/URL" target="_blank" rel="noopener">MDN Web Docs：URL</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions" target="_blank" rel="noopener">MDN Web Docs：Regular expressions guide</a></li>
+          <li><a href="https://javascript.info/regexp-greedy-and-lazy" target="_blank" rel="noopener">JavaScript.info：Greedy and lazy quantifiers</a></li>
         </ul>
       </div>
     </section>

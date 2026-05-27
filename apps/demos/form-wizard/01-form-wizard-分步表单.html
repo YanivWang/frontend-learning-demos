@@ -1,17 +1,18 @@
 <!--
 分类: demos / form-wizard
-  主题: 分步表单向导
+  主题: 分步表单向导与逐步校验
   难度: 进阶
   要点:
-    - 多步表单用 currentStep 状态驱动视图
-    - 每步校验通过才允许 next
-    - 最后一步汇总展示已填数据
+    - 用 step 状态决定当前渲染哪一组字段，输入值保存在独立 data 对象中
+    - 每一步先同步当前输入，再调用 checkValidity / reportValidity 阻止非法跳转
+    - 渲染用户输入时使用 textContent，不把表单值拼进 innerHTML
+    - 返回上一步要保留已填数据，提交页只做汇总展示，不伪装成真实网络提交
   面试:
-    - 分步表单向导的核心概念是什么
-    - 分步表单向导在实际项目里怎么用
-    - 分步表单向导有哪些常见坑或易错点
-    - 分步表单向导和相近 API 如何区分选型
-    - 面试中如何简洁讲清 分步表单向导
+    - 分步表单为什么要把 step 和表单数据分开管理？
+    - 下一步按钮为什么必须先做当前步骤校验？
+    - 如何避免汇总页把用户输入当 HTML 渲染？
+    - 分步表单和普通长表单如何取舍？
+    - 真实项目里分步表单还要补哪些失败路径？
 -->
 
 <!doctype html>
@@ -38,20 +39,31 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>分步表单</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <h1>分步表单向导与逐步校验</h1>
+      <p class="hint">这个 demo 用原生 DOM 实现三步表单，重点观察：step 如何驱动视图、每步如何校验、汇总页如何安全展示用户输入。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>多步表单用 currentStep 状态驱动视图。</li>
-          <li>每步校验通过才允许 next。</li>
-          <li>最后一步汇总展示已填数据。</li>
+          <li><strong>状态拆分：</strong><code>step</code> 只表示当前处于第几步，<code>data</code> 保存已填写的业务值。两者分开后，返回上一步不会丢数据，也不会把 DOM 当成唯一数据源。</li>
+          <li><strong>逐步校验：</strong>点击下一步时先把当前字段写回 <code>data</code>，再用表单控件的 <code>checkValidity()</code> / <code>reportValidity()</code> 触发 HTML 约束校验；不通过就停留在当前步骤。</li>
+          <li><strong>失败路径：</strong>空姓名、非法邮箱、空城市都应该阻止继续；真实项目还要处理接口失败、重复提交、刷新恢复、离开页面前确认等边界。</li>
+          <li><strong>安全展示：</strong>汇总页展示的是用户输入，示例用 <code>textContent</code> 写入 <code>pre</code>，避免把 <code>&lt;img onerror=...&gt;</code> 这类字符串当 HTML 解析。</li>
+          <li><strong>取舍：</strong>分步表单适合字段多、需要分阶段确认的流程；字段少或强依赖上下文时，普通长表单往往更直接，减少步骤切换成本。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>多步表单用 currentStep 状态驱动视图？</strong> 多步表单用 currentStep 状态驱动视图</li>
-          <li><strong>每步校验通过才允许 next？</strong> 每步校验通过才允许 next</li>
-          <li><strong>最后一步汇总展示已填数据？</strong> 最后一步汇总展示已填数据</li>
+          <li><strong>分步表单为什么要把 step 和表单数据分开管理？</strong> 结论是 step 控制视图，data 保存业务状态。这样返回上一步、重新渲染或最终汇总都能从同一份数据恢复，不依赖临时 DOM。边界是复杂表单还需要草稿保存、脏状态提示和跨步骤依赖校验。</li>
+          <li><strong>下一步按钮为什么必须先做当前步骤校验？</strong> 结论是不能让非法数据进入后续步骤。原因是后续步骤可能依赖前一步值，提前拦截能减少错误传播；项目里通常同时做前端约束校验和服务端最终校验。</li>
+          <li><strong>如何避免汇总页把用户输入当 HTML 渲染？</strong> 展示纯文本时用 <code>textContent</code> 或创建文本节点，不把输入拼到 <code>innerHTML</code>。原因是 <code>innerHTML</code> 会解析字符串，用户输入可能变成 DOM 注入；只有可信且净化后的 HTML 才适合渲染为标记。</li>
+          <li><strong>分步表单和普通长表单如何取舍？</strong> 结论是字段多、流程性强、每步有独立目标时用分步表单；字段少或需要整体对照时用长表单。边界是分步会增加导航、状态恢复和校验设计成本。</li>
+          <li><strong>真实项目里分步表单还要补哪些失败路径？</strong> 至少要处理空输入、格式错误、接口失败、重复点击提交、刷新后恢复和离开页面确认。这个 demo 只演示前端约束校验和汇总展示，真实提交仍需后端兜底。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Forms/Form_validation" target="_blank" rel="noopener">MDN Web Docs：Client-side form validation</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/checkValidity" target="_blank" rel="noopener">MDN Web Docs：HTMLInputElement.checkValidity()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/reportValidity" target="_blank" rel="noopener">MDN Web Docs：HTMLInputElement.reportValidity()</a></li>
+          <li><a href="https://developer.mozilla.org/docs/Web/API/Node/textContent" target="_blank" rel="noopener">MDN Web Docs：Node.textContent</a></li>
         </ul>
       </div>
     </section>
@@ -79,25 +91,49 @@
       const form = document.getElementById("form");
 
       function renderSteps() {
-        stepsEl.innerHTML = fields.map((_, i) => `<span class="${i === step ? "active" : ""}">步骤 ${i + 1}</span>`).join("");
+        const nodes = fields.map((_, i) => {
+          const item = document.createElement("span");
+          item.className = i === step ? "active" : "";
+          item.textContent = `步骤 ${i + 1}`;
+          return item;
+        });
+        stepsEl.replaceChildren(...nodes);
       }
       function renderForm() {
+        form.replaceChildren();
         if (step >= fields.length) {
-          form.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre><p>提交完成（demo 仅展示数据）</p>`;
+          const summary = document.createElement("pre");
+          summary.textContent = JSON.stringify(data, null, 2);
+          const message = document.createElement("p");
+          message.textContent = "提交完成（demo 仅展示数据，没有发送网络请求）";
+          form.append(summary, message);
           document.getElementById("next").textContent = "完成";
           return;
         }
         document.getElementById("next").textContent = step === fields.length - 1 ? "提交" : "下一步";
-        form.innerHTML = fields[step].map((f) => `
-        <label for="${f.key}">${f.label}</label>
-        <input id="${f.key}" name="${f.key}" type="${f.type || "text"}" value="${data[f.key] || ""}" ${f.required ? "required" : ""} />`).join("");
+        for (const f of fields[step]) {
+          const label = document.createElement("label");
+          label.setAttribute("for", f.key);
+          label.textContent = f.label;
+          const input = document.createElement("input");
+          input.id = f.key;
+          input.name = f.key;
+          input.type = f.type || "text";
+          input.value = data[f.key] || "";
+          input.required = Boolean(f.required);
+          form.append(label, input);
+        }
       }
       function validate() {
         if (step >= fields.length) return true;
         for (const f of fields[step]) {
-          const v = form.querySelector(`#${f.key}`).value.trim();
-          if (f.required && !v) { alert(`请填写${f.label}`); return false; }
+          const input = form.querySelector(`#${f.key}`);
+          const v = input.value.trim();
           data[f.key] = v;
+          if (!input.checkValidity()) {
+            input.reportValidity();
+            return false;
+          }
         }
         return true;
       }

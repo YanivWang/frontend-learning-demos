@@ -4,11 +4,13 @@
   要点:
     - 用 (...) / ! / void 等把 function 变成表达式后立即调用
     - 经典用途：隔离作用域、私有变量、修复 var+for 闭包
-    - 现代替代：ES Module、let/const 块作用域
+    - IIFE 可用于揭示模块模式和立即初始化
+    - 现代替代：ES Module、let/const 块作用域、块级作用域
   面试:
     - IIFE 是什么？有哪些写法？
     - 如何用 IIFE 解决 var+for 闭包？
     - IIFE 和模块化的关系？
+    - IIFE 与 new Function 的作用域差异？
   相关: 严格模式, 闭包
 -->
 
@@ -33,13 +35,22 @@
           <li>常见写法：<code>(function(){})()</code>、<code>!function(){}()</code>、具名 IIFE、带参 IIFE。</li>
           <li>可返回对象/函数，实现揭示模块模式（Revealing Module），隐藏私有变量。</li>
           <li>经典题：用 IIFE 为每次循环创建独立作用域，修复 var+for 闭包；现代用 let。</li>
-          <li>现代 ES Module 取代 IIFE 做模块隔离；IIFE 仍见于 legacy 代码和需要立即执行的场景。</li>
+          <li>现代 ES Module 取代 IIFE 做模块隔离；IIFE 仍见于 legacy bundle、书签脚本、立即初始化和隔离临时变量的场景。</li>
+          <li>IIFE 是正常函数调用，能闭包外层变量；<code>new Function</code> 从字符串创建函数，通常只能访问全局作用域和自身参数，且有类似 eval 的风险。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>IIFE 是什么？</strong> 定义后立即执行的函数表达式，创建独立作用域，避免变量挂到全局。</li>
-          <li><strong>var+for 闭包怎么修？</strong> IIFE 传 i：<code>(function(j){ setTimeout(...) })(i)</code>；或直接用 <code>let</code>。</li>
-          <li><strong>和模块化的关系？</strong> IIFE 是 ES5 时代的模块雏形；ES6 import/export 是标准方案。UMD 等仍可能包一层 IIFE。</li>
+          <li><strong>IIFE 是什么？</strong> 结论是「函数表达式创建后立即调用」。因为函数声明不能直接跟调用括号，所以常用外层括号或一元运算符把 <code>function</code> 转成表达式；它会创建一个函数作用域，避免临时变量泄漏到全局。</li>
+          <li><strong>var+for 闭包怎么修？</strong> 结论是 ES5 可把当前 <code>i</code> 作为参数传入 IIFE，ES6 直接用 <code>let</code>。原因是 <code>var</code> 只有函数作用域，循环结束后闭包读到同一个变量；IIFE 每轮创建新的参数绑定。</li>
+          <li><strong>IIFE 和模块化的关系？</strong> 结论是 IIFE 是 ES Module 普及前常见的模块隔离方式。它可以返回公开 API、隐藏私有变量；现代项目优先用 <code>import</code> / <code>export</code>，但 UMD、旧 bundle 和一次性初始化代码里仍能看到 IIFE。</li>
+          <li><strong>IIFE 与 new Function 的作用域差异？</strong> 结论是 IIFE 能访问外层词法作用域，<code>new Function</code> 不能闭包局部变量。原因是前者是普通函数表达式，后者从字符串编译并在全局语境创建；涉及动态字符串时还要考虑安全和 CSP。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Glossary/IIFE">MDN Glossary：IIFE</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules">MDN：JavaScript modules</a></li>
+          <li><a href="https://javascript.info/closure">JavaScript.info：Variable scope, closure</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function">MDN：Function() constructor</a></li>
         </ul>
       </div>
     </section>

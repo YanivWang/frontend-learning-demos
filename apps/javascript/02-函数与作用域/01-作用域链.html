@@ -2,13 +2,15 @@
   分类: javascript / 02-函数与作用域
   主题: 作用域链与变量查找
   要点:
-    - 函数执行时形成「作用域链」：先找自己变量对象，找不到逐级向外
-    - 内层函数能看到外层函数与全局作用域的变量，反之不行
-    - debugger 在 DevTools 打开时能命中断点，便于查看 Scope 列表
+    - JS 使用词法作用域，标识符解析由代码书写位置决定
+    - 函数调用会创建词法环境，并通过 outer 引用串成作用域链
+    - 查找变量先当前环境、再外层环境，直到全局环境或抛 ReferenceError
+    - 闭包能保留外层词法环境，DevTools Scope 面板可观察这条链
   面试:
-    - 什么是作用域链？变量查找顺序是什么？
-    - 词法作用域和动态作用域的区别？
-    - 闭包与作用域链的关系？
+    - 作用域链如何决定变量查找顺序？
+    - JS 为什么说是词法作用域而不是动态作用域？
+    - 作用域链和原型链分别解决什么问题？
+    - 闭包为什么能在外层函数返回后继续访问外层变量？
   相关: 01-基础/变量进阶, 08-面试题/作用域
 -->
 
@@ -29,17 +31,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>函数执行时会创建活动对象（AO）/ 词法环境，并与外层环境引用串联成<strong>作用域链</strong>。</li>
-          <li>标识符查找沿作用域链由内向外：当前函数 → 外层函数 → … → 全局；找不到则 <code>ReferenceError</code>。</li>
-          <li>内层函数可访问外层与全局变量（闭包的基础）；外层无法访问内层局部变量。</li>
-          <li>JS 采用<strong>词法作用域</strong>：作用域在写代码时确定，与调用位置无关（对比动态作用域）。</li>
-          <li>在 DevTools 中对 <code>debugger</code> 断点查看 <strong>Scope</strong> 面板，可直观看到当前链上的各层绑定。</li>
+          <li>作用域链是多个词法环境通过外层引用串起来的查找结构。示例里 <code>changeColorInner</code> 先找自己的 <code>innerColorChild</code>，再找 <code>changeColor</code> 中的 <code>tempColor</code>，最后才到全局的 <code>outerColor</code>。</li>
+          <li>JS 是词法作用域：函数能访问哪些外层绑定，由函数定义时所在的位置决定，不由调用位置决定。把内层函数传到别处调用，也不会改变它的外层环境。</li>
+          <li>标识符查找只处理变量名、函数名这类绑定；对象属性访问走原型链。面试中要把“找变量”和“找属性”分开说明。</li>
+          <li>内层函数可以读取外层绑定，外层函数不能反向读取内层局部绑定；外层绑定如果被内层函数长期引用，就形成闭包并延长相关环境的生命周期。</li>
+          <li><code>debugger</code> 命中后，DevTools 的 Scope 面板会展示 Local、Closure、Script/Global 等层级，是验证作用域链最直接的方式。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>什么是作用域链？变量查找顺序是什么？</strong> 执行函数时沿词法环境外层引用向外查找；先当前环境记录，再外层，直到全局。与原型链不同：作用域链管标识符，原型链管属性访问。</li>
-          <li><strong>词法作用域和动态作用域的区别？</strong> JS 是词法作用域，函数写在哪儿就继承哪儿的外层；动态作用域（如部分 Bash）按调用栈决定，JS 没有。</li>
-          <li><strong>闭包与作用域链的关系？</strong> 内层函数引用外层变量时，外层已返回，内层仍通过作用域链上的环境记录保持访问权，即闭包。常考 for 循环 + var/let，见 <a href="../08-面试题/作用域/05-let-for循环闭包.html">let for 循环闭包</a>。</li>
+          <li><strong>作用域链如何决定变量查找顺序？</strong> 先结论：标识符会从当前词法环境开始逐层向外查找。原因是每个函数执行上下文都有当前环境和外层环境引用，规范中的 ResolveBinding 会沿这些环境解析名称。边界是它不负责属性查找，<code>obj.x</code> 的 <code>x</code> 走对象和原型链。</li>
+          <li><strong>JS 为什么说是词法作用域而不是动态作用域？</strong> 先结论：JS 的外层作用域由函数写在哪里决定。原因是函数创建时就记录了外部词法环境，而不是调用栈上的“调用者”。项目里把回调传给定时器、事件或 Promise 时，变量解析仍按定义位置走。</li>
+          <li><strong>闭包为什么能在外层函数返回后继续访问外层变量？</strong> 先结论：因为内层函数仍引用外层词法环境，垃圾回收不能释放被引用的绑定。原因是闭包保存的是环境引用，不是简单复制一份值。边界是只要不再持有这个函数引用，相关环境就可以被回收。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://tc39.es/ecma262/#sec-lexical-environments">ECMA-262：Lexical Environments</a></li>
+          <li><a href="https://tc39.es/ecma262/#sec-resolvebinding">ECMA-262：ResolveBinding</a></li>
+          <li><a href="https://javascript.info/closure">JavaScript.info：Variable scope, closure</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures">MDN：Closures</a></li>
         </ul>
       </div>
     </section>

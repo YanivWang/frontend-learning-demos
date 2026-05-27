@@ -2,15 +2,15 @@
 分类: javascript / 03-对象与原型
   主题: 原型对象（prototype）与共享属性
   要点:
-    - 构造函数自带 prototype 对象，挂在其上的属性/方法被所有实例共享
-    - 实例的 __proto__ 指向构造函数的 prototype
-    - prototype.constructor 反向指回构造函数，形成循环引用
+    - 构造函数的 prototype 是实例共享方法和属性的挂载点
+    - 实例的内部 [[Prototype]] 指向构造函数 prototype，可用 Object.getPrototypeOf 查看
+    - prototype.constructor 默认指回构造函数，但可被改写，不应过度依赖
+    - 原型上放引用类型共享状态会影响所有实例，通常只放方法或常量
   面试:
-    - 原型对象（prototype）与共享属性的核心概念是什么
-    - 原型对象（prototype）与共享属性在实际项目里怎么用
-    - 原型对象（prototype）与共享属性有哪些常见坑或易错点
-    - 原型对象（prototype）与共享属性和相近 API 如何区分选型
-    - 面试中如何简洁讲清 原型对象（prototype）与共享属性
+    - prototype 在构造函数和实例之间起什么作用？
+    - __proto__、[[Prototype]]、prototype 有什么区别？
+    - constructor 属性为什么会指回构造函数？
+    - 原型上为什么不建议放可变引用状态？
 -->
 
 <!doctype html>
@@ -30,15 +30,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>构造函数自带 prototype 对象，挂在其上的属性/方法被所有实例共享。</li>
-          <li>实例的 __proto__ 指向构造函数的 prototype。</li>
-          <li>prototype.constructor 反向指回构造函数，形成循环引用。</li>
+          <li><strong>共享挂载点：</strong>每个可构造函数都有 <code>prototype</code> 对象，通过 <code>new</code> 创建的实例会把内部 <code>[[Prototype]]</code> 链到它。</li>
+          <li><strong>查找机制：</strong>访问实例属性时先查自有属性，找不到再沿原型链查 <code>prototype</code> 上的属性或方法。</li>
+          <li><strong>API 选择：</strong><code>__proto__</code> 是历史访问器，学习时能帮助理解；项目代码推荐用 <code>Object.getPrototypeOf()</code> 和 <code>Object.setPrototypeOf()</code>。</li>
+          <li><strong>constructor：</strong><code>prototype.constructor</code> 默认指回构造函数，但它只是普通属性，替换整个原型对象后需要手动恢复。</li>
+          <li><strong>共享状态陷阱：</strong>原型适合放方法；若把数组、对象这类可变引用放在原型上，所有实例会共享同一份状态，容易互相影响。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>构造函数自带 prototype 对象？</strong> 构造函数自带 prototype 对象，挂在其上的属性/方法被所有实例共享；实例的 __proto__ 指向构造函数的 prototype</li>
-          <li><strong>实例的 __proto__ 指向构造函数的 prototype？</strong> 实例的 __proto__ 指向构造函数的 prototype</li>
-          <li><strong>prototype.constructor 反向指回构造函数？</strong> 构造函数自带 prototype 对象，挂在其上的属性/方法被所有实例共享；实例的 __proto__ 指向构造函数的 prototype</li>
+          <li><strong>prototype 在构造函数和实例之间起什么作用？</strong> 结论是它是实例共享行为的对象。<code>new Person()</code> 会让实例的 <code>[[Prototype]]</code> 指向 <code>Person.prototype</code>，因此多个实例能共享同一个 <code>sayHello</code> 方法。</li>
+          <li><strong>__proto__、[[Prototype]]、prototype 有什么区别？</strong> <code>[[Prototype]]</code> 是规范里的内部槽，<code>__proto__</code> 是访问它的历史属性，<code>prototype</code> 是函数对象上用于创建实例原型链的普通属性。项目里优先用标准 API 查看原型。</li>
+          <li><strong>constructor 属性为什么会指回构造函数？</strong> 默认的 <code>prototype</code> 对象自带 <code>constructor</code>，方便从原型回到构造函数。边界是它可被改写，替换原型后不自动保持正确。</li>
+          <li><strong>原型上为什么不建议放可变引用状态？</strong> 因为原型属性被所有实例共享，一个实例改数组或对象会影响其他实例。项目里实例自己的状态放构造函数，原型上主要放方法或不可变常量。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain" target="_blank" rel="noopener">MDN Web Docs：Inheritance and the prototype chain</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf" target="_blank" rel="noopener">MDN Web Docs：Object.getPrototypeOf()</a></li>
+          <li><a href="https://javascript.info/prototype-inheritance" target="_blank" rel="noopener">JavaScript.info：Prototypal inheritance</a></li>
         </ul>
       </div>
     </section>

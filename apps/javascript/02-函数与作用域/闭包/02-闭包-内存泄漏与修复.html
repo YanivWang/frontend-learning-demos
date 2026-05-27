@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 02-函数与作用域 / 闭包
+  分类: javascript / 02-函数与作用域 / 闭包
   主题: 闭包导致的内存泄漏与修复手段
   要点:
-    - 闭包持有外层变量引用，外层函数执行完毕这些变量也不会被回收
-    - 解决：调用后手动置 null、或避免持久持有大对象的闭包
-    - 配合 use strict 杜绝意外全局变量；定时器/事件监听记得清理
+    - 闭包不是泄漏本身，泄漏来自无用闭包仍被全局、定时器或监听器持有
+    - 长期闭包会保留其可达的外层对象，包含大数组或 DOM 时风险更高
+    - 释放引用、清理 timer、removeEventListener 和避免意外全局是常见修复
+    - 现代浏览器可回收不可达循环引用，但可达监听器链仍会保留内存
   面试:
-    - 闭包导致的内存泄漏与修复手段的核心概念是什么
-    - 闭包导致的内存泄漏与修复手段在实际项目里怎么用
-    - 闭包导致的内存泄漏与修复手段有哪些常见坑或易错点
-    - 闭包导致的内存泄漏与修复手段和相近 API 如何区分选型
-    - 面试中如何简洁讲清 闭包导致的内存泄漏与修复手段
+    - 闭包一定会导致内存泄漏吗？
+    - 为什么把闭包变量置为 null 能帮助释放内存？
+    - 定时器和事件监听为什么容易和闭包一起造成泄漏？
+    - 前端项目里如何定位和修复闭包相关内存问题？
 -->
 
 <!doctype html>
@@ -30,15 +30,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>闭包持有外层变量引用，外层函数执行完毕这些变量也不会被回收。</li>
-          <li>解决：调用后手动置 <code>null</code>、或避免持久持有大对象的闭包。</li>
-          <li>配合 use strict 杜绝意外全局变量；定时器/事件监听记得清理。</li>
+          <li>闭包本身是正常机制，不等于内存泄漏。只有当闭包已经不再有业务价值，却仍被全局变量、定时器、事件监听器或缓存持有时，它引用的外层对象才会持续可达。</li>
+          <li>示例中 <code>outer</code> 返回的 <code>inner</code> 引用了大数组 <code>arr</code>；把 <code>inner = null</code> 后，如果没有其他引用，闭包链和数组就可以等待垃圾回收。</li>
+          <li>非严格模式下未声明变量赋值会创建全局属性，导致对象生命周期被拉长；使用严格模式、ES modules 或构建工具默认严格环境能减少这类问题。</li>
+          <li>定时器和事件监听器经常持有回调，回调又持有组件状态、DOM 或大对象。页面切换、组件卸载、弹窗销毁时要 <code>clearInterval</code>、<code>removeEventListener</code> 或使用框架生命周期清理。</li>
+          <li>现代垃圾回收能处理不可达的循环引用；真正需要关注的是“从根对象仍然可达”的引用链。排查时可用浏览器 Memory 面板查看 Retainers。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>闭包持有外层变量引用？</strong> 闭包持有外层变量引用，外层函数执行完毕这些变量也不会被回收</li>
-          <li><strong>配合 use strict 杜绝意外全局变量？</strong> 配合 use strict 杜绝意外全局变量；定时器/事件监听记得清理</li>
-          <li><strong>闭包导致的内存泄漏与修复手段的核心概念是什么？</strong> 闭包持有外层变量引用，外层函数执行完毕这些变量也不会被回收；解决：调用后手动置 <code>null</code>、或避免持久持有大对象的闭包</li>
+          <li><strong>闭包一定会导致内存泄漏吗？</strong> 先结论：不会，闭包只是让函数保留外层环境。原因是只要闭包仍有用，保留变量就是正确行为；只有无用闭包仍从根对象可达时才是泄漏。项目里常见于组件卸载后遗留的回调、全局缓存和未停止的轮询。</li>
+          <li><strong>为什么把闭包变量置为 <code>null</code> 能帮助释放内存？</strong> 先结论：它断开了当前变量到闭包函数的强引用。原因是垃圾回收按可达性判断，对象不可达后才有机会回收。边界是如果同一个闭包还被别的变量、DOM 监听器或定时器持有，单独置空一个引用没有效果。</li>
+          <li><strong>定时器和事件监听为什么容易和闭包一起造成泄漏？</strong> 先结论：宿主环境会保存回调，回调闭包又保存外层状态。原因是 <code>setInterval</code> 不清理会一直运行，DOM 监听器不解绑会保留监听函数。项目中在 React effect 清理函数、Vue 卸载钩子或原生页面销毁逻辑中集中释放。</li>
+          <li><strong>前端项目里如何定位和修复闭包相关内存问题？</strong> 先结论：先复现增长，再找可达引用链，最后释放生命周期不匹配的引用。原因是内存泄漏本质是对象仍被 Retainers 持有。实践中用 Chrome Memory 快照比较、Performance monitor 观察趋势，并修复 timer、listener、全局数组和缓存。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Memory_management">MDN：Memory management</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures">MDN：Closures</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener">MDN：removeEventListener()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/clearInterval">MDN：clearInterval()</a></li>
         </ul>
       </div>
     </section>

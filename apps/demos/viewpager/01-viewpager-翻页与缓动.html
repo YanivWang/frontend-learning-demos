@@ -2,15 +2,17 @@
 分类: demos / viewpager
   主题: ViewPager 翻页组件 + 多种缓动插值器
   要点:
-    - 插值器(interpolator) 把线性进度 0→1 映射成不同曲线（弹性 / 回弹 / 超调）
-    - onPageScroll 中拿到 totalOffset，用 translate3d 移动 .pager_items（GPU 合成）
-    - lib/viewpager.js 为第三方实现，按 CONVENTIONS §5 不做改动
+    - 插值器把 0..1 的线性进度映射为弹性、回弹或超调曲线
+    - onPageScroll 接收 totalOffset，再用 translate3d 移动页面容器
+    - requestAnimationFrame 类动画应基于时间进度，而不是固定每帧步长
+    - transform 不参与普通文档流重排，但会创建新的 stacking context
+    - 运动效果要考虑 prefers-reduced-motion 等可访问性边界
   面试:
-    - ViewPager 翻页组件 + 多种缓动插值器的核心概念是什么
-    - ViewPager 翻页组件 + 多种缓动插值器在实际项目里怎么用
-    - ViewPager 翻页组件 + 多种缓动插值器有哪些常见坑或易错点
-    - ViewPager 翻页组件 + 多种缓动插值器和相近 API 如何区分选型
-    - 面试中如何简洁讲清 ViewPager 翻页组件 + 多种缓动插值器
+    - ViewPager 翻页动画为什么要把进度和位移分开？
+    - 插值器和 CSS transition timing-function 有什么相似点和区别？
+    - 为什么翻页位移常用 transform 而不是 left？
+    - requestAnimationFrame 动画为什么要用时间戳计算进度？
+    - 动效组件需要考虑哪些边界和降级？
 -->
 
 <!doctype html>
@@ -44,19 +46,30 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>ViewPager · 内置多种插值器（缓动函数）</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">这个 demo 用 ViewPager 和多种插值器演示翻页动画，重点观察线性进度如何被映射成不同手感，以及页面容器如何用 transform 移动。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>插值器(interpolator) 把线性进度 0→1 映射成不同曲线（弹性 / 回弹 / 超调）。</li>
-          <li>onPageScroll 中拿到 totalOffset，用 translate3d 移动 .pager_items（GPU 合成）。</li>
-          <li>lib/viewpager.js 为第三方实现，按 CONVENTIONS §5 不做改动。</li>
+          <li><strong>进度与插值：</strong>翻页动画先计算 <code>0..1</code> 的线性进度，再交给插值器映射成弹性、回弹或超调曲线，最后换算为位移。</li>
+          <li><strong>位移渲染：</strong><code>onPageScroll</code> 返回 <code>totalOffset</code>，示例用 <code>translate3d()</code> 移动 <code>.pager_items</code>，避免每帧修改 <code>left</code> 这类更容易触发布局的属性。</li>
+          <li><strong>动画时钟：</strong>实践中动画循环通常使用 <code>requestAnimationFrame()</code>，并根据回调时间戳计算进度，避免高刷新率屏幕上动画速度变快。</li>
+          <li><strong>CSS 边界：</strong><code>transform</code> 不改变文档流中的占位，但非 <code>none</code> 值会创建 stacking context；复杂组件里要注意层叠、定位和点击命中。</li>
+          <li><strong>体验边界：</strong>弹性、回弹这类动效能增强反馈，但过强动画可能影响晕动敏感用户；项目里应考虑 <code>prefers-reduced-motion</code> 或提供关闭动效的策略。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>插值器(interpolator) 把线性进度 0→1 映射成不同曲线（弹性 /？</strong> 插值器(interpolator) 把线性进度 0→1 映射成不同曲线（弹性 / 回弹 / 超调）</li>
-          <li><strong>onPageScroll 中拿到 totalOffset？</strong> onPageScroll 中拿到 totalOffset，用 translate3d 移动 .pager_items（GPU 合成）</li>
-          <li><strong>lib/viewpager.js 为第三方实现？</strong> lib/viewpager.js 为第三方实现，按 CONVENTIONS §5 不做改动</li>
+          <li><strong>ViewPager 翻页动画为什么要把进度和位移分开？</strong> 结论是进度描述动画完成比例，位移描述页面实际位置。这样同一套位移逻辑可以换不同插值器，项目里能复用成匀速、回弹、弹性等多种手感。</li>
+          <li><strong>插值器和 CSS transition timing-function 有什么相似点和区别？</strong> 两者都把线性时间映射成非线性进度。区别是 JS 插值器可以写任意函数并和组件状态联动，CSS timing-function 更声明式，适合简单属性过渡。</li>
+          <li><strong>为什么翻页位移常用 transform 而不是 left？</strong> <code>transform</code> 通常不会改变布局流，浏览器更容易把它交给合成阶段处理。边界是它会创建 stacking context，并不自动解决所有性能问题；元素过多或绘制内容复杂仍可能卡顿。</li>
+          <li><strong>requestAnimationFrame 动画为什么要用时间戳计算进度？</strong> 因为不同设备刷新率可能是 60Hz、120Hz 或更高，按帧累加会导致高刷新率设备动画更快。用时间戳计算 elapsed / duration，才能让动画时长稳定。</li>
+          <li><strong>动效组件需要考虑哪些边界和降级？</strong> 至少要考虑快速连续点击、越界页码、窗口尺寸变化、后台标签暂停动画，以及用户开启减少动态效果偏好。这个 demo 聚焦插值器，不覆盖完整生产级状态机。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame" target="_blank" rel="noopener">MDN Web Docs：requestAnimationFrame()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transform" target="_blank" rel="noopener">MDN Web Docs：CSS transform</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transition-timing-function" target="_blank" rel="noopener">MDN Web Docs：transition-timing-function</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion" target="_blank" rel="noopener">MDN Web Docs：prefers-reduced-motion</a></li>
         </ul>
       </div>
     </section>

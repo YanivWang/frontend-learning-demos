@@ -4,11 +4,13 @@
   要点:
     - 视觉相同字符可能由不同码点序列构成
     - 直接 === 可能 false；比较前 normalize('NFC')
-    - 用户输入：trim + 折叠空白 + normalize
+    - NFC/NFD 处理组合字符，NFKC/NFKD 还会做兼容等价折叠
+    - 用户输入：trim + 折叠空白 + normalize，再按业务决定大小写/全半角策略
   面试:
     - 为什么相同外观的字符串不相等？
-    - normalize 有什么用？
-    - 用户名校验要注意什么？
+    - NFC、NFD、NFKC、NFKD 有什么区别？
+    - 用户名、搜索和去重要注意什么？
+    - normalize 能解决同形字符攻击吗？
   相关: unicode
 -->
 
@@ -30,15 +32,25 @@
         <h2>知识点要点</h2>
         <ul>
           <li>Unicode 允许多种编码表示同一「字符」（如 é 可以是单码点或 e+组合重音）。</li>
-          <li>NFC（组合形式）与 NFD（分解形式）是两种标准规范化；<code>str.normalize('NFC')</code> 统一后再比较。</li>
-          <li>全角/半角、不同空格（NBSP）也会导致 === 失败。</li>
-          <li>用户输入清洗流程：trim → 折叠连续空白 → normalize → 再比较/入库。</li>
+          <li>NFC 会尽量组合为预组合字符，NFD 会拆成基字符 + 组合标记；<code>str.normalize('NFC')</code> 后再比较可减少误判。</li>
+          <li>NFKC / NFKD 是兼容规范化，可能把某些兼容字符折叠成普通形式；适合搜索或宽松匹配，不一定适合保留用户原文。</li>
+          <li>全角/半角、不同空格（如 NBSP）、大小写和语言特定排序不完全由 <code>normalize</code> 解决，必要时配合 <code>Intl.Collator</code> 或业务规则。</li>
+          <li>用户输入清洗流程常见为 <code>trim</code> → 折叠连续空白 → <code>normalize</code> → 再比较/入库，但应保留原始输入用于展示或审计。</li>
+          <li><code>normalize</code> 不能消除所有同形字符风险，例如拉丁 <code>a</code> 与西里尔 <code>а</code> 是不同字符；账号、域名等安全场景需要白名单或混合脚本检测。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>相同外观为何不相等？</strong> 不同 Unicode 码点序列（组合字符 vs 预组合字符）。需 normalize 后比较。</li>
-          <li><strong>normalize 作用？</strong> 将字符串转为 NFC/NFD 等规范形式，便于搜索、去重、数据库唯一约束。</li>
-          <li><strong>用户名校验？</strong> 不能只做 ===；要 normalize、考虑大小写/全半角、防 homoglyph 攻击（国际化产品）。</li>
+          <li><strong>相同外观为何不相等？</strong> 结论是它们可能由不同 Unicode 码点序列组成。比如 <code>é</code> 可以是单个预组合码点，也可以是 <code>e</code> 加组合重音；直接 <code>===</code> 比较的是序列，不是视觉外观。</li>
+          <li><strong>NFC、NFD、NFKC、NFKD 有什么区别？</strong> 结论是 NFC/NFD 处理规范等价，NFKC/NFKD 还处理兼容等价。NFC 适合大多数存储与比较，NFKC 会改变更多字符形态，适合搜索归一化但不一定适合展示原文。</li>
+          <li><strong>用户名、搜索和去重要注意什么？</strong> 结论是先定义业务等价规则，再做规范化。常见做法是 <code>trim</code>、折叠空白、<code>normalize('NFC')</code>，再按场景决定是否忽略大小写或全半角；数据库唯一约束要和前端规则一致。</li>
+          <li><strong>normalize 能解决同形字符攻击吗？</strong> 结论是不能完全解决。它处理的是 Unicode 规范化形式，不会把所有视觉相似字符合并；安全敏感标识需要限制字符集、检测混合脚本，或使用成熟的 IDN / 账号策略。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize">MDN：String.prototype.normalize()</a></li>
+          <li><a href="https://unicode.org/reports/tr15/">Unicode Standard Annex #15：Unicode Normalization Forms</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Collator">MDN：Intl.Collator</a></li>
+          <li><a href="https://unicode.org/reports/tr36/">Unicode Technical Report #36：Unicode Security Considerations</a></li>
         </ul>
       </div>
     </section>
@@ -53,9 +65,9 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // 字面上一样的 "ぎ"，可能由不同 Unicode 码点序列构成（组合形 vs 预组合形）
+      // 字面上一样的 "ぎ"，可能由不同 Unicode 码点序列构成（预组合形 vs 组合形）
       var code1 = "ぎ";
-      var code2 = "ぎ";
+      var code2 = "き\u3099";
 
       if (code1 === code2) {
         console.log("ぎ: 相等");
@@ -63,14 +75,14 @@
         console.log("ぎ: 不相等，normalize 后:", code1.normalize("NFC") === code2.normalize("NFC"));
       }
 
-      // 两个看上去一模一样的「郵便番号」，可能由不同 Unicode 序列构成
-      var foo = "郵便番号";
-      var bar = "郵便番号";
+      // 拉丁字母 é 也常见：预组合字符 vs e + 组合重音
+      var foo = "é";
+      var bar = "e\u0301";
 
       if (foo === bar) {
-        console.log("郵便番号: 相等");
+        console.log("é: 相等");
       } else {
-        console.log("郵便番号: 看起来一样实际不等，normalize 后:", foo.normalize("NFC") === bar.normalize("NFC"));
+        console.log("é: 看起来一样实际不等，normalize 后:", foo.normalize("NFC") === bar.normalize("NFC"));
       }
 
       function submitHandle() {

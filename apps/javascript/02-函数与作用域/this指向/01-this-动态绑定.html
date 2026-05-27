@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 02-函数与作用域 / this指向
+  分类: javascript / 02-函数与作用域 / this指向
   主题: this 的动态绑定
   要点:
-    - 函数定义时 this 不确定，运行时由「调用方」决定
-    - window.a() 中 this 指 window；window.a()() 第二次调用以 undefined/window 收尾
-    - this 永远指向「最后调用它」的对象
+    - 普通函数的 this 由调用形式决定，不由函数定义位置决定
+    - obj.fn() 会把 obj 作为 this，独立调用在非严格模式下通常落到 window
+    - 嵌套返回的普通函数再次独立调用时，会丢失外层调用的 this
+    - 箭头函数没有自己的 this，显式绑定、new 绑定与严格模式都有不同边界
   面试:
-    - this 的动态绑定的核心概念是什么
-    - this 的动态绑定在实际项目里怎么用
-    - this 的动态绑定有哪些常见坑或易错点
-    - this 的动态绑定和相近 API 如何区分选型
-    - 面试中如何简洁讲清 this 的动态绑定
+    - 普通函数的 this 到底由什么决定？
+    - window.a()() 为什么第二次调用拿不到第一次的 this？
+    - 严格模式、非严格模式下独立函数调用的 this 有什么不同？
+    - 箭头函数和普通函数的 this 机制有什么区别？
 -->
 
 <!doctype html>
@@ -30,16 +30,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>函数定义时 <code>this</code> 不确定，运行时由「调用方」决定。</li>
-          <li>window.a() 中 <code>this</code> 指 window；window.a()() 第二次调用以 <code>undefined</code>/window 收尾。</li>
-          <li><code>this</code> 永远指向「最后调用它」的对象。</li>
-          <li>函数定义时 <code>this</code> 不确定，运行时由「调用方」决定（补充）。</li>
+          <li>普通函数的 <code>this</code> 绑定在调用时确定。示例中 <code>window.a()</code> 是属性引用调用，所以 <code>a</code> 内部的 <code>this</code> 是 <code>window</code>。</li>
+          <li><code>window.a()()</code> 分两步：先执行 <code>window.a()</code> 得到一个匿名函数，再把这个匿名函数作为普通函数独立调用；第二次调用没有接收者，非严格模式下 <code>this</code> 会被替换为 <code>window</code>。</li>
+          <li>“this 指向最后调用它的对象”只是记忆口诀，不是完整规则。更准确的说法是：根据调用表达式判断引用基值，或由 <code>call</code>/<code>apply</code>/<code>bind</code>、<code>new</code>、箭头函数词法捕获等规则决定。</li>
+          <li>严格模式下，独立调用普通函数的 <code>this</code> 保持为 <code>undefined</code>；非严格模式下 <code>null</code>/<code>undefined</code> 会被替换为全局对象，原始值会装箱。</li>
+          <li>箭头函数没有自己的 <code>this</code>，会捕获外层词法环境的 <code>this</code>，适合回调保留上下文，但不能作为构造函数使用。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>函数定义时 this 不确定？</strong> 函数定义时 <code>this</code> 不确定，运行时由「调用方」决定</li>
-          <li><strong>window.a() 中 this 指 window？</strong> window.a() 中 <code>this</code> 指 window；window.a()() 第二次调用以 <code>undefined</code>/window 收尾</li>
-          <li><strong>this 永远指向「最后调用它」的对象？</strong> 函数定义时 <code>this</code> 不确定，运行时由「调用方」决定；window.a() 中 <code>this</code> 指 window；window.a()() 第二次调用以 <code>undefined</code>/window 收尾</li>
+          <li><strong>普通函数的 <code>this</code> 到底由什么决定？</strong> 先结论：由调用形式决定。原因是函数调用会根据引用的基值或显式传入的 thisArg 设置 <code>this</code>。项目中判断 <code>obj.fn()</code>、<code>const fn = obj.fn; fn()</code>、事件回调和 <code>bind</code> 时，都要先还原实际调用表达式。</li>
+          <li><strong><code>window.a()()</code> 为什么第二次调用拿不到第一次的 <code>this</code>？</strong> 先结论：第一次调用返回的是一个新函数，第二次是独立调用。原因是普通函数不会自动继承外层调用的 <code>this</code>。如果要保留上下文，可返回箭头函数、使用 <code>bind</code>，或在外层保存 <code>const self = this</code>。</li>
+          <li><strong>严格模式、非严格模式下独立函数调用的 <code>this</code> 有什么不同？</strong> 先结论：严格模式是 <code>undefined</code>，非严格模式会替换为全局对象。原因是非严格调用会执行 this 替换规则。边界是 ES modules 和 class 方法默认严格，所以很多现代代码里不会退化到 <code>window</code>。</li>
+          <li><strong>箭头函数和普通函数的 <code>this</code> 机制有什么区别？</strong> 先结论：箭头函数没有自己的 <code>this</code>，普通函数有调用时绑定。原因是箭头函数从外层词法环境读取 <code>this</code>。项目中箭头函数适合作为回调保留外层上下文，但不适合定义需要动态接收者的对象原型方法。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this">MDN：this</a></li>
+          <li><a href="https://javascript.info/object-methods">JavaScript.info：Object methods, this</a></li>
+          <li><a href="https://tc39.es/ecma262/#sec-ordinarycallbindthis">ECMA-262：OrdinaryCallBindThis</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions">MDN：Arrow function expressions</a></li>
         </ul>
       </div>
     </section>

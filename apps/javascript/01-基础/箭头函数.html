@@ -6,9 +6,9 @@
     - 箭头函数 this 由外层非箭头作用域词法决定
     - 普通函数有 prototype，可被 new 调用
   面试:
-    - 箭头函数 vs 普通函数区别？
-    - 箭头函数 this 指向哪里？
-    - 什么时候不能用箭头函数？
+    - 箭头函数和普通函数在 this / arguments / new 上有什么区别？
+    - 箭头函数的 this 为什么不能被 call/apply/bind 改变？
+    - 项目中哪些位置不应该使用箭头函数？
   相关: 函数进阶, this指向
 -->
 
@@ -41,6 +41,12 @@
           <li><strong>箭头函数 this 指向？</strong> 定义时外层（词法）作用域的 this，call/apply/bind 无法改变。对象方法、DOM 事件、需要动态 this 时勿用箭头。</li>
           <li><strong>什么时候不能用箭头函数？</strong> 构造函数、需要 arguments、对象字面量方法（若需 this 指向对象）、Vue2 选项式 methods、类的方法需要 super 时等。</li>
         </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions">MDN: Arrow function expressions</a>：箭头函数的词法 <code>this</code>、无 <code>arguments</code> 和不可构造。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/rest_parameters">MDN: Rest parameters</a>：用 <code>...args</code> 替代 <code>arguments</code> 收集实参。</li>
+          <li><a href="https://javascript.info/arrow-functions-basics">JavaScript.info: Arrow functions, the basics</a>：箭头函数语法和适用场景。</li>
+        </ul>
       </div>
     </section>
     <!-- NOTES_END -->
@@ -50,7 +56,8 @@
       // 箭头函数只能写成匿名函数表达式，不能像 function 那样具名声明
       const ArrowFunc = (x, y) => {
         // 箭头函数内部没有 arguments；如需收集实参用剩余参数 ...args
-        // console.log(arguments); // Uncaught ReferenceError: arguments is not defined
+        // 顶层脚本里没有外层普通函数的 arguments，直接访问会 ReferenceError
+        // console.log(arguments);
 
         console.log(x, y);
 
@@ -78,6 +85,12 @@
       console.log(Person.constructor === Person.__proto__.constructor);
 
       console.log(Person.constructor === Function);
+
+      const counter = {
+        value: 1,
+        getValue: () => this.value,
+      };
+      console.log("对象方法中误用箭头函数:", counter.getValue()); // undefined（this 不是 counter）
 
     </script>
     <!-- SCRIPT_END -->

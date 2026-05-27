@@ -2,15 +2,16 @@
 分类: javascript / 03-对象与原型
   主题: 原型链与组合继承
   要点:
-    - 组合继承：子构造函数中 Parent.call(this, ...) 借实例属性 + 原型链接 Object.create(Parent.prototype)
-    - 组合继承后须重置 Child.prototype.constructor = Child，否则 constructor 指向父类
-    - 注意：父类静态属性不会通过原型链继承
+    - 原型链用于属性查找：自有属性找不到时沿 [[Prototype]] 逐级查找
+    - 组合继承用 Parent.call(this) 继承实例属性，用 Object.create 继承原型方法
+    - 重置 Child.prototype.constructor 是为了恢复默认构造函数指向
+    - 父构造函数上的静态属性不会被 Object.create(Parent.prototype) 继承
   面试:
-    - 原型链与组合继承的核心概念是什么
-    - 原型链与组合继承在实际项目里怎么用
-    - 原型链与组合继承有哪些常见坑或易错点
-    - 原型链与组合继承和相近 API 如何区分选型
-    - 面试中如何简洁讲清 原型链与组合继承
+    - 原型链属性查找规则是什么？
+    - 组合继承为什么要同时用 Parent.call 和 Object.create？
+    - 为什么要重置 Child.prototype.constructor？
+    - 父类静态属性为什么不会通过原型链继承？
+    - class extends 和组合继承是什么关系？
 -->
 
 <!doctype html>
@@ -30,15 +31,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>组合继承：子构造函数中 Parent.call(<code>this</code>, ...) 借实例属性 + 原型链接 <code>Object</code>.create(Parent.prototype)。</li>
-          <li>组合继承后须重置 Child.prototype.constructor = Child，否则 constructor 指向父类。</li>
-          <li>注意：父类静态属性不会通过原型链继承。</li>
+          <li><strong>属性查找：</strong>对象访问属性时先查自有属性，找不到再沿 <code>[[Prototype]]</code> 指向的对象逐级查找，直到 <code>null</code>。</li>
+          <li><strong>组合继承：</strong><code>Parent.call(this, ...)</code> 负责把父构造函数里的实例属性复制到子实例；<code>Object.create(Parent.prototype)</code> 负责让子实例共享父原型方法。</li>
+          <li><strong>constructor 修复：</strong>把 <code>Child.prototype</code> 整体替换为新对象后，默认 <code>constructor</code> 会来自父原型，需要手动设回 <code>Child</code>。</li>
+          <li><strong>静态属性边界：</strong><code>Object.create(Parent.prototype)</code> 只连接实例原型链，不会复制 <code>Parent.someStatic</code> 这类构造函数自身属性。</li>
+          <li><strong>现代写法：</strong><code>class extends</code> 对这些步骤做了语法封装；理解组合继承有助于解释 <code>super()</code>、实例方法和静态方法的差异。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>组合继承后须重置 Child.prototype.constructor = C？</strong> 组合继承：子构造函数中 Parent.call(<code>this</code>, ...) 借实例属性 + 原型链接 <code>Object</code>.create(Parent.prototype)；组合继承后须重置 Child.prototype.constructor = Child，否则 constructor 指向父类</li>
-          <li><strong>原型链与组合继承的核心概念是什么？</strong> 组合继承：子构造函数中 Parent.call(<code>this</code>, ...) 借实例属性 + 原型链接 <code>Object</code>.create(Parent.prototype)；注意：父类静态属性不会通过原型链继承</li>
-          <li><strong>原型链与组合继承在实际项目里怎么用？</strong> 组合继承：子构造函数中 Parent.call(<code>this</code>, ...) 借实例属性 + 原型链接 <code>Object</code>.create(Parent.prototype)；注意：父类静态属性不会通过原型链继承</li>
+          <li><strong>原型链属性查找规则是什么？</strong> 结论是先查对象自身，再沿 <code>[[Prototype]]</code> 一层层向上查。原因是 JS 复用行为依赖委托而不是类复制；项目里可用 <code>hasOwnProperty</code> 区分自有属性和继承属性。</li>
+          <li><strong>组合继承为什么要同时用 Parent.call 和 Object.create？</strong> <code>Parent.call(this)</code> 解决每个实例自己的状态，<code>Object.create(Parent.prototype)</code> 解决共享方法。只用原型链继承会共享引用状态，只借构造函数又拿不到父原型方法。</li>
+          <li><strong>为什么要重置 Child.prototype.constructor？</strong> 因为替换子原型后，<code>constructor</code> 可能沿链找到 <code>Parent</code>。重置能恢复调试和约定上的指向，但它不是类型判断的唯一依据。</li>
+          <li><strong>父类静态属性为什么不会通过原型链继承？</strong> 这里连接的是 <code>Child.prototype -> Parent.prototype</code>，不是 <code>Child -> Parent</code>。静态属性挂在构造函数对象本身，需要显式复制或使用 <code>class extends</code> 的静态继承语义。</li>
+          <li><strong>class extends 和组合继承是什么关系？</strong> <code>class extends</code> 是现代语法封装，帮你处理实例原型、<code>super()</code> 和静态继承等细节。面试中可以先讲组合继承机制，再说明现代项目通常直接用 class。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain" target="_blank" rel="noopener">MDN Web Docs：Inheritance and the prototype chain</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create" target="_blank" rel="noopener">MDN Web Docs：Object.create()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/extends" target="_blank" rel="noopener">MDN Web Docs：extends</a></li>
+          <li><a href="https://javascript.info/class-inheritance" target="_blank" rel="noopener">JavaScript.info：Class inheritance</a></li>
         </ul>
       </div>
     </section>

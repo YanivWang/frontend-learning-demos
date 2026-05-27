@@ -2,13 +2,15 @@
   分类: javascript / 01-基础
   主题: 字符串中反斜杠转义与 JSON 序列化
   要点:
-    - JSON 字符串中特殊字符需反斜杠转义
-    - 嵌套序列化或写入 HTML 属性需再次转义
-    - 勿污染 String.prototype，仅作演示
+    - JS 字符串字面量、JSON 字符串和 URI 编码是三套规则
+    - JSON.stringify / JSON.parse 负责 JSON 层转义与还原
+    - 嵌套 JSON 或写入 HTML 属性会出现双重反斜杠
+    - escape / unescape 已废弃，不能用于 JSON 或 URL 新代码
   面试:
-    - JSON 字符串里哪些字符要转义？
-    - 为什么有时看到双重反斜杠？
-    - escape 和 JSON 转义是一回事吗？
+    - JSON 字符串里哪些字符必须转义？
+    - 为什么日志里会看到双重反斜杠？
+    - escape、JSON 转义和 encodeURIComponent 有什么区别？
+    - 为什么不要扩展 String.prototype 做转义工具？
   相关: JSON, encode-URI编码
 -->
 
@@ -29,17 +31,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>JSON 规范要求 <code>" \ /</code> 及控制字符（\n \t 等）在字符串内用反斜杠转义。</li>
-          <li><code>JSON.stringify</code> 自动加转义；<code>JSON.parse</code> 还原为实际字符。</li>
-          <li>把 JSON 字符串再放进 HTML 属性或另一层 JSON 时，反斜杠本身也要再转义（双重 \\）。</li>
-          <li>JS 源码字符串、正则字面量、JSON 三者的转义规则各自独立，勿混用。</li>
-          <li><code>escape</code> 是 URI 时代的 API，与 JSON 转义无关，已废弃。</li>
+          <li>这页真实主题不是现代 <code>escape()</code> 用法，而是反斜杠在 JS 字符串字面量、JSON 文本和二次嵌套中的表现。</li>
+          <li>JSON 字符串必须转义双引号、反斜杠以及 U+0000 到 U+001F 控制字符；<code>/</code> 允许转义但通常不是必须。</li>
+          <li><code>JSON.stringify</code> 会生成合法 JSON 文本，<code>JSON.parse</code> 会把转义序列还原为实际字符，业务代码不要手写拼接复杂 JSON。</li>
+          <li>把 JSON 文本再作为另一段 JS 字符串、HTML 属性或外层 JSON 的值时，反斜杠本身也会被转义，所以日志里可能看到 <code>\\\"</code>。</li>
+          <li><code>escape()</code> / <code>unescape()</code> 是已废弃的全局 API，和 JSON 转义不是一回事；URL 参数用 <code>encodeURIComponent</code>，结构化数据用 <code>JSON.stringify</code>。</li>
+          <li>不要扩展 <code>String.prototype</code> 实现项目转义工具，原因是会污染所有字符串对象，增加枚举、命名冲突和第三方代码兼容风险。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>JSON 哪些字符要转义？</strong> 双引号、反斜杠、以及 U+0000～U+001F 控制字符；unicode 可用 \uXXXX。</li>
-          <li><strong>为何双重反斜杠？</strong> 第一层 JSON 转义；第二层是字符串字面量或 HTML 属性转义。调试时看清「存储形式」vs「解析后形式」。</li>
-          <li><strong>escape vs JSON？</strong> 不同标准。JSON 用 \n \" 等；escape 产出 %uXXXX，已废弃。URL 编码用 encodeURIComponent。</li>
+          <li><strong>JSON 哪些字符必须转义？</strong> 结论是双引号、反斜杠和控制字符必须转义。原因是它们会破坏 JSON 字符串边界或不可直接出现在 JSON 文本中；边界是 <code>\uXXXX</code> 只是表示字符的另一种写法，不等于 URL 百分号编码。</li>
+          <li><strong>为何会看到双重反斜杠？</strong> 结论是因为同一段内容经过了两层字符串语法。第一层为了 JSON 合法性转义引号，第二层为了把 JSON 文本放进另一个字符串而转义反斜杠；排查时要区分「源码/日志展示」和「解析后的实际值」。</li>
+          <li><strong>escape、JSON 转义和 encodeURIComponent 有什么区别？</strong> 结论是三者服务于不同语境。JSON 转义维护数据格式，<code>encodeURIComponent</code> 维护 URI 组件，<code>escape</code> 是历史 API 且已废弃；项目里不要混用。</li>
+          <li><strong>为什么不要改 String.prototype？</strong> 结论是除非 polyfill 且遵循规范，否则不应修改内建原型。原因是所有字符串都会继承该方法，可能与未来标准或库冲突；局部工具函数更可控。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify">MDN：JSON.stringify()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse">MDN：JSON.parse()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/escape">MDN：escape()（Deprecated）</a></li>
+          <li><a href="https://tc39.es/ecma262/#sec-json.stringify">ECMA-262：JSON.stringify</a></li>
         </ul>
       </div>
     </section>
@@ -47,18 +58,6 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // 给原型加方法仅作演示，实际生产应避免污染原生原型
-      String.prototype.escapeSpecialChars = function() {
-        return this.replace(/\\n/g, "\\n")
-        .replace(/\\'/g, "\\'")
-        .replace(/\\"/g, '\\"')
-        .replace(/\\&/g, "\\&")
-        .replace(/\\r/g, "\\r")
-        .replace(/\\t/g, "\\t")
-        .replace(/\\b/g, "\\b")
-        .replace(/\\f/g, "\\f");
-      };
-
       let str = '{"hotRankNum":3,"index":1,"cgIndex":1,"pId":"67ac6749-4e44-4bb4-a81d-3f473e847948","title":"I feel like I just saw something I shouldn\'t have","type":"linkType","content":"<div><span class=\\"iconfont icon-link\\"></span><a href=\\"https://www.reddit.com\\">www.reddit.com</a></div>","cgName":"jp","upNum":2,"commentNum":1,"timeStamp":1570600685329,"uId":"uid1001","uName":"wangcheng","downNum":0}';
       console.log("str:" + str);
 
@@ -75,6 +74,8 @@
         str3 = str3.replace(reg, '\\\\"');
       }
       console.log("str3:" + str3);
+
+      console.log("escape 已废弃示例:", escape("中国 & JSON")); // 历史格式，勿用于新代码
 
     </script>
     <!-- SCRIPT_END -->

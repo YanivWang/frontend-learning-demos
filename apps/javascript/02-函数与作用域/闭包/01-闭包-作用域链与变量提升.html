@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 02-函数与作用域 / 闭包
+  分类: javascript / 02-函数与作用域 / 闭包
   主题: 闭包的作用域链与变量提升
   要点:
-    - var 在脚本顶层 → window 属性；let/const → 脚本作用域，不挂 window
-    - 函数声明 + var 有声明提升；let/const 有暂时性死区
-    - 闭包：内层函数引用外层变量，会延长外层变量的生命周期
+    - 闭包是函数连同其可访问的外层词法环境一起被保留
+    - var 声明会初始化为 undefined，let/const 在初始化前处于暂时性死区
+    - 顶层 var 和函数声明会成为浏览器全局对象属性，顶层 let/const 不会
+    - arguments.callee 已废弃，严格模式禁用，应直接使用函数名或具名表达式
   面试:
-    - 闭包的作用域链与变量提升的核心概念是什么
-    - 闭包的作用域链与变量提升在实际项目里怎么用
-    - 闭包的作用域链与变量提升有哪些常见坑或易错点
-    - 闭包的作用域链与变量提升和相近 API 如何区分选型
-    - 面试中如何简洁讲清 闭包的作用域链与变量提升
+    - 什么是闭包，为什么外层函数返回后变量仍可访问？
+    - var 提升和 let/const 暂时性死区有什么区别？
+    - 浏览器脚本顶层 var 与 let/const 对 window 有什么影响？
+    - 为什么不推荐 arguments.callee？
 -->
 
 <!doctype html>
@@ -30,16 +30,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>var</code> 在脚本顶层 → window 属性；<code>let</code>/const → 脚本作用域，不挂 window。</li>
-          <li>函数声明 + <code>var</code> 有声明提升；<code>let</code>/const 有暂时性死区。</li>
-          <li>闭包：内层函数引用外层变量，会延长外层变量的生命周期。</li>
-          <li><code>var</code> 在脚本顶层 → window 属性；<code>let</code>/const → 脚本作用域，不挂 window（补充）。</li>
+          <li>闭包是“函数 + 它引用的外层词法环境”。示例里 <code>innerFn</code> 和 <code>innnnerFn</code> 继续读取 <code>outerVar</code>、<code>outerLet</code>、<code>innerVar</code>、<code>innerLet</code>，说明相关环境没有在外层函数返回后立刻释放。</li>
+          <li><code>var</code> 声明会被提升并初始化为 <code>undefined</code>，所以赋值前读取 <code>outerVar</code> 得到 <code>undefined</code>。<code>let</code>/<code>const</code> 也会创建绑定，但初始化前处于暂时性死区，读取会抛 <code>ReferenceError</code>。</li>
+          <li>浏览器普通脚本顶层的 <code>var</code> 与函数声明会成为全局对象属性；顶层 <code>let</code>/<code>const</code> 属于全局词法环境，不会挂到 <code>window</code>。模块脚本还有独立模块作用域。</li>
+          <li><code>arguments</code> 是函数调用时的类数组实参对象，示例中可观察实参；但 <code>arguments.callee</code> 已废弃，严格模式中会报错，递归或自引用应使用函数名。</li>
+          <li>闭包常用于封装私有状态、工厂函数、回调记住上下文；边界是长期持有大对象或 DOM 引用时要主动释放无用引用。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>var 在脚本顶层 → window 属性？</strong> <code>var</code> 在脚本顶层 → window 属性；<code>let</code>/const → 脚本作用域，不挂 window；函数声明 + <code>var</code> 有声明提升；<code>let</code>/const 有暂时性死区</li>
-          <li><strong>函数声明 + var 有声明提升？</strong> 函数声明 + <code>var</code> 有声明提升；<code>let</code>/const 有暂时性死区</li>
-          <li><strong>闭包的作用域链与变量提升的核心概念是什么？</strong> <code>var</code> 在脚本顶层 → window 属性；<code>let</code>/const → 脚本作用域，不挂 window；函数声明 + <code>var</code> 有声明提升；<code>let</code>/const 有暂时性死区</li>
+          <li><strong>什么是闭包，为什么外层函数返回后变量仍可访问？</strong> 先结论：闭包让函数保留对外层词法环境的引用。原因是函数对象创建时记录了外层环境，内层函数还被外部变量持有时，垃圾回收不能释放这部分环境。项目中常见于事件回调、节流防抖、模块私有变量。</li>
+          <li><strong><code>var</code> 提升和 <code>let</code>/<code>const</code> 暂时性死区有什么区别？</strong> 先结论：<code>var</code> 可在声明前读取到 <code>undefined</code>，<code>let</code>/<code>const</code> 在初始化前不能访问。原因是 <code>var</code> 创建时已初始化，词法声明创建了绑定但要等执行到声明语句才初始化。边界是“提升”不是把代码文本移动，而是声明绑定阶段的行为。</li>
+          <li><strong>浏览器脚本顶层 <code>var</code> 与 <code>let</code>/<code>const</code> 对 <code>window</code> 有什么影响？</strong> 先结论：普通脚本顶层 <code>var</code> 会成为 <code>window</code> 属性，<code>let</code>/<code>const</code> 不会。原因是全局环境同时有对象环境记录和声明式环境记录。项目里要避免用顶层 <code>var</code> 暴露全局状态，模块化代码也不应依赖 <code>window.xxx</code> 读取声明。</li>
+          <li><strong>为什么不推荐 <code>arguments.callee</code>？</strong> 先结论：它已废弃且严格模式禁用。原因是它会暴露当前执行函数，影响优化并和现代严格模式设计冲突。实际递归应使用具名函数、函数声明或把函数引用保存到明确变量中。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures">MDN：Closures</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Glossary/Hoisting">MDN：Hoisting</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let#temporal_dead_zone_tdz">MDN：let - Temporal dead zone</a></li>
+          <li><a href="https://tc39.es/ecma262/#sec-global-environment-records">ECMA-262：Global Environment Records</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments/callee">MDN：arguments.callee</a></li>
         </ul>
       </div>
     </section>

@@ -6,9 +6,9 @@
     - push/pop/shift/unshift/splice/sort/reverse 会修改原数组
     - 去重、扁平化、分组统计是数组面试常见题
   面试:
-    - 哪些数组方法会改变原数组？
-    - 如何实现数组去重、扁平化？
-    - map 和 forEach 区别？[1,2,3].map(parseInt) 结果？
+    - 哪些数组方法会改变原数组，如何保持不可变更新？
+    - 如何实现数组去重、扁平化与分组统计？
+    - map 和 forEach 区别？[1,2,3].map(parseInt) 为什么踩坑？
   相关: parseInt
 -->
 
@@ -37,10 +37,17 @@
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>哪些方法改原数组？</strong> 记「栈队列 splice sort reverse」+ push/pop/shift/unshift。需要不可变数据时对副本操作或 spread。</li>
-          <li><strong>数组去重？</strong> <code>[...new Set(arr)]</code> 或 filter+indexOf。对象数组按 key 去重需 Map。</li>
-          <li><strong>map vs forEach？</strong> map 返回新数组；forEach 无返回值，不能链式。forEach 里 return 只跳出当前回调。</li>
-          <li><strong>[1,2,3].map(parseInt)？</strong> 得 [1, NaN, NaN]：map 传 (value,index)，parseInt('2',1) 和 parseInt('3',2) 为 NaN。应写 <code>.map(Number)</code> 或显式 radix。</li>
+          <li><strong>哪些方法改原数组？</strong> 结论：push/pop/shift/unshift/splice/sort/reverse/fill/copyWithin 会原地修改。原因是这些 API 设计为就地更新；在 React/Vue 状态或 reducer 中要先复制再调用，或使用 <code>toSorted</code>/<code>toReversed</code> 等现代不可变 API。</li>
+          <li><strong>数组去重怎么选？</strong> 结论：基础值用 <code>[...new Set(arr)]</code> 最直接，对象数组按 key 用 <code>Map</code>。原因是 Set 按 SameValueZero 比较值，不能自动按对象内容去重；业务里要先定义唯一键。</li>
+          <li><strong>map vs forEach？</strong> 结论：<code>map</code> 返回等长新数组，<code>forEach</code> 返回 <code>undefined</code>。原因是 map 用于映射数据，forEach 用于副作用；链式计算用 map/filter/reduce，日志或 DOM 操作用 forEach。</li>
+          <li><strong>[1,2,3].map(parseInt)？</strong> 结论：结果是 <code>[1, NaN, NaN]</code>。原因是 map 传入 <code>(value, index)</code>，parseInt 把 index 当 radix；项目中应写 <code>.map(Number)</code> 或 <code>.map(v =&gt; parseInt(v, 10))</code>。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">MDN: Array</a>：数组实例方法总览及是否原地修改。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map">MDN: Array.prototype.map()</a>：回调参数和返回新数组语义。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort">MDN: Array.prototype.sort()</a>：默认字符串排序和原地修改行为。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set">MDN: Set</a>：Set 唯一性和 SameValueZero 比较。</li>
         </ul>
       </div>
     </section>

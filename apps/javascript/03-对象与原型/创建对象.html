@@ -2,15 +2,15 @@
 分类: javascript / 03-对象与原型
   主题: 创建对象的多种方式
   要点:
-    - 原生构造函数（new Object/Array）vs 对象字面量 vs 自定义构造函数
-    - 实例自带 constructor 指向其构造函数（实际在 __proto__ 上）
-    - delete 删属性 vs 赋值 undefined：前者从对象上彻底移除键
+    - 对象字面量是创建普通对象的首选，new Object() 主要用于理解构造过程
+    - 自定义构造函数配合 new 可批量创建同类实例，但方法应放到 prototype 共享
+    - constructor 通常来自原型对象，不适合作为唯一可靠类型判断
+    - delete 会移除自有属性，赋值 undefined 只是保留键并清空值
   面试:
-    - 创建对象的多种方式的核心概念是什么
-    - 创建对象的多种方式在实际项目里怎么用
-    - 创建对象的多种方式有哪些常见坑或易错点
-    - 创建对象的多种方式和相近 API 如何区分选型
-    - 面试中如何简洁讲清 创建对象的多种方式
+    - 对象字面量、new Object、自定义构造函数如何取舍？
+    - constructor 属性为什么不适合作为唯一类型判断？
+    - delete 和 obj.key = undefined 有什么区别？
+    - 为什么构造函数中的方法不建议每个实例都创建一份？
 -->
 
 <!doctype html>
@@ -30,16 +30,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>原生构造函数（new <code>Object</code>/Array）vs 对象字面量 vs 自定义构造函数。</li>
-          <li>实例自带 constructor 指向其构造函数（实际在 __proto__ 上）。</li>
-          <li>delete 删属性 vs 赋值 <code>undefined</code>：前者从对象上彻底移除键。</li>
-          <li>原生构造函数（new <code>Object</code>/Array）vs 对象字面量 vs 自定义构造函数（补充）。</li>
+          <li><strong>对象字面量优先：</strong><code>{}</code> 是创建普通对象最常见、最清晰的写法；<code>new Object()</code> 行为相近，但在业务代码里通常没有必要。</li>
+          <li><strong>构造函数场景：</strong>需要批量创建同类对象时可用构造函数或 <code>class</code>；实例属性写在构造函数中，方法通常挂到 <code>prototype</code> 以便共享。</li>
+          <li><strong>constructor 边界：</strong><code>constructor</code> 通常来自原型，原型被替换或手动改写后可能不准；类型判断更常用 <code>instanceof</code>、品牌字段或业务判别字段。</li>
+          <li><strong>属性删除：</strong><code>delete obj.key</code> 会移除自有属性，<code>obj.key = undefined</code> 只是把值变成 <code>undefined</code>，<code>"key" in obj</code> 仍为 true。</li>
+          <li><strong>现代推荐：</strong>数据对象用字面量，带行为的对象用 <code>class</code> 或工厂函数；不要为了“像类”而在构造函数中重复创建大量相同方法。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>原生构造函数（new Object/Array）vs 对象字面量 vs 自定义构？</strong> 原生构造函数（new <code>Object</code>/Array）vs 对象字面量 vs 自定义构造函数</li>
-          <li><strong>实例自带 constructor 指向其构造函数（实际在 __proto__ 上？</strong> 实例自带 constructor 指向其构造函数（实际在 __proto__ 上）</li>
-          <li><strong>delete 删属性 vs 赋值 undefined？</strong> delete 删属性 vs 赋值 <code>undefined</code>：前者从对象上彻底移除键</li>
+          <li><strong>对象字面量、new Object、自定义构造函数如何取舍？</strong> 结论是普通配置/数据用对象字面量，同类实例用构造函数或 <code>class</code>。<code>new Object()</code> 更多是理解语言模型，不是项目首选；需要复用行为时要考虑原型方法共享。</li>
+          <li><strong>constructor 属性为什么不适合作为唯一类型判断？</strong> 因为 <code>constructor</code> 来自原型链，原型对象可以被替换或篡改。面试中可以说它能辅助理解实例来源，但生产判断更依赖 <code>instanceof</code>、<code>Array.isArray</code> 或明确的业务类型字段。</li>
+          <li><strong>delete 和 obj.key = undefined 有什么区别？</strong> <code>delete</code> 移除属性本身，<code>in</code> 和 <code>Object.keys</code> 都会反映变化；赋值 <code>undefined</code> 只是清空值，键仍存在。项目里需要表达“没有这个字段”时用 delete 或构造新对象更清晰。</li>
+          <li><strong>为什么构造函数中的方法不建议每个实例都创建一份？</strong> 因为函数也是对象，每次 new 都创建新函数会浪费内存，也让方法引用不相等。共享行为应放到 <code>prototype</code> 或 <code>class</code> 方法上，实例只保存各自状态。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer" target="_blank" rel="noopener">MDN Web Docs：Object initializer</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new" target="_blank" rel="noopener">MDN Web Docs：new operator</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/delete" target="_blank" rel="noopener">MDN Web Docs：delete operator</a></li>
+          <li><a href="https://javascript.info/constructor-new" target="_blank" rel="noopener">JavaScript.info：Constructor, operator new</a></li>
         </ul>
       </div>
     </section>

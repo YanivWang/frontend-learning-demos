@@ -12,7 +12,7 @@
 
 - [变量](/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E5%8F%98%E9%87%8F.html) — 变量声明、提升、null vs undefined、constructor
 - [变量进阶](/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E5%8F%98%E9%87%8F%E8%BF%9B%E9%98%B6.html) — var / let / const 变量提升与暂时性死区
-- [函数](/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E5%87%BD%E6%95%B0.html) — 函数声明的最小可运行示例
+- [函数](/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E5%87%BD%E6%95%B0.html) — 函数声明、参数与返回值基础
 - [函数进阶](/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E5%87%BD%E6%95%B0%E8%BF%9B%E9%98%B6.html) — 函数声明、函数表达式、Function 构造器、严格模式 this
 - [箭头函数](/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E7%AE%AD%E5%A4%B4%E5%87%BD%E6%95%B0.html) — 箭头函数与普通函数差异
 - [类型转换](/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2.html) — 类型转换、相等比较与浮点精度
@@ -43,7 +43,7 @@
 ### 02-函数与作用域
 
 - [作用域链](/apps/javascript/02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/01-%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE.html) — 作用域链与变量查找
-- [柯里化](/apps/javascript/02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/02-%E6%9F%AF%E9%87%8C%E5%8C%96.html) — 函数柯里化基础
+- [柯里化](/apps/javascript/02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/02-%E6%9F%AF%E9%87%8C%E5%8C%96.html) — 柯里化与参数收集
 
 ### 闭包
 
@@ -635,11 +635,11 @@ Actions、use()、useOptimistic、RSC 面试边界等 React 19 专题
 
 ### form-wizard
 
-- [form-wizard-分步表单](/apps/demos/form-wizard/01-form-wizard-%E5%88%86%E6%AD%A5%E8%A1%A8%E5%8D%95.html) — 分步表单向导
+- [form-wizard-分步表单](/apps/demos/form-wizard/01-form-wizard-%E5%88%86%E6%AD%A5%E8%A1%A8%E5%8D%95.html) — 分步表单向导与逐步校验
 
 ### hash-router
 
-- [hash-router-简易路由](/apps/demos/hash-router/01-hash-router-%E7%AE%80%E6%98%93%E8%B7%AF%E7%94%B1.html) — Hash 路由简易 SPA
+- [hash-router-简易路由](/apps/demos/hash-router/01-hash-router-%E7%AE%80%E6%98%93%E8%B7%AF%E7%94%B1.html) — Hash 路由简易 SPA 与 fallback
 
 ### todo
 

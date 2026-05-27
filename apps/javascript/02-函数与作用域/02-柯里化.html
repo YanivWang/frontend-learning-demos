@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 02-函数与作用域
-  主题: 函数柯里化基础
+  分类: javascript / 02-函数与作用域
+  主题: 柯里化与参数收集
   要点:
-    - Array.prototype.slice.call(arguments, 1) 取除第一个外的所有实参
-    - 柯里化：把多参函数转为「接收一个参数 + 返回新函数」的链式调用
-    - 常用于固定部分参数（partial application），提升复用性
+    - 柯里化把多参数函数拆成可逐步接收参数的函数链
+    - 闭包负责保存已经收集到的参数，参数够 fn.length 后执行原函数
+    - Array.prototype.slice.call(arguments) 是把类数组 arguments 转成数组的旧写法
+    - 现代代码更常用 rest 参数与展开语法，柯里化常用于复用配置或函数组合
   面试:
-    - 函数柯里化基础的核心概念是什么
-    - 函数柯里化基础在实际项目里怎么用
-    - 函数柯里化基础有哪些常见坑或易错点
-    - 函数柯里化基础和相近 API 如何区分选型
-    - 面试中如何简洁讲清 函数柯里化基础
+    - 柯里化和偏函数应用有什么区别？
+    - 通用 curry 为什么依赖 fn.length，边界是什么？
+    - arguments 为什么要借用 Array.prototype.slice？
+    - 项目里什么时候适合使用柯里化？
 -->
 
 <!doctype html>
@@ -25,21 +25,30 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>函数柯里化基础</h1>
+      <h1>柯里化与参数收集</h1>
       <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>Array</code>.prototype.slice.call(<code>arguments</code>, 1) 取除第一个外的所有实参。</li>
-          <li>柯里化：把多参函数转为「接收一个参数 + 返回新函数」的链式调用。</li>
-          <li>常用于固定部分参数（partial application），提升复用性。</li>
-          <li><code>Array</code>.prototype.slice.call(<code>arguments</code>, 1) 取除第一个外的所有实参（补充）。</li>
+          <li>柯里化是把 <code>fn(a, b, c)</code> 变成 <code>fn(a)(b)(c)</code> 或分批传参的形式。示例中的 <code>curried</code> 每次返回新函数，直到收集的参数数达到 <code>sum3.length</code>。</li>
+          <li>闭包保存已传入的 <code>args</code>，下一次调用再用展开语法拼接 <code>rest</code>。这说明柯里化不是语法特性，而是函数、闭包和参数列表组合出的模式。</li>
+          <li><code>Array.prototype.slice.call(arguments, 1)</code> 是把类数组 <code>arguments</code> 转成真数组并跳过第一个参数的旧写法；现代函数更推荐 <code>function fn(first, ...rest)</code>。</li>
+          <li>柯里化常用于固定上下文参数、构造可复用校验器、组合中间件或函数式工具。普通业务代码如果只是少传几个参数，用默认参数、对象参数或简单包装函数通常更直观。</li>
+          <li>通用 <code>curry</code> 依赖 <code>fn.length</code> 判断参数是否收齐；默认参数、剩余参数和可选参数会影响 <code>length</code>，实际库通常需要更完整的占位符和 arity 设计。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Array.prototype.slice.call(arguments？</strong> <code>Array</code>.prototype.slice.call(<code>arguments</code>, 1) 取除第一个外的所有实参</li>
-          <li><strong>常用于固定部分参数（partial application）？</strong> 常用于固定部分参数（partial application），提升复用性</li>
-          <li><strong>函数柯里化基础的核心概念是什么？</strong> <code>Array</code>.prototype.slice.call(<code>arguments</code>, 1) 取除第一个外的所有实参；柯里化：把多参函数转为「接收一个参数 + 返回新函数」的链式调用</li>
+          <li><strong>柯里化和偏函数应用有什么区别？</strong> 先结论：柯里化强调把多参函数拆成连续的一元或分批调用，偏函数应用强调先固定一部分参数。原因是二者都依赖闭包保存参数，但抽象目标不同。项目中固定接口前缀、日志上下文这类场景更像偏函数，构建函数组合流水线更像柯里化。</li>
+          <li><strong>通用 curry 为什么依赖 <code>fn.length</code>，边界是什么？</strong> 先结论：示例用 <code>fn.length</code> 表示原函数声明的形参数量，参数够了就执行。原因是函数对象的 <code>length</code> 记录第一个带默认值参数前的形参数量。边界是默认参数、rest 参数和运行时可选参数会让这个判断不可靠。</li>
+          <li><strong><code>arguments</code> 为什么要借用 <code>Array.prototype.slice</code>？</strong> 先结论：因为 <code>arguments</code> 是类数组，不是真数组。原因是它有索引和 <code>length</code>，但没有数组方法；<code>slice.call</code> 可按数组切片算法读取它。现代项目里优先用 rest 参数，类型更清楚，也避免箭头函数没有自己的 <code>arguments</code>。</li>
+          <li><strong>项目里什么时候适合使用柯里化？</strong> 先结论：当函数需要复用固定参数或参与组合时适合。原因是闭包能把配置前置，调用点只关心剩余业务参数。边界是过度柯里化会增加阅读成本，团队不熟悉函数式风格时应优先选择对象参数或明确命名的包装函数。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://javascript.info/currying-partials">JavaScript.info：Currying</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments">MDN：arguments object</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/rest_parameters">MDN：Rest parameters</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/length">MDN：Function.length</a></li>
         </ul>
       </div>
     </section>

@@ -37,9 +37,16 @@
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>emoji 长度不是 1？</strong> UTF-16 代理对占 2 个 code unit。用 <code>[...s].length</code> 或 for...of 数「字符」。</li>
-          <li><strong>charCodeAt vs codePointAt？</strong> 前者 16 位单元；后者完整码点，适合 BMP 外字符。</li>
-          <li><strong>正确遍历？</strong> for...of、Array.from(str)、match(/./gu)。slice 截取 emoji 需注意不要从代理对中间切。</li>
+          <li><strong>emoji 长度为什么不是 1？</strong> 结论是 JS 字符串长度统计 UTF-16 code unit，不是用户感知字符。BMP 外字符通常由代理对组成，所以 <code>"😀".length</code> 是 2；项目里统计展示字符要考虑码点甚至 grapheme cluster。</li>
+          <li><strong>charCodeAt 和 codePointAt 区别是什么？</strong> <code>charCodeAt</code> 返回某个 UTF-16 单元，<code>codePointAt</code> 在高代理项位置能返回完整码点。处理 emoji、罕见汉字等增补平面字符时优先用 <code>codePointAt</code> 和 <code>fromCodePoint</code>。</li>
+          <li><strong>如何正确遍历含 emoji 的字符串？</strong> 使用 <code>for...of</code>、<code>Array.from(str)</code> 或带 <code>u</code> 标志的正则，避免普通索引把代理对切开。边界是国旗、肤色、组合符这类 grapheme cluster 仍可能由多个码点组成。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/codePointAt" target="_blank" rel="noopener">MDN Web Docs：String.prototype.codePointAt()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/charCodeAt" target="_blank" rel="noopener">MDN Web Docs：String.prototype.charCodeAt()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/fromCodePoint" target="_blank" rel="noopener">MDN Web Docs：String.fromCodePoint()</a></li>
+          <li><a href="https://javascript.info/unicode" target="_blank" rel="noopener">JavaScript.info：Unicode, String internals</a></li>
         </ul>
       </div>
     </section>

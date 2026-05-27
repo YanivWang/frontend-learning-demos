@@ -6,9 +6,9 @@
     - substring 负数当 0，start>end 自动交换，易踩坑
     - 字面量 vs new String()：typeof 不同，=== 失败
   面试:
-    - slice、substring、substr 区别？
-    - 字符串为什么「不可变」？
-    - 如何判断字符串包含子串？
+    - slice、substring、substr 的参数语义和废弃状态有什么区别？
+    - 字符串不可变与包装对象会带来哪些判断边界？
+    - includes、indexOf、search、match 分别适合什么场景？
   相关: encode-URI编码
 -->
 
@@ -32,14 +32,22 @@
           <li><code>slice(start, end)</code>：推荐。支持负数索引；end 不含；start&gt;end 返回空串。</li>
           <li><code>substring(start, end)</code>：负数当 0；start&gt;end 自动交换起止。</li>
           <li><code>substr(start, length)</code>：已废弃，第二参数是长度而非 end。</li>
-          <li>字符串是原始类型，方法都不改原串，返回新串；<code >new String()</code > 是包装对象。</li>
+          <li>字符串是原始类型，方法都不改原串，返回新串；<code>new String()</code> 是包装对象。</li>
           <li>常用：includes、startsWith、endsWith、indexOf、replace、split、trim、padStart。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>slice / substring / substr 区别？</strong> slice 最通用（负索引）；substring 交换起止；substr 按长度且已废弃。新项目只用 slice。</li>
-          <li><strong>字符串不可变？</strong> 原始 string 不可改；修改操作返回新串。大量拼接用数组 join 或模板字符串，避免 + 循环。</li>
-          <li><strong>包含子串？</strong> ES6 <code>includes</code>；需位置用 <code>indexOf !== -1</code>；正则用 <code>test</code> / <code>match</code>。</li>
+          <li><strong>slice / substring / substr 区别？</strong> 结论：新代码优先 <code>slice(start, end)</code>。原因是它支持负索引且参数含义稳定；<code>substring</code> 会交换起止并把负数当 0，<code>substr</code> 第二参是长度且已废弃。</li>
+          <li><strong>字符串不可变？</strong> 结论：原始 string 的方法不会原地修改，只返回新字符串。原因是 string 是原始值，访问属性时才临时装箱；项目里不要用 <code>new String()</code>，否则 <code>typeof</code> 和严格相等都会踩坑。</li>
+          <li><strong>包含子串怎么选？</strong> 结论：普通包含用 <code>includes</code>，需要下标用 <code>indexOf</code>，正则匹配用 <code>test</code>/<code>match</code>/<code>search</code>。边界是 <code>indexOf</code> 不能接收正则，<code>match</code> 是否带 <code>g</code> 会影响返回结构。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/slice">MDN: String.prototype.slice()</a>：推荐截取 API 和负索引行为。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substring">MDN: String.prototype.substring()</a>：负数归零和起止交换规则。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substr">MDN: String.prototype.substr()</a>：废弃状态和按长度截取语义。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/includes">MDN: String.prototype.includes()</a>：字符串包含判断。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace">MDN: String.prototype.replace()</a>：字符串与正则替换、回调参数。</li>
         </ul>
       </div>
     </section>

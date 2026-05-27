@@ -1,14 +1,14 @@
 <!--
   分类: javascript / 01-基础
-  主题: 函数声明的最小可运行示例
+  主题: 函数声明、参数与返回值基础
   要点:
     - 函数声明会被整体提升，可在声明前调用
     - return 决定返回值，无 return 时返回 undefined
     - 形参与实参个数可以不一致，多出的实参可通过 arguments 访问
   面试:
-    - 函数声明和函数表达式的区别？
-    - 函数声明提升 vs 变量提升？
-    - 没有 return 时返回值是什么？
+    - 函数声明和函数表达式在提升阶段有什么区别？
+    - return 语句如何决定函数返回值？
+    - 形参与实参数量不一致时如何处理？
   相关: 函数进阶, arguments
 -->
 
@@ -24,7 +24,7 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>函数声明的最小可运行示例</h1>
+      <h1>函数声明、参数与返回值基础</h1>
       <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
@@ -36,9 +36,16 @@
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>函数声明 vs 函数表达式？</strong> 声明会整体提升；表达式只是变量赋值，遵循 var/let 的提升规则。表达式在赋值前不可调用。</li>
-          <li><strong>函数声明提升 vs var 提升？</strong> 同作用域内函数声明优先于 var；若同名，函数声明覆盖 var 的 undefined 初始值。</li>
-          <li><strong>没有 return 返回什么？</strong> 显式或隐式返回 <code>undefined</code>。注意 <code>return</code> 后的换行不会自动插入分号导致 ASI 陷阱（见进阶题）。</li>
+          <li><strong>函数声明 vs 函数表达式？</strong> 结论：函数声明在同作用域内可先调用，函数表达式要等赋值执行后才能调用。原因是声明会整体初始化为函数对象，而表达式遵循变量声明和赋值的执行顺序；项目里需要条件创建或传递回调时常用表达式。</li>
+          <li><strong>函数声明提升 vs var 提升？</strong> 结论：函数声明提升后直接可调用，<code>var</code> 只提升声明并初始化为 <code>undefined</code>。同名时还要看后续赋值语句是否覆盖；复杂场景建议避免同名声明。</li>
+          <li><strong>没有 return 返回什么？</strong> 结论：无 <code>return</code> 或空 <code>return</code> 都返回 <code>undefined</code>。原因是函数调用必须产生一个完成值；链式 API 或计算函数要显式返回，事件处理器这类副作用函数可以不返回。</li>
+          <li><strong>形参与实参数量不一致怎么办？</strong> 结论：少传的形参是 <code>undefined</code>，多传的实参普通函数可从 <code>arguments</code> 读取。现代代码更推荐默认参数和剩余参数，让边界更清楚。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions">MDN: Functions</a>：函数声明、表达式、参数和一等函数能力。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/return">MDN: return</a>：返回值、空返回和自动分号插入边界。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments">MDN: The arguments object</a>：实参数量与 <code>arguments</code> 的关系。</li>
         </ul>
       </div>
     </section>
@@ -47,17 +54,23 @@
     <!-- SCRIPT_START -->
     <script>
       // 函数声明会被「整体提升」，所以下面调用可以放在声明前后任意位置
+      sayHi("Nicholas", "how are you today?");
+
       function sayHi(name, message) {
         console.log("Hello " + name + ", " + message);
       }
-
-      sayHi("Nicholas", "how are you today?");
 
       // 有 return 的函数：把结果传回调用处
       function sum(num1, num2) {
         return num1 + num2;
       }
       console.log("sum(1,2) =", sum(1, 2));
+
+      // 没有 return 时返回 undefined
+      function logOnly(message) {
+        console.log("logOnly:", message);
+      }
+      console.log("logOnly 返回值:", logOnly("只产生副作用"));
 
     </script>
     <!-- SCRIPT_END -->

@@ -37,9 +37,15 @@
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Date 常见坑？</strong> 月份从 0 起；<code>new Date('2024-01-01')</code> 时区差异；直接改实例会 mutate。</li>
-          <li><strong>某月最后一天？</strong> <code>new Date(year, month, 0).getDate()</code>（month 为下一月 1-based）或 dayjs 的 endOf('month')。</li>
-          <li><strong>时区处理？</strong> 存储 UTC 时间戳；展示用 toLocaleString + timeZone；复杂场景用 Temporal（未来）或 dayjs timezone 插件。</li>
+          <li><strong>Date 常见坑？</strong> 结论是月份从 0 起、日期字符串解析受格式和时区影响、实例方法会修改原对象。原因是 <code>Date</code> 同时承载时间戳、本地时区展示和可变 setter；项目里存储优先用时间戳或 ISO 字符串，展示时再按用户时区格式化。</li>
+          <li><strong>某月最后一天如何计算？</strong> 可以用 <code>new Date(year, month, 0).getDate()</code>，这里 <code>month</code> 传“下个月”的 1-based 数字。原因是 <code>Date</code> 构造器允许日期溢出，day=0 会回退到上个月最后一天；边界是要明确本地时区还是 UTC。</li>
+          <li><strong>前端如何处理时区？</strong> 结论是传输和存储用统一时间基准，展示用 <code>Intl.DateTimeFormat</code> 或 <code>toLocaleString</code> 指定 <code>timeZone</code>。复杂日历、跨时区排班等场景不要只靠手写格式化，实践中通常引入成熟日期库或等待 Temporal 普及。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date" target="_blank" rel="noopener">MDN Web Docs：Date</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getMonth" target="_blank" rel="noopener">MDN Web Docs：Date.prototype.getMonth()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat" target="_blank" rel="noopener">MDN Web Docs：Intl.DateTimeFormat</a></li>
         </ul>
       </div>
     </section>

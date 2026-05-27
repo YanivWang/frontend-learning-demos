@@ -2,15 +2,16 @@
 分类: javascript / 02-函数与作用域 / this指向
   主题: new 调用构造函数时 this 的行为
   要点:
-    - new 构造时 this 指向新创建的实例，绝不会污染外层作用域
-    - 不加 new 直接调用，this 退化为 window（非严格）或 undefined（严格）
-    - 推荐为构造函数加首字母大写规范，避免漏写 new
+    - new 会创建对象、链接原型、以新对象作为 this 执行构造函数并返回实例
+    - 构造函数不显式返回对象时，new 的结果就是新实例
+    - 不加 new 调用普通构造函数会让 this 按普通函数规则绑定，可能污染全局或报错
+    - class 构造器必须用 new 调用，能避免传统构造函数漏写 new 的一类问题
   面试:
-    - new 调用构造函数时 this 的行为的核心概念是什么
-    - new 调用构造函数时 this 的行为在实际项目里怎么用
-    - new 调用构造函数时 this 的行为有哪些常见坑或易错点
-    - new 调用构造函数时 this 的行为和相近 API 如何区分选型
-    - 面试中如何简洁讲清 new 调用构造函数时 this 的行为
+    - new 操作符内部做了哪几步？
+    - 构造函数显式 return 对 new 的结果有什么影响？
+    - 漏写 new 为什么危险？
+    - class 和传统构造函数在调用方式上有什么差异？
+    - 手写 new 时要注意哪些边界？
 -->
 
 <!doctype html>
@@ -30,16 +31,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>new 构造时 <code>this</code> 指向新创建的实例，绝不会污染外层作用域。</li>
-          <li>不加 new 直接调用，<code>this</code> 退化为 window（非严格）或 <code>undefined</code>（严格）。</li>
-          <li>推荐为构造函数加首字母大写规范，避免漏写 new。</li>
-          <li>new 构造时 <code>this</code> 指向新创建的实例，绝不会污染外层作用域（补充）。</li>
+          <li><strong>new 的四步：</strong>创建空对象，把对象的 <code>[[Prototype]]</code> 链到构造函数 <code>prototype</code>，用新对象作为 <code>this</code> 执行构造函数，最后返回实例。</li>
+          <li><strong>返回值规则：</strong>构造函数显式返回对象时，<code>new</code> 的结果会变成该对象；返回原始值或不返回时，结果仍是新创建的实例。</li>
+          <li><strong>漏写 new 风险：</strong>传统构造函数直接调用时按普通函数绑定 <code>this</code>，非严格模式可能写到全局对象，严格模式下可能因为 <code>this</code> 是 <code>undefined</code> 报错。</li>
+          <li><strong>现代写法：</strong>新代码优先用 <code>class</code> 或工厂函数表达意图；<code>class</code> 构造器不能不带 <code>new</code> 调用，能减少漏写风险。</li>
+          <li><strong>类型关系：</strong>实例能通过原型链访问 <code>Person.prototype</code> 上的方法，因此 <code>instanceof Person</code> 为 true。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>new 构造时 this 指向新创建的实例？</strong> new 构造时 <code>this</code> 指向新创建的实例，绝不会污染外层作用域；不加 new 直接调用，<code>this</code> 退化为 window（非严格）或 <code>undefined</code>（严格）</li>
-          <li><strong>不加 new 直接调用？</strong> 不加 new 直接调用，<code>this</code> 退化为 window（非严格）或 <code>undefined</code>（严格）</li>
-          <li><strong>推荐为构造函数加首字母大写规范？</strong> 推荐为构造函数加首字母大写规范，避免漏写 new</li>
+          <li><strong>new 操作符内部做了哪几步？</strong> 结论是创建对象、链接原型、绑定 <code>this</code> 执行构造函数、返回对象。原因是 JS 的“实例”本质依赖原型链；项目里理解这点才能解释 <code>instanceof</code>、原型方法共享和手写 new。</li>
+          <li><strong>构造函数显式 return 对 new 的结果有什么影响？</strong> 如果返回对象，最终结果就是该对象；如果返回原始值或没有返回，结果仍是新实例。边界是构造函数里随意 return 对象会破坏实例原型关系。</li>
+          <li><strong>漏写 new 为什么危险？</strong> 传统构造函数会变成普通函数调用，<code>this</code> 不再指向新实例。非严格模式可能污染 <code>window</code>，严格模式通常报错；项目里用 <code>class</code>、工厂函数或命名规范降低风险。</li>
+          <li><strong>class 和传统构造函数有什么差异？</strong> <code>class</code> 语法仍基于原型，但构造器必须用 <code>new</code> 调用，并默认运行在严格模式。维护旧代码时要理解两者的共同原型模型和调用边界。</li>
+          <li><strong>手写 new 要注意哪些边界？</strong> 要用 <code>Object.create(Constructor.prototype)</code> 建立原型关系，并处理构造函数返回对象的情况。还要拒绝不可构造的目标，例如箭头函数没有 <code>prototype</code>，不能被 <code>new</code>。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new" target="_blank" rel="noopener">MDN Web Docs：new operator</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_classes" target="_blank" rel="noopener">MDN Web Docs：Using classes</a></li>
+          <li><a href="https://javascript.info/constructor-new" target="_blank" rel="noopener">JavaScript.info：Constructor, operator new</a></li>
         </ul>
       </div>
     </section>

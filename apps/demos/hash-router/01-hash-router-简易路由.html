@@ -1,17 +1,18 @@
 <!--
 分类: demos / hash-router
-  主题: Hash 路由简易 SPA
+  主题: Hash 路由简易 SPA 与 fallback
   难度: 进阶
   要点:
-    - hashchange / 初始 hash 解析路由
-    - 无需后端，适合静态托管
-    - 与 Vue Router hash 模式概念一致
+    - URL fragment 改变会触发 hashchange，首次进入页面仍要主动 render
+    - hash 路由不会把 # 后面的片段发送给服务器，静态托管下刷新成本低
+    - 动态段要显式匹配和解码，未知路径要有 404 fallback
+    - hashchange 不会由 history.pushState / replaceState 触发，history 模式需要 popstate
   面试:
-    - Hash 路由简易 SPA的核心概念是什么
-    - Hash 路由简易 SPA在实际项目里怎么用
-    - Hash 路由简易 SPA有哪些常见坑或易错点
-    - Hash 路由简易 SPA和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Hash 路由简易 SPA
+    - Hash 路由为什么刷新时通常不需要后端 fallback？
+    - 首屏渲染为什么不能只依赖 hashchange？
+    - Hash 路由和 History API 路由怎么选？
+    - 动态路由参数为什么要匹配、解码和安全渲染？
+    - 未知路由应该如何处理？
 -->
 
 <!doctype html>
@@ -32,20 +33,31 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>Hash 路由</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <h1>Hash 路由简易 SPA 与 fallback</h1>
+      <p class="hint">这个 demo 用 <code>location.hash</code> 和 <code>hashchange</code> 实现一个零依赖路由，重点观察首屏渲染、动态段匹配和未知路径 fallback。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>hashchange / 初始 hash 解析路由。</li>
-          <li>无需后端，适合静态托管。</li>
-          <li>与 Vue Router hash 模式概念一致。</li>
+          <li><strong>核心机制：</strong><code>#</code> 后面的 fragment 改变会触发 <code>hashchange</code>，但页面首次加载不会自动触发一次，所以初始化时必须主动调用 <code>render()</code>。</li>
+          <li><strong>静态托管优势：</strong>fragment 不会作为请求路径发送给服务器，刷新 <code>#/user/42</code> 仍然请求当前 HTML，因此 hash 路由通常不需要额外后端 fallback。</li>
+          <li><strong>动态段处理：</strong>示例用正则匹配 <code>/user/:id</code>，并只接受数字 ID；真实项目需要对参数做解码、校验和权限判断。</li>
+          <li><strong>安全渲染：</strong>路由参数来自地址栏，属于用户可控输入；示例用 DOM API 和 <code>textContent</code> 写入页面，不把参数拼进 <code>innerHTML</code>。</li>
+          <li><strong>模式取舍：</strong>hash 模式部署简单但 URL 带 <code>#</code>；History API URL 更自然，但刷新深层路径需要服务器把请求回退到入口 HTML。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>hashchange / 初始 hash 解析路由？</strong> hashchange / 初始 hash 解析路由；与 Vue Router hash 模式概念一致</li>
-          <li><strong>与 Vue Router hash 模式概念一致？</strong> 与 Vue Router hash 模式概念一致</li>
-          <li><strong>Hash 路由简易 SPA的核心概念是什么？</strong> hashchange / 初始 hash 解析路由；无需后端，适合静态托管</li>
+          <li><strong>Hash 路由为什么刷新时通常不需要后端 fallback？</strong> 结论是浏览器请求服务器时不会把 <code>#</code> 后面的 fragment 当成路径发送。原因是 hash 主要在客户端解析，所以静态站点刷新深层 hash 路由仍拿到同一个 HTML。边界是 SEO、分享链接美观度和服务端渲染场景通常更偏向 History 模式。</li>
+          <li><strong>首屏渲染为什么不能只依赖 hashchange？</strong> 因为 <code>hashchange</code> 只在 fragment 发生变化时触发，首次加载当前 URL 不一定有变化。实践中会在绑定监听后主动执行一次渲染，保证直接打开 <code>#/about</code> 也能显示正确页面。</li>
+          <li><strong>Hash 路由和 History API 路由怎么选？</strong> 部署约束强、静态托管为主时 hash 更省事；希望 URL 无 <code>#</code>、配合服务端路由或 SSR 时用 History API。History 模式需要服务器把未知前端路由 fallback 到入口页，否则刷新会 404。</li>
+          <li><strong>动态路由参数为什么要匹配、解码和安全渲染？</strong> 地址栏是用户可控输入，参数必须先确认形状再进入业务逻辑。展示时用 <code>textContent</code>，避免把恶意字符串拼成 HTML；项目里还要做权限校验和不存在资源的提示。</li>
+          <li><strong>未知路由应该如何处理？</strong> 结论是显式提供 404 fallback，而不是静默显示空白。原因是用户可能手输、收藏过期链接或从旧版本跳转；项目里还可以记录埋点并提供返回首页入口。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/hashchange_event" target="_blank" rel="noopener">MDN Web Docs：Window hashchange event</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Location/hash" target="_blank" rel="noopener">MDN Web Docs：Location.hash</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/History_API" target="_blank" rel="noopener">MDN Web Docs：History API</a></li>
+          <li><a href="https://developer.mozilla.org/docs/Web/API/Node/textContent" target="_blank" rel="noopener">MDN Web Docs：Node.textContent</a></li>
         </ul>
       </div>
     </section>
@@ -63,20 +75,29 @@
     <!-- SCRIPT_START -->
     <script>
       const routes = {
-        "/": () => "<h2>首页</h2><p>当前 hash：<code>" + location.hash + "</code></p>",
-        "/about": () => "<h2>关于</h2><p>这是一个零依赖 hash 路由 demo。</p>",
-        "/user/:id": (params) => `<h2>用户 ${params.id}</h2><p>动态段 :id = ${params.id}</p>`,
+        "/": () => createView("首页", `当前 hash：${location.hash || "#/"}`),
+        "/about": () => createView("关于", "这是一个零依赖 hash 路由 demo。"),
+        "/user/:id": (params) => createView(`用户 ${params.id}`, `动态段 :id = ${params.id}`),
       };
+      function createView(title, message) {
+        const fragment = document.createDocumentFragment();
+        const heading = document.createElement("h2");
+        heading.textContent = title;
+        const paragraph = document.createElement("p");
+        paragraph.textContent = message;
+        fragment.append(heading, paragraph);
+        return fragment;
+      }
       function match(path) {
         if (routes[path]) return { handler: routes[path], params: {} };
         const m = path.match(/^\/user\/(\d+)$/);
         if (m) return { handler: routes["/user/:id"], params: { id: m[1] } };
-        return { handler: () => "<p>404 Not Found</p>", params: {} };
+        return { handler: () => createView("404 Not Found", `没有匹配到路由：${path}`), params: {} };
       }
       function render() {
         const path = location.hash.slice(1) || "/";
         const { handler, params } = match(path);
-        document.getElementById("view").innerHTML = handler(params);
+        document.getElementById("view").replaceChildren(handler(params));
         document.querySelectorAll("nav a").forEach((a) => {
           a.classList.toggle("active", a.getAttribute("href") === "#" + path);
         });

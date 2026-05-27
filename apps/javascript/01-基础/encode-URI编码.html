@@ -5,11 +5,13 @@
     - encodeURI 编码整 URI，保留 : / ? # 等结构字符
     - encodeURIComponent 编码参数片段，会编码 : / ? 等
     - decodeURI / decodeURIComponent 对应解码
-    - escape 已废弃，勿与 encodeURIComponent 混用
+    - URLSearchParams 更适合构造查询字符串
+    - escape 已废弃，不要当作 URL 编码方案
   面试:
     - encodeURI 和 encodeURIComponent 区别？
-    - 什么时候用哪个？
-    - escape 为什么废弃？
+    - 查询参数为什么优先 encodeURIComponent 或 URLSearchParams？
+    - decodeURIComponent 什么时候会抛 URIError？
+    - escape 为什么不能替代现代 URI 编码？
   相关: 字符串方法, escape
 -->
 
@@ -32,15 +34,23 @@
         <ul>
           <li><code>encodeURI</code>：编码完整 URL，保留 <code>: / ? #</code> 等 URI 结构字符，只编码中文等特殊字符。</li>
           <li><code>encodeURIComponent</code>：编码 URL 组件（query 值、path 段），会编码 <code>/ ? & =</code> 等。</li>
-          <li>解码用 <code>decodeURI</code> / <code>decodeURIComponent</code>； malformed 序列抛 URIError。</li>
-          <li>拼接 URL：<code>?q=${encodeURIComponent(keyword)}</code>，不要对整个 URL 用 encodeURIComponent。</li>
-          <li><code>escape</code> 已废弃，编码规则与 UTF-8 百分号编码不一致。</li>
+          <li>解码用 <code>decodeURI</code> / <code>decodeURIComponent</code>；输入里存在非法百分号编码或不完整 UTF-8 序列时会抛 <code>URIError</code>。</li>
+          <li>拼接查询字符串时可写 <code>?q=${encodeURIComponent(keyword)}</code>，更推荐用 <code>URLSearchParams</code> 处理空格、重复 key 与自动转义。</li>
+          <li><code>escape</code> / <code>unescape</code> 已废弃，编码规则不是 WHATWG URL 使用的 UTF-8 百分号编码，不要用于新代码。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>encodeURI vs encodeURIComponent？</strong> 前者保 URI 结构；后者适合 query/path 片段。对整个 URL 误用 Component 会把 :// 也编码。</li>
-          <li><strong>什么时候用哪个？</strong> 整链 encodeURI；单个参数 encodeURIComponent；现代也可用 URLSearchParams。</li>
-          <li><strong>escape 为何废弃？</strong> 非标准、不支持 Unicode 完整范围；统一用 encodeURIComponent/decodeURIComponent。</li>
+          <li><strong>encodeURI vs encodeURIComponent？</strong> 结论是完整地址用 <code>encodeURI</code>，单个组件用 <code>encodeURIComponent</code>。原因是前者保留 URI 分隔符，后者会把 <code>://</code>、<code>&amp;</code>、<code>=</code> 等也编码；边界是已经由 <code>URL</code> / <code>URLSearchParams</code> 管理的地址不要重复编码。</li>
+          <li><strong>查询参数为什么优先 URLSearchParams？</strong> 结论是它比手写拼接更稳。它会按标准序列化 key/value，减少漏编码 <code>&amp;</code>、空格、中文等字符的风险；项目里仍要注意服务端对 <code>+</code> 与 <code>%20</code> 的解析约定。</li>
+          <li><strong>decodeURIComponent 什么时候会抛错？</strong> 结论是遇到格式非法的百分号转义会抛 <code>URIError</code>。例如孤立 <code>%</code> 或非法 UTF-8 字节无法还原；边界是解码用户输入前通常要捕获异常，避免整页脚本中断。</li>
+          <li><strong>escape 为何废弃？</strong> 结论是它不是现代 URL 编码方案。它会产生 <code>%uXXXX</code> 这类历史格式，和 UTF-8 百分号编码、URL 标准不一致；新代码用 <code>encodeURIComponent</code> 或 <code>URLSearchParams</code>。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURI">MDN：encodeURI()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent">MDN：encodeURIComponent()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams">MDN：URLSearchParams</a></li>
+          <li><a href="https://url.spec.whatwg.org/#application/x-www-form-urlencoded">WHATWG URL：application/x-www-form-urlencoded</a></li>
         </ul>
       </div>
     </section>
