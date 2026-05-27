@@ -2,26 +2,25 @@
 
 按主题编号的 CSS demo，共 **36** 个 `.html` 文件，兼顾常用效果、CSS 面试基础与现代特性。每个 demo 可直接在浏览器打开。
 
-目录按 `00-基础` ~ `05-性能` 编号，外加 `CSS选择器/` 专题。`04-响应式/media-queries/` 下 `step1.html` → `final.html` 演示媒体查询的渐进增强；`04-响应式/libs/` 存放 IE8 及以下 polyfill（见 [`04-响应式/libs/README.md`](04-响应式/libs/README.md)）。
+目录按 `00-基础` ~ `06-现代特性` 编号分类。`04-响应式/media-queries/` 下 `step1.html` → `final.html` 演示媒体查询的渐进增强；`04-响应式/libs/` 存放 IE8 及以下 polyfill（见 [`04-响应式/libs/README.md`](04-响应式/libs/README.md)）。
 
 ## 目录概览
 
 | 目录 | 知识点 |
 |---|---|
-| `00-基础/` | 盒模型、`display` 与文档流、常用单位、`calc()`、`clamp()`、CSS 变量 |
+| `00-基础/` | 选择器与优先级、盒模型、`display` 与文档流、常用单位、`calc()`、`clamp()`、CSS 变量 |
 | `01-布局/` | Flex、Grid、BFC、清除浮动、定位、层叠上下文、常见布局题、rem 适配、瀑布流、滚动表格（`thead` 固定） |
 | `02-动画/` | Loading 四种、`@keyframes`、NProgress、光标闪烁、展开折叠（height / max-height / grid）、序列帧（精灵图） |
 | `03-视觉效果/` | 文本省略、图片处理、百分比圆环、3D 按钮、`drop-shadow`、`background-blend-mode`、Tooltip |
 | `04-响应式/` | Media Queries（含 step1 → final 演进对比）、rem + @media + vw / vh 综合适配 |
 | `05-性能/` | 重排、重绘、合成层、`transform` / `opacity` 动画性能、`will-change`、`contain` |
 | `06-现代特性/` | `:has()` 父选择器、`@layer` 层叠管理、Container Queries 容器查询 |
-| `CSS选择器/` | 优先级与各种选择器一览 |
 
 ## CSS 面试基础覆盖
 
 | 高频问题 | 当前示例 |
 |---|---|
-| 选择器、优先级、层叠规则 | `CSS选择器/` |
+| 选择器、优先级、层叠规则 | `00-基础/选择器与优先级/` |
 | 盒模型、`box-sizing`、margin 折叠 | `00-基础/盒模型/` |
 | `display`、文档流、隐藏方式区别 | `00-基础/display与文档流/` |
 | CSS 单位、`calc()`、`clamp()`、CSS 变量 | `00-基础/单位与函数/` |
@@ -38,7 +37,7 @@
 
 ## 推荐顺序
 
-`00-基础 → 01-布局 → 02-动画 → 03-视觉效果 → 04-响应式 → 05-性能 → 06-现代特性 → CSS选择器`
+`00-基础 → 01-布局 → 02-动画 → 03-视觉效果 → 04-响应式 → 05-性能 → 06-现代特性`
 
 ## 完整 demo 清单
 
@@ -50,6 +49,7 @@
 |---|---|
 | `00-基础/单位与函数/index.html` | px、em、rem、百分比、vw/vh、calc、clamp、CSS 变量 |
 | `00-基础/盒模型/index.html` | 标准盒模型、IE 盒模型、margin 折叠 |
+| `00-基础/选择器与优先级/index.html` | 选择器种类与优先级（specificity） |
 | `00-基础/display与文档流/index.html` | block、inline、inline-block、none、visibility |
 | `01-布局/常见布局题/index.html` | 居中、两栏、三栏、粘性 footer、等比例盒子 |
 | `01-布局/定位与层叠上下文/index.html` | position、包含块、z-index、层叠上下文 |
@@ -82,7 +82,6 @@
 | `06-现代特性/01-has选择器/index.html` | :has() 父选择器与条件样式 |
 | `06-现代特性/02-layer层叠管理/index.html` | @layer 层叠上下文与优先级管理 |
 | `06-现代特性/03-container-queries容器查询/index.html` | container-type 与 @container 组件级响应式 |
-| `CSS选择器/index.html` | 选择器种类与优先级（specificity） |
 | `index.html` | CSS 模块导航入口 |
 
 <!-- DEMO_TABLE_END -->

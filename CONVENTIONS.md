@@ -9,7 +9,7 @@
 | 目录 | 用途 | 说明 |
 |---|---|---|
 | `javascript/` | 纯 JavaScript 知识点 demo | 按 `01-` ~ `09-` 编号分类 |
-| `css/` | CSS 布局 / 动画 / 视觉 / 响应式 / 性能 / 现代特性 | 按 `00-` ~ `06-` 编号分类，外加 `CSS选择器/` |
+| `css/` | CSS 布局 / 动画 / 视觉 / 响应式 / 性能 / 现代特性 | 按 `00-` ~ `06-` 编号分类 |
 | `vue2/` `vue3/` | Vue 框架 demo | 内含 `libs/`（运行时）与 `src/`（demo） |
 | `react/` | React 18 demo | 内含 `libs/` 与 `src/`（`function-components` + `class-components`） |
 | `typescript/` | TypeScript 面试基础 demo | 按 `01-基础` / `02-进阶` 编号 |
