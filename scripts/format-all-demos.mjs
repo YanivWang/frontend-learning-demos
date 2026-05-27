@@ -78,6 +78,13 @@ function ensureHeaderBlankLine(content) {
   );
 }
 
+function trimHeaderClosingBlankLine(content) {
+  return content.replace(
+    /(<!--[\s\S]*?)(\n[ \t]*\n)([ \t]*-->)(\s*\n\s*<!doctype html>)/i,
+    "$1\n$3$4"
+  );
+}
+
 function normalizeDoctype(content) {
   return content.replace(/<!DOCTYPE html>/i, "<!doctype html>");
 }
@@ -635,6 +642,7 @@ function formatOne(content, abs, rel) {
   next = stripDemoLogAndRun(next);
   next = fixImportMapsMetadata(next, rel);
   next = removeInlineHintStyle(next);
+  next = trimHeaderClosingBlankLine(next);
   next = ensureHeaderBlankLine(next);
 
   const shellFormatted = formatShellPage(next, abs, rel);
@@ -643,6 +651,7 @@ function formatOne(content, abs, rel) {
   }
 
   next = formatHead(next);
+  next = trimHeaderClosingBlankLine(next);
   next = ensureHeaderBlankLine(next);
   next = finalizeFormatting(next);
 
