@@ -1,16 +1,18 @@
 <!--
   分类: vue2 / 01-基础语法
-  主题: Vue 指令简写形式（: 与 @）
-  要点:
-    - v-bind:title 简写为 :title；v-on:click 简写为 @click
-    - 易错点：写成 :bind:title 是无效写法，会被当作普通 attribute（不响应）
-    - 正确写法是 :title（即 v-bind:title 简写）
+  主题: Vue 指令简写形式（: 与 @）
+  要点:
+    - v-bind:attr 可简写为 :attr，v-on:event 可简写为 @event
+    - 简写只是语法糖，不改变绑定属性或监听事件的运行机制
+    - :bind:title 不是 v-bind:title 的简写，而是在绑定名为 bind:title 的 attribute
+    - 指令参数可以是动态参数，但表达式要简单且注意大小写限制
+    - Vue 2 已 EOL，维护旧项目可用，新项目优先 Vue 3
   面试:
-    - Vue 指令简写形式（: 与 @）的核心概念是什么
-    - Vue 指令简写形式（: 与 @）在实际项目里怎么用
-    - Vue 指令简写形式（: 与 @）有哪些常见坑或易错点
-    - Vue 指令简写形式（: 与 @）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Vue 指令简写形式（: 与 @）
+    - :title 和 v-bind:title 是什么关系？
+    - @click 和 v-on:click 是什么关系？
+    - 为什么 :bind:title 不是正确简写？
+    - 动态参数和普通简写有什么区别？
+    - 维护 Vue 2 项目时如何说明指令简写与 Vue 3 选型边界？
 -->
 
 <!doctype html>
@@ -35,16 +37,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>v-<code>bind</code>:title 简写为 :title；v-on:click 简写为 @click。</li>
-          <li>易错点：写成 :<code>bind</code>:title 是无效写法，会被当作普通 attribute（不响应）。</li>
-          <li>正确写法是 :title（即 v-<code>bind</code>:title 简写）。</li>
-          <li>v-<code>bind</code>:title 简写为 :title；v-on:click 简写为 @click（补充）。</li>
+          <li><code>:</code> 是 <code>v-bind:</code> 的简写，所以 <code>:title="msg"</code> 等价于 <code>v-bind:title="msg"</code>。它把表达式结果绑定到指定 attribute、prop 或 class/style 等特殊处理目标。</li>
+          <li><code>@</code> 是 <code>v-on:</code> 的简写，所以 <code>@click="onClick"</code> 等价于 <code>v-on:click="onClick"</code>。它只负责监听事件，不等于方法调用本身。</li>
+          <li><code>:bind:title</code> 不是正确简写。因为冒号已经代表 <code>v-bind:</code>，后面的完整参数会被当成 <code>bind:title</code> 这个 attribute 名，而不是 <code>title</code>。</li>
+          <li>静态 <code>title="msg"</code> 是普通字符串，不会读取 data；动态 <code>:title="msg"</code> 才会把 <code>msg</code> 当表达式求值。本页可通过 hover 标题观察差异。</li>
+          <li>Vue 2.6+ 支持动态参数，例如 <code>:[attrName]="msg"</code> 或 <code>@[eventName]="onClick"</code>。动态参数表达式要保持简单，并注意 DOM 模板里的大小写限制。Vue 2 已 EOL，新项目优先 Vue 3。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue 指令简写形式（: 与 @）的核心概念是什么？</strong> v-<code>bind</code>:title 简写为 :title；v-on:click 简写为 @click；易错点：写成 :<code>bind</code>:title 是无效写法，会被当作普通 attribute（不响应）</li>
-          <li><strong>Vue 指令简写形式（: 与 @）在实际项目里怎么用？</strong> v-<code>bind</code>:title 简写为 :title；v-on:click 简写为 @click；易错点：写成 :<code>bind</code>:title 是无效写法，会被当作普通 attribute（不响应）</li>
-          <li><strong>Vue 指令简写形式（: 与 @）有哪些常见坑或易错点？</strong> v-<code>bind</code>:title 简写为 :title；v-on:click 简写为 @click；易错点：写成 :<code>bind</code>:title 是无效写法，会被当作普通 attribute（不响应）</li>
+          <li><strong>:title 和 v-bind:title 是什么关系？</strong> 结论是完全等价，<code>:</code> 是 <code>v-bind:</code> 的官方简写。原因是 Vue 指令语法允许对高频指令使用更短前缀。项目里推荐统一团队风格，常见代码基本都用简写。</li>
+          <li><strong>@click 和 v-on:click 是什么关系？</strong> 结论是完全等价，<code>@</code> 是 <code>v-on:</code> 的官方简写。原因是事件监听是模板中高频操作。边界是事件参数、修饰符、动态参数规则不因简写而改变。</li>
+          <li><strong>为什么 :bind:title 不是正确简写？</strong> 结论是因为冒号已经代表 <code>v-bind:</code>，后面的 <code>bind:title</code> 会成为要绑定的参数名。原因是 Vue 不会把 <code>:bind:title</code> 再二次解析成 <code>v-bind:title</code>。项目里看到这种写法应改成 <code>:title</code>。</li>
+          <li><strong>动态参数和普通简写有什么区别？</strong> 结论是普通简写的参数名固定，动态参数会先计算方括号里的表达式再决定绑定目标。原因是 <code>:[attrName]</code> 或 <code>@[eventName]</code> 允许运行时选择 attribute 或事件名。边界是动态参数过度使用会降低可读性，应只用于确实动态的封装组件。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/syntax.html#Shorthands" target="_blank" rel="noopener">Vue 2 官方文档：Shorthands</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/syntax.html#Dynamic-Arguments" target="_blank" rel="noopener">Vue 2 官方文档：Dynamic Arguments</a></li>
+          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 官方说明：Vue 2 Has Reached End of Life</a></li>
         </ul>
       </div>
     </section>
@@ -56,6 +66,7 @@
         <h3>正确：:title 即 v-bind:title</h3>
         <div :title="msg">{{ msg }}</div>
         <div @click="onClick">点我更新 msg</div>
+        <div :[dynamicAttr]="msg">动态参数 :[dynamicAttr]</div>
       </div>
       <div class="demo">
         <h3>错误：:bind:title 不是 v-bind 简写，不会响应式绑定</h3>
@@ -75,7 +86,8 @@
       new Vue({
         el: '#app1',
         data: {
-          msg: '悬浮提示来自 data'
+          msg: '悬浮提示来自 data',
+          dynamicAttr: 'title'
         },
         methods: {
           onClick: function () {

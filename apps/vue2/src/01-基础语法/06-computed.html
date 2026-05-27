@@ -2,15 +2,17 @@
   分类: vue2 / 01-基础语法
   主题: 计算属性 vs 方法（缓存差异）
   要点:
-    - computed 基于依赖缓存：依赖不变就直接复用上次结果
-    - methods 每次访问都重新执行，即使依赖未变
-    - 模板中能写 computedMsg（属性式）和 reverseMsg()（方法式）两种风格，注意区分
+    - computed 是声明式派生值，按响应式依赖缓存，依赖未变会复用旧结果
+    - methods 是普通函数调用，模板重新渲染时每次调用都会重新执行
+    - computed getter 应保持无副作用，异步和命令式动作应交给 methods 或 watch
+    - 不需要缓存或需要传参的逻辑通常用 methods，需要派生状态通常用 computed
+    - Vue 2 已 EOL，维护旧项目可用这些概念，新项目优先 Vue 3
   面试:
-    - 计算属性 vs 方法（缓存差异）的核心概念是什么
-    - 计算属性 vs 方法（缓存差异）在实际项目里怎么用
-    - 计算属性 vs 方法（缓存差异）有哪些常见坑或易错点
-    - 计算属性 vs 方法（缓存差异）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 计算属性 vs 方法（缓存差异）
+    - computed 和 methods 返回结果一样时为什么还要区分？
+    - computed 依赖 Date.now() 为什么不会自动更新？
+    - computed、methods、watch 在项目里如何选型？
+    - computed getter 里为什么不建议写副作用？
+    - 维护 Vue 2 项目时如何说明 computed 与 Vue 3 选型边界？
 -->
 
 <!doctype html>
@@ -31,16 +33,23 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>computed</code> 基于依赖缓存：依赖不变就直接复用上次结果。</li>
-          <li>methods 每次访问都重新执行，即使依赖未变。</li>
-          <li>模板中能写 computedMsg（属性式）和 reverseMsg()（方法式）两种风格，注意区分。</li>
-          <li><code>computed</code> 基于依赖缓存：依赖不变就直接复用上次结果（补充）。</li>
+          <li><code>computed</code> 适合声明“由响应式数据派生出的值”。本页中 <code>computedMsg</code> 依赖 <code>msg</code>，模板多次读取它时，只要 <code>msg</code> 没变，Vue 会直接复用缓存结果。</li>
+          <li>methods 是普通函数。模板中写 <code>{{ reverseMsg() }}</code> 时，只要组件重新渲染并执行到这个表达式，方法就会重新调用；即使返回结果和 computed 一样，也没有 computed 的依赖缓存。</li>
+          <li>computed 的缓存只跟响应式依赖有关。依赖 <code>this.msg</code> 会在 <code>msg</code> 变化后重新求值；如果 getter 只读 <code>Date.now()</code> 这类非响应式值，它不会因为时间流逝自动更新。</li>
+          <li>computed getter 应尽量保持纯粹：只根据依赖返回值，不做请求、计时器、DOM 操作或修改别的状态。需要传参、不需要缓存或要响应点击的动作，用 methods；需要异步副作用或监听变化过程，用 watch。</li>
+          <li>Vue 2 已于 2023-12-31 进入 EOL。维护旧项目时仍应理解 computed 的缓存模型；新项目或大版本升级应优先按 Vue 3 文档选型。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>computed 基于依赖缓存？</strong> <code>computed</code> 基于依赖缓存：依赖不变就直接复用上次结果；模板中能写 computedMsg（属性式）和 reverseMsg()（方法式）两种风格，注意区分</li>
-          <li><strong>methods 每次访问都重新执行？</strong> methods 每次访问都重新执行，即使依赖未变</li>
-          <li><strong>模板中能写 computedMsg（属性式）和 reverseMsg()（方法式？</strong> 模板中能写 computedMsg（属性式）和 reverseMsg()（方法式）两种风格，注意区分</li>
+          <li><strong>computed 和 methods 返回结果一样时为什么还要区分？</strong> 结论是 computed 适合可缓存的派生值，methods 适合每次都要执行的动作或计算。原因是 computed 会基于响应式依赖缓存，依赖不变时多次读取不会重复运行 getter；methods 在模板重新渲染并被调用时会再次执行。项目里大量列表过滤、格式化汇总优先 computed，点击提交、需要参数的逻辑用 methods。</li>
+          <li><strong>computed 依赖 <code>Date.now()</code> 为什么不会自动更新？</strong> 结论是它不会随时间自动重新计算。原因是 <code>Date.now()</code> 不是 Vue 2 响应式依赖，Vue 没有可追踪的数据变化来让 computed 失效。边界是如果同时读取了响应式字段，则该字段变化会触发重新求值，但这不等于时间本身被追踪。</li>
+          <li><strong>computed、methods、watch 在项目里如何选型？</strong> 结论是派生状态用 computed，事件动作或传参逻辑用 methods，异步请求、节流防抖、同步外部系统这类副作用用 watch。原因是三者表达的意图不同：值、动作、变化后的副作用。项目里表单全名、过滤列表是 computed；按钮点击是 methods；输入变化后请求接口是 watch。</li>
+          <li><strong>computed getter 里为什么不建议写副作用？</strong> 结论是 computed getter 应保持可预测和可缓存。原因是 Vue 可能因为依赖缓存而跳过 getter，也可能在渲染时读取多次；如果里面修改状态或发请求，会让执行次数和时机变得难以推断。边界是教学 demo 可以用 <code>console.log</code> 观察执行次数，真实业务不要把副作用放在 getter 里。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/computed.html" target="_blank" rel="noopener">Vue 2 官方文档：Computed Properties and Watchers</a></li>
+          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 官方说明：Vue 2 Has Reached End of Life</a></li>
         </ul>
       </div>
     </section>
@@ -49,6 +58,7 @@
     <!-- PAGE_DOM_START -->
     <div id="app1">
       <div>msg: {{msg}}</div>
+      <button type="button" @click="changeMsg">切换 msg，触发 computed 依赖失效</button>
       <!--很神奇，多次使用computedMsg，不会重复计算，而是立即返回 -->
       <div>computedMsg: {{computedMsg}}</div>
       <div>computedMsg: {{computedMsg}}</div>
@@ -80,6 +90,9 @@
           }
         },
         methods: {
+          changeMsg: function () {
+            this.msg = this.msg === '12345' ? 'abcde' : '12345';
+          },
           //调用方法将会始终触发函数的执行
           reverseMsg: function () {
             console.log("2222");

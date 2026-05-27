@@ -2,16 +2,17 @@
   分类: vue2 / 01-基础语法
   主题: 自定义指令 / 过滤器 / mixin / 插件
   要点:
-    - 自定义指令适合封装底层 DOM 行为，常见钩子有 bind / inserted / update / componentUpdated / unbind
-    - 过滤器只用于模板文本格式化，Vue3 已移除；复杂逻辑应使用 computed 或 methods
-    - mixin 会把选项合并到组件中，生命周期都会执行，同名 methods/data 容易冲突
-    - 插件通过 install(Vue, options) 统一注册全局能力
+    - 自定义指令适合封装底层 DOM 行为，钩子接收 el / binding / vnode 等参数
+    - 过滤器只做文本格式化，Vue 3 已移除，复杂逻辑应使用 computed 或 methods
+    - mixin 会合并组件选项，生命周期都会执行，同名 methods/data 容易冲突
+    - 插件通过 install(Vue, options) 注册全局指令、组件、原型方法或混入
+    - Vue 2 已 EOL，维护旧项目可用，新项目优先 Vue 3 与组合式 API
   面试:
-    - 自定义指令 / 过滤器 / mixin / 插件的核心概念是什么
-    - 自定义指令 / 过滤器 / mixin / 插件在实际项目里怎么用
-    - 自定义指令 / 过滤器 / mixin / 插件有哪些常见坑或易错点
-    - 自定义指令 / 过滤器 / mixin / 插件和相近 API 如何区分选型
-    - 面试中如何简洁讲清 自定义指令 / 过滤器 / mixin / 插件
+    - 自定义指令适合解决什么问题？
+    - Vue 2 过滤器为什么不适合承载复杂业务逻辑？
+    - mixin 的合并规则和风险是什么？
+    - 插件 install 通常用来注册哪些全局能力？
+    - 维护 Vue 2 项目时如何说明这些 API 与 Vue 3 选型边界？
 -->
 
 <!doctype html>
@@ -32,17 +33,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>自定义指令适合封装底层 DOM 行为，常见钩子有 <code>bind</code> / inserted / update / componentUpdated / unbind。</li>
-          <li>过滤器只用于模板文本格式化，Vue3 已移除；复杂逻辑应使用 <code>computed</code> 或 methods。</li>
-          <li>mixin 会把选项合并到组件中，生命周期都会执行，同名 methods/data 容易冲突。</li>
-          <li>插件通过 install(Vue, options) 统一注册全局能力。</li>
+          <li>自定义指令适合封装底层 DOM 行为，例如自动聚焦、滚动监听、尺寸测量或第三方 DOM 库接入。钩子包括 <code>bind</code>、<code>inserted</code>、<code>update</code>、<code>componentUpdated</code>、<code>unbind</code>，参数里最常用的是 <code>el</code> 和 <code>binding</code>。</li>
+          <li>过滤器用于模板中的轻量文本格式化，例如金额、日期、大小写。本页 <code>currency</code> 只负责展示格式；复杂派生状态应放到 computed，交互动作放到 methods。Vue 3 已移除过滤器。</li>
+          <li>mixin 会把选项合并进组件：生命周期钩子都会执行，data 会合并，同名 methods / components / directives 等对象选项通常由组件自身覆盖。风险是来源隐蔽、命名冲突和调试困难。</li>
+          <li>插件暴露 <code>install(Vue, options)</code>，通常用于统一注册全局组件、指令、过滤器、mixin 或 <code>Vue.prototype</code> 方法。本页 <code>ToastPlugin</code> 在原型上挂了 <code>$toast</code>。</li>
+          <li>维护 Vue 2 项目时可以识别这些 API 的边界：DOM 行为用指令，展示格式用过滤器，横切复用谨慎用 mixin，全局能力用插件。新项目优先 Vue 3 和组合式 API，避免继续扩大过滤器和 mixin 的使用面。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>自定义指令适合封装底层 DOM 行为？</strong> 自定义指令适合封装底层 DOM 行为，常见钩子有 <code>bind</code> / inserted / update / componentUpdated / unbind</li>
-          <li><strong>过滤器只用于模板文本格式化？</strong> 过滤器只用于模板文本格式化，Vue3 已移除；复杂逻辑应使用 <code>computed</code> 或 methods</li>
-          <li><strong>mixin 会把选项合并到组件中？</strong> mixin 会把选项合并到组件中，生命周期都会执行，同名 methods/data 容易冲突</li>
-          <li><strong>插件通过 install(Vue？</strong> 插件通过 install(Vue, options) 统一注册全局能力</li>
+          <li><strong>自定义指令适合解决什么问题？</strong> 结论是适合封装需要直接操作 DOM 的低层行为。原因是组件负责数据和视图结构，指令可以拿到真实元素 <code>el</code> 并在插入、更新、解绑等时机处理 DOM。项目里自动聚焦、权限埋点、拖拽和第三方库接入可以考虑指令，但业务组件复用优先用组件。</li>
+          <li><strong>Vue 2 过滤器为什么不适合承载复杂业务逻辑？</strong> 结论是过滤器只适合显示层格式化。原因是它只能在插值和 <code>v-bind</code> 表达式中使用，表达力和可测试性都不适合复杂状态派生。项目里金额展示可以用过滤器，带依赖的计算和复用逻辑应改为 computed、methods 或普通工具函数；Vue 3 已移除过滤器。</li>
+          <li><strong>mixin 的合并规则和风险是什么？</strong> 结论是 mixin 会按 Vue 选项合并策略合并进组件，生命周期钩子都会执行，同名对象选项可能冲突或被组件覆盖。原因是 mixin 本质是把一份组件选项混入另一份组件选项。项目里大量 mixin 会让属性和方法来源不清，维护时要谨慎。</li>
+          <li><strong>插件 install 通常用来注册哪些全局能力？</strong> 结论是插件用于集中安装全局组件、指令、过滤器、mixin 或原型方法。原因是 <code>Vue.use(plugin)</code> 会调用插件的 <code>install</code> 方法，把全局扩展挂到 Vue 构造器上。边界是全局能力会影响整个应用，命名和副作用要非常克制。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/custom-directive" target="_blank" rel="noopener">Vue 2 官方文档：Custom Directives</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/filters.html" target="_blank" rel="noopener">Vue 2 官方文档：Filters</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/mixins.html" target="_blank" rel="noopener">Vue 2 官方文档：Mixins</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/plugins.html" target="_blank" rel="noopener">Vue 2 官方文档：Plugins</a></li>
+          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 官方说明：Vue 2 Has Reached End of Life</a></li>
         </ul>
       </div>
     </section>
@@ -71,6 +81,9 @@
           el.style.border = "2px solid " + binding.value;
         },
         update(el, binding) {
+          if (binding.value === binding.oldValue) {
+            return;
+          }
           el.style.borderColor = binding.value;
         }
       });

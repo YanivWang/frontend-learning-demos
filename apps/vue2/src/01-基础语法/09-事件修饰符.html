@@ -6,11 +6,11 @@
     - .once 只触发一次；.capture 用捕获模式；.self 仅当 target 是元素自身时触发
     - 链式可叠加：@click.stop.prevent；按键修饰符如 @keyup.enter 同理
   面试:
-    - 事件修饰符 @event.modifier的核心概念是什么
-    - 事件修饰符 @event.modifier在实际项目里怎么用
-    - 事件修饰符 @event.modifier有哪些常见坑或易错点
-    - 事件修饰符 @event.modifier和相近 API 如何区分选型
-    - 面试中如何简洁讲清 事件修饰符 @event.modifier
+    - Vue 2 事件修饰符解决的核心问题是什么？
+    - .stop、.prevent、.self 分别对应哪些原生事件行为？
+    - 为什么修饰符链式书写时顺序会影响生成代码？
+    - .capture、.once、.passive 适合哪些边界场景？
+    - 按键修饰符和事件修饰符有什么区别？
 -->
 
 <!doctype html>
@@ -35,15 +35,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>.prevent ≡ e.preventDefault()；.stop ≡ e.stopPropagation()。</li>
-          <li>.once 只触发一次；.capture 用捕获模式；.self 仅当 target 是元素自身时触发。</li>
-          <li>链式可叠加：@click.stop.prevent；按键修饰符如 @keyup.enter 同理。</li>
+          <li>事件修饰符把常见 DOM 事件细节声明在模板里，让 methods 专注业务逻辑。<code>.prevent</code> 对应阻止默认行为，<code>.stop</code> 对应阻止冒泡。</li>
+          <li><code>.self</code> 只有当 <code>event.target</code> 是当前元素本身时才触发处理器，适合点击遮罩关闭弹窗但不响应内部内容点击。</li>
+          <li><code>.capture</code> 使用捕获阶段监听，<code>.once</code> 只触发一次。Vue 2 还支持 <code>.passive</code>，常用于滚动监听，但不要和 <code>.prevent</code> 一起使用。</li>
+          <li>修饰符可以链式组合，例如 <code>@click.stop.prevent</code>。顺序很重要，因为 Vue 会按书写顺序生成对应代码，<code>@click.prevent.self</code> 和 <code>@click.self.prevent</code> 的作用范围不同。</li>
+          <li>按键修饰符如 <code>@keyup.enter</code> 用来过滤键盘事件，它和 <code>.stop</code>、<code>.prevent</code> 这类事件行为修饰符可以组合，但关注点不同。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>.prevent ≡ e.preventDefault()？</strong> .prevent ≡ e.preventDefault()；.stop ≡ e.stopPropagation()；链式可叠加：@click.stop.prevent；按键修饰符如 @keyup.enter 同理</li>
-          <li><strong>.once 只触发一次？</strong> .once 只触发一次；.capture 用捕获模式；.self 仅当 target 是元素自身时触发</li>
-          <li><strong>事件修饰符 @event.modifier的核心概念是什么？</strong> .prevent ≡ e.preventDefault()；.stop ≡ e.stopPropagation()；.once 只触发一次；.capture 用捕获模式；.self 仅当 target 是元素自身时触发</li>
+          <li><strong>Vue 2 事件修饰符解决的核心问题是什么？</strong> 结论是把 DOM 事件控制逻辑从 methods 里拿出来，放到模板声明。原因是阻止默认行为、阻止冒泡、捕获阶段、只执行一次等都属于事件机制细节，不应污染业务函数。项目里表单提交、弹窗遮罩、链接阻止跳转常用修饰符。</li>
+          <li><strong>.stop、.prevent、.self 分别对应哪些原生事件行为？</strong> 结论是 <code>.stop</code> 调用 <code>stopPropagation</code>，<code>.prevent</code> 调用 <code>preventDefault</code>，<code>.self</code> 只在目标元素就是当前元素时触发。原因是 Vue 编译模板时会为这些修饰符生成事件包装代码。边界是 <code>.self</code> 不是阻止冒泡，它只是过滤触发条件。</li>
+          <li><strong>为什么修饰符链式书写时顺序会影响生成代码？</strong> 结论是 Vue 按修饰符出现顺序生成代码。原因是先过滤自身再阻止默认行为，和先阻止默认行为再过滤自身，作用范围不同。项目里如果只想点击遮罩本身才阻止默认行为，应明确使用符合预期的顺序。</li>
+          <li><strong>.capture、.once、.passive 适合哪些边界场景？</strong> 结论是捕获阶段监听用 <code>.capture</code>，一次性动作用 <code>.once</code>，滚动等不阻止默认行为的监听可考虑 <code>.passive</code>。原因是这些修饰符对应浏览器事件监听选项。边界是 <code>.passive</code> 和 <code>.prevent</code> 语义冲突，不应同时使用。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/events.html#Event-Modifiers" target="_blank" rel="noopener">Vue 2 官方文档：Event Modifiers</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/events.html#Key-Modifiers" target="_blank" rel="noopener">Vue 2 官方文档：Key Modifiers</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation" target="_blank" rel="noopener">MDN：Event.stopPropagation()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault" target="_blank" rel="noopener">MDN：Event.preventDefault()</a></li>
         </ul>
       </div>
     </section>

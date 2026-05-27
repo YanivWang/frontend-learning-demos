@@ -2,15 +2,17 @@
   分类: vue2 / 01-基础语法
   主题: nextTick 与异步 DOM 更新队列
   要点:
-    - Vue2 修改响应式数据后，不会立刻同步更新 DOM，而是把 watcher 放入异步队列
-    - 同一轮事件循环内多次修改同一个数据，会被合并成一次 DOM 更新
-    - 需要在数据变化后读取最新 DOM 时，用 this.$nextTick(callback) 或 Vue.nextTick(callback)
+    - Vue 2 修改响应式数据后会异步批量更新 DOM，避免同一轮重复渲染
+    - 同一轮事件循环里多次改同一状态，最终 DOM 通常只在队列 flush 后统一更新
+    - 数据变化后立刻读 DOM 可能还是旧值，需要 this.$nextTick 或 Vue.nextTick
+    - nextTick 只保证等到 Vue 本轮 DOM 更新后执行，不等同于网络、动画或图片加载完成
+    - Vue 2 已 EOL，维护旧项目可用，新项目优先 Vue 3
   面试:
-    - nextTick 与异步 DOM 更新队列的核心概念是什么
-    - nextTick 与异步 DOM 更新队列在实际项目里怎么用
-    - nextTick 与异步 DOM 更新队列有哪些常见坑或易错点
-    - nextTick 与异步 DOM 更新队列和相近 API 如何区分选型
-    - 面试中如何简洁讲清 nextTick 与异步 DOM 更新队列
+    - Vue 2 为什么更新数据后不能马上读到最新 DOM？
+    - nextTick 适合解决哪些实际问题？
+    - nextTick 和 setTimeout 有什么区别？
+    - 连续修改同一个响应式数据时 DOM 为什么不会同步刷新三次？
+    - 维护 Vue 2 项目时如何说明 nextTick 与 Vue 3 选型边界？
 -->
 
 <!doctype html>
@@ -31,15 +33,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue2 修改响应式数据后，不会立刻同步更新 DOM，而是把 watcher 放入异步队列。</li>
-          <li>同一轮事件循环内多次修改同一个数据，会被合并成一次 DOM 更新。</li>
-          <li>需要在数据变化后读取最新 DOM 时，用 <code>this</code>.$nextTick(callback) 或 Vue.nextTick(callback)。</li>
+          <li>Vue 2 修改响应式数据后不会立刻同步改 DOM，而是把 watcher 放入异步更新队列，并在本轮调用栈结束后批量 flush。这样可以把同一轮里的多次状态变化合并，减少重复渲染。</li>
+          <li>本页点击“修改 message”后，同步读取 <code>$refs.text.textContent</code> 仍可能是旧文本；进入 <code>this.$nextTick</code> 回调后，Vue 已完成本轮 DOM 更新，才能读到新文本。</li>
+          <li>连续执行 <code>this.count++</code> 三次会让数据变成新值，但 DOM 更新会被排队合并。不要把“数据已经变了”和“页面已经渲染完”混为一谈。</li>
+          <li><code>this.$nextTick(callback)</code> 适合组件实例内部使用，<code>Vue.nextTick(callback)</code> 是全局 API。它们等待的是 Vue 的 DOM 更新队列，不保证网络请求、CSS 动画、图片解码或第三方组件内部异步也完成。</li>
+          <li>Vue 2 已 EOL。维护旧项目时仍常用 <code>nextTick</code> 处理聚焦、测量尺寸、滚动到底部等 DOM 读取；新项目应优先按 Vue 3 当前文档选型。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue2 修改响应式数据后？</strong> Vue2 修改响应式数据后，不会立刻同步更新 DOM，而是把 watcher 放入异步队列；需要在数据变化后读取最新 DOM 时，用 <code>this</code>.$nextTick(callback) 或 Vue.nextTick(callback)</li>
-          <li><strong>同一轮事件循环内多次修改同一个数据？</strong> 同一轮事件循环内多次修改同一个数据，会被合并成一次 DOM 更新</li>
-          <li><strong>需要在数据变化后读取最新 DOM 时？</strong> 需要在数据变化后读取最新 DOM 时，用 <code>this</code>.$nextTick(callback) 或 Vue.nextTick(callback)</li>
+          <li><strong>Vue 2 为什么更新数据后不能马上读到最新 DOM？</strong> 结论是数据更新和 DOM patch 不是同步完成的。原因是 Vue 会把 watcher 放入异步队列，等待本轮调用栈结束后批量更新 DOM。项目里更新数据后立即测量高度、聚焦输入框或滚动容器，都应该放进 <code>nextTick</code>。</li>
+          <li><strong>nextTick 适合解决哪些实际问题？</strong> 结论是它适合“依赖最新 DOM”的动作。原因是回调执行时 Vue 已完成本轮响应式更新对应的 DOM patch。项目里常见场景是列表新增后滚动到底部、弹窗出现后聚焦输入框、条件渲染后读取元素尺寸。</li>
+          <li><strong>nextTick 和 setTimeout 有什么区别？</strong> 结论是 <code>nextTick</code> 等 Vue 自己的更新队列，<code>setTimeout</code> 只是把回调放到宏任务。原因是 Vue 会优先选择合适的异步策略来 flush 更新队列，语义更明确。边界是 <code>nextTick</code> 不负责等待网络、图片加载或 CSS 动画结束。</li>
+          <li><strong>连续修改同一个响应式数据时 DOM 为什么不会同步刷新三次？</strong> 结论是 Vue 会去重并批量更新 watcher。原因是同一轮事件循环内多次状态变化可以合并成一次渲染，减少性能浪费。项目里不要依赖中间 DOM 状态，应以最终数据状态和 <code>nextTick</code> 后的 DOM 为准。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/reactivity.html#Async-Update-Queue" target="_blank" rel="noopener">Vue 2 官方文档：Async Update Queue</a></li>
+          <li><a href="https://v2.vuejs.org/v2/api/#Vue-nextTick" target="_blank" rel="noopener">Vue 2 API：Vue.nextTick</a></li>
+          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 官方说明：Vue 2 Has Reached End of Life</a></li>
         </ul>
       </div>
     </section>

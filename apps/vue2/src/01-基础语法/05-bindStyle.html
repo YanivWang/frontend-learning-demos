@@ -2,15 +2,17 @@
   分类: vue2 / 01-基础语法
   主题: :style 三种写法（行内对象 / 对象变量 / 数组）
   要点:
-    - 行内对象写法可直接引用 data 字段：{color: activeColor}
-    - 数组写法可同时合并多个样式对象（后者覆盖前者）
-    - CSS 属性名既能用驼峰 fontSize，也能用串 'font-size'，但同 key 不要混写
+    - :style 是 v-bind 针对 style 的增强语法，可绑定样式对象或对象数组
+    - 样式对象的 key 使用 camelCase，kebab-case 需要加引号
+    - 数组语法会合并多个样式对象，后面的同名属性覆盖前面的值
+    - 动态视觉状态优先用 class，只有真正的运行时数值才适合放进 :style
+    - Vue 2 已 EOL，维护旧项目可用，新项目优先 Vue 3
   面试:
-    - :style 三种写法（行内对象 / 对象变量 / 数组）的核心概念是什么
-    - :style 三种写法（行内对象 / 对象变量 / 数组）在实际项目里怎么用
-    - :style 三种写法（行内对象 / 对象变量 / 数组）有哪些常见坑或易错点
-    - :style 三种写法（行内对象 / 对象变量 / 数组）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 :style 三种写法（行内对象 / 对象变量 / 数组）
+    - Vue 2 的 :style 对象语法为什么像 CSS 但本质是 JavaScript 对象？
+    - :style 数组语法合并多个对象时冲突如何处理？
+    - 动态样式应该优先用 :class 还是 :style？
+    - camelCase 和 kebab-case 属性名在 :style 中有什么注意点？
+    - 维护 Vue 2 动态样式时如何说明版本边界？
 -->
 
 <!doctype html>
@@ -31,15 +33,23 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>行内对象写法可直接引用 data 字段：{color: activeColor}。</li>
-          <li>数组写法可同时合并多个样式对象（后者覆盖前者）。</li>
-          <li>CSS 属性名既能用驼峰 fontSize，也能用串 'font-size'，但同 <code>key</code> 不要混写。</li>
+          <li><code>:style</code> 是 <code>v-bind:style</code> 的简写。Vue 2 对 <code>style</code> 绑定做了增强，表达式可以返回 JavaScript 对象，也可以返回多个样式对象组成的数组。</li>
+          <li>行内对象语法适合少量动态值，例如 <code>:style="{ color: activeColor, fontSize: fontSize }"</code>。对象 key 是 CSS 属性名，value 来自响应式数据，数据变了会更新元素的内联样式。</li>
+          <li>对象变量语法 <code>:style="styleObject"</code> 更适合样式项较多的场景，让模板保持干净。CSS 属性名可以写 <code>fontSize</code>，也可以写带引号的 <code>'font-size'</code>；不要写错大小写，也不要在同一个对象里混入重复同义 key。</li>
+          <li>数组语法 <code>:style="[baseStyle, overrideStyle]"</code> 会把多个样式对象合并到同一个元素上；当同一 CSS 属性重复出现时，后面的对象通常覆盖前面的值，因此适合表达“基础样式 + 覆盖样式”。</li>
+          <li>项目里优先用 <code>:class</code> 表达可复用的视觉状态，把颜色、间距、主题等交给 CSS；<code>:style</code> 更适合运行时计算出的宽度、高度、坐标、进度、用户配置色等必须内联的值。Vue 2 已 EOL，新项目应优先 Vue 3。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>行内对象写法可直接引用 data 字段？</strong> 行内对象写法可直接引用 data 字段：{color: activeColor}</li>
-          <li><strong>数组写法可同时合并多个样式对象（后者覆盖前者）？</strong> 数组写法可同时合并多个样式对象（后者覆盖前者）</li>
-          <li><strong>CSS 属性名既能用驼峰 fontSize？</strong> CSS 属性名既能用驼峰 fontSize，也能用串 'font-size'，但同 <code>key</code> 不要混写</li>
+          <li><strong>Vue 2 的 <code>:style</code> 对象语法为什么像 CSS 但本质是 JavaScript 对象？</strong> 结论是模板里的对象会被 Vue 计算成元素的内联样式。原因是 <code>v-bind</code> 表达式先按 JavaScript 求值，再由 Vue 把对象 key/value 写入 DOM style。边界是 kebab-case 属性名必须加引号，否则会被当成非法的 JavaScript 标识符。</li>
+          <li><strong><code>:style</code> 数组语法合并多个对象时冲突如何处理？</strong> 结论是多个对象会应用到同一个元素，后面的同名样式通常覆盖前面的结果。原因是最终写入的是同一个内联 style 声明，后赋值的属性会成为最终值。项目里可以用它表达基础样式和局部覆盖，但不要滥用成复杂主题系统。</li>
+          <li><strong>动态样式应该优先用 <code>:class</code> 还是 <code>:style</code>？</strong> 结论是可枚举、可复用的状态优先用 <code>:class</code>，运行时连续变化的数值才用 <code>:style</code>。原因是 class 更利于复用、缓存、媒体查询和维护，而内联样式优先级高且分散。项目里按钮状态、错误态用 class，拖拽坐标、进度条宽度、用户选择色可用 style。</li>
+          <li><strong>camelCase 和 kebab-case 属性名在 <code>:style</code> 中有什么注意点？</strong> 结论是两者都能用，但写法不同：<code>fontSize</code> 是普通对象 key，<code>'font-size'</code> 必须加引号。原因是模板表达式是 JavaScript 对象字面量，不是 CSS 文件。维护旧代码时看到 <code>'font-Size'</code> 这类大小写混乱写法要修正为标准 CSS 属性名。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/class-and-style#Binding-Inline-Styles" target="_blank" rel="noopener">Vue 2 官方文档：Binding Inline Styles</a></li>
+          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 官方说明：Vue 2 Has Reached End of Life</a></li>
         </ul>
       </div>
     </section>
@@ -83,8 +93,7 @@
         data: {
           styleObject: {
             color: "red",
-            'font-Size': '23px',
-            'fontSize': '33px'
+            fontSize: '33px'
           }
         },
         methods: {}
@@ -95,13 +104,11 @@
         data: {
           styleObject1: {
             color: "#ffffff",
-            'font-Size': '23px',
-            'fontSize': '33px'
+            fontSize: '23px'
           },
           styleObject2: {
             background: "red",
-            'font-Size': '23px',
-            'fontSize': '33px'
+            fontSize: '33px'
           }
         },
         methods: {}

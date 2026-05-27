@@ -194,3 +194,5 @@ npm run validate:smoke
 - 2026-05-27：完成 `apps/css/07-现代特性/04-is-where选择器/index.html`、`05-view-transitions/index.html`、`06-subgrid/index.html` 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `173/357` 提升到 `176/357`，下一处失败为 `apps/css/index.html`。
 - 2026-05-27：完成 `apps/css/index.html` 的权威化审核，并补齐现代特性 04-06 的入口链接；`node scripts/report-demo-notes.mjs` 从 `176/357` 提升到 `177/357`，下一处失败为 `apps/vue2/src/01-基础语法/01-模板语法-base.html`。
 - 2026-05-27：完成 `apps/vue2/src/01-基础语法/01-模板语法-base.html`、`02-模板插值与指令.html`、`03-v-if-v-show.html` 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `177/357` 提升到 `180/357`，下一处失败为 `apps/vue2/src/01-基础语法/04-bindClass.html`。
+- 2026-05-27：完成 `apps/vue2/src/01-基础语法/04-bindClass.html`、`05-bindStyle.html`、`06-computed.html` 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `180/357` 提升到 `183/357`，下一处失败为 `apps/vue2/src/01-基础语法/07-watch.html`。
+- 2026-05-27：完成 `apps/vue2/src/01-基础语法/07-watch.html` 至 `16-自定义指令-过滤器-mixin-插件.html` 共 10 个 demo 的权威化审核；`node scripts/report-demo-notes.mjs` 从 `183/357` 提升到 `193/357`，下一处失败为 `apps/vue2/src/01-基础语法/17-综合复习.html`。

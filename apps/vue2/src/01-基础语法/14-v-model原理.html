@@ -2,15 +2,17 @@
   分类: vue2 / 01-基础语法
   主题: v-model 原理
   要点:
-    - 表单元素上的 v-model 本质是 value 绑定 + input/change 事件
-    - text/textarea 默认使用 value + input；checkbox/radio/select 有各自的表单语义
-    - 自定义组件上的 v-model 默认等价于 :value="x" @input="x = $event"
+    - 原生文本输入的 v-model 等价于 value 绑定 + input 事件同步
+    - checkbox / radio / select 有不同表单语义，不能只套 value + input
+    - 自定义组件 v-model 默认等价于 :value + @input，可用 model 选项改 prop/event
+    - .lazy / .number / .trim 修饰符分别改变同步时机和输入值转换
+    - Vue 2 已 EOL，维护旧项目可用，新项目优先 Vue 3
   面试:
-    - v-model 原理的核心概念是什么
-    - v-model 原理在实际项目里怎么用
-    - v-model 原理有哪些常见坑或易错点
-    - v-model 原理和相近 API 如何区分选型
-    - 面试中如何简洁讲清 v-model 原理
+    - Vue 2 中普通 input 的 v-model 可以拆成什么？
+    - checkbox 的 v-model 为什么不能简单理解成 value + input？
+    - 自定义组件 v-model 默认约定是什么？
+    - .lazy、.number、.trim 分别改变什么行为？
+    - 维护 Vue 2 项目时如何说明 v-model 与 Vue 3 选型边界？
 -->
 
 <!doctype html>
@@ -31,16 +33,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>表单元素上的 <code>v-model</code> 本质是 value 绑定 + input/change 事件。</li>
-          <li>text/textarea 默认使用 value + input；checkbox/radio/select 有各自的表单语义。</li>
-          <li>自定义组件上的 <code>v-model</code> 默认等价于 :value=&quot;x&quot; @input=&quot;x = $event&quot;。</li>
-          <li>表单元素上的 <code>v-model</code> 本质是 value 绑定 + input/change 事件（补充）。</li>
+          <li>普通文本 <code>input</code> 上的 <code>v-model</code> 可以理解为 <code>:value="keyword"</code> 加 <code>@input="keyword = $event.target.value"</code>。本页前两个输入框演示了语法糖和手写展开写法保持同一份状态。</li>
+          <li><code>textarea</code> 也使用文本值同步；<code>checkbox</code>、<code>radio</code>、<code>select</code> 有各自表单语义。多个 checkbox 绑定数组时，选中会把对应 <code>value</code> 加入数组，取消会移除。</li>
+          <li>自定义组件上的 <code>v-model</code> 默认约定是父组件传入 <code>value</code> prop，子组件通过 <code>input</code> 事件把新值发回父组件。本页 <code>name-input</code> 正是这个模式。</li>
+          <li>Vue 2 还支持 <code>.lazy</code>、<code>.number</code>、<code>.trim</code>：分别改为 change 时同步、把输入转成数字、自动去掉首尾空白。它们改变的是输入同步规则，不是替代表单校验。</li>
+          <li>真实表单要处理空值、非法值、输入法组合、异步校验和提交失败。Vue 2 已 EOL，维护旧项目时理解这些约定即可，新项目应优先 Vue 3 当前写法。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>表单元素上的 v-model 本质是 value 绑定 + input/chan？</strong> 表单元素上的 <code>v-model</code> 本质是 value 绑定 + input/change 事件</li>
-          <li><strong>text/textarea 默认使用 value + input？</strong> text/textarea 默认使用 value + input；checkbox/radio/select 有各自的表单语义</li>
-          <li><strong>自定义组件上的 v-model 默认等价于？</strong> 自定义组件上的 <code>v-model</code> 默认等价于 :value=&quot;x&quot; @input=&quot;x = $event&quot;</li>
+          <li><strong>Vue 2 中普通 input 的 v-model 可以拆成什么？</strong> 结论是可拆成 <code>:value</code> 绑定和 <code>@input</code> 赋值。原因是文本输入的核心就是从状态渲染 value，再在输入事件里把 DOM 新值同步回状态。项目里手写自定义输入组件时，要保证这两个方向都完整。</li>
+          <li><strong>checkbox 的 v-model 为什么不能简单理解成 value + input？</strong> 结论是 checkbox 有布尔值、数组收集和真实 <code>value</code> 三种语义。原因是多个 checkbox 绑定数组时，Vue 根据选中状态添加或移除 value，而不是把输入框文本写回状态。项目里多选标签、权限选择要特别注意绑定类型。</li>
+          <li><strong>自定义组件 v-model 默认约定是什么？</strong> 结论是默认接收 <code>value</code> prop，触发 <code>input</code> 事件。原因是父组件的 <code>v-model="x"</code> 会编译成 <code>:value="x"</code> 和 <code>@input="x = $event"</code>。边界是 Vue 2 可以用组件 <code>model</code> 选项改成其他 prop/event。</li>
+          <li><strong>.lazy、.number、.trim 分别改变什么行为？</strong> 结论是 <code>.lazy</code> 改为 change 后同步，<code>.number</code> 尝试转数字，<code>.trim</code> 去掉首尾空白。原因是它们是 <code>v-model</code> 的输入修饰符。项目里修饰符不能替代表单校验，尤其数字转换失败时仍可能保留原值。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://v2.vuejs.org/v2/guide/forms.html" target="_blank" rel="noopener">Vue 2 官方文档：Form Input Bindings</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/components-custom-events.html#Customizing-Component-v-model" target="_blank" rel="noopener">Vue 2 官方文档：Customizing Component v-model</a></li>
+          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 官方说明：Vue 2 Has Reached End of Life</a></li>
         </ul>
       </div>
     </section>
@@ -56,6 +66,10 @@
       <label><input type="checkbox" value="Vue" v-model="checkedList">Vue</label>
       <label><input type="checkbox" value="React" v-model="checkedList">React</label>
       <p>checkedList: {{ checkedList }}</p>
+      <h3>修饰符</h3>
+      <input v-model.trim="trimmed" placeholder="自动 trim">
+      <input v-model.number="age" placeholder="尝试转数字">
+      <p>trimmed: "{{ trimmed }}" / age 类型: {{ typeof age }}，值: {{ age }}</p>
       <h3>自定义组件 v-model</h3>
       <name-input v-model="username"></name-input>
       <p>username: {{ username }}</p>
@@ -83,6 +97,8 @@
           return {
             keyword: "vue2",
             checkedList: ["Vue"],
+            trimmed: "  hello vue  ",
+            age: 18,
             username: "wangcheng"
           };
         }
