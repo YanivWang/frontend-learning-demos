@@ -2,17 +2,17 @@
   分类: react18 / class 组件
   主题: class 组件的 state 与 props 区别 + 事件 this 绑定
   要点:
-    - state 只能在 constructor 里直接赋值，其他地方必须用 setState
-    - props 是只读的；想通知父组件改值需通过父级传入的回调
-    - 事件函数若想拿到组件实例 this，可在 JSX 用箭头函数、constructor 里 bind、或类字段箭头函数（详见 13）
-    - onClick={console.log(this)} 会在 render 阶段立即执行，应包成箭头函数
-    - render 无参数；this.state 中无 id 字段时 <div id={this.state.id}> 为 undefined
+    - props 由父组件传入且只读，state 由组件自己持有并通过 setState 更新
+    - state 只能在 constructor 或类字段中初始化，事件里直接改 this.state 不会触发渲染
+    - class 方法作为事件处理器传递时会丢失实例 this，需要 bind 或使用箭头函数
+    - JSX 事件属性必须接收函数引用，写 onClick={console.log(this)} 会在 render 阶段立即执行
+    - 子组件想改变父级数据，应调用父组件传入的回调，而不是修改 props
   面试:
-    - class 组件的 state 与 props 区别 + 事件 this 绑定的核心概念是什么
-    - class 组件的 state 与 props 区别 + 事件 this 绑定在实际项目里怎么用
-    - class 组件的 state 与 props 区别 + 事件 this 绑定有哪些常见坑或易错点
-    - class 组件的 state 与 props 区别 + 事件 this 绑定和相近 API 如何区分选型
-    - 面试中如何简洁讲清 class 组件的 state 与 props 区别 + 事件 this 绑定
+    - class 组件中 state 和 props 的职责怎么区分？
+    - 为什么不能直接修改 props 或 this.state？
+    - class 事件处理函数为什么经常需要绑定 this？
+    - JSX 里 onClick={fn()} 和 onClick={fn} 有什么区别？
+    - 子组件如何通知父组件更新传入的 props？
 -->
 
 <!doctype html>
@@ -36,19 +36,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>state 只能在 constructor 里直接赋值，其他地方必须用 setState。</li>
-          <li>props 是只读的；想通知父组件改值需通过父级传入的回调。</li>
-          <li>事件函数若想拿到组件实例 <code>this</code>，可在 <code>JSX</code> 用箭头函数、constructor 里 <code>bind</code>、或类字段箭头函数（详见 13）。</li>
-          <li>onClick={<code>console.log</code>(<code>this</code>)} 会在 <code>render</code> 阶段立即执行，应包成箭头函数。</li>
-          <li><code>render</code> 无参数；<code>this</code>.state 中无 id 字段时 &lt;div id={<code>this</code>.state.id}&gt; 为 <code>undefined</code>。</li>
+          <li><code>props</code> 是父组件传给子组件的数据入口，子组件应把它当作只读值；示例中 <code>Root</code> 持有 <code>appId</code>，并把它作为 <code>id</code> 传给 <code>App</code>。</li>
+          <li><code>state</code> 是组件自己的可变状态。class 组件可以在 constructor 或类字段中初始化 state，但事件、生命周期等位置必须调用 <code>setState</code>，否则 React 不知道需要重新渲染。</li>
+          <li>子组件不能直接修改 props；如果要影响父组件数据，应调用父组件传入的回调。示例中 <code>App</code> 点击按钮后调用 <code>changeAppidFn</code>，由 <code>Root</code> 更新自己的 state，再把新 props 传回来。</li>
+          <li>class 普通方法作为事件处理器传给 React 后，调用时不会自动绑定组件实例；示例在 constructor 中 <code>bind</code>，也可以用类字段箭头函数或在 JSX 中包一层箭头函数。</li>
+          <li>JSX 事件属性要传函数引用：<code>onClick={this.handleBtnClick}</code> 表示点击后调用，<code>onClick={this.handleBtnClick()}</code> 或 <code>onClick={console.log(this)}</code> 会在 render 阶段立即执行。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>state 只能在 constructor 里直接赋值？</strong> state 只能在 constructor 里直接赋值，其他地方必须用 setState；<code>render</code> 无参数；<code>this</code>.state 中无 id 字段时 &lt;div id={<code>this</code>.state.id}&gt; 为 <code>undefined</code></li>
-          <li><strong>props 是只读的？</strong> props 是只读的；想通知父组件改值需通过父级传入的回调</li>
-          <li><strong>事件函数若想拿到组件实例 this？</strong> 事件函数若想拿到组件实例 <code>this</code>，可在 <code>JSX</code> 用箭头函数、constructor 里 <code>bind</code>、或类字段箭头函数（详见 13）</li>
-          <li><strong>onClick={console.log(this)} 会在 render 阶段？</strong> onClick={<code>console.log</code>(<code>this</code>)} 会在 <code>render</code> 阶段立即执行，应包成箭头函数</li>
-          <li><strong>render 无参数？</strong> onClick={<code>console.log</code>(<code>this</code>)} 会在 <code>render</code> 阶段立即执行，应包成箭头函数；<code >render</code > 无参数；<code>this</code>.state 中无 id 字段时 &lt;div id={<code>this</code>.state.id}&gt; 为 <code>undefined</code></li>
+          <li><strong>class 组件中 state 和 props 的职责怎么区分？</strong> 结论是：props 负责父到子的输入，state 负责组件内部随交互变化的数据。原因是 React 的数据流是单向的，父组件重新渲染会把新 props 传给子组件；项目中可复用组件通常用 props 配置外部行为，用 state 管理局部 UI 状态。</li>
+          <li><strong>为什么不能直接修改 props 或 this.state？</strong> 结论是：props 应视为只读，constructor 之后更新 state 必须用 <code>setState</code>。原因是直接修改不会进入 React 的更新队列，也会破坏父子数据边界；边界是 constructor 初始化时可以直接给 <code>this.state</code> 赋初值。</li>
+          <li><strong>class 事件处理函数为什么经常需要绑定 this？</strong> 结论是：普通 class 方法不会自动绑定实例。原因是把 <code>this.handleBtnClick</code> 当函数引用传出后，调用方不会保留原来的接收者；维护老代码常见做法是在 constructor 中 bind，现代写法更多用函数组件事件闭包或类字段箭头函数。</li>
+          <li><strong>JSX 里 onClick={fn()} 和 onClick={fn} 有什么区别？</strong> 结论是：前者会在 render 时立即执行，后者才是在点击时执行。原因是 JSX 花括号里是 JavaScript 表达式；项目里需要传参时使用 <code>onClick={() =&gt; fn(id)}</code>，注意避免在大量列表中无意义创建复杂闭包。</li>
+          <li><strong>子组件如何通知父组件更新传入的 props？</strong> 结论是：调用父组件通过 props 传下来的回调。原因是 props 本身不属于子组件所有；示例中 <code>App</code> 调用 <code>changeAppidFn</code>，父组件 <code>Root</code> 再通过 <code>setState</code> 改变传给子组件的 <code>id</code>。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/learn/passing-props-to-a-component" target="_blank" rel="noreferrer">React Docs：Passing Props to a Component</a></li>
+          <li><a href="https://react.dev/learn/state-a-components-memory" target="_blank" rel="noreferrer">React Docs：State: A Component's Memory</a></li>
+          <li><a href="https://legacy.reactjs.org/docs/react-component.html#setstate" target="_blank" rel="noreferrer">React Legacy Docs：setState()</a></li>
+          <li><a href="https://legacy.reactjs.org/docs/handling-events.html" target="_blank" rel="noreferrer">React Legacy Docs：Handling Events</a></li>
         </ul>
       </div>
     </section>
@@ -87,6 +94,7 @@
           this.state = {
             appName: "我是app组件",
           };
+          this.handleBtnClick = this.handleBtnClick.bind(this);
         }
 
         //任何时候，组件都不能直接修改props

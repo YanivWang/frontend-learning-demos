@@ -5,12 +5,13 @@
     - Error Boundary 只能用 class 组件实现，捕获子组件渲染、生命周期、构造函数中的错误
     - 它不能捕获事件处理、异步回调、服务端渲染、错误边界自身的错误
     - 常见优化: 合理 key、memo、useMemo/useCallback、懒加载、虚拟列表、状态下沉或拆分 Context
+    - 性能优化要先定位瓶颈，错误边界要按页面或功能区域分层放置
   面试:
-    - Error Boundary 与常见优化清单的核心概念是什么
-    - Error Boundary 与常见优化清单在实际项目里怎么用
-    - Error Boundary 与常见优化清单有哪些常见坑或易错点
-    - Error Boundary 与常见优化清单和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Error Boundary 与常见优化清单
+    - Error Boundary 能捕获哪些错误，不能捕获哪些错误？
+    - 为什么 React 18 仍然需要 class 组件实现错误边界？
+    - getDerivedStateFromError 和 componentDidCatch 分别做什么？
+    - 常见 React 性能优化为什么不能先上 memo？
+    - 错误边界和性能优化在项目里如何分层落地？
 -->
 
 <!doctype html>
@@ -33,15 +34,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Error Boundary 只能用 class 组件实现，捕获子组件渲染、生命周期、构造函数中的错误。</li>
-          <li>它不能捕获事件处理、异步回调、服务端渲染、错误边界自身的错误。</li>
-          <li>常见优化: 合理 <code>key</code>、memo、useMemo/useCallback、懒加载、虚拟列表、状态下沉或拆分 Context。</li>
+          <li>Error Boundary 是 React 渲染树的错误兜底机制。React 18 中错误边界仍通过 class 组件实现，使用 <code>static getDerivedStateFromError</code> 渲染降级 UI，并用 <code>componentDidCatch</code> 记录错误信息。</li>
+          <li>错误边界能捕获子组件在渲染、生命周期和构造函数中的错误；不能捕获事件处理函数、异步回调、服务端渲染错误，也不能捕获错误边界自身抛出的错误。</li>
+          <li>实际项目中不要只在根节点放一个边界。常见做法是在路由页、关键业务卡片、第三方组件区域分层放置，避免一个局部错误卸载整个应用，同时把错误上报到日志系统。</li>
+          <li>React 性能优化要先定位瓶颈，再选择手段。常见方向包括稳定 <code>key</code>、拆分组件和状态、避免不必要的 Context value 变化、<code>memo</code>、<code>useMemo</code>、<code>useCallback</code>、代码分割和虚拟列表。</li>
+          <li><code>memo</code> 和缓存 Hook 不是默认必加项。它们会增加比较和维护成本，只有当子组件渲染昂贵、props 引用可稳定、或 DevTools 证明重复渲染是瓶颈时才值得使用。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Error Boundary 只能用 class 组件实现？</strong> Error Boundary 只能用 class 组件实现，捕获子组件渲染、生命周期、构造函数中的错误</li>
-          <li><strong>它不能捕获事件处理、异步回调、服务端渲染、错误边界自身的错误？</strong> 它不能捕获事件处理、异步回调、服务端渲染、错误边界自身的错误</li>
-          <li><strong>Error Boundary 与常见优化清单的核心概念是什么？</strong> Error Boundary 只能用 class 组件实现，捕获子组件渲染、生命周期、构造函数中的错误</li>
+          <li><strong>Error Boundary 能捕获哪些错误，不能捕获哪些错误？</strong> 结论是能捕获子树渲染、生命周期和构造函数中的错误，不能捕获事件、异步、SSR 和自身错误。原因是它工作在 React 渲染提交流程里；事件和异步已经脱离这次渲染调用栈。</li>
+          <li><strong>为什么 React 18 仍然需要 class 组件实现错误边界？</strong> 结论是官方 API 仍要求错误边界使用 class 生命周期。原因是 <code>getDerivedStateFromError</code> 和 <code>componentDidCatch</code> 目前是 class API；函数组件通常通过第三方封装使用错误边界。</li>
+          <li><strong>getDerivedStateFromError 和 componentDidCatch 分别做什么？</strong> 前者返回 state 以渲染降级 UI，后者接收错误和组件栈，适合日志上报。项目里不要在 <code>getDerivedStateFromError</code> 做副作用。</li>
+          <li><strong>常见 React 性能优化为什么不能先上 memo？</strong> 结论是要先定位瓶颈。原因是 <code>memo</code> 也有比较成本，错误的缓存还会制造过期依赖问题；项目里先用 Profiler、日志和用户路径找出真正慢点。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary" target="_blank" rel="noreferrer">react.dev: Catching rendering errors with an error boundary</a></li>
+          <li><a href="https://legacy.reactjs.org/docs/error-boundaries.html" target="_blank" rel="noreferrer">Legacy React: Error Boundaries</a></li>
+          <li><a href="https://react.dev/reference/react/memo" target="_blank" rel="noreferrer">react.dev: memo</a></li>
+          <li><a href="https://react.dev/reference/react/lazy" target="_blank" rel="noreferrer">react.dev: lazy</a></li>
         </ul>
       </div>
     </section>

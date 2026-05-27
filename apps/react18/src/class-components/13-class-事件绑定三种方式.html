@@ -5,13 +5,13 @@
     - 方式一: constructor 中 this.handle = this.handle.bind(this)
     - 方式二: JSX 箭头函数 onClick={(e) => this.handle(e)}（每次 render 新建函数）
     - 方式三: 类字段箭头函数 handle = (e) => {}（推荐，this 自动绑定）
-    - 直接 onClick={this.handle} 会导致 this 为 undefined（非严格模式下可能是 window）
+    - 直接 onClick={this.handle} 会丢失 class 实例 this；传参和性能要分场景权衡
   面试:
-    - class 组件事件 this 绑定的三种方式的核心概念是什么
-    - class 组件事件 this 绑定的三种方式在实际项目里怎么用
-    - class 组件事件 this 绑定的三种方式有哪些常见坑或易错点
-    - class 组件事件 this 绑定的三种方式和相近 API 如何区分选型
-    - 面试中如何简洁讲清 class 组件事件 this 绑定的三种方式
+    - class 事件处理函数为什么需要绑定 this？
+    - constructor bind、JSX 箭头函数和类字段箭头函数怎么取舍？
+    - 在 render 中创建箭头函数一定是性能问题吗？
+    - 事件传参时如何避免误写成 onClick={this.handle()}？
+    - class 维护代码迁移到函数组件后 this 问题如何消失？
 -->
 
 <!doctype html>
@@ -34,16 +34,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>方式一: constructor 中 <code>this</code>.handle = <code>this</code>.handle.bind(<code>this</code>)。</li>
-          <li>方式二: <code>JSX</code> 箭头函数 onClick={(e) =&gt; <code>this</code>.handle(e)}（每次 <code>render</code> 新建函数）。</li>
-          <li>方式三: 类字段箭头函数 handle = (e) =&gt; {}（推荐，<code>this</code> 自动绑定）。</li>
-          <li>直接 onClick={<code>this</code>.handle} 会导致 <code>this</code> 为 <code>undefined</code>（非严格模式下可能是 window）。</li>
+          <li>React 不会自动把 class 方法绑定到组件实例。把 <code>this.handle</code> 作为回调传给事件系统时，它只是一个函数引用，调用时会丢失原来的 class 实例上下文。</li>
+          <li><code>constructor</code> 中 <code>bind</code> 会生成稳定函数引用，适合老项目和需要向下传递 handler 的场景；缺点是样板代码较多。</li>
+          <li>JSX 内箭头函数写法直观，尤其适合传参：<code>onClick={(e) =&gt; this.handle(id, e)}</code>。它每次 render 都创建新函数，通常不是首要瓶颈，但传给大量 memo 子组件时可能触发额外渲染。</li>
+          <li>类字段箭头函数把方法定义成实例属性，箭头函数词法绑定 <code>this</code>，在现代 Babel/构建配置中是 class 维护代码最常见写法。</li>
+          <li>不要写 <code>onClick={this.handle()}</code>，这会在渲染阶段立即执行。函数组件没有 class 实例 <code>this</code>，同类问题通常改由闭包、<code>useCallback</code> 或直接内联函数处理。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>直接 onClick={this.handle} 会导致 this 为 unde？</strong> 直接 onClick={<code>this</code>.handle} 会导致 <code>this</code> 为 <code>undefined</code>（非严格模式下可能是 window）</li>
-          <li><strong>class 组件事件 this 绑定的三种方式的核心概念是什么？</strong> 方式一: constructor 中 <code>this</code>.handle = <code>this</code>.handle.bind(<code>this</code>)；方式二: <code>JSX</code> 箭头函数 onClick={(e) =&gt; <code>this</code>.handle(e)}（每次 <code>render</code> 新建函数）</li>
-          <li><strong>class 组件事件 this 绑定的三种方式在实际项目里怎么用？</strong> 方式一: constructor 中 <code>this</code>.handle = <code>this</code>.handle.bind(<code>this</code>)；方式二: <code>JSX</code> 箭头函数 onClick={(e) =&gt; <code>this</code>.handle(e)}（每次 <code>render</code> 新建函数）</li>
+          <li><strong>class 事件处理函数为什么需要绑定 this？</strong> 结论是 class 方法默认不会绑定实例。原因是传给 <code>onClick</code> 的是函数引用，React 调用它时不会自动补上组件实例；边界是类字段箭头函数天然闭包住实例。</li>
+          <li><strong>constructor bind、JSX 箭头函数和类字段箭头函数怎么取舍？</strong> 结论是老代码常见 bind，传参常用 JSX 箭头函数，现代 class 维护代码常用类字段箭头函数。原因是它们分别优化稳定引用、写法便利和样板代码；大量列表中要关注函数引用变化。</li>
+          <li><strong>在 render 中创建箭头函数一定是性能问题吗？</strong> 结论是不一定。原因是创建函数本身通常很小，真正影响常来自把新引用传给 memo/PureComponent 子组件；项目里应先用 DevTools 定位，再决定是否提取稳定 handler。</li>
+          <li><strong>事件传参时常见错误是什么？</strong> 最常见是写成 <code>onClick={this.handle(id)}</code> 导致渲染时立即执行。正确做法是传函数，例如 <code>onClick={() =&gt; this.handle(id)}</code>，或预先 bind 参数。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://legacy.reactjs.org/docs/handling-events.html" target="_blank" rel="noreferrer">Legacy React: Handling Events</a></li>
+          <li><a href="https://react.dev/learn/responding-to-events" target="_blank" rel="noreferrer">react.dev: Responding to Events</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions" target="_blank" rel="noreferrer">MDN: Arrow function expressions</a></li>
         </ul>
       </div>
     </section>

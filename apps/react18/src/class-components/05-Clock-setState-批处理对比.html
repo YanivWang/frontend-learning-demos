@@ -2,15 +2,17 @@
   分类: react18 / class 组件
   主题: Clock 演示 setState 批处理（对象式 vs 函数式）
   要点:
-    - counterOld：三次对象式 setState 都基于「当前 state」+1，合并后只 +1
-    - counterNew：三次函数式 setState 都拿到「最新合并 state」，最终 +3
-    - componentWillUnmount 拼写必须正确，否则 React 不会调用，定时器无法清理
+    - counterOld 连续三次对象式 setState 都基于旧 count1，批处理后只增加 1
+    - counterNew 连续三次函数式 setState 按队列读取 prevState，批处理后增加 3
+    - 定时器示例必须在 componentWillUnmount 中清理，避免卸载后继续 setState
+    - setState 的第二个参数或生命周期适合观察提交后的结果，立即读 this.state 仍是旧快照
+    - 维护 class 组件时要把计时器、订阅和 DOM 读写放到正确生命周期中
   面试:
-    - Clock 演示 setState 批处理（对象式 vs 函数式）的核心概念是什么
-    - Clock 演示 setState 批处理（对象式 vs 函数式）在实际项目里怎么用
-    - Clock 演示 setState 批处理（对象式 vs 函数式）有哪些常见坑或易错点
-    - Clock 演示 setState 批处理（对象式 vs 函数式）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Clock 演示 setState 批处理（对象式 vs 函数式）
+    - 对象式 setState 和函数式 setState 在批处理中为什么结果不同？
+    - setState 后立即读取 this.state 为什么不可靠？
+    - 定时器驱动的 class 组件为什么必须清理 componentWillUnmount？
+    - setState 第二个参数回调适合解决什么问题？
+    - 维护 Clock 这类 class 组件时如何迁移到函数组件？
 -->
 
 <!doctype html>
@@ -34,15 +36,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>counterOld：三次对象式 setState 都基于「当前 state」+1，合并后只 +1。</li>
-          <li>counterNew：三次函数式 setState 都拿到「最新合并 state」，最终 +3。</li>
-          <li>componentWillUnmount 拼写必须正确，否则 React 不会调用，定时器无法清理。</li>
+          <li><code>counterOld</code> 连续三次对象式 <code>setState</code> 都先用旧 <code>this.state.count1</code> 算出同样的下一个值，React 批处理并浅合并后，<code>count1</code> 每轮只增加 1。</li>
+          <li><code>counterNew</code> 连续三次函数式 <code>setState</code> 会按队列顺序拿到最新 <code>preState.count2</code>，因此每轮增加 3；页面同时展示两个计数值，方便观察差异。</li>
+          <li><code>setState</code> 后立即读取 <code>this.state</code> 仍可能是旧快照。需要观察提交后的结果时，可以使用 <code>setState</code> 第二个参数回调、<code>componentDidUpdate</code>，或把 UI 直接交给下一次 render 展示。</li>
+          <li>定时器、订阅、手动 DOM 监听都属于副作用；class 组件应在 <code>componentDidMount</code> 建立，在 <code>componentWillUnmount</code> 清理，拼写错误会导致 React 无法调用清理逻辑。</li>
+          <li>新项目通常用函数组件表达 Clock：用 <code>useEffect</code> 建立和清理 interval，用 <code>useState</code> 保存计数；维护老 class 时仍需理解本页的批处理和生命周期边界。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>counterOld？</strong> counterOld：三次对象式 setState 都基于「当前 state」+1，合并后只 +1；counterNew：三次函数式 setState 都拿到「最新合并 state」，最终 +3</li>
-          <li><strong>counterNew？</strong> counterOld：三次对象式 setState 都基于「当前 state」+1，合并后只 +1；counterNew：三次函数式 setState 都拿到「最新合并 state」，最终 +3</li>
-          <li><strong>componentWillUnmount 拼写必须正确？</strong> componentWillUnmount 拼写必须正确，否则 React 不会调用，定时器无法清理</li>
+          <li><strong>对象式 setState 和函数式 setState 在批处理中为什么结果不同？</strong> 结论是：对象式会把旧 state 先算成对象，函数式会在队列执行时逐步读取最新 <code>prevState</code>。原因是 React 批处理时会合并多个更新；项目中只要依赖前一次结果，就应写函数式更新。</li>
+          <li><strong>setState 后立即读取 this.state 为什么不可靠？</strong> 结论是：因为 <code>setState</code> 安排更新，不等于同步改写实例字段。原因是 React 可能把多次更新合并到一次 render；如果要做提交后的日志、埋点或 DOM 测量，要放到回调或更新后的生命周期中。</li>
+          <li><strong>定时器驱动的 class 组件为什么必须清理 componentWillUnmount？</strong> 结论是：否则组件卸载后定时器仍会运行，继续调用 <code>setState</code> 或持有资源。原因是浏览器定时器不受 React 自动管理；项目中还要同样清理订阅、WebSocket、DOM 事件监听等外部资源。</li>
+          <li><strong>setState 第二个参数回调适合解决什么问题？</strong> 结论是：适合在 state 提交并完成重新渲染后执行一次性逻辑。原因是它比立即读取 <code>this.state</code> 更可靠；边界是复杂派生逻辑不要塞进回调，优先通过 render 或 <code>componentDidUpdate</code> 表达。</li>
+          <li><strong>维护 Clock 这类 class 组件时如何迁移到函数组件？</strong> 结论是：用 <code>useState</code> 存储计数和时间，用 <code>useEffect</code> 负责 interval 的建立与清理。原因是函数组件是现代 React 的主线；但迁移时仍要保留“依赖旧值用函数式更新、卸载时清理副作用”的规则。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://legacy.reactjs.org/docs/react-component.html#setstate" target="_blank" rel="noreferrer">React Legacy Docs：setState()</a></li>
+          <li><a href="https://legacy.reactjs.org/docs/react-component.html#componentwillunmount" target="_blank" rel="noreferrer">React Legacy Docs：componentWillUnmount()</a></li>
+          <li><a href="https://react.dev/learn/queueing-a-series-of-state-updates" target="_blank" rel="noreferrer">React Docs：Queueing a Series of State Updates</a></li>
+          <li><a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">React Docs：useEffect</a></li>
         </ul>
       </div>
     </section>
@@ -71,11 +84,8 @@
           console.log("组件已经挂载到dom上了...");
 
           this.timer = setInterval(() => {
-            // this.tick();
-
             this.counterOld();
-
-            // this.counterNew();
+            this.counterNew();
           }, 6000);
         }
 
@@ -164,7 +174,13 @@
         }
 
         render() {
-          return <div>{this.state.date.toLocaleTimeString()}</div>;
+          return (
+            <section>
+              <p>初始时间：{this.state.date.toLocaleTimeString()}</p>
+              <p>对象式 setState：{this.state.count1}</p>
+              <p>函数式 setState：{this.state.count2}</p>
+            </section>
+          );
         }
       }
 

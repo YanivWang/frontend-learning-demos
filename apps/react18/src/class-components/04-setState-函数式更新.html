@@ -2,16 +2,17 @@
   分类: react18 / class 组件
   主题: setState 函数式更新（解决合并陷阱）
   要点:
-    - setState(prev => ({ count: prev.count + 1 })) 每次基于「最新合并后的 state」
-    - 这样连续调用 10 次会逐步从 0 累加到 10，而不是合并成一次 +1
-    - 对比 03 文件可见：值更新依赖前一次状态时一定要用函数式 setState
-    - 10 次函数式 setState 后页面展示 10；React 18 使用 createRoot 渲染
+    - 函数式 setState 会按更新队列顺序接收最新 prevState 和当前 props
+    - 连续 10 次 prevState.count + 1 会从 0 累加到 10，而不是被对象合并成 1
+    - 当下一个状态依赖上一个状态、props 或批处理顺序时，应优先使用 updater 函数
+    - updater 必须保持纯函数特征，不直接修改 prevState，也不要在其中做副作用
+    - React 18 createRoot 下自动批处理更常见，函数式更新能避免旧 state 快照陷阱
   面试:
-    - setState 函数式更新（解决合并陷阱）的核心概念是什么
-    - setState 函数式更新（解决合并陷阱）在实际项目里怎么用
-    - setState 函数式更新（解决合并陷阱）有哪些常见坑或易错点
-    - setState 函数式更新（解决合并陷阱）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 setState 函数式更新（解决合并陷阱）
+    - 函数式 setState 为什么能把连续 10 次更新累加到 10？
+    - updater 函数的 prevState 和 props 分别是什么？
+    - 什么时候必须用函数式 setState？
+    - updater 函数里有哪些副作用和可变数据陷阱？
+    - 函数式 setState 与 Hooks 的函数式 setState 有什么共同点？
 -->
 
 <!doctype html>
@@ -34,17 +35,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>setState(prev =&gt; ({ count: prev.count + 1 })) 每次基于「最新合并后的 state」。</li>
-          <li>这样连续调用 10 次会逐步从 0 累加到 10，而不是合并成一次 +1。</li>
-          <li>对比 03 文件可见：值更新依赖前一次状态时一定要用函数式 setState。</li>
-          <li>10 次函数式 setState 后页面展示 10；React 18 使用 <code>createRoot</code> 渲染。</li>
+          <li>函数式 <code>setState</code> 接收 updater：<code>(prevState, props) =&gt; partialState</code>。React 会按队列顺序执行 updater，因此每一次都能拿到上一条更新合并后的最新 state。</li>
+          <li>示例在 <code>componentDidMount</code> 中连续调用 10 次函数式更新，<code>prevState.count</code> 依次是 0 到 9，最终页面展示 10，和上一页对象式更新最终只加 1 形成对比。</li>
+          <li>只要新值依赖旧值，就用函数式写法，例如计数器递增、购物车数量、分页游标、批量选择等；如果只是把 <code>loading</code> 设成 <code>true</code>，对象式更新更简洁。</li>
+          <li>updater 应该保持纯函数风格：不要直接修改 <code>prevState</code>，不要在 updater 里发请求、读写 DOM 或触发额外状态更新；副作用应放在生命周期或事件流程中。</li>
+          <li>React 18 的自动批处理让“同一批次内多次更新”更常见，函数式更新是跨 class 和 Hooks 都适用的防旧快照写法。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>setState(prev =&gt; ({ count？</strong> setState(prev =&gt; ({ count: prev.count + 1 })) 每次基于「最新合并后的 state」；对比 03 文件可见：值更新依赖前一次状态时一定要用函数式 setState</li>
-          <li><strong>这样连续调用 10 次会逐步从 0 累加到 10？</strong> 这样连续调用 10 次会逐步从 0 累加到 10，而不是合并成一次 +1</li>
-          <li><strong>对比 03 文件可见？</strong> 对比 03 文件可见：值更新依赖前一次状态时一定要用函数式 setState</li>
-          <li><strong>10 次函数式 setState 后页面展示 10？</strong> 这样连续调用 10 次会逐步从 0 累加到 10，而不是合并成一次 +1；10 次函数式 setState 后页面展示 10；React 18 使用 <code>createRoot</code> 渲染</li>
+          <li><strong>函数式 setState 为什么能把连续 10 次更新累加到 10？</strong> 结论是：因为每个 updater 都基于队列中前一次更新后的 <code>prevState</code> 计算。原因是 React 不会提前用同一个旧 <code>this.state</code> 算好所有对象；计数器这类累加逻辑必须依赖 updater，而不是对象式快照。</li>
+          <li><strong>updater 函数的 prevState 和 props 分别是什么？</strong> 结论是：<code>prevState</code> 是当前队列执行到这一步时的最新 state，<code>props</code> 是本次更新对应的当前 props。原因是 state 和 props 都可能影响下一状态；例如根据父组件传入的步长递增时，应使用第二个参数而不是闭包旧值。</li>
+          <li><strong>什么时候必须用函数式 setState？</strong> 结论是：新 state 依赖旧 state 或 props 时必须用。原因是对象式更新可能被批处理并浅合并，无法表达“在前一次结果上继续计算”；项目中常见于连续点击、批量更新、异步回调和循环更新。</li>
+          <li><strong>updater 函数里有哪些陷阱？</strong> 结论是：不要直接改 <code>prevState</code>，也不要在 updater 中做副作用。原因是 React 可能为了调试或并发能力重复调用渲染相关逻辑；保持 updater 纯净，才能让批处理和重渲染行为可预测。</li>
+          <li><strong>函数式 setState 与 Hooks 的函数式更新有什么共同点？</strong> 结论是：两者都是用“从上一个状态计算下一个状态”来避免旧快照。原因是 React 状态更新都有队列语义；差异是 class 的 <code>setState</code> 会浅合并对象，Hooks 的 <code>setState</code> 默认替换整个状态值。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://legacy.reactjs.org/docs/react-component.html#setstate" target="_blank" rel="noreferrer">React Legacy Docs：setState()</a></li>
+          <li><a href="https://react.dev/learn/queueing-a-series-of-state-updates" target="_blank" rel="noreferrer">React Docs：Queueing a Series of State Updates</a></li>
+          <li><a href="https://react.dev/learn/updating-objects-in-state" target="_blank" rel="noreferrer">React Docs：Updating Objects in State</a></li>
+          <li><a href="https://react.dev/reference/react/useState#setstate" target="_blank" rel="noreferrer">React Docs：useState set function</a></li>
         </ul>
       </div>
     </section>

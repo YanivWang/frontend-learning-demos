@@ -2,16 +2,17 @@
   分类: react18 / class 组件
   主题: class 组件 refs 访问 DOM 与实例
   要点:
-    - React.createRef() 创建 ref，挂载后 ref.current 指向 DOM 或 class 实例
-    - 回调 ref ref={(el) => ...} 在挂载/卸载时分别被调用
-    - ref 改变不会触发 render；适合聚焦、测量 DOM、命令式操作
-    - 字符串 ref 已废弃；函数组件 ref 需 forwardRef（见 function-components/27）
+    - React.createRef() 创建 ref 容器，提交挂载后 ref.current 才指向 DOM 或 class 实例
+    - 回调 ref 会在挂载时收到节点、卸载时收到 null，适合需要自定义保存节点的场景
+    - ref 变化不会触发 render，只适合聚焦、测量 DOM、集成第三方命令式库
+    - ref 不是父子通信的常规数据通道；业务数据优先用 props、state、Context 或回调
+    - React 18 函数组件接收 ref 需要 forwardRef；字符串 ref 已废弃
   面试:
-    - class 组件 refs 访问 DOM 与实例的核心概念是什么
-    - class 组件 refs 访问 DOM 与实例在实际项目里怎么用
-    - class 组件 refs 访问 DOM 与实例有哪些常见坑或易错点
-    - class 组件 refs 访问 DOM 与实例和相近 API 如何区分选型
-    - 面试中如何简洁讲清 class 组件 refs 访问 DOM 与实例
+    - class 组件里 createRef 和回调 ref 有什么区别？
+    - ref.current 什么时候可用，为什么 render 里不能依赖它做数据流？
+    - 什么时候应该用 ref，什么时候应该改用 props/state？
+    - 父组件通过 ref 调子 class 方法有什么风险？
+    - React 18 中函数组件为什么不能直接像 class 一样被 ref 拿到实例？
 -->
 
 <!doctype html>
@@ -30,21 +31,29 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>class 组件 refs 访问 DOM 与实例</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">点击下方按钮验证 createRef 聚焦 DOM、父组件调用子 class 实例方法，以及“只改实例字段不会触发 render”的差异。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>React.createRef() 创建 <code>ref</code>，挂载后 <code>ref</code>.current 指向 DOM 或 class 实例。</li>
-          <li>回调 <code>ref</code> <code>ref</code>={(el) =&gt; ...} 在挂载/卸载时分别被调用。</li>
-          <li><code>ref</code> 改变不会触发 <code>render</code>；适合聚焦、测量 DOM、命令式操作。</li>
-          <li>字符串 <code>ref</code> 已废弃；函数组件 <code>ref</code> 需 forwardRef（见 function-components/27）。</li>
+          <li><strong><code>createRef</code>：</strong>在 class 构造函数中创建 ref 容器，React 提交挂载后把 DOM 节点或 class 组件实例写入 <code>ref.current</code>，卸载后再置空；因此事件和生命周期里可读，render 中不应依赖它计算 UI。</li>
+          <li><strong>回调 ref：</strong><code>ref={(node) =&gt; ...}</code> 允许自定义保存节点；挂载时收到节点，卸载时收到 <code>null</code>。如果用内联函数，每次 render 都会得到新的回调，React 可能先清空旧 ref 再设置新 ref。</li>
+          <li><strong>适用场景：</strong>ref 是命令式逃生口，适合输入框聚焦、文本选择、滚动定位、测量尺寸、播放媒体、集成非 React DOM 库；业务数据同步应优先用 props、state、Context 或回调函数。</li>
+          <li><strong>访问实例：</strong>ref 指向 class 组件时拿到的是组件实例，可以调用公开方法；这会增加父子耦合，通常只在表单校验、动画控制、兼容旧组件时使用，不能当作常规状态管理。</li>
+          <li><strong>版本边界：</strong>字符串 ref 已废弃；React 18 中函数组件没有实例，想让父组件传入 ref 需要 <code>forwardRef</code> 暴露 DOM 或配合 <code>useImperativeHandle</code> 暴露受控命令式方法。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>React.createRef() 创建 ref？</strong> React.createRef() 创建 <code>ref</code>，挂载后 <code>ref</code>.current 指向 DOM 或 class 实例</li>
-          <li><strong>回调 ref ref={(el) =&gt; ...} 在挂载/卸载时分别被调用？</strong> 回调 <code>ref</code> <code>ref</code>={(el) =&gt; ...} 在挂载/卸载时分别被调用</li>
-          <li><strong>ref 改变不会触发 render？</strong> React.createRef() 创建 <code>ref</code>，挂载后 <code>ref</code>.current 指向 DOM 或 class 实例；回调 <code>ref</code> <code>ref</code>={(el) =&gt; ...} 在挂载/卸载时分别被调用</li>
-          <li><strong>字符串 ref 已废弃？</strong> 字符串 <code>ref</code> 已废弃；函数组件 <code>ref</code> 需 forwardRef（见 function-components/27）</li>
+          <li><strong>class 组件里 createRef 和回调 ref 有什么区别？</strong> 结论是 <code>createRef</code> 适合大多数稳定节点，回调 ref 适合自定义保存或处理动态节点。原因是 <code>createRef</code> 提供固定容器，React 自动维护 <code>current</code>；回调 ref 直接接收节点和 <code>null</code>，控制力更强。项目里输入框聚焦通常用 <code>createRef</code>，复杂列表节点管理才考虑回调 ref。</li>
+          <li><strong>ref.current 什么时候可用，为什么 render 里不能依赖它？</strong> 结论是提交挂载后才可靠可用。原因是 render 阶段只是描述 UI，真实 DOM 尚未提交，ref 写入发生在提交阶段；ref 变化也不会触发 render。需要读取尺寸或操作 DOM 时应放在事件、<code>componentDidMount</code> 或 <code>componentDidUpdate</code>。</li>
+          <li><strong>什么时候应该用 ref，什么时候应该改用 props/state？</strong> 结论是命令式 DOM 操作用 ref，声明式业务数据用 props/state。因为 React 的渲染一致性依赖单向数据流，绕过数据流会让状态来源不清。项目里主题、表单值、是否展开这类 UI 状态不要放 ref；聚焦、滚动、媒体播放可以用 ref。</li>
+          <li><strong>父组件通过 ref 调子 class 方法有什么风险？</strong> 结论是可以做，但会增强耦合。原因是父组件直接依赖子组件实例方法名和实现细节，子组件重构为函数组件或替换实现时容易破坏调用方。维护旧组件时可用于少量命令式能力，新设计更推荐通过 props 回调或受控状态表达交互。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/createRef" target="_blank" rel="noopener">React Reference: <code>createRef</code></a></li>
+          <li><a href="https://react.dev/learn/manipulating-the-dom-with-refs" target="_blank" rel="noopener">React Learn: Manipulating the DOM with Refs</a></li>
+          <li><a href="https://legacy.reactjs.org/docs/refs-and-the-dom.html" target="_blank" rel="noopener">Legacy React Docs: Refs and the DOM</a></li>
+          <li><a href="https://react.dev/reference/react/forwardRef" target="_blank" rel="noopener">React Reference: <code>forwardRef</code>（React 18 函数组件 ref 边界）</a></li>
         </ul>
       </div>
     </section>
@@ -76,11 +85,15 @@
         }
 
         focusInput = () => {
-          this.inputRef.current.focus();
+          if (this.inputRef.current) {
+            this.inputRef.current.focus();
+          }
         };
 
         callChild = () => {
-          this.childRef.current.sayHello();
+          if (this.childRef.current) {
+            this.childRef.current.sayHello();
+          }
         };
 
         addCount = () => {

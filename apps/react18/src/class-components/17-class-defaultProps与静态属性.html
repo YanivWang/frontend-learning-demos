@@ -2,15 +2,16 @@
   分类: react18 / class 组件
   主题: defaultProps、静态属性与 displayName
   要点:
-    - Component.defaultProps 为未传 props 提供默认值（React 18 仍可用，新代码更推荐参数默认值）
-    - static 静态属性挂在类上，实例通过 constructor 访问不到
+    - class 组件可用 Component.defaultProps 为未传或值为 undefined 的 props 提供默认值
+    - static 静态属性挂在类构造函数上，适合放组件级元信息
     - displayName 便于 DevTools 调试；HOC 包装时尤其有用
+    - 函数组件新代码更常用参数默认值，class 维护场景仍会遇到 defaultProps
   面试:
-    - defaultProps、静态属性与 displayName的核心概念是什么
-    - defaultProps、静态属性与 displayName在实际项目里怎么用
-    - defaultProps、静态属性与 displayName有哪些常见坑或易错点
-    - defaultProps、静态属性与 displayName和相近 API 如何区分选型
-    - 面试中如何简洁讲清 defaultProps、静态属性与 displayName
+    - class 组件 defaultProps 在什么情况下生效？
+    - defaultProps 和参数默认值分别适合哪些代码？
+    - static 静态属性和实例属性有什么区别？
+    - displayName 为什么常和 HOC 一起使用？
+    - props 传 null 时 defaultProps 会不会兜底？
 -->
 
 <!doctype html>
@@ -33,15 +34,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Component.defaultProps 为未传 props 提供默认值（React 18 仍可用，新代码更推荐参数默认值）。</li>
-          <li>static 静态属性挂在类上，实例通过 constructor 访问不到。</li>
-          <li>displayName 便于 DevTools 调试；HOC 包装时尤其有用。</li>
+          <li><code>Component.defaultProps</code> 会在 prop 未传或显式为 <code>undefined</code> 时提供默认值。本 demo 中 <code>&lt;Greeting /&gt;</code> 没传 <code>name</code> 和 <code>level</code>，因此显示“访客”和 <code>1</code>。</li>
+          <li><code>null</code> 不会触发 <code>defaultProps</code>，因为它表示调用方明确传入空值。业务上如果 <code>null</code> 也要兜底，应在渲染逻辑中显式处理。</li>
+          <li><code>static</code> 属性属于类构造函数本身，例如 <code>Greeting.species</code>，不是每个组件实例自己的字段。它适合放组件级元信息、常量或 HOC 需要复制的静态成员。</li>
+          <li><code>displayName</code> 影响 DevTools、错误栈和 HOC 包装后的调试名称。HOC 返回匿名 wrapper 时应设置类似 <code>WithLoading(GreetingCard)</code> 的名称。</li>
+          <li>React 18 中 class 组件仍可使用 <code>defaultProps</code>。函数组件新代码通常用 JavaScript 参数默认值或解构默认值；不要把 React 19 的函数组件默认写法混成 class 组件规则。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Component.defaultProps 为未传 props 提供默认值（R？</strong> Component.defaultProps 为未传 props 提供默认值（React 18 仍可用，新代码更推荐参数默认值）</li>
-          <li><strong>static 静态属性挂在类上？</strong> static 静态属性挂在类上，实例通过 constructor 访问不到</li>
-          <li><strong>displayName 便于 DevTools 调试？</strong> displayName 便于 DevTools 调试；HOC 包装时尤其有用</li>
+          <li><strong>class 组件 defaultProps 在什么情况下生效？</strong> 结论是 prop 缺失或值为 <code>undefined</code> 时生效。原因是 React 在把 props 交给组件前会补默认值；边界是传 <code>null</code> 不会触发默认值。</li>
+          <li><strong>defaultProps 和参数默认值分别适合哪些代码？</strong> 结论是 class 维护代码常见 <code>defaultProps</code>，函数组件新代码更常见参数默认值。原因是 class 没有函数参数解构位置；项目迁移时不要为了统一写法大范围改动稳定旧组件。</li>
+          <li><strong>static 静态属性和实例属性有什么区别？</strong> 结论是 static 挂在类上，实例属性挂在每个实例上。原因是它们的访问路径不同：<code>Greeting.species</code> 访问静态属性，<code>this.state</code> 访问实例状态。</li>
+          <li><strong>displayName 为什么常和 HOC 一起使用？</strong> 结论是它能保留调试可读性。原因是 HOC 会返回新的包装组件，不设置名称时 DevTools 里可能只看到匿名 wrapper；项目排查错误栈时会更难定位原组件。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://legacy.reactjs.org/docs/typechecking-with-proptypes.html#default-prop-values" target="_blank" rel="noreferrer">Legacy React: Default Prop Values</a></li>
+          <li><a href="https://react.dev/reference/react/Component" target="_blank" rel="noreferrer">react.dev: Component</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/static" target="_blank" rel="noreferrer">MDN: static</a></li>
         </ul>
       </div>
     </section>

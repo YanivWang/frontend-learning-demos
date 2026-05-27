@@ -4,13 +4,14 @@
   要点:
     - 受控: value 绑定 state，onChange 更新 state，React 为唯一数据源
     - 非受控: defaultValue + ref 在提交时读取 DOM
-    - 业务表单、校验、联动优先受控；简单一次性读取可用非受控
+    - 表单校验、联动和提交前禁用按钮优先受控，文件上传等 DOM 自有状态通常用非受控
+    - 不要在同一个输入上混用 value 与 defaultValue，避免受控/非受控切换警告
   面试:
-    - class 组件中的受控与非受控表单的核心概念是什么
-    - class 组件中的受控与非受控表单在实际项目里怎么用
-    - class 组件中的受控与非受控表单有哪些常见坑或易错点
-    - class 组件中的受控与非受控表单和相近 API 如何区分选型
-    - 面试中如何简洁讲清 class 组件中的受控与非受控表单
+    - 受控组件为什么说 React state 是唯一数据源？
+    - defaultValue 和 value 的行为差异是什么？
+    - 表单校验、联动和一次性提交时如何选择受控或非受控？
+    - 为什么文件输入和部分第三方控件更适合非受控？
+    - class 表单里如何避免受控/非受控切换警告？
 -->
 
 <!doctype html>
@@ -33,15 +34,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>受控: value 绑定 state，onChange 更新 state，React 为唯一数据源。</li>
-          <li>非受控: defaultValue + <code>ref</code> 在提交时读取 DOM。</li>
-          <li>业务表单、校验、联动优先受控；简单一次性读取可用非受控。</li>
+          <li>受控组件把输入值放在 <code>this.state</code> 中，<code>value</code> 或 <code>checked</code> 由 React 传回输入框，<code>onChange</code> 再把用户输入写回 state，因此校验、联动、禁用提交按钮和回显都可以由同一份数据驱动。</li>
+          <li>非受控组件让 DOM 保存当前值，React 只用 <code>defaultValue</code> 或 <code>defaultChecked</code> 设置初始值，提交时通过 <code>ref</code> 读取。它适合简单一次性读取、迁移旧表单或文件输入这类 DOM 自有状态。</li>
+          <li><code>value</code> 与 <code>defaultValue</code> 不是同一种控制权：前者每次渲染都以 React state 为准，后者只影响初始值。不要在同一个输入生命周期内从未定义 <code>value</code> 切到有值，避免受控/非受控切换警告。</li>
+          <li>class 组件里表单事件仍是合成事件，读取 <code>event.target.value</code> 后用 <code>setState</code> 更新；如果下一步依赖更新后的 state，应放到 <code>setState</code> 回调或 <code>componentDidUpdate</code>。</li>
+          <li>涉及用户输入时不要把输入内容拼进 <code>innerHTML</code>。本 demo 提交时用 <code>alert(JSON.stringify(...))</code> 展示数据，没有把用户输入作为 HTML 注入页面。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>业务表单、校验、联动优先受控？</strong> 业务表单、校验、联动优先受控；简单一次性读取可用非受控</li>
-          <li><strong>class 组件中的受控与非受控表单的核心概念是什么？</strong> 受控: value 绑定 state，onChange 更新 state，React 为唯一数据源；非受控: defaultValue + <code>ref</code> 在提交时读取 DOM</li>
-          <li><strong>class 组件中的受控与非受控表单在实际项目里怎么用？</strong> 受控: value 绑定 state，onChange 更新 state，React 为唯一数据源；非受控: defaultValue + <code>ref</code> 在提交时读取 DOM</li>
+          <li><strong>受控组件为什么说 React state 是唯一数据源？</strong> 结论是输入显示值由 state 决定。原因是 <code>value</code> 绑定 state 后，用户输入必须经过 <code>onChange</code> 和 <code>setState</code> 才能反映到界面；边界是高频大表单要注意渲染成本，可拆分字段组件或局部状态。</li>
+          <li><strong>defaultValue 和 value 的行为差异是什么？</strong> <code>value</code> 是持续控制，<code>defaultValue</code> 只是初始值。原因是 React 后续渲染不会再用 <code>defaultValue</code> 覆盖 DOM 当前值；项目中如果要重置非受控输入，通常改 <code>key</code> 重新挂载或直接操作 ref。</li>
+          <li><strong>表单校验、联动和一次性提交时如何选择？</strong> 结论是需要实时校验、联动、回显、禁用提交时优先受控，只在简单采集或接入旧 DOM 插件时考虑非受控。原因是受控值在 React 数据流里更容易组合；边界是文件输入不能被脚本设置文件路径，通常用非受控读取。</li>
+          <li><strong>class 表单里有哪些常见坑？</strong> 最常见是忘记 <code>onChange</code> 导致只读、把 <code>undefined</code> 传给 <code>value</code> 后又切为字符串、提交时忘记 <code>preventDefault</code>。项目里要给空值提供稳定默认值，例如字符串字段用空字符串。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react-dom/components/input" target="_blank" rel="noreferrer">react.dev: &lt;input&gt;</a></li>
+          <li><a href="https://react.dev/reference/react-dom/components/select" target="_blank" rel="noreferrer">react.dev: &lt;select&gt;</a></li>
+          <li><a href="https://legacy.reactjs.org/docs/uncontrolled-components.html" target="_blank" rel="noreferrer">Legacy React: Uncontrolled Components</a></li>
         </ul>
       </div>
     </section>

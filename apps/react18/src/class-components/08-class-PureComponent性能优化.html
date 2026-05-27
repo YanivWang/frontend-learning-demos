@@ -2,16 +2,17 @@
   分类: react18 / class 组件
   主题: PureComponent 与 shouldComponentUpdate 浅比较
   要点:
-    - React.PureComponent 内置浅比较 props/state，相等则跳过 render
-    - 等价于 shouldComponentUpdate 中对 nextProps/nextState 做浅比较
-    - 浅比较看引用；对象/数组原地修改会导致优化失效
-    - 函数组件对应 API 是 React.memo
+    - React.PureComponent 会对 props 和 state 做浅比较，相等时跳过当前组件 render
+    - PureComponent 类似自动实现 shouldComponentUpdate，但只能覆盖浅层引用比较
+    - 对象、数组、函数按引用比较；原地修改会让 UI 不更新或优化判断失真
+    - 不可变更新能让变化路径产生新引用，是 PureComponent 生效的前提
+    - 函数组件相近能力是 React.memo，但二者都不是默认必用的性能开关
   面试:
-    - PureComponent 与 shouldComponentUpdate 浅比较的核心概念是什么
-    - PureComponent 与 shouldComponentUpdate 浅比较在实际项目里怎么用
-    - PureComponent 与 shouldComponentUpdate 浅比较有哪些常见坑或易错点
-    - PureComponent 与 shouldComponentUpdate 浅比较和相近 API 如何区分选型
-    - 面试中如何简洁讲清 PureComponent 与 shouldComponentUpdate 浅比较
+    - PureComponent 到底比较了什么，为什么能跳过 render？
+    - PureComponent 为什么要求不可变更新？
+    - PureComponent 和手写 shouldComponentUpdate 怎么选？
+    - PureComponent 与 React.memo 的关系是什么？
+    - 什么时候不应该为了性能到处使用 PureComponent？
 -->
 
 <!doctype html>
@@ -30,20 +31,29 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>PureComponent 与 shouldComponentUpdate 浅比较</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">打开控制台点击“切换无关 state”和“Alice +1”，比较普通 Component、PureComponent 与手写 shouldComponentUpdate 的 render 日志。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>React.PureComponent 内置浅比较 props/state，相等则跳过 <code>render</code>。</li>
-          <li>等价于 shouldComponentUpdate 中对 nextProps/nextState 做浅比较。</li>
-          <li>浅比较看引用；对象/数组原地修改会导致优化失效。</li>
-          <li>函数组件对应 API 是 React.memo。</li>
+          <li><strong>基本机制：</strong><code>React.PureComponent</code> 继承自 <code>Component</code>，但内置了基于浅比较的 <code>shouldComponentUpdate</code>；当新旧 props 和 state 的浅层值都相等时，React 会跳过该组件的 render。</li>
+          <li><strong>浅比较边界：</strong>原始值按值比较，对象、数组、函数按引用比较。示例中切换 <code>theme</code> 不改变每个 <code>user</code> 对象引用，所以 <code>PureRow</code> 和 <code>ManualRow</code> 可以跳过无关渲染。</li>
+          <li><strong>不可变更新前提：</strong>如果原地修改 <code>user.score</code> 再复用旧对象引用，浅比较会认为 props 没变，PureComponent 可能不重新渲染；因此配套写法是用 <code>map</code>、展开语法或不可变数据结构创建变化路径上的新引用。</li>
+          <li><strong>与手写 SCU 的区别：</strong>PureComponent 适合“渲染只依赖浅层 props/state”的组件；手写 <code>shouldComponentUpdate</code> 可以只比较特定字段，但更容易漏比较、写错比较逻辑或和新增 props 不同步。</li>
+          <li><strong>现代替代：</strong>函数组件里的相近能力是 <code>React.memo</code>；在 React 18 新代码中通常先保证组件纯渲染和状态局部化，再用 Profiler 或实际性能证据决定是否加 memo/PureComponent。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>React.PureComponent 内置浅比较 props/state？</strong> React.PureComponent 内置浅比较 props/state，相等则跳过 <code>render</code>；函数组件对应 API 是 React.memo</li>
-          <li><strong>等价于 shouldComponentUpdate 中对 nextProps/n？</strong> 等价于 shouldComponentUpdate 中对 nextProps/nextState 做浅比较</li>
-          <li><strong>函数组件对应 API 是 React.memo？</strong> 函数组件对应 API 是 React.memo</li>
+          <li><strong>PureComponent 到底比较了什么，为什么能跳过 render？</strong> 结论是它浅比较新旧 props 和 state。原因是如果组件渲染结果只由这些浅层输入决定，输入没变就没有必要重新计算 UI。边界是它不做深比较，嵌套对象内部变化必须通过新引用表达出来。</li>
+          <li><strong>PureComponent 为什么要求不可变更新？</strong> 结论是浅比较依赖引用变化识别对象和数组是否变了。因为原地修改会保留旧引用，PureComponent 可能误判“没变化”并跳过 render；不可变更新让被修改对象和沿途容器都产生新引用。项目里列表项、表格行、树节点这类优化尤其依赖这一点。</li>
+          <li><strong>PureComponent 和手写 shouldComponentUpdate 怎么选？</strong> 结论是简单浅层依赖用 PureComponent，复杂比较才手写。原因是 PureComponent 减少样板代码，但无法表达“只比较某几个字段”或特殊业务判断；手写逻辑更灵活，也更容易遗漏字段。维护时如果 props 结构变化频繁，手写比较要配套测试或谨慎复核。</li>
+          <li><strong>PureComponent 与 React.memo 的关系是什么？</strong> 结论是二者都是基于输入相等性跳过渲染的性能优化，PureComponent 用于 class，<code>React.memo</code> 用于函数组件。React 18 新代码通常优先函数组件加 <code>memo</code>，旧 class 维护可继续用 PureComponent。二者都不应替代正确的数据流设计。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/PureComponent" target="_blank" rel="noopener">React Reference: <code>PureComponent</code></a></li>
+          <li><a href="https://react.dev/reference/react/Component#shouldcomponentupdate" target="_blank" rel="noopener">React Reference: <code>shouldComponentUpdate</code></a></li>
+          <li><a href="https://react.dev/reference/react/memo" target="_blank" rel="noopener">React Reference: <code>memo</code></a></li>
+          <li><a href="https://react.dev/learn/updating-objects-in-state" target="_blank" rel="noopener">React Learn: Updating Objects in State</a></li>
         </ul>
       </div>
     </section>

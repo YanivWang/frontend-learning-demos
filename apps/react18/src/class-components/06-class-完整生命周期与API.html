@@ -1,20 +1,18 @@
 <!--
   分类: react18 / class 组件
-  主题: class 组件完整生命周期与常用 API 大杂烩
+  主题: class 组件生命周期与常用实例 API
   要点:
-    - 创建：constructor → render → componentDidMount
-    - 更新：shouldComponentUpdate → render → componentDidUpdate
-    - 卸载：componentWillUnmount（清理 timer / 监听）
-    - 错误：getDerivedStateFromError + componentDidCatch（详见 19）
-    - refs：React.createRef() 访问 DOM/子实例（详见 07）
-    - componentWillMount / componentWillReceiveProps / componentWillUpdate 在 React 16.3+ 已废弃，须前缀 UNSAFE_
-    - React 18 使用 createRoot 渲染，ReactDOM.render 已废弃
+    - 挂载阶段通常是 constructor → render → componentDidMount，副作用放在 componentDidMount
+    - 更新阶段可用 shouldComponentUpdate 控制渲染，componentDidUpdate 读取更新后的 DOM 或发起后续同步
+    - componentWillUnmount 负责清理 timer、订阅和 DOM 监听，避免卸载后继续 setState
+    - UNSAFE_ 生命周期只用于维护旧代码，新代码优先用 componentDidMount/componentDidUpdate 或函数组件 Hooks
+    - forceUpdate 会绕过当前组件 shouldComponentUpdate，通常应改用 state 或 props 驱动渲染
   面试:
-    - class 组件完整生命周期与常用 API 大杂烩的核心概念是什么
-    - class 组件完整生命周期与常用 API 大杂烩在实际项目里怎么用
-    - class 组件完整生命周期与常用 API 大杂烩有哪些常见坑或易错点
-    - class 组件完整生命周期与常用 API 大杂烩和相近 API 如何区分选型
-    - 面试中如何简洁讲清 class 组件完整生命周期与常用 API 大杂烩
+    - class 组件挂载、更新、卸载阶段各自适合放什么逻辑？
+    - 为什么 constructor 里只能初始化 state，不能做网络请求或订阅？
+    - shouldComponentUpdate、forceUpdate 和 setState 的边界是什么？
+    - React 18 项目里遇到 UNSAFE_ 生命周期应该怎么迁移？
+    - componentWillUnmount 不清理副作用会造成什么问题？
 -->
 
 <!doctype html>
@@ -32,23 +30,29 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>class 组件完整生命周期与常用 API 大杂烩</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <h1>class 组件生命周期与常用实例 API</h1>
+      <p class="hint">打开控制台观察 constructor、render、componentDidMount、shouldComponentUpdate、componentDidUpdate 的调用顺序，并操作下方按钮验证 state 与 forceUpdate 的区别。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>创建：constructor → <code>render</code> → componentDidMount。</li>
-          <li>更新：shouldComponentUpdate → <code>render</code> → componentDidUpdate。</li>
-          <li>卸载：componentWillUnmount（清理 timer / 监听）。</li>
-          <li>错误：getDerivedStateFromError + componentDidCatch（详见 19）。</li>
-          <li>refs：React.createRef() 访问 DOM/子实例（详见 07）。</li>
-          <li>componentWillMount / componentWillReceiveProps / componentWillUpdate 在 React 16.3+ 已废弃，须前缀 UNSAFE_。</li>
+          <li><strong>挂载阶段：</strong><code>constructor</code> 用来初始化 state 和绑定实例字段，<code>render</code> 必须保持纯渲染，访问 DOM、启动 timer、订阅事件或发起请求应放到 <code>componentDidMount</code>。</li>
+          <li><strong>更新阶段：</strong><code>setState</code> 或 props 变化会进入更新流程；<code>shouldComponentUpdate</code> 可返回 <code>false</code> 跳过当前组件渲染，<code>componentDidUpdate</code> 适合根据上一次 props/state 做 DOM 同步或补充请求，但必须避免无条件再次 <code>setState</code>。</li>
+          <li><strong>卸载阶段：</strong><code>componentWillUnmount</code> 是清理副作用的位置，timer、订阅、手写 DOM 监听和未取消的异步回调都要在这里处理，否则容易出现内存泄漏或卸载后更新状态的警告。</li>
+          <li><strong>旧生命周期边界：</strong><code>componentWillMount</code>、<code>componentWillReceiveProps</code>、<code>componentWillUpdate</code> 在现代 React 中被标记为不安全；维护旧 class 代码时只能以 <code>UNSAFE_</code> 前缀保留，并优先迁移到 <code>componentDidMount</code>、<code>componentDidUpdate</code>、<code>getDerivedStateFromProps</code> 或函数组件 Hooks。</li>
+          <li><strong>实例 API：</strong><code>forceUpdate</code> 会强制当前组件重新 render，并跳过当前组件的 <code>shouldComponentUpdate</code>；它只适合桥接非 React 数据源，常规业务状态应放进 state/props，事件处理器也要用箭头函数或显式绑定保证 <code>this</code> 指向组件实例。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>componentWillMount / componentWillReceiv？</strong> 创建：constructor → <code>render</code> → componentDidMount；更新：shouldComponentUpdate → <code>render</code> → componentDidUpdate</li>
-          <li><strong>React 18 使用 createRoot 渲染？</strong> refs：React.createRef() 访问 DOM/子实例（详见 07）；componentWillMount / componentWillReceiveProps / componentWillUpdate 在 React 16.3+ 已废弃，须前缀 UNSAFE_</li>
-          <li><strong>class 组件完整生命周期与常用 API 大杂烩的核心概念是什么？</strong> 创建：constructor → <code>render</code> → componentDidMount；更新：shouldComponentUpdate → <code>render</code> → componentDidUpdate</li>
+          <li><strong>class 组件挂载、更新、卸载阶段各自适合放什么逻辑？</strong> 结论是 render 只负责返回 UI，副作用按时机放到提交后的生命周期。因为 constructor 和 render 可能在渲染流程中被调用，不能依赖真实 DOM；DOM 测量、订阅和 timer 应在 <code>componentDidMount</code> 建立，在 <code>componentWillUnmount</code> 清理。项目里如果更新后要同步滚动或请求数据，放在 <code>componentDidUpdate</code> 并比较前后 props/state。</li>
+          <li><strong>为什么 constructor 里不能做网络请求或订阅？</strong> 结论是 constructor 只做初始化。原因是此时组件尚未挂载，DOM 不存在，副作用也没有对应的清理时机；并发渲染和严格检查语境下，把副作用放进渲染前阶段更容易产生重复执行和难以回收的问题。真实项目里请求通常放到 <code>componentDidMount</code>，函数组件则放到 <code>useEffect</code>。</li>
+          <li><strong>shouldComponentUpdate、forceUpdate 和 setState 的边界是什么？</strong> 结论是业务更新优先用 <code>setState</code>，性能裁剪才考虑 <code>shouldComponentUpdate</code>，<code>forceUpdate</code> 是少用的命令式兜底。因为 <code>setState</code> 会进入 React 的调度和合并流程，<code>shouldComponentUpdate</code> 可以阻止不必要渲染，而 <code>forceUpdate</code> 会绕过当前组件的该判断。维护旧代码时只有 render 依赖了非 state/props 的外部可变值，才考虑临时使用 <code>forceUpdate</code>。</li>
+          <li><strong>React 18 项目里遇到 UNSAFE_ 生命周期应该怎么迁移？</strong> 结论是先确认它原来承载的是初始化、副作用、派生状态还是 DOM 快照，再迁移到对应现代 API。因为这些旧生命周期发生在提交前，容易和异步渲染模型冲突。常见做法是把请求和订阅迁到 <code>componentDidMount</code>/<code>componentDidUpdate</code>，把 props 派生状态收敛到受控数据流或 <code>getDerivedStateFromProps</code>，新代码则优先写函数组件和 Hooks。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/Component" target="_blank" rel="noopener">React Reference: <code>Component</code></a></li>
+          <li><a href="https://react.dev/reference/react-dom/client/createRoot" target="_blank" rel="noopener">React DOM Reference: <code>createRoot</code></a></li>
+          <li><a href="https://legacy.reactjs.org/docs/react-component.html" target="_blank" rel="noopener">Legacy React Docs: React Component</a></li>
         </ul>
       </div>
     </section>
@@ -213,9 +217,9 @@
               //组件实例访问不到class的静态属性
               // console.log("this __proto__", this.__proto__);//Person {props: {…}, context: {…}, refs: {…}, updater: {…}, add: ƒ, …}
 
-              this.setState({
-                num: ++this.state.num
-              }, function (a, b) {
+              this.setState((state) => ({
+                num: state.num + 1
+              }), function (a, b) {
                 console.log("渲染完毕...");
                 console.log(a);//undefined
                 console.log(b);//undefined

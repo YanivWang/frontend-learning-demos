@@ -2,15 +2,16 @@
   分类: react18 / class 组件
   主题: class 组件 constructor 必须调用 super()
   要点:
-    - class extends React.Component 时，一旦显式写了 constructor，必须先 super(props)
-    - 否则会抛 ReferenceError；constructor 内不能在 super() 之前访问 this
-    - class 组件必须实现 render()，否则抛 "No render method found"
+    - ES class 子类 constructor 中必须先调用 super()，再访问 this
+    - React class 组件显式写 constructor 时通常传入 super(props)，便于初始化时读取 this.props
+    - 初始化 state 才需要 constructor；不需要初始化或绑定时可以省略 constructor
+    - class 组件必须实现 render()，它是 React 调用组件并产出 UI 的入口
   面试:
-    - class 组件 constructor 必须调用 super()的核心概念是什么
-    - class 组件 constructor 必须调用 super()在实际项目里怎么用
-    - class 组件 constructor 必须调用 super()有哪些常见坑或易错点
-    - class 组件 constructor 必须调用 super()和相近 API 如何区分选型
-    - 面试中如何简洁讲清 class 组件 constructor 必须调用 super()
+    - 为什么 class 组件 constructor 里要先调用 super(props)？
+    - 什么时候可以不写 constructor？
+    - super() 与 super(props) 在 React class 中有什么区别？
+    - constructor 里适合做哪些事，哪些事应该放到生命周期里？
+    - class 组件为什么必须实现 render()？
 -->
 
 <!doctype html>
@@ -34,16 +35,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>class <code>extends</code> React.Component 时，一旦显式写了 constructor，必须先 super(props)。</li>
-          <li>否则会抛 ReferenceError；constructor 内不能在 super() 之前访问 <code>this</code>。</li>
-          <li>class 组件必须实现 <code>render</code>()，否则抛 &quot;No <code>render</code> method found&quot;。</li>
-          <li>class <code>extends</code> React.Component 时，一旦显式写了 constructor，必须先 super(props)（补充）。</li>
+          <li>React class 组件本质上是继承 <code>React.Component</code> 的 ES class；只要显式声明 <code>constructor</code>，就必须先调用 <code>super()</code>，否则在访问 <code>this</code> 前会触发 JavaScript 子类初始化错误。</li>
+          <li>在 React class 中推荐写 <code>super(props)</code>，因为这样 constructor 内的 <code>this.props</code> 与传入参数保持一致；如果 constructor 不读取 props，语法上 <code>super()</code> 也能完成父类初始化，但没有必要刻意省略参数。</li>
+          <li><code>constructor</code> 只适合初始化 <code>this.state</code> 或绑定实例方法；网络请求、订阅、定时器等副作用应放在 <code>componentDidMount</code>，并在卸载时清理。</li>
+          <li>如果不需要初始化 state 或绑定方法，class 组件可以完全省略 <code>constructor</code>；现代 React 新代码更推荐函数组件与 Hooks，class 更多用于维护历史代码和理解生命周期。</li>
+          <li>class 组件必须实现 <code>render()</code>，React 会调用它得到要渲染的元素；示例中的 <code>render</code> 返回一段 JSX，证明组件实例初始化成功后才能进入渲染阶段。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>class extends React.Component 时？</strong> class <code>extends</code> React.Component 时，一旦显式写了 constructor，必须先 super(props)；class 组件必须实现 <code>render</code>()，否则抛 &quot;No <code>render</code> method found&quot;</li>
-          <li><strong>否则会抛 ReferenceError？</strong> 否则会抛 ReferenceError；constructor 内不能在 super() 之前访问 <code>this</code></li>
-          <li><strong>class 组件必须实现 render()？</strong> class <code>extends</code> React.Component 时，一旦显式写了 constructor，必须先 super(props)；class 组件必须实现 <code>render</code>()，否则抛 &quot;No <code>render</code> method found&quot;</li>
+          <li><strong>为什么 class 组件 constructor 里要先调用 super(props)？</strong> 结论是：因为它既满足 ES class 子类必须先初始化父类的规则，也让 React 组件实例拿到 props。原因是子类在 <code>super()</code> 之前不能访问 <code>this</code>；项目中如果 constructor 里要初始化 state 或绑定方法，通常直接写 <code>constructor(props) { super(props); ... }</code>。</li>
+          <li><strong>什么时候可以不写 constructor？</strong> 结论是：没有初始化 state、没有手动绑定实例方法时就不要写。原因是 React 会正常构造组件实例，额外的空 constructor 只增加样板代码；维护老 class 组件时再根据需要补充。</li>
+          <li><strong>super() 与 super(props) 有什么区别？</strong> 结论是：两者都能调用父类构造函数，但 React class 中应优先写 <code>super(props)</code>。原因是 constructor 内如果读取 <code>this.props</code>，传入 props 才最直观；边界是新代码通常用函数组件，不会再遇到这个 constructor 细节。</li>
+          <li><strong>constructor 里适合做哪些事？</strong> 结论是：只做同步初始化，例如设置初始 state、绑定方法。原因是 constructor 发生在挂载前，不能依赖 DOM，也不适合请求数据；副作用放到 <code>componentDidMount</code>，清理放到 <code>componentWillUnmount</code>。</li>
+          <li><strong>class 组件为什么必须实现 render()？</strong> 结论是：<code>render()</code> 是 class 组件描述 UI 的必需方法。原因是 React 需要调用它得到 React element；如果漏写，组件没有可渲染输出，开发环境会给出缺少 render 方法的错误。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://legacy.reactjs.org/docs/react-component.html#constructor" target="_blank" rel="noreferrer">React Legacy Docs：constructor()</a></li>
+          <li><a href="https://legacy.reactjs.org/docs/react-component.html#render" target="_blank" rel="noreferrer">React Legacy Docs：render()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/super" target="_blank" rel="noreferrer">MDN：super</a></li>
+          <li><a href="https://react.dev/reference/react/Component" target="_blank" rel="noreferrer">React Docs：Component</a></li>
         </ul>
       </div>
     </section>

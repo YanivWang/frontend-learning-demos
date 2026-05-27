@@ -541,7 +541,7 @@
 - [setState-异步合并](/apps/react18/src/class-components/03-setState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6.html) — setState 异步合并（同步触发多次只会更新一次）
 - [setState-函数式更新](/apps/react18/src/class-components/04-setState-%E5%87%BD%E6%95%B0%E5%BC%8F%E6%9B%B4%E6%96%B0.html) — setState 函数式更新（解决合并陷阱）
 - [Clock-setState-批处理对比](/apps/react18/src/class-components/05-Clock-setState-%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html) — Clock 演示 setState 批处理（对象式 vs 函数式）
-- [class-完整生命周期与API](/apps/react18/src/class-components/06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html) — class 组件完整生命周期与常用 API 大杂烩
+- [class-完整生命周期与API](/apps/react18/src/class-components/06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html) — class 组件生命周期与常用实例 API
 - [class-refs与DOM](/apps/react18/src/class-components/07-class-refs%E4%B8%8EDOM.html) — class 组件 refs 访问 DOM 与实例
 - [class-PureComponent性能优化](/apps/react18/src/class-components/08-class-PureComponent%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html) — PureComponent 与 shouldComponentUpdate 浅比较
 - [class-getDerivedStateFromProps与getSnapshotBeforeUpdate](/apps/react18/src/class-components/09-class-getDerivedStateFromProps%E4%B8%8EgetSnapshotBeforeUpdate.html) — getDerivedStateFromProps 与 getSnapshotBeforeUpdate

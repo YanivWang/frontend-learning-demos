@@ -5,12 +5,13 @@
     - setState(updater, callback) 的 callback 在 state 提交且 DOM 更新后执行
     - setState 后立即读 this.state 仍是旧值（异步批处理）
     - callback 里可读最新 DOM；需要基于新 state 做副作用时用 callback 或 componentDidUpdate
+    - 连续更新依赖旧 state 时仍应使用函数式 updater
   面试:
-    - setState 第二参数回调与 state 读取时机的核心概念是什么
-    - setState 第二参数回调与 state 读取时机在实际项目里怎么用
-    - setState 第二参数回调与 state 读取时机有哪些常见坑或易错点
-    - setState 第二参数回调与 state 读取时机和相近 API 如何区分选型
-    - 面试中如何简洁讲清 setState 第二参数回调与 state 读取时机
+    - setState 第二参数 callback 什么时候执行？
+    - 为什么 setState 后同步读取 this.state 可能还是旧值？
+    - callback、componentDidUpdate 和函数式 updater 分别解决什么问题？
+    - React 18 自动批处理下读取 DOM 有哪些边界？
+    - 连续点击或连续 setState 时如何避免丢更新？
 -->
 
 <!doctype html>
@@ -33,15 +34,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>setState(updater, callback) 的 callback 在 state 提交且 DOM 更新后执行。</li>
-          <li>setState 后立即读 <code>this</code>.state 仍是旧值（异步批处理）。</li>
-          <li>callback 里可读最新 DOM；需要基于新 state 做副作用时用 callback 或 componentDidUpdate。</li>
+          <li><code>this.setState(updater, callback)</code> 的第二参数会在本次更新提交到 DOM 之后执行，因此可以读取最新 <code>this.state</code>，也可以安全读取本组件已更新后的 DOM。</li>
+          <li><code>setState</code> 是请求更新，不是同步赋值。React 会批处理多个更新，所以在同一个事件处理函数里调用后立刻读 <code>this.state</code>，通常仍会看到旧值。</li>
+          <li>如果下一步逻辑依赖“更新完成后”的状态或 DOM，可用第二参数 callback；如果要响应任意一次 props/state 变化并比较前后值，更适合写在 <code>componentDidUpdate(prevProps, prevState)</code>。</li>
+          <li>如果新 state 依赖旧 state，尤其是连续点击或同一事件内多次更新，应使用函数式 updater：<code>this.setState(prev =&gt; ...)</code>。第二参数 callback 不能替代函数式 updater 的“基于最新队列状态计算”。</li>
+          <li>React 18 对更多来源的更新做自动批处理，class 维护代码里更不要依赖同步读取 state。确实需要同步刷新 DOM 的少数场景可了解 <code>flushSync</code>，但本 demo 重点是 class 的 callback 语义。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>setState(updater？</strong> setState(updater, callback) 的 callback 在 state 提交且 DOM 更新后执行；setState 后立即读 <code>this</code>.state 仍是旧值（异步批处理）</li>
-          <li><strong>setState 后立即读 this.state 仍是旧值（异步批处理）？</strong> setState(updater, callback) 的 callback 在 state 提交且 DOM 更新后执行；setState 后立即读 <code>this</code>.state 仍是旧值（异步批处理）</li>
-          <li><strong>callback 里可读最新 DOM？</strong> setState(updater, callback) 的 callback 在 state 提交且 DOM 更新后执行；callback 里可读最新 DOM；需要基于新 state 做副作用时用 callback 或 componentDidUpdate</li>
+          <li><strong>setState 第二参数 callback 什么时候执行？</strong> 结论是更新被提交后执行。原因是 React 先把更新排队、计算并提交 DOM，再调用 callback；项目里常用于滚动到新元素、聚焦输入框或读取更新后的尺寸。</li>
+          <li><strong>为什么 setState 后同步读取 this.state 可能还是旧值？</strong> 结论是 <code>setState</code> 不是立即修改实例字段。原因是 React 会批处理更新并在之后渲染提交；边界是不要把同步读取结果当作下一次更新依据。</li>
+          <li><strong>callback、componentDidUpdate 和函数式 updater 如何选？</strong> 结论是 callback 处理当前这次更新后的副作用，<code>componentDidUpdate</code> 处理跨多次更新的比较逻辑，函数式 updater 处理基于旧 state 计算新 state。原因是三者介入的阶段不同；连续自增必须用函数式 updater。</li>
+          <li><strong>React 18 自动批处理对 class 读取 state 有什么影响？</strong> 结论是异步来源中的更新也更可能被批处理，代码更不应依赖同步读到新 state。维护旧 class 组件时，读取最新值放在 callback 或生命周期里更稳。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://legacy.reactjs.org/docs/react-component.html#setstate" target="_blank" rel="noreferrer">Legacy React: setState()</a></li>
+          <li><a href="https://react.dev/reference/react/Component#setstate" target="_blank" rel="noreferrer">react.dev: Component setState</a></li>
+          <li><a href="https://react.dev/blog/2022/03/29/react-v18#new-feature-automatic-batching" target="_blank" rel="noreferrer">React 18 Blog: Automatic batching</a></li>
         </ul>
       </div>
     </section>
