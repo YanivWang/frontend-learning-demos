@@ -2,13 +2,16 @@
   分类: javascript / 06-浏览器API / 事件模型
   主题: Node.js 与浏览器事件循环对比
   要点:
-    - 浏览器：微任务 Promise.then → 宏任务 setTimeout；每轮宏任务后清空微任务
-    - Node.js：除 timers/poll/check 外还有 process.nextTick（优先级高于 Promise 微任务）
-    - Node 11+ 微任务在阶段之间清空，与浏览器更接近
+    - 浏览器以 HTML 事件循环为模型：任务结束后执行微任务检查点，再进入渲染或下一任务
+    - Node.js 事件循环由 libuv 阶段驱动，timers、poll、check 等阶段会影响回调时机
+    - process.nextTick 是 Node 专有队列，优先级高于 Promise 微任务，递归使用可能饿死事件循环
+    - setImmediate 与 setTimeout(0) 的相对顺序受调用位置和 Node/libuv 版本影响
   面试:
     - 浏览器与 Node 事件循环有何异同？
     - process.nextTick 与 Promise.then 谁先执行？
     - setImmediate 与 setTimeout(0) 在 Node 中顺序如何？
+    - 为什么不能用浏览器事件循环规则硬套 Node？
+    - nextTick 递归调用有什么风险？
   相关: 事件循环, dom事件-冒泡捕获委托
 -->
 
@@ -30,20 +33,31 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Node.js vs 浏览器事件循环</h1>
-      <p class="hint">在浏览器中操作下方按钮；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中操作下方按钮观察任务与微任务顺序；Node.js 专有 API 请结合下方对照代码在终端理解。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>浏览器宏任务：setTimeout、setInterval、I/O、UI 渲染；微任务：Promise.then、MutationObserver。</li>
-          <li>Node.js 宏任务：timers、poll、check、setImmediate；微任务：Promise.then、queueMicrotask。</li>
-          <li>Node 特有 <code>process.nextTick</code>，优先级高于 Promise 微任务。</li>
-          <li>Node 11+ 微任务在阶段之间清空，与浏览器更接近。</li>
+          <li>浏览器事件循环由 HTML 标准定义：一次任务执行完后会执行微任务检查点，清空 <code>Promise.then</code>、<code>queueMicrotask</code> 等微任务，然后浏览器才有机会渲染或处理下一任务。</li>
+          <li>Node.js 事件循环运行在 libuv 阶段模型上，常见阶段包括 timers、poll、check；<code>setTimeout</code> 进入 timers，<code>setImmediate</code> 进入 check，I/O 回调通常和 poll 阶段相关。</li>
+          <li><code>process.nextTick</code> 是 Node 专有队列，不属于浏览器微任务 API；Node 会在继续事件循环前先清空 nextTick 队列，再处理 Promise 微任务，所以它通常早于 <code>Promise.then</code>。</li>
+          <li><code>setImmediate</code> 与 <code>setTimeout(fn, 0)</code> 的先后不能脱离上下文硬背：在主模块中顺序可能受调度和版本影响，在 I/O 回调内部通常 <code>setImmediate</code> 更早执行。</li>
+          <li>Node 20 起随 libuv 1.45 调整，timers 只在 poll 之后运行；涉及精确顺序的面试题要说明 Node 版本、代码位置和是否在 I/O 回调内。</li>
+          <li>递归追加 <code>process.nextTick</code> 或微任务会让事件循环迟迟无法进入 timers/poll/check，实际服务端项目中可能造成 I/O 饥饿、请求延迟或监控误判。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>浏览器执行顺序？</strong> 同步 → 微任务（Promise/queueMicrotask）→ 宏任务（setTimeout）。</li>
-          <li><strong>Node 与浏览器差异？</strong> Node 多 process.nextTick（最先）和 setImmediate；Node 11+ 微任务清空时机更接近浏览器。</li>
-          <li><strong>Node 典型输出？</strong> sync 1,5 → nextTick 4 → microtask 3 → macrotask 2（浏览器无 nextTick 则为 1,5,3,2）。</li>
+          <li><strong>浏览器与 Node 事件循环有何异同？</strong> 结论是二者都有“同步先执行、微任务优先于后续任务”的共同点，但调度模型不同。原因是浏览器受 HTML 事件循环和渲染管线约束，Node 受 libuv 阶段、I/O 和专有队列约束；项目里分析顺序必须先确认运行环境。</li>
+          <li><strong><code>process.nextTick</code> 与 <code>Promise.then</code> 谁先执行？</strong> 结论是在 Node 中 <code>process.nextTick</code> 通常先于 Promise 微任务。原因是 nextTick 队列会在事件循环继续前被优先清空；边界是浏览器没有 <code>process.nextTick</code>，跨端代码不要依赖它。</li>
+          <li><strong><code>setImmediate</code> 与 <code>setTimeout(0)</code> 在 Node 中顺序如何？</strong> 结论是不能只背固定顺序。原因是 <code>setTimeout</code> 属于 timers，<code>setImmediate</code> 属于 check；主模块中可能受计时器阈值和版本影响，在 I/O 回调内通常 <code>setImmediate</code> 先运行。</li>
+          <li><strong>为什么不能用浏览器事件循环规则硬套 Node？</strong> 结论是会误判 I/O、<code>setImmediate</code> 和 <code>nextTick</code>。原因是浏览器需要协调渲染、用户输入和任务队列，Node 更关注服务端 I/O 阶段；排查线上延迟时要结合 Node 官方事件循环阶段和实际版本。</li>
+          <li><strong><code>nextTick</code> 递归调用有什么风险？</strong> 结论是可能饿死事件循环。原因是 Node 会优先清空 nextTick 队列，如果回调不断追加 nextTick，timers、poll 和 I/O 回调都得不到执行；项目里应改用任务拆分、流式处理或背压机制。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick" target="_blank" rel="noreferrer">Node.js Docs: The Node.js Event Loop</a></li>
+          <li><a href="https://nodejs.org/api/process.html#processnexttickcallback-args" target="_blank" rel="noreferrer">Node.js API: process.nextTick()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide" target="_blank" rel="noreferrer">MDN: Using microtasks in JavaScript with queueMicrotask()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout" target="_blank" rel="noreferrer">MDN: Window setTimeout()</a></li>
         </ul>
       </div>
     </section>
@@ -52,6 +66,16 @@
     <!-- PAGE_DOM_START -->
     <button type="button" id="run">运行顺序演示</button>
     <div id="browser-log">点击按钮查看浏览器中的宏/微任务顺序</div>
+    <section aria-label="Node.js 对照代码">
+      <h2>Node.js 对照代码</h2>
+      <pre><code>console.log("sync start");
+setTimeout(() => console.log("timer"), 0);
+setImmediate(() => console.log("immediate"));
+Promise.resolve().then(() => console.log("promise"));
+process.nextTick(() => console.log("nextTick"));
+console.log("sync end");</code></pre>
+      <p>在 Node 中通常先看到同步日志，再看到 <code>nextTick</code>、Promise 微任务；<code>timer</code> 与 <code>immediate</code> 的相对顺序要结合代码位置和 Node 版本判断。</p>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->

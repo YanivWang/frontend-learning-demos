@@ -1,16 +1,17 @@
 <!--
 分类: javascript / 06-浏览器API / toolTips
-  主题: Vue3 实现可交互的 Tooltip
+  主题: Vue3 实现悬停与键盘可访问的交互浮层
   要点:
-    - 使用 mouseenter/mouseleave 触发显示/隐藏；移入 tooltip 时清除隐藏定时器
-    - 100ms 的延迟隐藏，给鼠标从触发区移动到 tooltip 留出过渡时间
-    - tooltip 用绝对定位 + ::after 三角实现指向尖角
+    - mouseenter/mouseleave 不冒泡，适合触发区与浮层之间的悬停状态控制
+    - focusin/focusout 让键盘用户也能打开浮层，并用 relatedTarget 判断焦点是否仍在容器内
+    - 交互内容不应标成纯 ARIA tooltip；包含按钮时更接近非模态 popover/dialog
+    - 延迟隐藏需要清理旧定时器，避免鼠标快速移动时出现闪烁或状态竞态
   面试:
-    - Vue3 实现可交互的 Tooltip的核心概念是什么
-    - Vue3 实现可交互的 Tooltip在实际项目里怎么用
-    - Vue3 实现可交互的 Tooltip有哪些常见坑或易错点
-    - Vue3 实现可交互的 Tooltip和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Vue3 实现可交互的 Tooltip
+    - 可交互 Tooltip 为什么不能只靠 :hover？
+    - mouseenter/mouseleave 与 mouseover/mouseout 如何选？
+    - 交互浮层为什么要补 focusin/focusout？
+    - ARIA tooltip 与包含按钮的 popover 有什么边界？
+    - 延迟隐藏定时器有哪些竞态风险？
 -->
 
 <!doctype html>
@@ -36,8 +37,10 @@
         cursor: pointer;
         border-radius: 8px;
         transition: background-color 0.3s;
+        font: inherit;
       }
-      .app:hover {
+      .app:hover,
+      .app:focus-visible {
         background-color: #e0e0e0;
       }
       .tooltip-container {
@@ -101,20 +104,31 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>Vue3 实现可交互的 Tooltip</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <h1>Vue3 实现悬停与键盘可访问的交互浮层</h1>
+      <p class="hint">在浏览器中打开本页，用鼠标悬停或 Tab 聚焦触发区，观察浮层显示、延迟隐藏和焦点离开边界。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>使用 mouseenter/mouseleave 触发显示/隐藏；移入 tooltip 时清除隐藏定时器。</li>
-          <li>100ms 的延迟隐藏，给鼠标从触发区移动到 tooltip 留出过渡时间。</li>
-          <li>tooltip 用绝对定位 + ::after 三角实现指向尖角。</li>
+          <li><code>mouseenter</code> / <code>mouseleave</code> 不冒泡，适合把触发区和浮层分别作为进入、离开的边界；如果用 <code>mouseover</code> / <code>mouseout</code>，子元素切换也会触发，通常要额外判断 <code>relatedTarget</code>。</li>
+          <li>可交互浮层不能只依赖 CSS <code>:hover</code>，因为用户从触发区移动到浮层按钮时会短暂离开触发区；示例用短延迟和清理定时器，减少闪烁和“刚移入又被隐藏”的竞态。</li>
+          <li>键盘用户无法触发鼠标悬停，因此触发区应是可聚焦控件，并用 <code>focusin</code> / <code>focusout</code> 维护显示状态；<code>focusout</code> 通过 <code>event.relatedTarget</code> 判断焦点是否仍在浮层容器内。</li>
+          <li>包含按钮、链接等可交互内容时，不应把它当作纯 ARIA <code>tooltip</code>。纯 tooltip 通常只提供说明文本；本例更接近非模态 popover / dialog，需要在真实项目里继续补充 Escape 关闭、焦点管理和定位防溢出。</li>
+          <li>Vue 这里只负责把事件和响应式状态绑定起来：<code>ref</code> 保存显示状态，模板类名与 ARIA 状态从响应式值派生；不要把 DOM 可见状态和 Vue 状态拆成两套来源。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>使用 mouseenter/mouseleave 触发显示/隐藏？</strong> 使用 mouseenter/mouseleave 触发显示/隐藏；移入 tooltip 时清除隐藏定时器</li>
-          <li><strong>100ms 的延迟隐藏？</strong> 100ms 的延迟隐藏，给鼠标从触发区移动到 tooltip 留出过渡时间</li>
-          <li><strong>tooltip 用绝对定位 +？</strong> 使用 mouseenter/mouseleave 触发显示/隐藏；移入 tooltip 时清除隐藏定时器；100ms 的延迟隐藏，给鼠标从触发区移动到 tooltip 留出过渡时间</li>
+          <li><strong>可交互 Tooltip 为什么不能只靠 <code>:hover</code>？</strong> 结论是不能只靠 <code>:hover</code>。原因是浮层里有按钮时，鼠标从触发区移动到浮层会离开触发元素，CSS hover 容易闪烁；项目里通常用状态机或延迟关闭，并在浮层移入时取消隐藏定时器。</li>
+          <li><strong><code>mouseenter</code> / <code>mouseleave</code> 与 <code>mouseover</code> / <code>mouseout</code> 怎么选？</strong> 结论是简单边界用前者，事件委托或需要冒泡时才考虑后者。原因是 <code>mouseenter</code> 不冒泡，子元素之间移动不会重复触发；但大量节点逐个绑定会有成本，列表型场景可用冒泡事件加 <code>relatedTarget</code> 判断。</li>
+          <li><strong>为什么交互浮层要支持键盘焦点？</strong> 结论是必须支持，否则键盘和辅助技术用户无法打开或操作浮层。原因是 hover 只覆盖鼠标路径；本例用可聚焦按钮、<code>focusin</code> 和 <code>focusout</code> 让 Tab 进入时显示，焦点离开整个容器时再隐藏。</li>
+          <li><strong>ARIA tooltip 与带按钮的 popover 有什么边界？</strong> 结论是带按钮的浮层不应简单标成 <code>role="tooltip"</code>。原因是 ARIA tooltip 是说明文本，不接收焦点；真实项目中带交互控件的浮层更接近 popover 或非模态 dialog，需要补 Escape 关闭、焦点返回和屏幕阅读器标签。</li>
+          <li><strong>延迟隐藏定时器有什么坑？</strong> 结论是定时器必须可取消并只保留一个有效任务。原因是鼠标快速进出会产生多个待执行回调；如果不清理，旧回调可能覆盖新状态，导致浮层闪烁或点击按钮前被隐藏。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/mouseenter_event" target="_blank" rel="noreferrer">MDN: Element mouseenter event</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/FocusEvent/relatedTarget" target="_blank" rel="noreferrer">MDN: FocusEvent relatedTarget</a></li>
+          <li><a href="https://vuejs.org/guide/essentials/event-handling.html" target="_blank" rel="noreferrer">Vue Docs: Event Handling</a></li>
+          <li><a href="https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/" target="_blank" rel="noreferrer">WAI-ARIA APG: Tooltip Pattern</a></li>
         </ul>
       </div>
     </section>
@@ -123,19 +137,30 @@
     <!-- PAGE_DOM_START -->
     <div id="app">
       <h2>Vue3 可交互 Tooltip 示例</h2>
-      <p>将鼠标移入下方的灰色区域，会在上方显示可交互的tooltip</p>
-      <div class="tooltip-container">
-        <div
+      <p>将鼠标移入或用 Tab 聚焦下方区域，会在上方显示可交互浮层。</p>
+      <div
+        ref="container"
+        class="tooltip-container"
+        @focusin="showTooltip"
+        @focusout="handleContainerFocusOut"
+        >
+        <button
+          type="button"
           class="app"
           @mouseenter="showTooltip"
           @mouseleave="handleAppMouseLeave"
+          :aria-expanded="String(isTooltipVisible)"
+          aria-controls="interactive-tooltip"
           >
           悬停显示 Tooltip
-        </div>
+        </button>
         <div
+          id="interactive-tooltip"
           ref="tooltip"
           class="tooltip"
           :class="{ show: isTooltipVisible }"
+          role="dialog"
+          aria-label="可交互提示浮层"
           @mouseenter="handleTooltipMouseEnter"
           @mouseleave="handleTooltipMouseLeave"
           >
@@ -153,11 +178,12 @@
 
     <!-- SCRIPT_START -->
     <script>
-      const { createApp, ref, nextTick } = Vue;
+      const { createApp, ref } = Vue;
 
       createApp({
         setup() {
           const isTooltipVisible = ref(false);
+          const container = ref(null);
           const tooltip = ref(null);
           let hideTimeout = null;
 
@@ -198,17 +224,25 @@
             hideTooltip();
           };
 
+          const handleContainerFocusOut = (event) => {
+            if (!container.value?.contains(event.relatedTarget)) {
+              hideTooltipWithDelay();
+            }
+          };
+
           const handleButtonClick = () => {
             alert("Tooltip 按钮被点击了！");
           };
 
           return {
             isTooltipVisible,
+            container,
             tooltip,
             showTooltip,
             handleAppMouseLeave,
             handleTooltipMouseEnter,
             handleTooltipMouseLeave,
+            handleContainerFocusOut,
             handleButtonClick,
           };
         },

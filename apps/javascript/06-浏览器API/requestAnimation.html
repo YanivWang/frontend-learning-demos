@@ -2,15 +2,15 @@
 分类: javascript / 06-浏览器API
   主题: requestAnimationFrame 与递归调用对比
   要点:
-    - 直接递归调用同步函数会爆栈；requestAnimationFrame 把下次调用挂到下一帧
-    - rAF 与浏览器刷新率同步（一般 60Hz），适合做动画
-    - 想要停止：保存返回的 id 并 cancelAnimationFrame(id)
+    - 同步递归会持续占用当前调用栈；requestAnimationFrame 把回调排到下一次重绘前
+    - rAF 回调接收高精度时间戳，应按时间差更新动画而不是假设固定 60fps
+    - 后台标签页中的 rAF 通常会暂停或降频，适合视觉动画但不适合可靠计时
+    - 停止动画要保存返回 id 并调用 cancelAnimationFrame(id)
   面试:
-    - requestAnimationFrame 与递归调用对比的核心概念是什么
-    - requestAnimationFrame 与递归调用对比在实际项目里怎么用
-    - requestAnimationFrame 与递归调用对比有哪些常见坑或易错点
-    - requestAnimationFrame 与递归调用对比和相近 API 如何区分选型
-    - 面试中如何简洁讲清 requestAnimationFrame 与递归调用对比
+    - requestAnimationFrame 为什么比同步递归更适合动画循环？
+    - rAF 和 setTimeout/setInterval 做动画有什么差异？
+    - 为什么动画逻辑应该使用回调时间戳计算进度？
+    - 组件卸载或页面隐藏时如何停止 rAF 循环？
 -->
 
 <!doctype html>
@@ -30,16 +30,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>直接递归调用同步函数会爆栈；<code>requestAnimationFrame</code> 把下次调用挂到下一帧。</li>
-          <li>rAF 与浏览器刷新率同步（一般 60Hz），适合做动画。</li>
-          <li>想要停止：保存返回的 id 并 cancelAnimationFrame(id)。</li>
-          <li>直接递归调用同步函数会爆栈；<code>requestAnimationFrame</code> 把下次调用挂到下一帧（补充）。</li>
+          <li>直接同步递归会在同一轮调用栈里不断调用自己，缺少退出条件时会造成栈溢出；<code>requestAnimationFrame()</code> 则把下一次回调交给浏览器，在下一次重绘前执行。</li>
+          <li>rAF 与浏览器渲染节奏协同，适合驱动视觉动画、滚动跟随、拖拽中的合帧更新。它不是“固定 60Hz 定时器”，高刷新率屏幕、系统负载和后台标签页都会影响回调频率。</li>
+          <li>rAF 回调会收到 <code>DOMHighResTimeStamp</code>，动画应根据时间差计算位移或进度，而不是每帧固定加一个数。这样在 60Hz、120Hz 或掉帧时速度才更稳定。</li>
+          <li>想停止动画必须保存 <code>requestAnimationFrame()</code> 返回的 id，并用 <code>cancelAnimationFrame(id)</code> 取消下一帧；组件卸载、路由切换、弹窗关闭时都应清理，避免后台循环继续跑。</li>
+          <li>与 <code>setTimeout</code>/<code>setInterval</code> 相比，rAF 更适合“下一次绘制前更新 UI”；定时器更适合非视觉任务，但可能和渲染不同步并产生掉帧或无效绘制。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>直接递归调用同步函数会爆栈？</strong> 直接递归调用同步函数会爆栈；<code>requestAnimationFrame</code> 把下次调用挂到下一帧</li>
-          <li><strong>rAF 与浏览器刷新率同步（一般 60Hz）？</strong> rAF 与浏览器刷新率同步（一般 60Hz），适合做动画</li>
-          <li><strong>requestAnimationFrame 与递归调用对比的核心概念是什么？</strong> 直接递归调用同步函数会爆栈；<code>requestAnimationFrame</code> 把下次调用挂到下一帧</li>
+          <li><strong>requestAnimationFrame 为什么比同步递归更适合动画循环？</strong> 结论是同步递归会连续占用当前调用栈，而 rAF 会把下一次更新排到下一帧绘制前。原因是浏览器可以在帧边界统一处理样式、布局、绘制和回调。项目里做动画循环时应在回调尾部再次申请 rAF，而不是直接递归调用函数。</li>
+          <li><strong>rAF 和 setTimeout/setInterval 做动画有什么差异？</strong> 结论是 rAF 面向视觉更新并和渲染节奏同步，定时器只按任务队列延迟执行。原因是定时器可能在浏览器不准备绘制时触发，导致无效更新或帧不稳定。实际动画、拖拽和滚动联动优先 rAF，非视觉轮询或超时逻辑才用定时器。</li>
+          <li><strong>为什么动画逻辑应该使用回调时间戳计算进度？</strong> 结论是应按时间差推进动画，而不是假设每秒 60 帧。原因是用户设备刷新率可能是 60Hz、120Hz，也可能因为负载掉帧或后台降频。项目里常用 <code>delta = timestamp - lastTimestamp</code> 计算位移，保证不同设备上的速度一致。</li>
+          <li><strong>组件卸载或页面隐藏时如何停止 rAF 循环？</strong> 结论是保存 rAF id，在卸载、路由切换或显式停止时调用 <code>cancelAnimationFrame()</code>。原因是只要下一帧已被申请，回调就可能继续运行并持有闭包引用。项目里还可监听 <code>visibilitychange</code> 暂停动画，回到前台后重新同步时间戳。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame" target="_blank" rel="noreferrer">MDN: Window.requestAnimationFrame()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/cancelAnimationFrame" target="_blank" rel="noreferrer">MDN: Window.cancelAnimationFrame()</a></li>
+          <li><a href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#animation-frames" target="_blank" rel="noreferrer">WHATWG HTML Standard: Animation frames</a></li>
         </ul>
       </div>
     </section>
@@ -47,7 +55,8 @@
 
     <!-- SCRIPT_START -->
     <script>
-      let requestAnimation = window.requestAnimationFrame;
+      let rafId = 0;
+      let frameCount = 0;
 
       //递归调用必须有一个明确的结束条件，否则会到导致堆栈溢出
       function animation1() {
@@ -57,11 +66,18 @@
 
       //animation1(); //错误
 
-      function animation2() {
-        requestAnimation(animation2);
-        console.log("动画...");
+      function animation2(timestamp) {
+        frameCount += 1;
+        console.log("动画帧...", frameCount, "timestamp:", Math.round(timestamp));
+        if (frameCount < 120) {
+          rafId = requestAnimationFrame(animation2);
+        }
       }
-      animation2();
+      rafId = requestAnimationFrame(animation2);
+
+      window.addEventListener("pagehide", function () {
+        cancelAnimationFrame(rafId);
+      });
 
     </script>
     <!-- SCRIPT_END -->

@@ -3,15 +3,15 @@
   主题: 无障碍 a11y：语义化、焦点与 ARIA
   难度: 进阶
   要点:
-    - 用原生语义标签（button / label / nav）优于 div 模拟
-    - aria-live 播报动态区域；aria-expanded 表示折叠状态
-    - 键盘 Tab 顺序与可见 focus 样式不可省略
+    - 原生语义控件自带角色、键盘行为和可访问状态，优先于 div + ARIA 模拟
+    - ARIA 只改变辅助技术理解，不会自动补齐点击、键盘和焦点逻辑
+    - aria-expanded 与 aria-controls 描述折叠控件关系，hidden 同步真实可见性
+    - aria-live 适合非焦点动态消息，键盘 Tab 顺序和 focus-visible 必须可感知
   面试:
-    - 无障碍 a11y：语义化、焦点与 ARIA的核心概念是什么
-    - 无障碍 a11y：语义化、焦点与 ARIA在实际项目里怎么用
-    - 无障碍 a11y：语义化、焦点与 ARIA有哪些常见坑或易错点
-    - 无障碍 a11y：语义化、焦点与 ARIA和相近 API 如何区分选型
-    - 面试中如何简洁讲清 无障碍 a11y：语义化、焦点与 ARIA
+    - 为什么无障碍优先使用原生 button，而不是 div role=button？
+    - aria-expanded、aria-controls 和 hidden 分别表达什么？
+    - aria-live 应该用于哪些动态内容，为什么不要滥用 assertive？
+    - 如何验证一个交互组件的键盘可用性和焦点可见性？
 -->
 
 <!doctype html>
@@ -32,20 +32,31 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>无障碍（a11y）要点</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <h1>无障碍 a11y：语义化、焦点与 ARIA</h1>
+      <p class="hint">用 Tab 聚焦按钮，再按 Enter 或 Space 触发展开；观察焦点样式、<code>aria-expanded</code> 和动态状态文本。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>用原生语义标签（button / label / nav）优于 div 模拟。</li>
-          <li>aria-live 播报动态区域；aria-expanded 表示折叠状态。</li>
-          <li>键盘 Tab 顺序与可见 focus 样式不可省略。</li>
+          <li>无障碍不是只给元素加 ARIA，而是让页面结构、名称、角色、状态和交互都能被键盘用户与辅助技术理解；原生 <code>button</code> 自带按钮角色、键盘触发和禁用语义。</li>
+          <li>ARIA 用来补充语义，不改变真实行为。把 <code>div</code> 写成 <code>role="button"</code> 后，开发者仍要自己处理 <kbd>Tab</kbd> 可聚焦、<kbd>Enter</kbd>/<kbd>Space</kbd> 触发、禁用态和焦点样式，所以优先使用原生控件。</li>
+          <li>本页按钮用 <code>aria-expanded</code> 表达折叠状态，用 <code>aria-controls</code> 指向被控制面板；面板的 <code>hidden</code> 决定真实可见性，避免只改 ARIA 但视觉和 DOM 状态不同步。</li>
+          <li><code>aria-live="polite"</code> 适合“已展开/已折叠”这类非紧急动态消息，读屏软件会在合适时机播报；错误、支付失败等紧急消息才考虑 <code>assertive</code>，否则容易打断用户。</li>
+          <li>验证交互组件至少要测试键盘 Tab 顺序、焦点是否可见、Enter/Space 是否可操作、状态是否同步，以及在屏幕阅读器或浏览器无障碍树中是否有正确名称与角色。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>用原生语义标签（button / label / nav）优于 div 模拟？</strong> 用原生语义标签（button / label / nav）优于 div 模拟</li>
-          <li><strong>aria-live 播报动态区域？</strong> aria-live 播报动态区域；aria-expanded 表示折叠状态</li>
-          <li><strong>键盘 Tab 顺序与可见 focus 样式不可省略？</strong> 键盘 Tab 顺序与可见 focus 样式不可省略</li>
+          <li><strong>为什么优先使用原生 <code>button</code>？</strong> 结论是原生控件默认具备正确角色、键盘行为和可访问状态，成本最低也最不容易漏。原因是 ARIA 只改变无障碍树，不会自动实现交互逻辑。项目中只有样式或组件结构确实无法使用原生控件时，才考虑自定义角色并补齐键盘和焦点行为。</li>
+          <li><strong><code>aria-expanded</code>、<code>aria-controls</code> 和 <code>hidden</code> 分别表达什么？</strong> 结论是 <code>aria-expanded</code> 告诉辅助技术当前是否展开，<code>aria-controls</code> 建立控制关系，<code>hidden</code> 控制元素实际是否显示和暴露。原因是状态、关系和可见性是不同层面的信息。边界是不能只改 ARIA 不改 UI，也不能只隐藏 UI 不更新状态。</li>
+          <li><strong><code>aria-live</code> 适合哪些动态内容？</strong> 结论是适合不移动焦点也需要告知用户的状态变化，例如保存成功、筛选结果数量、展开折叠状态。原因是读屏用户不一定能看到视觉变化。边界是频繁变化或非关键消息不要用 <code>assertive</code>，否则会造成播报噪音和用户打断。</li>
+          <li><strong>如何验证一个组件键盘可用？</strong> 结论是不用鼠标也能发现、聚焦、操作、退出，并且焦点始终可见。原因是键盘访问是 WCAG 的基础要求，也影响读屏和开关设备用户。项目中应把 Tab 顺序、Enter/Space 行为、Esc/方向键等约定纳入测试用例。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA">MDN Web Docs: ARIA</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Attributes/aria-expanded">MDN Web Docs: aria-expanded</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Guides/Live_regions">MDN Web Docs: ARIA live regions</a></li>
+          <li><a href="https://www.w3.org/WAI/WCAG22/Understanding/keyboard">W3C WAI: Understanding Success Criterion 2.1.1 Keyboard</a></li>
+          <li><a href="https://www.w3.org/WAI/WCAG22/Understanding/focus-visible">W3C WAI: Understanding Success Criterion 2.4.7 Focus Visible</a></li>
         </ul>
       </div>
     </section>

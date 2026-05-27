@@ -21,11 +21,13 @@ self.onmessage = function (e) {
             carryOutTaskC(data);
             break;
         default:
+            self.postMessage({task: task || "unknown", data: null, state: -1, error: "unknown task"});
             break;
     }
 };
 
 function carryOutTaskA(data) {
+    data = normalizeCount(data);
     self.postMessage({task: "A", data: data, state: 0});
 
     let sum = 1;
@@ -38,7 +40,7 @@ function carryOutTaskA(data) {
 }
 
 function carryOutTaskB(data) {
-    data = parseInt(data);
+    data = normalizeCount(data);
     self.postMessage({task: "B", data: data, state: 0});
 
     let sum = 1;
@@ -50,4 +52,12 @@ function carryOutTaskB(data) {
 
 function carryOutTaskC(data) {
 
+}
+
+function normalizeCount(data) {
+    let count = Number.parseInt(data, 10);
+    if (!Number.isFinite(count) || count < 0) {
+        return 0;
+    }
+    return Math.min(count, 50000000);
 }

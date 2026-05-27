@@ -5,10 +5,12 @@
     - fetch 只有网络错误才会 reject；HTTP 404/500 需要检查 response.ok
     - 跨域由浏览器同源策略限制，CORS 需要服务端返回 Access-Control-* 响应头
     - 简单请求直接发出；非简单请求会先发送 OPTIONS 预检请求
+    - mode: 'no-cors' 只能得到不可读 opaque 响应，不能绕过跨域读取限制
   面试:
     - fetch 与 axios 在错误处理上有何不同？
     - 什么是 CORS 预检请求？何时触发？
     - mode: 'no-cors' 能解决跨域吗？
+    - 前端请求失败时如何区分网络错误、HTTP 错误和 CORS 拦截？
   相关: HTTP缓存, DOM操作
 -->
 
@@ -34,16 +36,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>fetch</code> 只有网络错误才会 reject；HTTP 404/500 需要检查 <code>response.ok</code>。</li>
-          <li>跨域由浏览器同源策略限制，CORS 需要服务端返回 <code>Access-Control-*</code> 响应头。</li>
-          <li>简单请求直接发出；非简单请求会先发送 OPTIONS 预检请求。</li>
-          <li><code>mode: 'no-cors'</code> 不是万能跨域，响应会变成不可读的 opaque。</li>
+          <li><code>fetch()</code> 返回 Promise，但只有网络层失败、请求被中止或浏览器安全策略阻止这类场景会 reject；HTTP 404/500 仍会 resolve 成 <code>Response</code>，所以业务代码必须检查 <code>response.ok</code> 或 <code>status</code>。</li>
+          <li>CORS 是浏览器在同源策略上的受控放行机制。是否允许跨域读取响应由目标服务端通过 <code>Access-Control-Allow-Origin</code>、<code>Access-Control-Allow-Methods</code>、<code>Access-Control-Allow-Headers</code> 等响应头决定，前端单独改请求参数不能替服务端授权。</li>
+          <li>简单请求会直接发送；使用非简单方法、自定义请求头，或 <code>Content-Type</code> 不属于表单三类时，浏览器会先发 OPTIONS 预检请求。预检失败时 JS 通常只能看到泛化的 <code>TypeError</code>，具体原因要结合 Network 面板和服务端日志排查。</li>
+          <li><code>mode: "no-cors"</code> 不能解决跨域读取，它只允许发出受限请求并返回不可读的 opaque response，前端拿不到状态码和响应体。真实项目要用后端 CORS 配置、同源代理或后端转发解决。</li>
+          <li>本页用 <code>textContent</code> 展示请求结果，避免把远程响应拼成 HTML；网络 demo 还要准备失败路径、加载中状态、超时或 AbortController 取消，避免用户面对静默失败。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>fetch 错误处理？</strong> 只有网络失败才 reject；404/500 需手动检查 response.ok 或 status。</li>
-          <li><strong>CORS 预检何时触发？</strong> 非简单请求（自定义头、PUT/DELETE、Content-Type 非表单三类型）先发 OPTIONS。</li>
-          <li><strong>跨域怎么解决？</strong> 服务端返回 Access-Control-Allow-Origin 等头；开发环境可用代理，生产靠后端配置。</li>
+          <li><strong>fetch 与 axios 在错误处理上有何不同？</strong> 结论是原生 <code>fetch</code> 对 HTTP 4xx/5xx 不会自动 reject，axios 默认会把非 2xx 状态当作 rejected Promise。原因是 Fetch 标准把“请求成功拿到响应”和“业务状态成功”分开。项目里封装请求层时应统一检查 <code>response.ok</code>、解析错误体，并把网络错误、HTTP 错误和业务错误区分开。</li>
+          <li><strong>什么是 CORS 预检请求？何时触发？</strong> 结论是预检是浏览器在正式跨域请求前发送的 OPTIONS 请求，用来询问服务端是否允许方法、请求头和来源。原因是非简单请求可能产生更强副作用，浏览器需要先确认授权。项目里如果新增 <code>Authorization</code> 或自定义头，要同步配置 <code>Access-Control-Allow-Headers</code>。</li>
+          <li><strong><code>mode: "no-cors"</code> 能解决跨域吗？</strong> 结论是不能解决“读取跨域响应”的问题，只会得到不可读 opaque 响应。原因是它不会绕过同源策略，浏览器仍不允许 JS 读取未授权响应体。项目里正确做法是服务端 CORS、同源反向代理或后端转发，而不是让前端强行 no-cors。</li>
+          <li><strong>前端请求失败时如何区分网络错误、HTTP 错误和 CORS 拦截？</strong> 结论是先看 Promise 是否 reject，再看 <code>response.ok/status</code>，同时结合 DevTools Network 判断是否被 CORS 或预检拦截。原因是浏览器出于安全考虑不会把所有跨域失败细节暴露给 JS。项目中要给用户展示可理解的失败提示，并在日志里记录 URL、状态码、请求 ID 和失败阶段。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch" target="_blank" rel="noreferrer">MDN: Using the Fetch API</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS" target="_blank" rel="noreferrer">MDN: Cross-Origin Resource Sharing (CORS)</a></li>
+          <li><a href="https://fetch.spec.whatwg.org/" target="_blank" rel="noreferrer">WHATWG Fetch Standard</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Response/ok" target="_blank" rel="noreferrer">MDN: Response.ok</a></li>
         </ul>
       </div>
     </section>

@@ -2,15 +2,15 @@
 分类: javascript / 06-浏览器API / WebWorker / 02-命名与消息分发
   主题: 给 Worker 命名 + 用消息体分发不同任务
   要点:
-    - new Worker(path, { name }) 可标识不同 worker，便于 DevTools 调试
-    - 主线程发送 {task, data}，子线程依据 task 字段调用对应函数
-    - 易错点：直接在主线程跑大循环（startCount）会卡死 UI，应放到 worker
+    - new Worker(path, { name }) 可给 worker 调试上下文命名，便于区分多个后台任务
+    - 主线程用 { task, data } 这类消息协议分发任务，worker 返回 task/state/data 驱动 UI
+    - CPU 密集任务应放入 worker，主线程只负责启动、取消、展示结果和错误处理
+    - terminate() 后同一个 Worker 实例不可复用，需要重新 new Worker 才能再次启动任务
   面试:
-    - 给 Worker 命名 + 用消息体分发不同任务的核心概念是什么
-    - 给 Worker 命名 + 用消息体分发不同任务在实际项目里怎么用
-    - 给 Worker 命名 + 用消息体分发不同任务有哪些常见坑或易错点
-    - 给 Worker 命名 + 用消息体分发不同任务和相近 API 如何区分选型
-    - 面试中如何简洁讲清 给 Worker 命名 + 用消息体分发不同任务
+    - Worker 的 name 选项解决什么调试问题？
+    - 多任务 worker 为什么要设计消息协议，而不是只传裸值？
+    - 如何避免 CPU 密集任务卡住 UI 或耗尽浏览器资源？
+    - Worker 与 setTimeout 分片、requestIdleCallback 的选型边界是什么？
 -->
 
 <!doctype html>
@@ -30,15 +30,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>new Worker(path, { name }) 可标识不同 worker，便于 DevTools 调试。</li>
-          <li>主线程发送 {task, data}，子线程依据 task 字段调用对应函数。</li>
-          <li>易错点：直接在主线程跑大循环（startCount）会卡死 UI，应放到 worker。</li>
+          <li><code>new Worker("work.js", { name: "hardWork1" })</code> 会给 worker 上下文命名，方便在 DevTools、错误日志或多 worker 场景里区分任务来源；它不是线程池，也不会自动调度多个任务。</li>
+          <li>本页约定主线程发送 <code>{ task, data }</code>，worker 根据 <code>task</code> 分发到不同处理函数，再返回 <code>{ task, data, state }</code>。这种显式协议比只传裸值更容易扩展、取消和排查错误。</li>
+          <li>CPU 密集循环放在主线程会阻塞 UI；示例中的 <code>startCount()</code> 只保留为对比，真实大任务应由 worker 执行，主线程只负责按钮响应、状态展示和终止任务。</li>
+          <li>消息入口要把 <code>task</code>、<code>data</code>、任务规模和未知分支都当作边界处理。来自 UI 或网络的数据不能默认可信，否则可能触发超大循环、内存膨胀或无法停止的后台任务。</li>
+          <li><code>terminate()</code> 会立即结束当前 worker，同一个 <code>Worker</code> 实例不能恢复执行；如果用户再次启动任务，主线程必须重新创建 worker 并重新绑定消息、错误处理函数。</li>
+          <li>Worker 适合持续或重 CPU 的后台计算；如果只是把轻量任务让出一次事件循环，可用 <code>setTimeout</code> 或 <code>queueMicrotask</code>，如果是空闲期低优先级工作，可考虑 <code>requestIdleCallback</code> 但要注意兼容性。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>new Worker(path？</strong> new Worker(path, { name }) 可标识不同 worker，便于 DevTools 调试</li>
-          <li><strong>主线程发送 {task？</strong> 主线程发送 {task, data}，子线程依据 task 字段调用对应函数；易错点：直接在主线程跑大循环（startCount）会卡死 UI，应放到 worker</li>
-          <li><strong>给 Worker 命名 + 用消息体分发不同任务的核心概念是什么？</strong> new Worker(path, { name }) 可标识不同 worker，便于 DevTools 调试；主线程发送 {task, data}，子线程依据 task 字段调用对应函数</li>
+          <li><strong>Worker 的 name 选项解决什么调试问题？</strong> 结论是它用于给 worker 全局作用域命名，帮助调试时识别哪个后台脚本在运行。原因是多个 worker 同时存在时，只有脚本路径往往不足以定位任务。项目里通常把业务含义写进 name，例如 image-compressor 或 search-index-builder。</li>
+          <li><strong>多任务 worker 为什么要设计消息协议，而不是只传裸值？</strong> 结论是消息协议能让主线程和 worker 对任务类型、输入、进度、完成和错误形成稳定契约。原因是 <code>postMessage</code> 本身只负责传数据，不知道业务语义。实际项目会把 <code>task</code>、<code>requestId</code>、<code>payload</code>、<code>state</code>、<code>error</code> 都标准化，方便并发任务回包归属。</li>
+          <li><strong>如何避免 CPU 密集任务卡住 UI 或耗尽浏览器资源？</strong> 结论是重计算放进 worker，并给任务规模、取消、错误和重复点击设置边界。原因是 worker 不阻塞主线程，但仍会消耗 CPU 和内存，任务过大一样会影响设备。项目里常配合按钮禁用、进度状态、超时取消和 <code>terminate()</code> 做保护。</li>
+          <li><strong>Worker 与 setTimeout 分片、requestIdleCallback 的选型边界是什么？</strong> 结论是 worker 用于真正需要并行执行的重任务，分片和 idle callback 只是把主线程任务拆开排队。原因是后两者仍在主线程执行，不能避免总计算量对页面响应的影响。轻量分批渲染可用分片，后台索引、压缩、解析等更适合 worker。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Worker/Worker" target="_blank" rel="noreferrer">MDN: Worker() constructor</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers" target="_blank" rel="noreferrer">MDN: Using Web Workers</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Worker/terminate" target="_blank" rel="noreferrer">MDN: Worker.terminate()</a></li>
+          <li><a href="https://html.spec.whatwg.org/multipage/workers.html" target="_blank" rel="noreferrer">WHATWG HTML Standard: Workers</a></li>
         </ul>
       </div>
     </section>
@@ -68,31 +79,51 @@
       function startCount() {
         console.log("count start....");
         let count = 0;
-        for (let i = 0; i < 10000000000000; i++) {
+        for (let i = 0; i < 50000000; i++) {
           count = count + i;
         }
         console.log("count end...." + count);
       }
 
       //msg format to work: {task: "A", data: "xxx"}
-      //msg format from work: {desc: "Task A finish...", data: data}
-      let work = new Worker("work.js", {name: 'hardWork1'});
+      //msg format from work: {task: "A", data: data, state: 0 | 1}
+      let work = createWorker();
+
+      function createWorker() {
+        const nextWorker = new Worker("work.js", {name: 'hardWork1'});
+        nextWorker.onmessage = handleWorkerMessage;
+        nextWorker.onerror = function (event) {
+          console.log("worker error: " + event.message);
+          nextWorker.terminate();
+          if (work === nextWorker) {
+            work = null;
+          }
+        };
+        return nextWorker;
+      }
 
       function startTaskA() {
+        if (!work) {
+          work = createWorker();
+        }
         let msg = {task: "A", data: "1000"};
         work.postMessage(msg);
       }
 
       function stopTaskA() {
-        work.terminate();
+        if (work) {
+          work.terminate();
+          work = null;
+          console.log("worker stopped; next start will create a new Worker instance.");
+        }
       }
 
-      work.onmessage = function (e) {
+      function handleWorkerMessage(e) {
         let msg = e.data;
         console.log("work msg: " + JSON.stringify(msg));
 
-        if (msg.task === 'A' && msg.state === 1) {
-          let msg = {task: "B", data: "10000000000"};
+        if (work && msg.task === 'A' && msg.state === 1) {
+          let msg = {task: "B", data: "50000000"};
           work.postMessage(msg);
         }
       }

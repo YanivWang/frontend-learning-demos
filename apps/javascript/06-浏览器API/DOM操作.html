@@ -2,15 +2,15 @@
 分类: javascript / 06-浏览器API
   主题: DOM 基础操作（选择 / 属性 / 数据集 / 类）
   要点:
-    - HTMLCollection 是实时集合；NodeList（querySelectorAll）是快照
-    - dataset.xxx 比 getAttribute('data-xxx') 更简洁
-    - element.classList 比直接拼 className 字符串更安全
+    - getElementById 返回单个元素，getElementsByClassName 返回实时 HTMLCollection
+    - querySelectorAll 返回静态 NodeList，DOM 变化后不会自动补入新匹配项
+    - dataset 适合读写 data-* 自定义数据，classList 适合增删切换类名
+    - 用户输入写入页面时优先使用 textContent，避免 innerHTML 造成 XSS 风险
   面试:
-    - DOM 基础操作（选择 / 属性 / 数据集 / 类）的核心概念是什么
-    - DOM 基础操作（选择 / 属性 / 数据集 / 类）在实际项目里怎么用
-    - DOM 基础操作（选择 / 属性 / 数据集 / 类）有哪些常见坑或易错点
-    - DOM 基础操作（选择 / 属性 / 数据集 / 类）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 DOM 基础操作（选择 / 属性 / 数据集 / 类）
+    - HTMLCollection 和 querySelectorAll 返回的 NodeList 有什么差异？
+    - dataset、getAttribute 和直接挂 JS 属性分别适合什么场景？
+    - classList 为什么比拼接 className 更可靠？
+    - innerHTML 和 textContent 在安全边界上如何选择？
 -->
 
 <!doctype html>
@@ -35,15 +35,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>HTMLCollection 是实时集合；NodeList（querySelectorAll）是快照。</li>
-          <li>dataset.xxx 比 getAttribute('data-xxx') 更简洁。</li>
-          <li>element.classList 比直接拼 className 字符串更安全。</li>
+          <li><code>getElementById</code> 返回单个元素或 <code>null</code>；<code>getElementsByClassName</code> 返回实时 <code>HTMLCollection</code>，DOM 变化会反映到集合里。</li>
+          <li><code>querySelectorAll</code> 返回静态 <code>NodeList</code>，它是当次查询快照；如果后续插入新匹配元素，需要重新查询。</li>
+          <li><code>dataset</code> 是读写 <code>data-*</code> 属性的现代接口，适合把少量声明式配置挂在 HTML 上；<code>getAttribute/setAttribute</code> 更通用，能处理任意属性。</li>
+          <li><code>classList.add/remove/toggle</code> 以 token 方式操作类名，比拼接 <code>className</code> 字符串更不容易重复、误删或覆盖已有类。</li>
+          <li><code>innerHTML</code> 会解析 HTML，只有在内容可信或经过严格净化时才应使用；渲染用户输入、日志和错误信息时优先用 <code>textContent</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>HTMLCollection 是实时集合？</strong> HTMLCollection 是实时集合；NodeList（querySelectorAll）是快照</li>
-          <li><strong>dataset.xxx 比 getAttribute('data-xxx') 更？</strong> dataset.xxx 比 getAttribute('data-xxx') 更简洁</li>
-          <li><strong>element.classList 比直接拼 className 字符串更安全？</strong> HTMLCollection 是实时集合；NodeList（querySelectorAll）是快照；element.classList 比直接拼 className 字符串更安全</li>
+          <li><strong>HTMLCollection 和 querySelectorAll 返回的 NodeList 有什么差异？</strong> 结论是前者通常是实时集合，后者是静态快照。原因是传统 DOM 集合会随文档变化自动更新，而选择器查询返回的是当次匹配结果。项目里遍历实时集合时要小心边遍历边修改 DOM 导致索引变化。</li>
+          <li><strong>dataset、getAttribute 和直接挂 JS 属性分别适合什么场景？</strong> 结论是 <code>dataset</code> 适合 <code>data-*</code> 配置，<code>getAttribute</code> 适合读取真实 HTML 属性，直接挂 JS 属性只存在于当前 DOM 对象实例上。原因是属性 attribute 和 JS property 是两套相关但不完全相同的模型。需要被 CSS、选择器、序列化或服务端模板感知时应写 attribute。</li>
+          <li><strong>classList 为什么比拼接 className 更可靠？</strong> 结论是 <code>classList</code> 按类名 token 操作，不需要手动处理空格、重复和覆盖。原因是浏览器提供了专门的 <code>DOMTokenList</code> API。项目里做状态类切换、校验高亮或组件开关时优先用 <code>classList.toggle(name, force)</code>。</li>
+          <li><strong>innerHTML 和 textContent 在安全边界上如何选择？</strong> 结论是可信 HTML 模板才用 <code>innerHTML</code>，用户输入和接口文本优先用 <code>textContent</code>。原因是 <code>innerHTML</code> 会把字符串作为 HTML 解析，可能引入 XSS。项目里如果必须渲染富文本，要经过可信的 HTML sanitizer，并避免直接拼接未过滤数据。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementsByClassName">MDN: Document.getElementsByClassName()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll">MDN: Document.querySelectorAll()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset">MDN: HTMLElement.dataset</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/classList">MDN: Element.classList</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML">MDN: Element.innerHTML</a></li>
         </ul>
       </div>
     </section>
@@ -74,8 +85,8 @@
         console.log("HTMLCollection:", list);
         console.log("NodeList:", list2);
 
-        // ② 内容修改
-        list[0].innerHTML = "<b>已被修改</b>";
+        // ② 内容修改：用户输入或接口文本优先用 textContent，避免被当 HTML 解析。
+        list[0].textContent = "已被修改";
 
         // ③ 内联样式 .style.xxx
         single.style.backgroundColor = "#ffe5b4";

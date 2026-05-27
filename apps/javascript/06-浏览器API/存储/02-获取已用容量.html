@@ -2,15 +2,16 @@
 分类: javascript / 06-浏览器API / 存储
   主题: 通过 iterate 统计已用容量
   要点:
-    - iterate 回调中累计 key.length + JSON.stringify(value).length 估算字节数
-    - 估算并非物理字节，但够用作业务粗略容量提示
-    - 注意：JSON.stringify 不能正确序列化 Date/Blob 等，需要特殊处理
+    - localforage.iterate 可遍历当前 store 的 key/value，用于业务级容量估算
+    - TextEncoder 可按 UTF-8 估算字符串字节数，比 length 更接近实际文本大小
+    - Blob、ArrayBuffer、Date、循环引用等类型不能只靠 JSON.stringify 统计
+    - StorageManager.estimate 返回 origin 级用量和配额，不能直接精确到 localforage store
   面试:
-    - 通过 iterate 统计已用容量的核心概念是什么
-    - 通过 iterate 统计已用容量在实际项目里怎么用
-    - 通过 iterate 统计已用容量有哪些常见坑或易错点
-    - 通过 iterate 统计已用容量和相近 API 如何区分选型
-    - 面试中如何简洁讲清 通过 iterate 统计已用容量
+    - 如何粗略统计 localforage 当前 store 已用容量？
+    - 为什么 key.length + JSON.stringify(value).length 不是准确字节数？
+    - StorageManager.estimate 和业务自算容量有什么区别？
+    - 遍历统计容量在大数据量场景有什么性能风险？
+    - Blob、Date、循环引用等值如何影响容量估算？
 -->
 
 <!doctype html>
@@ -31,16 +32,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>iterate 回调中累计 <code>key</code>.length + JSON.stringify(value).length 估算字节数。</li>
-          <li>估算并非物理字节，但够用作业务粗略容量提示。</li>
-          <li>注意：JSON.stringify 不能正确序列化 Date/Blob 等，需要特殊处理。</li>
-          <li>iterate 回调中累计 <code>key</code>.length + JSON.stringify(value).length 估算字节数（补充）。</li>
+          <li><code>localforage.iterate()</code> 会遍历当前 store 的每个 key/value，适合做业务层“我写入了多少数据”的粗略统计，但它不是浏览器底层物理占用统计。</li>
+          <li>用 <code>TextEncoder</code> 计算字符串 UTF-8 字节数，比直接用 <code>length</code> 更接近真实文本大小；中文、emoji 等字符用 <code>length</code> 会明显低估或误判。</li>
+          <li>值类型会影响估算策略：<code>Blob</code> 可直接读 <code>size</code>，<code>ArrayBuffer</code> 可读 <code>byteLength</code>，普通对象可 JSON 序列化估算，<code>Date</code>、<code>Map</code>、循环引用需要特殊处理。</li>
+          <li><code>navigator.storage.estimate()</code> 返回的是整个 origin 的 <code>usage</code> 和 <code>quota</code>，包含 IndexedDB、Cache Storage 等来源；它适合判断总体配额压力，不适合精确归因到某个 localforage store。</li>
+          <li>全量遍历本身是异步 I/O 和序列化工作，数据量大时可能很慢；实际项目应维护增量元数据、分批统计，或只在设置页/诊断页触发。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>iterate 回调中累计 key.length + JSON.stringif？</strong> iterate 回调中累计 <code>key</code>.length + JSON.stringify(value).length 估算字节数</li>
-          <li><strong>通过 iterate 统计已用容量的核心概念是什么？</strong> iterate 回调中累计 <code>key</code>.length + JSON.stringify(value).length 估算字节数；估算并非物理字节，但够用作业务粗略容量提示</li>
-          <li><strong>通过 iterate 统计已用容量在实际项目里怎么用？</strong> iterate 回调中累计 <code>key</code>.length + JSON.stringify(value).length 估算字节数；估算并非物理字节，但够用作业务粗略容量提示</li>
+          <li><strong>如何粗略统计 localforage 当前 store 已用容量？</strong> 结论是遍历 store 后按 key 和 value 的序列化字节数累加。原因是 localforage 没有提供单个 store 的精确物理占用 API；项目里可用这个估算给用户展示缓存大小，但不能把它当作浏览器配额判定。</li>
+          <li><strong>为什么 <code>key.length + JSON.stringify(value).length</code> 不是准确字节数？</strong> 结论是它只是字符数近似。原因是 JavaScript 字符串长度按 UTF-16 code unit 计算，存储层可能按 UTF-8、结构化克隆或浏览器内部格式保存；中文、emoji、Blob 和对象都会让误差变大。</li>
+          <li><strong><code>StorageManager.estimate()</code> 和业务自算容量有什么区别？</strong> 结论是前者看 origin 总体，后者看业务数据估算。原因是 <code>estimate()</code> 汇总浏览器认为当前源已用和可用的配额，不能告诉你某个 key 或 store 占多少；排查配额压力时两者可以结合。</li>
+          <li><strong>遍历统计容量在大数据量场景有什么性能风险？</strong> 结论是可能造成明显耗时和额外序列化开销。原因是每条数据都要读取、转换、累计；真实项目应避免在首屏自动运行，改成用户主动触发、分页统计或写入时维护累计元数据。</li>
+          <li><strong>Blob、Date、循环引用等值如何影响容量估算？</strong> 结论是不能统一用 JSON。原因是 <code>Blob</code> 有 <code>size</code>，<code>Date</code> 会被 JSON 转成字符串，循环引用会直接抛错；业务上应按数据类型选择估算策略并捕获异常。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://localforage.github.io/localForage/#data-api-iterate" target="_blank" rel="noreferrer">localForage API: iterate()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder" target="_blank" rel="noreferrer">MDN: TextEncoder</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/estimate" target="_blank" rel="noreferrer">MDN: StorageManager estimate()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob/size" target="_blank" rel="noreferrer">MDN: Blob size</a></li>
         </ul>
       </div>
     </section>
@@ -48,36 +59,61 @@
 
     <!-- SCRIPT_START -->
     <script>
-      console.log("进入..");
-      /*
-      async function testRemainCap() {
-        await localforage.setItem("name", "Join");
-        for (let i = 0; i < 10000; i++) {
-          await localforage.setItem("key_" + i, Math.random().toFixed(5));
+      const encoder = new TextEncoder();
+      const store = localforage.createInstance({
+        name: "frontend-learning-demos",
+        storeName: "localforage_usage_estimate",
+      });
+
+      function stringBytes(text) {
+        return encoder.encode(String(text)).byteLength;
+      }
+
+      function valueBytes(value) {
+        if (value == null) return 0;
+        if (typeof value === "string") return stringBytes(value);
+        if (value instanceof Blob) return value.size;
+        if (value instanceof ArrayBuffer) return value.byteLength;
+
+        try {
+          return stringBytes(JSON.stringify(value));
+        } catch (error) {
+          console.warn("无法序列化，使用字符串兜底估算：", error);
+          return stringBytes(String(value));
         }
       }
-      testRemainCap().then(function () {
-        console.log("写入完毕..");
-      });*/
 
-      var time1 = new Date().getTime();
+      async function seedDemoData() {
+        await store.setItem("name", "Join");
+        await store.setItem("profile", { level: "demo", updatedAt: new Date().toISOString() });
+        await store.setItem("note", "localforage 容量估算示例：中文和 emoji 🚀 会占用多个字节。");
+      }
 
-      let totalSize = 0;
-      let iterNumber1 = 0;
-      localforage.iterate(function (value, key, iterNumber) {
-        totalSize = totalSize + key.length + JSON.stringify(value).length;
-        //iterNumber1 = iterNumber;
-        //console.log(iterNumber + " : " + totalSize);
-      }).then(function () {
-        var time2 = new Date().getTime();
+      async function estimateStoreUsage() {
+        await seedDemoData();
 
-        console.log("用时：" + (time2 - time1)/1000 + "s");
+        const startedAt = performance.now();
+        let totalBytes = 0;
 
-        //console.log("iterNumber:" + iterNumber1);
-        console.log("totalSize:" + totalSize/1024/1024 + "M");
-      }).catch(function (err) {
-        console.log("err:" + err);
-      })
+        await store.iterate(function (value, key, iterationNumber) {
+          const bytes = stringBytes(key) + valueBytes(value);
+          totalBytes += bytes;
+          console.log(iterationNumber + ":", key, bytes + " bytes");
+        });
+
+        console.log("业务估算已用：" + (totalBytes / 1024).toFixed(2) + " KB");
+        console.log("遍历耗时：" + ((performance.now() - startedAt) / 1000).toFixed(3) + "s");
+
+        if (navigator.storage?.estimate) {
+          const estimate = await navigator.storage.estimate();
+          console.log("origin 总体用量：" + Math.round((estimate.usage || 0) / 1024) + " KB");
+          console.log("origin 总体配额：" + Math.round((estimate.quota || 0) / 1024 / 1024) + " MB");
+        }
+      }
+
+      estimateStoreUsage().catch(function (error) {
+        console.error("容量估算失败：", error);
+      });
 
     </script>
     <!-- SCRIPT_END -->

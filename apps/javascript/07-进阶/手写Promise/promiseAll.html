@@ -2,15 +2,15 @@
 分类: javascript / 07-进阶 / 手写Promise
   主题: 手写 Promise.all
   要点:
-    - 全部 resolve 才整体 resolve；任一 reject 立刻整体 reject
-    - 易错点：用 retArray.length 判断完成数会失败（稀疏数组的 length 是「最大索引+1」）
-    - 用独立计数器 doneCount 判断完成数，避免稀疏数组 length 陷阱
+    - Promise.all 接收 iterable，返回一个聚合 Promise
+    - 空 iterable 立即 fulfilled；非空输入按传入顺序收集结果，而不是完成顺序
+    - 任一输入 rejected 时整体 fail-fast rejected，原因使用第一个拒绝原因
+    - 手写时要用 Promise.resolve 吸收普通值或 thenable，并用计数器避免稀疏数组 length 陷阱
   面试:
-    - 手写 Promise.all的核心概念是什么
-    - 手写 Promise.all在实际项目里怎么用
-    - 手写 Promise.all有哪些常见坑或易错点
-    - 手写 Promise.all和相近 API 如何区分选型
-    - 面试中如何简洁讲清 手写 Promise.all
+    - Promise.all 为什么结果顺序按输入顺序而不是完成顺序？
+    - 手写 Promise.all 时为什么要用独立完成计数器？
+    - Promise.all 的 fail-fast 行为和 allSettled 有什么区别？
+    - 空数组、普通值、thenable、非 iterable 输入分别怎么处理？
 -->
 
 <!doctype html>
@@ -30,15 +30,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>全部 resolve 才整体 resolve；任一 reject 立刻整体 reject。</li>
-          <li>易错点：用 retArray.length 判断完成数会失败（稀疏数组的 length 是「最大索引+1」）。</li>
-          <li>用独立计数器 doneCount 判断完成数，避免稀疏数组 length 陷阱。</li>
+          <li><code>Promise.all(iterable)</code> 接收一个可迭代对象，返回聚合 Promise；所有输入 fulfilled 后，聚合 Promise fulfilled 为结果数组。</li>
+          <li>结果数组按输入顺序写入，而不是按完成顺序写入，所以手写时必须记录每个任务的原始索引：第 3 个先完成也要写到结果数组第 3 位。</li>
+          <li>任一输入 rejected 时，聚合 Promise 立即以第一个拒绝原因 rejected；这叫 fail-fast。其他任务不会被自动取消，它们可能仍在继续执行，只是聚合结果已经失败。</li>
+          <li>边界处理很重要：空 iterable 应得到 <code>[]</code>；普通值和 thenable 需要通过 <code>Promise.resolve</code> 归一化；非 iterable 输入会让返回的 Promise rejected 为 <code>TypeError</code>。</li>
+          <li>不要用 <code>retArray.length</code> 判断完成数量，因为数组按索引赋值会形成稀疏数组，<code>length</code> 只是最大索引加 1；应使用独立 <code>doneCount</code> 统计 fulfilled 的输入数量。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>全部 resolve 才整体 resolve？</strong> 全部 resolve 才整体 resolve；任一 reject 立刻整体 reject</li>
-          <li><strong>用独立计数器 doneCount 判断完成数？</strong> 用独立计数器 doneCount 判断完成数，避免稀疏数组 length 陷阱</li>
-          <li><strong>手写 Promise.all的核心概念是什么？</strong> 全部 resolve 才整体 resolve；任一 reject 立刻整体 reject；易错点：用 retArray.length 判断完成数会失败（稀疏数组的 length 是「最大索引+1」）</li>
+          <li><strong><code>Promise.all</code> 为什么按输入顺序返回结果？</strong> 结论是规范要求 fulfillment values 按 iterable 迭代出的顺序组成数组。原因是调用方需要稳定地把结果映射回输入任务，而异步完成顺序不可预测。项目中并发请求用户、订单、权限时，结果顺序稳定能避免额外排序和配对错误。</li>
+          <li><strong>手写时为什么要用独立完成计数器？</strong> 结论是计数器表示真正 fulfilled 的元素数，数组 <code>length</code> 不能表示完成数。原因是先写入高索引会把 <code>length</code> 拉大，导致稀疏数组误判全部完成。边界是空 iterable 要单独处理，否则计数器永远不会触发 resolve。</li>
+          <li><strong><code>Promise.all</code> 和 <code>allSettled</code> 怎么选？</strong> 结论是任务互相依赖、任一失败就无法继续时用 <code>all</code>；需要拿到每个任务最终状态时用 <code>allSettled</code>。原因是 <code>all</code> fail-fast，<code>allSettled</code> 等全部 settled。项目中首屏必要数据可用 <code>all</code>，批量上报或多接口容错更适合 <code>allSettled</code>。</li>
+          <li><strong>普通值、thenable 和非 iterable 输入怎么处理？</strong> 结论是普通值和 thenable 都应通过 <code>Promise.resolve</code> 归一化，非 iterable 会让聚合 Promise rejected。原因是原生 <code>Promise.all</code> 面向 iterable，并对每个元素执行 Promise 解析过程。边界是手写面试版可简化，但要主动说明和规范实现的差异。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all">MDN Web Docs: Promise.all()</a></li>
+          <li><a href="https://tc39.es/ecma262/#sec-promise.all">ECMAScript Language Specification: Promise.all</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled">MDN Web Docs: Promise.allSettled()</a></li>
         </ul>
       </div>
     </section>
@@ -61,24 +70,32 @@
       // 规则:
       //   1.有一个失败就 reject
       //   2.全部成功才 resolve
-      Promise.myAll = function (...args) {
+      Promise.myAll = function (iterable) {
         return new Promise((resolve, reject) => {
-          const retArray = new Array(args.length);
+          let items;
+          try {
+            items = Array.from(iterable);
+          } catch (error) {
+            reject(error);
+            return;
+          }
+
+          const retArray = new Array(items.length);
 
           // 边界：传空数组应立即 resolve([])
-          if (args.length === 0) {
+          if (items.length === 0) {
             resolve(retArray);
             return;
           }
 
           // 用计数器 doneCount 代替 retArray.length，避免稀疏数组 length 判断陷阱
           let doneCount = 0;
-          args.forEach((tempPromise, index) => {
+          items.forEach((tempPromise, index) => {
             // 包一层 Promise.resolve，容忍非 thenable 输入
             Promise.resolve(tempPromise).then((res) => {
               retArray[index] = res;
               doneCount++;
-              if (doneCount === args.length) {
+              if (doneCount === items.length) {
                 resolve(retArray);
               }
             }).catch(reject);
@@ -86,7 +103,7 @@
         });
       };
 
-      Promise.myAll(p1, p2, p3).then(res => {
+      Promise.myAll([p1, p2, p3]).then(res => {
         console.log("all resolved:", res);
       }).catch(err => {
         console.log("any rejected:", err);

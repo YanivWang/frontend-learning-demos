@@ -3,14 +3,15 @@
   主题: 拖拽调整侧栏宽度（Vue3 + requestAnimationFrame 版）
   要点:
     - mousedown 起点 → mousemove 计算偏移 → mouseup 解绑事件，是拖拽三段经典写法
-    - 拖拽过程中给容器加 .no-transition，避免 transition 让宽度跟手不及时
-    - 用 requestAnimationFrame 合帧节流，宽度变化与浏览器渲染节奏同步
+    - 拖拽中禁用 transition、阻止文本选中，避免宽度变化滞后或误选内容
+    - requestAnimationFrame 只在下一帧提交最新宽度，避免 mousemove 高频触发渲染
+    - 生产项目优先考虑 Pointer Events，以覆盖鼠标、触摸和触控笔
   面试:
-    - 拖拽调整侧栏宽度（Vue3 + requestAnimationFrame 版）的核心概念是什么
-    - 拖拽调整侧栏宽度（Vue3 + requestAnimationFrame 版）在实际项目里怎么用
-    - 拖拽调整侧栏宽度（Vue3 + requestAnimationFrame 版）有哪些常见坑或易错点
-    - 拖拽调整侧栏宽度（Vue3 + requestAnimationFrame 版）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 拖拽调整侧栏宽度（Vue3 + requestAnimationFrame 版）
+    - 拖拽调整宽度为什么要把 move/up 监听绑到 document？
+    - requestAnimationFrame 在拖拽节流里解决什么问题？
+    - 拖拽过程中为什么要禁用 transition 并阻止默认行为？
+    - 为什么要限制侧栏最小和最大宽度？
+    - Mouse Events 和 Pointer Events 在拖拽交互里如何选？
 -->
 
 <!doctype html>
@@ -208,15 +209,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>mousedown 起点 → mousemove 计算偏移 → mouseup 解绑事件，是拖拽三段经典写法。</li>
-          <li>拖拽过程中给容器加 .no-transition，避免 transition 让宽度跟手不及时。</li>
-          <li>用 <code>requestAnimationFrame</code> 合帧节流，宽度变化与浏览器渲染节奏同步。</li>
+          <li>拖拽调整宽度的核心流程是：按下时记录 <code>clientX</code> 和初始宽度，移动时计算偏移量，松开时解绑全局监听并恢复状态。</li>
+          <li>把 <code>mousemove</code>/<code>mouseup</code> 监听临时绑定到 <code>document</code>，可以避免鼠标移出手柄或侧栏后拖拽丢失；结束时必须解绑，避免内存泄漏和重复响应。</li>
+          <li>拖拽中临时添加 <code>.no-transition</code>，并在 <code>mousedown</code> 里 <code>preventDefault()</code>，可以减少宽度跟手滞后和文本被选中的问题。</li>
+          <li><code>requestAnimationFrame</code> 不是让宽度变化“更少计算”，而是把高频 <code>mousemove</code> 合并到浏览器下一帧提交，避免一帧内多次写响应式状态。</li>
+          <li>侧栏宽度要设置最小/最大边界，保证菜单仍可用、主内容不被完全挤压；真实项目还应支持键盘操作或可访问的替代设置项。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>mousedown 起点 → mousemove 计算偏移 → mouseup？</strong> mousedown 起点 → mousemove 计算偏移 → mouseup 解绑事件，是拖拽三段经典写法</li>
-          <li><strong>拖拽过程中给容器加 .no-transition？</strong> 拖拽过程中给容器加 .no-transition，避免 transition 让宽度跟手不及时</li>
-          <li><strong>用 requestAnimationFrame 合帧节流？</strong> 用 <code>requestAnimationFrame</code> 合帧节流，宽度变化与浏览器渲染节奏同步</li>
+          <li><strong>拖拽调整宽度为什么要把 move/up 监听绑到 <code>document</code>？</strong> 结论是为了让拖拽在鼠标离开手柄后仍能继续并正确结束。原因是 <code>mousemove</code> 只绑在手柄上很容易断流；边界是拖拽结束必须解绑，否则会造成重复监听和异常更新。</li>
+          <li><strong><code>requestAnimationFrame</code> 在拖拽节流里解决什么问题？</strong> 结论是把高频事件合并到浏览器绘制节奏中提交。原因是鼠标移动事件可能远高于屏幕刷新率，一帧内多次改宽度只会制造额外布局压力；项目里通常记录最新值，在下一帧一次性写入。</li>
+          <li><strong>拖拽过程中为什么要禁用 <code>transition</code> 并阻止默认行为？</strong> 结论是为了保证跟手和避免误选文本。原因是宽度过渡会让视觉变化滞后于指针，默认拖选文本会干扰交互；拖拽结束后再恢复过渡效果即可。</li>
+          <li><strong>为什么要限制侧栏最小和最大宽度？</strong> 结论是拖拽必须有业务边界。原因是过窄会隐藏菜单，过宽会挤压内容；后台系统常把边界和用户偏好一起持久化，下次打开恢复。</li>
+          <li><strong>Mouse Events 和 Pointer Events 在拖拽交互里如何选？</strong> 结论是现代项目优先 Pointer Events，简单桌面 demo 可用 Mouse Events。原因是 Pointer Events 统一鼠标、触摸和触控笔，还支持 pointer capture；如果只支持鼠标，移动端拖拽要额外写 touch 逻辑。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/mousemove_event" target="_blank" rel="noreferrer">MDN: Document mousemove event</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame" target="_blank" rel="noreferrer">MDN: requestAnimationFrame()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events" target="_blank" rel="noreferrer">MDN: Pointer events</a></li>
+          <li><a href="https://vuejs.org/guide/essentials/event-handling.html" target="_blank" rel="noreferrer">Vue Docs: Event Handling</a></li>
         </ul>
       </div>
     </section>
@@ -303,7 +315,7 @@
 
     <!-- SCRIPT_START -->
     <script>
-      const { createApp, ref, reactive, onMounted } = Vue;
+      const { createApp, ref, reactive } = Vue;
 
       createApp({
         setup() {
@@ -329,12 +341,14 @@
           const startX = ref(0);
           const startWidth = ref(0);
           let rafId = null; // requestAnimationFrame ID
+          let pendingWidth = sidebarWidth.value;
 
-          // 开始调整宽度B
+          // 开始调整宽度
           const startResize = (e) => {
             isResizing.value = true;
             startX.value = e.clientX;
             startWidth.value = sidebarWidth.value;
+            pendingWidth = sidebarWidth.value;
 
             // 添加全局事件监听
             document.addEventListener('mousemove', resize);
@@ -345,6 +359,8 @@
               cancelAnimationFrame(rafId);
               rafId = null;
             }
+
+            e.preventDefault();
           };
 
           // 调整宽度 - 使用requestAnimationFrame优化性能
@@ -356,11 +372,12 @@
 
             // 限制宽度范围（178px - 280px）
             const clampedWidth = Math.max(178, Math.min(newWidth, 280));
+            pendingWidth = clampedWidth;
 
-            // 使用requestAnimationFrame确保流畅动画
+            // 使用 requestAnimationFrame 把同一帧内的多次移动合并为一次状态写入
             if (!rafId) {
               rafId = requestAnimationFrame(() => {
-                sidebarWidth.value = clampedWidth;
+                sidebarWidth.value = pendingWidth;
                 rafId = null;
               });
             }
@@ -379,6 +396,7 @@
               cancelAnimationFrame(rafId);
               rafId = null;
             }
+            sidebarWidth.value = pendingWidth;
           };
 
           // 返回模板需要的数据和方法

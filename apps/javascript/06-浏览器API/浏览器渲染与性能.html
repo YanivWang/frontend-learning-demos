@@ -5,10 +5,13 @@
     - 关键渲染路径：HTML -> DOM，CSS -> CSSOM，然后生成 Render Tree
     - Layout 计算位置尺寸，Paint 绘制像素，Composite 合成图层
     - 批量 DOM 操作、读写分离、transform/opacity 动画可以减少性能压力
+    - 强制同步布局来自先写 DOM 再立即读 layout 属性，容易造成 layout thrashing
   面试:
     - 重排、重绘、合成分别是什么？如何减少？
     - DocumentFragment 批量插入为何更快？
     - 为什么 transform/opacity 动画性能更好？
+    - 什么是 layout thrashing，如何用读写分离避免？
+    - requestAnimationFrame 在渲染性能优化中适合做什么？
   相关: requestAnimation, DOM操作
 -->
 
@@ -39,16 +42,28 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>关键渲染路径：HTML → DOM，CSS → CSSOM，然后生成 Render Tree。</li>
-          <li>Layout 计算位置尺寸，Paint 绘制像素，Composite 合成图层。</li>
-          <li>重排 reflow：几何信息变化；重绘 repaint：视觉样式变化但布局不变；合成 composite：transform/opacity 等。</li>
-          <li>批量 DOM 操作、读写分离、transform/opacity 动画可以减少性能压力。</li>
+          <li>关键渲染路径通常包括解析 HTML 得到 DOM、解析 CSS 得到 CSSOM，再结合可见节点生成渲染树；浏览器随后计算布局、绘制像素并把图层合成到屏幕。</li>
+          <li>Layout 负责计算元素几何信息，Paint 负责把背景、文字、边框等绘制成像素，Composite 负责合成图层；不同属性变化会触发不同阶段，成本也不同。</li>
+          <li>重排（layout/reflow）来自尺寸、位置、字体等几何信息变化；重绘（paint）来自颜色、阴影等视觉变化；只改 <code>transform</code>/<code>opacity</code> 更可能停留在合成阶段。</li>
+          <li>示例里的“逐个插入”故意在每次写 DOM 后读取 <code>offsetHeight</code>，会迫使浏览器尽快计算布局；这类读写交错就是常见的 layout thrashing。</li>
+          <li><code>DocumentFragment</code> 可以先在内存中组装多个节点，再一次性插入文档，减少中间状态对布局和绘制的影响；真实项目还应使用虚拟列表、分页和按需渲染控制节点数量。</li>
+          <li><code>requestAnimationFrame</code> 适合把视觉更新安排到下一帧执行，但它不能自动修复低效 DOM 结构；优化仍要从减少节点、读写分离、避免强制同步布局入手。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>重排 vs 重绘 vs 合成？</strong> 重排最贵（改布局）；重绘次之（改颜色）；合成最轻（只改 transform/opacity 图层）。</li>
-          <li><strong>如何减少重排？</strong> DocumentFragment 批量插入、避免 layout thrashing（读写分离）、离线修改 DOM。</li>
-          <li><strong>动画优化？</strong> 优先 transform/opacity 触发合成；节流用 requestAnimationFrame。</li>
+          <li><strong>重排、重绘、合成分别是什么？如何减少？</strong> 结论是重排改几何，重绘改像素，合成组合图层。原因是布局变化会影响后续位置尺寸计算，通常成本最高；项目里应减少同步布局、批量 DOM 操作，动画优先使用 <code>transform</code>/<code>opacity</code>。</li>
+          <li><strong><code>DocumentFragment</code> 批量插入为何更快？</strong> 结论是它能把多个节点先离线组装，再一次插入文档。原因是中间节点不在当前文档树里，不会每添加一个都形成可见中间状态；边界是最终插入大量节点仍然会有一次布局和绘制成本。</li>
+          <li><strong>为什么 <code>transform</code>/<code>opacity</code> 动画性能更好？</strong> 结论是它们更容易在合成阶段完成。原因是改变平移、缩放、透明度通常不需要重新计算其他元素布局；但如果元素很多、图层过多或有复杂滤镜，仍可能占用 GPU/内存并掉帧。</li>
+          <li><strong>什么是 layout thrashing，如何用读写分离避免？</strong> 结论是 layout thrashing 是反复写样式/DOM 后马上读布局信息，导致浏览器多次强制同步布局。原因是浏览器本可批量计算布局，但读 <code>offsetHeight</code>/<code>getBoundingClientRect()</code> 会要求立即给出最新值；项目里应先批量读，再批量写。</li>
+          <li><strong><code>requestAnimationFrame</code> 在渲染性能优化中适合做什么？</strong> 结论是适合调度下一帧的视觉更新和动画循环。原因是回调会在浏览器下一次重绘前执行，能和刷新节奏对齐；边界是它不是节省计算的魔法，重任务仍需拆分、降采样或移到 Worker。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work" target="_blank" rel="noreferrer">MDN: How browsers work</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment" target="_blank" rel="noreferrer">MDN: DocumentFragment</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetHeight" target="_blank" rel="noreferrer">MDN: HTMLElement offsetHeight</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Animation_performance_and_frame_rate" target="_blank" rel="noreferrer">MDN: Animation performance and frame rate</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame" target="_blank" rel="noreferrer">MDN: requestAnimationFrame()</a></li>
         </ul>
       </div>
     </section>

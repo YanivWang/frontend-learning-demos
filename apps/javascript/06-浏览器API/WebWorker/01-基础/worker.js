@@ -36,7 +36,7 @@ self.addEventListener('message', function (e) {
             self.close();
             break;
         default:
-            self.postMessage("unknow cmd!");
+            self.postMessage("unknown cmd!");
             break;
     }
 }, false);

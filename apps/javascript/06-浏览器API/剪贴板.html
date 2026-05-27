@@ -2,15 +2,16 @@
 分类: javascript / 06-浏览器API
   主题: 文本复制到剪贴板的新旧两种方案
   要点:
-    - 老方案 document.execCommand('copy')：兼容性最好但已废弃
-    - 新方案 navigator.clipboard.writeText：需 HTTPS + 用户手势触发
-    - 易错点：必须在用户点击事件回调里调用，否则浏览器会拒绝
+    - navigator.clipboard.writeText 是现代异步剪贴板 API，通常要求安全上下文和用户激活
+    - document.execCommand('copy') 已废弃，只适合作为兼容兜底且依赖选区
+    - 剪贴板写入可能因权限、非 HTTPS、无用户手势或浏览器策略失败
+    - 复制用户生成内容时应复制 textContent，避免把 HTML 当作可信内容传播
   面试:
-    - 文本复制到剪贴板的新旧两种方案的核心概念是什么
-    - 文本复制到剪贴板的新旧两种方案在实际项目里怎么用
-    - 文本复制到剪贴板的新旧两种方案有哪些常见坑或易错点
-    - 文本复制到剪贴板的新旧两种方案和相近 API 如何区分选型
-    - 面试中如何简洁讲清 文本复制到剪贴板的新旧两种方案
+    - 复制文本为什么优先使用 navigator.clipboard.writeText？
+    - Clipboard API 为什么经常要求 HTTPS 和用户点击？
+    - execCommand('copy') 为什么只能作为兜底？
+    - 剪贴板复制失败时产品上应该怎么处理？
+    - 复制 DOM 内容时为什么优先取 textContent？
 -->
 
 <!doctype html>
@@ -35,15 +36,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>老方案 document.execCommand('copy')：兼容性最好但已废弃。</li>
-          <li>新方案 navigator.clipboard.writeText：需 HTTPS + 用户手势触发。</li>
-          <li>易错点：必须在用户点击事件回调里调用，否则浏览器会拒绝。</li>
+          <li><code>navigator.clipboard.writeText()</code> 是现代异步剪贴板写入 API，返回 Promise；成功只代表浏览器接受了写入请求，不代表业务上可以忽略失败提示。</li>
+          <li>Clipboard API 通常只能在安全上下文（HTTPS 或 localhost）和用户激活下使用。非安全页面、后台脚本、自动触发或权限策略限制都可能抛出 <code>NotAllowedError</code>。</li>
+          <li><code>document.execCommand("copy")</code> 已废弃，但一些旧浏览器仍可用；它依赖当前选区或临时输入框，容易影响焦点和选择状态，只适合作为兼容兜底。</li>
+          <li>复制 DOM 内容时优先使用 <code>textContent</code> 得到纯文本；不要把用户生成的 <code>innerHTML</code> 直接复制或展示成可信 HTML，避免把 XSS 载荷在系统间传播。</li>
+          <li>用户体验上必须处理失败路径：按钮应在点击回调里调用复制、捕获异常、显示可理解的失败原因，并可提供“手动选择复制”的 fallback。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>老方案 document.execCommand('copy')？</strong> 老方案 document.execCommand('copy')：兼容性最好但已废弃</li>
-          <li><strong>新方案 navigator.clipboard.writeText？</strong> 新方案 navigator.clipboard.writeText：需 HTTPS + 用户手势触发</li>
-          <li><strong>文本复制到剪贴板的新旧两种方案的核心概念是什么？</strong> 老方案 document.execCommand('copy')：兼容性最好但已废弃；新方案 navigator.clipboard.writeText：需 HTTPS + 用户手势触发</li>
+          <li><strong>复制文本为什么优先使用 <code>navigator.clipboard.writeText</code>？</strong> 结论是现代项目优先用 Clipboard API。原因是它是异步 Promise API，不需要人为操作选区，语义比 <code>execCommand</code> 明确；边界是它受安全上下文、用户激活和权限策略限制，失败时要兜底提示。</li>
+          <li><strong>Clipboard API 为什么经常要求 HTTPS 和用户点击？</strong> 结论是这是浏览器的安全约束。原因是剪贴板可能包含敏感信息，任意页面自动读写会造成隐私和钓鱼风险；项目里应把复制调用放在按钮点击等用户手势内，并在 HTTP 环境下提示手动复制。</li>
+          <li><strong><code>execCommand("copy")</code> 为什么只能作为兜底？</strong> 结论是它已废弃且行为依赖选区。原因是浏览器保留它主要是兼容旧内容，未来行为和支持都不应作为新代码基础；兼容方案应创建临时输入框、恢复焦点，并捕获失败。</li>
+          <li><strong>剪贴板复制失败时产品上怎么处理？</strong> 结论是失败是正常路径，不应只在控制台报错。原因是权限、协议、iframe 权限策略、浏览器设置都可能拒绝写入；项目里应展示“复制失败，请手动选择文本”的提示，并保留可选中文本。</li>
+          <li><strong>复制 DOM 内容时为什么优先取 <code>textContent</code>？</strong> 结论是复制纯文本更安全、更可预测。原因是 <code>innerHTML</code> 可能包含用户注入的标签和事件属性；分享码、命令、邀请链接这类场景通常只需要文本，应该避免把 HTML 当作可信载荷。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/writeText" target="_blank" rel="noreferrer">MDN: Clipboard writeText()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API" target="_blank" rel="noreferrer">MDN: Clipboard API</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand" target="_blank" rel="noreferrer">MDN: Document execCommand()</a></li>
+          <li><a href="https://w3c.github.io/clipboard-apis/" target="_blank" rel="noreferrer">W3C: Clipboard API and events</a></li>
         </ul>
       </div>
     </section>
@@ -87,6 +99,11 @@
       // ============ ② 现代异步 API：navigator.clipboard ============
       // 需要 HTTPS / localhost + 用户交互内调用
       document.getElementById("modern").addEventListener("click", async () => {
+        if (!navigator.clipboard?.writeText) {
+          hint.textContent = "当前浏览器不支持 Clipboard API，请使用兼容方式或手动复制。";
+          return;
+        }
+
         try {
           await navigator.clipboard.writeText(target.textContent);
           hint.textContent = "复制成功（clipboard）";

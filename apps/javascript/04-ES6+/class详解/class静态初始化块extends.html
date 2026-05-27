@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 04-ES6+ / class详解
+  分类: javascript / 04-ES6+ / class详解
   主题: 静态初始化块在继承场景的特性
   要点:
-    - 父类静态先初始化，子类静态后初始化
-    - 子类静态块中可用 super.xxx 访问父类静态属性/方法
-    - 静态方法在类本身上，需要通过类名调用
+    - 继承链上父类静态字段和 static 块先初始化，子类随后初始化
+    - 子类 static 块中可用 super.xxx 读取父类静态属性或调用父类静态方法
+    - 静态成员属于类构造器，实例不能直接访问静态方法
+    - static 块中不能调用 super()，也不能访问实例 this
   面试:
-    - 静态初始化块在继承场景的特性的核心概念是什么
-    - 静态初始化块在继承场景的特性在实际项目里怎么用
-    - 静态初始化块在继承场景的特性有哪些常见坑或易错点
-    - 静态初始化块在继承场景的特性和相近 API 如何区分选型
-    - 面试中如何简洁讲清 静态初始化块在继承场景的特性
+    - 父类和子类的静态初始化顺序如何保证？
+    - static 块里的 super.xxx 和实例方法里的 super.xxx 有什么区别？
+    - 静态方法为什么要通过类名调用，实例为什么访问不到？
+    - 静态工厂方法和 constructor 分别适合什么场景？
 -->
 
 <!doctype html>
@@ -30,15 +30,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>父类静态先初始化，子类静态后初始化。</li>
-          <li>子类静态块中可用 super.xxx 访问父类静态属性/方法。</li>
-          <li>静态方法在类本身上，需要通过类名调用。</li>
+          <li>在 <code>class Child extends Parent</code> 中，父类静态字段和 <code>static</code> 块会先完成初始化，子类再按自己的声明顺序初始化静态字段和静态块。</li>
+          <li>子类静态块里的 <code>this</code> 指向子类构造器，<code>super.xxx</code> 会从父类构造器查找静态属性或静态方法，不会访问父类实例原型。</li>
+          <li>静态成员定义在类本身上，适合放工厂方法、固定配置、缓存或工具函数；实例只能通过构造器访问，不能直接调用 <code>instance.staticMethod()</code>。</li>
+          <li><code>static</code> 块中不能调用 <code>super()</code>，因为它不是实例构造流程；派生类实例构造器中的 <code>super()</code> 才负责初始化实例 <code>this</code>。</li>
+          <li>静态工厂方法可以统一创建实例、校验参数或隐藏构造细节，但真正需要每个实例状态时仍应放到 constructor 或实例字段里。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>子类静态块中可用 super.xxx 访问父类静态属性/方法？</strong> 父类静态先初始化，子类静态后初始化；子类静态块中可用 super.xxx 访问父类静态属性/方法</li>
-          <li><strong>静态方法在类本身上？</strong> 静态方法在类本身上，需要通过类名调用</li>
-          <li><strong>静态初始化块在继承场景的特性的核心概念是什么？</strong> 父类静态先初始化，子类静态后初始化；子类静态块中可用 super.xxx 访问父类静态属性/方法</li>
+          <li><strong>父类和子类的静态初始化顺序是什么？</strong> 结论是父类先、子类后，同一个类内部再按声明顺序执行静态字段和 <code>static</code> 块。原因是子类静态逻辑可能依赖父类静态状态；项目里初始化配置时应避免子类静态块反向依赖尚未执行的子类下方字段。</li>
+          <li><strong>static 块里的 <code>super.xxx</code> 查找什么？</strong> 它查找父类构造器上的静态成员，不查找父类实例方法。边界是实例方法中的 <code>super.method()</code> 走父类原型，静态块中的 <code>super.method()</code> 走父类构造器。</li>
+          <li><strong>为什么静态方法要通过类名调用？</strong> 因为静态方法挂在构造器对象上，不在实例原型链上。项目中用它表达“与类相关但不依赖某个实例”的能力，例如 <code>fromJSON</code>、<code>create</code> 或缓存读取。</li>
+          <li><strong>静态工厂方法和 constructor 如何分工？</strong> constructor 负责初始化一个实例的必要状态，静态工厂方法负责命名化创建流程、参数归一化或返回已有缓存。需要异步创建时更适合静态工厂返回 Promise，而不是让 constructor 做异步工作。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Static_initialization_blocks" target="_blank" rel="noreferrer">MDN Web Docs：Static initialization blocks</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/static" target="_blank" rel="noreferrer">MDN Web Docs：static</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/super" target="_blank" rel="noreferrer">MDN Web Docs：super</a></li>
         </ul>
       </div>
     </section>
@@ -69,9 +78,14 @@
           console.log(super.age);
         }
 
-        //类的静态方法，非常适合作为创建类实例的工厂方法
-        static createPerson(){
+        constructor(name) {
+          super();
+          this.name = name;
+        }
 
+        //类的静态方法，非常适合作为创建类实例的工厂方法
+        static createPerson(name) {
+          return new Pig(name);
         }
       }
 
@@ -79,6 +93,7 @@
 
       //类的静态方法，需要通过类名调用
       Pig.staticMethod();
+      console.log(Pig.createPerson("佩奇").name);
 
     </script>
     <!-- SCRIPT_END -->

@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 04-ES6+ / class详解
+  分类: javascript / 04-ES6+ / class详解
   主题: extends 继承与 super 调用
   要点:
-    - 派生类的 constructor 必须先调用 super() 才能使用 this
-    - 实例方法挂在 prototype 上，所有实例共享；实例字段每个实例各有一份
-    - 易错点：在实例方法中读私有字段要用 this.#field，不能写死成具体实例名
+    - extends 同时连接子类构造器原型链和实例 prototype 原型链
+    - 派生类 constructor 必须先调用 super() 才能访问 this
+    - 实例方法挂在 prototype 上共享，实例字段和私有字段每个实例各自初始化
+    - 继承耦合强，扩展内建对象时要优先考虑组合替代
   面试:
-    - extends 继承与 super 调用的核心概念是什么
-    - extends 继承与 super 调用在实际项目里怎么用
-    - extends 继承与 super 调用有哪些常见坑或易错点
-    - extends 继承与 super 调用和相近 API 如何区分选型
-    - 面试中如何简洁讲清 extends 继承与 super 调用
+    - extends 会建立哪两条原型链？
+    - 派生类 constructor 为什么必须先 super() 再使用 this？
+    - super.method() 和 super() 分别在什么位置使用？
+    - 什么时候应该用组合而不是 class 继承？
 -->
 
 <!doctype html>
@@ -30,15 +30,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>派生类的 constructor 必须先调用 super() 才能使用 <code>this</code>。</li>
-          <li>实例方法挂在 prototype 上，所有实例共享；实例字段每个实例各有一份。</li>
-          <li>易错点：在实例方法中读私有字段要用 <code>this</code>.#field，不能写死成具体实例名。</li>
+          <li><code>extends</code> 会建立两条关系：<code>Object.getPrototypeOf(Child) === Parent</code> 让静态成员可继承，<code>Object.getPrototypeOf(Child.prototype) === Parent.prototype</code> 让实例方法可继承。</li>
+          <li>派生类如果显式声明 constructor，必须先调用 <code>super(...args)</code> 才能使用 <code>this</code>；因为实例的 <code>this</code> 需要由父类构造器先完成初始化。</li>
+          <li><code>super()</code> 只用于派生类构造器调用父类构造器；<code>super.method()</code> 可在实例方法中调用父类原型方法，也可在静态方法/静态块中调用父类静态方法。</li>
+          <li>实例方法挂在 <code>prototype</code> 上，由所有实例共享；实例字段和私有字段在每次 <code>new</code> 时初始化，每个实例各有自己的状态。</li>
+          <li>读取私有字段必须写 <code>this.#field</code>，不能写成具体实例名；私有字段也不能在类体外新增或访问。</li>
+          <li>继承适合稳定的 “is-a” 关系；如果只是复用能力或包装内建对象，组合通常更清晰，也能避开内建对象子类化的性能和语义风险。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>派生类的 constructor 必须先调用 super() 才能使用 this？</strong> 派生类的 constructor 必须先调用 super() 才能使用 <code>this</code></li>
-          <li><strong>实例方法挂在 prototype 上？</strong> 实例方法挂在 prototype 上，所有实例共享；实例字段每个实例各有一份；易错点：在实例方法中读私有字段要用 <code>this</code>.#field，不能写死成具体实例名</li>
-          <li><strong>extends 继承与 super 调用的核心概念是什么？</strong> 派生类的 constructor 必须先调用 super() 才能使用 <code>this</code>；实例方法挂在 prototype 上，所有实例共享；实例字段每个实例各有一份</li>
+          <li><strong><code>extends</code> 会建立哪两条原型链？</strong> 结论是子类构造器继承父类构造器，子类原型继承父类原型。前者让静态成员可沿构造器链查找，后者让实例方法可沿实例原型链查找；排查继承问题时要分清静态方法和实例方法放在哪里。</li>
+          <li><strong>为什么派生类 constructor 必须先调用 <code>super()</code>？</strong> 因为派生类实例的 <code>this</code> 由父类构造器初始化，在 <code>super()</code> 返回前访问 <code>this</code> 会抛 ReferenceError。项目中常见错误是在 <code>super()</code> 前设置实例字段或调用依赖 <code>this</code> 的方法。</li>
+          <li><strong><code>super()</code> 和 <code>super.method()</code> 有什么区别？</strong> <code>super()</code> 是构造器调用，只能在派生类 constructor 中使用；<code>super.method()</code> 是属性查找，可在实例方法或静态方法中调用父级同名方法。边界是静态上下文查父类构造器，实例上下文查父类 prototype。</li>
+          <li><strong>什么时候应该用组合替代继承？</strong> 当关系不是稳定的 “is-a”，或只是复用一组能力时，组合更合适。原因是继承会默认继承父类所有行为，扩展内建对象还可能遇到性能、安全和新方法语义变化；业务封装 Map、Array、Date 时尤其要谨慎。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/extends" target="_blank" rel="noreferrer">MDN Web Docs：extends</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/super" target="_blank" rel="noreferrer">MDN Web Docs：super</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements" target="_blank" rel="noreferrer">MDN Web Docs：Private elements</a></li>
         </ul>
       </div>
     </section>
@@ -83,7 +93,7 @@
 
       console.log(typeof p1);
 
-      console.log("Person.prototype === p1.__proto__", Person.prototype === p1.__proto__);
+      console.log("Person.prototype === Object.getPrototypeOf(p1)", Person.prototype === Object.getPrototypeOf(p1));
 
       class WhitePerson extends Person {
         skinColor = "white";
@@ -98,6 +108,8 @@
       const whitePerson1 = new WhitePerson("特朗普");
       whitePerson1.eat();
       console.log(whitePerson1.userName);
+      console.log("WhitePerson 继承 Person 静态链", Object.getPrototypeOf(WhitePerson) === Person);
+      console.log("WhitePerson.prototype 继承 Person.prototype", Object.getPrototypeOf(WhitePerson.prototype) === Person.prototype);
 
     </script>
     <!-- SCRIPT_END -->

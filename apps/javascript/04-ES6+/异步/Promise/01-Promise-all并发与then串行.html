@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 04-ES6+ / 异步 / Promise
+  分类: javascript / 04-ES6+ / 异步 / Promise
   主题: Promise.all 并发 与 then 串行
   要点:
-    - Promise.all：并发执行，总耗时 ≈ max(各任务耗时)；任一失败立刻 reject
-    - 串行：.then(() => taskFn()) 返回新 Promise；不能直接 .then(promiseInstance)
-    - new Promise(executor) 的 executor 是同步执行的
+    - Promise.all 接收 Promise iterable，全部 fulfilled 后按输入顺序返回结果数组
+    - Promise.all 是 fail-fast：任一输入 reject，外层 Promise 以首个拒因 reject
+    - 并发要先启动多个任务；串行要在 then 中返回下一个任务的 Promise
+    - new Promise(executor) 的 executor 同步执行，then/catch 回调异步进入微任务
   面试:
-    - Promise.all 并发 与 then 串行的核心概念是什么
-    - Promise.all 并发 与 then 串行在实际项目里怎么用
-    - Promise.all 并发 与 then 串行有哪些常见坑或易错点
-    - Promise.all 并发 与 then 串行和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Promise.all 并发 与 then 串行
+    - Promise.all 为什么是并发等待而不是自动创建并发？
+    - Promise.all 的返回值顺序和完成顺序有什么关系？
+    - Promise.all、allSettled 和串行 then 链如何选？
+    - 为什么 then 里要传函数而不是直接传 Promise 实例？
 -->
 
 <!doctype html>
@@ -30,16 +30,23 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>Promise</code>.all：并发执行，总耗时 ≈ max(各任务耗时)；任一失败立刻 reject。</li>
-          <li>串行：.then(() =&gt; taskFn()) 返回新 <code>Promise</code>；不能直接 .then(promiseInstance)。</li>
-          <li>new <code>Promise</code>(executor) 的 executor 是同步执行的。</li>
-          <li><code>Promise</code>.all：并发执行，总耗时 ≈ max(各任务耗时)；任一失败立刻 reject（补充）。</li>
+          <li><code>Promise.all(iterable)</code> 接收一组 Promise 或普通值，返回一个新的 Promise；全部 fulfilled 后，结果数组按输入顺序排列，而不是按完成先后排列。</li>
+          <li><code>Promise.all</code> 本身不“创建任务”，并发来自你已经调用了多个异步函数并拿到多个 Promise；总耗时通常接近最慢的那个任务。</li>
+          <li><code>Promise.all</code> 是 fail-fast：任一输入 reject，外层 Promise 就以首个拒因 reject；如果需要收集每个任务的成功/失败结果，应选择 <code>Promise.allSettled</code> 或给单个任务包 <code>catch</code>。</li>
+          <li>串行执行要在 <code>then</code> 回调里返回下一个任务的 Promise，例如 <code>.then(() =&gt; taskP1())</code>；直接写 <code>.then(taskP1())</code> 会立刻启动任务并把 Promise 实例当作非函数参数传入。</li>
+          <li><code>new Promise(executor)</code> 的 executor 会同步执行；真正异步的是 <code>resolve</code> 后排队执行的 <code>then</code>/<code>catch</code> 回调。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Promise.all？</strong> <code>Promise</code>.all：并发执行，总耗时 ≈ max(各任务耗时)；任一失败立刻 reject；串行：.then(() =&gt; taskFn()) 返回新 <code>Promise</code>；不能直接 .then(promiseInstance)</li>
-          <li><strong>new Promise(executor) 的 executor 是同步执行的？</strong> new <code>Promise</code>(executor) 的 executor 是同步执行的</li>
-          <li><strong>Promise.all 并发 与 then 串行的核心概念是什么？</strong> <code>Promise</code>.all：并发执行，总耗时 ≈ max(各任务耗时)；任一失败立刻 reject；串行：.then(() =&gt; taskFn()) 返回新 <code>Promise</code>；不能直接 .then(promiseInstance)</li>
+          <li><strong><code>Promise.all</code> 为什么是并发等待而不是自动创建并发？</strong> 结论是 <code>Promise.all</code> 只聚合已经传入的 Promise，不负责启动异步任务。原因是任务在调用 <code>taskP1()</code> 时就开始了；项目里要并发请求就先调用多个请求函数，要串行就把下一次调用放进前一个 <code>then</code> 或 <code>await</code> 之后。</li>
+          <li><strong><code>Promise.all</code> 的结果顺序如何确定？</strong> 结果数组按输入 iterable 的顺序排列，和各任务完成时间无关。边界是任一任务 reject 会让整体 reject，成功数组不会返回；需要部分成功结果时不要直接用裸 <code>Promise.all</code>。</li>
+          <li><strong><code>Promise.all</code>、<code>allSettled</code> 和串行 then 链如何选？</strong> 多个互不依赖且任一失败就整体失败时用 <code>all</code>；需要拿到每个任务状态时用 <code>allSettled</code>；后一个任务依赖前一个结果或要限流时用串行链。项目里请求详情页多个独立接口常用 <code>all</code>，批量上传需要逐项结果常用 <code>allSettled</code>。</li>
+          <li><strong>为什么 then 里要传函数而不是直接传 Promise 实例？</strong> <code>then</code> 需要的是回调函数，回调返回的 Promise 会决定下一步等待什么。直接传 Promise 实例既不会被当作回调执行，也容易让任务提前启动，导致串行代码实际变成并发。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" target="_blank" rel="noreferrer">MDN Web Docs：Promise</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all" target="_blank" rel="noreferrer">MDN Web Docs：Promise.all()</a></li>
         </ul>
       </div>
     </section>
@@ -84,7 +91,7 @@
       });
 
       // 二：串行执行
-      //    易错点：.then(p1) 期望传函数，传入 Promise 实例会被当成「忽略上一步返回值的函数」
+      //    易错点：.then(taskP1()) 会立即启动任务，并把 Promise 实例当作非函数参数忽略
       //    解决：.then(() => p1Fn())，确保下一个任务是「返回新 Promise 的函数」
       new Promise((resolve) => {
         console.log("serial start...");

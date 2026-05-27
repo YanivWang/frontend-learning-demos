@@ -2,15 +2,16 @@
 分类: javascript / 06-浏览器API / 事件模型
   主题: DOM 事件流：捕获、目标、冒泡与事件委托
   要点:
-    - addEventListener 第三个参数 true 表示捕获阶段监听
-    - stopPropagation 阻止事件继续传播；stopImmediatePropagation 还会阻止同元素后续监听器
-    - 事件委托把子元素点击统一交给父元素处理，适合动态列表
+    - DOM 事件传播通常经历捕获、目标、冒泡三个阶段，监听选项决定在哪个阶段触发
+    - stopPropagation 只阻止继续传播，stopImmediatePropagation 还会阻止同元素后续监听器
+    - 事件委托依赖冒泡和 target/closest，适合动态列表但要校验命中范围
+    - passive、once、capture 等 addEventListener 选项会影响默认行为、清理与触发顺序
   面试:
-    - DOM 事件流：捕获、目标、冒泡与事件委托的核心概念是什么
-    - DOM 事件流：捕获、目标、冒泡与事件委托在实际项目里怎么用
-    - DOM 事件流：捕获、目标、冒泡与事件委托有哪些常见坑或易错点
-    - DOM 事件流：捕获、目标、冒泡与事件委托和相近 API 如何区分选型
-    - 面试中如何简洁讲清 DOM 事件流：捕获、目标、冒泡与事件委托
+    - DOM 事件捕获和冒泡的执行顺序是什么？
+    - stopPropagation 与 stopImmediatePropagation 有什么区别？
+    - 事件委托为什么适合动态列表？
+    - addEventListener 第三个参数从 boolean 到 options 有哪些常用配置？
+    - 事件委托处理用户生成内容时要注意什么？
 -->
 
 <!doctype html>
@@ -41,16 +42,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>addEventListener</code> 第三个参数 true 表示捕获阶段监听。</li>
-          <li><code>stopPropagation</code> 阻止事件继续传播；stopImmediatePropagation 还会阻止同元素后续监听器。</li>
-          <li>事件委托把子元素点击统一交给父元素处理，适合动态列表。</li>
-          <li><code>addEventListener</code> 第三个参数 true 表示捕获阶段监听（补充）。</li>
+          <li>DOM 事件从根节点向目标元素传播是捕获阶段，到达目标后再沿祖先链向外冒泡；默认 <code>addEventListener(type, listener)</code> 监听冒泡阶段，传 <code>{ capture: true }</code> 或旧写法 <code>true</code> 才监听捕获阶段。</li>
+          <li><code>event.target</code> 是实际触发事件的节点，<code>event.currentTarget</code> 是当前正在执行监听器的节点；做委托时通常从 <code>target.closest(selector)</code> 找业务元素，再确认它仍在委托容器内。</li>
+          <li><code>stopPropagation()</code> 阻止事件继续进入后续祖先节点，但不会阻止当前元素上已经注册的其他监听器；<code>stopImmediatePropagation()</code> 还会阻止当前元素后续监听器执行。</li>
+          <li>事件委托适合动态列表和大量子元素，能减少绑定和销毁成本；不适合所有事件，例如不冒泡的事件或需要独立生命周期的复杂交互通常应单独绑定。</li>
+          <li><code>addEventListener</code> 现代推荐使用 options 对象：<code>capture</code> 控制阶段，<code>once</code> 自动解绑，<code>passive</code> 声明不会调用 <code>preventDefault()</code>，滚动场景可减少浏览器等待。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>addEventListener 第三个参数 true 表示捕获阶段监听？</strong> <code>addEventListener</code> 第三个参数 true 表示捕获阶段监听</li>
-          <li><strong>stopPropagation 阻止事件继续传播？</strong> <code>stopPropagation</code> 阻止事件继续传播；stopImmediatePropagation 还会阻止同元素后续监听器</li>
-          <li><strong>事件委托把子元素点击统一交给父元素处理？</strong> 事件委托把子元素点击统一交给父元素处理，适合动态列表</li>
+          <li><strong>DOM 事件捕获和冒泡的执行顺序是什么？</strong> 结论是先捕获、到目标、再冒泡。原因是浏览器沿祖先链分阶段派发事件，本例点击 inner 时会先看到 outer/middle/inner 的 capture，再看到 inner/middle/outer 的 bubble；边界是并非所有事件都冒泡，委托前要查事件类型。</li>
+          <li><strong><code>stopPropagation</code> 和 <code>stopImmediatePropagation</code> 有什么区别？</strong> 结论是前者只阻止继续传播，后者还阻止同一元素上的后续监听器。原因是同一节点可以注册多个监听器；本例 middle 调用 <code>stopPropagation</code> 后仍会执行 middle 的第二个冒泡监听，而 inner 调用 <code>stopImmediatePropagation</code> 会截断后续监听器。</li>
+          <li><strong>事件委托为什么适合动态列表？</strong> 结论是把监听器放在稳定父节点上，让冒泡事件统一处理。原因是新增或删除子项时不需要逐个绑定/解绑；项目里要用 <code>closest</code> 找目标项，并用 <code>currentTarget.contains()</code> 防止误命中容器外节点。</li>
+          <li><strong><code>addEventListener</code> 第三个参数如何选？</strong> 结论是新代码优先用 options 对象而不是布尔值。原因是 <code>{ capture, once, passive }</code> 可读性更强，能同时表达阶段、自动解绑和默认行为约束；边界是老代码里的 <code>true</code> 等价于捕获阶段。</li>
+          <li><strong>事件委托处理用户生成内容时要注意什么？</strong> 结论是事件命中不等于数据可信。原因是 DOM 节点和 <code>data-*</code> 属性都可能来自动态内容；实际项目里应校验 id、权限和容器范围，渲染用户文本使用 <code>textContent</code>，避免把事件委托和 HTML 拼接组合成 XSS 风险。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener" target="_blank" rel="noreferrer">MDN: EventTarget addEventListener()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Event_bubbling" target="_blank" rel="noreferrer">MDN: Event bubbling</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation" target="_blank" rel="noreferrer">MDN: Event stopPropagation()</a></li>
+          <li><a href="https://javascript.info/bubbling-and-capturing" target="_blank" rel="noreferrer">JavaScript.info: Bubbling and capturing</a></li>
         </ul>
       </div>
     </section>
@@ -144,7 +155,7 @@
 
       document.getElementById("todoList").addEventListener("click", event => {
         const item = event.target.closest("li");
-        if (!item) return;
+        if (!item || !event.currentTarget.contains(item)) return;
         resetLog("事件委托：父级 ul 捕获到 li 点击，id=" + item.dataset.id + "，文本=" + item.textContent);
       });
 

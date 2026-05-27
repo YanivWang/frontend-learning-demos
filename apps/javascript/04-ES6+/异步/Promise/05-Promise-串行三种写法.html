@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 04-ES6+ / 异步 / Promise
+  分类: javascript / 04-ES6+ / 异步 / Promise
   主题: 三种 Promise 串行写法对比
   要点:
-    - new Promise(resolve=>resolve()).then(f1).then(f2)：起步显式
-    - Promise.resolve().then(f1).then(f2)：最简洁，推荐
-    - new Promise(f1).then(f2)：把 f1 当 executor，f1 必须遵循 (resolve, reject) 签名
+    - Promise.resolve().then(f1).then(f2) 是串行任务的轻量起步写法
+    - then 链串行的关键是每个回调返回下一个 Promise
+    - new Promise(resolve=>resolve()) 可用但冗余，已有 Promise 时不要再包一层
+    - new Promise(f1) 会把 f1 当 executor，只有 f1 遵循 resolve/reject 签名才合适
   面试:
-    - 三种 Promise 串行写法对比的核心概念是什么
-    - 三种 Promise 串行写法对比在实际项目里怎么用
-    - 三种 Promise 串行写法对比有哪些常见坑或易错点
-    - 三种 Promise 串行写法对比和相近 API 如何区分选型
-    - 面试中如何简洁讲清 三种 Promise 串行写法对比
+    - Promise 串行链为什么要返回下一个 Promise？
+    - Promise.resolve().then(...) 为什么通常优于 new Promise(resolve=>resolve())？
+    - new Promise(f1).then(f2) 和 Promise.resolve().then(f1) 有什么本质区别？
+    - 串行 then 链和 async/await 如何互相改写？
 -->
 
 <!doctype html>
@@ -30,16 +30,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>new <code>Promise</code>(resolve=&gt;resolve()).then(f1).then(f2)：起步显式。</li>
-          <li><code>Promise</code>.resolve().then(f1).then(f2)：最简洁，推荐。</li>
-          <li>new <code>Promise</code>(f1).then(f2)：把 f1 当 executor，f1 必须遵循 (resolve, reject) 签名。</li>
-          <li>new <code>Promise</code>(resolve=&gt;resolve()).then(f1).then(f2)：起步显式（补充）。</li>
+          <li>Promise 串行链的核心是：每个 <code>then</code> 回调返回下一个 Promise，后续 <code>then</code> 会等待它 settled 后再执行。</li>
+          <li><code>Promise.resolve().then(f1).then(f2)</code> 是轻量起步写法，适合把同步入口切到微任务并开始串行执行一组返回 Promise 的任务。</li>
+          <li><code>new Promise(resolve =&gt; resolve()).then(f1)</code> 能工作，但只是手动创建一个立即 fulfilled 的 Promise，通常比 <code>Promise.resolve()</code> 冗余。</li>
+          <li><code>new Promise(f1).then(f2)</code> 的含义完全不同：<code>f1</code> 会被当作 executor 立刻同步调用，并且必须接收 <code>resolve</code>/<code>reject</code> 参数。</li>
+          <li>已有 Promise 或已有返回 Promise 的函数时，不要为了“串行”再包一层 <code>new Promise</code>；过度包装会让错误处理和执行时机更难判断。</li>
+          <li>串行 then 链可以自然改写成 <code>async</code>/<code>await</code>：按顺序 <code>await f1(); await f2(); await f3();</code>，可读性通常更好。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>new Promise(resolve=&gt;resolve()).then(f1)？</strong> new <code>Promise</code>(resolve=&gt;resolve()).then(f1).then(f2)：起步显式；new <code>Promise</code>(f1).then(f2)：把 f1 当 executor，f1 必须遵循 (resolve, reject) 签名</li>
-          <li><strong>Promise.resolve().then(f1).then(f2)？</strong> new <code>Promise</code>(resolve=&gt;resolve()).then(f1).then(f2)：起步显式；<code>Promise</code>.resolve().then(f1).then(f2)：最简洁，推荐</li>
-          <li><strong>new Promise(f1).then(f2)？</strong> new <code>Promise</code>(resolve=&gt;resolve()).then(f1).then(f2)：起步显式；new <code>Promise</code>(f1).then(f2)：把 f1 当 executor，f1 必须遵循 (resolve, reject) 签名</li>
+          <li><strong>Promise 串行链为什么要返回下一个 Promise？</strong> 因为 <code>then</code> 会根据回调返回值决定下一步等待什么；返回 Promise 时，后续链路会等它 fulfilled 或 rejected。项目里如果忘记 return，下一个 <code>then</code> 会提前执行，串行关系就断了。</li>
+          <li><strong><code>Promise.resolve().then(...)</code> 为什么通常更推荐？</strong> 它直接创建一个已 fulfilled 的起点，语义清楚、代码更短。<code>new Promise(resolve =&gt; resolve())</code> 只是手写同样效果，除非你确实要桥接非 Promise API，否则没必要使用构造器。</li>
+          <li><strong><code>new Promise(f1).then(f2)</code> 和 <code>Promise.resolve().then(f1)</code> 有什么区别？</strong> 前者把 <code>f1</code> 当 executor 同步执行，要求它调用 <code>resolve</code>/<code>reject</code>；后者把 <code>f1</code> 当普通 then 回调，在微任务里执行，并等待它的返回值。两者执行时机和函数签名都不同。</li>
+          <li><strong>串行 then 链和 async/await 如何互相改写？</strong> <code>Promise.resolve().then(f1).then(f2)</code> 等价于在 async 函数里依次 <code>await f1(); await f2();</code>。需要动态拼接任务数组时 then/reduce 方便；固定流程里 async/await 更易读。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" target="_blank" rel="noreferrer">MDN Web Docs：Promise</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await" target="_blank" rel="noreferrer">MDN Web Docs：await</a></li>
         </ul>
       </div>
     </section>

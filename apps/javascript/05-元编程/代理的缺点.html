@@ -2,15 +2,15 @@
 分类: javascript / 05-元编程
   主题: Proxy 的局限性
   要点:
-    - Proxy 对依赖「内部槽位」的方法不透明，例如 Date.getDate 调用会丢失内部 this
-    - 解决：在 get 拦截中显式 bind 原对象，或对方法做手动转发
-    - instanceof 判断不一定可靠：Date 的内部检测会失败
+    - Proxy 不能透明代理依赖内部槽位的内建对象方法，例如 Date.prototype.getDate
+    - 空 handler 也会让 Date 方法里的 this 变成代理对象，从而触发不兼容接收者错误
+    - 可在 get trap 中把函数 bind 回原对象，但这会改变方法的 this 和可扩展性边界
+    - Proxy 还存在私有字段、相等性和旧环境无法完整 polyfill 等局限
   面试:
-    - Proxy 的局限性的核心概念是什么
-    - Proxy 的局限性在实际项目里怎么用
-    - Proxy 的局限性有哪些常见坑或易错点
-    - Proxy 的局限性和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Proxy 的局限性
+    - 为什么空 handler 的 Proxy 也不能透明代理 Date？
+    - bind 原对象修复内建方法调用有什么副作用？
+    - Proxy 在私有字段、=== 和旧浏览器兼容上有哪些边界？
+    - 遇到内建对象或类实例时是否应该直接套 Proxy？
 -->
 
 <!doctype html>
@@ -30,16 +30,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>Proxy</code> 对依赖「内部槽位」的方法不透明，例如 Date.getDate 调用会丢失内部 <code>this</code>。</li>
-          <li>解决：在 get 拦截中显式 <code>bind</code> 原对象，或对方法做手动转发。</li>
-          <li><code>instanceof</code> 判断不一定可靠：Date 的内部检测会失败。</li>
-          <li><code>Proxy</code> 对依赖「内部槽位」的方法不透明，例如 Date.getDate 调用会丢失内部 <code>this</code>（补充）。</li>
+          <li><code>Proxy</code> 可以代理普通属性访问，但不能让所有内建对象“透明工作”。<code>Date</code>、<code>Map</code>、<code>Set</code> 等方法依赖规范里的内部槽位，代理对象本身没有这些槽位。</li>
+          <li>本 demo 中空 handler 的 <code>proxy instanceof Date</code> 仍为 <code>true</code>，但调用 <code>proxy.getDate()</code> 会报不兼容接收者错误，因为方法收到的 <code>this</code> 是代理对象而不是原始 <code>Date</code> 实例。</li>
+          <li>常见修复是在 <code>get</code> trap 中遇到函数就 <code>bind</code> 到原对象，或只针对少量方法手动转发；这能让示例运行，但会让方法始终绑定原对象，影响继承、mock 和后续二次包装。</li>
+          <li><code>Proxy</code> 还有其他边界：对象相等性不会被代理抹平，带私有字段的类方法也可能因为 <code>this</code> 不是原实例而失败，且旧环境无法完整 polyfill。</li>
+          <li>实践中不要默认给所有内建对象、DOM 对象或第三方类实例套通用代理；更稳妥的方式是封装明确 API、只代理普通数据对象，或针对需要的操作做白名单转发。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Proxy 对依赖「内部槽位」的方法不透明？</strong> <code>Proxy</code> 对依赖「内部槽位」的方法不透明，例如 Date.getDate 调用会丢失内部 <code>this</code></li>
-          <li><strong>instanceof 判断不一定可靠？</strong> <code>instanceof</code> 判断不一定可靠：Date 的内部检测会失败</li>
-          <li><strong>Proxy 的局限性的核心概念是什么？</strong> <code>Proxy</code> 对依赖「内部槽位」的方法不透明，例如 Date.getDate 调用会丢失内部 <code>this</code></li>
+          <li><strong>为什么空 handler 的 Proxy 也不能透明代理 Date？</strong> 结论是空 handler 只代表不自定义 trap，不代表代理对象拥有目标对象的内部槽位。原因是 <code>Date.prototype.getDate</code> 会检查 <code>this</code> 上的 Date 内部数据，而代理对象不是那个原始 Date 实例。项目里给内建对象做日志、权限或响应式包装时，要先验证其方法是否依赖内部槽位。</li>
+          <li><strong>bind 原对象修复内建方法调用有什么副作用？</strong> 结论是它能解决当前调用，但不是完全透明代理。原因是方法的 <code>this</code> 被固定为原对象，后续继承、二次代理、测试替身或希望 receiver 参与逻辑的场景都会受影响。工程上更推荐只对白名单方法转发，并把这种包装边界写清楚。</li>
+          <li><strong>Proxy 在私有字段、=== 和旧浏览器兼容上有哪些边界？</strong> 结论是代理不会改变对象身份，<code>proxy !== target</code>；私有字段方法可能因 <code>this</code> 不匹配而失败；旧环境也无法完整 polyfill。原因是这些能力依赖语言内部机制而不是普通属性访问。需要跨环境兼容或代理 class 实例时，要优先考虑显式适配层。</li>
+          <li><strong>遇到内建对象或类实例时是否应该直接套 Proxy？</strong> 结论是不应默认直接套通用代理。原因是普通对象数据和带内部槽位/私有状态的对象行为差异很大。项目里更稳的做法是代理 plain object，或为 Date、Map、DOM 节点、第三方实例分别设计清晰的封装 API。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://javascript.info/proxy#proxy-limitations">JavaScript.info: Proxy limitations</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">MDN: Proxy</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getDate">MDN: Date.prototype.getDate()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_properties">MDN: Private elements</a></li>
         </ul>
       </div>
     </section>
@@ -61,7 +70,7 @@
         console.log("空 handler 代理调用 getDate 报错:", e.message);
       }
 
-      // 修复：get 拦截里对函数显式 bind 到原对象
+      // 修复：get 拦截里对函数显式 bind 到原对象。
       const proxyFixed = new Proxy(target, {
         get(obj, prop) {
           const value = Reflect.get(obj, prop, obj);

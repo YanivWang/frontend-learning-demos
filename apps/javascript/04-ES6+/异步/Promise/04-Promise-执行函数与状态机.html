@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 04-ES6+ / 异步 / Promise
+  分类: javascript / 04-ES6+ / 异步 / Promise
   主题: Promise 的执行函数（executor）与状态机
   要点:
-    - new Promise(executor) 会立即同步执行 executor
-    - executor 内通过 resolve/reject 把 Promise 从 pending → fulfilled/rejected
-    - 一旦状态确定不可再改，后续 resolve/reject 都会被忽略
+    - new Promise(executor) 会立即同步调用 executor
+    - Promise 只有 pending、fulfilled、rejected 三种状态
+    - resolve/reject 只能让 pending 变为 fulfilled 或 rejected，状态一旦确定不可逆
+    - executor 同步抛错会让 Promise rejected，但异步回调里的抛错要手动 reject
   面试:
-    - Promise 的执行函数（executor）与状态机的核心概念是什么
-    - Promise 的执行函数（executor）与状态机在实际项目里怎么用
-    - Promise 的执行函数（executor）与状态机有哪些常见坑或易错点
-    - Promise 的执行函数（executor）与状态机和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Promise 的执行函数（executor）与状态机
+    - Promise executor 什么时候执行，then 回调什么时候执行？
+    - Promise 状态为什么一旦 settled 就不能再改变？
+    - executor 里同步 throw 和异步回调 throw 有什么区别？
+    - 什么时候应该手写 new Promise，什么时候直接返回已有 Promise？
 -->
 
 <!doctype html>
@@ -30,16 +30,22 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>new <code>Promise</code>(executor) 会立即同步执行 executor。</li>
-          <li>executor 内通过 resolve/reject 把 <code>Promise</code> 从 pending → fulfilled/rejected。</li>
-          <li>一旦状态确定不可再改，后续 resolve/reject 都会被忽略。</li>
-          <li>new <code>Promise</code>(executor) 会立即同步执行 executor（补充）。</li>
+          <li><code>new Promise(executor)</code> 创建 Promise 时会立刻同步调用 executor；executor 不是等到 <code>then</code> 注册后才执行。</li>
+          <li>Promise 状态机只有三种状态：<code>pending</code>、<code>fulfilled</code>、<code>rejected</code>。<code>resolve</code> 和 <code>reject</code> 只能把 <code>pending</code> 推到终态。</li>
+          <li>状态一旦 settled 就不可逆，后续再次 <code>resolve</code> 或 <code>reject</code> 会被忽略；这保证同一个异步结果不会被消费多次或前后矛盾。</li>
+          <li>executor 内同步抛错会等价于 <code>reject(error)</code>；但 <code>setTimeout</code> 等异步回调里的异常不会被 Promise 构造器自动捕获，应在回调里显式 <code>try...catch</code> 后 <code>reject</code>。</li>
+          <li>只有在把回调型 API 转成 Promise 时才手写 <code>new Promise</code>；如果已有 Promise，直接 return 或组合它，避免 Promise constructor antipattern。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>new Promise(executor) 会立即同步执行 executor？</strong> new <code>Promise</code>(executor) 会立即同步执行 executor</li>
-          <li><strong>executor 内通过 resolve/reject 把 Promise 从？</strong> new <code>Promise</code>(executor) 会立即同步执行 executor；executor 内通过 resolve/reject 把 <code>Promise</code> 从 pending → fulfilled/rejected</li>
-          <li><strong>一旦状态确定不可再改？</strong> 一旦状态确定不可再改，后续 resolve/reject 都会被忽略</li>
+          <li><strong>Promise executor 什么时候执行，then 回调什么时候执行？</strong> executor 在构造 Promise 的当下同步执行，<code>then</code>/<code>catch</code> 回调在状态 settled 后作为微任务执行。项目里不要把 executor 当懒执行函数；想懒执行应封装成“返回 Promise 的函数”。</li>
+          <li><strong>Promise 状态为什么一旦 settled 就不能再改变？</strong> 结论是 fulfilled 或 rejected 后不可逆，后续决议会被忽略。原因是 Promise 表示一次异步结果，消费者需要稳定的一致状态；否则多个回调可能看到互相冲突的结果。</li>
+          <li><strong>executor 里同步 throw 和异步回调 throw 有什么区别？</strong> executor 同步 throw 会被 Promise 构造器捕获并转成 rejection；异步回调已经脱离 executor 调用栈，throw 不会自动变成当前 Promise 的 rejection。实际包装回调 API 时，应在异步回调内部捕获异常并调用 <code>reject</code>。</li>
+          <li><strong>什么时候应该手写 <code>new Promise</code>？</strong> 当你要把事件、计时器、Node 风格回调等非 Promise API 包成 Promise 时才手写。已有 Promise 的场景直接返回、链式组合或使用 <code>async</code>/<code>await</code>，否则容易多包一层并制造错误处理盲区。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" target="_blank" rel="noreferrer">MDN Web Docs：Promise</a></li>
         </ul>
       </div>
     </section>
@@ -52,12 +58,17 @@
       function test(resolve, reject) {
         let ret = 0;
         setTimeout(() => {
-          ret = Math.random() * 10;
+          try {
+            ret = Math.random() * 10;
 
-          if (ret > 5) {
-            resolve(ret);
-          } else {
-            reject("fail");
+            if (ret > 5) {
+              resolve(ret);
+              reject("ignored after resolve");
+            } else {
+              reject(new Error("随机数不大于 5"));
+            }
+          } catch (error) {
+            reject(error);
           }
         }, 2000);
       }
@@ -66,8 +77,8 @@
       p1.then((flag) => {
         console.log(flag);
       }).catch((err) => {
-        console.log(err);
-      })
+        console.error(err);
+      });
 
     </script>
     <!-- SCRIPT_END -->

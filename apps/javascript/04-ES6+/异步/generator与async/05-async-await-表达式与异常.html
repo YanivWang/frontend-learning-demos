@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 04-ES6+ / 异步 / generator与async
+  分类: javascript / 04-ES6+ / 异步 / generator与async
   主题: await 表达式与异常处理
   要点:
-    - await 后面可以是任意表达式：非 Promise 会被 Promise.resolve 包装
-    - async 函数 return 的值 → 作为 then(data) 回调的参数
-    - 任一 await 的 Promise 变 reject，整个函数立刻中断；用 try/catch 捕获
+    - await 可等待 Promise、thenable 或普通值，普通值按 fulfilled 值处理
+    - async 函数 return 普通值会变成外层 Promise 的 fulfilled value
+    - await 遇到 rejection 会抛出异常，中断当前 async 函数后续语句
+    - 存储类异步 API 要处理权限、配额、序列化和浏览器隐私模式失败
   面试:
-    - await 表达式与异常处理的核心概念是什么
-    - await 表达式与异常处理在实际项目里怎么用
-    - await 表达式与异常处理有哪些常见坑或易错点
-    - await 表达式与异常处理和相近 API 如何区分选型
-    - 面试中如何简洁讲清 await 表达式与异常处理
+    - await 后面不是 Promise 时会发生什么？
+    - async 函数 return 和 throw 分别如何影响外层 Promise？
+    - await 的 Promise reject 后后续代码是否继续执行？
+    - 使用浏览器存储 API 时 async/await 需要补哪些失败路径？
 -->
 
 <!doctype html>
@@ -31,16 +31,23 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>await</code> 后面可以是任意表达式：非 <code>Promise</code> 会被 <code>Promise</code>.resolve 包装。</li>
-          <li><code>async</code> 函数 return 的值 → 作为 <code>then</code>(data) 回调的参数。</li>
-          <li>任一 <code>await</code> 的 <code>Promise</code> 变 reject，整个函数立刻中断；用 try/catch 捕获。</li>
-          <li><code>await</code> 后面可以是任意表达式：非 <code>Promise</code> 会被 <code>Promise</code>.resolve 包装（补充）。</li>
+          <li><code>await</code> 后面可以是 Promise、thenable 或普通值；普通值会按已 fulfilled 的值处理，但 async 函数后续代码仍会让出到微任务恢复。</li>
+          <li><code>async</code> 函数 <code>return</code> 的普通值会成为外层 Promise 的 fulfilled value；未捕获异常或 rejected await 会让外层 Promise rejected。</li>
+          <li>任一 <code>await</code> 的 Promise rejected，当前 async 函数会像同步 <code>throw</code> 一样中断，后续语句不再执行，除非用 <code>try...catch</code> 捕获。</li>
+          <li>本页用 localforage 演示存储 Promise：浏览器隐私模式、配额不足、序列化失败或底层存储不可用都可能 reject，不能只写成功路径。</li>
+          <li>如果多个存储写入互不依赖，提前创建多个 Promise 会并发执行；如果需要严格顺序，应传入函数并在 async 函数内部逐个调用。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>await 后面可以是任意表达式？</strong> <code>await</code> 后面可以是任意表达式：非 <code>Promise</code> 会被 <code>Promise</code>.resolve 包装；任一 <code>await</code> 的 <code>Promise</code> 变 reject，整个函数立刻中断；用 try/catch 捕获</li>
-          <li><strong>async 函数 return 的值 → 作为 then(data) 回调的参数？</strong> <code>async</code> 函数 return 的值 → 作为 <code>then</code>(data) 回调的参数</li>
-          <li><strong>任一 await 的 Promise 变 reject？</strong> 任一 <code>await</code> 的 <code>Promise</code> 变 reject，整个函数立刻中断；用 try/catch 捕获</li>
+          <li><strong><code>await</code> 后面不是 Promise 时会发生什么？</strong> 它会按 Promise resolution 规则处理表达式，普通值会成为 fulfilled value，thenable 会被吸收。边界是即使值已经可用，<code>await</code> 后续代码仍会异步恢复，不会继续留在当前同步调用栈。</li>
+          <li><strong>async 函数 <code>return</code> 和 <code>throw</code> 如何影响外层 Promise？</strong> <code>return value</code> 会让返回的 Promise fulfilled 为 value；抛错或未捕获的 await rejection 会让返回的 Promise rejected。调用方必须用 <code>await try...catch</code> 或 <code>.catch</code> 处理失败。</li>
+          <li><strong><code>await</code> 的 Promise reject 后后续代码是否继续？</strong> 默认不会继续，控制流会跳到最近的 <code>catch</code> 或让 async 函数返回 rejected Promise。项目里如果要失败后继续执行，应在当前步骤局部捕获并提供默认值。</li>
+          <li><strong>使用浏览器存储 API 时需要补哪些失败路径？</strong> 要处理配额不足、权限限制、隐私模式、序列化失败和库未加载等情况。存储成功后再更新 UI，失败时给用户提示并避免把未确认的数据当作已持久化状态。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await" target="_blank" rel="noreferrer">MDN Web Docs：await</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function" target="_blank" rel="noreferrer">MDN Web Docs：async function</a></li>
         </ul>
       </div>
     </section>
@@ -60,16 +67,20 @@
       //也可以是Promise对象(使用Promise对象包装异步函数)
       //await 表示，紧跟在后面的表达式需要等待返回结果
 
-      //async函数可以看成是由多个异步操作包装成的一个Promise对象，而await命令就是内部then命令的语法糖
-      //await可以看成是其后面的表达式(同步或者是异步的)执行完毕之后，执行的then回调
+      // async 函数把 return/throw 包装成外层 Promise 的 fulfilled/rejected
       async function storeData(m1, m2) {
-        const r1 = await m1;
-        const r2 = await m2;
+        try {
+          const r1 = await m1;
+          const r2 = await m2;
 
-        const r3 = await 123;
+          const r3 = await 123;
 
-        //async函数，内部的return语法返回的值，会成为then方法回调函数的参数
-        return [r1, r2, r3];
+          //async函数，内部的return语法返回的值，会成为then方法回调函数的参数
+          return [r1, r2, r3];
+        } catch (error) {
+          console.error("存储失败", error);
+          throw error;
+        }
       }
 
       //async函数返回一个Promise对象
@@ -81,15 +92,15 @@
       promise.then(function (data) {
         console.log(data);
       }).catch(function (err) {
-        console.log(err);
+        console.error(err);
       });
 
       console.log("1234");
 
       function timeout(ms) {
         return new Promise(function (resolve) {
-          setTimeout(resolve, ms)
-        })
+          setTimeout(resolve, ms);
+        });
       }
 
       //async函数返回的Promise对象，必须等到内部所有await命令后面的Promise对象执行完，才会完成

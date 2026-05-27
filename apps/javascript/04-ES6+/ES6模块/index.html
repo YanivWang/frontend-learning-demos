@@ -29,15 +29,23 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>&lt;script type="module"&gt;</code> 自动启用严格模式，<code>import</code> 必须是顶层语句。</li>
-          <li>静态导入 <code>import {...} from '...'</code>；动态导入 <code>import('...').then(...)</code> 可在运行时按需加载。</li>
-          <li>模块在浏览器中需要通过 http(s) 协议加载（直接 file:// 不行）。</li>
+          <li><code>&lt;script type="module"&gt;</code> 会把脚本按模块解析：自动启用严格模式，默认延迟执行，并且每个模块只会按 URL 实例化与执行一次。</li>
+          <li>静态 <code>import</code> 只能出现在模块顶层，导入的是只读 live binding；导出方更新绑定后，导入方能观察到新值，但不能直接给导入名重新赋值。</li>
+          <li>动态 <code>import()</code> 是表达式并返回 Promise，可放在事件回调、条件分支或懒加载路径里；失败时要按异步错误处理，不能假设网络与模块解析一定成功。</li>
+          <li>浏览器按 URL 解析模块说明符，相对路径通常要写完整文件名；裸模块名需要 import maps 或构建工具处理。</li>
+          <li>直接用 <code>file://</code> 打开本页通常会被浏览器模块加载安全策略拦截，本地学习应通过 Vite/VitePress 或静态服务器访问。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>静态 vs 动态 import？</strong> 静态 import 编译期确定依赖，利于 tree-shaking；动态 import() 返回 Promise，适合懒加载和条件加载。</li>
-          <li><strong>type="module" 有何特性？</strong> 自动严格模式、defer 执行、单例缓存、CORS 限制。</li>
-          <li><strong>为何 file:// 不行？</strong> 浏览器安全策略要求模块脚本通过 http(s) 加载，本地开发用 dev server。</li>
+          <li><strong>ES Module 和 CommonJS 的核心区别是什么？</strong> 结论是 ESM 以静态声明为主，导入 live binding，适合浏览器原生加载与构建期分析；CommonJS 以运行时 <code>require</code> 为主，常见导出值是对象属性读取。边界是 Node.js、打包器会提供兼容层，但浏览器原生 ESM 仍按 URL 与 CORS 规则加载。</li>
+          <li><strong>静态 <code>import</code> 与动态 <code>import()</code> 如何选？</strong> 默认用静态导入，因为依赖关系清晰，便于预加载、类型检查和 tree shaking；需要按路由、权限或用户操作拆包时再用动态导入。项目里动态导入必须处理 Promise reject，例如模块路径错误、网络失败或被 CSP 拦截。</li>
+          <li><strong>为什么本页提示不能直接用 <code>file://</code>？</strong> 浏览器模块脚本按安全模型从 URL 拉取依赖，<code>file:</code> 下相对模块加载常被禁止或行为不一致。实际开发应通过本地 HTTP 服务访问，并把模块路径、MIME 类型和跨域头配置正确。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules" target="_blank" rel="noreferrer">MDN Web Docs：JavaScript modules</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import" target="_blank" rel="noreferrer">MDN Web Docs：import statement</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import" target="_blank" rel="noreferrer">MDN Web Docs：import()</a></li>
         </ul>
       </div>
     </section>
@@ -53,8 +61,10 @@
 
       // 动态导入：返回 Promise，可在条件分支中使用
       // import("./moduleA.js").then((moduleA) => {
-        //   console.log("dynamic import:", moduleA);
-        // });
+      //   console.log("dynamic import:", moduleA);
+      // }).catch((error) => {
+      //   console.error("模块加载失败:", error);
+      // });
 
     </script>
     <!-- SCRIPT_END -->

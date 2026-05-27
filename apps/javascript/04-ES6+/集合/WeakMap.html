@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 04-ES6+ / 集合
+  分类: javascript / 04-ES6+ / 集合
   主题: WeakMap 弱引用映射
   要点:
-    - 键必须是对象，且 WeakMap 对键是弱引用，不会阻止垃圾回收
+    - 键必须是可被垃圾回收的对象或非注册 Symbol，WeakMap 不会强引用键
     - 没有 keys/values/entries/forEach 等迭代方法，无法枚举
-    - 典型场景：给已有对象关联私有数据，且对象被回收时数据自动清理
+    - 典型场景：给已有对象关联私有数据、DOM 元数据或对象缓存
+    - 需要枚举、size 或调试完整内容时应使用 Map
   面试:
-    - WeakMap 弱引用映射的核心概念是什么
-    - WeakMap 弱引用映射在实际项目里怎么用
-    - WeakMap 弱引用映射有哪些常见坑或易错点
-    - WeakMap 弱引用映射和相近 API 如何区分选型
-    - 面试中如何简洁讲清 WeakMap 弱引用映射
+    - WeakMap 为什么不能枚举键？
+    - WeakMap 和 Map 的核心区别是什么？
+    - WeakMap 如何用于私有数据或 DOM 元数据？
+    - WeakMap 的弱引用是否意味着可以预测 GC 时间？
 -->
 
 <!doctype html>
@@ -30,16 +30,22 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>键必须是对象，且 <code>WeakMap</code> 对键是弱引用，不会阻止垃圾回收。</li>
-          <li>没有 keys/values/entries/forEach 等迭代方法，无法枚举。</li>
-          <li>典型场景：给已有对象关联私有数据，且对象被回收时数据自动清理。</li>
-          <li>键必须是对象，且 <code>WeakMap</code> 对键是弱引用，不会阻止垃圾回收（补充）。</li>
+          <li><code>WeakMap</code> 是键值映射，但键必须是可被垃圾回收的对象或非注册 Symbol；它不会因为键存在于 WeakMap 中就阻止键对象被回收。</li>
+          <li><code>WeakMap</code> 不提供 <code>keys</code>、<code>values</code>、<code>entries</code>、<code>forEach</code> 或 <code>size</code>，因为可枚举性会暴露垃圾回收时机并引入不确定性。</li>
+          <li>典型场景是把元数据挂到已有对象外部：类私有数据、DOM 节点状态、对象输入的缓存结果，都能随键对象生命周期自动清理。</li>
+          <li>如果业务需要列出所有键、统计数量、导出调试快照或序列化，应使用 <code>Map</code>，不要使用 <code>WeakMap</code>。</li>
+          <li>弱引用不等于立刻回收，也不能预测回收时间；代码不应依赖“多久后键值对消失”。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>没有 keys/values/entries/forEach 等迭代方法？</strong> 没有 keys/values/entries/forEach 等迭代方法，无法枚举</li>
-          <li><strong>WeakMap 弱引用映射的核心概念是什么？</strong> 键必须是对象，且 <code>WeakMap</code> 对键是弱引用，不会阻止垃圾回收</li>
-          <li><strong>WeakMap 弱引用映射在实际项目里怎么用？</strong> 键必须是对象，且 <code>WeakMap</code> 对键是弱引用，不会阻止垃圾回收</li>
+          <li><strong>WeakMap 为什么不能枚举键？</strong> 因为键是弱引用，某个键是否仍存在取决于垃圾回收状态；如果允许枚举，就等于让程序观察 GC 时机。规范因此不提供 <code>keys</code>、<code>entries</code>、<code>size</code> 等 API。</li>
+          <li><strong>WeakMap 和 Map 的核心区别是什么？</strong> <code>Map</code> 强引用键、可枚举、有 size；<code>WeakMap</code> 不强引用键、不可枚举、键类型受限。需要缓存对象派生数据且不想造成内存泄漏时选 WeakMap，需要完整遍历时选 Map。</li>
+          <li><strong>WeakMap 如何用于私有数据或 DOM 元数据？</strong> 把实例或 DOM 节点作为键，把内部状态作为值；外部没有 WeakMap 引用就拿不到数据，节点或实例释放后元数据也可回收。项目里常用于不污染对象本身的附加状态。</li>
+          <li><strong>弱引用是否意味着可以预测 GC 时间？</strong> 不能。弱引用只表示不阻止回收，具体何时回收由引擎决定。业务逻辑不能依赖某个 WeakMap 条目在固定时间内消失。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap" target="_blank" rel="noreferrer">MDN Web Docs：WeakMap</a></li>
         </ul>
       </div>
     </section>

@@ -2,15 +2,16 @@
 分类: javascript / 06-浏览器API / 存储
   主题: FileReader 读取文件并存入 localforage
   要点:
-    - readAsDataURL 把文件读成 base64 字符串；下方用 result.length×2 粗算 UTF-16 字符占用
-    - 大文件直接读 dataURL 内存吃紧，更适合 readAsArrayBuffer / Blob 存储
-    - 始终监听 onloadend / onerror，便于在异常时给出反馈
+    - FileReader.readAsDataURL 会把文件读成带 MIME 前缀的 base64 data URL
+    - base64 字符串会放大体积并占用 JS 内存，大文件更适合存 Blob 或 ArrayBuffer
+    - localforage 基于 IndexedDB 时可存 Blob，回退到 localStorage 时能力和容量会受限
+    - 文件读取和存储都可能失败，必须处理未选择文件、读取错误和配额错误
   面试:
-    - FileReader 读取文件并存入 localforage的核心概念是什么
-    - FileReader 读取文件并存入 localforage在实际项目里怎么用
-    - FileReader 读取文件并存入 localforage有哪些常见坑或易错点
-    - FileReader 读取文件并存入 localforage和相近 API 如何区分选型
-    - 面试中如何简洁讲清 FileReader 读取文件并存入 localforage
+    - readAsDataURL 和 readAsArrayBuffer 存文件有什么区别？
+    - 为什么大文件不建议先转 base64 再缓存？
+    - localforage 存 Blob 时要注意哪些浏览器后端差异？
+    - 文件读取和写入 IndexedDB 分别有哪些失败路径？
+    - 前端离线缓存用户文件时有哪些安全和隐私边界？
 -->
 
 <!doctype html>
@@ -31,54 +32,110 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>readAsDataURL 把文件读成 base64 字符串；下方用 result.length×2 粗算 UTF-16 字符占用。</li>
-          <li>大文件直接读 dataURL 内存吃紧，更适合 readAsArrayBuffer / Blob 存储。</li>
-          <li>始终监听 onloadend / onerror，便于在异常时给出反馈。</li>
+          <li><code>FileReader.readAsDataURL()</code> 会把 <code>File</code>/<code>Blob</code> 读成 <code>data:&lt;mime&gt;;base64,...</code> 字符串，适合小图片预览，但不是最省空间的持久化格式。</li>
+          <li>base64 会带来额外体积和 JS 字符串内存开销；如果只是离线缓存文件，优先把原始 <code>Blob</code> 存进 localforage，或用 <code>readAsArrayBuffer()</code> 处理二进制数据。</li>
+          <li>localforage 常用 IndexedDB 后端时可以保存 Blob、ArrayBuffer 等值；如果浏览器只能回退到 localStorage，容量和二进制支持都会变差，生产代码要确认 driver 或做降级。</li>
+          <li>读取文件要处理用户未选择文件、读取失败、用户重复选择同一文件、文件过大等情况；写入存储还要捕获配额不足和 IndexedDB 不可用。</li>
+          <li>缓存用户文件涉及隐私和安全边界：不要默认长期保存敏感文件，提供删除入口，不要把 data URL 注入 <code>innerHTML</code>，展示时应使用受控的 <code>src</code> 或对象 URL。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>readAsDataURL 把文件读成 base64 字符串？</strong> readAsDataURL 把文件读成 base64 字符串；下方用 result.length×2 粗算 UTF-16 字符占用；大文件直接读 dataURL 内存吃紧，更适合 readAsArrayBuffer / Blob 存储</li>
-          <li><strong>大文件直接读 dataURL 内存吃紧？</strong> 大文件直接读 dataURL 内存吃紧，更适合 readAsArrayBuffer / Blob 存储</li>
-          <li><strong>始终监听 onloadend / onerror？</strong> 始终监听 onloadend / onerror，便于在异常时给出反馈</li>
+          <li><strong><code>readAsDataURL</code> 和 <code>readAsArrayBuffer</code> 存文件有什么区别？</strong> 结论是 data URL 适合小文件预览，ArrayBuffer/Blob 更适合二进制处理和离线缓存。原因是 data URL 是 base64 字符串并带 MIME 前缀，体积和内存开销更高；项目里头像预览可用 data URL，大文件缓存应保留 Blob。</li>
+          <li><strong>为什么大文件不建议先转 base64 再缓存？</strong> 结论是会增加体积、占用 JS 堆内存并拖慢序列化。原因是 FileReader 会一次性把结果放到内存中，localforage 再持久化；图片编辑器、离线附件等场景应限制大小、分片或直接存 Blob。</li>
+          <li><strong>localforage 存 Blob 时要注意哪些浏览器后端差异？</strong> 结论是 IndexedDB 后端最适合，localStorage 回退不适合大二进制。原因是 IndexedDB 支持结构化克隆存储 Blob，而 localStorage 只有字符串且容量很小；生产里应确认 driver，并为老浏览器提供提示或上传替代方案。</li>
+          <li><strong>文件读取和写入 IndexedDB 分别有哪些失败路径？</strong> 结论是读取可能因为未选文件、权限或 I/O 错误失败，写入可能因为配额、浏览器策略或数据库异常失败。原因是这两步是独立异步流程；代码应分别捕获并给出不同提示，不能只在最后打印一个笼统错误。</li>
+          <li><strong>前端离线缓存用户文件时有哪些安全和隐私边界？</strong> 结论是必须让用户知道文件会保存在本机，并提供清理能力。原因是浏览器存储通常按同源长期保留，敏感文件可能被同源后续代码读取；项目里要最小化保存、避免 HTML 注入，并在退出登录或清理缓存时删除。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/FileReader" target="_blank" rel="noreferrer">MDN: FileReader</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL" target="_blank" rel="noreferrer">MDN: FileReader readAsDataURL()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsArrayBuffer" target="_blank" rel="noreferrer">MDN: FileReader readAsArrayBuffer()</a></li>
+          <li><a href="https://localforage.github.io/localForage/#data-api-setitem" target="_blank" rel="noreferrer">localForage API: setItem()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob" target="_blank" rel="noreferrer">MDN: Blob</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <input onchange="readFile(this)" type="file">
+    <section class="demo-block" aria-label="文件存储操作">
+      <h2 class="demo-block__label">运行示例</h2>
+      <p class="hint">选择一个小文件，示例会把原始 Blob 存入 localforage，并额外演示小文件 data URL 预览读取。</p>
+      <input id="file-input" type="file">
+      <button id="clear-file" type="button">清理缓存文件</button>
+      <p id="status" aria-live="polite">尚未选择文件。</p>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      function readFile(input) {
-        let file = input.files[0];
-        let reader = new FileReader();
-        reader.onloadend = function (e) {
-          let fileData = e.target.result;
+      const store = localforage.createInstance({
+        name: "frontend-learning-demos",
+        storeName: "localforage_file_reader",
+      });
+      const fileInput = document.querySelector("#file-input");
+      const clearButton = document.querySelector("#clear-file");
+      const statusEl = document.querySelector("#status");
+      const PREVIEW_LIMIT_BYTES = 512 * 1024;
 
-          _storeData(fileData);
-        };
-        reader.readAsDataURL(file);
+      function setStatus(message) {
+        statusEl.textContent = message;
+        console.log(message);
       }
 
-      function _storeData(fileData) {
-        localforage.clear().then(function () {
-          localforage.keys().then(function (keys) {
-            console.log("keys:" + keys);
-
-            console.log("file size: " + fileData.length * 2);
-            let b = fileData.length * 2;
-            let kb = b / 1024;
-            console.log("b: " + b);
-            console.log("kb: " + kb);
-
-            localforage.setItem("bigData", fileData);
-          });
-        }).catch(function (err) {
-          console.log(err);
+      function readAsDataURL(file) {
+        return new Promise(function (resolve, reject) {
+          const reader = new FileReader();
+          reader.onload = function () {
+            resolve(reader.result);
+          };
+          reader.onerror = function () {
+            reject(reader.error || new Error("FileReader 读取失败"));
+          };
+          reader.readAsDataURL(file);
         });
       }
+
+      async function storeFile(file) {
+        if (!file) {
+          setStatus("未选择文件。");
+          return;
+        }
+
+        try {
+          await store.setItem("last-file", {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            updatedAt: new Date().toISOString(),
+            blob: file,
+          });
+
+          setStatus("已缓存 Blob：" + file.name + "，大小 " + (file.size / 1024).toFixed(2) + " KB。");
+
+          if (file.size <= PREVIEW_LIMIT_BYTES) {
+            const dataURL = await readAsDataURL(file);
+            console.log("dataURL 字符数：", dataURL.length);
+            console.log("dataURL 预览前 80 字符：", dataURL.slice(0, 80));
+          } else {
+            console.warn("文件超过 512KB，跳过 readAsDataURL 预览，避免额外内存开销。");
+          }
+        } catch (error) {
+          setStatus("文件缓存失败：" + (error?.name || "Error") + " - " + (error?.message || String(error)));
+          console.error("文件读取或存储失败：", error);
+        }
+      }
+
+      fileInput.addEventListener("change", function (event) {
+        storeFile(event.target.files[0]);
+      });
+
+      clearButton.addEventListener("click", async function () {
+        await store.clear();
+        fileInput.value = "";
+        setStatus("缓存文件已清理。");
+      });
 
     </script>
     <!-- SCRIPT_END -->

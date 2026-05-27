@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 04-ES6+ / class详解
+  分类: javascript / 04-ES6+ / class详解
   主题: 类的字段、方法与原型对象关系
   要点:
-    - 公有/私有实例字段「每实例一份」；实例方法挂在 prototype 上「所有实例共享」
-    - 在 constructor 里给 this 赋方法，每个实例会各持有一份，浪费内存
-    - 私有字段只能在类体外通过类内部代码访问，且只能用 this.#field
+    - class 是原型语法糖：实例方法在 prototype 上共享
+    - 公有/私有实例字段每个实例各有一份，静态字段在类构造器上
+    - constructor 中给 this 赋函数会让每个实例持有独立函数对象
+    - 私有字段只能在类体内部通过 this.#field 访问，类外访问是语法错误
   面试:
-    - 类的字段、方法与原型对象关系的核心概念是什么
-    - 类的字段、方法与原型对象关系在实际项目里怎么用
-    - 类的字段、方法与原型对象关系有哪些常见坑或易错点
-    - 类的字段、方法与原型对象关系和相近 API 如何区分选型
-    - 面试中如何简洁讲清 类的字段、方法与原型对象关系
+    - class 方法、实例字段、静态字段分别存在哪里？
+    - 为什么不建议在 constructor 里给 this 重复创建方法？
+    - 私有字段和普通下划线属性有什么本质区别？
+    - 如何用 Object.getPrototypeOf 验证实例与类原型的关系？
 -->
 
 <!doctype html>
@@ -30,15 +30,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>公有/私有实例字段「每实例一份」；实例方法挂在 prototype 上「所有实例共享」。</li>
-          <li>在 constructor 里给 <code>this</code> 赋方法，每个实例会各持有一份，浪费内存。</li>
-          <li>私有字段只能在类体外通过类内部代码访问，且只能用 <code>this</code>.#field。</li>
+          <li><code>class</code> 是更严格、更清晰的原型语法：constructor 负责实例初始化，类体中的实例方法定义在 <code>ClassName.prototype</code> 上，由所有实例共享。</li>
+          <li>公有实例字段和私有实例字段会在每次 <code>new</code> 时初始化到当前实例；静态字段和静态方法定义在类构造器本身，实例默认访问不到。</li>
+          <li>在 constructor 里写 <code>this.sayHello = function () {}</code> 会给每个实例创建一个新的函数对象；除非需要闭包捕获构造参数，否则更推荐写成原型方法。</li>
+          <li>私有字段 <code>#field</code> 是语法级私有，只能在声明它的类体内部通过 <code>this.#field</code> 访问；<code>_field</code> 只是命名约定，外部仍能读写。</li>
+          <li>推荐用 <code>Object.getPrototypeOf(instance)</code> 验证原型关系；<code>__proto__</code> 是历史访问器，不适合作为现代示例的首选写法。</li>
+          <li>理解字段与原型的存放位置，有助于判断内存占用、方法共享、静态工具方法和实例状态的边界。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>公有/私有实例字段「每实例一份」？</strong> 公有/私有实例字段「每实例一份」；实例方法挂在 prototype 上「所有实例共享」</li>
-          <li><strong>在 constructor 里给 this 赋方法？</strong> 在 constructor 里给 <code>this</code> 赋方法，每个实例会各持有一份，浪费内存</li>
-          <li><strong>私有字段只能在类体外通过类内部代码访问？</strong> 私有字段只能在类体外通过类内部代码访问，且只能用 <code>this</code>.#field</li>
+          <li><strong>class 方法、实例字段、静态字段分别存在哪里？</strong> 结论是实例方法在 <code>prototype</code> 上共享，实例字段在每个实例上，静态成员在类构造器本身上。原因是 class 仍建立在原型机制之上；项目里要根据“每实例状态”还是“类级能力”选择字段或方法位置。</li>
+          <li><strong>为什么不建议在 constructor 里重复创建方法？</strong> 因为每次 <code>new</code> 都会创建新的函数对象，实例之间无法共享，实例数量大时会浪费内存。边界是如果方法必须闭包捕获 constructor 的局部变量，才考虑放到实例上。</li>
+          <li><strong>私有字段和下划线属性有什么区别？</strong> <code>#field</code> 是语言语法级私有，类外访问会直接语法错误；<code>_field</code> 只是团队约定，运行时仍是普通属性。库代码需要隐藏内部状态时，优先使用真正的私有字段或模块闭包。</li>
+          <li><strong>如何验证实例和类原型的关系？</strong> 可以用 <code>Object.getPrototypeOf(p1) === Person.prototype</code> 验证实例原型，用 <code>Object.getPrototypeOf(Sub.prototype) === Base.prototype</code> 验证继承链。现代代码更推荐 <code>Object.getPrototypeOf</code>，不要依赖 <code>__proto__</code>。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes" target="_blank" rel="noreferrer">MDN Web Docs：Classes</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements" target="_blank" rel="noreferrer">MDN Web Docs：Private elements</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf" target="_blank" rel="noreferrer">MDN Web Docs：Object.getPrototypeOf()</a></li>
         </ul>
       </div>
     </section>
@@ -65,7 +75,7 @@
           // this.#weight = weight;
 
           // 反面：把方法挂在 this 上，每个实例都会有一份独立函数对象
-          this.sayhello = function(){};
+          this.sayHello = function () {};
         }
 
         // 推荐：实例方法挂 prototype 上，由所有实例共享
@@ -81,6 +91,9 @@
 
       const p1 = new Person();
       p1.eat();
+      console.log("Person.prototype === Object.getPrototypeOf(p1)", Person.prototype === Object.getPrototypeOf(p1));
+      console.log("p1.hasOwnProperty('sayHello')", Object.hasOwn(p1, "sayHello"));
+      console.log("p1.hasOwnProperty('eat')", Object.hasOwn(p1, "eat"));
 
       // 实例访问类静态属性返回 undefined（静态只能用类名访问）
       console.log("p1.userType", p1.userType);

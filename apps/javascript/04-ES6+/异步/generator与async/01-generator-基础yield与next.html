@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 04-ES6+ / 异步 / generator与async
+  分类: javascript / 04-ES6+ / 异步 / generator与async
   主题: generator 基础：yield 与 next
   要点:
-    - function* 定义生成器，调用后返回「迭代器对象」，函数体不会立即执行
-    - 每次 .next() 推进到下一个 yield，返回 { value, done }
-    - 普通对象没有默认迭代器；Array / Map / Set / String 等内置可迭代对象有 Symbol.iterator
+    - function* 调用后返回 Generator 对象，函数体不会立即执行
+    - next() 推进到下一个 yield，返回 IteratorResult: { value, done }
+    - yield 会暂停函数并把值交给调用方，下一次 next(value) 可把值送回暂停点
+    - 可迭代对象必须提供 Symbol.iterator，普通对象默认不可 for...of
   面试:
-    - generator 基础：yield 与 next的核心概念是什么
-    - generator 基础：yield 与 next在实际项目里怎么用
-    - generator 基础：yield 与 next有哪些常见坑或易错点
-    - generator 基础：yield 与 next和相近 API 如何区分选型
-    - 面试中如何简洁讲清 generator 基础：yield 与 next
+    - generator 函数调用后为什么不会立即执行函数体？
+    - yield、return 和 next() 的 value/done 分别表示什么？
+    - 普通对象如何实现 Symbol.iterator 后支持 for...of？
+    - generator 适合哪些场景，为什么异步流程现在更常用 async/await？
 -->
 
 <!doctype html>
@@ -30,15 +30,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>function* 定义生成器，调用后返回「迭代器对象」，函数体不会立即执行。</li>
-          <li>每次 .next() 推进到下一个 yield，返回 { value, done }。</li>
-          <li>普通对象没有默认迭代器；<code>Array</code> / <code>Map</code> / <code>Set</code> / String 等内置可迭代对象有 <code>Symbol</code>.iterator。</li>
+          <li><code>function*</code> 定义 generator 函数；调用它只会返回一个 Generator 对象，函数体会停在开头，直到第一次 <code>next()</code> 才开始执行。</li>
+          <li>每次 <code>next()</code> 都把函数推进到下一个 <code>yield</code>、<code>return</code> 或函数结束位置，并返回迭代器结果对象 <code>{ value, done }</code>。</li>
+          <li><code>yield</code> 会把右侧值交给调用方并暂停执行；下一次 <code>next(value)</code> 传入的值会成为当前暂停的 <code>yield</code> 表达式结果。</li>
+          <li><code>return</code> 会结束 generator，返回 <code>{ value, done: true }</code>；之后继续 <code>next()</code> 只会得到 <code>{ value: undefined, done: true }</code>。</li>
+          <li>可迭代对象必须实现 <code>Symbol.iterator</code> 并返回带 <code>next()</code> 的迭代器；数组、Map、Set、字符串内置可迭代，普通对象默认不可 <code>for...of</code>。</li>
+          <li>generator 仍适合惰性序列、自定义迭代和可暂停流程；现代异步控制流通常优先用 <code>async</code>/<code>await</code>，可读性和错误处理更直接。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>function* 定义生成器？</strong> function* 定义生成器，调用后返回「迭代器对象」，函数体不会立即执行</li>
-          <li><strong>每次 .next() 推进到下一个 yield？</strong> 每次 .next() 推进到下一个 yield，返回 { value, done }</li>
-          <li><strong>普通对象没有默认迭代器？</strong> 普通对象没有默认迭代器；<code>Array</code> / <code>Map</code> / <code>Set</code> / String 等内置可迭代对象有 <code>Symbol</code>.iterator</li>
+          <li><strong>generator 函数调用后为什么不会立即执行函数体？</strong> 因为调用 <code>function*</code> 返回的是 Generator 对象，执行权由调用方通过 <code>next()</code> 驱动。这样函数可以在多个 <code>yield</code> 点暂停和恢复，适合惰性产生数据或表达可暂停流程。</li>
+          <li><strong><code>yield</code>、<code>return</code> 和 <code>next()</code> 的结果如何理解？</strong> <code>yield</code> 产生一个中间值，<code>done</code> 为 <code>false</code>；<code>return</code> 或函数结束表示迭代完成，<code>done</code> 为 <code>true</code>。项目里消费迭代器时不能只看 <code>value</code>，还要看 <code>done</code>。</li>
+          <li><strong>普通对象如何支持 <code>for...of</code>？</strong> 给对象实现 <code>[Symbol.iterator]()</code>，返回包含 <code>next()</code> 的迭代器即可。边界是对象属性枚举用 <code>Object.keys</code> 或 <code>for...in</code>，不是所有对象都天然可迭代。</li>
+          <li><strong>generator 和 async/await 如何取舍？</strong> generator 适合自定义迭代和惰性序列；异步请求、串行流程和错误处理优先使用 <code>async</code>/<code>await</code>。历史上 generator 可配合执行器模拟异步流程，但现代项目很少需要手写。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*" target="_blank" rel="noreferrer">MDN Web Docs：function*</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/yield" target="_blank" rel="noreferrer">MDN Web Docs：yield</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols" target="_blank" rel="noreferrer">MDN Web Docs：Iteration protocols</a></li>
         </ul>
       </div>
     </section>

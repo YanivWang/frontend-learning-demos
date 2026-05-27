@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 04-ES6+ / 异步 / Promise
+  分类: javascript / 04-ES6+ / 异步 / Promise
   主题: Promise + async/await 与事件循环（宏任务/微任务）
   要点:
-    - Promise 构造器内的同步代码立即执行；.then 回调进入微任务队列
-    - await 等价于「先 .then 包装再让出执行权」，await 之后的代码进入微任务
-    - 微任务批次执行完毕后才会去取下一个宏任务（如 setTimeout）
+    - Promise executor 同步执行，then/catch/finally 反应回调进入微任务
+    - await 会暂停 async 函数后续代码，并把恢复执行安排到微任务
+    - 当前宏任务结束后先清空微任务队列，再进入 setTimeout 等下一个任务
+    - 多写不必要的 await 会增加微任务切分，可能引入竞态或性能损耗
   面试:
-    - Promise + async/await 与事件循环（宏任务/微任务）的核心概念是什么
-    - Promise + async/await 与事件循环（宏任务/微任务）在实际项目里怎么用
-    - Promise + async/await 与事件循环（宏任务/微任务）有哪些常见坑或易错点
-    - Promise + async/await 与事件循环（宏任务/微任务）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Promise + async/await 与事件循环（宏任务/微任务）
+    - Promise executor、then、setTimeout 的执行顺序如何判断？
+    - await 后面的代码为什么会晚于同步代码执行？
+    - 微任务和宏任务在浏览器事件循环中如何调度？
+    - 为什么不建议滥用不必要的 await？
 -->
 
 <!doctype html>
@@ -30,16 +30,23 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>Promise</code> 构造器内的同步代码立即执行；.then 回调进入微任务队列。</li>
-          <li><code>await</code> 等价于「先 .then 包装再让出执行权」，<code>await</code> 之后的代码进入微任务。</li>
-          <li>微任务批次执行完毕后才会去取下一个宏任务（如 <code>setTimeout</code>）。</li>
-          <li><code>Promise</code> 构造器内的同步代码立即执行；.then 回调进入微任务队列（补充）。</li>
+          <li><code>new Promise(executor)</code> 会立刻同步执行 executor，所以示例里的 <code>console.log("1")</code>、<code>console.log("2")</code> 会早于 <code>then</code> 回调。</li>
+          <li><code>then</code>、<code>catch</code>、<code>finally</code> 这类 Promise 反应回调会进入微任务队列，等当前同步调用栈清空后执行。</li>
+          <li><code>await</code> 会计算右侧表达式并暂停 async 函数，后续代码作为恢复执行的微任务排队；即使 await 的是已 fulfilled Promise 或普通值，也会发生这次让出。</li>
+          <li>浏览器事件循环在一个任务结束后会先处理微任务，再取下一个任务；因此 Promise/await 回调通常早于 <code>setTimeout(..., 0)</code>。</li>
+          <li>过度拆分 <code>await</code> 会制造更多微任务切换，可能让两个流程交错执行并引入竞态；只有后续代码确实依赖结果时才需要 await。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Promise 构造器内的同步代码立即执行？</strong> <code>Promise</code> 构造器内的同步代码立即执行；.then 回调进入微任务队列</li>
-          <li><strong>await 等价于「先 .then 包装再让出执行权」？</strong> <code>await</code> 等价于「先 .then 包装再让出执行权」，<code>await</code> 之后的代码进入微任务</li>
-          <li><strong>微任务批次执行完毕后才会去取下一个宏任务（如 setTimeout）？</strong> <code>Promise</code> 构造器内的同步代码立即执行；.then 回调进入微任务队列；<code>await</code> 等价于「先 .then 包装再让出执行权」，<code>await</code> 之后的代码进入微任务</li>
+          <li><strong>Promise executor、then、setTimeout 的执行顺序如何判断？</strong> 先跑当前同步代码，包括 Promise executor；再清空 Promise/await 产生的微任务；最后才进入 <code>setTimeout</code> 这类后续任务。项目排查“为什么日志顺序不对”时，先把同步、微任务、任务三类分开标记。</li>
+          <li><strong><code>await</code> 后面的代码为什么会晚于同步代码执行？</strong> 因为 <code>await</code> 会让 async 函数暂停，恢复执行被排成微任务。即使等待的是普通值，也不会继续留在当前同步调用栈里执行；这就是 async 函数能让出控制权的原因。</li>
+          <li><strong>微任务和宏任务在浏览器事件循环中如何调度？</strong> 每轮事件循环取一个任务执行，任务结束后执行微任务检查点，清空当前可执行微任务，再进入渲染机会和下一任务。边界是微任务如果持续追加微任务，可能推迟计时器和渲染。</li>
+          <li><strong>为什么不建议滥用不必要的 await？</strong> 多余的 <code>await</code> 会把代码拆成更多微任务，增加调度成本，也可能让并发流程交错产生竞态。只需要返回 Promise 给调用方时，可以直接 return；需要在当前函数捕获错误或改善栈信息时再 <code>return await</code>。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" target="_blank" rel="noreferrer">MDN Web Docs：Promise</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await" target="_blank" rel="noreferrer">MDN Web Docs：await</a></li>
         </ul>
       </div>
     </section>

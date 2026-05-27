@@ -1,16 +1,16 @@
 <!--
 分类: javascript / 07-进阶 / UMD插件模式
-  主题: UMD（Universal Module Definition）演示
+  主题: UMD 插件模式与多模块环境兼容
   要点:
-    - 同一份代码自动适配 AMD / CommonJS / 浏览器全局
-    - 通过 typeof define === 'function' && define.amd 判定 AMD 环境
-    - 早期 jQuery、lodash 等老牌库的标配模式
+    - UMD 是兼容 AMD、CommonJS 与浏览器全局变量的库包装模式
+    - 包装函数先探测运行环境，再把 factory 返回值导出到对应模块系统
+    - UMD 适合老项目和直接 script 引入，新包优先提供 ESM 构建
+    - 入口检测顺序、全局对象和副作用配置会影响打包产物兼容性
   面试:
-    - UMD（Universal Module Definition）演示的核心概念是什么
-    - UMD（Universal Module Definition）演示在实际项目里怎么用
-    - UMD（Universal Module Definition）演示有哪些常见坑或易错点
-    - UMD（Universal Module Definition）演示和相近 API 如何区分选型
-    - 面试中如何简洁讲清 UMD（Universal Module Definition）演示
+    - UMD 为什么能让同一份插件同时支持 AMD、CommonJS 和 script 标签？
+    - UMD 与 ESM、CommonJS 的选型边界是什么？
+    - UMD 包装里为什么要先判断 define.amd，再判断 exports？
+    - 在浏览器全局模式下如何避免插件污染 window 或覆盖同名变量？
 -->
 
 <!doctype html>
@@ -26,20 +26,30 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>UMD（Universal Module Definition）插件模式</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <h1>UMD 插件模式与多模块环境兼容</h1>
+      <p class="hint">请打开 DevTools Console 查看 <code>Record</code> 插件在浏览器全局模式下的导出与调用。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>同一份代码自动适配 AMD / CommonJS / 浏览器全局。</li>
-          <li>通过 <code>typeof</code> define === 'function' &amp;&amp; define.amd 判定 AMD 环境。</li>
-          <li>早期 jQuery、lodash 等老牌库的标配模式。</li>
+          <li>UMD（Universal Module Definition）不是 ECMAScript 标准语法，而是一种库发布包装模式：外层立即执行函数接收 <code>root</code> 和 <code>factory</code>，按环境把 <code>factory()</code> 的返回值交给 AMD、CommonJS 或浏览器全局变量。</li>
+          <li>本页的 <code>plugin.js</code> 在普通 <code>&lt;script&gt;</code> 中会走浏览器全局分支，把插件暴露为 <code>Record</code>；如果运行在 AMD 加载器中会调用 <code>define(factory)</code>，在 CommonJS 环境中会写入 <code>module.exports</code>。</li>
+          <li>UMD 的价值是兼容老式加载器和直接 script 引入；现代新项目优先使用 ESM 的 <code>import</code> / <code>export</code>，库通常通过 <code>exports</code> 字段同时提供 ESM、CJS 或 UMD 构建产物。</li>
+          <li>常见坑是环境探测过宽：页面上如果存在 AMD loader，UMD 会优先进入 AMD 分支；在严格模式、ESM 或 worker 场景里 <code>this</code> 未必是 <code>window</code>，更稳妥的模板会使用 <code>globalThis</code> 或由打包器生成。</li>
+          <li>浏览器全局分支会占用全局命名空间，真实项目应使用明确命名、版本化构建和无副作用初始化，避免覆盖已有变量或在加载脚本时立即执行重逻辑。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>同一份代码自动适配 AMD / CommonJS / 浏览器全局？</strong> 同一份代码自动适配 AMD / CommonJS / 浏览器全局</li>
-          <li><strong>通过 typeof define === 'function' &amp;&amp; defin？</strong> 通过 <code>typeof</code> define === 'function' &amp;&amp; define.amd 判定 AMD 环境</li>
-          <li><strong>早期 jQuery、lodash 等老牌库的标配模式？</strong> 早期 jQuery、lodash 等老牌库的标配模式</li>
+          <li><strong>UMD 为什么能让同一份插件支持多种模块系统？</strong> 结论是 UMD 把业务代码放进 <code>factory</code>，再由外层包装根据当前环境选择导出方式。原因是 AMD 使用 <code>define</code>，CommonJS 使用 <code>module.exports</code>，普通浏览器脚本只能挂到全局对象。边界是它只能兼容加载方式，不能让代码自动获得 ESM 的静态分析、tree-shaking 和异步模块图能力。</li>
+          <li><strong>UMD 与 ESM、CommonJS 怎么选？</strong> 新业务代码和现代库入口优先选 ESM，因为语法标准化、可静态分析，也更利于构建优化。CommonJS 主要用于 Node.js 旧生态或兼容包；UMD 适合需要 CDN script 标签、AMD 加载器或老项目同时消费的发布产物。项目里通常源码写 ESM，再由构建工具输出多格式。</li>
+          <li><strong>为什么常见 UMD 模板先判断 <code>define.amd</code>？</strong> 结论是为了在存在 AMD 加载器的浏览器页面中走异步模块注册，而不是误判成全局变量模式。原因是 AMD 的 <code>define</code> 是显式加载器协议，CommonJS 分支通常面向 Node 或打包环境。边界是不同模板检测顺序可能不同，库作者必须测试目标运行环境。</li>
+          <li><strong>浏览器全局模式有哪些风险？</strong> 结论是全局导出最容易发生命名冲突和加载顺序问题。原因是所有 script 共享同一个全局命名空间，后加载脚本可能覆盖前面的对象。项目中应给全局变量取稳定前缀、避免加载时副作用，并在文档中明确 UMD 包只面向兼容场景。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules">MDN Web Docs: JavaScript modules</a></li>
+          <li><a href="https://nodejs.org/api/modules.html">Node.js Documentation: Modules - CommonJS modules</a></li>
+          <li><a href="https://github.com/amdjs/amdjs-api/blob/master/AMD.md">AMD API: Asynchronous Module Definition</a></li>
+          <li><a href="https://github.com/umdjs/umd">UMD templates: Universal Module Definition patterns</a></li>
         </ul>
       </div>
     </section>

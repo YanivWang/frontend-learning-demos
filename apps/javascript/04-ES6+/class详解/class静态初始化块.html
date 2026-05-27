@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 04-ES6+ / class详解
+  分类: javascript / 04-ES6+ / class详解
   主题: 静态初始化块 static { ... }
   要点:
-    - 类初始化阶段执行（不是 new 时），按声明顺序同步执行
-    - 块内的 this 指向「类构造函数对象」本身，可访问私有静态字段
-    - 只能引用「声明在自己上方」的字段；引用下方字段拿到 undefined
+    - static 块在类求值阶段同步执行，不等到 new 实例
+    - 静态字段和 static 块按类体声明顺序交错执行
+    - 块内 this 指向类构造器本身，可访问已声明的私有静态字段
+    - static 块适合封装复杂静态初始化，但不能使用 await、yield、arguments 或 super()
   面试:
-    - 静态初始化块 static { ... }的核心概念是什么
-    - 静态初始化块 static { ... }在实际项目里怎么用
-    - 静态初始化块 static { ... }有哪些常见坑或易错点
-    - 静态初始化块 static { ... }和相近 API 如何区分选型
-    - 面试中如何简洁讲清 静态初始化块 static { ... }
+    - static 初始化块和静态字段初始化顺序是什么？
+    - static 块里的 this、var、私有静态字段分别有什么作用域边界？
+    - static 块适合替代哪些类外初始化写法？
+    - 为什么 static 块不能写 await、yield、arguments 或 super()？
 -->
 
 <!doctype html>
@@ -30,15 +30,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>类初始化阶段执行（不是 new 时），按声明顺序同步执行。</li>
-          <li>块内的 <code>this</code> 指向「类构造函数对象」本身，可访问私有静态字段。</li>
-          <li>只能引用「声明在自己上方」的字段；引用下方字段拿到 <code>undefined</code>。</li>
+          <li><code>static { ... }</code> 是类体内的静态初始化块，在类定义被求值时同步执行，不会等到 <code>new</code> 实例。</li>
+          <li>静态字段初始化器和多个 <code>static</code> 块按源码顺序交错执行；父类静态初始化会先于子类静态初始化。</li>
+          <li>块内的 <code>this</code> 指向当前类构造器本身，所以可以读写公共静态字段，也可以访问类中声明的私有静态字段。</li>
+          <li>静态块内部声明的 <code>var</code>、<code>let</code>、<code>const</code> 都不会泄漏到块外；这和普通块里 <code>var</code> 会提升到函数作用域不同。</li>
+          <li>静态块只能同步执行，不能使用 <code>await</code>、<code>yield</code>、<code>arguments</code>，也不能调用 <code>super()</code>；需要异步初始化时应暴露显式初始化方法或返回 Promise。</li>
+          <li>它适合把复杂静态配置、缓存预处理、私有静态字段初始化封装在类内部，避免暴露一个只为初始化服务的公共 <code>init()</code> 方法。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>类初始化阶段执行（不是 new 时）？</strong> 类初始化阶段执行（不是 new 时），按声明顺序同步执行</li>
-          <li><strong>块内的 this 指向「类构造函数对象」本身？</strong> 块内的 <code>this</code> 指向「类构造函数对象」本身，可访问私有静态字段</li>
-          <li><strong>只能引用「声明在自己上方」的字段？</strong> 只能引用「声明在自己上方」的字段；引用下方字段拿到 <code>undefined</code></li>
+          <li><strong>static 初始化块什么时候执行？</strong> 结论是类求值时执行，不是创建实例时执行。原因是它属于类的静态初始化流程，会和静态字段按声明顺序同步运行；项目里不能把它当成实例构造逻辑。</li>
+          <li><strong>static 块里的 <code>this</code> 指向谁？</strong> <code>this</code> 指向当前类构造器，因此可访问 <code>this.staticField</code> 和已声明的私有静态字段。边界是实例字段还没有实例可挂载，所以在静态块里读 <code>this.type</code> 读到的是类上的静态属性，而不是实例字段。</li>
+          <li><strong>static 块适合解决什么问题？</strong> 它适合封装复杂的同步静态初始化，例如从多个值推导缓存或初始化私有静态状态。原因是类外函数无法访问私有静态字段，而公开 <code>init()</code> 又会泄漏实现细节；异步初始化仍应放到显式 API 中处理失败路径。</li>
+          <li><strong>引用下方静态字段有什么坑？</strong> 公共静态字段在执行到声明位置前还没有被设置，读取通常得到 <code>undefined</code>；私有静态字段如果尚未初始化，访问会抛错。项目里应把被依赖的静态字段写在静态块之前，或者在块内完成统一赋值。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Static_initialization_blocks" target="_blank" rel="noreferrer">MDN Web Docs：Static initialization blocks</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Public_class_fields" target="_blank" rel="noreferrer">MDN Web Docs：Public class fields</a></li>
         </ul>
       </div>
     </section>
@@ -68,13 +77,13 @@
           console.log(this.animalId)
 
           //初始化块可以引用其上方的字段值，但不能引用其下方的字段值
-          console.log(this.speciel)
+          console.log(this.species)
         }
 
-        static speciel = "pig";
+        static species = "pig";
 
         static {
-          console.log(this.speciel)
+          console.log(this.species)
 
           //静态代码块中的 this 是指 类的构造函数对象(class Pig)
           console.log(this)

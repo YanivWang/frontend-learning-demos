@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 04-ES6+ / 集合
+  分类: javascript / 04-ES6+ / 集合
   主题: Set 值的集合
   要点:
-    - 值唯一（用严格相等判断），保留插入顺序
-    - [...new Set(arr)] 是数组去重经典写法
-    - 添加对象字面量时按引用判断：两个 {} 视为不同
+    - Set 存储唯一值，按 SameValueZero 判断相等并保留插入顺序
+    - [...new Set(arr)] 可做数组去重，但对象按引用身份去重
+    - Set.prototype.has 通常比数组 includes 更适合大量成员查询
+    - Set 适合存在性判断和集合运算，不适合保存键值元数据
   面试:
-    - Set 值的集合的核心概念是什么
-    - Set 值的集合在实际项目里怎么用
-    - Set 值的集合有哪些常见坑或易错点
-    - Set 值的集合和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Set 值的集合
+    - Set 如何判断两个值是否重复？
+    - Set 数组去重为什么不能按对象内容去重？
+    - Set 和 Array 在成员查询上如何选择？
+    - Set、Map、WeakSet 分别适合什么场景？
 -->
 
 <!doctype html>
@@ -30,15 +30,22 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>值唯一（用严格相等判断），保留插入顺序。</li>
-          <li>[...new <code>Set</code>(arr)] 是数组去重经典写法。</li>
-          <li>添加对象字面量时按引用判断：两个 {} 视为不同。</li>
+          <li><code>Set</code> 存储唯一值，使用 SameValueZero 判断相等：<code>NaN</code> 可被识别为同一个值，<code>0</code> 和 <code>-0</code> 视为相同。</li>
+          <li><code>Set</code> 保留成功插入的顺序，<code>for...of</code>、<code>values()</code>、<code>keys()</code> 和 <code>entries()</code> 都按插入顺序迭代。</li>
+          <li><code>[...new Set(arr)]</code> 是数组去重常见写法，但对象按引用身份比较，两个内容相同的对象字面量仍会被视为不同值。</li>
+          <li>大量成员存在性判断时，<code>set.has(value)</code> 通常比反复 <code>array.includes(value)</code> 更适合；但如果需要索引、排序或重复次数，仍应使用数组或 Map 计数。</li>
+          <li><code>Set</code> 只保存值；如果要给每个键关联额外数据，应使用 <code>Map</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>值唯一（用严格相等判断）？</strong> 值唯一（用严格相等判断），保留插入顺序</li>
-          <li><strong>[...new Set(arr)] 是数组去重经典写法？</strong> [...new <code>Set</code>(arr)] 是数组去重经典写法</li>
-          <li><strong>添加对象字面量时按引用判断？</strong> 添加对象字面量时按引用判断：两个 {} 视为不同</li>
+          <li><strong>Set 如何判断两个值是否重复？</strong> 它使用 SameValueZero，相比 <code>===</code> 的重要差异是 <code>NaN</code> 等于 <code>NaN</code>。对象仍按引用判断，所以对象内容相同不代表 Set 里是同一个值。</li>
+          <li><strong>Set 数组去重为什么不能按对象内容去重？</strong> 因为对象值比较的是引用身份，<code>{ id: 1 }</code> 和另一个 <code>{ id: 1 }</code> 是两个对象。项目里按业务字段去重时应先用 Map 以 ID 为键，或手写归一化逻辑。</li>
+          <li><strong>Set 和 Array 在成员查询上如何选择？</strong> 如果只是少量数据或需要保持数组操作，<code>includes</code> 足够；大量查询、频繁判断是否已处理时用 <code>Set.has</code> 更清晰。边界是 Set 不保存重复项和索引信息。</li>
+          <li><strong>Set、Map、WeakSet 分别适合什么场景？</strong> Set 表达唯一值集合，Map 表达键值映射，WeakSet 表达对对象的临时弱标记。需要可枚举和 size 用 Set/Map，需要不阻止对象回收用 WeakSet/WeakMap。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set" target="_blank" rel="noreferrer">MDN Web Docs：Set</a></li>
         </ul>
       </div>
     </section>
@@ -66,19 +73,19 @@
         console.log(item[0] + ":" + item[1]);
       }
 
-      const array = [...set]
+      const array = [...set];
       console.log(array);
 
       //数组去重
-      const arrayDub = [1,2,2,1,3,3,3]
+      const arrayDub = [1, 2, 2, 1, 3, 3, 3];
 
       console.log([...new Set(arrayDub)]);
 
       const set1 = new Set();
-      console.log(  set.has(undefined));
+      console.log(set.has(undefined));
 
-      set1.add({})
-      set1.add({})
+      set1.add({});
+      set1.add({});
 
       console.log(set1.size);
 

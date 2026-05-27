@@ -2,15 +2,16 @@
 分类: javascript / 06-浏览器API / 存储
   主题: 测试 localforage 最大可写容量
   要点:
-    - 不同浏览器、不同后端（IndexedDB/WebSQL/localStorage）限制差异巨大
-    - 一次写入巨大数组可触发 QuotaExceededError，需要 try/catch
-    - JS 字符串按 UTF-16 存储，一个字符约 2 字节（emoji 等更多）
+    - 浏览器存储配额由实现策略决定，不能依赖固定容量假设
+    - 压测应由用户手动触发、分块写入，并随时允许停止和清理
+    - QuotaExceededError 只说明当前写入失败，不等同于所有存储后端完全不可用
+    - 测试数据会占用真实本地空间，demo 必须提供失败路径和清理入口
   面试:
-    - 测试 localforage 最大可写容量的核心概念是什么
-    - 测试 localforage 最大可写容量在实际项目里怎么用
-    - 测试 localforage 最大可写容量有哪些常见坑或易错点
-    - 测试 localforage 最大可写容量和相近 API 如何区分选型
-    - 面试中如何简洁讲清 测试 localforage 最大可写容量
+    - 为什么不能通过一次大对象写入准确测出最大容量？
+    - localforage 写满时如何处理 QuotaExceededError？
+    - 为什么容量压测要分块写入并提供清理按钮？
+    - StorageManager.estimate 和真实写入压测各自适合什么场景？
+    - 生产项目如何避免离线缓存把用户磁盘打满？
 -->
 
 <!doctype html>
@@ -31,46 +32,118 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>不同浏览器、不同后端（IndexedDB/WebSQL/localStorage）限制差异巨大。</li>
-          <li>一次写入巨大数组可触发 QuotaExceededError，需要 try/catch。</li>
-          <li>JS 字符串按 UTF-16 存储，一个字符约 2 字节（emoji 等更多）。</li>
+          <li>浏览器存储配额不是 Web API 规范里给定的固定值，不同浏览器、设备空间、隐私模式、持久化策略和 localforage 后端都会影响可写容量。</li>
+          <li>一次构造巨大数组再写入会同时压垮 JS 堆内存和存储配额，不能区分“内存不够”和“存储写满”；更安全的压测方式是分块写入并记录第几个 chunk 失败。</li>
+          <li><code>QuotaExceededError</code> 表示本次写入超过当前可用配额或被策略拒绝，项目里要捕获并提示用户清理缓存、减少离线数据或改为服务端保存。</li>
+          <li><code>navigator.storage.estimate()</code> 适合快速看总体配额压力，真实写入压测适合验证当前数据形态能否写入；前者成本低但不精确，后者更接近结果但有副作用。</li>
+          <li>容量压测会写入真实本地数据，demo 和生产诊断工具都必须由用户主动触发，并提供停止、清理和错误提示，避免页面打开就污染用户存储。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>不同浏览器、不同后端（IndexedDB/WebSQL/localStorage？</strong> 不同浏览器、不同后端（IndexedDB/WebSQL/localStorage）限制差异巨大</li>
-          <li><strong>一次写入巨大数组可触发 QuotaExceededError？</strong> 一次写入巨大数组可触发 QuotaExceededError，需要 try/catch</li>
-          <li><strong>JS 字符串按 UTF-16 存储？</strong> JS 字符串按 UTF-16 存储，一个字符约 2 字节（emoji 等更多）</li>
+          <li><strong>为什么不能通过一次大对象写入准确测出最大容量？</strong> 结论是一次大对象只能测到“这次写入是否成功”，不能精确代表最大配额。原因是失败可能来自 JS 内存、序列化成本、单条记录大小限制或浏览器配额；项目里应分块写入并结合 <code>StorageManager.estimate()</code> 观察。</li>
+          <li><strong>localforage 写满时如何处理 <code>QuotaExceededError</code>？</strong> 结论是必须捕获错误并走降级流程。原因是离线缓存、草稿和文件都可能超过配额；业务上可以清理旧缓存、压缩数据、限制文件大小，或提示用户改用云端保存。</li>
+          <li><strong>为什么容量压测要分块写入并提供清理按钮？</strong> 结论是分块能定位失败边界，清理按钮能撤销副作用。原因是压测数据真实落盘，占用同源配额；demo 若自动写入几十 MB，会影响后续学习页面和用户浏览器状态。</li>
+          <li><strong><code>StorageManager.estimate()</code> 和真实写入压测各自适合什么场景？</strong> 结论是 <code>estimate()</code> 适合低成本监控，写入压测适合开发诊断。原因是前者给的是同源总体近似值，后者会验证当前数据结构和后端，但不能在生产页面频繁运行。</li>
+          <li><strong>生产项目如何避免离线缓存把用户磁盘打满？</strong> 结论是设置业务上限、LRU 清理、按需下载和写入失败兜底。原因是浏览器可能驱逐非持久化数据，用户设备空间也有限；PWA、图片编辑器和文档离线包尤其需要可见的缓存管理页。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria" target="_blank" rel="noreferrer">MDN: Storage quotas and eviction criteria</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/estimate" target="_blank" rel="noreferrer">MDN: StorageManager estimate()</a></li>
+          <li><a href="https://localforage.github.io/localForage/#data-api-setitem" target="_blank" rel="noreferrer">localForage API: setItem()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/DOMException" target="_blank" rel="noreferrer">MDN: DOMException</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
+    <!-- PAGE_DOM_START -->
+    <section class="demo-block" aria-label="容量压测操作">
+      <h2 class="demo-block__label">运行示例</h2>
+      <p class="hint">点击按钮后会向独立 localforage store 分块写入测试数据，最多写入 20MB。测试结束后请点击清理。</p>
+      <button id="start-test" type="button">开始分块写入</button>
+      <button id="stop-test" type="button">停止</button>
+      <button id="clear-test" type="button">清理测试数据</button>
+      <p id="status" aria-live="polite">尚未开始。</p>
+    </section>
+    <!-- PAGE_DOM_END -->
+
     <!-- SCRIPT_START -->
     <script>
-      // 压测：约 550 万次 push，每条 testStr 为 10 个字符，用于探测 IndexedDB 配额上限
-      localforage.clear().then(function () {
-        localforage.keys().then(function (keys) {
-          console.log("keys:" + keys);
+      const store = localforage.createInstance({
+        name: "frontend-learning-demos",
+        storeName: "localforage_quota_probe",
+      });
+      const statusEl = document.querySelector("#status");
+      const startButton = document.querySelector("#start-test");
+      const stopButton = document.querySelector("#stop-test");
+      const clearButton = document.querySelector("#clear-test");
+      const CHUNK_SIZE_MB = 1;
+      const MAX_CHUNKS = 20;
+      let shouldStop = false;
+      let isRunning = false;
 
-          //纯净版测试
-          var startTime = new Date().getTime();
-          var array = [];
-          var testStr = "ABCDEFGEFG";
-          for (var i = 0; i < 10000 * 100 * 5.5; i++) {
-            array.push(testStr);
+      function setStatus(message) {
+        statusEl.textContent = message;
+        console.log(message);
+      }
+
+      function makeChunk(index) {
+        return {
+          index,
+          createdAt: new Date().toISOString(),
+          payload: "x".repeat(CHUNK_SIZE_MB * 1024 * 1024),
+        };
+      }
+
+      async function logOriginEstimate() {
+        if (!navigator.storage?.estimate) return;
+        const estimate = await navigator.storage.estimate();
+        console.log("origin usage MB:", ((estimate.usage || 0) / 1024 / 1024).toFixed(2));
+        console.log("origin quota MB:", ((estimate.quota || 0) / 1024 / 1024).toFixed(2));
+      }
+
+      async function runQuotaProbe() {
+        if (isRunning) return;
+        shouldStop = false;
+        isRunning = true;
+        startButton.disabled = true;
+
+        const startedAt = performance.now();
+        try {
+          await logOriginEstimate();
+
+          for (let index = 1; index <= MAX_CHUNKS; index += 1) {
+            if (shouldStop) {
+              setStatus("已停止，当前保留已写入的测试数据，可点击清理。");
+              return;
+            }
+
+            await store.setItem("chunk-" + index, makeChunk(index));
+            setStatus("已写入约 " + index * CHUNK_SIZE_MB + " MB 测试数据。");
           }
-          localforage.setItem("bigData", array).then(function (value) {
-            // 粗估字符数：元素个数 × 每条字符串长度，再换算为 MB（非精确字节数）
-            console.log(value.length * testStr.length / 1024 / 1024 + "m");
 
-            var endTime = new Date().getTime();
-            console.log("用时：" + (endTime - startTime) / 1000 + " s");
-          }).catch(function (err) {
-            console.log("存储错误：" + err);
-          });
-        });
-      }).catch(function (err) {
-        console.log("清空错误：" + err);
+          setStatus("达到 demo 安全上限 " + MAX_CHUNKS * CHUNK_SIZE_MB + " MB，未继续写入。");
+        } catch (error) {
+          setStatus("写入失败：" + (error?.name || "Error") + " - " + (error?.message || String(error)));
+          console.error("容量压测写入失败：", error);
+        } finally {
+          await logOriginEstimate();
+          console.log("压测耗时 s:", ((performance.now() - startedAt) / 1000).toFixed(2));
+          isRunning = false;
+          startButton.disabled = false;
+        }
+      }
+
+      startButton.addEventListener("click", runQuotaProbe);
+      stopButton.addEventListener("click", function () {
+        shouldStop = true;
+      });
+      clearButton.addEventListener("click", async function () {
+        shouldStop = true;
+        await store.clear();
+        setStatus("测试数据已清理。");
+        await logOriginEstimate();
       });
 
     </script>

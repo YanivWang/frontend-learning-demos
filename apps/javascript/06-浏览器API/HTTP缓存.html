@@ -2,16 +2,17 @@
 分类: javascript / 06-浏览器API
   主题: HTTP 强缓存与协商缓存
   要点:
-    - 强缓存：Cache-Control / Expires，命中时不发请求（200 from disk cache）
-    - 协商缓存：ETag / Last-Modified，发条件请求 304 Not Modified
-    - 面试常问：no-cache vs no-store；private vs public
-    - 实践：HTML 入口短缓存 + 带 hash 静态资源 immutable 长缓存
+    - 强缓存由 Cache-Control 等响应头决定，命中时浏览器不发网络请求
+    - 协商缓存通过 ETag / Last-Modified 条件请求验证资源是否变化
+    - no-cache 表示存储前可复用但每次须验证，no-store 表示不应存储
+    - 生产常用 HTML 入口不强缓存，带内容 hash 的静态资源长缓存 immutable
+    - 缓存策略错误会导致旧版本资源、隐私数据落盘或频繁回源
   面试:
-    - HTTP 强缓存与协商缓存的核心概念是什么
-    - HTTP 强缓存与协商缓存在实际项目里怎么用
-    - HTTP 强缓存与协商缓存有哪些常见坑或易错点
-    - HTTP 强缓存与协商缓存和相近 API 如何区分选型
-    - 面试中如何简洁讲清 HTTP 强缓存与协商缓存
+    - 强缓存和协商缓存的请求链路有什么区别？
+    - Cache-Control: no-cache 和 no-store 有什么区别？
+    - ETag 和 Last-Modified 同时存在时如何理解优先级？
+    - 前端静态资源为什么常用文件 hash 加长期缓存？
+    - 缓存配置错误会带来哪些线上风险？
 -->
 
 <!doctype html>
@@ -40,16 +41,28 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>强缓存：Cache-Control / Expires，命中时不发请求（200 from disk cache）。</li>
-          <li>协商缓存：ETag / Last-Modified，发条件请求 304 Not Modified。</li>
-          <li>面试常问：no-cache vs no-store；private vs public。</li>
-          <li>实践：HTML 入口短缓存 + 带 hash 静态资源 immutable 长缓存。</li>
+          <li>强缓存由响应头里的 <code>Cache-Control</code>、兼容旧协议的 <code>Expires</code> 等信息决定；命中且未过期时，浏览器直接使用本地副本，不需要发网络请求。</li>
+          <li>协商缓存发生在缓存过期或需要重新验证时：浏览器携带 <code>If-None-Match</code> 或 <code>If-Modified-Since</code> 请求服务器，资源未变化则返回 <code>304 Not Modified</code>。</li>
+          <li><code>no-cache</code> 不是“不缓存”，而是可以存储但使用前必须向服务器验证；<code>no-store</code> 才表示不应存储请求或响应，常用于隐私和敏感数据。</li>
+          <li><code>ETag</code> 通常比 <code>Last-Modified</code> 更精确，因为后者时间精度有限且受文件时间影响；两者同时存在时，现代服务器通常优先用 <code>ETag</code> 验证。</li>
+          <li>生产实践常见组合是 HTML 入口短缓存或每次协商，带内容 hash 的 JS/CSS/图片使用 <code>Cache-Control: public, max-age=31536000, immutable</code>，通过文件名变化完成更新。</li>
+          <li>缓存策略也是风险控制：错误地长缓存 HTML 会让用户停留在旧版本，缓存个性化响应可能泄露隐私，过度禁用缓存会导致带宽和首屏性能下降。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>HTTP 强缓存与协商缓存的核心概念是什么？</strong> 强缓存：Cache-Control / Expires，命中时不发请求（200 from disk cache）；协商缓存：ETag / Last-Modified，发条件请求 304 Not Modified</li>
-          <li><strong>HTTP 强缓存与协商缓存在实际项目里怎么用？</strong> 强缓存：Cache-Control / Expires，命中时不发请求（200 from disk cache）；协商缓存：ETag / Last-Modified，发条件请求 304 Not Modified</li>
-          <li><strong>HTTP 强缓存与协商缓存有哪些常见坑或易错点？</strong> 强缓存：Cache-Control / Expires，命中时不发请求（200 from disk cache）；协商缓存：ETag / Last-Modified，发条件请求 304 Not Modified</li>
+          <li><strong>强缓存和协商缓存的请求链路有什么区别？</strong> 结论是强缓存命中时不发请求，协商缓存会发条件请求并可能拿到 <code>304</code>。原因是强缓存依据本地 freshness 判断是否可直接复用，协商缓存需要服务器确认资源是否变化。排查线上问题时可在 DevTools Network 里看是否出现 memory/disk cache 或 <code>304</code>。</li>
+          <li><strong>Cache-Control: no-cache 和 no-store 有什么区别？</strong> 结论是 <code>no-cache</code> 表示用前必须重新验证，<code>no-store</code> 表示不应存储。原因是二者控制的是“是否可直接复用”和“是否允许保存”两个层面。登录态接口、隐私页面更偏 <code>no-store</code>，普通 HTML 入口常用 <code>no-cache</code> 或短缓存配合协商。</li>
+          <li><strong>ETag 和 Last-Modified 同时存在时如何理解优先级？</strong> 结论是 <code>ETag</code> 通常更精确，现代实践一般优先按 <code>If-None-Match</code> 验证。原因是 <code>Last-Modified</code> 只能表达修改时间，可能受秒级精度、部署时间和文件系统影响。边界是分布式服务要保证 ETag 生成稳定，否则会导致缓存命中率下降。</li>
+          <li><strong>前端静态资源为什么常用文件 hash 加长期缓存？</strong> 结论是内容 hash 让 URL 和内容绑定，可以安全设置长期强缓存。原因是内容变化会生成新文件名，旧缓存不会污染新版本。项目里通常让 HTML 引用最新 hash 资源，所以 HTML 本身不能被错误地长期强缓存。</li>
+          <li><strong>缓存配置错误会带来哪些线上风险？</strong> 结论是既可能影响正确性，也可能影响安全和性能。原因是缓存会改变资源更新、用户隔离和网络请求路径。典型风险包括 HTML 长缓存导致发布不生效，用户专属数据被共享缓存保存，以及所有资源 <code>no-store</code> 导致首屏和带宽成本变差。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching">MDN: HTTP caching</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control">MDN: Cache-Control</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag">MDN: ETag</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/304">MDN: 304 Not Modified</a></li>
+          <li><a href="https://httpwg.org/specs/rfc9111.html">RFC 9111: HTTP Caching</a></li>
         </ul>
       </div>
     </section>

@@ -2,15 +2,15 @@
 分类: javascript / 05-元编程
   主题: Object.defineProperty 数据属性
   要点:
-    - 通过 defineProperty 添加的属性，writable / enumerable / configurable 默认都是 false
-    - 字面量直接写的属性这三项默认为 true
-    - getOwnPropertyDescriptor 可读取属性描述符，便于核对
+    - 数据属性由 value、writable、enumerable、configurable 四个描述符控制
+    - Object.defineProperty 新增属性时，未声明的布尔描述符默认都是 false
+    - configurable 为 false 后不能删除属性，也不能再随意修改描述符
+    - Object.getOwnPropertyDescriptor 可用于核对属性真实特性
   面试:
-    - Object.defineProperty 数据属性的核心概念是什么
-    - Object.defineProperty 数据属性在实际项目里怎么用
-    - Object.defineProperty 数据属性有哪些常见坑或易错点
-    - Object.defineProperty 数据属性和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Object.defineProperty 数据属性
+    - defineProperty 创建的数据属性默认为什么不可写、不可枚举、不可配置？
+    - writable、enumerable、configurable 分别影响哪些对象操作？
+    - configurable: false 之后还能修改哪些描述符？
+    - defineProperty 和对象字面量创建属性的默认特性有什么区别？
 -->
 
 <!doctype html>
@@ -30,15 +30,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>通过 defineProperty 添加的属性，writable / enumerable / configurable 默认都是 false。</li>
-          <li>字面量直接写的属性这三项默认为 true。</li>
-          <li>getOwnPropertyDescriptor 可读取属性描述符，便于核对。</li>
+          <li>数据属性由 <code>value</code>、<code>writable</code>、<code>enumerable</code>、<code>configurable</code> 描述：值本身、能否赋值、能否被枚举、能否删除或重新配置。</li>
+          <li><code>Object.defineProperty</code> 新增属性时，未显式写出的布尔描述符默认都是 <code>false</code>；对象字面量或普通赋值创建的属性通常三者都是 <code>true</code>。</li>
+          <li><code>writable: false</code> 会阻止重新赋值；非严格模式下赋值失败可能静默，严格模式下会抛出 <code>TypeError</code>。</li>
+          <li><code>configurable: false</code> 是最容易踩坑的开关：属性不能删除，描述符大多不能再改，只允许把 <code>writable</code> 从 <code>true</code> 改成 <code>false</code>。</li>
+          <li>调试属性行为时优先用 <code>Object.getOwnPropertyDescriptor</code> 查看真实描述符，不要只看 <code>console.log</code> 展示出的对象外观。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>通过 defineProperty 添加的属性？</strong> 通过 defineProperty 添加的属性，writable / enumerable / configurable 默认都是 false</li>
-          <li><strong>字面量直接写的属性这三项默认为 true？</strong> 字面量直接写的属性这三项默认为 true</li>
-          <li><strong>getOwnPropertyDescriptor 可读取属性描述符？</strong> getOwnPropertyDescriptor 可读取属性描述符，便于核对</li>
+          <li><strong>defineProperty 创建的数据属性默认为什么不可写、不可枚举、不可配置？</strong> 结论是规范默认值如此：省略的布尔描述符会按 <code>false</code> 处理。原因是 <code>defineProperty</code> 面向精确描述符定义，而不是普通业务赋值。项目里如果希望表现得像普通属性，要显式写出 <code>writable/enumerable/configurable: true</code>。</li>
+          <li><strong>writable、enumerable、configurable 分别影响哪些对象操作？</strong> 结论是 <code>writable</code> 管赋值，<code>enumerable</code> 管 <code>Object.keys</code>、<code>for...in</code>、对象展开等枚举入口，<code>configurable</code> 管删除和重新配置。原因是它们分别对应数据属性的不同内部特性。边界是 <code>JSON.stringify</code> 也只序列化可枚举自有属性。</li>
+          <li><strong>configurable: false 之后还能修改哪些描述符？</strong> 结论是几乎不能改，通常只能把仍为 <code>true</code> 的 <code>writable</code> 降为 <code>false</code>。原因是不可配置属性要保证对象形状稳定。封装库里一旦把公共属性设成不可配置，后续热更新、测试 mock 或兼容补丁都会更难做。</li>
+          <li><strong>defineProperty 和对象字面量创建属性的默认特性有什么区别？</strong> 结论是字面量/赋值更偏日常可变属性，<code>defineProperty</code> 更偏精确控制。原因是普通创建方式默认可写、可枚举、可配置，而 <code>defineProperty</code> 默认收紧。需要隐藏内部状态、定义只读 API 或兼容 Vue 2 响应式拦截时才更常用它。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty">MDN: Object.defineProperty()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getOwnPropertyDescriptor">MDN: Object.getOwnPropertyDescriptor()</a></li>
+          <li><a href="https://tc39.es/ecma262/multipage/fundamental-objects.html#sec-object.defineproperty">ECMAScript 规范: Object.defineProperty</a></li>
         </ul>
       </div>
     </section>
@@ -50,8 +59,7 @@
         age: 30
       };
 
-      //动态给对象添加一个name属性，且它的值为 "wangcheng"
-      //通过这种方式添加的数据属性，默认其它特性都是 false
+      // 动态给对象添加一个 name 属性；未写出的布尔描述符默认都是 false
       Object.defineProperty(person, "name", {
         value: "wangcheng",
       });

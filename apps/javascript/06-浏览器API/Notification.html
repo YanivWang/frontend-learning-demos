@@ -1,16 +1,15 @@
 <!--
-分类: javascript / 06-浏览器API
+  分类: javascript / 06-浏览器API
   主题: Notification 桌面通知
   要点:
-    - 必须先 requestPermission 获取用户授权，且仅在 HTTPS/localhost 可用
-    - Notification.permission 三态：granted / denied / default
-    - 浏览器与系统对通知样式各异；通知可设置 body / icon / tag
+    - Notification API 需要安全上下文和用户授权，权限状态为 granted、denied 或 default
+    - requestPermission 应由用户手势触发，denied 后不要反复弹窗骚扰用户
+    - 页面通知适合当前页面会话；后台推送通常要结合 Service Worker 和 Push API
   面试:
-    - Notification 桌面通知的核心概念是什么
-    - Notification 桌面通知在实际项目里怎么用
-    - Notification 桌面通知有哪些常见坑或易错点
-    - Notification 桌面通知和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Notification 桌面通知
+    - Notification API 为什么必须先请求权限？
+    - granted、denied、default 三种权限状态如何处理？
+    - 页面 Notification 和 Push API 后台推送有什么区别？
+    - 循环通知或营销提醒要注意哪些体验和安全边界？
 -->
 
 <!doctype html>
@@ -34,15 +33,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>必须先 requestPermission 获取用户授权，且仅在 HTTPS/localhost 可用。</li>
-          <li>Notification.permission 三态：granted / denied / default。</li>
-          <li>浏览器与系统对通知样式各异；通知可设置 body / icon / tag。</li>
+          <li><code>Notification</code> 用于从页面创建系统级通知；它暴露在安全上下文中，且必须先通过 <code>Notification.requestPermission()</code> 获得用户授权。</li>
+          <li><code>Notification.permission</code> 有 <code>granted</code>、<code>denied</code>、<code>default</code> 三态：已允许才能发送，已拒绝应停止请求，默认态可以在用户手势中发起一次请求。</li>
+          <li>通知内容可设置 <code>body</code>、<code>icon</code>、<code>tag</code> 等选项，但展示样式、声音、关闭行为会受浏览器和操作系统策略影响，不能当作可靠 UI 渠道。</li>
+          <li>本页的循环通知用于演示节奏控制；真实项目要限制频率、提供关闭入口，并避免在用户拒绝或页面不可见时持续骚扰。</li>
+          <li>普通页面 Notification 只能在页面活跃时直接创建；离线或后台推送通常需要 Service Worker、Push API 和服务端推送订阅配合。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>必须先 requestPermission 获取用户授权？</strong> 必须先 requestPermission 获取用户授权，且仅在 HTTPS/localhost 可用</li>
-          <li><strong>Notification.permission 三态？</strong> Notification.permission 三态：granted / denied / default</li>
-          <li><strong>浏览器与系统对通知样式各异？</strong> 浏览器与系统对通知样式各异；通知可设置 body / icon / tag</li>
+          <li><strong>Notification API 为什么必须先请求权限？</strong> 结论是系统通知会打断用户，所以浏览器要求明确授权。原因是通知可能跨出页面可视区域，滥用会造成骚扰和钓鱼风险。项目里应在用户完成订阅、下单提醒等明确动作后请求，而不是首屏自动弹权限。</li>
+          <li><strong>granted、denied、default 三种权限状态如何处理？</strong> 结论是 <code>granted</code> 直接发送，<code>denied</code> 不再请求，<code>default</code> 可在用户手势中请求一次。原因是 denied 往往代表用户明确拒绝，反复触发会损害体验。业务上要提供站内提醒或设置页说明作为降级。</li>
+          <li><strong>页面 Notification 和 Push API 后台推送有什么区别？</strong> 结论是 Notification 负责展示通知，Push API 负责把服务端消息送到 Service Worker。原因是页面脚本关闭后不能直接执行普通通知逻辑。需要离线到达、后台提醒或消息订阅时，应使用 Service Worker + Push，再由 Service Worker 展示通知。</li>
+          <li><strong>循环通知或营销提醒要注意哪些体验和安全边界？</strong> 结论是必须限频、可关闭、可解释，并尊重权限和浏览器策略。原因是通知属于高打扰通道，系统可能静默、折叠或拦截滥用通知。项目里应把它用于用户明确期待的提醒，并记录发送失败或权限拒绝路径。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Notification" target="_blank" rel="noreferrer">MDN: Notification</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Notification/requestPermission_static" target="_blank" rel="noreferrer">MDN: Notification.requestPermission()</a></li>
+          <li><a href="https://notifications.spec.whatwg.org/" target="_blank" rel="noreferrer">WHATWG: Notifications API Standard</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Push_API" target="_blank" rel="noreferrer">MDN: Push API</a></li>
         </ul>
       </div>
     </section>
@@ -64,6 +73,18 @@
       }
       refresh();
 
+      function requestNotificationPermission() {
+        if (!("Notification" in window)) {
+          status.textContent = "不支持";
+          alert("此浏览器不支持桌面通知");
+          return Promise.resolve("unsupported");
+        }
+        return Notification.requestPermission().then((perm) => {
+          refresh();
+          return perm;
+        });
+      }
+
       function notify(title, options) {
         if (!("Notification" in window)) {
           alert("此浏览器不支持桌面通知");
@@ -73,15 +94,16 @@
           return new Notification(title, options);
         }
         if (Notification.permission !== "denied") {
-          Notification.requestPermission().then((perm) => {
-            refresh();
+          requestNotificationPermission().then((perm) => {
             if (perm === "granted") new Notification(title, options);
           });
+          return;
         }
+        status.textContent = "denied：用户已拒绝，请到浏览器设置中开启";
       }
 
       document.getElementById("ask").onclick = () => {
-        Notification.requestPermission().then(refresh);
+        requestNotificationPermission();
       };
 
       document.getElementById("send").onclick = () => {
@@ -89,15 +111,39 @@
       };
 
       let timer = null;
-      document.getElementById("repeat").onclick = () => {
+      const repeatButton = document.getElementById("repeat");
+
+      function startRepeatingNotifications() {
+        repeatButton.textContent = "停止循环通知";
+        timer = setInterval(() => {
+          notify("循环通知", { body: "随机值 " + Math.random().toFixed(3), tag: "demo-repeat" });
+        }, 4000);
+      }
+
+      repeatButton.onclick = () => {
         if (timer) {
           clearInterval(timer);
           timer = null;
+          repeatButton.textContent = "③ 每 4 秒发送一次";
           return;
         }
-        timer = setInterval(() => {
-          notify("循环通知", { body: "随机值 " + Math.random().toFixed(3) });
-        }, 4000);
+        if (!("Notification" in window)) {
+          requestNotificationPermission();
+          return;
+        }
+        if (Notification.permission === "granted") {
+          startRepeatingNotifications();
+          return;
+        }
+        if (Notification.permission === "denied") {
+          status.textContent = "denied：用户已拒绝，请到浏览器设置中开启";
+          return;
+        }
+        requestNotificationPermission().then((perm) => {
+          if (perm === "granted") {
+            startRepeatingNotifications();
+          }
+        });
       };
 
     </script>

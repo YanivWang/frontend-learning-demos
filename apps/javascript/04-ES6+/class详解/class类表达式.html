@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 04-ES6+ / class详解
+  分类: javascript / 04-ES6+ / class详解
   主题: class 表达式（匿名/具名）
   要点:
-    - 类表达式可以是匿名或具名，具名时类名只在类内部可见
-    - 与函数表达式类似，类表达式不会进行声明提升
-    - 没有 extends 的类，constructor 内不能调用 super()
+    - class 表达式可匿名也可具名，结果值通常赋给变量或作为参数传递
+    - 具名 class 表达式的内部类名只在类体内部可见，便于递归或调试
+    - class 表达式同样有严格模式、暂时性死区和必须 new 调用的 class 语义
+    - 与 class 声明相比，表达式更适合动态选择基类、工厂函数和局部类定义
   面试:
-    - class 表达式（匿名/具名）的核心概念是什么
-    - class 表达式（匿名/具名）在实际项目里怎么用
-    - class 表达式（匿名/具名）有哪些常见坑或易错点
-    - class 表达式（匿名/具名）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 class 表达式（匿名/具名）
+    - 匿名 class 表达式和具名 class 表达式有什么区别？
+    - class 表达式和 class 声明在提升、作用域和重定义上如何区分？
+    - 什么时候会在项目里选择 class 表达式而不是声明式 class？
+    - 具名 class 表达式的内部名称为什么外部访问不到？
 -->
 
 <!doctype html>
@@ -30,15 +30,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>类表达式可以是匿名或具名，具名时类名只在类内部可见。</li>
-          <li>与函数表达式类似，类表达式不会进行声明提升。</li>
-          <li>没有 <code>extends</code> 的类，constructor 内不能调用 super()。</li>
+          <li><code>class</code> 表达式会产生一个类值，可赋给变量、作为函数返回值或作为参数传递；匿名 class 的可访问名称通常来自接收它的变量。</li>
+          <li>具名 class 表达式会额外创建一个只在类体内部可见的名称，适合在方法里引用当前类或让调试栈更清晰；外层作用域只能访问接收表达式结果的变量。</li>
+          <li>class 表达式和 class 声明共享 class 语义：类体默认严格模式，构造器必须通过 <code>new</code> 调用，实例方法定义在 <code>prototype</code> 上。</li>
+          <li>表达式不会像函数声明那样提前可用；如果赋给 <code>const</code> 或 <code>let</code>，访问时还要遵守外层变量自己的暂时性死区。</li>
+          <li>实际项目中，声明式 class 更适合稳定、顶层的领域模型；class 表达式常用于工厂函数、根据条件组合基类、测试里临时构造替身类等局部场景。</li>
+          <li>没有 <code>extends</code> 的 class 是基类，constructor 内不能调用 <code>super()</code>；只有派生类构造器才需要先调用 <code>super()</code> 再使用 <code>this</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>类表达式可以是匿名或具名？</strong> 类表达式可以是匿名或具名，具名时类名只在类内部可见；与函数表达式类似，类表达式不会进行声明提升</li>
-          <li><strong>没有 extends 的类？</strong> 没有 <code>extends</code> 的类，constructor 内不能调用 super()</li>
-          <li><strong>class 表达式（匿名/具名）的核心概念是什么？</strong> 类表达式可以是匿名或具名，具名时类名只在类内部可见；与函数表达式类似，类表达式不会进行声明提升</li>
+          <li><strong>匿名 class 表达式和具名 class 表达式有什么区别？</strong> 结论是匿名表达式只把类值交给外部变量，具名表达式还提供一个类体内部可见的名字。原因是具名表达式的名称绑定被限制在 class 自身作用域内；项目里常用它改善调试栈或在类内部稳定引用当前类。</li>
+          <li><strong>class 表达式和 class 声明如何区分？</strong> 声明式 class 直接在当前作用域创建词法绑定，适合顶层模型；表达式是一个值，适合赋值、返回或按条件创建。边界是两者都有 class 的严格语义，不能把 class 表达式当成普通函数表达式直接调用。</li>
+          <li><strong>什么时候选择 class 表达式？</strong> 当类定义是局部实现细节、需要从工厂函数返回，或要根据条件选择继承来源时，class 表达式更自然。业务长期维护的公开模型更建议用 class 声明，提高可读性和静态搜索能力。</li>
+          <li><strong>为什么具名 class 表达式的内部名外部访问不到？</strong> 因为这个名字只绑定在 class 表达式自身作用域，用于类体内部引用，不会泄漏到外层。这样可以避免污染外层作用域；外部如果需要使用这个类，应通过接收它的变量访问。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/class" target="_blank" rel="noreferrer">MDN Web Docs：class expression</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes" target="_blank" rel="noreferrer">MDN Web Docs：Classes</a></li>
         </ul>
       </div>
     </section>
@@ -50,7 +59,7 @@
       //1.可以是匿名的类
       const Dog = class {
         //类的构造方法用于创建和初始化类的对象实例
-        //一个类只有拥有一个constructor方法(是类的构造函数)
+        //一个类最多只能有一个 constructor 方法
         constructor(name) {
           this.name = name;
         }
@@ -61,11 +70,18 @@
       //2.也可以是具名的类
       const Cat = class Cat1 {
         constructor(name) {
-          //1.super方法只能在类的constructor方法中调用
+          // 没有 extends 的 class 是基类，constructor 内不能调用 super()
           // super(name);
           this.name = name;
         }
+
+        getInternalClassName() {
+          return Cat1.name;
+        }
       };
+      const cat1 = new Cat("cat111");
+      console.log("我是cat1", cat1.name, cat1.getInternalClassName());
+      // console.log(Cat1); // ReferenceError: Cat1 is not defined
 
     </script>
     <!-- SCRIPT_END -->

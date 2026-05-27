@@ -2,15 +2,16 @@
 分类: javascript / 06-浏览器API / 拖曳手柄
   主题: 悬浮侧栏拖拽 V2（带圆角与外边距）
   要点:
-    - 与 V1 类似，区别是 sidebar 有 padding/border-radius，需要校准坐标计算
-    - 用 will-change: width 提示浏览器对宽度做 GPU 合成
-    - 限制宽度范围避免拖到极小被遮挡或极大遮内容
+    - 固定定位侧栏带外边距时，主内容 margin-left 要同时补偿侧栏宽度和页面间距
+    - width 与 margin-left 变化会触发布局，requestAnimationFrame 只能合帧提交，不能消除重排
+    - will-change 不是 GPU 加速开关，长期滥用会增加内存和图层管理成本
+    - 拖拽手柄要处理阻止默认行为、全局解绑和宽度边界
   面试:
-    - 悬浮侧栏拖拽 V2（带圆角与外边距）的核心概念是什么
-    - 悬浮侧栏拖拽 V2（带圆角与外边距）在实际项目里怎么用
-    - 悬浮侧栏拖拽 V2（带圆角与外边距）有哪些常见坑或易错点
-    - 悬浮侧栏拖拽 V2（带圆角与外边距）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 悬浮侧栏拖拽 V2（带圆角与外边距）
+    - 带外边距的 fixed 侧栏为什么要额外补偿主内容位置？
+    - 拖拽中改 width 和 margin-left 会触发哪些渲染阶段？
+    - will-change 应该如何谨慎使用？
+    - requestAnimationFrame 能否避免重排？
+    - 可调整布局组件有哪些可访问性和移动端边界？
 -->
 
 <!doctype html>
@@ -49,7 +50,6 @@
         z-index: 1000;
         transition: width 0.2s ease;
         border-radius: 8px;
-        will-change: width;
       }
       .sidebar.no-transition {
         transition: none !important;
@@ -135,7 +135,6 @@
         transition: margin-left 0.2s ease;
         margin-left: 216px;
         border-radius: 8px;
-        will-change: margin-left;
       }
       .main-content.no-transition {
         transition: none !important;
@@ -217,15 +216,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>与 V1 类似，区别是 sidebar 有 padding/border-radius，需要校准坐标计算。</li>
-          <li>用 will-change: width 提示浏览器对宽度做 GPU 合成。</li>
-          <li>限制宽度范围避免拖到极小被遮挡或极大遮内容。</li>
+          <li>这个 V2 和贴边版的主要区别是侧栏有 <code>left: 16px</code>、圆角和页面内边距，因此主内容的 <code>margin-left</code> 要用“侧栏宽度 + 间距”一起计算。</li>
+          <li>拖拽时同时修改 <code>width</code> 和 <code>margin-left</code> 会影响布局阶段，浏览器需要重新计算相关盒子的尺寸和位置；<code>requestAnimationFrame</code> 只能减少提交频率，不能把这类更新变成纯合成。</li>
+          <li><code>will-change</code> 适合短时间提示浏览器某个属性即将变化，但它不是“GPU 加速开关”；对 <code>width</code>、<code>margin-left</code> 这类布局属性长期使用可能增加内存和图层管理成本。</li>
+          <li>拖拽交互要处理用户体验边界：按下时阻止默认选中文本，移动时限制宽度范围，结束时解绑监听，避免页面后续交互被残留监听影响。</li>
+          <li>现代实现可以考虑 Pointer Events 和 <code>setPointerCapture()</code>，统一鼠标、触摸、触控笔；本 demo 保留 Mouse Events，便于对照基础拖拽流程。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>用 will-change？</strong> 用 will-change: width 提示浏览器对宽度做 GPU 合成</li>
-          <li><strong>限制宽度范围避免拖到极小被遮挡或极大遮内容？</strong> 限制宽度范围避免拖到极小被遮挡或极大遮内容</li>
-          <li><strong>悬浮侧栏拖拽 V2（带圆角与外边距）的核心概念是什么？</strong> 与 V1 类似，区别是 sidebar 有 padding/border-radius，需要校准坐标计算；用 will-change: width 提示浏览器对宽度做 GPU 合成</li>
+          <li><strong>带外边距的 fixed 侧栏为什么要额外补偿主内容位置？</strong> 结论是主内容需要同时避开侧栏宽度和页面间距。原因是 fixed 侧栏脱离普通文档流，不会自动占位；项目里如果只用宽度计算，内容会和侧栏边距或阴影发生重叠。</li>
+          <li><strong>拖拽中改 <code>width</code> 和 <code>margin-left</code> 会触发哪些渲染阶段？</strong> 结论是通常会触发布局，并可能继续触发绘制和合成。原因是几何尺寸和位置变化会影响布局树；如果动画可以改成 <code>transform</code>，才更可能降低到合成层更新。</li>
+          <li><strong><code>will-change</code> 应该如何谨慎使用？</strong> 结论是只在变化前短时间使用，变化结束后移除或避免长期声明。原因是浏览器可能提前分配资源，滥用会增加内存占用；对布局属性也不能承诺一定走 GPU 合成。</li>
+          <li><strong><code>requestAnimationFrame</code> 能否避免重排？</strong> 结论是不能消除由布局属性变化引起的重排，只能把更新安排到合适的帧。原因是 <code>width</code> 和 <code>margin-left</code> 的语义就是改变布局；它的价值在于合并高频事件、减少一帧内多次写入。</li>
+          <li><strong>可调整布局组件有哪些可访问性和移动端边界？</strong> 结论是不能只依赖鼠标拖拽。原因是触屏、键盘和辅助技术用户可能无法操作手柄；真实项目应提供键盘调整、重置按钮、持久化设置，并用 Pointer Events 覆盖更多输入设备。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/position" target="_blank" rel="noreferrer">MDN: position</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/will-change" target="_blank" rel="noreferrer">MDN: will-change</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Animation_performance_and_frame_rate" target="_blank" rel="noreferrer">MDN: Animation performance and frame rate</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events" target="_blank" rel="noreferrer">MDN: Pointer events</a></li>
         </ul>
       </div>
     </section>
@@ -341,12 +351,14 @@
           const startX = ref(0);
           const startWidth = ref(0);
           let rafId = null; // requestAnimationFrame ID
+          let pendingWidth = sidebarWidth.value;
 
           // 开始调整宽度
           const startResize = (e) => {
             isResizing.value = true;
             startX.value = e.clientX;
             startWidth.value = sidebarWidth.value;
+            pendingWidth = sidebarWidth.value;
 
             // 添加全局事件监听
             document.addEventListener('mousemove', resize);
@@ -371,11 +383,12 @@
 
             // 限制宽度范围（178px - 280px）
             const clampedWidth = Math.max(178, Math.min(newWidth, 280));
+            pendingWidth = clampedWidth;
 
-            // 使用requestAnimationFrame确保流畅动画
+            // 使用 requestAnimationFrame 把同一帧内的多次移动合并为一次状态写入
             if (!rafId) {
               rafId = requestAnimationFrame(() => {
-                sidebarWidth.value = clampedWidth;
+                sidebarWidth.value = pendingWidth;
                 rafId = null;
               });
             }
@@ -394,6 +407,7 @@
               cancelAnimationFrame(rafId);
               rafId = null;
             }
+            sidebarWidth.value = pendingWidth;
           };
 
           // 返回模板需要的数据和方法

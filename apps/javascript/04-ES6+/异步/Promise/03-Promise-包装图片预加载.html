@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 04-ES6+ / 异步 / Promise
+  分类: javascript / 04-ES6+ / 异步 / Promise
   主题: 用 Promise 把图片预加载封装成同步风格
   要点:
-    - Image.onload / onerror 是基于事件回调的异步 API，包成 Promise 更易拼接
-    - 必须先绑事件再赋 src，避免缓存图片错过 onload
-    - 易错点：跨域 / 403 图会触发 onerror，需要 catch 兜底
+    - new Image() 创建 HTMLImageElement，可用 load/error 事件封装加载结果
+    - 先绑定 load/error 监听再设置 src，避免缓存命中时错过事件
+    - Promise 包装图片预加载便于与 Promise.all、await、catch 组合
+    - 图片加载可能因 404、跨域、网络或格式错误失败，必须有 reject 和 UI 兜底
   面试:
-    - 用 Promise 把图片预加载封装成同步风格的核心概念是什么
-    - 用 Promise 把图片预加载封装成同步风格在实际项目里怎么用
-    - 用 Promise 把图片预加载封装成同步风格有哪些常见坑或易错点
-    - 用 Promise 把图片预加载封装成同步风格和相近 API 如何区分选型
-    - 面试中如何简洁讲清 用 Promise 把图片预加载封装成同步风格
+    - 如何把 Image 的 load/error 回调封装成 Promise？
+    - 为什么要先绑定事件再给 img.src 赋值？
+    - 图片预加载失败时应该如何处理页面和 Promise 状态？
+    - 多张图片预加载时 Promise.all 和 allSettled 如何选择？
 -->
 
 <!doctype html>
@@ -26,54 +26,65 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>用 Promise 把图片预加载封装成同步风格</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">请打开 DevTools Console 查看输出；图片加载失败时页面会显示错误提示。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Image.onload / onerror 是基于事件回调的异步 API，包成 <code>Promise</code> 更易拼接。</li>
-          <li>必须先绑事件再赋 src，避免缓存图片错过 onload。</li>
-          <li>易错点：跨域 / 403 图会触发 onerror，需要 <code>catch</code> 兜底。</li>
+          <li><code>new Image()</code> 会创建一个 <code>HTMLImageElement</code>，本质上等价于创建 <code>&lt;img&gt;</code>；资源成功加载会触发 <code>load</code>，失败会触发 <code>error</code>。</li>
+          <li>把 <code>load</code>/<code>error</code> 事件封装成 Promise 后，可以用 <code>then</code>、<code>catch</code>、<code>await</code> 或 <code>Promise.all</code> 组织预加载流程。</li>
+          <li>推荐先绑定 <code>onload</code>/<code>onerror</code>，再设置 <code>img.src</code>，避免缓存命中、Data URL 或极快响应时事件先于监听注册完成。</li>
+          <li>失败路径不能只打印日志：404、403、网络断开、图片格式错误都可能触发 <code>error</code>，应 reject 并在 UI 上显示兜底信息。</li>
+          <li>如果加载用户可控 URL，不要把 URL 拼进 <code>innerHTML</code>；本示例使用 DOM API 和 <code>textContent</code> 展示错误，避免把输入当 HTML 执行。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Image.onload / onerror 是基于事件回调的异步 API？</strong> Image.onload / onerror 是基于事件回调的异步 API，包成 <code>Promise</code> 更易拼接</li>
-          <li><strong>必须先绑事件再赋 src？</strong> 必须先绑事件再赋 src，避免缓存图片错过 onload</li>
-          <li><strong>用 Promise 把图片预加载封装成同步风格的核心概念是什么？</strong> Image.onload / onerror 是基于事件回调的异步 API，包成 <code>Promise</code> 更易拼接；必须先绑事件再赋 src，避免缓存图片错过 onload</li>
+          <li><strong>如何把 Image 的 <code>load</code>/<code>error</code> 回调封装成 Promise？</strong> 结论是在 Promise executor 里创建 <code>Image</code>，成功事件 resolve 图片元素，失败事件 reject 错误。原因是图片加载结果天然是一次性异步结果，Promise 能把回调式 API 接入链式或 async/await 流程。</li>
+          <li><strong>为什么要先绑定事件再给 <code>img.src</code> 赋值？</strong> 因为设置 <code>src</code> 会立即启动资源加载，缓存命中或本地资源可能很快完成。先绑监听再赋值可以避免事件发生时处理器尚未注册；这是封装事件型异步 API 的通用习惯。</li>
+          <li><strong>图片预加载失败时应该如何处理？</strong> Promise 必须 reject，并且调用方要在 <code>catch</code> 中给出 UI 兜底，例如占位图或错误文案。项目里不要只在控制台打印错误，否则用户会看到空白区域，也不利于监控失败率。</li>
+          <li><strong>多张图片预加载时如何选 <code>Promise.all</code> 和 <code>allSettled</code>？</strong> 如果任一图片失败就不能进入下一步，用 <code>Promise.all</code>；如果允许部分图片失败并展示占位图，用 <code>allSettled</code> 收集每张结果。边界是 <code>all</code> fail-fast，失败后不会给你成功/失败的完整清单。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/Image" target="_blank" rel="noreferrer">MDN Web Docs：HTMLImageElement Image() constructor</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/load_event" target="_blank" rel="noreferrer">MDN Web Docs：HTMLElement load event</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/error_event" target="_blank" rel="noreferrer">MDN Web Docs：HTMLElement error event</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all" target="_blank" rel="noreferrer">MDN Web Docs：Promise.all()</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <div class="imgDiv"></div>
+    <div class="imgDiv" aria-live="polite"></div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
       function loadImgSync(url) {
         return new Promise(function (resolve, reject) {
-          //可以对图片进行预加载
           const img = new Image();
+          img.alt = "预加载演示图片";
           img.onload = function () {
             resolve(img);
           };
 
-          img.onerror = function (err) {
-            console.log(err);
-            reject(new Error("load img fail..."));
+          img.onerror = function () {
+            reject(new Error("图片加载失败：" + url));
           };
 
           img.src = url;
-        })
+        });
       }
 
       var url = "https://www.baidu.com/img/bd_logo1.png?qua=high";
       loadImgSync(url).then(function (img) {
         console.log(img);
-        var imgDiv = document.getElementsByClassName("imgDiv");
-        imgDiv[0].appendChild(img);
+        var imgDiv = document.querySelector(".imgDiv");
+        imgDiv.replaceChildren(img);
       }).catch(function (error) {
-        console.log(error);
+        console.error(error);
+        var imgDiv = document.querySelector(".imgDiv");
+        imgDiv.textContent = "图片加载失败，请检查网络、跨域或资源地址。";
       });
 
     </script>

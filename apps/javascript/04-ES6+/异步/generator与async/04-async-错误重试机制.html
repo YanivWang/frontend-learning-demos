@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 04-ES6+ / 异步 / generator与async
+  分类: javascript / 04-ES6+ / 异步 / generator与async
   主题: async 错误重试机制
   要点:
-    - try/catch 包 await，可捕获 reject 的 Promise，避免后续中断
-    - 失败后重置中间结果数组，循环重试 N 次
-    - 注意外层 count 与 syncFun 内的 count 是不同作用域的变量，避免命名混淆
+    - try/catch 包 await 可捕获 Promise rejection，并决定是否重试
+    - 串行重试需要清空本轮中间结果，避免混入失败轮次数据
+    - 重试次数耗尽后必须 throw，让调用方 catch 到最终失败
+    - 真实项目要区分可重试错误和不可重试错误，并考虑退避、取消和幂等
   面试:
-    - async 错误重试机制的核心概念是什么
-    - async 错误重试机制在实际项目里怎么用
-    - async 错误重试机制有哪些常见坑或易错点
-    - async 错误重试机制和相近 API 如何区分选型
-    - 面试中如何简洁讲清 async 错误重试机制
+    - async/await 中如何捕获 await 的 rejection 并重试？
+    - 重试时为什么要清理本轮中间状态？
+    - 重试次数耗尽后为什么要继续抛错？
+    - 接口重试在项目里有哪些边界条件？
 -->
 
 <!doctype html>
@@ -30,16 +30,23 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>try/catch 包 <code>await</code>，可捕获 reject 的 <code>Promise</code>，避免后续中断。</li>
-          <li>失败后重置中间结果数组，循环重试 N 次。</li>
-          <li>注意外层 count 与 syncFun 内的 count 是不同作用域的变量，避免命名混淆。</li>
-          <li>try/catch 包 <code>await</code>，可捕获 reject 的 <code>Promise</code>，避免后续中断（补充）。</li>
+          <li><code>await</code> 遇到 rejected Promise 会像同步代码 <code>throw</code> 一样中断当前 async 函数，可用 <code>try...catch</code> 捕获并决定是否进入下一轮重试。</li>
+          <li>串行执行多个异步步骤时，只要某一步失败，本轮后续步骤不会继续执行；重试前应清空本轮已收集的中间结果，避免把失败轮次数据当成成功结果。</li>
+          <li>重试循环需要明确最大次数，次数耗尽后必须 <code>throw</code> 最后一次错误，让调用方的 <code>.catch</code> 或外层 <code>try...catch</code> 获得最终失败。</li>
+          <li>真实接口重试不能无脑重试：只对网络抖动、超时、5xx 等可恢复错误重试；对参数错误、鉴权失败、业务校验失败应直接失败。</li>
+          <li>生产代码还要考虑指数退避、取消信号、幂等性和监控日志，避免重试放大流量或重复提交订单。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>try/catch 包 await？</strong> try/catch 包 <code>await</code>，可捕获 reject 的 <code>Promise</code>，避免后续中断</li>
-          <li><strong>失败后重置中间结果数组？</strong> 失败后重置中间结果数组，循环重试 N 次</li>
-          <li><strong>注意外层 count 与 syncFun 内的 count 是不同作用域的变量？</strong> 注意外层 count 与 syncFun 内的 count 是不同作用域的变量，避免命名混淆</li>
+          <li><strong>async/await 中如何捕获 rejection 并重试？</strong> 把一轮串行流程放进 <code>try</code>，某个 <code>await</code> reject 后进入 <code>catch</code>，再由循环决定是否继续下一轮。这样异步失败可以按同步异常的结构处理，可读性比嵌套 <code>then().catch()</code> 更好。</li>
+          <li><strong>重试时为什么要清理本轮中间状态？</strong> 因为失败可能发生在第 2 或第 3 个步骤，数组里已有前面步骤的旧数据。下一轮如果不重置，就会把不同轮次的结果混在一起，项目里会造成数据错配或重复提交。</li>
+          <li><strong>重试次数耗尽后为什么要继续抛错？</strong> 如果耗尽后静默返回空数组，调用方会误以为流程成功但结果为空。正确做法是抛出最后一次错误或包装后的错误，让上层统一展示失败、上报监控或触发降级。</li>
+          <li><strong>接口重试有哪些项目边界？</strong> 只重试可恢复错误，并限制次数和间隔；涉及写操作时必须保证幂等或带请求 ID。对于用户主动取消、401/403、参数校验失败，应立即停止重试并给出明确反馈。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function" target="_blank" rel="noreferrer">MDN Web Docs：async function</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await" target="_blank" rel="noreferrer">MDN Web Docs：await</a></li>
         </ul>
       </div>
     </section>
@@ -47,22 +54,22 @@
 
     <!-- SCRIPT_START -->
     <script>
-      let count = 0;
+      let callCount = 0;
 
       function syncFun(initParam) {
         console.log(initParam);
 
-        count++;
-        console.log("call...:" + count);
+        callCount++;
+        console.log("call...:" + callCount);
         return new Promise(function (resolve, reject) {
           setTimeout(function () {
-            let rand = parseInt(Math.random() * 2);
+            const rand = Math.floor(Math.random() * 2);
             if (rand > 0) {
               resolve(rand);
             } else {
-              reject("save err");
+              reject(new Error("save err: " + initParam));
             }
-          }, 1000)
+          }, 1000);
         });
       }
 
@@ -71,27 +78,28 @@
       async function setData(methodArray, paramArray) {
         console.log("参数长度：" + arguments.length);
 
-        let count = 20;
-        let dataArray = [];
-        for (let i = 0; i < count; i++) {
+        const maxRetries = 20;
+        let lastError;
+        for (let i = 0; i < maxRetries; i++) {
           try {
-            dataArray = [];
+            const dataArray = [];
             //try里面实际上是同步的代码
             let res = 0;
             for (let j = 0; j < methodArray.length; j++) {
-              if (paramArray && paramArray[j]) {
+              if (paramArray && j in paramArray) {
                 res = await methodArray[j](paramArray[j]);//await语句如果失败，会立即终止执行
                 dataArray.push(res);
               }
             }
             console.log("success");
-            break;
+            return dataArray;
           } catch (e) {
-            console.log("err:" + (++errCount));
+            lastError = e;
+            console.warn("err:" + (++errCount), e);
           }
         }
 
-        return dataArray;
+        throw lastError || new Error("重试次数耗尽");
       }
 
       let methodArray = [];
@@ -106,9 +114,9 @@
 
       setData(methodArray, paramArray).then(function (data) {
         console.log("final..." + data);
-      }).catch(function () {
-        console.log("failure...");
-      })
+      }).catch(function (error) {
+        console.error("failure...", error);
+      });
 
     </script>
     <!-- SCRIPT_END -->

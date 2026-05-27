@@ -1,16 +1,15 @@
 <!--
-分类: javascript / 06-浏览器API
+  分类: javascript / 06-浏览器API
   主题: IntersectionObserver 实现图片懒加载
   要点:
-    - new IntersectionObserver(callback, options)：监听目标元素与视口的相交
-    - threshold 控制触发阈值；rootMargin 可扩大/缩小判定范围（如预加载）
-    - 元素进入视口后再观察 disconnect/unobserve，避免重复触发
+    - IntersectionObserver 异步报告目标元素与视口或指定 root 的交叉状态
+    - rootMargin 适合提前预加载，threshold 控制达到多少可见比例才触发
+    - 图片懒加载要处理加载失败、重复触发、重置时 observer 清理和可访问 alt 文本
   面试:
-    - IntersectionObserver 实现图片懒加载的核心概念是什么
-    - IntersectionObserver 实现图片懒加载在实际项目里怎么用
-    - IntersectionObserver 实现图片懒加载有哪些常见坑或易错点
-    - IntersectionObserver 实现图片懒加载和相近 API 如何区分选型
-    - 面试中如何简洁讲清 IntersectionObserver 实现图片懒加载
+    - IntersectionObserver 为什么比 scroll 事件更适合懒加载？
+    - rootMargin 和 threshold 在图片预加载里分别控制什么？
+    - 懒加载图片进入视口后为什么要 unobserve？
+    - 图片加载失败或重复重置时要补哪些边界处理？
 -->
 
 <!doctype html>
@@ -142,6 +141,10 @@
       .lazy-img.loaded img {
         opacity: 1;
       }
+      .lazy-img.error {
+        border: 1px dashed #e74c3c;
+        background-color: #fff5f5;
+      }
       .placeholder {
         position: absolute;
         color: #a0aec0;
@@ -208,16 +211,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>new <code>IntersectionObserver</code>(callback, options)：监听目标元素与视口的相交。</li>
-          <li>threshold 控制触发阈值；rootMargin 可扩大/缩小判定范围（如预加载）。</li>
-          <li>元素进入视口后再观察 disconnect/unobserve，避免重复触发。</li>
-          <li>new <code>IntersectionObserver</code>(callback, options)：监听目标元素与视口的相交（补充）。</li>
+          <li><code>IntersectionObserver</code> 让浏览器异步计算目标元素与视口或指定 <code>root</code> 的交叉状态，回调拿到的是本轮状态发生变化的 <code>IntersectionObserverEntry</code> 集合。</li>
+          <li><code>root</code> 默认为视口；<code>rootMargin</code> 可以扩大观察区域，本页设置底部 <code>100px</code> 提前加载；<code>threshold</code> 控制可见比例达到多少时触发。</li>
+          <li>图片懒加载的推荐流程是先渲染占位内容，把真实地址放到 <code>data-src</code>，进入观察区域后再赋给 <code>img.src</code>，加载成功后移除占位并停止观察。</li>
+          <li>常见坑是只处理成功路径：图片可能跨域失败、网络失败或被重置按钮重复初始化，所以需要 <code>onload</code>/<code>onerror</code>、<code>unobserve</code> 和旧 observer 的 <code>disconnect</code>。</li>
+          <li>它适合可见性驱动的图片懒加载、曝光统计和无限滚动哨兵；如果需要逐帧跟随滚动位置，仍应使用节流后的 <code>scroll</code> 或 <code>requestAnimationFrame</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>new IntersectionObserver(callback？</strong> new <code>IntersectionObserver</code>(callback, options)：监听目标元素与视口的相交</li>
-          <li><strong>threshold 控制触发阈值？</strong> threshold 控制触发阈值；rootMargin 可扩大/缩小判定范围（如预加载）</li>
-          <li><strong>元素进入视口后再观察 disconnect/unobserve？</strong> 元素进入视口后再观察 disconnect/unobserve，避免重复触发</li>
+          <li><strong>IntersectionObserver 为什么比 scroll 事件更适合懒加载？</strong> 结论是它把可见性判断交给浏览器异步完成，通常比每次滚动手动计算元素位置更稳。原因是浏览器可以批量调度交叉状态变化，减少主线程上的频繁布局读取。项目里仍要为不支持的旧环境准备降级，或直接使用原生 <code>loading="lazy"</code> 满足简单图片场景。</li>
+          <li><strong>rootMargin 和 threshold 在图片预加载里分别控制什么？</strong> 结论是 <code>rootMargin</code> 控制观察区域边界，<code>threshold</code> 控制目标可见比例。原因是提前加载通常希望图片还没真正进入视口就触发，而不是等完全可见。移动端可根据网络、图片尺寸和首屏策略调大底部 <code>rootMargin</code>。</li>
+          <li><strong>懒加载图片进入视口后为什么要 unobserve？</strong> 结论是加载完成后应停止观察这个元素。原因是同一元素滚入滚出会继续产生回调，可能重复赋值、重复计数或浪费 observer 资源。列表重置、虚拟滚动销毁和组件卸载时还要对 observer 调用 <code>disconnect</code>。</li>
+          <li><strong>图片加载失败或重复重置时要补哪些边界处理？</strong> 结论是至少要处理 <code>onerror</code>、保持可访问的 <code>alt</code>、避免重复计数并清理旧 observer。原因是懒加载触发只代表开始请求，不代表图片真的加载成功。真实项目还会加入占位图、重试、错误样式和监控埋点。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API" target="_blank" rel="noreferrer">MDN: Intersection Observer API</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/rootMargin" target="_blank" rel="noreferrer">MDN: IntersectionObserver.rootMargin</a></li>
+          <li><a href="https://www.w3.org/TR/intersection-observer/" target="_blank" rel="noreferrer">W3C: Intersection Observer</a></li>
         </ul>
       </div>
     </section>
@@ -289,6 +300,7 @@
       let loadedImages = 0;
       // 交叉观察器
       let activeObserver = null;
+      let sentinelObserver = null;
 
       // 初始化图片
       function initImages() {
@@ -305,10 +317,15 @@
           // 图片占位符
           const placeholder = document.createElement('div');
           placeholder.className = 'placeholder';
-          placeholder.innerHTML = `
-          <div class="loading-animation"></div>
-          <div>图片 #${index + 1}<br><small>向下滚动加载</small></div>
-          `;
+          const spinner = document.createElement('div');
+          spinner.className = 'loading-animation';
+          const label = document.createElement('div');
+          label.append(`图片 #${index + 1}`);
+          label.appendChild(document.createElement('br'));
+          const tip = document.createElement('small');
+          tip.textContent = '向下滚动加载';
+          label.appendChild(tip);
+          placeholder.append(spinner, label);
 
           // 真实图片（隐藏）
           const img = document.createElement('img');
@@ -330,6 +347,9 @@
         if (activeObserver) {
           activeObserver.disconnect();
         }
+        if (sentinelObserver) {
+          sentinelObserver.disconnect();
+        }
 
         // 创建新的观察者
         activeObserver = new IntersectionObserver((entries, observer) => {
@@ -348,21 +368,29 @@
               if (!entry.target.classList.contains('loaded')) {
                 // 延迟加载效果
                 setTimeout(() => {
-                  // 添加加载类名
-                  entry.target.classList.add('loaded');
-                  // 加载真实图片
-                  imgElement.src = imgElement.dataset.src;
-
-                  // 更新计数器
-                  loadedImages++;
-                  updateCounters();
-
-                  // 图片加载完成后移除占位符
+                  if (!entry.target.isConnected) {
+                    return;
+                  }
                   imgElement.onload = () => {
+                    entry.target.classList.add('loaded');
+                    loadedImages++;
+                    updateCounters();
                     setTimeout(() => {
-                      entry.target.querySelector('.placeholder').remove();
+                      const placeholder = entry.target.querySelector('.placeholder');
+                      if (placeholder) {
+                        placeholder.remove();
+                      }
                     }, 500);
                   };
+                  imgElement.onerror = () => {
+                    entry.target.classList.add('error');
+                    const placeholder = entry.target.querySelector('.placeholder');
+                    if (placeholder) {
+                      placeholder.textContent = '图片加载失败，请稍后重试';
+                    }
+                  };
+                  // 加载真实图片
+                  imgElement.src = imgElement.dataset.src;
 
                   // 停止观察该元素
                   observer.unobserve(entry.target);
@@ -383,13 +411,14 @@
 
         // 观察底部标记用于日志
         const sentinel = document.getElementById('sentinel');
-        new IntersectionObserver(entries => {
+        sentinelObserver = new IntersectionObserver(entries => {
           entries.forEach(entry => {
             if (entry.isIntersecting) {
               console.log('触底 - 底部哨兵元素进入视口');
             }
           });
-        }).observe(sentinel);
+        });
+        sentinelObserver.observe(sentinel);
       }
 
       // 更新计数器

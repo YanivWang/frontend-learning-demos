@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 04-ES6+ / 集合
+  分类: javascript / 04-ES6+ / 集合
   主题: Map 键值对集合
   要点:
-    - 与 Object 不同，Map 允许任意类型（包括对象、Symbol）作为键
-    - 维护插入顺序，迭代时按插入顺序遍历
-    - 常用 API：set/get/has/delete/size/forEach/entries/keys/values
+    - Map 存储键值对，键可为任意值，对象键按引用身份比较
+    - Map 维护键值对首次插入顺序，可直接 for...of 迭代 entries
+    - 常用 API：set/get/has/delete/clear/size/keys/values/entries
+    - 与 Object 相比，Map 更适合频繁增删和用户提供键的字典场景
   面试:
-    - Map 键值对集合的核心概念是什么
-    - Map 键值对集合在实际项目里怎么用
-    - Map 键值对集合有哪些常见坑或易错点
-    - Map 键值对集合和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Map 键值对集合
+    - Map 和 Object 用作字典时如何选择？
+    - Map 的对象键为什么两个字面量对象不相等？
+    - Map 的迭代顺序和 entries 结果是什么？
+    - 为什么不要用 map.foo = value 存 Map 数据？
 -->
 
 <!doctype html>
@@ -30,16 +30,22 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>与 <code>Object</code> 不同，<code>Map</code> 允许任意类型（包括对象、<code>Symbol</code>）作为键。</li>
-          <li>维护插入顺序，迭代时按插入顺序遍历。</li>
-          <li>常用 API：set/get/has/delete/size/forEach/entries/keys/values。</li>
-          <li>与 <code>Object</code> 不同，<code>Map</code> 允许任意类型（包括对象、<code>Symbol</code>）作为键（补充）。</li>
+          <li><code>Map</code> 存储键值对，键和值都可以是任意 JavaScript 值；对象键按引用身份比较，不按对象内容深比较。</li>
+          <li><code>Map</code> 维护键值对的首次插入顺序，<code>for...of</code>、<code>entries()</code>、<code>keys()</code>、<code>values()</code> 都按该顺序迭代。</li>
+          <li>常用 API 包括 <code>set</code>、<code>get</code>、<code>has</code>、<code>delete</code>、<code>clear</code>、<code>size</code>、<code>forEach</code>、<code>entries</code>、<code>keys</code>、<code>values</code>。</li>
+          <li>与普通对象相比，<code>Map</code> 没有原型默认键，更适合用户输入键、频繁增删、需要直接迭代或键不是字符串/Symbol 的场景。</li>
+          <li>不要用 <code>map.foo = value</code> 存储 Map 数据，那只是给 Map 对象本身加普通属性，<code>get</code>/<code>has</code>/<code>delete</code> 都不会识别。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>与 Object 不同？</strong> 与 <code>Object</code> 不同，<code>Map</code> 允许任意类型（包括对象、<code>Symbol</code>）作为键</li>
-          <li><strong>Map 键值对集合的核心概念是什么？</strong> 与 <code>Object</code> 不同，<code>Map</code> 允许任意类型（包括对象、<code>Symbol</code>）作为键</li>
-          <li><strong>Map 键值对集合在实际项目里怎么用？</strong> 与 <code>Object</code> 不同，<code>Map</code> 允许任意类型（包括对象、<code>Symbol</code>）作为键</li>
+          <li><strong>Map 和 Object 用作字典时如何选择？</strong> 动态键、非字符串键、频繁增删和需要稳定迭代顺序时优先 <code>Map</code>；固定字段的数据模型、需要 JSON 序列化时用对象。原因是对象有原型和属性枚举语义，Map 是专门的键值集合。</li>
+          <li><strong>Map 的对象键为什么两个字面量对象不相等？</strong> 对象键按引用身份比较，<code>{}</code> 和另一个 <code>{}</code> 是两个不同对象。项目里如果要按业务 ID 查找，应使用 ID 字符串/数字做键，而不是临时对象字面量。</li>
+          <li><strong>Map 的迭代顺序和 entries 结果是什么？</strong> <code>Map</code> 按首次插入顺序迭代，默认迭代器和 <code>entries()</code> 都产生 <code>[key, value]</code>。这让它适合缓存、菜单配置、按插入顺序输出统计结果等场景。</li>
+          <li><strong>为什么不要用 <code>map.foo = value</code>？</strong> 这会设置普通对象属性，不会进入 Map 的键值存储。后续 <code>map.has("foo")</code> 会是 <code>false</code>，容易造成看似有值但 API 读不到的 bug。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map" target="_blank" rel="noreferrer">MDN Web Docs：Map</a></li>
         </ul>
       </div>
     </section>
@@ -74,7 +80,7 @@
         console.log(value,"=",key);
       })
 
-      map.entries()
+      console.log("entries array:", [...map.entries()]);
 
     </script>
     <!-- SCRIPT_END -->

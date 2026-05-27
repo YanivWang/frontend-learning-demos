@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 04-ES6+ / 异步 / generator与async
+  分类: javascript / 04-ES6+ / 异步 / generator与async
   主题: async 函数的多种声明形式与异常综合
   要点:
-    - 函数声明 / 函数表达式 / 对象方法简写都支持 async
-    - 内部 await 的 Promise 提前在 .catch 中处理时，外层 try/catch 接不到
-    - try/catch 抓不到的异常会向外 reject，外层 .catch 兜底
+    - async 可用于函数声明、函数表达式、箭头函数和对象/类方法
+    - async 函数总返回 Promise；return 变 fulfilled，未捕获异常变 rejected
+    - await 前给 Promise 接 catch 会把错误局部消费，外层 try/catch 接不到原 rejection
+    - try/catch 未捕获的异常会让外层 Promise rejected，调用方仍要兜底 catch
   面试:
-    - async 函数的多种声明形式与异常综合的核心概念是什么
-    - async 函数的多种声明形式与异常综合在实际项目里怎么用
-    - async 函数的多种声明形式与异常综合有哪些常见坑或易错点
-    - async 函数的多种声明形式与异常综合和相近 API 如何区分选型
-    - 面试中如何简洁讲清 async 函数的多种声明形式与异常综合
+    - async 可以声明在哪些函数形态上？
+    - async 函数内部 throw 和 await rejection 如何传到调用方？
+    - await promise.catch(...) 和 try/catch 包 await 有什么区别？
+    - 为什么调用 async 函数时外层仍要写 catch？
 -->
 
 <!doctype html>
@@ -30,15 +30,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>函数声明 / 函数表达式 / 对象方法简写都支持 <code>async</code>。</li>
-          <li>内部 <code>await</code> 的 <code>Promise</code> 提前在 .catch 中处理时，外层 try/catch 接不到。</li>
-          <li>try/catch 抓不到的异常会向外 reject，外层 .catch 兜底。</li>
+          <li><code>async</code> 可用于函数声明、函数表达式、箭头函数、对象方法和类方法；每次调用都会返回一个 Promise。</li>
+          <li>async 函数内部 <code>return</code> 的值会成为返回 Promise 的 fulfilled value；内部未捕获的 <code>throw</code> 或 await rejection 会让返回 Promise rejected。</li>
+          <li><code>try...catch</code> 包住 <code>await</code> 可以捕获 await 产生的异常；如果在 await 前对 Promise 先接了 <code>.catch</code> 并吞掉错误，外层 <code>try...catch</code> 就接不到原始 rejection。</li>
+          <li>局部 <code>catch</code> 适合把某一步失败转为默认值；外层 <code>try...catch</code> 适合让一组步骤共享失败处理。两者混用时要清楚错误是否继续抛出。</li>
+          <li>调用 async 函数时仍要在外层 <code>await try...catch</code> 或 <code>.catch</code> 兜底，否则未处理 rejection 会进入全局错误处理。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>函数声明 / 函数表达式 / 对象方法简写都支持 async？</strong> 函数声明 / 函数表达式 / 对象方法简写都支持 <code>async</code></li>
-          <li><strong>内部 await 的 Promise 提前在 .catch 中处理时？</strong> 内部 <code>await</code> 的 <code>Promise</code> 提前在 .catch 中处理时，外层 try/catch 接不到</li>
-          <li><strong>try/catch 抓不到的异常会向外 reject？</strong> 内部 <code>await</code> 的 <code>Promise</code> 提前在 .catch 中处理时，外层 try/catch 接不到；try/catch 抓不到的异常会向外 reject，外层 .catch 兜底</li>
+          <li><strong>async 可以声明在哪些函数形态上？</strong> 可以用于函数声明、函数表达式、箭头函数、对象方法和类方法。无论哪种形态，调用结果都是 Promise；区别主要在 this、提升和命名调试信息等普通函数语义上。</li>
+          <li><strong>async 函数内部 throw 和 await rejection 如何传到调用方？</strong> 未捕获的 throw 或 await rejection 会让 async 函数返回的 Promise rejected。调用方可以用 <code>await</code> 外层 <code>try...catch</code> 捕获，也可以用 <code>.catch</code> 捕获。</li>
+          <li><strong><code>await promise.catch(...)</code> 和 <code>try/catch</code> 包 await 有什么区别？</strong> 前者先在 Promise 链上局部处理错误，如果 catch 返回正常值，外层 await 看到的是 fulfilled；后者统一捕获 await 抛出的异常。项目里局部降级用前者，整体失败流程用后者。</li>
+          <li><strong>为什么调用 async 函数时外层仍要写 catch？</strong> 因为 async 内部未处理错误不会同步抛给调用栈，而是表现为返回 Promise rejected。没有外层 catch 会形成未处理 rejection，生产环境应统一兜底、提示用户并上报监控。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function" target="_blank" rel="noreferrer">MDN Web Docs：async function</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await" target="_blank" rel="noreferrer">MDN Web Docs：await</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncFunction" target="_blank" rel="noreferrer">MDN Web Docs：AsyncFunction</a></li>
         </ul>
       </div>
     </section>
@@ -56,6 +65,9 @@
 
       };
 
+      //箭头函数表达式
+      const arrowFoo = async () => "arrow result";
+
       //函数属性
       let obj = {
         name: "wc",
@@ -65,6 +77,9 @@
       };
 
       obj.foo().then();
+      arrowFoo().then(function (value) {
+        console.log(value);
+      });
 
       //异常处理
       //正常情况下：await后面是一个Promise对象，返回该对象的结果(Promise对象自执行能力)
@@ -79,7 +94,7 @@
       handleError().then(function (data) {
         console.log("data:" + data);
       }).catch(function (err) {
-        console.log("err:" + err);
+        console.error("err:" + err);
       });
 
       //异常处理

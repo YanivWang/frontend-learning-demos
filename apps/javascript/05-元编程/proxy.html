@@ -2,15 +2,15 @@
 分类: javascript / 05-元编程
   主题: Proxy 代理与基本拦截器
   要点:
-    - Proxy 通过 handler 拦截目标对象的 get/set/has 等基础操作
-    - get(targetObj, property, proxyInstance) 三参数；set 多了 newValue
-    - Proxy 实例无 __proto__，instanceof Proxy 不可用；Reflect 提供配套反射 API
+    - Proxy 用 handler trap 拦截对象的读取、写入、has、delete 等基本操作
+    - get trap 接收 target、property、receiver；set trap 还接收 value 并必须返回布尔值
+    - Reflect 提供与对象内部操作同名的默认转发 API，能保留 receiver 语义
+    - Proxy 没有可用于 instanceof 的 prototype，判断代理类型应依赖业务标记或目标能力
   面试:
-    - Proxy 代理与基本拦截器的核心概念是什么
-    - Proxy 代理与基本拦截器在实际项目里怎么用
-    - Proxy 代理与基本拦截器有哪些常见坑或易错点
-    - Proxy 代理与基本拦截器和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Proxy 代理与基本拦截器
+    - Proxy 的 get/set trap 分别能拦截什么，参数含义是什么？
+    - 为什么 set trap 必须返回 true 或 Reflect.set 的结果？
+    - Proxy 和 Reflect 为什么经常一起使用？
+    - Proxy 与 Object.defineProperty 在响应式实现上有什么区别？
 -->
 
 <!doctype html>
@@ -30,16 +30,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>Proxy</code> 通过 handler 拦截目标对象的 get/set/has 等基础操作。</li>
-          <li>get(targetObj, property, proxyInstance) 三参数；set 多了 newValue。</li>
-          <li><code>Proxy</code> 实例无 __proto__，<code>instanceof</code> <code>Proxy</code> 不可用；<code>Reflect</code> 提供配套反射 API。</li>
-          <li><code>Proxy</code> 通过 handler 拦截目标对象的 get/set/has 等基础操作（补充）。</li>
+          <li><code>Proxy</code> 会在目标对象外包一层代理，<code>handler</code> 里的 trap 可以拦截读取、写入、<code>in</code>、删除、枚举、函数调用等基本对象操作。</li>
+          <li><code>get(target, property, receiver)</code> 用于读取属性；<code>set(target, property, value, receiver)</code> 用于写属性，并且必须返回布尔值表示写入是否成功。</li>
+          <li>在 trap 内优先用 <code>Reflect.get</code>、<code>Reflect.set</code> 做默认转发，能减少手写 <code>target[property]</code> 带来的继承、访问器 <code>this</code> 和返回值问题。</li>
+          <li><code>Proxy</code> 本身没有可用于 <code>instanceof Proxy</code> 的 <code>prototype</code>，代理对象通常仍表现得像目标对象；需要识别时应使用业务标记、<code>WeakMap</code> 或能力检测。</li>
+          <li>与 <code>Object.defineProperty</code> 相比，<code>Proxy</code> 能覆盖新增属性、删除属性和更多元操作，但它不能被完整 polyfill，旧浏览器兼容性要单独评估。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Proxy 通过 handler 拦截目标对象的 get/set/has 等基础？</strong> <code>Proxy</code> 通过 handler 拦截目标对象的 get/set/has 等基础操作；<code>Proxy</code> 实例无 __proto__，<code>instanceof</code> <code>Proxy</code> 不可用；<code>Reflect</code> 提供配套反射 API</li>
-          <li><strong>get(targetObj？</strong> <code>Proxy</code> 通过 handler 拦截目标对象的 get/set/has 等基础操作；get(targetObj, property, proxyInstance) 三参数；set 多了 newValue</li>
-          <li><strong>Proxy 实例无 __proto__？</strong> <code>Proxy</code> 通过 handler 拦截目标对象的 get/set/has 等基础操作；<code>Proxy</code> 实例无 __proto__，<code>instanceof</code> <code>Proxy</code> 不可用；<code>Reflect</code> 提供配套反射 API</li>
+          <li><strong>Proxy 的 get/set trap 分别能拦截什么，参数含义是什么？</strong> 结论是 <code>get</code> 拦截属性读取，<code>set</code> 拦截属性写入。原因是它们分别对应对象内部的取值和赋值操作，参数里的 <code>target</code> 是原对象，<code>property</code> 是属性键，<code>receiver</code> 是本次访问的接收者，<code>set</code> 还多一个新值。项目里常用它们做响应式依赖收集、校验、日志和权限边界。</li>
+          <li><strong>为什么 set trap 必须返回 true 或 Reflect.set 的结果？</strong> 结论是 <code>set</code> trap 的返回值表示写入是否成功。原因是规范会把返回值转成布尔值，严格模式下返回 <code>false</code> 会抛出 <code>TypeError</code>。实际写法通常直接 <code>return Reflect.set(target, property, value, receiver)</code>，避免遗漏。</li>
+          <li><strong>Proxy 和 Reflect 为什么经常一起使用？</strong> 结论是 <code>Proxy</code> 负责拦截，<code>Reflect</code> 负责按默认语义转发。原因是 <code>Reflect</code> 的方法名和许多 trap 对应，参数也能保留 <code>receiver</code>。在有 getter、继承链或不可写属性时，<code>Reflect</code> 比手写 <code>target[key]</code> 更接近语言本身行为。</li>
+          <li><strong>Proxy 与 Object.defineProperty 在响应式实现上有什么区别？</strong> 结论是 <code>defineProperty</code> 针对具体属性，<code>Proxy</code> 针对整个对象的元操作。原因是 <code>defineProperty</code> 需要逐个属性改写 getter/setter，而 <code>Proxy</code> 可以天然感知新增、删除、<code>in</code>、枚举等操作。边界是 <code>Proxy</code> 无法完整降级到旧环境，兼容性要求高时要保留替代方案。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">MDN: Proxy</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/Proxy/get">MDN: handler.get()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/Proxy/set">MDN: handler.set()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect">MDN: Reflect</a></li>
+          <li><a href="https://tc39.es/ecma262/multipage/reflection.html#sec-proxy-objects">ECMAScript 规范: Proxy Objects</a></li>
         </ul>
       </div>
     </section>
@@ -47,45 +57,41 @@
 
     <!-- SCRIPT_START -->
     <script>
-      //被代理的目标对象
+      // 被代理的目标对象
       const person = {
         name: "wangcheng",
-        sayHello(){
+        sayHello() {
           console.log("我是", this.name);
-        }
-      }
+        },
+      };
 
-      //处理器对象：有一些属性比如set get函数
+      // 处理器对象：get/set trap 分别拦截读取和写入。
       const handler = {
-        //targetObj被代理的目标对象
-        //property 当前对访问的属性
-        //proxyInstance 创建的代理实例
-        get(targetObj,property,proxyInstance){
+        get(targetObj, property, receiver) {
           console.log(targetObj === person);
           console.log(property === "name");
-          console.log(proxyInstance === proxy);
+          console.log(receiver === proxy);
 
-          return targetObj[property]
+          return Reflect.get(targetObj, property, receiver);
         },
-        set(targetObj, property, newValue, proxyInstance){
-          console.log("targetObj>>", targetObj)
-          console.log("property>>", property)
-          console.log("newValue>>", newValue)
+        set(targetObj, property, newValue, receiver) {
+          console.log("targetObj>>", targetObj);
+          console.log("property>>", property);
+          console.log("newValue>>", newValue);
 
-          console.log("proxyInstance>>", proxyInstance)
+          console.log("receiver>>", receiver);
 
-          //如果用户传入的新的属性值，跟原来的属性值不一样，则将新值赋值给原来的属性
-          if(newValue !== targetObj[property]){
-            targetObj[property] = newValue;
-
-            //触发 dom 更新等一系列操作
+          if (newValue === targetObj[property]) {
+            return true;
           }
 
-          //新值跟原来的值一样的话 do nothing
-        }
-      }
+          const didSet = Reflect.set(targetObj, property, newValue, receiver);
+          // 这里可以继续触发 DOM 更新、依赖通知等副作用。
+          return didSet;
+        },
+      };
 
-      // Proxy 不能用 instanceof Proxy 判断（Proxy 不是构造函数）；代理对象仍走正常原型链
+      // Proxy 不能用 instanceof Proxy 判断；代理对象仍走目标对象的正常原型链。
       const proxy = new Proxy(person, handler);
       console.log(proxy.name);
 
@@ -94,12 +100,12 @@
       // console.log(proxy instanceof Proxy);
 
       console.log(Reflect);
-      console.log(typeof Reflect);//object
+      console.log(typeof Reflect); // object
 
-      proxy.name = "我是高杰"
+      proxy.name = "我是高杰";
 
-      console.log(proxy.name)
-      console.log(person.name)
+      console.log(proxy.name);
+      console.log(person.name);
 
     </script>
     <!-- SCRIPT_END -->

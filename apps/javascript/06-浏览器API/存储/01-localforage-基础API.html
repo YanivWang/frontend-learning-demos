@@ -2,15 +2,16 @@
 分类: javascript / 06-浏览器API / 存储
   主题: localforage 基础 API
   要点:
-    - localforage 是「IndexedDB / WebSQL / localStorage」的统一封装
-    - 所有 API 返回 Promise；不会被同步阻塞
-    - 常用方法：setItem/getItem/removeItem/clear/keys/length/iterate
+    - localforage 用 Promise API 封装 IndexedDB，并可按环境降级到 WebSQL/localStorage
+    - setItem/getItem/removeItem/keys/length/iterate 都是异步操作，需要 await 或链式串行
+    - createInstance 可隔离 name/storeName，避免 clear 误删其他业务数据
+    - 存储值会经过结构化克隆或降级序列化，Blob、循环引用和配额失败要单独处理
   面试:
-    - localforage 基础 API的核心概念是什么
-    - localforage 基础 API在实际项目里怎么用
-    - localforage 基础 API有哪些常见坑或易错点
-    - localforage 基础 API和相近 API 如何区分选型
-    - 面试中如何简洁讲清 localforage 基础 API
+    - localforage 相比直接用 localStorage 解决了什么问题？
+    - localforage 的异步 API 为什么要按顺序 await？
+    - clear 和 removeItem 在业务数据安全上有什么区别？
+    - localforage 与直接使用 IndexedDB 如何选？
+    - localforage 写入失败时应该处理哪些边界？
 -->
 
 <!doctype html>
@@ -31,15 +32,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>localforage 是「IndexedDB / WebSQL / <code>localStorage</code>」的统一封装。</li>
-          <li>所有 API 返回 <code>Promise</code>；不会被同步阻塞。</li>
-          <li>常用方法：setItem/getItem/removeItem/clear/keys/length/iterate。</li>
+          <li>localforage 的价值是用接近 <code>localStorage</code> 的 key-value 接口封装 IndexedDB，并在不支持时降级到 WebSQL 或 <code>localStorage</code>，让业务代码统一使用 Promise。</li>
+          <li>所有读写方法都是异步的：<code>setItem</code> 完成后再 <code>getItem</code> 才能稳定读到最新值；示例用 <code>async</code> / <code>await</code> 串行展示，避免多个 Promise 并发导致日志顺序误导。</li>
+          <li><code>createInstance({ name, storeName })</code> 可以把 demo 数据隔离到独立仓库；业务代码不应随意调用 <code>clear()</code>，除非确认要清空整个 store，删除单个 key 优先用 <code>removeItem()</code>。</li>
+          <li><code>iterate</code>、<code>keys</code>、<code>length</code> 适合调试和管理小规模 key 集合；大量数据仍应设计索引、分页或直接使用 IndexedDB 游标，避免一次性遍历造成性能问题。</li>
+          <li>失败路径必须处理：配额不足、用户清理、隐私模式、降级驱动差异、Blob 支持差异都可能让 Promise reject；缓存类数据要能从网络或默认值恢复。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>localforage 是「IndexedDB / WebSQL / local？</strong> localforage 是「IndexedDB / WebSQL / <code>localStorage</code>」的统一封装</li>
-          <li><strong>所有 API 返回 Promise？</strong> 所有 API 返回 <code>Promise</code>；不会被同步阻塞</li>
-          <li><strong>localforage 基础 API的核心概念是什么？</strong> localforage 是「IndexedDB / WebSQL / <code>localStorage</code>」的统一封装</li>
+          <li><strong>localforage 相比直接用 <code>localStorage</code> 解决了什么问题？</strong> 结论是它把存储改成异步 Promise 模型，并优先使用 IndexedDB。原因是 <code>localStorage</code> 同步、只能存字符串且不适合大数据；项目里需要离线缓存对象或文件时，localforage 比手写 IndexedDB 更轻量。</li>
+          <li><strong>localforage 的异步 API 为什么要按顺序 <code>await</code>？</strong> 结论是有依赖关系的读写必须串行等待。原因是 <code>setItem</code>、<code>getItem</code>、<code>removeItem</code> 都返回 Promise，不等待就会产生竞态；例如刚写入就读取、刚清理就遍历，日志顺序可能和真实存储状态不一致。</li>
+          <li><strong><code>clear</code> 和 <code>removeItem</code> 在业务数据安全上有什么区别？</strong> 结论是 <code>removeItem</code> 删除单个 key，<code>clear</code> 清空整个 store。原因是同一个 store 里可能有多个业务模块数据；真实项目要用独立实例隔离命名空间，并谨慎暴露清空能力。</li>
+          <li><strong>localforage 与直接使用 IndexedDB 如何选？</strong> 结论是简单 key-value 缓存选 localforage，复杂查询、索引、事务控制选 IndexedDB。原因是 localforage 屏蔽了大量样板代码，但也隐藏了底层能力；离线数据库、搜索索引和多对象仓库通常需要直接建模 IndexedDB。</li>
+          <li><strong>localforage 写入失败时应该处理哪些边界？</strong> 结论是把写入失败当成正常异常处理。原因是配额、浏览器策略、隐私模式、驱动降级和数据类型都可能失败；项目里应捕获错误、提示用户、清理旧缓存或回退到网络数据。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://localforage.github.io/localForage/" target="_blank" rel="noreferrer">localForage Documentation</a></li>
+          <li><a href="https://localforage.github.io/localForage/#api-setitem" target="_blank" rel="noreferrer">localForage API: setItem / getItem</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API" target="_blank" rel="noreferrer">MDN: IndexedDB API</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria" target="_blank" rel="noreferrer">MDN: Storage quotas and eviction criteria</a></li>
         </ul>
       </div>
     </section>
@@ -47,44 +59,39 @@
 
     <!-- SCRIPT_START -->
     <script>
-      //set 是异步的
-      localforage.setItem("key", {"name": "王成"}).then(function (value) {
-        console.log("1:" + JSON.stringify(value));
-      }).catch(function () {
-        console.log("error");
+      const store = localforage.createInstance({
+        name: "frontend-learning-demos",
+        storeName: "localforage_basic_api",
+        description: "localforage 基础 API demo",
       });
 
-      localforage.getItem("key").then(function (value) {
-        console.log("2:" + JSON.stringify(value));
-      }).catch(function () {
-        console.log("error");
-      });
+      async function runLocalforageDemo() {
+        try {
+          const savedValue = await store.setItem("profile", { name: "王成", role: "learner" });
+          console.log("1 setItem:", savedValue);
 
-      //获取离线仓库的key的数量
-      localforage.length().then(function (numberOfKeys) {
-        console.log("5:" + numberOfKeys);
-      }).catch(function (err) {
-        console.log(err);
-      });
+          const profile = await store.getItem("profile");
+          console.log("2 getItem:", profile);
 
-      localforage.clear().then(function () {
-        console.log("7:" + "empty");
-      }).catch(function (err) {
-        console.log(err);
-      });
+          await store.setItem("theme", "dark");
+          console.log("3 keys:", await store.keys());
+          console.log("4 length:", await store.length());
 
-      localforage.removeItem("key").then(function () {
-        console.log("8:" + "success");
-      }).catch(function () {
-        console.log("error");
-      });
+          await store.iterate(function (value, key, iterationNumber) {
+            console.log("5 iterate:", iterationNumber, key, value);
+          });
 
-      //获取数据库中所有的key的名称
-      localforage.keys().then(function (keys) {
-        console.log("6:" + keys);
-      }).catch(function (err) {
-        console.log(err);
-      });
+          await store.removeItem("profile");
+          console.log("6 removeItem profile:", await store.getItem("profile"));
+
+          await store.removeItem("theme");
+          console.log("7 cleanup keys:", await store.keys());
+        } catch (error) {
+          console.error("localforage 操作失败：", error);
+        }
+      }
+
+      runLocalforageDemo();
 
     </script>
     <!-- SCRIPT_END -->

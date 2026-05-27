@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 04-ES6+ / 异步 / generator与async
+  分类: javascript / 04-ES6+ / 异步 / generator与async
   主题: async/await 串行流程最小演示
   要点:
-    - await 暂停当前 async 函数，等待右侧 Promise 决议
-    - async 函数自身返回的也是一个 Promise
-    - 把回调地狱写成顺序代码，但底层依旧基于微任务
+    - async 函数调用后立即返回 Promise，函数体会执行到第一个 await
+    - await 暂停当前 async 函数后续代码，等待右侧值按 Promise 规则决议
+    - 多个 await 写在一起默认串行，后一步依赖前一步时才这样写
+    - async/await 改善顺序阅读体验，但底层仍是 Promise 和微任务
   面试:
-    - async/await 串行流程最小演示的核心概念是什么
-    - async/await 串行流程最小演示在实际项目里怎么用
-    - async/await 串行流程最小演示有哪些常见坑或易错点
-    - async/await 串行流程最小演示和相近 API 如何区分选型
-    - 面试中如何简洁讲清 async/await 串行流程最小演示
+    - async 函数返回值为什么总是 Promise？
+    - await 如何让异步代码看起来像同步串行流程？
+    - 多个 await 什么时候会造成不必要的串行等待？
+    - async/await 和 then 链如何互相改写？
 -->
 
 <!doctype html>
@@ -30,16 +30,23 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>await</code> 暂停当前 <code>async</code> 函数，等待右侧 <code>Promise</code> 决议。</li>
-          <li><code>async</code> 函数自身返回的也是一个 <code>Promise</code>。</li>
-          <li>把回调地狱写成顺序代码，但底层依旧基于微任务。</li>
-          <li><code>await</code> 暂停当前 <code>async</code> 函数，等待右侧 <code>Promise</code> 决议（补充）。</li>
+          <li><code>async</code> 函数调用后会立即返回一个 Promise；函数体先同步执行到第一个 <code>await</code> 或结束位置。</li>
+          <li><code>await</code> 会等待右侧表达式按 Promise 规则决议，并把决议值作为表达式结果；非 Promise 值也会被当成已 fulfilled 的值处理。</li>
+          <li><code>await</code> 后面的代码会被安排到后续微任务中恢复执行，因此不会阻塞主线程。</li>
+          <li>多个 <code>await</code> 连续写默认是串行流程，适合后一步依赖前一步结果；互不依赖的任务应先启动，再用 <code>Promise.all</code> 并发等待。</li>
+          <li><code>async</code>/<code>await</code> 主要改善 Promise 链的可读性，错误处理可用普通 <code>try...catch</code> 包裹 <code>await</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>await 暂停当前 async 函数？</strong> <code>await</code> 暂停当前 <code>async</code> 函数，等待右侧 <code>Promise</code> 决议</li>
-          <li><strong>async 函数自身返回的也是一个 Promise？</strong> <code>await</code> 暂停当前 <code>async</code> 函数，等待右侧 <code>Promise</code> 决议；<code>async</code> 函数自身返回的也是一个 <code>Promise</code></li>
-          <li><strong>把回调地狱写成顺序代码？</strong> 把回调地狱写成顺序代码，但底层依旧基于微任务</li>
+          <li><strong>async 函数返回值为什么总是 Promise？</strong> 结论是 async 函数调用结果永远是 Promise，普通 return 值会成为 fulfilled 值，未捕获异常会变成 rejected。这样调用方可以统一用 <code>then</code>/<code>catch</code> 或 <code>await</code> 消费。</li>
+          <li><strong><code>await</code> 如何让异步代码看起来像同步串行流程？</strong> <code>await</code> 暂停当前 async 函数，等右侧 Promise fulfilled 后再恢复下一行。原因是语言把后续代码接到 Promise 反应流程里；项目里可用它消除层层嵌套的回调。</li>
+          <li><strong>多个 <code>await</code> 什么时候会造成不必要的串行等待？</strong> 如果任务互不依赖，逐个 <code>await</code> 会让后一个任务等前一个结束后才启动，浪费时间。应先创建多个 Promise，再用 <code>Promise.all</code> 等待；只有存在数据依赖时才串行。</li>
+          <li><strong>async/await 和 then 链如何互相改写？</strong> <code>await timeout(ms); console.log(value)</code> 等价于 <code>timeout(ms).then(() =&gt; console.log(value))</code>。固定业务流程用 async/await 更清晰，动态任务数组可用 Promise 链或 reduce 组织。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function" target="_blank" rel="noreferrer">MDN Web Docs：async function</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await" target="_blank" rel="noreferrer">MDN Web Docs：await</a></li>
         </ul>
       </div>
     </section>
@@ -47,11 +54,10 @@
 
     <!-- SCRIPT_START -->
     <script>
-      //async 函数是 generator 函数的语法糖
       function timeout(ms) {
-        return new Promise(function (resolve, reject) {
-          setTimeout(resolve,ms)
-        })
+        return new Promise(function (resolve) {
+          setTimeout(resolve, ms);
+        });
       }
 
       async function asyncPrint(value,ms) {
@@ -60,7 +66,9 @@
       }
 
       //async函数，本身也是返回Promise
-      asyncPrint("print", 3000)
+      asyncPrint("print", 3000).then(function () {
+        console.log("asyncPrint finished");
+      });
 
     </script>
     <!-- SCRIPT_END -->

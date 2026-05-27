@@ -1,17 +1,16 @@
 <!--
-分类: javascript / 06-浏览器API
+  分类: javascript / 06-浏览器API
   主题: Web Components 自定义元素与 Shadow DOM
   难度: 进阶
   要点:
-    - customElements.define 注册自定义标签
-    - attachShadow 创建样式隔离的 Shadow Root
-    - 属性变化可通过 observedAttributes + attributeChangedCallback 响应
+    - Custom Elements 用 customElements.define 注册带连字符的自定义标签
+    - Shadow DOM 提供封装边界和样式隔离，但事件、插槽和可访问性仍要显式设计
+    - observedAttributes 与 attributeChangedCallback 负责把属性变化同步到组件内部渲染
   面试:
-    - Web Components 自定义元素与 Shadow DOM的核心概念是什么
-    - Web Components 自定义元素与 Shadow DOM在实际项目里怎么用
-    - Web Components 自定义元素与 Shadow DOM有哪些常见坑或易错点
-    - Web Components 自定义元素与 Shadow DOM和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Web Components 自定义元素与 Shadow DOM
+    - Web Components 由哪些标准能力组成？
+    - Shadow DOM 的样式隔离和普通组件 CSS 作用域有什么区别？
+    - observedAttributes 为什么只监听属性而不是属性对象？
+    - Web Components 与 React/Vue 组件如何选型和集成？
 -->
 
 <!doctype html>
@@ -34,15 +33,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>customElements.define 注册自定义标签。</li>
-          <li>attachShadow 创建样式隔离的 Shadow Root。</li>
-          <li>属性变化可通过 observedAttributes + attributeChangedCallback 响应。</li>
+          <li>Web Components 是一组浏览器原生组件化能力，常见组合包括 Custom Elements、Shadow DOM 和 HTML templates；本页重点演示自定义元素和 Shadow Root。</li>
+          <li><code>customElements.define("user-card", UserCard)</code> 注册自定义标签，名称必须包含连字符，类通常继承 <code>HTMLElement</code> 并使用生命周期回调。</li>
+          <li><code>attachShadow({ mode: "open" })</code> 创建 Shadow Root，组件内部样式默认不会泄漏到外部，外部普通选择器也不能直接选中 shadow tree 内部节点。</li>
+          <li><code>observedAttributes</code> 声明要监听的 HTML 属性，属性变化会触发 <code>attributeChangedCallback</code>；如果要同步复杂对象，通常需要属性序列化或直接暴露 DOM property。</li>
+          <li>常见坑是忽略无障碍语义、slot 内容、事件 <code>composed</code> 边界和框架集成差异；跨框架设计系统适合 Web Components，业务强状态组件仍常用 React/Vue。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>customElements.define 注册自定义标签？</strong> customElements.define 注册自定义标签</li>
-          <li><strong>attachShadow 创建样式隔离的 Shadow Root？</strong> attachShadow 创建样式隔离的 Shadow Root；属性变化可通过 observedAttributes + attributeChangedCallback 响应</li>
-          <li><strong>属性变化可通过 observedAttributes + attributeCh？</strong> 属性变化可通过 observedAttributes + attributeChangedCallback 响应</li>
+          <li><strong>Web Components 由哪些标准能力组成？</strong> 结论是它不是单一 API，而是 Custom Elements、Shadow DOM、templates 等浏览器标准的组合。原因是自定义标签负责生命周期，Shadow DOM 负责封装边界，模板负责声明可复用 DOM。项目里通常用它封装跨框架 UI 基础组件。</li>
+          <li><strong>Shadow DOM 的样式隔离和普通组件 CSS 作用域有什么区别？</strong> 结论是 Shadow DOM 是浏览器级封装边界，普通框架 scoped CSS 多是编译或命名约定。原因是 shadow tree 对外部选择器不可见，样式默认不会互相污染。边界场景是主题定制需要用 CSS custom properties、parts 或 slots 显式开放。</li>
+          <li><strong>observedAttributes 为什么只监听属性而不是属性对象？</strong> 结论是它监听的是 HTML attribute 的字符串变化。原因是 Custom Elements 需要和声明式 HTML 兼容，而 attribute 天然只能表达字符串。复杂数据应通过 property、事件或序列化协议传递，并在 attribute/property 之间保持同步规则。</li>
+          <li><strong>Web Components 与 React/Vue 组件如何选型和集成？</strong> 结论是跨技术栈、生命周期长的基础组件适合 Web Components，强依赖框架状态和生态的业务组件适合框架组件。原因是 Web Components 提供标准分发形式，但表单绑定、事件、SSR 和类型体验在不同框架中仍有差异。实际项目要提前约定 props、events 和样式定制接口。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_components" target="_blank" rel="noreferrer">MDN: Web Components</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements" target="_blank" rel="noreferrer">MDN: Using custom elements</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_shadow_DOM" target="_blank" rel="noreferrer">MDN: Using shadow DOM</a></li>
+          <li><a href="https://html.spec.whatwg.org/multipage/custom-elements.html" target="_blank" rel="noreferrer">WHATWG HTML: Custom elements</a></li>
         </ul>
       </div>
     </section>
@@ -60,15 +69,20 @@
         constructor() {
           super();
           const root = this.attachShadow({ mode: "open" });
-          root.innerHTML = `
-          <style>
+          const style = document.createElement("style");
+          style.textContent = `
             .card { display:inline-block;margin:.5rem;padding:1rem;border-radius:8px;background:#eef2ff;border:1px solid #c7d2fe;font-family:system-ui,sans-serif; }
             .name { font-weight:700; }
             .role { color:#4338ca;font-size:.875rem; }
-          </style>
-          <div class="card"><div class="name"></div><div class="role"></div></div>`;
-            this._nameEl = root.querySelector(".name");
-            this._roleEl = root.querySelector(".role");
+          `;
+          const card = document.createElement("div");
+          card.className = "card";
+          this._nameEl = document.createElement("div");
+          this._nameEl.className = "name";
+          this._roleEl = document.createElement("div");
+          this._roleEl.className = "role";
+          card.append(this._nameEl, this._roleEl);
+          root.append(style, card);
           }
           connectedCallback() { this._render(); }
           attributeChangedCallback() { this._render(); }
@@ -77,7 +91,13 @@
             this._roleEl.textContent = this.getAttribute("role") || "—";
           }
         }
+      if (!customElements.get("user-card")) {
         customElements.define("user-card", UserCard);
+      }
+
+      setTimeout(() => {
+        document.querySelector("user-card")?.setAttribute("role", "Frontend Engineer");
+      }, 1200);
 
     </script>
     <!-- SCRIPT_END -->

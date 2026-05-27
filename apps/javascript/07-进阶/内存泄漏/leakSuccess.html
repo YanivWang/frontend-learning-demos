@@ -2,15 +2,15 @@
 分类: javascript / 07-进阶 / 内存泄漏
   主题: 通过手动置 null 释放闭包引用
   要点:
-    - inner 持有 outer 的局部变量 bigData，会阻止其回收
-    - 把 inner 置为 null 后，闭包链断裂，GC 可回收
-    - 用 DevTools 在置 null 前后做 Heap snapshot 对比可直观看到差异
+    - 闭包会让函数保留对其词法环境的引用，捕获的大对象可能随函数长期存活
+    - 把保存闭包的变量置为 null 可以断开最后一条强引用，让对象变为可回收
+    - 置 null 只是解除可达性，不保证立即触发 GC 或马上降低任务管理器内存
+    - 用 Heap snapshot 对比置 null 前后的 retainers，可验证引用链是否断开
   面试:
-    - 通过手动置 null 释放闭包引用的核心概念是什么
-    - 通过手动置 null 释放闭包引用在实际项目里怎么用
-    - 通过手动置 null 释放闭包引用有哪些常见坑或易错点
-    - 通过手动置 null 释放闭包引用和相近 API 如何区分选型
-    - 面试中如何简洁讲清 通过手动置 null 释放闭包引用
+    - 闭包为什么可能让大对象长期留在内存中？
+    - 把闭包变量置为 null 到底释放了什么？
+    - 为什么置 null 后内存不一定立刻下降？
+    - 在组件、事件监听和定时器场景中如何清理闭包引用？
 -->
 
 <!doctype html>
@@ -26,19 +26,28 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>通过手动置 null 释放闭包引用</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">请打开 DevTools Console 与 Memory 面板，等待 15 秒后对比闭包引用被置空前后的快照。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>inner 持有 outer 的局部变量 bigData，会阻止其回收。</li>
-          <li>把 inner 置为 <code>null</code> 后，闭包链断裂，GC 可回收。</li>
-          <li>用 DevTools 在置 <code>null</code> 前后做 Heap snapshot 对比可直观看到差异。</li>
+          <li>闭包是函数和其词法环境的组合。只要返回的函数仍可达，它就可以继续访问创建时捕获的变量，因此本页 <code>inner</code> 会保留 <code>outer</code> 中的 <code>bigData</code>。</li>
+          <li>把 <code>inner</code> 置为 <code>null</code> 的作用是断开外部变量到闭包函数的强引用；如果没有其他引用链指向该闭包或 <code>bigData</code>，这些对象会在后续 GC 中变为可回收。</li>
+          <li>常见误区是把 <code>null</code> 当成立即释放内存的命令。JavaScript 标准不提供同步触发 GC 的能力，DevTools 中看到的内存下降受引擎调度、快照时机和对象晋升策略影响。</li>
+          <li>真实项目里更推荐按生命周期清理：组件卸载时移除事件监听、取消定时器和异步订阅，清空大型缓存或回调引用；只有在长生命周期对象确实持有短生命周期资源时，手动置空才有意义。</li>
+          <li>排查闭包泄漏时，用 Heap snapshot 查看闭包、数组和 retainers 的引用路径，比单纯观察 Console 日志更可靠；本页的 15 秒定时器只是制造一个可观察的释放时点。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>inner 持有 outer 的局部变量 bigData？</strong> inner 持有 outer 的局部变量 bigData，会阻止其回收；把 inner 置为 <code>null</code> 后，闭包链断裂，GC 可回收</li>
-          <li><strong>把 inner 置为 null 后？</strong> 把 inner 置为 <code>null</code> 后，闭包链断裂，GC 可回收</li>
-          <li><strong>用 DevTools 在置 null 前后做 Heap snapshot 对比可？</strong> 用 DevTools 在置 <code>null</code> 前后做 Heap snapshot 对比可直观看到差异</li>
+          <li><strong>闭包为什么可能让大对象长期留在内存中？</strong> 结论是闭包函数可达时，它捕获的词法环境也会随之可达。原因是函数需要保留外层变量以便后续调用。边界是现代引擎可能优化未使用变量，但被闭包实际读取的大数组、DOM 节点或业务对象仍可能被保留。</li>
+          <li><strong>把闭包变量置为 <code>null</code> 到底释放了什么？</strong> 结论是它释放的是“引用”，不是直接释放内存。原因是当保存闭包的变量不再指向函数，闭包和它捕获的对象可能从可达图中消失。项目里常见场景是取消回调、清理订阅、把不再使用的大对象从长生命周期实例上移除。</li>
+          <li><strong>为什么置 <code>null</code> 后内存不一定立刻下降？</strong> 结论是对象只是变成可回收，真正回收由垃圾回收器择机执行。原因是 JavaScript 没有标准的同步 GC API，浏览器还可能为了性能延迟回收或保留堆空间复用。排查时应通过多次快照和 retainers 验证引用是否断开，而不是只盯总内存数字。</li>
+          <li><strong>组件或事件场景如何避免闭包泄漏？</strong> 结论是在生命周期结束时移除所有能继续触达组件状态的外部引用。原因是事件监听、定时器、Promise 回调和全局缓存都可能持有闭包。实际项目中要在卸载钩子里 remove listener、clear timer、abort 请求或取消订阅。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures">MDN Web Docs: Closures</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Memory_management">MDN Web Docs: Memory management</a></li>
+          <li><a href="https://developer.chrome.com/docs/devtools/memory-problems">Chrome DevTools: Fix memory problems</a></li>
         </ul>
       </div>
     </section>

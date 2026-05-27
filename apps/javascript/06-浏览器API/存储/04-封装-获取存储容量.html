@@ -1,16 +1,17 @@
 <!--
 分类: javascript / 06-浏览器API / 存储
-  主题: 封装获取存储容量（已用 / 剩余）
+  主题: 封装 localforage 容量估算工具
   要点:
-    - 把 iterate 的回调累加结果挂在对象上传递（闭包写法 + 引用传递）
-    - 用 async/await 把异步流水线写成同步风格
-    - 易错点：MAX_SIZE 仅是「业务约定」上限，并非浏览器真实配额
+    - 容量工具应返回结构化结果，而不是依赖外部可变对象传递统计值
+    - localforage.iterate 估算 store 已用，StorageManager.estimate 估算 origin 总配额
+    - 估算逻辑要按字符串、Blob、ArrayBuffer、对象等类型分别处理
+    - 工具函数必须捕获序列化和浏览器 API 不支持等失败路径
   面试:
-    - 封装获取存储容量（已用 / 剩余）的核心概念是什么
-    - 封装获取存储容量（已用 / 剩余）在实际项目里怎么用
-    - 封装获取存储容量（已用 / 剩余）有哪些常见坑或易错点
-    - 封装获取存储容量（已用 / 剩余）和相近 API 如何区分选型
-    - 面试中如何简洁讲清 封装获取存储容量（已用 / 剩余）
+    - 如何把 localforage 容量统计封装成可复用工具？
+    - 为什么封装时不建议把统计值写进外部对象？
+    - 工具返回的 storeUsage 和 originQuota 分别代表什么？
+    - 浏览器不支持 StorageManager.estimate 时如何降级？
+    - 大数据量缓存页面多久统计一次更合理？
 -->
 
 <!doctype html>
@@ -26,20 +27,31 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>封装获取存储容量（已用 / 剩余）</h1>
+      <h1>封装 localforage 容量估算工具</h1>
       <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>把 iterate 的回调累加结果挂在对象上传递（闭包写法 + 引用传递）。</li>
-          <li>用 <code>async</code>/await 把异步流水线写成同步风格。</li>
-          <li>易错点：MAX_SIZE 仅是「业务约定」上限，并非浏览器真实配额。</li>
+          <li>容量统计工具应返回清晰的数据结构，例如 <code>storeUsageBytes</code>、<code>originUsageBytes</code>、<code>originQuotaBytes</code> 和 <code>originRemainingBytes</code>，避免调用方误把业务估算当真实配额。</li>
+          <li><code>localforage.iterate()</code> 负责遍历当前 store，适合做局部缓存大小估算；<code>navigator.storage.estimate()</code> 负责读取同源总体用量和配额，适合判断写入风险。</li>
+          <li>比起把累加值挂到外部对象，封装函数内部维护局部变量并返回结果更直观，也减少并发调用时互相污染的风险。</li>
+          <li>估算函数要按类型处理：字符串用 <code>TextEncoder</code>，<code>Blob</code> 用 <code>size</code>，<code>ArrayBuffer</code> 用 <code>byteLength</code>，普通对象再尝试 JSON 序列化。</li>
+          <li>失败路径包括序列化异常、浏览器不支持 <code>StorageManager.estimate()</code>、localforage 后端不可用或配额已满；工具应返回可解释的降级结果或抛出给调用方处理。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>把 iterate 的回调累加结果挂在对象上传递（闭包写法 + 引用传递）？</strong> 把 iterate 的回调累加结果挂在对象上传递（闭包写法 + 引用传递）</li>
-          <li><strong>用 async/await 把异步流水线写成同步风格？</strong> 用 <code>async</code>/await 把异步流水线写成同步风格</li>
-          <li><strong>封装获取存储容量（已用 / 剩余）的核心概念是什么？</strong> 把 iterate 的回调累加结果挂在对象上传递（闭包写法 + 引用传递）；用 <code>async</code>/await 把异步流水线写成同步风格</li>
+          <li><strong>如何把 localforage 容量统计封装成可复用工具？</strong> 结论是把“遍历 store 估算业务数据”和“读取 origin 配额”拆成函数，最后返回结构化对象。原因是两类数据来源不同、精度不同；项目里调用方可以分别展示缓存大小和剩余配额。</li>
+          <li><strong>为什么封装时不建议把统计值写进外部对象？</strong> 结论是局部变量加返回值更稳定。原因是外部可变对象会让数据流不清晰，多次并发调用也可能共享状态；只有需要跨多个回调累加时，才在函数内部用闭包变量。</li>
+          <li><strong>工具返回的 <code>storeUsage</code> 和 <code>originQuota</code> 分别代表什么？</strong> 结论是 <code>storeUsage</code> 是业务层估算，<code>originQuota</code> 是浏览器给整个同源站点的粗略配额。原因是 localforage 只管理自己的 store，而浏览器配额还包含 Cache Storage、其他 IndexedDB 数据等。</li>
+          <li><strong>浏览器不支持 <code>StorageManager.estimate()</code> 时如何降级？</strong> 结论是仍可返回 store 估算值，并把 origin 级字段置为 <code>null</code>。原因是 API 支持度和浏览器策略不同；用户界面应显示“无法获取浏览器配额”，而不是显示一个伪造数字。</li>
+          <li><strong>大数据量缓存页面多久统计一次更合理？</strong> 结论是不要每次渲染或首屏都全量统计。原因是 <code>iterate()</code> 会读取和序列化每条数据；项目里适合在设置页用户主动打开时统计，或在写入/删除时维护增量元数据。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://localforage.github.io/localForage/#data-api-iterate" target="_blank" rel="noreferrer">localForage API: iterate()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/estimate" target="_blank" rel="noreferrer">MDN: StorageManager estimate()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria" target="_blank" rel="noreferrer">MDN: Storage quotas and eviction criteria</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob/size" target="_blank" rel="noreferrer">MDN: Blob size</a></li>
         </ul>
       </div>
     </section>
@@ -47,36 +59,78 @@
 
     <!-- SCRIPT_START -->
     <script>
-      console.log("进入...");
+      const encoder = new TextEncoder();
+      const store = localforage.createInstance({
+        name: "frontend-learning-demos",
+        storeName: "localforage_storage_info",
+      });
 
-      function _getStorageSize(cSizeObj) {
-        return localforage.iterate(function (value, key) {
-          cSizeObj.currentSize = cSizeObj.currentSize + key.length + JSON.stringify(value).length;
-        })
+      function stringBytes(text) {
+        return encoder.encode(String(text)).byteLength;
       }
 
-      async function getStorageInfoSync() {
-        const MAX_SIZE = 50;
+      function valueBytes(value) {
+        if (value == null) return 0;
+        if (typeof value === "string") return stringBytes(value);
+        if (value instanceof Blob) return value.size;
+        if (value instanceof ArrayBuffer) return value.byteLength;
 
-        let cSizeObj = {
-          currentSize: 0
-        };
-        await _getStorageSize(cSizeObj);
-
-        let currentSize = cSizeObj.currentSize / 1024 / 1024;
-        let remainSize = MAX_SIZE - currentSize;
-        return {
-          currentSize: currentSize,
-          remainSize: remainSize
+        try {
+          return stringBytes(JSON.stringify(value));
+        } catch (error) {
+          console.warn("无法序列化，使用字符串兜底估算：", error);
+          return stringBytes(String(value));
         }
       }
 
-      async function test() {
-        let currentSizeObj = await getStorageInfoSync();
-        console.log("currentSizeObj:" + JSON.stringify(currentSizeObj));
+      async function estimateStoreUsage(targetStore) {
+        let totalBytes = 0;
+        await targetStore.iterate(function (value, key) {
+          totalBytes += stringBytes(key) + valueBytes(value);
+        });
+        return totalBytes;
       }
 
-      test();
+      async function getStorageInfo(targetStore) {
+        const storeUsageBytes = await estimateStoreUsage(targetStore);
+        const originEstimate = navigator.storage?.estimate
+          ? await navigator.storage.estimate()
+          : null;
+        const originUsageBytes = originEstimate?.usage ?? null;
+        const originQuotaBytes = originEstimate?.quota ?? null;
+        const originRemainingBytes =
+          originUsageBytes == null || originQuotaBytes == null
+            ? null
+            : Math.max(originQuotaBytes - originUsageBytes, 0);
+
+        return {
+          storeUsageBytes,
+          storeUsageMB: storeUsageBytes / 1024 / 1024,
+          originUsageBytes,
+          originQuotaBytes,
+          originRemainingBytes,
+        };
+      }
+
+      async function runDemo() {
+        await store.setItem("todo-cache", [{ id: 1, title: "离线任务", done: false }]);
+        await store.setItem("avatar-placeholder", new Blob(["demo avatar"], { type: "text/plain" }));
+
+        const info = await getStorageInfo(store);
+        console.log("容量信息：", {
+          storeUsageKB: (info.storeUsageBytes / 1024).toFixed(2),
+          originUsageMB:
+            info.originUsageBytes == null ? "unknown" : (info.originUsageBytes / 1024 / 1024).toFixed(2),
+          originQuotaMB:
+            info.originQuotaBytes == null ? "unknown" : (info.originQuotaBytes / 1024 / 1024).toFixed(2),
+          originRemainingMB:
+            info.originRemainingBytes == null ? "unknown" : (info.originRemainingBytes / 1024 / 1024).toFixed(2),
+        });
+      }
+
+      runDemo().catch(function (error) {
+        console.error("获取存储容量失败：", error);
+      });
 
     </script>
     <!-- SCRIPT_END -->

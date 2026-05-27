@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 04-ES6+ / class详解
+  分类: javascript / 04-ES6+ / class详解
   主题: 用静态私有标志位模拟「私有构造函数」
   要点:
-    - JS 没有真正的 private constructor，借助静态私有字段 + 工厂方法模拟
-    - 直接 new PrivateConstructor() 会抛错；只能通过 PrivateConstructor.create()
-    - 私有静态字段不能在类外部访问
+    - JavaScript 没有 private constructor 语法，只能用运行时协议模拟
+    - 静态私有字段只能在类体内部访问，适合隐藏构造许可标志
+    - 工厂方法先打开标志位再 new，constructor 校验后立即复位
+    - 模拟私有构造要处理异常复位，避免一次失败污染后续构造
   面试:
-    - 用静态私有标志位模拟「私有构造函数」的核心概念是什么
-    - 用静态私有标志位模拟「私有构造函数」在实际项目里怎么用
-    - 用静态私有标志位模拟「私有构造函数」有哪些常见坑或易错点
-    - 用静态私有标志位模拟「私有构造函数」和相近 API 如何区分选型
-    - 面试中如何简洁讲清 用静态私有标志位模拟「私有构造函数」
+    - JavaScript 能不能声明真正的私有构造函数？
+    - 静态私有字段为什么能隐藏构造许可标志？
+    - 工厂方法模拟私有构造时如何避免异常后状态泄漏？
+    - 这种模式适合哪些场景，什么时候不值得使用？
 -->
 
 <!doctype html>
@@ -30,15 +30,23 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>JS 没有真正的 private constructor，借助静态私有字段 + 工厂方法模拟。</li>
-          <li>直接 new PrivateConstructor() 会抛错；只能通过 PrivateConstructor.create()。</li>
-          <li>私有静态字段不能在类外部访问。</li>
+          <li>JavaScript class 没有 TypeScript 那种 <code>private constructor</code> 语法；这里用静态私有字段和静态工厂方法做运行时模拟。</li>
+          <li>静态私有字段 <code>#isInternalConstructing</code> 只能在类体内部访问，类外既不能读取也不能改写，因此适合作为构造许可标志。</li>
+          <li>工厂方法先把许可标志设为 <code>true</code>，再调用 <code>new PrivateConstructor()</code>；constructor 校验通过后必须立刻复位，避免后续直接 <code>new</code> 被误放行。</li>
+          <li>如果构造过程可能抛错，工厂方法应使用 <code>try...finally</code> 复位标志；本页示例在 constructor 内复位，适合演示基本机制，但真实项目还要覆盖失败路径。</li>
+          <li>这种模式常用于单例、受控工厂、不可直接创建的值对象；如果只是想限制模块外创建，更简单的做法是不要导出 class，只导出创建函数。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>JS 没有真正的 private constructor？</strong> JS 没有真正的 private constructor，借助静态私有字段 + 工厂方法模拟</li>
-          <li><strong>直接 new PrivateConstructor() 会抛错？</strong> 直接 new PrivateConstructor() 会抛错；只能通过 PrivateConstructor.create()</li>
-          <li><strong>私有静态字段不能在类外部访问？</strong> 私有静态字段不能在类外部访问</li>
+          <li><strong>JavaScript 能不能声明真正的私有构造函数？</strong> 结论是不能，当前 JS class 的 constructor 没有 <code>private</code> 修饰符。原因是 <code>#</code> 私有元素适用于字段、方法和访问器，不是 constructor 可见性控制；需要限制创建时只能用运行时检查、模块封装或 TypeScript 编译期约束。</li>
+          <li><strong>静态私有字段为什么能隐藏构造许可标志？</strong> 因为 <code>#private</code> 名称只在声明它的类体内部可访问，外部代码无法读取或赋值。项目里把许可标志放成静态私有字段，可以避免调用方伪造状态直接绕过工厂方法。</li>
+          <li><strong>工厂方法模拟私有构造有什么坑？</strong> 最大风险是构造失败后没有复位标志，导致后续直接 <code>new</code> 误通过。真实代码应把“打开标志、构造、复位”放进 <code>try...finally</code>，并保证 constructor 里不要把内部标志暴露到实例上。</li>
+          <li><strong>什么时候不值得使用这种模式？</strong> 如果只是模块内部不想暴露构造能力，直接不导出 class 更简单；如果只是 TypeScript 项目内部约束，<code>private constructor</code> 编译期提示更直观。运行时模拟适合发布给纯 JS 使用者或需要强制走工厂方法的库。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements" target="_blank" rel="noreferrer">MDN Web Docs：Private elements</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/static" target="_blank" rel="noreferrer">MDN Web Docs：static</a></li>
         </ul>
       </div>
     </section>
@@ -62,9 +70,13 @@
         // 工厂方法：唯一的合法构造入口
         static create() {
           PrivateConstructor.#isInternalConstructing = true;
-          const instance = new PrivateConstructor();
-          console.log("使用工厂方法构造成功!");
-          return instance;
+          try {
+            const instance = new PrivateConstructor();
+            console.log("使用工厂方法构造成功!");
+            return instance;
+          } finally {
+            PrivateConstructor.#isInternalConstructing = false;
+          }
         }
       }
 

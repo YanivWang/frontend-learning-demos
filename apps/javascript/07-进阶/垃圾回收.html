@@ -2,15 +2,15 @@
 分类: javascript / 07-进阶
   主题: 垃圾回收、可达性、标记清除与分代回收
   要点:
-    - JS 引擎主要根据对象是否从根对象可达来判断能否回收
-    - 标记清除能处理循环引用；单纯引用计数会被循环引用困住
-    - WeakMap / WeakSet 不会阻止键对象被 GC，适合存对象关联元数据
+    - JavaScript 自动管理内存，但 GC 只能回收从根对象不可达的对象
+    - 标记清除能处理整体不可达的循环引用，引用计数无法单独解决循环
+    - 闭包、全局变量、定时器和事件监听都可能让对象意外保活
+    - WeakMap / WeakSet 弱持有对象键或对象值，适合关联元数据和访问记录
   面试:
-    - 垃圾回收、可达性、标记清除与分代回收的核心概念是什么
-    - 垃圾回收、可达性、标记清除与分代回收在实际项目里怎么用
-    - 垃圾回收、可达性、标记清除与分代回收有哪些常见坑或易错点
-    - 垃圾回收、可达性、标记清除与分代回收和相近 API 如何区分选型
-    - 面试中如何简洁讲清 垃圾回收、可达性、标记清除与分代回收
+    - JavaScript 的垃圾回收为什么通常按可达性判断？
+    - 标记清除为什么能回收循环引用？
+    - WeakMap 和 Map 在内存保留上的关键区别是什么？
+    - 项目里哪些引用最容易造成对象无法回收？
 -->
 
 <!doctype html>
@@ -26,19 +26,29 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>垃圾回收：可达性与常见泄漏</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">请打开 DevTools Console 查看可达性、闭包保活和 WeakMap 的输出示例。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>JS 引擎主要根据对象是否从根对象可达来判断能否回收。</li>
-          <li>标记清除能处理循环引用；单纯引用计数会被循环引用困住。</li>
-          <li><code>WeakMap</code> / <code>WeakSet</code> 不会阻止键对象被 GC，适合存对象关联元数据。</li>
+          <li>JavaScript 会在创建对象、数组、函数和闭包时自动分配内存，并由垃圾回收器在对象不再需要时回收；开发者不能可靠地手动触发标准 GC，只能管理引用关系。</li>
+          <li>现代 GC 的核心判断是可达性：从全局对象、当前调用栈、闭包环境、活动 DOM 和宿主对象出发能访问到的对象都是可达对象，不会被回收。</li>
+          <li>标记清除会从根对象出发标记所有可达对象，再清理未标记对象，所以即使两个对象互相引用，只要整体从根不可达，也可以回收；这比单纯引用计数更能处理循环引用。</li>
+          <li>本页的闭包示例展示了 <code>reader</code> 会保留 <code>bigData</code>，直到 <code>reader = null</code> 断开最后一条强引用；真实泄漏常来自全局缓存、未清理定时器、事件监听和长期闭包。</li>
+          <li><code>WeakMap</code> 的键和 <code>WeakSet</code> 的值是弱持有，不会阻止对象被 GC，适合给 DOM 节点或对象实例挂元数据；代价是不可枚举、不能依赖它判断对象是否已经被回收。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>JS 引擎主要根据对象是否从根对象可达来判断能否回收？</strong> JS 引擎主要根据对象是否从根对象可达来判断能否回收</li>
-          <li><strong>标记清除能处理循环引用？</strong> 标记清除能处理循环引用；单纯引用计数会被循环引用困住</li>
-          <li><strong>WeakMap / WeakSet 不会阻止键对象被 GC？</strong> <code>WeakMap</code> / <code>WeakSet</code> 不会阻止键对象被 GC，适合存对象关联元数据</li>
+          <li><strong>JavaScript 的垃圾回收为什么通常按可达性判断？</strong> 结论是引擎只能安全回收从根对象不可达的对象。原因是“对象是否还会被业务使用”无法被精确判定，可达性是可实现的近似模型。边界是对象不可达后也不保证立刻释放，GC 时机由引擎根据内存压力和性能策略决定。</li>
+          <li><strong>标记清除为什么能处理循环引用？</strong> 结论是它看的是整组对象是否能从根访问到，而不是对象之间是否互相引用。原因是循环中的对象如果整体不可达，就不会被标记，清除阶段可以一起回收。项目中循环引用本身不一定泄漏，真正的问题是循环中的某个对象仍被全局、DOM、监听器或闭包持有。</li>
+          <li><strong><code>WeakMap</code> 和 <code>Map</code> 的内存区别是什么？</strong> 结论是 <code>Map</code> 强持有键和值，<code>WeakMap</code> 不会因为键存在于集合中而阻止键对象被回收。原因是 WeakMap 的键是弱引用，键被回收后对应值也可成为回收候选。边界是 WeakMap 只能用对象或非注册 Symbol 作键，且不能枚举键集合。</li>
+          <li><strong>项目里哪些引用最容易造成对象无法回收？</strong> 结论是生命周期比对象更长的引用最危险，例如全局缓存、模块单例、定时器、事件监听、闭包回调和 DOM 节点引用。原因是这些引用会把本该随页面片段释放的数据留在可达图里。排查时应结合 Heap snapshot 的 retainers 找到具体引用链。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Memory_management">MDN Web Docs: Memory management</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap">MDN Web Docs: WeakMap</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet">MDN Web Docs: WeakSet</a></li>
+          <li><a href="https://developer.chrome.com/docs/devtools/memory-problems">Chrome DevTools: Fix memory problems</a></li>
         </ul>
       </div>
     </section>

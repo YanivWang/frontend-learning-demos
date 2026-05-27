@@ -1,16 +1,15 @@
 <!--
-分类: javascript / 06-浏览器API
+  分类: javascript / 06-浏览器API
   主题: MutationObserver 监听 DOM 变化
   要点:
-    - 回调在微任务队列中批量执行，多次变更会合并触发一次
-    - config 中的 subtree:true 会扩大监听到所有后代，开销较大
-    - 易错点：在回调中再修改 DOM 容易死循环；observer.disconnect 用完要解绑
+    - MutationObserver 异步批量报告 childList、attributes、characterData 等 DOM 变化
+    - observe 配置决定监听范围；subtree 和 oldValue 能力有用但会增加记录成本
+    - 回调里继续改同一片 DOM 容易形成循环，组件卸载或任务结束要 disconnect
   面试:
-    - MutationObserver 监听 DOM 变化的核心概念是什么
-    - MutationObserver 监听 DOM 变化在实际项目里怎么用
-    - MutationObserver 监听 DOM 变化有哪些常见坑或易错点
-    - MutationObserver 监听 DOM 变化和相近 API 如何区分选型
-    - 面试中如何简洁讲清 MutationObserver 监听 DOM 变化
+    - MutationObserver 与 DOM Mutation Events 有什么区别？
+    - observe 配置里 childList、attributes、subtree 分别影响什么？
+    - MutationObserver 回调里继续修改 DOM 有什么风险？
+    - MutationObserver 和 ResizeObserver、IntersectionObserver 如何选型？
 -->
 
 <!doctype html>
@@ -30,15 +29,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>回调在微任务队列中批量执行，多次变更会合并触发一次。</li>
-          <li>config 中的 subtree:true 会扩大监听到所有后代，开销较大。</li>
-          <li>易错点：在回调中再修改 DOM 容易死循环；observer.disconnect 用完要解绑。</li>
+          <li><code>MutationObserver</code> 用来异步观察 DOM 树变化，回调收到一组 <code>MutationRecord</code>，可以区分子节点、属性和文本内容变化。</li>
+          <li><code>observe(target, options)</code> 必须至少启用 <code>childList</code>、<code>attributes</code> 或 <code>characterData</code> 之一；<code>subtree: true</code> 会扩大到所有后代节点，适合容器级监听但成本更高。</li>
+          <li><code>attributeOldValue</code> 与 <code>characterDataOldValue</code> 能记录旧值，便于 diff 和调试，但也会保留更多快照信息，不适合无边界地监听大 DOM。</li>
+          <li>MutationObserver 替代了同步且性能差的旧 Mutation Events；它的回调是异步批量投递，不能假设每次 DOM 改动都会立即单独触发。</li>
+          <li>常见坑是在回调里继续修改被观察区域，导致回调再次入队形成循环；组件卸载、一次性扫描结束或切换观察目标时要调用 <code>disconnect()</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>回调在微任务队列中批量执行？</strong> 回调在微任务队列中批量执行，多次变更会合并触发一次</li>
-          <li><strong>config 中的 subtree？</strong> config 中的 subtree:true 会扩大监听到所有后代，开销较大；易错点：在回调中再修改 DOM 容易死循环；observer.disconnect 用完要解绑</li>
-          <li><strong>MutationObserver 监听 DOM 变化的核心概念是什么？</strong> 回调在微任务队列中批量执行，多次变更会合并触发一次；config 中的 subtree:true 会扩大监听到所有后代，开销较大</li>
+          <li><strong>MutationObserver 与 DOM Mutation Events 有什么区别？</strong> 结论是 MutationObserver 是现代推荐方案，旧 Mutation Events 已不适合作为监听 DOM 变化的实现。原因是 MutationObserver 异步批量投递记录，能减少同步事件带来的性能和递归问题。项目里应使用它做第三方 DOM 接入、富文本插件适配或调试辅助。</li>
+          <li><strong>observe 配置里 childList、attributes、subtree 分别影响什么？</strong> 结论是 <code>childList</code> 看子节点增删，<code>attributes</code> 看属性变化，<code>subtree</code> 把观察范围扩展到后代。原因是 MutationObserver 不会默认监听所有变化，必须明确声明关心的类型。实际项目应缩小 target 和 options，避免在整个 document 上长期监听。</li>
+          <li><strong>MutationObserver 回调里继续修改 DOM 有什么风险？</strong> 结论是可能触发新的 mutation 并反复进入回调。原因是回调本身的 DOM 写入也会被同一个 observer 观察到。安全做法是加条件过滤、临时 <code>disconnect()</code>、或把修正操作限定到不被观察的节点。</li>
+          <li><strong>MutationObserver 和 ResizeObserver、IntersectionObserver 如何选型？</strong> 结论是 DOM 结构或属性变化用 MutationObserver，元素尺寸变化用 ResizeObserver，可见性或曝光用 IntersectionObserver。原因是三者观察的信号不同。不要用 MutationObserver 推断布局尺寸或滚动曝光，否则容易误判且成本更高。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver" target="_blank" rel="noreferrer">MDN: MutationObserver</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/observe" target="_blank" rel="noreferrer">MDN: MutationObserver.observe()</a></li>
+          <li><a href="https://dom.spec.whatwg.org/#mutation-observers" target="_blank" rel="noreferrer">WHATWG DOM: Mutation observers</a></li>
         </ul>
       </div>
     </section>
@@ -108,6 +116,8 @@
 
         setTimeout(()=>{
           appDom.className = "appNew";
+          observer.disconnect();
+          console.log("演示结束，已 disconnect MutationObserver。");
         },5000)
       }, 3000);
 

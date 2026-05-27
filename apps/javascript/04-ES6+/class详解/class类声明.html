@@ -1,16 +1,16 @@
 <!--
-分类: javascript / 04-ES6+ / class详解
+  分类: javascript / 04-ES6+ / class详解
   主题: class 声明的关键特性
   要点:
-    - 类声明不提升，存在暂时性死区；class 主体默认严格模式
-    - 静态字段在类初始化时执行，实例字段仅在 new 时初始化
-    - 易错点：无 extends 的构造器不能调用 super()；class 名标识符不能重新声明
+    - class 声明创建原型方法模板，但类名在声明前处于暂时性死区
+    - class 主体默认严格模式；方法定义在 prototype，静态字段定义在类本身
+    - 实例字段在 new 时初始化，静态字段在类求值时初始化
+    - 私有字段必须预先声明，外部不能通过对象属性语法访问
   面试:
-    - class 声明的关键特性的核心概念是什么
-    - class 声明的关键特性在实际项目里怎么用
-    - class 声明的关键特性有哪些常见坑或易错点
-    - class 声明的关键特性和相近 API 如何区分选型
-    - 面试中如何简洁讲清 class 声明的关键特性
+    - class 声明和函数构造器在提升、严格模式、原型方法上有什么区别？
+    - 静态字段、实例字段、私有字段分别在什么时候初始化？
+    - 为什么 class 声明不能在同一作用域重复声明，但声明后的绑定可以重新赋值？
+    - 无 extends 的类和派生类在 super() 调用上有什么边界？
 -->
 
 <!doctype html>
@@ -30,15 +30,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>类声明不提升，存在暂时性死区；class 主体默认严格模式。</li>
-          <li>静态字段在类初始化时执行，实例字段仅在 new 时初始化。</li>
-          <li>易错点：无 <code>extends</code> 的构造器不能调用 super()；class 名标识符不能重新声明。</li>
+          <li><code>class</code> 声明用于定义可被 <code>new</code> 调用的构造器模板，语法底层仍基于原型：实例方法放在 <code>ClassName.prototype</code>，静态成员放在类构造器本身。</li>
+          <li>类声明的名字是词法绑定，声明前处于暂时性死区，不能像函数声明那样提前调用；同一作用域内不能和 <code>let</code>、<code>const</code>、<code>class</code> 等再次声明同名标识符。</li>
+          <li>class 主体默认严格模式，因此方法被解构后独立调用时 <code>this</code> 会是 <code>undefined</code>，不会在非严格模式下自动指向全局对象。</li>
+          <li>静态字段在类求值时创建在类本身；实例字段在每次 <code>new</code> 时为当前实例初始化。字段声明不是变量声明，不能写 <code>const userAge = 18</code>。</li>
+          <li>私有字段以 <code>#</code> 开头，必须在类体中预先声明，只能在类内部访问；这和 TypeScript 的 <code>private</code> 类型修饰不同，运行时也有语法级限制。</li>
+          <li>只有派生类构造器需要并且必须先调用 <code>super()</code> 才能使用 <code>this</code>；没有 <code>extends</code> 的基类构造器中写 <code>super()</code> 是语法错误。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>静态字段在类初始化时执行？</strong> 静态字段在类初始化时执行，实例字段仅在 new 时初始化</li>
-          <li><strong>class 声明的关键特性的核心概念是什么？</strong> 类声明不提升，存在暂时性死区；class 主体默认严格模式；易错点：无 <code>extends</code> 的构造器不能调用 super()；class 名标识符不能重新声明</li>
-          <li><strong>class 声明的关键特性在实际项目里怎么用？</strong> 类声明不提升，存在暂时性死区；class 主体默认严格模式；易错点：无 <code>extends</code> 的构造器不能调用 super()；class 名标识符不能重新声明</li>
+          <li><strong>class 声明和函数构造器有什么区别？</strong> 结论是 class 是更严格的原型构造语法：不能在声明前访问，类体自动严格模式，必须用 <code>new</code> 调用。原因是规范给 class 加了暂时性死区、方法不可枚举等语义；维护老代码时仍能把它理解为原型链上的构造器与方法集合。</li>
+          <li><strong>静态字段、实例字段、私有字段何时初始化？</strong> 静态字段在类定义被求值时初始化一次，实例字段在每次创建实例时初始化，私有字段也随实例创建但只能在类内部访问。项目中常把工具方法、常量缓存放静态成员，把每个对象自己的状态放实例字段。</li>
+          <li><strong>class 名能不能重新声明或重新赋值？</strong> 同一作用域不能再次声明同名 class，因为它是词法声明，会和 <code>let</code>/<code>const</code>/<code>class</code> 产生声明冲突；但 class 声明创建的是可变绑定，声明后可以重新赋值。项目里不建议这么做，因为会破坏构造器身份、静态成员和原型方法引用的一致性。</li>
+          <li><strong><code>super()</code> 的边界是什么？</strong> 基类构造器里不能调用 <code>super()</code>；派生类如果写了 constructor，则必须先调用 <code>super()</code> 才能访问 <code>this</code>。这来自派生类实例初始化顺序，实际排查继承报错时先看是否遗漏或提前使用了 <code>this</code>。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes" target="_blank" rel="noreferrer">MDN Web Docs：Classes</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/class" target="_blank" rel="noreferrer">MDN Web Docs：class declaration</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements" target="_blank" rel="noreferrer">MDN Web Docs：Private elements</a></li>
         </ul>
       </div>
     </section>
@@ -81,8 +91,8 @@
       // 类名标识符不可重新声明（Uncaught SyntaxError: Identifier 'WhitePerson' has already been declared）
       // const WhitePerson = 123;
       //
-      // 类名绑定不可重新赋值（与 const 相同，会抛 TypeError: Assignment to constant variable）
-      // WhitePerson = "new value"; // 不要这样做
+      // 类声明绑定可重新赋值（更接近 let），但项目代码不应这样做：
+      // WhitePerson = "new value";
 
       const wp = new WhitePerson("trump");
       console.log(wp);

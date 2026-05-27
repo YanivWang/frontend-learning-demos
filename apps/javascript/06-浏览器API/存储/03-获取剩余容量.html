@@ -1,16 +1,17 @@
 <!--
 分类: javascript / 06-浏览器API / 存储
-  主题: 用 localforage.iterate 估算剩余容量
+  主题: 结合 localforage 与 StorageManager 估算剩余容量
   要点:
-    - localforage.iterate 遍历所有键值对，每条调用回调
-    - 单条占用 ≈ key.length + JSON.stringify(value).length（字符数近似估算）
-    - iterate 返回 Promise，配合 await 写成顺序代码，便于读
+    - localforage.iterate 只能估算当前 store 的业务数据大小
+    - navigator.storage.estimate 返回 origin 级 usage/quota，可粗略判断配额压力
+    - 剩余容量不是固定 50MB，浏览器会受设备空间、持久化策略和站点使用情况影响
+    - TextEncoder、Blob.size、ArrayBuffer.byteLength 能减少字符数估算误差
   面试:
-    - 用 localforage.iterate 估算剩余容量的核心概念是什么
-    - 用 localforage.iterate 估算剩余容量在实际项目里怎么用
-    - 用 localforage.iterate 估算剩余容量有哪些常见坑或易错点
-    - 用 localforage.iterate 估算剩余容量和相近 API 如何区分选型
-    - 面试中如何简洁讲清 用 localforage.iterate 估算剩余容量
+    - 如何估算 localforage 当前 store 还剩多少可用空间？
+    - 为什么不能用固定 50MB 当作浏览器真实剩余容量？
+    - StorageManager.estimate 的 usage/quota 和 localforage.iterate 有什么区别？
+    - 容量估算在大数据量或多标签页场景有哪些误差？
+    - 项目里什么时候应该提示用户清理离线缓存？
 -->
 
 <!doctype html>
@@ -26,20 +27,31 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>用 localforage.iterate 估算剩余容量</h1>
+      <h1>结合 localforage 与 StorageManager 估算剩余容量</h1>
       <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>localforage.iterate 遍历所有键值对，每条调用回调。</li>
-          <li>单条占用 ≈ <code>key</code>.length + JSON.stringify(value).length（字符数近似估算）。</li>
-          <li>iterate 返回 <code>Promise</code>，配合 <code>await</code> 写成顺序代码，便于读。</li>
+          <li><code>localforage.iterate()</code> 可以遍历当前 store 的 key/value，适合估算“业务写入了多少数据”；它不等于浏览器底层真实占用，也不会告诉你整体配额。</li>
+          <li><code>navigator.storage.estimate()</code> 返回当前 origin 的 <code>usage</code> 和 <code>quota</code>，可用 <code>quota - usage</code> 粗略判断总体剩余空间；这个值包含 IndexedDB、Cache Storage 等同源数据。</li>
+          <li>剩余容量不是固定值。浏览器会根据设备剩余磁盘、站点参与度、是否持久化存储、隐私模式等因素调整配额，并可能在存储压力下清理非持久化数据。</li>
+          <li>容量估算要按值类型处理：字符串可用 <code>TextEncoder</code> 估算 UTF-8 字节数，<code>Blob</code> 读 <code>size</code>，<code>ArrayBuffer</code> 读 <code>byteLength</code>，对象再考虑 JSON 序列化和异常兜底。</li>
+          <li>项目里通常把业务估算用于缓存详情页，把 <code>StorageManager.estimate()</code> 用于判断是否接近 origin 配额；不要在首屏频繁全量遍历大 store。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>localforage.iterate 遍历所有键值对？</strong> localforage.iterate 遍历所有键值对，每条调用回调</li>
-          <li><strong>单条占用 ≈ key.length + JSON.stringify(value？</strong> 单条占用 ≈ <code>key</code>.length + JSON.stringify(value).length（字符数近似估算）</li>
-          <li><strong>iterate 返回 Promise？</strong> localforage.iterate 遍历所有键值对，每条调用回调；iterate 返回 <code>Promise</code>，配合 <code>await</code> 写成顺序代码，便于读</li>
+          <li><strong>如何估算 localforage 当前 store 还剩多少可用空间？</strong> 结论是只能粗略估算：先用 <code>iterate()</code> 统计当前 store 的业务数据大小，再用 <code>navigator.storage.estimate()</code> 查看同源总体 <code>quota - usage</code>。原因是 localforage 没有暴露浏览器真实配额 API；项目里应把结果标成估算值，并在写入失败时处理 <code>QuotaExceededError</code>。</li>
+          <li><strong>为什么不能用固定 50MB 当作浏览器真实剩余容量？</strong> 结论是固定 50MB 只能是业务阈值，不是规范保证。原因是 IndexedDB/localStorage 等配额由浏览器按设备空间和策略决定；离线缓存、图片编辑、PWA 等场景必须用真实写入结果和 <code>StorageManager.estimate()</code> 共同判断。</li>
+          <li><strong><code>StorageManager.estimate()</code> 的 usage/quota 和 <code>localforage.iterate()</code> 有什么区别？</strong> 结论是前者看整个 origin，后者看当前 localforage store。原因是 <code>estimate()</code> 可能包含 IndexedDB、Cache Storage 等全部同源数据，而 <code>iterate()</code> 只能遍历 localforage 管理的数据；排查配额压力时两者互补。</li>
+          <li><strong>容量估算在大数据量或多标签页场景有哪些误差？</strong> 结论是误差来自序列化格式、并发写入和浏览器内部存储实现。原因是 JSON 字符数不等于字节数，其他标签页可能同时写入，浏览器也可能压缩或额外记录元数据；项目里应展示近似值并在关键写入前后重新检查。</li>
+          <li><strong>项目里什么时候应该提示用户清理离线缓存？</strong> 结论是当总体剩余配额很低、写入失败或业务缓存超过阈值时提示。原因是主动清理比等浏览器驱逐更可控；离线文档、音视频草稿等场景还要告诉用户哪些数据会被删除。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://localforage.github.io/localForage/#data-api-iterate" target="_blank" rel="noreferrer">localForage API: iterate()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/estimate" target="_blank" rel="noreferrer">MDN: StorageManager estimate()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria" target="_blank" rel="noreferrer">MDN: Storage quotas and eviction criteria</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder" target="_blank" rel="noreferrer">MDN: TextEncoder</a></li>
         </ul>
       </div>
     </section>
@@ -47,35 +59,62 @@
 
     <!-- SCRIPT_START -->
     <script>
-      console.log("获取剩余空间..");
+      const encoder = new TextEncoder();
+      const store = localforage.createInstance({
+        name: "frontend-learning-demos",
+        storeName: "localforage_remaining_estimate",
+      });
 
-      /* 测试用：往本地写一堆数据，注释掉避免每次打开都写盘
-      async function testRemainCap() {
-        await localforage.setItem("name", "Join");
-        for (let i = 0; i < 10000; i++) {
-          await localforage.setItem("key_" + i, {["key_" + i] : Math.random().toFixed(5)});
+      function stringBytes(text) {
+        return encoder.encode(String(text)).byteLength;
+      }
+
+      function valueBytes(value) {
+        if (value == null) return 0;
+        if (typeof value === "string") return stringBytes(value);
+        if (value instanceof Blob) return value.size;
+        if (value instanceof ArrayBuffer) return value.byteLength;
+
+        try {
+          return stringBytes(JSON.stringify(value));
+        } catch (error) {
+          console.warn("无法序列化，使用字符串兜底估算：", error);
+          return stringBytes(String(value));
         }
       }
-      testRemainCap().then(function () {
-        console.log("写入完毕..");
-      });
-      */
 
-      // 用 localforage.iterate 遍历已有条目，累加字符数近似估算已用空间
-      const MAX_SIZE_MB = 50;
-      (async function getRemainSize(){
-        let currentBytes = 0;
-        try {
-          await localforage.iterate(function (value, key) {
-            currentBytes += key.length + JSON.stringify(value).length;
-          });
-          const remainMB = MAX_SIZE_MB - currentBytes / 1024 / 1024;
-          console.log("currentMB:", (currentBytes / 1024 / 1024).toFixed(4));
-          console.log("remainMB:", remainMB.toFixed(4));
-        } catch (err) {
-          console.error("iterate error:", err);
+      async function seedDemoData() {
+        await store.setItem("draft", "离线草稿示例");
+        await store.setItem("settings", { theme: "dark", synced: false });
+      }
+
+      async function estimateRemainingSize() {
+        await seedDemoData();
+
+        let storeUsageBytes = 0;
+        await store.iterate(function (value, key) {
+          storeUsageBytes += stringBytes(key) + valueBytes(value);
+        });
+
+        console.log("当前 store 业务估算已用：" + (storeUsageBytes / 1024).toFixed(2) + " KB");
+
+        if (navigator.storage?.estimate) {
+          const estimate = await navigator.storage.estimate();
+          const usage = estimate.usage || 0;
+          const quota = estimate.quota || 0;
+          const remaining = Math.max(quota - usage, 0);
+
+          console.log("origin 总体已用：" + (usage / 1024 / 1024).toFixed(2) + " MB");
+          console.log("origin 总体配额：" + (quota / 1024 / 1024).toFixed(2) + " MB");
+          console.log("origin 粗略剩余：" + (remaining / 1024 / 1024).toFixed(2) + " MB");
+        } else {
+          console.warn("当前浏览器不支持 navigator.storage.estimate()，只能展示 store 业务估算值。");
         }
-      })();
+      }
+
+      estimateRemainingSize().catch(function (error) {
+        console.error("剩余容量估算失败：", error);
+      });
 
     </script>
     <!-- SCRIPT_END -->

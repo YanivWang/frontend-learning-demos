@@ -141,8 +141,8 @@
 - [存储方案对比](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/00-%E5%AD%98%E5%82%A8%E6%96%B9%E6%A1%88%E5%AF%B9%E6%AF%94.html) — Cookie、sessionStorage、localStorage、IndexedDB 对比
 - [localforage-基础API](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/01-localforage-%E5%9F%BA%E7%A1%80API.html) — localforage 基础 API
 - [获取已用容量](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/02-%E8%8E%B7%E5%8F%96%E5%B7%B2%E7%94%A8%E5%AE%B9%E9%87%8F.html) — 通过 iterate 统计已用容量
-- [获取剩余容量](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/03-%E8%8E%B7%E5%8F%96%E5%89%A9%E4%BD%99%E5%AE%B9%E9%87%8F.html) — 用 localforage.iterate 估算剩余容量
-- [封装-获取存储容量](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/04-%E5%B0%81%E8%A3%85-%E8%8E%B7%E5%8F%96%E5%AD%98%E5%82%A8%E5%AE%B9%E9%87%8F.html) — 封装获取存储容量（已用 / 剩余）
+- [获取剩余容量](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/03-%E8%8E%B7%E5%8F%96%E5%89%A9%E4%BD%99%E5%AE%B9%E9%87%8F.html) — 结合 localforage 与 StorageManager 估算剩余容量
+- [封装-获取存储容量](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/04-%E5%B0%81%E8%A3%85-%E8%8E%B7%E5%8F%96%E5%AD%98%E5%82%A8%E5%AE%B9%E9%87%8F.html) — 封装 localforage 容量估算工具
 - [测试最大容量](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/05-%E6%B5%8B%E8%AF%95%E6%9C%80%E5%A4%A7%E5%AE%B9%E9%87%8F.html) — 测试 localforage 最大可写容量
 - [存储文件-FileReader](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/06-%E5%AD%98%E5%82%A8%E6%96%87%E4%BB%B6-FileReader.html) — FileReader 读取文件并存入 localforage
 
@@ -164,7 +164,7 @@
 
 ### toolTips
 
-- [index](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/toolTips/index.html) — Vue3 实现可交互的 Tooltip
+- [index](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/toolTips/index.html) — Vue3 实现悬停与键盘可访问的交互浮层
 
 ### 01-基础
 
@@ -200,7 +200,7 @@
 
 ### UMD插件模式
 
-- [index](/apps/javascript/07-%E8%BF%9B%E9%98%B6/UMD%E6%8F%92%E4%BB%B6%E6%A8%A1%E5%BC%8F/index.html) — UMD（Universal Module Definition）演示
+- [index](/apps/javascript/07-%E8%BF%9B%E9%98%B6/UMD%E6%8F%92%E4%BB%B6%E6%A8%A1%E5%BC%8F/index.html) — UMD 插件模式与多模块环境兼容
 
 ### 08-面试题
 

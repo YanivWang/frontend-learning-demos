@@ -2,15 +2,15 @@
 分类: javascript / 06-浏览器API / BOM
   主题: hash 路由的基本演示
   要点:
-    - location.hash 修改不会触发整页刷新，是 hash 路由的基础
-    - 监听 hashchange 即可在 SPA 中实现「自定义导航」
-    - location.replace 会替换当前历史栈条目，不会留下「后退」记录
+    - URL 片段标识符（# 后内容）变化不会向服务器重新请求页面
+    - hashchange 只响应片段变化，是 hash 路由更新视图的核心事件
+    - location.hash 会新增历史记录，location.replace("#/...") 会替换当前记录
+    - hash 路由不依赖服务端 fallback，但 URL 语义和 SEO 通常弱于 History 路由
   面试:
-    - hash 路由的基本演示的核心概念是什么
-    - hash 路由的基本演示在实际项目里怎么用
-    - hash 路由的基本演示有哪些常见坑或易错点
-    - hash 路由的基本演示和相近 API 如何区分选型
-    - 面试中如何简洁讲清 hash 路由的基本演示
+    - hash 路由为什么切换页面时不会刷新整页？
+    - hashchange 和 popstate 分别适合监听哪类导航？
+    - location.hash 赋值和 location.replace("#/...") 对历史栈有什么区别？
+    - hash 路由和 History 路由在部署与用户体验上如何取舍？
 -->
 
 <!doctype html>
@@ -30,15 +30,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>location.hash 修改不会触发整页刷新，是 hash 路由的基础。</li>
-          <li>监听 hashchange 即可在 SPA 中实现「自定义导航」。</li>
-          <li>location.replace 会替换当前历史栈条目，不会留下「后退」记录。</li>
+          <li><code>location.hash</code> 对应 URL 中 <code>#</code> 后面的片段标识符；浏览器不会把片段发送给服务器，因此片段变化通常不会触发整页重新请求。</li>
+          <li>hash 路由的核心是监听 <code>hashchange</code>：当 <code>location.hash</code> 变化时，根据新片段匹配页面组件或渲染逻辑。</li>
+          <li>直接给 <code>location.hash</code> 赋值会增加一条可后退的历史记录；<code>location.replace("#/...")</code> 会替换当前记录，更适合重定向或不希望用户回到中间态的场景。</li>
+          <li><code>popstate</code> 主要服务于 History API 导航，不能替代 <code>hashchange</code> 作为 hash 路由的核心监听。</li>
+          <li>hash 路由部署简单，刷新不会要求服务端把所有路径 fallback 到入口 HTML；代价是 URL 带 <code>#</code>，语义、滚动锚点和部分 SEO/统计处理需要额外设计。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>location.hash 修改不会触发整页刷新？</strong> location.hash 修改不会触发整页刷新，是 hash 路由的基础；location.replace 会替换当前历史栈条目，不会留下「后退」记录</li>
-          <li><strong>监听 hashchange 即可在 SPA 中实现「自定义导航」？</strong> 监听 hashchange 即可在 SPA 中实现「自定义导航」</li>
-          <li><strong>location.replace 会替换当前历史栈条目？</strong> location.hash 修改不会触发整页刷新，是 hash 路由的基础；location.replace 会替换当前历史栈条目，不会留下「后退」记录</li>
+          <li><strong>hash 路由为什么切换页面时不会刷新整页？</strong> 结论是 hash 只改变 URL 片段，浏览器不会为片段变化重新向服务器请求文档。原因是片段标识符用于客户端定位文档内资源，不属于 HTTP 请求路径。项目里可以据此在前端监听 <code>hashchange</code> 并局部更新视图。</li>
+          <li><strong>hashchange 和 popstate 分别适合监听哪类导航？</strong> 结论是 hash 路由监听 <code>hashchange</code>，History 路由监听 <code>popstate</code>。原因是二者对应不同的浏览器导航机制。边界是浏览器前进后退如果导致 hash 改变，也会触发 <code>hashchange</code>，但单纯调用 <code>pushState</code> 不会触发 <code>popstate</code>。</li>
+          <li><strong>location.hash 赋值和 location.replace("#/...") 对历史栈有什么区别？</strong> 结论是前者通常新增历史记录，后者替换当前记录。原因是 <code>replace</code> 的语义就是不保留当前条目。登录后跳转、非法路由纠正等场景常用 replace，普通页面导航更常用可后退的 hash 赋值。</li>
+          <li><strong>hash 路由和 History 路由在部署与用户体验上如何取舍？</strong> 结论是 hash 路由部署成本低，History 路由 URL 更自然。原因是 hash 路由刷新时服务器只看到入口路径，而 History 路由刷新深层路径需要服务端 fallback。项目里静态托管、旧系统嵌入常选 hash，对 URL 语义要求高的 SPA 通常选 History。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Location/hash">MDN: Location.hash</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/hashchange_event">MDN: Window hashchange event</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Location/replace">MDN: Location.replace()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event">MDN: Window popstate event</a></li>
         </ul>
       </div>
     </section>
@@ -54,22 +64,13 @@
     <!-- SCRIPT_START -->
     <script>
       function jumpToPageA() {
-        let stateObject = {
-          name: "wangcheng",
-        };
-        let title = "我是A页面";
-        let url = "page-aaa";
-
-        window.location.hash = "#/page-aaa";//直接给location对象的hash属性赋值，实现导航
+        // 直接给 location.hash 赋值会创建一条新的历史记录。
+        window.location.hash = "#/page-aaa";
       }
 
       function jumpToPageB() {
-        let stateObject = {
-          name: "gaojie",
-        };
-        let title = "我是B页面";
-        let url = "page-bbb";
-        window.location.replace("#/page-bbb")
+        // replace 不保留当前历史记录，用户点击后退不会回到替换前的 hash。
+        window.location.replace("#/page-bbb");
       }
 
       // popstate 仅在 pushState/replaceState 导航时触发；纯 hash 变化请监听 hashchange

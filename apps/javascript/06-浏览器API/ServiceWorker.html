@@ -1,16 +1,15 @@
 <!--
-分类: javascript / 06-浏览器API
+  分类: javascript / 06-浏览器API
   主题: Service Worker 基础注册
   要点:
-    - SW 独立线程，可拦截 fetch、做离线缓存（PWA 核心能力）
-    - 必须在 HTTPS / localhost 下注册，且单独提供 sw.js
-    - 注册晚于 load 事件可避免阻塞首屏关键资源
+    - Service Worker 是浏览器在页面外运行的 worker，可代理 fetch、缓存资源和支撑 PWA
+    - 注册要求安全上下文；脚本文件的位置决定默认 scope，不能随意控制更高层级路径
+    - 生命周期包含 register、install、activate、fetch，缓存更新和失败回退必须显式设计
   面试:
-    - Service Worker 基础注册的核心概念是什么
-    - Service Worker 基础注册在实际项目里怎么用
-    - Service Worker 基础注册有哪些常见坑或易错点
-    - Service Worker 基础注册和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Service Worker 基础注册
+    - Service Worker 为什么必须运行在 HTTPS 或 localhost？
+    - register 的 scope 由什么决定，为什么本页使用相对 scope？
+    - Service Worker 生命周期里 install、activate、fetch 分别做什么？
+    - 离线缓存有哪些常见坑和回滚策略？
 -->
 
 <!doctype html>
@@ -30,16 +29,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>SW 独立线程，可拦截 <code>fetch</code>、做离线缓存（PWA 核心能力）。</li>
-          <li>必须在 HTTPS / localhost 下注册，且单独提供 sw.js。</li>
-          <li>注册晚于 load 事件可避免阻塞首屏关键资源。</li>
-          <li>SW 独立线程，可拦截 <code>fetch</code>、做离线缓存（PWA 核心能力）（补充）。</li>
+          <li><code>ServiceWorker</code> 是独立于页面生命周期运行的 worker，可拦截其作用域内的网络请求、管理缓存、配合 Push/Notification 做 PWA 能力。</li>
+          <li>注册必须发生在安全上下文中，通常是 HTTPS 或 <code>localhost</code>；<code>file://</code> 直接打开不会成功，本页会把失败原因写到日志里。</li>
+          <li><code>navigator.serviceWorker.register(scriptURL, { scope })</code> 的默认 scope 受脚本 URL 所在目录限制；本页使用 <code>./sw.js</code> 和 <code>scope: "./"</code>，避免错误声明站点根作用域。</li>
+          <li>生命周期分为注册、安装、激活和拦截请求。离线缓存不是自动发生的，必须在 worker 脚本里选择缓存清单、更新策略、失败回退和旧缓存清理。</li>
+          <li>常见坑是缓存版本没有失效、接口请求被错误缓存、旧 Service Worker 长期控制页面。生产项目应提供版本化缓存、灰度发布、skipWaiting/clients.claim 的取舍和一键注销方案。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>必须在 HTTPS / localhost 下注册？</strong> 必须在 HTTPS / localhost 下注册，且单独提供 sw.js</li>
-          <li><strong>注册晚于 load 事件可避免阻塞首屏关键资源？</strong> 注册晚于 load 事件可避免阻塞首屏关键资源</li>
-          <li><strong>Service Worker 基础注册的核心概念是什么？</strong> SW 独立线程，可拦截 <code>fetch</code>、做离线缓存（PWA 核心能力）；必须在 HTTPS / localhost 下注册，且单独提供 sw.js</li>
+          <li><strong>Service Worker 为什么必须运行在 HTTPS 或 localhost？</strong> 结论是它能拦截网络请求，浏览器必须限制在可信来源中。原因是如果不要求安全上下文，恶意脚本可能长期驻留并篡改资源响应。开发时可用 localhost，本地直接双击 HTML 的 <code>file://</code> 不能注册。</li>
+          <li><strong>register 的 scope 由什么决定，为什么本页使用相对 scope？</strong> 结论是 scope 受 Service Worker 脚本所在路径限制，默认不能控制脚本目录以上的页面。原因是这避免低层级目录脚本接管整个站点。当前 demo 的 <code>sw.js</code> 和 HTML 同目录，所以使用 <code>scope: "./"</code> 才是最小权限。</li>
+          <li><strong>Service Worker 生命周期里 install、activate、fetch 分别做什么？</strong> 结论是 install 适合预缓存，activate 适合清理旧缓存，fetch 负责按策略响应请求。原因是 Service Worker 不是普通页面脚本，它会经历安装、等待、激活和控制客户端。项目里要明确缓存优先、网络优先或 stale-while-revalidate 等策略。</li>
+          <li><strong>离线缓存有哪些常见坑和回滚策略？</strong> 结论是最大风险是缓存陈旧、接口误缓存和新旧 worker 版本并存。原因是被 Service Worker 控制的页面可能继续使用旧逻辑直到刷新或重新激活。实践中要做缓存版本号、白名单路由、错误 fallback、监控和必要时的注销/清缓存入口。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API" target="_blank" rel="noreferrer">MDN: Service Worker API</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerContainer/register" target="_blank" rel="noreferrer">MDN: ServiceWorkerContainer.register()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Offline_and_background_operation" target="_blank" rel="noreferrer">MDN: Offline and background operation</a></li>
+          <li><a href="https://w3c.github.io/ServiceWorker/" target="_blank" rel="noreferrer">W3C: Service Workers</a></li>
         </ul>
       </div>
     </section>
@@ -56,21 +64,26 @@
       const log = document.getElementById("log");
       function append(s) { log.textContent += s + "\n"; }
 
-      // 1) 特性检测：in 操作符会沿原型链查找
-      if ("serviceWorker" in navigator) {
+      const isLocalhost = ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname);
+      const canRegister = window.isSecureContext || isLocalhost;
+
+      if (!("serviceWorker" in navigator)) {
+        append("当前浏览器不支持 Service Worker");
+      } else if (!canRegister || location.protocol === "file:") {
+        append("当前页面不是 HTTPS/localhost 安全上下文，无法注册 Service Worker。");
+        append("请通过本地开发服务器访问本页，例如 http://localhost:xxxx/...");
+      } else {
         // 2) 等页面 load 后再注册，避免争抢首屏资源
         window.addEventListener("load", () => {
           navigator.serviceWorker
-          .register("./sw.js", { scope: "/" })
+          .register("./sw.js", { scope: "./" })
           .then((registration) => {
-            append("✅ 注册成功，作用域：" + registration.scope);
+            append("注册成功，作用域：" + registration.scope);
           })
           .catch((err) => {
-            append("❌ 注册失败：" + err.message);
+            append("注册失败：" + err.message);
           });
         });
-      } else {
-        append("当前浏览器不支持 Service Worker");
       }
 
       /*
