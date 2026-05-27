@@ -21,6 +21,13 @@ const REQUIRED = [
   { file: "apps/css/07-现代特性/04-is-where选择器/index.html", keywords: [":is(", ":where(", "特异性"] },
   { file: "apps/css/07-现代特性/05-view-transitions/index.html", keywords: ["view-transition", "过渡"] },
   { file: "apps/css/07-现代特性/06-subgrid/index.html", keywords: ["subgrid", "grid"] },
+  { file: "apps/css/06-性能/01-重排重绘/index.html", keywords: ["重排", "重绘", "transform"] },
+  { file: "apps/css/06-性能/02-合成层/index.html", keywords: ["合成层", "will-change", "GPU"] },
+  { file: "apps/css/06-性能/03-content-visibility/index.html", keywords: ["content-visibility", "contain-intrinsic-size"] },
+  { file: "apps/javascript/06-浏览器API/WebSocket.html", keywords: ["WebSocket", "readyState", "OPEN"] },
+  { file: "apps/javascript/06-浏览器API/Performance-API.html", keywords: ["performance.now", "mark", "measure"] },
+  { file: "apps/javascript/07-进阶/无障碍-a11y.html", keywords: ["aria-expanded", "aria-live", "focus"] },
+  { file: "apps/demos/todo/01-todo-本地状态.html", keywords: ["Todo", "render", "done"] },
   // Vue3
   { file: "apps/vue3/src/07-路由状态工程化/06-Router与Pinia可运行示例.html", keywords: ["createRouter", "defineStore", "vue-router"] },
   { file: "apps/vue3/src/07-路由状态工程化/07-Vitest单元测试面试点.html", keywords: ["Vitest", "单元测试", "mock"] },

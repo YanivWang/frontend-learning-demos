@@ -1,6 +1,6 @@
 # Vue 2
 
-Vue 2.7 时代的 demo（`libs/vue.js` 为 **2.7.16**，Vue 2 最终版）。`apps/vue2/src/` 下共 **57** 个 `.html`，每个文件可直接在浏览器打开，无需构建。
+Vue 2.7 时代的 demo（`libs/vue.js` 为 **2.7.16**，Vue 2 最终版）。`apps/vue2/src/` 下共 **57** 个 `.html` 文件`.html`，每个文件可直接在浏览器打开，无需构建。
 
 ## 推荐顺序
 

@@ -2,7 +2,7 @@
 
 # Demo 索引
 
-共 **346** 个可运行 demo。点击链接打开对应 HTML 页面。
+共 **357** 个可运行 demo。点击链接打开对应 HTML 页面。
 
 ## JavaScript
 
@@ -128,11 +128,15 @@
 - [DOM操作](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/DOM%E6%93%8D%E4%BD%9C.html) — DOM 基础操作（选择 / 属性 / 数据集 / 类）
 - [fetch与跨域](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/fetch%E4%B8%8E%E8%B7%A8%E5%9F%9F.html) — fetch 基础、错误处理与 CORS 跨域
 - [HTTP缓存](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/HTTP%E7%BC%93%E5%AD%98.html) — HTTP 强缓存与协商缓存
+- [ImportMaps](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/ImportMaps.html) — Import Maps 浏览器原生模块映射
 - [IntersectionObserver](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/IntersectionObserver.html) — IntersectionObserver 实现图片懒加载
 - [MutationObserver](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/MutationObserver.html) — MutationObserver 监听 DOM 变化
 - [Notification](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/Notification.html) — Notification 桌面通知
+- [Performance-API](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/Performance-API.html) — Performance API 计时与导航指标
 - [requestAnimation](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/requestAnimation.html) — requestAnimationFrame 与递归调用对比
 - [ServiceWorker](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/ServiceWorker.html) — Service Worker 基础注册
+- [WebComponents](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/WebComponents.html) — Web Components 自定义元素与 Shadow DOM
+- [WebSocket](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/WebSocket.html) — WebSocket 连接与消息收发
 
 ### 存储
 
@@ -176,6 +180,7 @@
 
 - [垃圾回收](/apps/javascript/07-%E8%BF%9B%E9%98%B6/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6.html) — 垃圾回收、可达性、标记清除与分代回收
 - [深拷贝](/apps/javascript/07-%E8%BF%9B%E9%98%B6/%E6%B7%B1%E6%8B%B7%E8%B4%9D.html) — 浅拷贝 vs 深拷贝
+- [无障碍-a11y](/apps/javascript/07-%E8%BF%9B%E9%98%B6/%E6%97%A0%E9%9A%9C%E7%A2%8D-a11y.html) — 无障碍 a11y：语义化、焦点与 ARIA
 
 ### 安全
 
@@ -316,8 +321,8 @@
 
 ### 按钮
 
-- [3dButton](/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E6%8C%89%E9%92%AE/3dButton.html) — 渐变 + 下边框 + box-shadow 的 3D 按钮
-- [button](/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E6%8C%89%E9%92%AE/button.html) — 拟物 3D 按钮的按下动效
+- [立体按钮](/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E6%8C%89%E9%92%AE/02-%E7%AB%8B%E4%BD%93%E6%8C%89%E9%92%AE.html) — 拟物 3D 按钮的按下动效
+- [3D按钮](/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E6%8C%89%E9%92%AE/03-3D%E6%8C%89%E9%92%AE.html) — 渐变 + 下边框 + box-shadow 的 3D 按钮
 
 ### 百分比圆环
 
@@ -348,9 +353,17 @@
 
 - [index](/apps/css/05-%E5%93%8D%E5%BA%94%E5%BC%8F/vw-vh/index.html) — rem + @media + vw / vh 综合响应式示例
 
-### 渲染性能
+### 01-重排重绘
 
-- [index](/apps/css/06-%E6%80%A7%E8%83%BD/%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD/index.html) — 重排、重绘、合成层与动画性能
+- [index](/apps/css/06-%E6%80%A7%E8%83%BD/01-%E9%87%8D%E6%8E%92%E9%87%8D%E7%BB%98/index.html) — 重排、重绘与触发布局属性
+
+### 02-合成层
+
+- [index](/apps/css/06-%E6%80%A7%E8%83%BD/02-%E5%90%88%E6%88%90%E5%B1%82/index.html) — 合成层、GPU 加速与 will-change
+
+### 03-content-visibility
+
+- [index](/apps/css/06-%E6%80%A7%E8%83%BD/03-content-visibility/index.html) — content-visibility 跳过屏幕外渲染
 
 ### 01-has选择器
 
@@ -592,6 +605,8 @@
 
 ## React 19
 
+Actions、use()、useOptimistic、RSC 面试边界等 React 19 专题
+
 ### 01-基础语法
 
 - [入门-createRoot与元素](/apps/react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/01-%E5%85%A5%E9%97%A8-createRoot%E4%B8%8E%E5%85%83%E7%B4%A0.html) — React 19 元素与 createRoot 渲染
@@ -611,16 +626,32 @@
 
 ## 综合 Demo
 
-拖拽 / ViewPager 等小项目
+拖拽 / ViewPager / Todo / 虚拟列表 / 分步表单 / Hash 路由
 
 ### drag
 
 - [drag-原生](/apps/demos/drag/01-drag-%E5%8E%9F%E7%94%9F.html) — 原生 HTML5 拖拽 API（drag &amp; drop）
 - [drag-HTML5拖放复制](/apps/demos/drag/02-drag-HTML5%E6%8B%96%E6%94%BE%E5%A4%8D%E5%88%B6.html) — HTML5 拖放复制（带 UI 反馈）
 
+### form-wizard
+
+- [form-wizard-分步表单](/apps/demos/form-wizard/01-form-wizard-%E5%88%86%E6%AD%A5%E8%A1%A8%E5%8D%95.html) — 分步表单向导
+
+### hash-router
+
+- [hash-router-简易路由](/apps/demos/hash-router/01-hash-router-%E7%AE%80%E6%98%93%E8%B7%AF%E7%94%B1.html) — Hash 路由简易 SPA
+
+### todo
+
+- [todo-本地状态](/apps/demos/todo/01-todo-%E6%9C%AC%E5%9C%B0%E7%8A%B6%E6%80%81.html) — Todo 本地状态管理
+
 ### viewpager
 
 - [viewpager-翻页与缓动](/apps/demos/viewpager/01-viewpager-%E7%BF%BB%E9%A1%B5%E4%B8%8E%E7%BC%93%E5%8A%A8.html) — ViewPager 翻页组件 + 多种缓动插值器
+
+### virtual-list
+
+- [virtual-list-固定高度](/apps/demos/virtual-list/01-virtual-list-%E5%9B%BA%E5%AE%9A%E9%AB%98%E5%BA%A6.html) — 固定高度虚拟列表
 
 ## TypeScript
 

@@ -5,9 +5,21 @@
 ## 新增 / 修改 demo 后必跑
 
 ```bash
-npm run build:index    # 生成 manifest、VitePress 导航，并注入页脚导航
+npm run build:index    # manifest、侧边栏、首页数字、搜索索引、页脚导航
 npm run sync:readmes   # 同步各模块 README 清单表
-npm run validate       # 全量校验（含 TS tsc、主题覆盖、冒烟）
+npm run validate       # 全量校验（含 TS tsc、主题覆盖、冒烟、libs）
+```
+
+JavaScript `01-基础` / `08-手写` 缺页面输出时：
+
+```bash
+npm run enhance:js-demos
+```
+
+Playwright 抽样（需先 `npm run docs:build && npm run serve`）：
+
+```bash
+npm run validate:playwright
 ```
 
 只检查、不写入：
@@ -20,8 +32,8 @@ node scripts/sync-readmes.mjs --check
 ## 规范
 
 - 阅读 [`CONVENTIONS.md`](CONVENTIONS.md)：命名、头注释、`libs/` 版本注释
-- 每个 demo 在 `<!DOCTYPE` 前写 `分类` / `主题` / `要点`
-- 不要手改 `manifest.json`、VitePress 自动生成文件与 README 中 `DEMO_TABLE` 区域
+- 每个 demo 在 `<!DOCTYPE` 前写 `分类` / `主题` / `要点`；可选 `难度` / `前置` / `相关`
+- 不要手改 `manifest.json`、`docs/index.md`、`docs/demos/search-index.md`、VitePress 自动生成文件与 README 中 `DEMO_TABLE` 区域
 
 ## 本地预览
 

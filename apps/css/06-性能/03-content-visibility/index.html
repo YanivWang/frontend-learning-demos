@@ -1,0 +1,65 @@
+<!--
+  分类: css / 06-性能 / 03-content-visibility
+  主题: content-visibility 跳过屏幕外渲染
+  难度: 进阶
+  前置: 01-重排重绘
+  相关: 02-合成层
+  要点:
+    - content-visibility: auto 让浏览器跳过屏幕外内容的渲染
+    - contain-intrinsic-size 避免滚动条跳动
+    - 适合长列表 / 文档流大段内容
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>content-visibility 懒渲染</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; color: #222; }
+    header { position: sticky; top: 0; background: #fff; border-bottom: 1px solid #eee; padding: 1rem; z-index: 1; }
+    .block {
+      margin: 1rem; padding: 1.25rem; border-radius: 8px; background: #f6f8fa; border: 1px solid #e3e3e3;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 120px;
+    }
+    .block h2 { margin: 0 0 0.5rem; font-size: 1rem; }
+    .block p { margin: 0; color: #555; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <header><h1>content-visibility: auto</h1><p style="margin:0;color:#666;font-size:.875rem">向下滚动，屏幕外区块可跳过渲染以提升首屏性能。</p></header>
+  <div id="list"></div>
+  <script>
+    const list = document.getElementById("list");
+    for (let i = 1; i <= 40; i++) {
+      const el = document.createElement("section");
+      el.className = "block";
+      el.innerHTML = `<h2>区块 #${i}</h2><p>模拟长文档中的一段内容。content-visibility 让浏览器延迟绘制视口外的节点。</p>`;
+      list.appendChild(el);
+    }
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+  <a href="../02-%E5%90%88%E6%88%90%E5%B1%82/index.html">← index</a>
+  <a href="../../07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/01-has%E9%80%89%E6%8B%A9%E5%99%A8/index.html">index →</a>
+  <script>
+    (function () {
+      var a = document.querySelector("[data-demo-catalog]");
+      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+        a.setAttribute("href", a.dataset.fileCatalog);
+      }
+    })();
+  </script>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

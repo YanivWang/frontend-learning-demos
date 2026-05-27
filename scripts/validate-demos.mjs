@@ -71,6 +71,25 @@ function validateFilename(name, fileRel) {
   }
 }
 
+function validateVisibleLearningSurface(content, fileRel) {
+  const jsTargets = [
+    /^apps\/javascript\/01-基础\//,
+    /^apps\/javascript\/08-面试题\/手写\//,
+  ];
+  if (!jsTargets.some((re) => re.test(fileRel))) return;
+  if (!/<h1[\s>]/i.test(content)) {
+    errors.push(`${fileRel}: 01-基础 / 08-手写 demo 须有 <h1>（运行 node scripts/enhance-js-console-demos.mjs）`);
+  }
+  const hasOutput =
+    /id\s*=\s*["']demo-output["']/i.test(content) ||
+    /id\s*=\s*["']log["']/i.test(content) ||
+    /class\s*=\s*["'][^"']*\bdemo-output\b/i.test(content) ||
+    /id\s*=\s*["']out["']/i.test(content);
+  if (!hasOutput) {
+    errors.push(`${fileRel}: 01-基础 / 08-手写 demo 须有可见输出区（#demo-output / #log / .demo-output）`);
+  }
+}
+
 function validatePageMeta(content, fileRel) {
   if (!/<html[^>]*\blang\s*=\s*["']zh-CN["']/i.test(content)) {
     errors.push(`${fileRel}: 缺少 lang="zh-CN"（运行 node scripts/inject-demo-nav.mjs 可自动补齐）`);
@@ -137,6 +156,7 @@ async function main() {
     validateHeader(content, rel);
     validateFilename(abs.split(sep).pop(), rel);
     validatePageMeta(content, rel);
+    validateVisibleLearningSurface(content, rel);
     await checkScripts(content, rel);
   }
 

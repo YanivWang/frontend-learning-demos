@@ -67,8 +67,40 @@ function ensureHeadMeta(content) {
   return next;
 }
 
-function buildNavHtml(fromAbs, prev, nextItem) {
-  const parts = [`<a href="${docsHomeHref()}">目录</a>`];
+function appsIndexRel(fromAbs) {
+  let rel = relative(dirname(fromAbs), join(ROOT, "apps/index.html"));
+  rel = toPosix(rel);
+  if (!rel.startsWith(".")) rel = `./${rel}`;
+  return rel.split("/").map(encodeURIComponent).join("/");
+}
+
+function resolveRelatedHref(fromAbs, relatedTitle, flat) {
+  const hit = flat.find(
+    (it) =>
+      it.title === relatedTitle ||
+      it.href.endsWith(`/${encodeURIComponent(relatedTitle)}.html`) ||
+      decodeHref(it.href).endsWith(`/${relatedTitle}.html`)
+  );
+  if (!hit) return null;
+  return relHref(fromAbs, join(ROOT, decodeHref(hit.href)));
+}
+
+function buildNavHtml(fromAbs, prev, nextItem, current, flat) {
+  const catalogServer = docsHomeHref();
+  const catalogFile = appsIndexRel(fromAbs);
+  const parts = [
+    `<a href="${catalogServer}" data-demo-catalog data-file-catalog="${catalogFile}">目录</a>`,
+  ];
+
+  if (current?.related?.length) {
+    for (const relTitle of current.related) {
+      const href = resolveRelatedHref(fromAbs, relTitle, flat);
+      if (href) {
+        parts.push(`<a href="${href}">相关 · ${escapeHtml(relTitle)}</a>`);
+      }
+    }
+  }
+
   if (prev) {
     parts.push(`<a href="${relHref(fromAbs, join(ROOT, decodeHref(prev.href)))}">← ${escapeHtml(prev.title)}</a>`);
   }
@@ -85,6 +117,14 @@ function buildNavHtml(fromAbs, prev, nextItem) {
     .demo-output:empty { display: none; }
   </style>
   ${parts.join("\n  ")}
+  <script>
+    (function () {
+      var a = document.querySelector("[data-demo-catalog]");
+      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+        a.setAttribute("href", a.dataset.fileCatalog);
+      }
+    })();
+  </script>
 </footer>
 ${NAV_END}`;
 }
@@ -150,7 +190,7 @@ async function main() {
 
     const prev = idx > 0 ? flat[idx - 1] : null;
     const nextItem = idx < flat.length - 1 ? flat[idx + 1] : null;
-    const navBlock = buildNavHtml(abs, prev, nextItem);
+    const navBlock = buildNavHtml(abs, prev, nextItem, flat[idx], flat);
 
     let content = await readFile(abs, "utf8");
     const before = content;

@@ -6,15 +6,15 @@
 
 | 分类 | 路径 | demo 数量 | 说明文档 |
 |---|---|---:|---|
-| JavaScript | `apps/javascript/` | 124 | [`apps/javascript/README.md`](apps/javascript/README.md) |
-| CSS | `apps/css/` | 39 | [`apps/css/README.md`](apps/css/README.md) |
+| JavaScript | `apps/javascript/` | 129 | [`apps/javascript/README.md`](apps/javascript/README.md) |
+| CSS | `apps/css/` | 41 | [`apps/css/README.md`](apps/css/README.md) |
 | Vue 2 | `apps/vue2/src/` | 57 | [`apps/vue2/README.md`](apps/vue2/README.md) |
 | Vue 3 | `apps/vue3/src/` | 41 | [`apps/vue3/README.md`](apps/vue3/README.md) |
 | React 18 | `apps/react18/src/` | 53 | [`apps/react18/README.md`](apps/react18/README.md) |
 | React 19 | `apps/react19/src/` | 11 | [`apps/react19/README.md`](apps/react19/README.md) |
 | TypeScript | `apps/typescript/` | 18 | [`apps/typescript/README.md`](apps/typescript/README.md) |
-| 综合 Demo | `apps/demos/` | 3 | [`apps/demos/README.md`](apps/demos/README.md) |
-| **合计** | — | **346** | 统一头注释 + 页脚导航 + VitePress 搜索（见 [`CONVENTIONS.md`](CONVENTIONS.md)） |
+| 综合 Demo | `apps/demos/` | 7 | [`apps/demos/README.md`](apps/demos/README.md) |
+| **合计** | — | **357** | 统一头注释 + 页脚导航 + VitePress 搜索（见 [`CONVENTIONS.md`](CONVENTIONS.md)） |
 
 ## 快速开始
 
@@ -55,7 +55,7 @@ npm run serve
 │   ├── css/                 # CSS（含 07-现代特性）
 │   ├── vue2/                # Vue 2.7.16
 │   ├── vue3/                # Vue 3.5.34
-│   ├── react/               # React 18.3.1（function-components + class-components）
+│   ├── react18/             # React 18.3.1（function-components + class-components）
 │   ├── react19/             # React 19（基础语法 + 面试题，umd-react 运行时）
 │   ├── typescript/          # TypeScript 面试基础 / 进阶 / 工程与框架
 │   └── demos/               # 综合 Demo（drag / viewpager）

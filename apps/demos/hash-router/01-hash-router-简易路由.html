@@ -1,0 +1,77 @@
+<!--
+  分类: demos / hash-router
+  主题: Hash 路由简易 SPA
+  难度: 进阶
+  要点:
+    - hashchange / 初始 hash 解析路由
+    - 无需后端，适合静态托管
+    - 与 Vue Router hash 模式概念一致
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hash 路由简易 SPA</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; }
+    nav a { margin-right: 12px; color: #0969da; text-decoration: none; }
+    nav a.active { font-weight: 700; text-decoration: underline; }
+    #view { margin-top: 1.5rem; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; min-height: 120px; }
+  </style>
+</head>
+<body>
+  <h1>Hash 路由</h1>
+  <nav>
+    <a href="#/" data-route="/">首页</a>
+    <a href="#/about" data-route="/about">关于</a>
+    <a href="#/user/42" data-route="/user/42">用户 42</a>
+  </nav>
+  <div id="view" aria-live="polite"></div>
+  <script>
+    const routes = {
+      "/": () => "<h2>首页</h2><p>当前 hash：<code>" + location.hash + "</code></p>",
+      "/about": () => "<h2>关于</h2><p>这是一个零依赖 hash 路由 demo。</p>",
+      "/user/:id": (params) => `<h2>用户 ${params.id}</h2><p>动态段 :id = ${params.id}</p>`,
+    };
+    function match(path) {
+      if (routes[path]) return { handler: routes[path], params: {} };
+      const m = path.match(/^\/user\/(\d+)$/);
+      if (m) return { handler: routes["/user/:id"], params: { id: m[1] } };
+      return { handler: () => "<p>404 Not Found</p>", params: {} };
+    }
+    function render() {
+      const path = location.hash.slice(1) || "/";
+      const { handler, params } = match(path);
+      document.getElementById("view").innerHTML = handler(params);
+      document.querySelectorAll("nav a").forEach((a) => {
+        a.classList.toggle("active", a.getAttribute("href") === "#" + path);
+      });
+    }
+    window.addEventListener("hashchange", render);
+    render();
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+  <a href="../form-wizard/01-form-wizard-%E5%88%86%E6%AD%A5%E8%A1%A8%E5%8D%95.html">← form-wizard-分步表单</a>
+  <a href="../todo/01-todo-%E6%9C%AC%E5%9C%B0%E7%8A%B6%E6%80%81.html">todo-本地状态 →</a>
+  <script>
+    (function () {
+      var a = document.querySelector("[data-demo-catalog]");
+      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+        a.setAttribute("href", a.dataset.fileCatalog);
+      }
+    })();
+  </script>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

@@ -15,7 +15,11 @@ async function main() {
     recursive: true,
     force: true,
   });
-  console.log("[copy-docs-assets] 已将 apps/ 复制到 dist");
+  await cp(join(ROOT, "packages/shared"), join(DIST, "packages/shared"), {
+    recursive: true,
+    force: true,
+  });
+  console.log("[copy-docs-assets] 已将 apps/ 与 packages/shared/ 复制到 dist");
 }
 
 main().catch((err) => {

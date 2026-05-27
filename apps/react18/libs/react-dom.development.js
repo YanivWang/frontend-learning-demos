@@ -1,3 +1,4 @@
+/* React DOM 18.3.1 — https://react.dev/ — vendored 2025-05-27 */
 /**
  * @license React
  * react-dom.development.js

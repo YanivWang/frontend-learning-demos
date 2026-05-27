@@ -27,7 +27,10 @@ async function walk(dirAbs) {
       await walk(abs);
     } else if (ent.isFile() && !SKIP.has(ent.name)) {
       const head = (await readFile(abs, "utf8")).slice(0, 500);
-      if (!/\*\*\s*[\d.]+\s*\*\*|版本|@\d+\.\d+/.test(head) && !head.startsWith("/*!")) {
+      if (
+        !/\*\*\s*[\d.]+\s*\*\*|版本|@\d+\.\d+|vendored/i.test(head) &&
+        !head.startsWith("/*!")
+      ) {
         errors.push(`${abs.replace(ROOT + "/", "")}: 首段缺少版本注释（见 CONVENTIONS.md §5）`);
       }
     }
@@ -46,9 +49,9 @@ async function main() {
   }
 
   if (errors.length) {
-    console.error(`[check-lib-versions] 警告 ${errors.length} 项（非阻塞）：\n`);
+    console.error(`[check-lib-versions] 失败 ${errors.length} 项：\n`);
     errors.forEach((e) => console.error("  •", e));
-    console.log("[check-lib-versions] 完成（仅警告，不阻断 CI）");
+    process.exitCode = 1;
     return;
   }
   console.log("[check-lib-versions] 通过：libs 版本注释检查完成");

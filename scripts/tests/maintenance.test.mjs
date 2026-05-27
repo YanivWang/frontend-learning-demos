@@ -57,6 +57,7 @@ test("sync-readmes --check validates README tables without rewriting them", () =
     "apps/react18/README.md",
     "apps/react19/README.md",
     "apps/typescript/README.md",
+    "apps/demos/README.md",
   ];
   const before = Object.fromEntries(
     readmeFiles.map((file) => [file, readFileSync(join(ROOT, file), "utf8")])

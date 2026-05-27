@@ -12,15 +12,29 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
 const BASE = process.env.DEMO_BASE_URL || "http://127.0.0.1:4173";
-const SAMPLE_SIZE = Number(process.env.PLAYWRIGHT_SAMPLE || 24);
+const SAMPLE_SIZE = Number(process.env.PLAYWRIGHT_SAMPLE || 48);
 
 const PRIORITY_HREFS = [
   "apps/javascript/01-基础/严格模式.html",
+  "apps/javascript/01-基础/变量.html",
   "apps/javascript/06-浏览器API/HTTP缓存.html",
+  "apps/javascript/06-浏览器API/WebSocket.html",
+  "apps/javascript/06-浏览器API/Performance-API.html",
+  "apps/javascript/06-浏览器API/WebComponents.html",
+  "apps/javascript/06-浏览器API/ImportMaps.html",
+  "apps/javascript/07-进阶/无障碍-a11y.html",
   "apps/vue3/src/07-路由状态工程化/06-Router与Pinia可运行示例.html",
   "apps/react18/src/function-components/34-React19新特性概览.html",
+  "apps/react19/src/01-基础语法/03-Actions与useActionState.html",
   "apps/typescript/mini-project/index.html",
   "apps/demos/drag/01-drag-原生.html",
+  "apps/demos/todo/01-todo-本地状态.html",
+  "apps/demos/virtual-list/01-virtual-list-固定高度.html",
+  "apps/demos/form-wizard/01-form-wizard-分步表单.html",
+  "apps/demos/hash-router/01-hash-router-简易路由.html",
+  "apps/css/06-性能/01-重排重绘/index.html",
+  "apps/css/06-性能/02-合成层/index.html",
+  "apps/css/06-性能/03-content-visibility/index.html",
 ];
 
 async function loadManifestPaths() {

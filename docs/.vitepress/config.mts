@@ -8,6 +8,7 @@ import sidebar from "./sidebar.generated.mts";
 const configDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(configDir, "../..");
 const appsRoot = join(repoRoot, "apps");
+const packagesSharedRoot = join(repoRoot, "packages/shared");
 
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -20,10 +21,10 @@ const MIME: Record<string, string> = {
   ".woff2": "font/woff2",
 };
 
-function safeAppsPath(urlPath: string) {
+function safeRootPath(root: string, urlPath: string) {
   const rel = decodeURIComponent(urlPath.split("?")[0]).replace(/^\/+/, "");
-  const abs = join(appsRoot, rel);
-  if (!abs.startsWith(appsRoot)) {
+  const abs = join(root, rel);
+  if (!abs.startsWith(root)) {
     return null;
   }
   return abs;
@@ -40,25 +41,34 @@ function serveStaticFile(filePath: string, res: import("http").ServerResponse) {
   return true;
 }
 
+function mountStaticRoot(
+  server: { middlewares: import("connect").Connect.Server },
+  mountPath: string,
+  root: string
+) {
+  server.middlewares.use(mountPath, (req, res, next) => {
+    if (!req.url) {
+      return next();
+    }
+    const filePath = safeRootPath(root, req.url);
+    if (!filePath) {
+      return next();
+    }
+    try {
+      if (serveStaticFile(filePath, res)) {
+        return;
+      }
+    } catch {
+      // fall through
+    }
+    next();
+  });
+}
+
 function serveAppsDemos(): Plugin {
   function attach(server: { middlewares: import("connect").Connect.Server }) {
-    server.middlewares.use("/apps", (req, res, next) => {
-      if (!req.url) {
-        return next();
-      }
-      const filePath = safeAppsPath(req.url);
-      if (!filePath) {
-        return next();
-      }
-      try {
-        if (serveStaticFile(filePath, res)) {
-          return;
-        }
-      } catch {
-        // fall through
-      }
-      next();
-    });
+    mountStaticRoot(server, "/apps", appsRoot);
+    mountStaticRoot(server, "/packages/shared", packagesSharedRoot);
   }
 
   return {
@@ -72,10 +82,10 @@ export default defineConfig({
   title: "frontend-learning-demos",
   description: "前端语法与框架复习 Demo 库",
   lang: "zh-CN",
-  // GitHub Pages 部署时设置：VITEPRESS_BASE=/js-css-vue-react-learn/
+  // GitHub Pages 部署时设置：VITEPRESS_BASE=/js-css-vue-react-apps/
   base: process.env.VITEPRESS_BASE || "/",
   cleanUrls: false,
-  ignoreDeadLinks: [/^\/apps\//],
+  ignoreDeadLinks: [/^\/apps\//, /^\/packages\//],
   vite: {
     plugins: [serveAppsDemos()],
   },
@@ -85,7 +95,7 @@ export default defineConfig({
       { text: "Demo 索引", link: "/demos/" },
       {
         text: "GitHub",
-        link: "https://github.com/jsAppSpace/js-css-vue-react-learn",
+        link: "https://github.com/jsAppSpace/js-css-vue-react-apps",
       },
     ],
     sidebar,

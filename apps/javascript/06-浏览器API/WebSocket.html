@@ -1,0 +1,71 @@
+<!--
+  分类: javascript / 06-浏览器API
+  主题: WebSocket 连接与消息收发
+  难度: 进阶
+  前置: fetch与跨域
+  要点:
+    - new WebSocket(url) 建立全双工连接
+    - readyState：CONNECTING / OPEN / CLOSING / CLOSED
+    - 本 demo 使用 echo 测试服务 wss://echo.websocket.events（需网络）
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WebSocket 基础</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 640px; }
+    button { margin: 4px 4px 4px 0; padding: 8px 12px; cursor: pointer; }
+    #log { margin-top: 1rem; padding: 12px; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; min-height: 4rem; }
+  </style>
+</head>
+<body>
+  <h1>WebSocket 连接与消息</h1>
+  <p>使用公共 echo 服务演示连接、发送、接收与关闭。</p>
+  <button type="button" id="connect">连接</button>
+  <button type="button" id="send" disabled>发送 ping</button>
+  <button type="button" id="close" disabled>关闭</button>
+  <div id="log" aria-live="polite"></div>
+  <script>
+    const logEl = document.getElementById("log");
+    const append = (line) => { logEl.textContent += (logEl.textContent ? "\n" : "") + line; };
+    let ws = null;
+    const URL = "wss://echo.websocket.events";
+
+    document.getElementById("connect").onclick = () => {
+      if (ws && ws.readyState <= 1) return append("已有连接");
+      ws = new WebSocket(URL);
+      append("CONNECTING…");
+      ws.onopen = () => { append("OPEN"); document.getElementById("send").disabled = false; document.getElementById("close").disabled = false; };
+      ws.onmessage = (e) => append("← " + e.data);
+      ws.onerror = () => append("ERROR（可能无网络或被拦截）");
+      ws.onclose = () => { append("CLOSED"); document.getElementById("send").disabled = true; document.getElementById("close").disabled = true; };
+    };
+    document.getElementById("send").onclick = () => { if (ws?.readyState === 1) { ws.send("ping-" + Date.now()); append("→ ping"); } };
+    document.getElementById("close").onclick = () => ws?.close();
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+  <a href="./WebComponents.html">← WebComponents</a>
+  <a href="./%E5%AD%98%E5%82%A8/00-%E5%AD%98%E5%82%A8%E6%96%B9%E6%A1%88%E5%AF%B9%E6%AF%94.html">存储方案对比 →</a>
+  <script>
+    (function () {
+      var a = document.querySelector("[data-demo-catalog]");
+      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+        a.setAttribute("href", a.dataset.fileCatalog);
+      }
+    })();
+  </script>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

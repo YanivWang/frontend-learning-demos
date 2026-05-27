@@ -65,8 +65,17 @@ async function parseDemoMeta(absPath) {
   const block = comment?.[1] || "";
   const theme = (block.match(/主题:\s*(.+)/) || [])[1]?.trim() || "";
   const category = (block.match(/分类:\s*(.+)/) || [])[1]?.trim() || "";
+  const difficulty = (block.match(/难度:\s*(.+)/) || [])[1]?.trim() || "";
+  const prerequisite = (block.match(/前置:\s*(.+)/) || [])[1]?.trim() || "";
+  const relatedRaw = (block.match(/相关:\s*(.+)/) || [])[1]?.trim() || "";
+  const related = relatedRaw
+    ? relatedRaw.split(/[,，]/).map((s) => s.trim()).filter(Boolean)
+    : [];
   const bullets = [...block.matchAll(/^\s*-\s*(.+)$/gm)].map((m) => m[1].trim());
-  return { theme, category, keywords: bullets.join(" ") };
+  const keywords = [difficulty, prerequisite, related.join(" "), bullets.join(" ")]
+    .filter(Boolean)
+    .join(" ");
+  return { theme, category, difficulty, prerequisite, related, keywords };
 }
 
 async function collect(dirAbs, results) {
@@ -129,6 +138,9 @@ async function buildManifest() {
             href: toHref(abs),
             theme: meta.theme,
             category: meta.category,
+            difficulty: meta.difficulty,
+            prerequisite: meta.prerequisite,
+            related: meta.related,
             searchText: [fileToTitle(f), meta.theme, meta.category, meta.keywords].join(" "),
           };
         })

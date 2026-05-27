@@ -1,21 +1,19 @@
 # packages
 
-根目录下的 **npm 工作区子包**与**跨 demo 共用资源**目录。
+根目录下的**跨 demo 共用资源**目录。
 
 | 子目录 | 用途 |
 |---|---|
-| `shared/` | 浏览器可直接引用的通用 vendored 库（`libs/`：axios、lodash、js-cookie） |
-| *(未来)* | 可构建子项目、共享配置、CLI 等，各子目录自带 `package.json` |
+| `shared/demo-log.js` | 将 `console.log` 同步到页面 `#demo-output`（JavaScript 基础 demo 使用） |
+| `shared/libs/` | 浏览器可直接引用的通用 vendored 库（axios、lodash、js-cookie） |
 
 与 `apps/` 的分工：
 
 | 目录 | 用途 |
 |---|---|
 | `apps/` | 浏览器可直接打开的 HTML demo（主学习内容） |
-| `packages/` | 共用运行时 + 需要独立 `package.json` 的工程化子包 |
+| `packages/shared/` | 共用运行时脚本 + 第三方库 |
 
-新增可构建子包时：
+VitePress 开发/预览服务器与 `docs:build` 产物均会托管 `/packages/shared/` 路径。
 
-1. 在 `packages/<name>/` 下自建 `package.json` 与 README；
-2. 子包名用小写连字符（如 `demo-tools`）；
-3. 若需被根仓库引用，在根 `package.json` 的 `workspaces` 中登记（启用后再跑 `npm install`）。
+若将来需要 npm workspaces 子包，可在 `packages/<name>/` 下自建 `package.json`，并在根 `package.json` 的 `workspaces` 字段登记。

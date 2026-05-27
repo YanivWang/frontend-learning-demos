@@ -1,6 +1,6 @@
 # TypeScript
 
-TypeScript 面试与语法复习 demo，共 **15** 个 `.html`。本模块在浏览器中直接打开，**运行时仍为 JavaScript**；TypeScript 源码以 `<pre>` 展示，可运行部分用等价 JS + JSDoc 演示类型意图（真实项目用 `tsc` / Vite 编译 `.ts`）。
+TypeScript 面试与语法复习 demo，共 **18** 个 `.html` 文件`.html`。本模块在浏览器中直接打开，**运行时仍为 JavaScript**；TypeScript 源码以 `<pre>` 展示，可运行部分用等价 JS + JSDoc 演示类型意图（真实项目用 `tsc` / Vite 编译 `.ts`）。
 
 ## 目录概览
 

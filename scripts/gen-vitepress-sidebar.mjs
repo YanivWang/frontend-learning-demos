@@ -31,7 +31,8 @@ const SECTION_DESC = {
   "Vue 2": "响应式原理、基础语法、组件、路由与状态",
   "Vue 3": "基础语法、响应式、组件通信、内置组件、路由状态、原理性能",
   "React 18": "函数组件 33 + 类组件 19：JSX、Hooks、setState、生命周期、面试考点",
-  "综合 Demo": "拖拽 / ViewPager 等小项目",
+  "React 19": "Actions、use()、useOptimistic、RSC 面试边界等 React 19 专题",
+  "综合 Demo": "拖拽 / ViewPager / Todo / 虚拟列表 / 分步表单 / Hash 路由",
   TypeScript: "基础语法、进阶类型、工程配置、Vue3/React 组件类型",
 };
 
@@ -68,7 +69,12 @@ function buildSidebar(manifest) {
     })),
   }));
 
-  return [guideSection, { text: "Demo 索引", link: "/demos/" }, ...demoSections];
+  return [
+    guideSection,
+    { text: "Demo 索引", link: "/demos/" },
+    { text: "Demo 搜索索引", link: "/demos/search-index" },
+    ...demoSections,
+  ];
 }
 
 function renderSidebarFile(sidebar) {

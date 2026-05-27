@@ -2,7 +2,7 @@
 
 本仓库是「前端语法 / 框架学习 Demo 库」，每个 `.html` 都可以直接在浏览器打开。本文规定目录与命名规范，保持仓库长期清爽。
 
-当前仓库共 **346** 个可索引 demo（`javascript` 124 · `css` 39 · `vue2` 57 · `vue3` 41 · `react18` 53 · `react19` 11 · `typescript` 18 · `demos` 3），统计以 `node scripts/validate-demos.mjs` 输出为准。
+当前仓库 demo 总数与各分类数量以 `npm run validate` 输出及 `manifest.json` 为准（**勿手改数字**）。
 
 ## 1. 顶层目录
 
@@ -11,18 +11,19 @@
 | `apps/javascript/` | 纯 JavaScript 知识点 demo | 按 `01-` ~ `09-` 编号分类 |
 | `apps/css/` | CSS 布局 / 动画 / 视觉 / 响应式 / 性能 / 现代特性 | 按 `01-` ~ `07-` 编号分类 |
 | `apps/vue2/` `apps/vue3/` | Vue 框架 demo | 内含 `libs/`（框架运行时）与 `src/`（demo）；通用库见 `packages/shared/libs/` |
-| `packages/` | 工作区子包与共用资源 | `shared/libs/` 放 axios、lodash、js-cookie 等；其余子包可自带 `package.json` |
 | `apps/react18/` | React 18 demo | 内含 `libs/` 与 `src/`（`function-components` + `class-components`） |
-| `apps/react19/` | React 19 新特性与面试 demo | 内含 React 19 运行时（`umd-react`）与 `src/`（`01-基础语法` + `02-面试题`） |
+| `apps/react19/` | React 19 新特性与面试 demo | 内含 React 19 运行时与 `src/` |
 | `apps/typescript/` | TypeScript 面试基础 / 进阶 / 工程与框架 demo | 按 `01-基础` / `02-进阶` / `03-工程与框架` 编号 |
-| `apps/demos/` | 综合性 / 交互小项目 | `drag`、`viewpager` 等 |
+| `apps/demos/` | 综合性 / 交互小项目 | `drag`、`viewpager`、`todo`、`virtual-list` 等 |
+| `apps/index.html` | file:// 与本地静态服务的总入口 | VitePress 仍为推荐入口 |
+| `packages/shared/` | 跨 demo 共用脚本与 vendored 库 | `demo-log.js`、`libs/`（axios、lodash 等） |
 | `scripts/` | 仓库工具脚本 | `build-index.mjs`、`sync-readmes.mjs`、`validate-demos.mjs` 等 |
 
 ## 2. 目录命名规则
 
 - **一级分类目录**：保留中文短语，加 `NN-` 编号前缀（`01-基础`、`03-动画`；CSS 从 `01-基础` 起）。
 - **二级专题子目录**：纯中文（`正则/`、`闭包/`、`异步/`）；编号可省略。
-- **每个分类目录都应有一份 `README.md`** 作为目录索引；`apps/javascript` / `apps/css` / `apps/vue2` / `apps/vue3` / `apps/react18` / `apps/react19` / `apps/typescript` 的 README 内含由 `sync-readmes.mjs` 维护的完整 demo 清单表。
+- **每个分类目录都应有一份 `README.md`** 作为目录索引；`apps/javascript` / `apps/css` / `apps/vue2` / `apps/vue3` / `apps/react18` / `apps/react19` / `apps/typescript` / `apps/demos` 的 README 内含由 `sync-readmes.mjs` 维护的完整 demo 清单表。
 
 ## 3. 文件命名规则
 
@@ -39,7 +40,7 @@
 4. **不使用拼音首字母**（`FZ` `ZJ`）；要么写全中文，要么写英文全称
 5. **同主题多个 demo** 用「主题-子点」格式：`Promise-基础.html` `Promise-并发.html` `Promise-串行.html`，而不是 `test1.html` `test2.html`
 
-## 4. 元数据头注释（推荐，当前 323 个 demo 均已具备）
+## 4. 元数据头注释（必填）
 
 每个 demo 在 `<!DOCTYPE html>` 之前加入注释，方便检索与生成 README 清单：
 
@@ -47,17 +48,36 @@
 <!--
   分类: javascript / 04-ES6+
   主题: Promise 并发与串行
+  难度: 进阶
+  前置: Promise-基础
+  相关: Promise-串行
   要点:
     - Promise.all 并发执行，时长 = max(任务时长)
     - Promise.resolve().then(f1).then(f2) 串行执行
-    - then 回调若传 Promise，须返回函数或链式调用，避免把 Promise 对象当返回值
 -->
 <!DOCTYPE html>
 ```
 
-- **`分类`**：顶层模块 + 子路径，如 `react / function-components`、`vue3 / 02-响应式与副作用`
-- **`主题`**：一句话概括，会同步到对应 `README.md` 的 demo 清单表
-- **`要点`**：3～5 条 bullet，写面试常问点或易错点；反面教材 demo 在要点中标注「易错点 / 反面教材」
+- **`分类`**：顶层模块 + 子路径
+- **`主题`**：一句话概括，会同步到 README 清单表
+- **`要点`**：3～5 条 bullet
+- **`难度`**（可选）：`入门` | `进阶` | `面试`
+- **`前置`**（可选）：建议先学的 demo 名或知识点
+- **`相关`**（可选）：逗号分隔的相关 demo 标题，会注入页脚链接
+
+### 4.1 JavaScript 页面骨架（`01-基础` / `08-面试题/手写`）
+
+```html
+<body>
+  <h1><!-- 与「主题」一致 --></h1>
+  <p class="hint">下方为 console.log 同步输出。</p>
+  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
+  <script src="../../../packages/shared/demo-log.js"></script>
+  <script>/* demo 逻辑 */</script>
+</body>
+```
+
+运行 `npm run enhance:js-demos` 可批量补齐上述结构。
 
 ## 5. libs 目录
 
@@ -67,7 +87,7 @@
 - **跨模块通用库**（axios、lodash、js-cookie 等）统一放在 `packages/shared/libs/`，demo 用相对路径 `../../../../packages/shared/libs/<file>` 引用（相对 `apps/vue2|vue3/src/<分类>/`）
 - demo 内嵌的小库放在 demo 同级的 `lib/`（注意是单数）
 - **每个第三方文件**首行必须有注释，写明：**名称 + 版本号 + 官方下载地址 + 下载日期**
-- 自己写的工具脚本不要放在 `libs/`，统一放在 `src/utils/` 或 demo 同级目录
+- 自己写的工具脚本放在 `packages/shared/`（如 `demo-log.js`）或 demo 同级 `lib/`
 
 ## 6. 入口 / 索引
 

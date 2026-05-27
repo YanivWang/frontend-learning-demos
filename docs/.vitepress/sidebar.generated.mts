@@ -28,6 +28,10 @@ const sidebar: DefaultTheme.SidebarItem[] = [
     "link": "/demos/"
   },
   {
+    "text": "Demo 搜索索引",
+    "link": "/demos/search-index"
+  },
+  {
     "text": "JavaScript",
     "collapsed": true,
     "items": [
@@ -424,6 +428,10 @@ const sidebar: DefaultTheme.SidebarItem[] = [
             "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/HTTP%E7%BC%93%E5%AD%98.html"
           },
           {
+            "text": "ImportMaps",
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/ImportMaps.html"
+          },
+          {
             "text": "IntersectionObserver",
             "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/IntersectionObserver.html"
           },
@@ -436,12 +444,24 @@ const sidebar: DefaultTheme.SidebarItem[] = [
             "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/Notification.html"
           },
           {
+            "text": "Performance-API",
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/Performance-API.html"
+          },
+          {
             "text": "requestAnimation",
             "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/requestAnimation.html"
           },
           {
             "text": "ServiceWorker",
             "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/ServiceWorker.html"
+          },
+          {
+            "text": "WebComponents",
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/WebComponents.html"
+          },
+          {
+            "text": "WebSocket",
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/WebSocket.html"
           }
         ]
       },
@@ -566,6 +586,10 @@ const sidebar: DefaultTheme.SidebarItem[] = [
           {
             "text": "深拷贝",
             "link": "/apps/javascript/07-%E8%BF%9B%E9%98%B6/%E6%B7%B1%E6%8B%B7%E8%B4%9D.html"
+          },
+          {
+            "text": "无障碍-a11y",
+            "link": "/apps/javascript/07-%E8%BF%9B%E9%98%B6/%E6%97%A0%E9%9A%9C%E7%A2%8D-a11y.html"
           }
         ]
       },
@@ -938,12 +962,12 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "collapsed": true,
         "items": [
           {
-            "text": "3dButton",
-            "link": "/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E6%8C%89%E9%92%AE/3dButton.html"
+            "text": "立体按钮",
+            "link": "/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E6%8C%89%E9%92%AE/02-%E7%AB%8B%E4%BD%93%E6%8C%89%E9%92%AE.html"
           },
           {
-            "text": "button",
-            "link": "/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E6%8C%89%E9%92%AE/button.html"
+            "text": "3D按钮",
+            "link": "/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E6%8C%89%E9%92%AE/03-3D%E6%8C%89%E9%92%AE.html"
           }
         ]
       },
@@ -1022,12 +1046,32 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         ]
       },
       {
-        "text": "渲染性能",
+        "text": "01-重排重绘",
         "collapsed": true,
         "items": [
           {
             "text": "index",
-            "link": "/apps/css/06-%E6%80%A7%E8%83%BD/%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD/index.html"
+            "link": "/apps/css/06-%E6%80%A7%E8%83%BD/01-%E9%87%8D%E6%8E%92%E9%87%8D%E7%BB%98/index.html"
+          }
+        ]
+      },
+      {
+        "text": "02-合成层",
+        "collapsed": true,
+        "items": [
+          {
+            "text": "index",
+            "link": "/apps/css/06-%E6%80%A7%E8%83%BD/02-%E5%90%88%E6%88%90%E5%B1%82/index.html"
+          }
+        ]
+      },
+      {
+        "text": "03-content-visibility",
+        "collapsed": true,
+        "items": [
+          {
+            "text": "index",
+            "link": "/apps/css/06-%E6%80%A7%E8%83%BD/03-content-visibility/index.html"
           }
         ]
       },
@@ -1898,12 +1942,52 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         ]
       },
       {
+        "text": "form-wizard",
+        "collapsed": true,
+        "items": [
+          {
+            "text": "form-wizard-分步表单",
+            "link": "/apps/demos/form-wizard/01-form-wizard-%E5%88%86%E6%AD%A5%E8%A1%A8%E5%8D%95.html"
+          }
+        ]
+      },
+      {
+        "text": "hash-router",
+        "collapsed": true,
+        "items": [
+          {
+            "text": "hash-router-简易路由",
+            "link": "/apps/demos/hash-router/01-hash-router-%E7%AE%80%E6%98%93%E8%B7%AF%E7%94%B1.html"
+          }
+        ]
+      },
+      {
+        "text": "todo",
+        "collapsed": true,
+        "items": [
+          {
+            "text": "todo-本地状态",
+            "link": "/apps/demos/todo/01-todo-%E6%9C%AC%E5%9C%B0%E7%8A%B6%E6%80%81.html"
+          }
+        ]
+      },
+      {
         "text": "viewpager",
         "collapsed": true,
         "items": [
           {
             "text": "viewpager-翻页与缓动",
             "link": "/apps/demos/viewpager/01-viewpager-%E7%BF%BB%E9%A1%B5%E4%B8%8E%E7%BC%93%E5%8A%A8.html"
+          }
+        ]
+      },
+      {
+        "text": "virtual-list",
+        "collapsed": true,
+        "items": [
+          {
+            "text": "virtual-list-固定高度",
+            "link": "/apps/demos/virtual-list/01-virtual-list-%E5%9B%BA%E5%AE%9A%E9%AB%98%E5%BA%A6.html"
           }
         ]
       }

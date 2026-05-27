@@ -63,10 +63,15 @@ function buildTable(rows) {
   return lines.join("\n");
 }
 
+function patchIntroCount(content, count) {
+  return content.replace(/共 \*\*\d+\*\* 个[^`\n]*/u, `共 **${count}** 个 \`.html\` 文件`);
+}
+
 async function patchReadme(readmePath, scanRoot) {
   const rows = await collect(scanRoot);
   const table = buildTable(rows);
   let content = await readFile(join(ROOT, readmePath), "utf8");
+  content = patchIntroCount(content, rows.length);
   const re = new RegExp(
     `${MARKER_START}[\\s\\S]*?${MARKER_END}`,
     "m"
@@ -95,6 +100,7 @@ const tasks = [
   ["apps/react18/README.md", join("apps", "react18", "src")],
   ["apps/react19/README.md", join("apps", "react19", "src")],
   ["apps/typescript/README.md", join("apps", "typescript")],
+  ["apps/demos/README.md", join("apps", "demos")],
 ];
 
 for (const [readme, scan] of tasks) {

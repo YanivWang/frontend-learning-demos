@@ -1,0 +1,67 @@
+<!--
+  分类: javascript / 07-进阶
+  主题: 无障碍 a11y：语义化、焦点与 ARIA
+  难度: 进阶
+  要点:
+    - 用原生语义标签（button / label / nav）优于 div 模拟
+    - aria-live 播报动态区域；aria-expanded 表示折叠状态
+    - 键盘 Tab 顺序与可见 focus 样式不可省略
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>无障碍 a11y 基础</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 640px; }
+    :focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+    .panel { margin-top: 1rem; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; }
+    .panel[hidden] { display: none; }
+  </style>
+</head>
+<body>
+  <h1>无障碍（a11y）要点</h1>
+
+  <button type="button" id="toggle" aria-expanded="false" aria-controls="panel">展开详情</button>
+  <div id="panel" class="panel" hidden role="region" aria-labelledby="toggle">
+    <p>这块区域通过 aria-expanded 与 hidden 联动，读屏软件可感知展开状态。</p>
+  </div>
+
+  <p id="status" aria-live="polite" style="margin-top:1rem;color:#555;"></p>
+
+  <script>
+    const btn = document.getElementById("toggle");
+    const panel = document.getElementById("panel");
+    const status = document.getElementById("status");
+    btn.addEventListener("click", () => {
+      const open = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", String(!open));
+      panel.hidden = open;
+      status.textContent = open ? "已折叠" : "已展开";
+    });
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+  <a href="./%E6%B7%B1%E6%8B%B7%E8%B4%9D.html">← 深拷贝</a>
+  <a href="./%E5%AE%89%E5%85%A8/XSS%E4%B8%8ECSRF.html">XSS与CSRF →</a>
+  <script>
+    (function () {
+      var a = document.querySelector("[data-demo-catalog]");
+      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+        a.setAttribute("href", a.dataset.fileCatalog);
+      }
+    })();
+  </script>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

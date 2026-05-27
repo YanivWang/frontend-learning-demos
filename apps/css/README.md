@@ -1,6 +1,6 @@
 # CSS
 
-按主题编号的 CSS demo，共 **36** 个 `.html` 文件，兼顾常用效果、CSS 面试基础与现代特性。每个 demo 可直接在浏览器打开。
+按主题编号的 CSS demo，共 **41** 个 `.html` 文件`.html` 文件，兼顾常用效果、CSS 面试基础与现代特性。每个 demo 可直接在浏览器打开。
 
 目录按 `01-基础` ~ `07-现代特性` 编号分类。`05-响应式/media-queries/` 下 `01-基础布局.html` → `02-响应式最终页.html` 演示媒体查询的渐进增强；`05-响应式/libs/` 存放 IE8 及以下 polyfill（见 [`05-响应式/libs/README.md`](05-响应式/libs/README.md)）。
 
@@ -43,7 +43,7 @@
 
 <!-- DEMO_TABLE_START -->
 
-共 **39** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
+共 **41** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
 
 | 文件 | 主题 |
 |---|---|
@@ -68,8 +68,8 @@
 | `03-动画/loading/03-圆环旋转.html` | lds-ring 圆环旋转 loading |
 | `03-动画/loading/04-文字淡出.html` | 文字逐字淡出的 loading 动画 |
 | `03-动画/nprogress/index.html` | NProgress 顶部进度条第三方库 |
-| `04-视觉效果/按钮/3dButton.html` | 渐变 + 下边框 + box-shadow 的 3D 按钮 |
-| `04-视觉效果/按钮/button.html` | 拟物 3D 按钮的按下动效 |
+| `04-视觉效果/按钮/02-立体按钮.html` | 拟物 3D 按钮的按下动效 |
+| `04-视觉效果/按钮/03-3D按钮.html` | 渐变 + 下边框 + box-shadow 的 3D 按钮 |
 | `04-视觉效果/百分比圆环/index.html` | 纯 CSS 百分比圆环 demo 页（多色 / dark / 多尺寸） |
 | `04-视觉效果/文本与图片处理/index.html` | 文本省略、vertical-align、object-fit、aspect-ratio |
 | `04-视觉效果/background-blend-mode/index.html` | 背景叠加颜色 / 渐变的混合演示 |
@@ -78,7 +78,9 @@
 | `05-响应式/media-queries/01-基础布局.html` | 响应式布局基础页（仅加载 style.css，未引入 media-queries.css） |
 | `05-响应式/media-queries/02-响应式最终页.html` | 响应式布局最终页（基础布局上叠加 media-queries） |
 | `05-响应式/vw-vh/index.html` | rem + @media + vw / vh 综合响应式示例 |
-| `06-性能/渲染性能/index.html` | 重排、重绘、合成层与动画性能 |
+| `06-性能/01-重排重绘/index.html` | 重排、重绘与触发布局属性 |
+| `06-性能/02-合成层/index.html` | 合成层、GPU 加速与 will-change |
+| `06-性能/03-content-visibility/index.html` | content-visibility 跳过屏幕外渲染 |
 | `07-现代特性/01-has选择器/index.html` | :has() 父选择器与条件样式 |
 | `07-现代特性/02-layer层叠管理/index.html` | @layer 层叠上下文与优先级管理 |
 | `07-现代特性/03-container-queries容器查询/index.html` | container-type 与 @container 组件级响应式 |

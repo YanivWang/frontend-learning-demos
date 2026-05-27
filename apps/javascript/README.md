@@ -1,6 +1,6 @@
 # JavaScript
 
-按学习顺序编号的纯 JS 知识点 demo，共 **120** 个 `.html` 文件。每个文件都可以直接在浏览器打开，无需构建。
+按学习顺序编号的纯 JS 知识点 demo，共 **129** 个 `.html` 文件`.html` 文件。每个文件都可以直接在浏览器打开，无需构建。
 
 每个 demo 在 `<!DOCTYPE html>` 前有统一头注释（`分类` / `主题` / `要点`），详见 [`../../CONVENTIONS.md`](../../CONVENTIONS.md) §4。
 
@@ -29,7 +29,7 @@
 
 <!-- DEMO_TABLE_START -->
 
-共 **124** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
+共 **129** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
 
 | 文件 | 主题 |
 |---|---|
@@ -123,12 +123,16 @@
 | `06-浏览器API/DOM操作.html` | DOM 基础操作（选择 / 属性 / 数据集 / 类） |
 | `06-浏览器API/fetch与跨域.html` | fetch 基础、错误处理与 CORS 跨域 |
 | `06-浏览器API/HTTP缓存.html` | HTTP 强缓存与协商缓存 |
+| `06-浏览器API/ImportMaps.html` | Import Maps 浏览器原生模块映射 |
 | `06-浏览器API/IntersectionObserver.html` | IntersectionObserver 实现图片懒加载 |
 | `06-浏览器API/MutationObserver.html` | MutationObserver 监听 DOM 变化 |
 | `06-浏览器API/Notification.html` | Notification 桌面通知 |
+| `06-浏览器API/Performance-API.html` | Performance API 计时与导航指标 |
 | `06-浏览器API/requestAnimation.html` | requestAnimationFrame 与递归调用对比 |
 | `06-浏览器API/ServiceWorker.html` | Service Worker 基础注册 |
 | `06-浏览器API/toolTips/index.html` | Vue3 实现可交互的 Tooltip |
+| `06-浏览器API/WebComponents.html` | Web Components 自定义元素与 Shadow DOM |
+| `06-浏览器API/WebSocket.html` | WebSocket 连接与消息收发 |
 | `06-浏览器API/WebWorker/01-基础/01-Worker-基础与子脚本.html` | Worker 基础与子脚本 |
 | `06-浏览器API/WebWorker/02-命名与消息分发/01-Worker-命名与消息分发.html` | 给 Worker 命名 + 用消息体分发不同任务 |
 | `07-进阶/安全/XSS与CSRF.html` | XSS 与 CSRF 防护 |
@@ -138,6 +142,7 @@
 | `07-进阶/内存泄漏/timeline.html` | 用 Performance 面板观察 DOM 节点 + 内存增长 |
 | `07-进阶/深拷贝.html` | 浅拷贝 vs 深拷贝 |
 | `07-进阶/手写Promise/promiseAll.html` | 手写 Promise.all |
+| `07-进阶/无障碍-a11y.html` | 无障碍 a11y：语义化、焦点与 ARIA |
 | `07-进阶/资源预加载/index.html` | 用 new Image / new Audio 触发浏览器预加载 |
 | `07-进阶/UMD插件模式/index.html` | UMD（Universal Module Definition）演示 |
 | `08-面试题/防抖节流.html` | 防抖（debounce）与节流（throttle） |

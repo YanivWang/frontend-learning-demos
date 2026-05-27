@@ -1,3 +1,4 @@
+/* Vue 3.5.34 — https://vuejs.org/ — vendored 2025-05-27 */
 /**
 * vue v3.5.34
 * (c) 2018-present Yuxi (Evan) You and Vue contributors
