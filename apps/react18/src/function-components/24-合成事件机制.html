@@ -2,16 +2,15 @@
   分类: react18 / 事件
   主题: React 合成事件机制
   要点:
-    - React 事件是 SyntheticEvent，屏蔽浏览器差异
-    - React 事件名使用小驼峰，如 onClick、onChange
-    - React 17+ 事件委托从 document 调整到 root 容器
-    - 阻止默认行为使用 event.preventDefault()，不要 return false
+    - React 事件处理器使用小驼峰命名，并接收 SyntheticEvent
+    - SyntheticEvent 提供跨浏览器一致接口，也可通过 nativeEvent 访问原生事件
+    - 阻止默认行为要调用 preventDefault，阻止冒泡要调用 stopPropagation
+    - React 17+ 事件委托绑定在 root 容器附近，多 root 与原生监听混用时要注意边界
   面试:
-    - React 合成事件机制的核心概念是什么
-    - React 合成事件机制在实际项目里怎么用
-    - React 合成事件机制有哪些常见坑或易错点
-    - React 合成事件机制和相近 API 如何区分选型
-    - 面试中如何简洁讲清 React 合成事件机制
+    - SyntheticEvent 和浏览器原生事件是什么关系？
+    - React 中为什么 return false 不能阻止默认提交？
+    - stopPropagation 在 React 事件与原生事件混用时有什么边界？
+    - React 17+ 事件委托位置变化对多 root 有什么影响？
 -->
 
 <!doctype html>
@@ -34,17 +33,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>React 事件是 SyntheticEvent，屏蔽浏览器差异。</li>
-          <li>React 事件名使用小驼峰，如 onClick、onChange。</li>
-          <li>React 17+ 事件委托从 document 调整到 root 容器。</li>
-          <li>阻止默认行为使用 event.preventDefault()，不要 return false。</li>
+          <li>React DOM 事件名使用小驼峰，例如 <code>onClick</code>、<code>onChange</code>；处理函数接收的是 <code>SyntheticEvent</code>，不是直接暴露的浏览器事件对象。</li>
+          <li><code>SyntheticEvent</code> 提供与原生事件相似的一致接口，仍可通过 <code>event.nativeEvent</code> 访问底层事件；React 17 起事件对象不再池化，异步读取事件属性不需要 <code>persist()</code>。</li>
+          <li>表单提交、链接跳转这类默认行为必须显式调用 <code>event.preventDefault()</code>；React 不支持用 <code>return false</code> 同时阻止默认行为和冒泡。</li>
+          <li>冒泡控制使用 <code>event.stopPropagation()</code>。当 React 事件和原生 <code>addEventListener</code> 混用时，要分清监听器注册位置与捕获/冒泡阶段，避免误以为所有监听都会被拦截。</li>
+          <li>React 17+ 将事件委托从 <code>document</code> 调整到 root 容器附近，多个 React root 或逐步升级旧页面时，事件隔离比旧版本更清晰。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>React 事件是 SyntheticEvent？</strong> React 事件是 SyntheticEvent，屏蔽浏览器差异；React 事件名使用小驼峰，如 onClick、onChange</li>
-          <li><strong>React 事件名使用小驼峰？</strong> React 事件是 SyntheticEvent，屏蔽浏览器差异；React 事件名使用小驼峰，如 onClick、onChange</li>
-          <li><strong>React 17+ 事件委托从 document 调整到 root 容器？</strong> React 事件是 SyntheticEvent，屏蔽浏览器差异；React 事件名使用小驼峰，如 onClick、onChange</li>
-          <li><strong>阻止默认行为使用 event.preventDefault()？</strong> 阻止默认行为使用 event.preventDefault()，不要 return false</li>
+          <li><strong>SyntheticEvent 和浏览器原生事件是什么关系？</strong> 结论是 React 给处理器传入合成事件，它封装了原生事件并提供一致接口。原因是 React 需要统一不同浏览器行为并接入自己的调度与事件系统。需要原生细节时读取 <code>nativeEvent</code>，但不要依赖未声明的映射细节。</li>
+          <li><strong>React 中为什么 return false 不能阻止默认提交？</strong> 结论是必须调用 <code>preventDefault()</code>。原因是 React 事件处理器不会把返回值当作取消信号。本 demo 的表单提交调用 <code>event.preventDefault()</code> 后，页面不会刷新，失败路径是忘记调用时浏览器会执行默认提交。</li>
+          <li><strong>stopPropagation 有什么边界？</strong> 它能阻止当前 React 事件继续冒泡到上层 React 处理器。边界是原生捕获监听、不同 root 或已经触发的监听器不一定按直觉被拦截；复杂页面里应明确监听阶段和挂载位置。</li>
+          <li><strong>React 17+ 事件委托位置变化有什么意义？</strong> 结论是事件委托从全局 <code>document</code> 更靠近 root 容器。原因是这样更利于多版本 React、微前端和逐步迁移。项目里如果混用多个 root，要测试跨 root 点击、弹窗和全局快捷键行为。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/learn/responding-to-events" target="_blank" rel="noreferrer">React Docs: Responding to Events</a></li>
+          <li><a href="https://legacy.reactjs.org/docs/events.html" target="_blank" rel="noreferrer">Legacy React Docs: SyntheticEvent</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault" target="_blank" rel="noreferrer">MDN: Event.preventDefault()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation" target="_blank" rel="noreferrer">MDN: Event.stopPropagation()</a></li>
         </ul>
       </div>
     </section>

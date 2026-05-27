@@ -2,16 +2,15 @@
   分类: react18 / 工程化
   主题: Router 与状态管理常见面试点
   要点:
-    - React Router 负责 URL 与页面组件的映射，常见概念有 BrowserRouter、Routes、Route、Link、useNavigate、useParams
-    - 状态管理要先区分本地状态、跨组件状态、服务端缓存状态
-    - Redux/Zustand/Context 不是互相完全替代，选择取决于规模、协作和调试需求
-    - 本文件不引入第三方库，用最小 demo 模拟路由与 store 思想
+    - Router 负责把 URL 状态映射到页面组件，并处理导航、参数和未命中路由
+    - 状态管理先区分本地 UI 状态、跨组件客户端状态和服务端缓存状态
+    - Context/useReducer 可演示小型 store，复杂协作再考虑 Redux、Zustand 或查询缓存库
+    - 本静态 HTML 未引入 React Router，只模拟路由与 store 思路
   面试:
-    - Router 与状态管理常见面试点的核心概念是什么
-    - Router 与状态管理常见面试点在实际项目里怎么用
-    - Router 与状态管理常见面试点有哪些常见坑或易错点
-    - Router 与状态管理常见面试点和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Router 与状态管理常见面试点
+    - React Router 解决什么问题，本 demo 为什么只是模拟？
+    - 本地状态、全局客户端状态、服务端缓存状态如何区分？
+    - Context + useReducer 与 Redux/Zustand 的边界是什么？
+    - 路由刷新、未知路径和登录态恢复有哪些风险？
 -->
 
 <!doctype html>
@@ -34,17 +33,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>React Router 负责 URL 与页面组件的映射，常见概念有 BrowserRouter、Routes、Route、Link、useNavigate、useParams。</li>
-          <li>状态管理要先区分本地状态、跨组件状态、服务端缓存状态。</li>
-          <li>Redux/Zustand/Context 不是互相完全替代，选择取决于规模、协作和调试需求。</li>
-          <li>本文件不引入第三方库，用最小 demo 模拟路由与 store 思想。</li>
+          <li>真实 React Router 负责 URL 与页面组件的映射，并提供 <code>BrowserRouter</code>、<code>Routes</code>、<code>Route</code>、<code>Link</code>、<code>useNavigate</code>、<code>useParams</code> 等能力。</li>
+          <li>本静态 HTML 没有引入第三方库，只用 <code>path</code> 状态模拟页面切换；它不会改浏览器地址栏，也不能覆盖刷新、前进后退和深链接这些真实路由问题。</li>
+          <li>状态管理先分层：组件内 UI 状态放本地，少量跨层客户端状态可用 Context 或外部 store，服务端数据缓存更适合 TanStack Query、SWR 等查询库。</li>
+          <li><code>Context + useReducer</code> 可表达“小型 store”思想，但它缺少 Redux DevTools、规范化约束、中间件生态和大型团队协作约定。</li>
+          <li>涉及登录态、路由守卫、刷新恢复、未知路径 fallback 时，要明确数据来源、持久化策略和失败路径；本 demo 增加未知路由提示来演示边界。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>React Router 负责 URL 与页面组件的映射？</strong> React Router 负责 URL 与页面组件的映射，常见概念有 BrowserRouter、Routes、Route、Link、useNavigate、useParams</li>
-          <li><strong>状态管理要先区分本地状态、跨组件状态、服务端缓存状态？</strong> 状态管理要先区分本地状态、跨组件状态、服务端缓存状态</li>
-          <li><strong>Redux/Zustand/Context 不是互相完全替代？</strong> Redux/Zustand/Context 不是互相完全替代，选择取决于规模、协作和调试需求</li>
-          <li><strong>本文件不引入第三方库？</strong> 本文件不引入第三方库，用最小 demo 模拟路由与 store 思想</li>
+          <li><strong>React Router 解决什么问题，本 demo 为什么只是模拟？</strong> 结论是 Router 让 URL 成为页面位置的来源。原因是刷新、分享链接、前进后退和参数解析都依赖真实地址。本 demo 只用状态切换组件，能说明映射思想，但不能替代真实 React Router 行为。</li>
+          <li><strong>本地状态、全局客户端状态、服务端缓存状态如何区分？</strong> 结论是按所有权和生命周期区分。组件展开收起、输入草稿放本地；登录用户、主题这类跨组件状态放 Context 或 store；接口列表、分页缓存、失效重试属于服务端状态，通常交给查询缓存库。</li>
+          <li><strong>Context + useReducer 与 Redux/Zustand 的边界是什么？</strong> 小型页面或教学 demo 可以用 Context + useReducer 表达状态和 action。规模变大后，Redux/Zustand 在选择器、调试、模块拆分和团队约定上更有优势。边界是不要把所有状态塞进一个 Context 导致大范围重渲染。</li>
+          <li><strong>路由刷新、未知路径和登录态恢复有哪些风险？</strong> 结论是要设计 fallback 和恢复流程。原因是用户可能直接打开深链接、刷新页面、token 过期或访问未知路径。项目里需要 404 页面、鉴权重定向、加载态和错误提示，本 demo 的“未知页”按钮只演示最小 fallback。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://reactrouter.com/start/declarative/routing" target="_blank" rel="noreferrer">React Router Docs: Routing</a></li>
+          <li><a href="https://react.dev/learn/sharing-state-between-components" target="_blank" rel="noreferrer">React Docs: Sharing State Between Components</a></li>
+          <li><a href="https://react.dev/learn/scaling-up-with-reducer-and-context" target="_blank" rel="noreferrer">React Docs: Scaling Up with Reducer and Context</a></li>
+          <li><a href="https://redux.js.org/usage/when-to-use-redux" target="_blank" rel="noreferrer">Redux Docs: When should I use Redux?</a></li>
         </ul>
       </div>
     </section>
@@ -87,6 +94,10 @@
       );
       }
 
+      function NotFound({ path }) {
+        return <p role="alert">未找到路径: {path}。真实路由应渲染 404 页面或重定向。</p>;
+      }
+
       function App() {
         const [path, setPath] = useState("/home");
         const [state, dispatch] = useReducer(reducer, { user: null });
@@ -99,10 +110,12 @@
           <nav>
             <button onClick={() => setPath("/home")}>Home</button>
             <button onClick={() => setPath("/profile")}>Profile</button>
+            <button onClick={() => setPath("/settings")}>未知页</button>
           </nav>
           {path === "/home" && <Home />}
           {path === "/profile" && <Profile />}
-          <p>面试回答: 路由管理页面位置；状态管理管理跨组件共享数据；服务端数据缓存通常还会用 React Query/SWR 这类工具。</p>
+          {path !== "/home" && path !== "/profile" && <NotFound path={path} />}
+          <p>面试回答: 路由管理 URL 与页面位置；状态管理管理跨组件共享数据；服务端数据缓存通常还会用 TanStack Query/SWR 这类工具。</p>
         </section>
       </StoreContext.Provider>
       );

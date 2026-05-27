@@ -2,16 +2,15 @@
   分类: react18 / 原理
   主题: 虚拟 DOM、Fiber 与 React 18 自动批处理
   要点:
-    - 虚拟 DOM 是描述 UI 的普通 JS 对象，React 用它计算真实 DOM 更新
-    - Fiber 是 React 的内部节点结构，让渲染工作可拆分、可中断、可恢复
-    - React 18 createRoot 下，事件、定时器、Promise 等异步回调中的状态更新也会自动批处理
-    - 面试不必手写 Fiber，但要能说清楚它解决了大更新阻塞主线程的问题
+    - React 元素是描述 UI 的普通对象，React 根据新旧描述更新真实 DOM
+    - Fiber 是 React 内部的工作单元结构，支撑可中断渲染与优先级调度
+    - React 18 createRoot 会把定时器、Promise、原生事件等更新自动批处理
+    - 批处理减少重复渲染，但读取更新后 DOM 时可能需要 flushSync
   面试:
-    - 虚拟 DOM、Fiber 与 React 18 自动批处理的核心概念是什么
-    - 虚拟 DOM、Fiber 与 React 18 自动批处理在实际项目里怎么用
-    - 虚拟 DOM、Fiber 与 React 18 自动批处理有哪些常见坑或易错点
-    - 虚拟 DOM、Fiber 与 React 18 自动批处理和相近 API 如何区分选型
-    - 面试中如何简洁讲清 虚拟 DOM、Fiber 与 React 18 自动批处理
+    - 虚拟 DOM 解决什么问题，为什么不等于“比手写 DOM 一定快”？
+    - Fiber 为什么能支撑并发渲染和优先级调度？
+    - React 18 自动批处理相比 React 17 有什么变化？
+    - 什么时候需要用 flushSync 打破批处理？
 -->
 
 <!doctype html>
@@ -34,17 +33,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>虚拟 DOM 是描述 UI 的普通 JS 对象，React 用它计算真实 DOM 更新。</li>
-          <li><code>Fiber</code> 是 React 的内部节点结构，让渲染工作可拆分、可中断、可恢复。</li>
-          <li>React 18 <code>createRoot</code> 下，事件、定时器、<code>Promise</code> 等异步回调中的状态更新也会自动批处理。</li>
-          <li>面试不必手写 <code>Fiber</code>，但要能说清楚它解决了大更新阻塞主线程的问题。</li>
+          <li>React 元素是描述 UI 的普通 JavaScript 对象，渲染时 React 会根据前后两次描述计算最小必要更新，再提交到真实 DOM。</li>
+          <li>“虚拟 DOM 一定更快”是常见误解。它真正提供的是声明式编程模型、跨平台描述能力和可预测更新流程；手写小范围 DOM 可能更快，但复杂 UI 更难维护。</li>
+          <li><code>Fiber</code> 是 React 内部的节点与工作单元结构，支撑把渲染拆成可调度任务，并为并发渲染、优先级、暂停和恢复提供基础。</li>
+          <li>React 18 在 <code>createRoot</code> 下启用更广泛的自动批处理，定时器、Promise、原生事件处理器中的多次 <code>setState</code> 也会合并成更少渲染。</li>
+          <li>批处理通常减少重复渲染；如果必须在状态更新后立即读取已经提交的 DOM，可使用 <code>flushSync</code>，但它会降低调度空间，应少用。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>虚拟 DOM 是描述 UI 的普通 JS 对象？</strong> 虚拟 DOM 是描述 UI 的普通 JS 对象，React 用它计算真实 DOM 更新</li>
-          <li><strong>Fiber 是 React 的内部节点结构？</strong> <code>Fiber</code> 是 React 的内部节点结构，让渲染工作可拆分、可中断、可恢复；面试不必手写 <code>Fiber</code>，但要能说清楚它解决了大更新阻塞主线程的问题</li>
-          <li><strong>React 18 createRoot 下？</strong> 虚拟 DOM 是描述 UI 的普通 JS 对象，React 用它计算真实 DOM 更新；<code>Fiber</code> 是 React 的内部节点结构，让渲染工作可拆分、可中断、可恢复</li>
-          <li><strong>面试不必手写 Fiber？</strong> 面试不必手写 <code>Fiber</code>，但要能说清楚它解决了大更新阻塞主线程的问题</li>
+          <li><strong>虚拟 DOM 解决什么问题？</strong> 结论是它让 UI 可以用状态到视图的声明式描述表达。原因是 React 通过元素树比较和提交阶段统一管理 DOM 更新。边界是它不是性能神话，极小 DOM 操作手写可能更快，但复杂应用更看重可维护性和一致性。</li>
+          <li><strong>Fiber 为什么重要？</strong> 结论是 Fiber 让渲染工作能被拆分和调度。原因是每个 Fiber 节点携带组件、状态、子树和副作用等信息，React 可以按优先级推进工作。面试不必手写 Fiber，只要能说明它为并发渲染和避免长任务阻塞提供基础。</li>
+          <li><strong>React 18 自动批处理有什么变化？</strong> 结论是 <code>createRoot</code> 下批处理范围从 React 事件扩展到定时器、Promise、原生事件等异步回调。原因是 React 统一调度同一轮任务里的状态更新。本 demo 点击按钮后定时器里更新 <code>a</code> 和 <code>b</code>，通常只产生一次合并渲染。</li>
+          <li><strong>什么时候需要 flushSync？</strong> 结论是只有在状态更新后必须同步读取已更新 DOM 时才考虑。原因是 <code>flushSync</code> 会强制 React 立即提交，削弱自动批处理和并发调度收益。常见场景是测量 DOM 尺寸或对接必须同步读取 DOM 的第三方库。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/createElement" target="_blank" rel="noreferrer">React API Reference: createElement</a></li>
+          <li><a href="https://react.dev/learn/queueing-a-series-of-state-updates" target="_blank" rel="noreferrer">React Docs: Queueing a Series of State Updates</a></li>
+          <li><a href="https://github.com/reactwg/react-18/discussions/21" target="_blank" rel="noreferrer">React 18 Working Group: Automatic Batching</a></li>
+          <li><a href="https://react.dev/reference/react-dom/flushSync" target="_blank" rel="noreferrer">React DOM API Reference: flushSync</a></li>
         </ul>
       </div>
     </section>

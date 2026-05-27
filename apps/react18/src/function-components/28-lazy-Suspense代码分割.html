@@ -2,16 +2,15 @@
   分类: react18 / 工程化
   主题: React.lazy 与 Suspense
   要点:
-    - React.lazy 用于动态加载组件，常配合路由或大模块做代码分割
-    - Suspense 的 fallback 会在懒加载组件未就绪时展示
-    - 真实项目里 lazy 通常写成 lazy(() => import('./Page.jsx'))
-    - 本静态 HTML 无打包环境，用 Promise 模拟动态加载
+    - React.lazy 声明懒加载组件，真实项目通常包裹动态 import
+    - Suspense 在懒加载 Promise 未完成时展示 fallback
+    - lazy 加载失败会抛给最近的错误边界，而不是由 Suspense fallback 处理
+    - 静态 HTML 无打包环境，本 demo 用 Promise 模拟成功与失败路径
   面试:
-    - React.lazy 与 Suspense的核心概念是什么
-    - React.lazy 与 Suspense在实际项目里怎么用
-    - React.lazy 与 Suspense有哪些常见坑或易错点
-    - React.lazy 与 Suspense和相近 API 如何区分选型
-    - 面试中如何简洁讲清 React.lazy 与 Suspense
+    - React.lazy 和 Suspense 各自负责什么？
+    - lazy 组件加载失败为什么需要错误边界？
+    - 路由级代码分割应该如何设置 loading 和重试体验？
+    - Suspense for data fetching 与 React 18 客户端 lazy 有什么边界？
 -->
 
 <!doctype html>
@@ -34,17 +33,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>React.lazy 用于动态加载组件，常配合路由或大模块做代码分割。</li>
-          <li><code>Suspense</code> 的 fallback 会在懒加载组件未就绪时展示。</li>
-          <li>真实项目里 lazy 通常写成 lazy(() =&gt; <code>import</code>('./Page.jsx'))。</li>
-          <li>本静态 HTML 无打包环境，用 <code>Promise</code> 模拟动态加载。</li>
+          <li><code>React.lazy</code> 用来声明懒加载组件，加载函数必须返回 Promise，并解析为包含 <code>default</code> 组件的模块对象。</li>
+          <li><code>Suspense</code> 负责在懒加载组件尚未就绪时展示 <code>fallback</code>；它处理“等待中”，不负责处理“加载失败”。</li>
+          <li>真实项目里常写成 <code>lazy(() =&gt; import('./Page.jsx'))</code>，配合路由级分包、首屏之外的大模块、后台低频页面使用。</li>
+          <li>加载失败、网络断开、chunk 404、部署后旧页面引用旧 chunk 都会让 lazy Promise reject；这类错误应交给 Error Boundary 展示失败 UI 和重试入口。</li>
+          <li>React 18 中客户端代码分割的 Suspense 已稳定；数据获取 Suspense 在不同框架里有不同约束，不能简单把 React 19 的 <code>use()</code> 能力混进 React 18 demo。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>React.lazy 用于动态加载组件？</strong> React.lazy 用于动态加载组件，常配合路由或大模块做代码分割</li>
-          <li><strong>Suspense 的 fallback 会在懒加载组件未就绪时展示？</strong> <code>Suspense</code> 的 fallback 会在懒加载组件未就绪时展示</li>
-          <li><strong>真实项目里 lazy 通常写成 lazy(() =&gt; import('./Pag？</strong> 真实项目里 lazy 通常写成 lazy(() =&gt; <code>import</code>('./Page.jsx'))</li>
-          <li><strong>本静态 HTML 无打包环境？</strong> 本静态 HTML 无打包环境，用 <code>Promise</code> 模拟动态加载</li>
+          <li><strong>React.lazy 和 Suspense 各自负责什么？</strong> 结论是 <code>lazy</code> 定义如何加载组件，<code>Suspense</code> 定义等待期间显示什么。原因是懒加载组件渲染时会“挂起”，React 用最近的 Suspense fallback 填补 UI。项目里常把页面级路由组件放进 Suspense 边界。</li>
+          <li><strong>lazy 组件加载失败为什么需要错误边界？</strong> 结论是失败会作为错误抛出，Suspense fallback 只处理 pending。原因是 reject 代表加载已失败，不再是等待状态。本 demo 增加“模拟加载失败”，由 Error Boundary 给出错误提示和重试边界。</li>
+          <li><strong>路由级代码分割如何设计体验？</strong> 结论是按页面或大模块分割，并提供稳定 loading、失败提示和重试。原因是 chunk 下载受网络、缓存和部署版本影响。项目里还要考虑预加载关键路由、部署后 chunk 失效兜底和监控上报。</li>
+          <li><strong>Suspense for data fetching 与 React 18 lazy 有什么边界？</strong> React 18 客户端稳定场景是代码分割等待组件加载。数据获取 Suspense 通常由框架或库约定支持；React 19 的 <code>use()</code> 属于新版本能力，讲 React 18 时应单独说明版本差异。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/lazy" target="_blank" rel="noreferrer">React API Reference: lazy</a></li>
+          <li><a href="https://react.dev/reference/react/Suspense" target="_blank" rel="noreferrer">React API Reference: Suspense</a></li>
+          <li><a href="https://legacy.reactjs.org/docs/code-splitting.html" target="_blank" rel="noreferrer">Legacy React Docs: Code-Splitting</a></li>
+          <li><a href="https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary" target="_blank" rel="noreferrer">React Docs: Catching rendering errors with an Error Boundary</a></li>
         </ul>
       </div>
     </section>
@@ -70,18 +77,52 @@
         });
       });
 
+      const BrokenReport = lazy(() => {
+        return new Promise((_, reject) => {
+          setTimeout(() => {
+            reject(new Error("模拟 chunk 下载失败"));
+          }, 800);
+        });
+      });
+
+      class ErrorBoundary extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = { error: null };
+        }
+
+        static getDerivedStateFromError(error) {
+          return { error };
+        }
+
+        componentDidCatch(error) {
+          console.warn("lazy 组件加载失败:", error.message);
+        }
+
+        render() {
+          if (this.state.error) {
+            return <p role="alert">加载失败: {this.state.error.message}。请点击上方按钮重试。</p>;
+          }
+          return this.props.children;
+        }
+      }
+
       function App() {
-        const [showReport, setShowReport] = useState(false);
+        const [loadMode, setLoadMode] = useState(null);
 
         return (
         <section>
           <h1>lazy 与 Suspense</h1>
 
-          <button onClick={() => setShowReport(true)}>加载报表</button>
-          <Suspense fallback={<p>加载中...</p>}>
-            {showReport && <LazyReport />}
-          </Suspense>
-          <p>面试回答: lazy 负责按需加载组件，Suspense 负责声明加载等待期间的 UI。</p>
+          <button onClick={() => setLoadMode("success")}>加载报表</button>
+          <button onClick={() => setLoadMode("fail")}>模拟加载失败</button>
+          <ErrorBoundary key={loadMode}>
+            <Suspense fallback={<p>加载中...</p>}>
+              {loadMode === "success" && <LazyReport />}
+              {loadMode === "fail" && <BrokenReport />}
+            </Suspense>
+          </ErrorBoundary>
+          <p>面试回答: lazy 负责按需加载组件，Suspense 负责等待 UI，加载失败要交给错误边界兜底。</p>
         </section>
       );
       }

@@ -2,16 +2,15 @@
   分类: react18 / hooks
   主题: useRef 保存 DOM 与可变值
   要点:
-    - useRef 返回稳定对象 { current: ... }
-    - ref.current 改变不会触发组件重新渲染
-    - 常见用途: 访问 DOM、保存定时器 ID、保存不会驱动视图的可变值
-    - useRef 与 useState 的核心区别: state 参与渲染，ref 不参与渲染
+    - useRef 返回跨渲染稳定的 { current } 容器，可保存 DOM 节点或普通可变值
+    - 修改 ref.current 不会触发重新渲染，也不应该在渲染期间读写可变 ref
+    - DOM ref 适合聚焦、测量、滚动等命令式场景，声明式 UI 仍应交给 state
+    - useRef 保存“不驱动视图”的值；需要展示到页面上的数据使用 useState
   面试:
-    - useRef 保存 DOM 与可变值的核心概念是什么
-    - useRef 保存 DOM 与可变值在实际项目里怎么用
-    - useRef 保存 DOM 与可变值有哪些常见坑或易错点
-    - useRef 保存 DOM 与可变值和相近 API 如何区分选型
-    - 面试中如何简洁讲清 useRef 保存 DOM 与可变值
+    - useRef 和 useState 的本质区别是什么？
+    - 什么时候应该通过 ref 操作 DOM？
+    - 为什么修改 ref.current 页面不会立刻更新？
+    - 在渲染期间读写 ref 有什么风险？
 -->
 
 <!doctype html>
@@ -34,16 +33,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>useRef 返回稳定对象 { current: ... }。</li>
-          <li><code>ref</code>.current 改变不会触发组件重新渲染。</li>
-          <li>常见用途: 访问 DOM、保存定时器 ID、保存不会驱动视图的可变值。</li>
-          <li>useRef 与 <code>useState</code> 的核心区别: state 参与渲染，<code>ref</code> 不参与渲染。</li>
+          <li><code>useRef</code> 返回同一个 ref 对象，React 会在提交 DOM 后把节点写入 <code>current</code>；示例中的输入框聚焦就是典型命令式 DOM 操作。</li>
+          <li>修改 <code>ref.current</code> 不会触发重新渲染，所以它适合保存定时器 ID、上一次值、点击次数这类“不直接驱动 UI”的可变数据。</li>
+          <li><code>useState</code> 用于让页面随数据变化重新渲染，<code>useRef</code> 用于跨渲染保存可变引用；把 UI 状态塞进 ref 会让界面和数据不同步。</li>
+          <li>不要在渲染期间随意读写可变 ref，因为 React 可能重新渲染、丢弃渲染或并发调度；读写 DOM ref 通常放在事件处理或 effect 中。</li>
+          <li>DOM ref 需要考虑节点尚未挂载或已经卸载的边界，实际项目里调用 <code>focus()</code>、测量尺寸、滚动前应先确认 <code>current</code> 存在。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>useRef 返回稳定对象 { current？</strong> useRef 返回稳定对象 { current: ... }；useRef 与 <code>useState</code> 的核心区别: state 参与渲染，<code>ref</code> 不参与渲染</li>
-          <li><strong>ref.current 改变不会触发组件重新渲染？</strong> <code>ref</code>.current 改变不会触发组件重新渲染；useRef 与 <code>useState</code> 的核心区别: state 参与渲染，<code>ref</code> 不参与渲染</li>
-          <li><strong>useRef 与 useState 的核心区别？</strong> useRef 返回稳定对象 { current: ... }；useRef 与 <code>useState</code> 的核心区别: state 参与渲染，<code>ref</code> 不参与渲染</li>
+          <li><strong><code>useRef</code> 和 <code>useState</code> 的本质区别是什么？</strong> 结论是 state 参与渲染，ref 不参与渲染。原因是 setState 会通知 React 重新计算 UI，而修改 <code>ref.current</code> 只是改一个普通对象属性。项目里输入值、列表和错误信息用 state，定时器 ID、DOM 节点和上一次值用 ref。</li>
+          <li><strong>什么时候应该通过 ref 操作 DOM？</strong> 结论是只在 React 声明式模型覆盖不了的命令式场景使用。原因是聚焦、滚动、测量尺寸、调用第三方组件实例方法都需要真实 DOM 或实例。边界是不要用 ref 手动改 React 正在管理的文本和样式，否则容易和下一次渲染冲突。</li>
+          <li><strong>为什么修改 <code>ref.current</code> 页面不会立刻更新？</strong> 结论是 ref 的变化不会触发 render。原因是 React 不追踪 ref 对象内部属性的变化。示例里点击“只改 ref”会更新控制台值，页面要等其他状态触发渲染后才读到新值。</li>
+          <li><strong>在渲染期间读写 ref 有什么风险？</strong> 结论是容易破坏组件纯渲染假设。原因是渲染可能被 React 重复调用或丢弃，写 ref 会产生不可预测的外部变化。项目中应把这类读写放到事件处理、effect 或 layout effect 中。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/useRef" target="_blank" rel="noreferrer">React Docs: useRef</a></li>
+          <li><a href="https://react.dev/learn/referencing-values-with-refs" target="_blank" rel="noreferrer">React Docs: Referencing Values with Refs</a></li>
+          <li><a href="https://react.dev/learn/manipulating-the-dom-with-refs" target="_blank" rel="noreferrer">React Docs: Manipulating the DOM with Refs</a></li>
         </ul>
       </div>
     </section>
@@ -63,7 +70,9 @@
         const [renderCount, setRenderCount] = useState(0);
 
         function focusInput() {
-          inputRef.current.focus();
+          if (inputRef.current) {
+            inputRef.current.focus();
+          }
         }
 
         function addRefCount() {

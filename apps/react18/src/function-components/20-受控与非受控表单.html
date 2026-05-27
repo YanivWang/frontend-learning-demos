@@ -2,15 +2,15 @@
   分类: react18 / 表单
   主题: 受控组件与非受控组件
   要点:
-    - 受控组件: 表单值由 React state 控制，value + onChange 成对出现
-    - 非受控组件: 表单值保存在 DOM 中，通过 ref 在需要时读取
-    - 业务表单、校验、联动通常用受控组件；简单一次性读取可用非受控组件
+    - 受控组件由 React state 管理表单值，value / checked 必须配合 onChange 更新
+    - 非受控组件把当前值留在 DOM 中，提交或需要读取时通过 ref 获取
+    - 校验、联动、禁用提交和错误提示通常更适合受控组件
+    - 简单一次性读取可用非受控组件，但要处理空值、ref 为空和安全展示边界
   面试:
-    - 受控组件与非受控组件的核心概念是什么
-    - 受控组件与非受控组件在实际项目里怎么用
-    - 受控组件与非受控组件有哪些常见坑或易错点
-    - 受控组件与非受控组件和相近 API 如何区分选型
-    - 面试中如何简洁讲清 受控组件与非受控组件
+    - 受控组件和非受控组件的核心区别是什么？
+    - 为什么 value 没有 onChange 会让输入框不可编辑？
+    - 业务表单为什么通常优先受控？
+    - 非受控表单提交时要注意哪些失败路径？
 -->
 
 <!doctype html>
@@ -33,15 +33,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>受控组件: 表单值由 React state 控制，value + onChange 成对出现。</li>
-          <li>非受控组件: 表单值保存在 DOM 中，通过 <code>ref</code> 在需要时读取。</li>
-          <li>业务表单、校验、联动通常用受控组件；简单一次性读取可用非受控组件。</li>
+          <li>受控组件把表单当前值保存在 React state 中，<code>value</code> / <code>checked</code> 与 <code>onChange</code> 成对出现；页面展示和业务状态始终来自同一数据源。</li>
+          <li>非受控组件让 DOM 自己保存输入值，React 只用 <code>defaultValue</code> 设置初始值，并在提交或需要时通过 <code>ref</code> 读取。</li>
+          <li>需要实时校验、联动禁用按钮、展示错误提示、根据输入发请求时，受控组件更容易维护；一次性备注、文件选择或集成第三方表单库时，非受控也很常见。</li>
+          <li><code>value</code> 传了字符串但没有同步更新的 <code>onChange</code>，输入框会被锁住；从 <code>undefined</code> 切到字符串也可能触发受控/非受控切换警告。</li>
+          <li>用户输入必须按文本处理。React 默认会转义文本插值，但提交前仍要做空值校验、长度限制和服务端校验；非受控 ref 也要防止节点为空。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>业务表单、校验、联动通常用受控组件？</strong> 业务表单、校验、联动通常用受控组件；简单一次性读取可用非受控组件</li>
-          <li><strong>受控组件与非受控组件的核心概念是什么？</strong> 受控组件: 表单值由 React state 控制，value + onChange 成对出现；非受控组件: 表单值保存在 DOM 中，通过 <code>ref</code> 在需要时读取</li>
-          <li><strong>受控组件与非受控组件在实际项目里怎么用？</strong> 受控组件: 表单值由 React state 控制，value + onChange 成对出现；非受控组件: 表单值保存在 DOM 中，通过 <code>ref</code> 在需要时读取</li>
+          <li><strong>受控组件和非受控组件的核心区别是什么？</strong> 结论是数据源不同：受控值来自 React state，非受控值来自 DOM。原因是受控组件每次输入都走 state 更新，非受控组件只在需要时读取 DOM 当前值。项目里可校验、联动、回显的业务字段通常受控，简单一次性字段可以非受控。</li>
+          <li><strong>为什么 <code>value</code> 没有 <code>onChange</code> 会让输入框不可编辑？</strong> 结论是 React 会把输入框值固定为传入的 <code>value</code>。原因是用户输入后如果 state 不更新，下一次渲染仍把旧值写回 DOM。边界是只读字段应显式加 <code>readOnly</code>，可编辑字段必须更新 state。</li>
+          <li><strong>业务表单为什么通常优先受控？</strong> 结论是受控组件更容易做实时校验、联动和提交状态管理。原因是 React state 持有完整表单快照，错误提示、禁用按钮和派生字段都能同步计算。项目里大型表单可借助表单库优化渲染，但核心仍是明确数据源。</li>
+          <li><strong>非受控表单提交时要注意哪些失败路径？</strong> 结论是要处理 ref 为空、空字符串、长度限制和服务端校验失败。原因是 DOM 当前值绕过了 React state 的实时约束。示例里空用户名会显示错误，备注从 ref 读取前也要确认节点存在。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react-dom/components/input" target="_blank" rel="noreferrer">React DOM Docs: input</a></li>
+          <li><a href="https://react.dev/reference/react-dom/components/select" target="_blank" rel="noreferrer">React DOM Docs: select</a></li>
+          <li><a href="https://react.dev/reference/react/useRef" target="_blank" rel="noreferrer">React Docs: useRef</a></li>
         </ul>
       </div>
     </section>
@@ -58,14 +67,22 @@
       function App() {
         const [username, setUsername] = useState("");
         const [role, setRole] = useState("user");
+        const [error, setError] = useState("");
         const noteRef = useRef(null);
 
         function submitForm(event) {
           event.preventDefault();
+          const trimmedUsername = username.trim();
+          if (!trimmedUsername) {
+            setError("用户名不能为空，提交前请先填写。");
+            return;
+          }
+
+          setError("");
           alert(JSON.stringify({
-            username,
+            username: trimmedUsername,
             role,
-            note: noteRef.current.value
+            note: noteRef.current ? noteRef.current.value : ""
           }, null, 2));
         }
 
@@ -77,7 +94,7 @@
             <div>
               <label>
                 用户名（受控）:
-                <input value={username} onChange={e => setUsername(e.target.value)} />
+                <input value={username} onChange={e => setUsername(e.target.value)} aria-describedby="username-error" />
               </label>
             </div>
             <div>
@@ -95,6 +112,7 @@
                 <input ref={noteRef} defaultValue="DOM 自己保存这个值" />
               </label>
             </div>
+            {error && <p id="username-error" role="alert">{error}</p>}
             <button type="submit">提交</button>
           </form>
           <p>当前受控值: {username || "空"} / {role}</p>

@@ -2,15 +2,15 @@
   分类: react18 / 性能
   主题: React.memo 与不可变更新
   要点:
-    - React.memo 会在 props 浅比较相等时跳过函数组件重渲染
-    - 浅比较看引用，数组/对象直接原地修改会破坏 React 的更新判断
-    - 性能优化前先定位问题，不要为了“看起来专业”滥用 memo
+    - React.memo 通过 props 浅比较跳过相同输入下的函数组件渲染
+    - 对象、数组、函数 props 的引用稳定性决定 memo 是否有效
+    - 不可变更新让 React 能识别哪一项状态真的变化
+    - memo 是性能工具，不是修复渲染逻辑错误的手段
   面试:
-    - React.memo 与不可变更新的核心概念是什么
-    - React.memo 与不可变更新在实际项目里怎么用
-    - React.memo 与不可变更新有哪些常见坑或易错点
-    - React.memo 与不可变更新和相近 API 如何区分选型
-    - 面试中如何简洁讲清 React.memo 与不可变更新
+    - React.memo 什么时候能减少渲染，什么时候没效果？
+    - 为什么 memo 依赖不可变更新和稳定引用？
+    - memo、useMemo、useCallback 分别优化什么？
+    - 为什么优化前要先用 Profiler 定位瓶颈？
 -->
 
 <!doctype html>
@@ -33,15 +33,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>React.memo 会在 props 浅比较相等时跳过函数组件重渲染。</li>
-          <li>浅比较看引用，数组/对象直接原地修改会破坏 React 的更新判断。</li>
-          <li>性能优化前先定位问题，不要为了“看起来专业”滥用 memo。</li>
+          <li><code>React.memo</code> 包裹函数组件后，React 会用 <code>Object.is</code> 对新旧 props 做浅比较；相等时可以复用上次渲染结果。</li>
+          <li>浅比较只看第一层引用，对象、数组、函数每次新建都会被视为变化；直接原地修改又会让 React 难以判断哪一项变了。</li>
+          <li>本 demo 中点击“切换无关状态”时 <code>users</code> 引用不变，<code>UserCard</code> 可跳过；点击 <code>Alice +1</code> 时只为 Alice 返回新对象，Bob 的 props 仍稳定。</li>
+          <li><code>memo</code> 优化组件重渲染，<code>useMemo</code> 缓存计算结果，<code>useCallback</code> 缓存函数引用；三者都应服务于真实性能瓶颈。</li>
+          <li>常见坑是把 memo 当默认装饰器。组件很轻、props 总是新引用、或渲染问题来自状态设计时，memo 会增加比较成本和理解成本。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>React.memo 会在 props 浅比较相等时跳过函数组件重渲染？</strong> React.memo 会在 props 浅比较相等时跳过函数组件重渲染；浅比较看引用，数组/对象直接原地修改会破坏 React 的更新判断</li>
-          <li><strong>性能优化前先定位问题？</strong> 性能优化前先定位问题，不要为了“看起来专业”滥用 memo</li>
-          <li><strong>React.memo 与不可变更新的核心概念是什么？</strong> React.memo 会在 props 浅比较相等时跳过函数组件重渲染；浅比较看引用，数组/对象直接原地修改会破坏 React 的更新判断</li>
+          <li><strong>React.memo 什么时候能减少渲染？</strong> 结论是父组件重渲染但子组件 props 浅比较不变时最有效。原因是 React 可以跳过子组件函数执行。本 demo 切换主题不会改变每个 <code>user</code> 对象引用，所以未变化的卡片可避免重复渲染。</li>
+          <li><strong>为什么 memo 依赖不可变更新？</strong> 因为 React 的比较依据主要是引用。不可变更新让变化项拿到新引用，未变化项保留旧引用，既能触发正确 UI 更新，也能让 memo 精确跳过未变化项。原地修改数组或对象会破坏这个判断。</li>
+          <li><strong>memo、useMemo、useCallback 分别优化什么？</strong> <code>memo</code> 优化组件是否重渲染，<code>useMemo</code> 优化昂贵计算结果，<code>useCallback</code> 优化函数 props 的引用稳定。边界是不要为了“少一次 render”盲目叠加，先用 React DevTools Profiler 证明瓶颈。</li>
+          <li><strong>自定义比较函数要注意什么？</strong> 结论是只在浅比较不足且数据结构可控时使用。原因是比较函数本身也有成本，且漏比较函数 props 可能留下旧闭包。表格大行、图表配置这类明确重组件可以考虑，普通展示组件通常不需要。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/memo" target="_blank" rel="noreferrer">React API Reference: memo</a></li>
+          <li><a href="https://react.dev/learn/updating-objects-in-state" target="_blank" rel="noreferrer">React Docs: Updating Objects in State</a></li>
+          <li><a href="https://react.dev/learn/updating-arrays-in-state" target="_blank" rel="noreferrer">React Docs: Updating Arrays in State</a></li>
+          <li><a href="https://react.dev/reference/react/useMemo" target="_blank" rel="noreferrer">React API Reference: useMemo</a></li>
         </ul>
       </div>
     </section>

@@ -2,16 +2,15 @@
   分类: react18 / hooks
   主题: useEffect 副作用、依赖数组与清理函数
   要点:
-    - useEffect 用于处理渲染后的副作用，比如请求、订阅、定时器、手动 DOM 操作
-    - 不传依赖数组: 每次渲染后执行
-    - 传 []: 首次挂载后执行一次，卸载时执行清理
-    - 传 [deps]: 首次挂载和 deps 变化后执行；下一次执行前先清理上一次副作用
+    - useEffect 用来把组件渲染结果同步到外部系统，而不是替代所有生命周期
+    - 依赖数组描述 effect 读取的响应式值；依赖变化时先清理旧副作用再建立新副作用
+    - 定时器、订阅、事件监听和请求取消都应在 cleanup 中收尾
+    - React 18 开发环境 Strict Mode 会额外执行一次 setup + cleanup 来暴露副作用问题
   面试:
-    - useEffect 副作用、依赖数组与清理函数的核心概念是什么
-    - useEffect 副作用、依赖数组与清理函数在实际项目里怎么用
-    - useEffect 副作用、依赖数组与清理函数有哪些常见坑或易错点
-    - useEffect 副作用、依赖数组与清理函数和相近 API 如何区分选型
-    - 面试中如何简洁讲清 useEffect 副作用、依赖数组与清理函数
+    - useEffect 到底同步什么，为什么不是 componentDidMount 的一比一替代？
+    - 依赖数组应该如何写，漏依赖会造成什么问题？
+    - 为什么清理函数会在下一次 effect 前执行？
+    - React 18 Strict Mode 下 effect 执行两次该怎么理解？
 -->
 
 <!doctype html>
@@ -34,16 +33,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>useEffect</code> 用于处理渲染后的副作用，比如请求、订阅、定时器、手动 DOM 操作。</li>
-          <li>不传依赖数组: 每次渲染后执行。</li>
-          <li>传 []: 首次挂载后执行一次，卸载时执行清理。</li>
-          <li>传 [deps]: 首次挂载和 deps 变化后执行；下一次执行前先清理上一次副作用。</li>
+          <li><code>useEffect</code> 表达“这次渲染结果需要和哪个外部系统同步”，常见外部系统包括定时器、DOM API、浏览器事件、网络连接和第三方库。</li>
+          <li>依赖数组不是手动优化开关，而是 effect 读取的响应式值清单；示例中定时器依赖 <code>step</code>，所以 <code>step</code> 变化时必须重新建立定时器。</li>
+          <li>cleanup 会在组件卸载前执行，也会在依赖变化导致下一次 setup 前执行；定时器、订阅和事件监听如果不清理，会造成重复执行或内存泄漏。</li>
+          <li>空依赖数组表示 effect 不读取组件内会变化的响应式值；如果实际读取了却强行省略，容易产生旧闭包和线上难复现的状态不同步。</li>
+          <li>React 18 开发环境 Strict Mode 会额外做一次 setup + cleanup + setup，用来检查 cleanup 是否完整；生产环境不会因此重复挂载业务逻辑。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>useEffect 用于处理渲染后的副作用？</strong> <code>useEffect</code> 用于处理渲染后的副作用，比如请求、订阅、定时器、手动 DOM 操作</li>
-          <li><strong>useEffect 副作用、依赖数组与清理函数的核心概念是什么？</strong> <code>useEffect</code> 用于处理渲染后的副作用，比如请求、订阅、定时器、手动 DOM 操作</li>
-          <li><strong>useEffect 副作用、依赖数组与清理函数在实际项目里怎么用？</strong> <code>useEffect</code> 用于处理渲染后的副作用，比如请求、订阅、定时器、手动 DOM 操作</li>
+          <li><strong><code>useEffect</code> 到底同步什么？</strong> 结论是同步 React 渲染结果与外部系统。原因是渲染本身应保持纯净，DOM 标题、定时器、订阅和网络连接这类副作用必须在提交到页面后处理。边界是派生数据、事件处理里的计算不应该滥用 effect。</li>
+          <li><strong>依赖数组应该怎么写？</strong> 结论是 effect 中读取的 props、state 和组件内声明的响应式值都应列入依赖。原因是 React 依赖这份清单决定何时重新同步外部系统。项目里漏依赖常见后果是请求参数旧、事件监听读旧状态、定时器步长不同步。</li>
+          <li><strong>为什么 cleanup 会在下一次 effect 前执行？</strong> 结论是 React 要先撤销上一轮渲染对应的外部副作用，再建立新副作用。原因是每次 effect 都属于某一次渲染快照。边界是没有外部资源的 effect 可以不返回 cleanup，但定时器、订阅、事件监听必须返回。</li>
+          <li><strong>React 18 Strict Mode 下 effect 执行两次是不是 bug？</strong> 结论是不是 bug，这是开发环境的检查。原因是 React 通过额外 setup + cleanup 暴露不可重复执行或清理不完整的副作用。项目里应修复 cleanup 和幂等性，而不是靠全局变量屏蔽这次检查。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">React Docs: useEffect</a></li>
+          <li><a href="https://react.dev/learn/synchronizing-with-effects" target="_blank" rel="noreferrer">React Docs: Synchronizing with Effects</a></li>
+          <li><a href="https://react.dev/learn/lifecycle-of-reactive-effects" target="_blank" rel="noreferrer">React Docs: Lifecycle of Reactive Effects</a></li>
         </ul>
       </div>
     </section>

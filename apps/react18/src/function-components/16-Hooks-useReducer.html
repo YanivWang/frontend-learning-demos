@@ -2,15 +2,15 @@
   分类: react18 / hooks
   主题: useReducer 管理复杂状态
   要点:
-    - useReducer 适合多个状态字段有关联、更新逻辑较集中或需要 action 语义的场景
-    - reducer 必须是纯函数: 相同 state + action 得到相同新 state，不直接修改原对象
-    - dispatch(action) 描述“发生了什么”，reducer 决定“状态如何变化”
+    - useReducer 把状态更新逻辑集中到 reducer，适合字段关联和 action 语义清晰的场景
+    - reducer 必须保持纯函数，不修改原 state，不读写外部可变值
+    - dispatch(action) 描述发生了什么，React 会用 reducer 计算下一状态
+    - 简单独立状态继续用 useState；复杂流程、历史记录和多分支更新更适合 useReducer
   面试:
-    - useReducer 管理复杂状态的核心概念是什么
-    - useReducer 管理复杂状态在实际项目里怎么用
-    - useReducer 管理复杂状态有哪些常见坑或易错点
-    - useReducer 管理复杂状态和相近 API 如何区分选型
-    - 面试中如何简洁讲清 useReducer 管理复杂状态
+    - useReducer 相比 useState 解决了什么问题？
+    - reducer 为什么必须是纯函数？
+    - dispatch 的 action 应该如何设计？
+    - useReducer 适不适合替代全局状态管理？
 -->
 
 <!doctype html>
@@ -33,15 +33,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>useReducer 适合多个状态字段有关联、更新逻辑较集中或需要 action 语义的场景。</li>
-          <li>reducer 必须是纯函数: 相同 state + action 得到相同新 state，不直接修改原对象。</li>
-          <li>dispatch(action) 描述“发生了什么”，reducer 决定“状态如何变化”。</li>
+          <li><code>useReducer</code> 把“状态如何变化”从组件事件处理函数中抽离出来，适合多个字段有关联、更新分支多或需要记录 action 语义的局部状态。</li>
+          <li>reducer 必须是纯函数：相同的 <code>state</code> 和 <code>action</code> 得到相同的新 state，不直接修改原对象，也不在 reducer 中请求网络、写存储或操作 DOM。</li>
+          <li><code>dispatch(action)</code> 描述“发生了什么”，示例中的 <code>increment</code>、<code>decrement</code>、<code>reset</code> 让事件处理更像发出意图，转移规则集中在 reducer。</li>
+          <li>返回新对象时要保持不可变更新，数组用 <code>concat</code>、展开或 <code>map</code> 生成新引用；原地 <code>push</code> 再返回旧 state 会破坏 React 的变化判断。</li>
+          <li><code>useReducer</code> 管的是组件局部状态；跨页面或远端缓存仍要结合 Context、路由状态、数据请求库或外部状态管理工具评估。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>useReducer 适合多个状态字段有关联、更新逻辑较集中或需要 action？</strong> useReducer 适合多个状态字段有关联、更新逻辑较集中或需要 action 语义的场景</li>
-          <li><strong>reducer 必须是纯函数？</strong> reducer 必须是纯函数: 相同 state + action 得到相同新 state，不直接修改原对象；dispatch(action) 描述“发生了什么”，reducer 决定“状态如何变化”</li>
-          <li><strong>dispatch(action) 描述“发生了什么”？</strong> dispatch(action) 描述“发生了什么”，reducer 决定“状态如何变化”</li>
+          <li><strong><code>useReducer</code> 相比 <code>useState</code> 解决了什么问题？</strong> 结论是它让复杂状态转移更集中、更可读。原因是多个事件都修改同一组字段时，把规则散在事件处理里容易重复和出错。项目里表单向导、编辑器、购物车局部状态和带历史记录的交互更适合 reducer。</li>
+          <li><strong>reducer 为什么必须是纯函数？</strong> 结论是为了让状态更新可预测。原因是 React 可能重新调用 reducer 来确认结果，副作用或原地修改会让结果依赖调用次数和外部环境。边界是副作用应放在事件处理、effect 或请求层，reducer 只返回新状态。</li>
+          <li><strong>action 应该怎么设计？</strong> 结论是 action 描述业务事件，而不是暴露任意字段赋值。原因是 <code>{ type, payload }</code> 能让状态变化有语义，便于调试和复用。项目里 action 类型要覆盖真实用户行为，未知 action 可以抛错帮助尽早发现拼写问题。</li>
+          <li><strong><code>useReducer</code> 适不适合替代全局状态管理？</strong> 结论是不适合作为默认替代。原因是它只解决单个组件树内的状态转移，跨页面共享、缓存失效、服务端数据同步还需要其他方案。边界是配合 Context 可做小范围全局状态，但要注意 Provider 值变化导致的渲染范围。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/useReducer" target="_blank" rel="noreferrer">React Docs: useReducer</a></li>
+          <li><a href="https://react.dev/learn/extracting-state-logic-into-a-reducer" target="_blank" rel="noreferrer">React Docs: Extracting State Logic into a Reducer</a></li>
+          <li><a href="https://react.dev/learn/keeping-components-pure" target="_blank" rel="noreferrer">React Docs: Keeping Components Pure</a></li>
         </ul>
       </div>
     </section>

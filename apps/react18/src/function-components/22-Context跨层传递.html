@@ -2,15 +2,15 @@
   分类: react18 / 组件通信
   主题: Context 跨层传递
   要点:
-    - Context 适合主题、语言、当前登录用户等跨层共享数据
-    - Provider 提供 value，useContext 读取最近的上层 Provider
-    - Context 不是全局状态管理银弹；频繁变化的大状态可能导致较大范围重渲染
+    - Context 适合主题、语言、当前用户这类跨层只读或低频变化数据
+    - useContext 总是读取组件上方最近 Provider 的 value
+    - Provider 的 value 引用变化会让消费组件重新渲染，应拆分上下文或稳定 value
+    - Context 解决传参层级问题，不替代复杂客户端状态管理
   面试:
-    - Context 跨层传递的核心概念是什么
-    - Context 跨层传递在实际项目里怎么用
-    - Context 跨层传递有哪些常见坑或易错点
-    - Context 跨层传递和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Context 跨层传递
+    - Context 适合传什么数据，不适合传什么数据？
+    - useContext 如何决定读取哪个 Provider？
+    - Provider value 为什么常配合 useMemo 或拆分 Context？
+    - Context 与 props 组合、Redux/Zustand 的选型边界是什么？
 -->
 
 <!doctype html>
@@ -33,15 +33,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Context 适合主题、语言、当前登录用户等跨层共享数据。</li>
-          <li>Provider 提供 value，useContext 读取最近的上层 Provider。</li>
-          <li>Context 不是全局状态管理银弹；频繁变化的大状态可能导致较大范围重渲染。</li>
+          <li>Context 用来把数据提供给某棵组件树下的所有后代，典型场景是主题、语言、当前用户、权限配置等跨层但相对稳定的数据。</li>
+          <li><code>useContext(ThemeContext)</code> 会沿组件树向上查找最近的 <code>ThemeContext.Provider</code>；如果没有匹配 Provider，才会使用 <code>createContext</code> 的默认值。</li>
+          <li>Provider 的 <code>value</code> 按引用传递，父组件每次创建新对象都可能让消费者重渲染；本 demo 用 <code>useMemo</code> 稳定主题对象，只在 <code>dark</code> 改变时生成新值。</li>
+          <li>Context 不负责异步请求、缓存、时间旅行调试或复杂派生状态；大型业务状态通常要拆分 Provider，或引入 Redux、Zustand、TanStack Query 等更专门的工具。</li>
+          <li>现代写法优先用函数组件与 <code>useContext</code>；维护旧 class 代码时才会遇到 <code>Context.Consumer</code> 或 <code>contextType</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Context 适合主题、语言、当前登录用户等跨层共享数据？</strong> Context 适合主题、语言、当前登录用户等跨层共享数据；Provider 提供 value，useContext 读取最近的上层 Provider</li>
-          <li><strong>Provider 提供 value？</strong> Provider 提供 value，useContext 读取最近的上层 Provider</li>
-          <li><strong>Context 不是全局状态管理银弹？</strong> Context 适合主题、语言、当前登录用户等跨层共享数据；Provider 提供 value，useContext 读取最近的上层 Provider</li>
+          <li><strong>Context 适合传什么数据，不适合传什么数据？</strong> 结论是适合跨层、低频、读多写少的数据。原因是它避免层层透传 props，但 Provider value 变化会影响所有消费者。项目里主题、登录用户可放 Context，输入框草稿、列表缓存和高频动画状态不宜直接塞进一个大 Context。</li>
+          <li><strong>useContext 如何决定读取哪个 Provider？</strong> 它读取调用组件上方最近的同一个 Context Provider。原因是 React 按组件树而不是 DOM 层级查找上下文；没有 Provider 时使用默认值。嵌套主题、局部权限覆盖等场景可以用内层 Provider 覆盖外层值。</li>
+          <li><strong>Provider value 为什么常配合 useMemo 或拆分 Context？</strong> 结论是为了减少不必要的消费者重渲染。原因是对象、数组、函数每次重新创建都会变成新的引用。本 demo 的主题对象只依赖 <code>dark</code>，真实项目还会把读状态和写 dispatch 分到不同 Context。</li>
+          <li><strong>Context 与 props 组合、状态库如何取舍？</strong> 少量中间层优先 props 或 children 组合，跨很多层共享稳定配置再用 Context。需要复杂更新流程、调试工具、服务端缓存或跨页面协作时，Context 通常只是底层通道，不应当承担完整状态管理。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/learn/passing-data-deeply-with-context" target="_blank" rel="noreferrer">React Docs: Passing Data Deeply with Context</a></li>
+          <li><a href="https://react.dev/reference/react/useContext" target="_blank" rel="noreferrer">React API Reference: useContext</a></li>
+          <li><a href="https://react.dev/reference/react/createContext" target="_blank" rel="noreferrer">React API Reference: createContext</a></li>
         </ul>
       </div>
     </section>

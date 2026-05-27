@@ -2,16 +2,15 @@
   分类: react18 / 函数组件
   主题: defaultProps、参数默认值与 displayName
   要点:
-    - 函数组件推荐 ES6 参数默认值: function Greeting({ name = "访客" })
-    - 仍可用 Component.defaultProps，但新代码更推荐解构默认值
-    - displayName 便于 React DevTools 调试；HOC 包装后尤其需要设置
-    - 对比 class 17：函数组件没有 static，displayName 直接挂函数名上
+    - 函数组件默认值优先使用解构参数默认值
+    - defaultProps 可见于旧代码，新函数组件不应依赖它作为首选写法
+    - displayName 主要服务调试、DevTools 和 HOC 包装后的可读名称
+    - 默认值只在 prop 为 undefined 时生效，null 会按显式传入处理
   面试:
-    - defaultProps、参数默认值与 displayName的核心概念是什么
-    - defaultProps、参数默认值与 displayName在实际项目里怎么用
-    - defaultProps、参数默认值与 displayName有哪些常见坑或易错点
-    - defaultProps、参数默认值与 displayName和相近 API 如何区分选型
-    - 面试中如何简洁讲清 defaultProps、参数默认值与 displayName
+    - 函数组件为什么更推荐参数默认值而不是 defaultProps？
+    - defaultProps 或参数默认值遇到 null 会不会生效？
+    - displayName 在 HOC、memo、forwardRef 场景有什么作用？
+    - class 组件 static defaultProps 与函数组件默认值怎么迁移？
 -->
 
 <!doctype html>
@@ -34,17 +33,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>函数组件推荐 ES6 参数默认值: function Greeting({ name = &quot;访客&quot; })。</li>
-          <li>仍可用 Component.defaultProps，但新代码更推荐解构默认值。</li>
-          <li>displayName 便于 React DevTools 调试；HOC 包装后尤其需要设置。</li>
-          <li>对比 class 17：函数组件没有 static，displayName 直接挂函数名上。</li>
+          <li>函数组件默认值优先写在参数解构里，例如 <code>function Greeting({ name = "访客" })</code>，这与普通 JavaScript 默认参数一致。</li>
+          <li><code>defaultProps</code> 在旧函数组件和 class 组件代码中常见；新函数组件更推荐参数默认值，类型工具、代码阅读和迁移都更直接。</li>
+          <li>默认值只在 prop 为 <code>undefined</code> 或未传入时生效；如果父组件显式传 <code>null</code>，React 会把 <code>null</code> 作为真实值交给子组件。</li>
+          <li><code>displayName</code> 不影响渲染结果，主要影响 React DevTools、错误堆栈和调试可读性；HOC、<code>memo</code>、<code>forwardRef</code> 包装后尤其需要保留可读名称。</li>
+          <li>从 class 组件迁移时，<code>static defaultProps</code> 可改为函数参数默认值；如果旧代码仍使用 <code>Component.defaultProps</code>，应避免和参数默认值重复表达同一规则。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>函数组件推荐 ES6 参数默认值？</strong> 函数组件推荐 ES6 参数默认值: function Greeting({ name = &quot;访客&quot; })；对比 class 17：函数组件没有 static，displayName 直接挂函数名上</li>
-          <li><strong>仍可用 Component.defaultProps？</strong> 仍可用 Component.defaultProps，但新代码更推荐解构默认值</li>
-          <li><strong>displayName 便于 React DevTools 调试？</strong> displayName 便于 React DevTools 调试；HOC 包装后尤其需要设置；对比 class 17：函数组件没有 static，displayName 直接挂函数名上</li>
-          <li><strong>对比 class 17？</strong> 对比 class 17：函数组件没有 static，displayName 直接挂函数名上</li>
+          <li><strong>函数组件为什么更推荐参数默认值？</strong> 结论是它是现代函数组件的首选写法。原因是默认值逻辑直接出现在函数签名里，和 JavaScript、TypeScript 推导更一致。维护旧代码时仍会看到 <code>defaultProps</code>，但新代码不必为了兼容旧风格而继续使用。</li>
+          <li><strong>默认值遇到 null 会不会生效？</strong> 不会。默认值只处理未传入或 <code>undefined</code>。原因是 <code>null</code> 表示父组件有意传入“空值”。项目里如果 <code>null</code> 也要兜底，应在组件内部显式用空值合并或条件判断表达业务含义。</li>
+          <li><strong>displayName 有什么作用？</strong> 结论是它服务调试而不是业务逻辑。原因是 React DevTools 和错误堆栈需要可读组件名。HOC、<code>memo</code>、<code>forwardRef</code> 包装后函数名可能变得不直观，设置 <code>displayName</code> 能保留组件来源。</li>
+          <li><strong>class 组件 defaultProps 如何迁移？</strong> 结论是 class 的 <code>static defaultProps</code> 可迁移为函数组件参数默认值。原因是函数组件没有实例生命周期依赖默认 props 的必要。边界是大型旧代码库可分步迁移，但同一组件内不要同时维护两套默认值。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/learn/passing-props-to-a-component" target="_blank" rel="noreferrer">React Docs: Passing Props to a Component</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters" target="_blank" rel="noreferrer">MDN: Default parameters</a></li>
+          <li><a href="https://legacy.reactjs.org/docs/react-component.html#defaultprops" target="_blank" rel="noreferrer">Legacy React Docs: defaultProps</a></li>
+          <li><a href="https://legacy.reactjs.org/docs/higher-order-components.html#convention-wrap-the-display-name-for-easy-debugging" target="_blank" rel="noreferrer">Legacy React Docs: Wrap the Display Name for Easy Debugging</a></li>
         </ul>
       </div>
     </section>

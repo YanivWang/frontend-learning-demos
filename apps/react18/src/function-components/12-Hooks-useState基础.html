@@ -2,16 +2,15 @@
   分类: react18 / hooks
   主题: useState 基础与函数式更新
   要点:
-    - Hooks 只能在函数组件顶层调用，不能写在 if / for / 普通函数里
-    - useState 返回 [state, setState]，修改状态必须调用 setState
-    - 当下一次状态依赖上一次状态时，优先使用函数式更新 setCount(prev => prev + 1)
-    - React 状态更新是异步调度的，setState 后立刻读取旧值是常见面试坑
+    - useState 为每次渲染提供一份状态快照，set 函数请求下一次渲染
+    - 同一次事件里多次 setCount(count + 1) 读取的是同一个旧快照
+    - 下一次状态依赖上一次状态时，应使用 setCount(prev => prev + 1)
+    - state 不要原地修改对象或数组；把新值交给 React 才能触发更新
   面试:
-    - useState 基础与函数式更新的核心概念是什么
-    - useState 基础与函数式更新在实际项目里怎么用
-    - useState 基础与函数式更新有哪些常见坑或易错点
-    - useState 基础与函数式更新和相近 API 如何区分选型
-    - 面试中如何简洁讲清 useState 基础与函数式更新
+    - 为什么连续三次 setCount(count + 1) 通常只加 1？
+    - 什么时候必须使用函数式更新？
+    - setState 后为什么立刻读不到新状态？
+    - useState 和 useReducer 如何按状态复杂度选型？
 -->
 
 <!doctype html>
@@ -34,17 +33,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Hooks 只能在函数组件顶层调用，不能写在 if / for / 普通函数里。</li>
-          <li><code>useState</code> 返回 [state, setState]，修改状态必须调用 setState。</li>
-          <li>当下一次状态依赖上一次状态时，优先使用函数式更新 setCount(prev =&gt; prev + 1)。</li>
-          <li>React 状态更新是异步调度的，setState 后立刻读取旧值是常见面试坑。</li>
+          <li><code>useState</code> 返回当前渲染的状态快照和一个 set 函数；调用 set 函数不会改写本次 render 里的变量，而是让 React 安排下一次渲染。</li>
+          <li>同一次事件处理中，<code>count</code> 始终是这次渲染捕获到的值，所以连续三次 <code>setCount(count + 1)</code> 通常只把同一个下一状态入队三次。</li>
+          <li>当下一次状态依赖上一次状态时，使用函数式更新 <code>setCount(prev =&gt; prev + 1)</code>，React 会按队列顺序把每个 updater 应用到最新中间值。</li>
+          <li>state 适合驱动 UI；不会影响渲染的可变值放到 <code>useRef</code>。如果状态字段多且转移规则集中，再考虑 <code>useReducer</code>。</li>
+          <li>对象和数组状态要创建新引用，不能原地修改后再传回同一个对象；否则 React 可能认为状态没有变化，UI 也难以追踪。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Hooks 只能在函数组件顶层调用？</strong> Hooks 只能在函数组件顶层调用，不能写在 if / for / 普通函数里</li>
-          <li><strong>useState 返回 [state？</strong> <code>useState</code> 返回 [state, setState]，修改状态必须调用 setState</li>
-          <li><strong>当下一次状态依赖上一次状态时？</strong> 当下一次状态依赖上一次状态时，优先使用函数式更新 setCount(prev =&gt; prev + 1)</li>
-          <li><strong>React 状态更新是异步调度的？</strong> React 状态更新是异步调度的，setState 后立刻读取旧值是常见面试坑</li>
+          <li><strong>为什么连续三次 <code>setCount(count + 1)</code> 通常只加 1？</strong> 结论是三次读取的都是同一次渲染中的 <code>count</code> 快照。原因是 React 在事件处理结束后再处理状态队列，普通写法会把相同的下一值入队。边界是如果下一状态只和事件参数有关，这样写可以；如果依赖旧状态，就要改成函数式更新。</li>
+          <li><strong>什么时候必须使用函数式更新？</strong> 结论是“下一值依赖上一值”时优先使用 updater 函数。原因是 updater 会在 React 处理队列时拿到最新中间状态，能正确表达连续加减、切换、追加列表等逻辑。项目里常见于计数器、分页游标、队列式追加和定时器回调。</li>
+          <li><strong>setState 后为什么立刻读不到新状态？</strong> 结论是本次函数调用里的 state 不会被即时替换。原因是函数组件渲染产生的是快照，set 函数请求下一次渲染，新值会在下一次 render 中体现。需要基于新值做副作用时，通常放到事件里计算好，或用 <code>useEffect</code> 观察状态变化。</li>
+          <li><strong><code>useState</code> 和 <code>useReducer</code> 怎么选？</strong> 结论是简单独立状态用 <code>useState</code>，复杂状态转移用 <code>useReducer</code>。原因是 reducer 能把 action 和转移规则集中管理。边界是不要为了“看起来高级”过早引入 reducer，小组件里的布尔值和输入框状态直接用 <code>useState</code> 更清晰。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/useState" target="_blank" rel="noreferrer">React Docs: useState</a></li>
+          <li><a href="https://react.dev/learn/state-as-a-snapshot" target="_blank" rel="noreferrer">React Docs: State as a Snapshot</a></li>
+          <li><a href="https://react.dev/learn/queueing-a-series-of-state-updates" target="_blank" rel="noreferrer">React Docs: Queueing a Series of State Updates</a></li>
         </ul>
       </div>
     </section>

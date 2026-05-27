@@ -2,16 +2,15 @@
   分类: react18 / hooks
   主题: 闭包与依赖数组陷阱
   要点:
-    - 函数组件每次渲染都有自己的 state 快照和函数闭包
-    - effect / callback 使用了外部变量，就应该放入依赖数组
-    - 故意不放依赖会产生 stale closure，也就是读到旧状态
-    - 如果只需要基于旧状态更新，函数式 setState 可以减少依赖
+    - 函数组件每次渲染都会创建新的 state 快照和事件/副作用闭包
+    - effect、memo、callback 读取响应式值时，依赖数组要如实声明
+    - 漏依赖会产生 stale closure，使定时器、订阅或请求回调读到旧状态
+    - 函数式 setState、把逻辑移入 effect、拆分 effect 都是减少错误依赖的常见办法
   面试:
-    - 闭包与依赖数组陷阱的核心概念是什么
-    - 闭包与依赖数组陷阱在实际项目里怎么用
-    - 闭包与依赖数组陷阱有哪些常见坑或易错点
-    - 闭包与依赖数组陷阱和相近 API 如何区分选型
-    - 面试中如何简洁讲清 闭包与依赖数组陷阱
+    - 为什么事件回调会读到点击那一刻的旧 count？
+    - effect 漏依赖为什么会造成 stale closure？
+    - 依赖太多导致 effect 频繁执行时应该怎么重构？
+    - 函数式 setState 能解决哪些依赖问题，不能解决哪些？
 -->
 
 <!doctype html>
@@ -34,17 +33,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>函数组件每次渲染都有自己的 state 快照和函数闭包。</li>
-          <li>effect / callback 使用了外部变量，就应该放入依赖数组。</li>
-          <li>故意不放依赖会产生 stale closure，也就是读到旧状态。</li>
-          <li>如果只需要基于旧状态更新，函数式 setState 可以减少依赖。</li>
+          <li>函数组件每次渲染都会创建一组新的变量和函数闭包；示例中 <code>alertLater</code> 捕获的是点击那次渲染里的 <code>count</code> 快照。</li>
+          <li>依赖数组要如实描述 effect、memo、callback 读取的响应式值。示例中的 message 由 <code>count</code> 派生，因此 effect 依赖 <code>count</code>。</li>
+          <li>漏依赖会产生 stale closure：定时器、订阅、异步请求回调继续读旧 props 或 state，表现为 UI 看似更新了，副作用还按旧参数运行。</li>
+          <li>依赖太多不是删除依赖的理由，应该先判断是否真的需要 effect，再考虑把派生计算放回渲染、把事件逻辑放回事件处理，或拆分成多个更小的 effect。</li>
+          <li>函数式 setState 适合“只根据上一状态计算下一状态”的场景，可以减少对当前 state 的闭包依赖；但它不能替代所有依赖声明，比如请求参数、订阅 key 仍要写进依赖数组。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>函数组件每次渲染都有自己的 state 快照和函数闭包？</strong> 函数组件每次渲染都有自己的 state 快照和函数闭包</li>
-          <li><strong>effect / callback 使用了外部变量？</strong> effect / callback 使用了外部变量，就应该放入依赖数组</li>
-          <li><strong>故意不放依赖会产生 stale closure？</strong> 故意不放依赖会产生 stale closure，也就是读到旧状态</li>
-          <li><strong>如果只需要基于旧状态更新？</strong> 如果只需要基于旧状态更新，函数式 setState 可以减少依赖</li>
+          <li><strong>为什么事件回调会读到点击那一刻的旧 <code>count</code>？</strong> 结论是回调闭包捕获的是创建它那次渲染的状态快照。原因是函数组件每次 render 都是一次新的函数调用，旧回调不会自动改写内部变量。项目里延迟提示、定时器和 Promise 回调都要意识到这个快照语义。</li>
+          <li><strong>effect 漏依赖为什么会造成 stale closure？</strong> 结论是 effect 会继续使用旧渲染里的变量。原因是 React 只有在依赖变化时才重新同步副作用。边界是如果一个值确实不参与副作用，可以不放；但读取了响应式值却省略，通常是 bug。</li>
+          <li><strong>依赖太多导致 effect 频繁执行怎么办？</strong> 结论是重构数据流，而不是删除依赖。原因是依赖多往往说明 effect 做了过多事情或把派生计算放错位置。项目里常用做法是拆分 effect、把纯计算移回 render、把事件驱动逻辑放回事件处理函数。</li>
+          <li><strong>函数式 setState 能解决哪些依赖问题？</strong> 结论是能解决“下一状态只依赖上一状态”的更新。原因是 updater 函数由 React 在处理队列时传入最新状态。边界是它不能让请求参数、订阅对象、外部变量自动变新，这些仍要遵守依赖数组规则。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/learn/state-as-a-snapshot" target="_blank" rel="noreferrer">React Docs: State as a Snapshot</a></li>
+          <li><a href="https://react.dev/learn/removing-effect-dependencies" target="_blank" rel="noreferrer">React Docs: Removing Effect Dependencies</a></li>
+          <li><a href="https://react.dev/reference/react/useEffect#specifying-reactive-dependencies" target="_blank" rel="noreferrer">React Docs: Specifying Reactive Dependencies</a></li>
         </ul>
       </div>
     </section>

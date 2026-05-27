@@ -2,15 +2,15 @@
   分类: react18 / ref
   主题: forwardRef 与 useImperativeHandle
   要点:
-    - 普通函数组件不能直接接收 ref，需要 forwardRef 转发
-    - useImperativeHandle 可以限制父组件能调用的实例方法
-    - 这类命令式调用应少用，优先使用 props/state 的声明式数据流
+    - React 18 函数组件要接收父级 ref，需通过 forwardRef 显式转发
+    - useImperativeHandle 可把 DOM ref 封装成受控的命令式方法
+    - 依赖数组要覆盖暴露方法用到的响应式值，避免旧闭包
+    - 命令式 API 适合聚焦、滚动、媒体播放等少数 DOM 场景
   面试:
-    - forwardRef 与 useImperativeHandle的核心概念是什么
-    - forwardRef 与 useImperativeHandle在实际项目里怎么用
-    - forwardRef 与 useImperativeHandle有哪些常见坑或易错点
-    - forwardRef 与 useImperativeHandle和相近 API 如何区分选型
-    - 面试中如何简洁讲清 forwardRef 与 useImperativeHandle
+    - React 18 函数组件为什么不能像 DOM 节点一样直接拿 ref？
+    - useImperativeHandle 相比直接暴露 DOM 节点有什么价值？
+    - 命令式 ref API 适合哪些场景，什么时候应该改用 props/state？
+    - React 19 的 ref as prop 与 React 18 forwardRef 边界是什么？
 -->
 
 <!doctype html>
@@ -33,16 +33,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>普通函数组件不能直接接收 <code>ref</code>，需要 forwardRef 转发。</li>
-          <li>useImperativeHandle 可以限制父组件能调用的实例方法。</li>
-          <li>这类命令式调用应少用，优先使用 props/state 的声明式数据流。</li>
-          <li>普通函数组件不能直接接收 <code>ref</code>，需要 forwardRef 转发（补充）。</li>
+          <li>在 React 18 中，普通函数组件不会自动接收 <code>ref</code>；需要用 <code>forwardRef</code> 把父组件传入的 ref 转发到内部 DOM 或自定义句柄。</li>
+          <li><code>useImperativeHandle(ref, createHandle, deps)</code> 可以隐藏真实 DOM 节点，只暴露父组件需要的少量方法，例如本 demo 的 <code>focus()</code> 与 <code>clear()</code>。</li>
+          <li>依赖数组应覆盖暴露方法读取的 props、state 或函数引用；如果句柄只调用稳定的 DOM ref 与 state setter，空依赖通常可接受。</li>
+          <li>命令式 ref API 适合聚焦、滚动、文本选择、媒体播放、第三方组件实例桥接；业务数据流仍优先通过 props、state、Context 或事件回调声明式表达。</li>
+          <li>版本边界：React 19 开始支持把 <code>ref</code> 作为 prop 传给函数组件；本仓库 React 18 demo 仍应使用 <code>forwardRef</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>普通函数组件不能直接接收 ref？</strong> 普通函数组件不能直接接收 <code>ref</code>，需要 forwardRef 转发</li>
-          <li><strong>useImperativeHandle 可以限制父组件能调用的实例方法？</strong> useImperativeHandle 可以限制父组件能调用的实例方法</li>
-          <li><strong>这类命令式调用应少用？</strong> 这类命令式调用应少用，优先使用 props/state 的声明式数据流</li>
+          <li><strong>React 18 函数组件为什么不能像 DOM 节点一样直接拿 ref？</strong> 结论是 React 18 中 <code>ref</code> 不是普通 prop，函数组件没有实例可挂。原因是函数组件只是渲染函数。需要让父级操作内部 DOM 时，用 <code>forwardRef</code> 明确声明这个组件支持 ref 转发。</li>
+          <li><strong>useImperativeHandle 相比直接暴露 DOM 节点有什么价值？</strong> 结论是它把内部实现封装成稳定、受控的命令式接口。原因是父组件只拿到 <code>focus</code>、<code>clear</code> 这类方法，不能随意改内部 DOM。项目里封装输入框、播放器、弹窗实例时更容易维护边界。</li>
+          <li><strong>命令式 ref API 适合哪些场景？</strong> 适合 DOM 能力或第三方实例能力，例如聚焦、滚动、选中文本、播放暂停。原因是这些行为本身不是纯 UI 状态。边界是业务开关、表单值、权限状态应优先走声明式数据流，否则父子组件会强耦合。</li>
+          <li><strong>React 19 的 ref as prop 与 React 18 有什么边界？</strong> React 19 中函数组件可把 <code>ref</code> 当 prop 接收，减少 <code>forwardRef</code> 包装。React 18 当前推荐仍是 <code>forwardRef</code>；面试回答要明确版本，不能把 React 19 能力写成 React 18 现状。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/forwardRef" target="_blank" rel="noreferrer">React API Reference: forwardRef</a></li>
+          <li><a href="https://react.dev/reference/react/useImperativeHandle" target="_blank" rel="noreferrer">React API Reference: useImperativeHandle</a></li>
+          <li><a href="https://react.dev/learn/manipulating-the-dom-with-refs" target="_blank" rel="noreferrer">React Docs: Manipulating the DOM with Refs</a></li>
         </ul>
       </div>
     </section>
@@ -88,8 +96,8 @@
           <h1>forwardRef 与 useImperativeHandle</h1>
 
           <SearchInput ref={searchRef} />
-          <button onClick={() => searchRef.current.focus()}>聚焦</button>
-          <button onClick={() => searchRef.current.clear()}>清空</button>
+          <button onClick={() => searchRef.current?.focus()}>聚焦</button>
+          <button onClick={() => searchRef.current?.clear()}>清空</button>
           <p>面试回答: forwardRef 负责转发 ref，useImperativeHandle 负责暴露受控的命令式 API。</p>
         </section>
       );

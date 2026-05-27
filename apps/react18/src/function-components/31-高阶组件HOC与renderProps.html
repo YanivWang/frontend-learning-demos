@@ -2,16 +2,15 @@
   分类: react18 / 函数组件
   主题: 高阶组件 HOC 与 render props
   要点:
-    - HOC: 函数接收组件，返回增强后的新组件，不修改原组件
-    - render props: 组件接收函数 prop，由父决定渲染什么
-    - Hooks 时代很多 HOC/render props 场景可用自定义 Hook 替代
-    - 对比 class 18：函数组件同样可写 HOC，但面试常问与 Hook 的取舍
+    - HOC 是接收组件并返回增强组件的函数，不能修改原组件
+    - render props 通过函数 prop 暴露状态或行为，由调用方决定渲染内容
+    - 自定义 Hook 是函数组件复用有状态逻辑的现代首选
+    - HOC/render props 仍常见于旧库、权限包装、埋点和跨组件增强
   面试:
-    - 高阶组件 HOC 与 render props的核心概念是什么
-    - 高阶组件 HOC 与 render props在实际项目里怎么用
-    - 高阶组件 HOC 与 render props有哪些常见坑或易错点
-    - 高阶组件 HOC 与 render props和相近 API 如何区分选型
-    - 面试中如何简洁讲清 高阶组件 HOC 与 render props
+    - HOC 为什么要返回新组件而不是修改传入组件？
+    - render props 与 children-as-function 有什么优缺点？
+    - Hooks 时代为什么很多逻辑复用会迁移到自定义 Hook？
+    - HOC、render props、Hook 在权限、埋点、鼠标位置这类场景如何取舍？
 -->
 
 <!doctype html>
@@ -34,16 +33,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>HOC: 函数接收组件，返回增强后的新组件，不修改原组件。</li>
-          <li><code>render</code> props: 组件接收函数 prop，由父决定渲染什么。</li>
-          <li>Hooks 时代很多 HOC/render props 场景可用自定义 Hook 替代。</li>
-          <li>对比 class 18：函数组件同样可写 HOC，但面试常问与 Hook 的取舍。</li>
+          <li>高阶组件 HOC 是“接收组件，返回新组件”的函数，常用于注入 loading、权限、埋点、主题等横切能力；它不应修改传入组件本身。</li>
+          <li><code>render props</code> 是组件通过函数 prop 暴露状态或行为，由调用方决定如何渲染；本 demo 的 <code>MouseTracker</code> 把鼠标坐标交给 <code>render</code> 函数。</li>
+          <li>自定义 Hook 把有状态逻辑提取到普通函数中，函数组件里复用更直接；本 demo 的 <code>useMousePosition</code> 与 render props 版本演示了同一逻辑的现代写法。</li>
+          <li>常见坑：HOC 要透传无关 props、设置可读 <code>displayName</code>，避免在 render 内动态创建 HOC；render props 每次传新函数可能影响基于浅比较的优化。</li>
+          <li>鼠标移动是高频 DOM 事件，真实项目要按场景节流、限制监听范围，并确保 Effect cleanup 正确移除监听，避免性能问题和内存泄漏。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>render props？</strong> <code>render</code> props: 组件接收函数 prop，由父决定渲染什么；Hooks 时代很多 HOC/render props 场景可用自定义 Hook 替代</li>
-          <li><strong>Hooks 时代很多 HOC/render props 场景可用自定义 Hook？</strong> Hooks 时代很多 HOC/render props 场景可用自定义 Hook 替代；对比 class 18：函数组件同样可写 HOC，但面试常问与 Hook 的取舍</li>
-          <li><strong>对比 class 18？</strong> 对比 class 18：函数组件同样可写 HOC，但面试常问与 Hook 的取舍</li>
+          <li><strong>HOC 为什么要返回新组件而不是修改传入组件？</strong> 结论是 HOC 应保持纯函数式组合。原因是修改原组件会让多个增强器互相污染，也破坏组件可复用性。本 demo 的 <code>withLoading</code> 返回 <code>WithLoading</code>，并把剩余 props 透传给原组件。</li>
+          <li><strong>render props 的优缺点是什么？</strong> 优点是调用方完全控制渲染结构，逻辑组件只负责提供状态。缺点是 JSX 嵌套可能变深，传入函数引用每次变化也可能影响浅比较优化。鼠标位置、表单状态、权限结果都可以用这种模式表达。</li>
+          <li><strong>Hooks 时代为什么迁移到自定义 Hook？</strong> 结论是 Hook 复用状态逻辑更轻，少一层组件包装。原因是它直接在函数组件里返回数据和方法，不需要 render props 嵌套或 HOC 命名转发。边界是 Hook 只能在 React 函数组件或其他 Hook 中调用，不能替代所有组件增强场景。</li>
+          <li><strong>HOC、render props、Hook 如何取舍？</strong> 新函数组件业务逻辑复用优先自定义 Hook；需要包裹组件、统一权限、埋点、主题注入时 HOC 仍有价值；需要调用方决定 UI 结构时 render props 仍清晰。维护旧 class 代码或第三方库时，要能读懂三种模式。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://legacy.reactjs.org/docs/higher-order-components.html" target="_blank" rel="noreferrer">Legacy React Docs: Higher-Order Components</a></li>
+          <li><a href="https://legacy.reactjs.org/docs/render-props.html" target="_blank" rel="noreferrer">Legacy React Docs: Render Props</a></li>
+          <li><a href="https://react.dev/learn/reusing-logic-with-custom-hooks" target="_blank" rel="noreferrer">React Docs: Reusing Logic with Custom Hooks</a></li>
+          <li><a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">React API Reference: useEffect</a></li>
         </ul>
       </div>
     </section>

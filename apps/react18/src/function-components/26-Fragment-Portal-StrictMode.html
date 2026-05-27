@@ -2,15 +2,15 @@
   分类: react18 / 内置能力
   主题: Fragment、Portal 与 StrictMode
   要点:
-    - Fragment 用于返回多个兄弟节点，不额外创建 DOM 包裹层
-    - Portal 可以把子节点渲染到父组件 DOM 层级之外，常用于弹窗、浮层
-    - StrictMode 只在开发环境生效，用来暴露副作用、废弃 API 等问题
+    - Fragment 让组件返回多个兄弟节点而不增加额外 DOM
+    - Portal 改变 DOM 挂载位置，但事件仍按 React 组件树冒泡
+    - StrictMode 仅开发环境启用额外检查，可能重复调用渲染和 Effect
+    - 弹窗 Portal 要额外处理焦点、键盘关闭、遮罩和无障碍语义
   面试:
-    - Fragment、Portal 与 StrictMode的核心概念是什么
-    - Fragment、Portal 与 StrictMode在实际项目里怎么用
-    - Fragment、Portal 与 StrictMode有哪些常见坑或易错点
-    - Fragment、Portal 与 StrictMode和相近 API 如何区分选型
-    - 面试中如何简洁讲清 Fragment、Portal 与 StrictMode
+    - Fragment 与普通 div 包裹有什么区别？
+    - Portal 渲染到 root 外时事件为什么仍能回到 React 父组件？
+    - StrictMode 为什么会让开发环境出现重复执行？
+    - 用 Portal 做弹窗时有哪些交互和无障碍边界？
 -->
 
 <!doctype html>
@@ -37,15 +37,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Fragment 用于返回多个兄弟节点，不额外创建 DOM 包裹层。</li>
-          <li>Portal 可以把子节点渲染到父组件 DOM 层级之外，常用于弹窗、浮层。</li>
-          <li>StrictMode 只在开发环境生效，用来暴露副作用、废弃 API 等问题。</li>
+          <li><code>Fragment</code> 允许组件返回多个兄弟节点而不额外创建 DOM 包裹层，适合列表项、表格结构和不希望影响 CSS 布局的场景。</li>
+          <li><code>createPortal(children, domNode)</code> 会把子节点挂到指定 DOM 节点；它只改变真实 DOM 位置，不改变 React 组件树关系。</li>
+          <li>Portal 中触发的 React 事件仍按 React 组件树冒泡，而不是按真实 DOM 层级冒泡；弹窗、Tooltip、浮层要特别留意事件关闭逻辑。</li>
+          <li><code>StrictMode</code> 只在开发环境生效，会额外执行一些检查，并可能重复调用渲染逻辑和 Effect setup/cleanup，以暴露不纯渲染和遗漏清理的问题。</li>
+          <li>本 demo 的 Portal 只演示挂载位置。生产弹窗还应处理焦点陷阱、Esc 关闭、滚动锁定、遮罩点击、<code>aria-modal</code> 等交互和无障碍边界。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Fragment 用于返回多个兄弟节点？</strong> Fragment 用于返回多个兄弟节点，不额外创建 DOM 包裹层</li>
-          <li><strong>Portal 可以把子节点渲染到父组件 DOM 层级之外？</strong> Portal 可以把子节点渲染到父组件 DOM 层级之外，常用于弹窗、浮层</li>
-          <li><strong>StrictMode 只在开发环境生效？</strong> StrictMode 只在开发环境生效，用来暴露副作用、废弃 API 等问题</li>
+          <li><strong>Fragment 与普通 div 包裹有什么区别？</strong> 结论是 Fragment 不会产生真实 DOM 节点。原因是它只是 React 组件返回多个子节点的语法容器。边界是需要 class、样式、语义或布局容器时仍应使用真实元素。</li>
+          <li><strong>Portal 渲染到 root 外时事件为什么仍能回到 React 父组件？</strong> 因为 Portal 保留在原 React 组件树里，只是提交到另一个 DOM 容器。本 demo 弹窗显示在 <code>#modal-root</code>，但状态仍由父组件控制。项目里不要把 DOM 层级和 React 事件路径混为一谈。</li>
+          <li><strong>StrictMode 为什么会让开发环境出现重复执行？</strong> 结论是这是有意的开发检查。原因是 React 通过重复调用暴露不纯渲染、遗漏 Effect 清理和废弃 API。边界是生产构建不会因为 StrictMode 自动重复执行这些检查，但代码仍应按可重复执行来写。</li>
+          <li><strong>用 Portal 做弹窗有哪些边界？</strong> 结论是 Portal 只解决挂载位置，不解决完整弹窗体验。原因是焦点管理、键盘关闭、滚动锁定和无障碍语义属于应用逻辑。真实项目应补 <code>role="dialog"</code>、焦点回收、Esc 关闭和遮罩策略。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/Fragment" target="_blank" rel="noreferrer">React API Reference: Fragment</a></li>
+          <li><a href="https://react.dev/reference/react-dom/createPortal" target="_blank" rel="noreferrer">React DOM API Reference: createPortal</a></li>
+          <li><a href="https://react.dev/reference/react/StrictMode" target="_blank" rel="noreferrer">React API Reference: StrictMode</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/dialog_role" target="_blank" rel="noreferrer">MDN: ARIA dialog role</a></li>
         </ul>
       </div>
     </section>

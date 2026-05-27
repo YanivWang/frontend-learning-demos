@@ -2,16 +2,15 @@
   分类: react18 / 原理
   主题: 列表 key 与 diff
   要点:
-    - key 帮助 React 在同级列表中识别元素身份
-    - key 不会作为 props 传给组件
-    - 稳定唯一的业务 id 通常优于 index
-    - 用 index 作为 key 时，列表插入、删除、排序可能导致状态错位
+    - key 是 React 在同级列表 diff 时识别元素身份的线索，不会作为普通 props 传入组件
+    - 稳定唯一的业务 id 通常优于 index，可让组件状态跟着数据项移动
+    - index key 只适合静态、不排序、不插入删除的列表
+    - key 变化会让 React 把元素视为新身份，可用于有意重置局部状态
   面试:
-    - 列表 key 与 diff的核心概念是什么
-    - 列表 key 与 diff在实际项目里怎么用
-    - 列表 key 与 diff有哪些常见坑或易错点
-    - 列表 key 与 diff和相近 API 如何区分选型
-    - 面试中如何简洁讲清 列表 key 与 diff
+    - key 在 React diff 中到底解决什么问题？
+    - 为什么列表增删排序时不推荐 index key？
+    - key 为什么不会出现在组件 props 里？
+    - 什么时候可以有意改变 key 来重置组件状态？
 -->
 
 <!doctype html>
@@ -34,17 +33,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>key</code> 帮助 React 在同级列表中识别元素身份。</li>
-          <li><code>key</code> 不会作为 props 传给组件。</li>
-          <li>稳定唯一的业务 id 通常优于 index。</li>
-          <li>用 index 作为 <code>key</code> 时，列表插入、删除、排序可能导致状态错位。</li>
+          <li><code>key</code> 是 React 在同级兄弟元素中识别身份的线索，帮助 diff 判断“哪一项还是原来的组件”。它只在当前数组层级内需要唯一。</li>
+          <li><code>key</code> 不会作为普通 props 传给组件；如果子组件也需要业务 id，要显式传入 <code>id={todo.id}</code> 或类似字段。</li>
+          <li>稳定业务 id 能让组件状态跟着数据项移动。示例中正确列表用 <code>todo.id</code>，从头插入新任务后，已勾选项仍对应原任务。</li>
+          <li>index key 只适合完全静态的列表；一旦从头插入、删除或排序，React 会按位置复用组件，导致输入框内容、勾选状态等局部状态错位。</li>
+          <li>改变 <code>key</code> 会让 React 认为这是新组件，从而销毁旧状态并重新创建；项目里可用它重置表单或详情页局部状态，但不要用随机 key 造成每次渲染都重建。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>key 帮助 React 在同级列表中识别元素身份？</strong> <code>key</code> 帮助 React 在同级列表中识别元素身份；<code>key</code> 不会作为 props 传给组件</li>
-          <li><strong>key 不会作为 props 传给组件？</strong> <code>key</code> 帮助 React 在同级列表中识别元素身份；<code>key</code> 不会作为 props 传给组件</li>
-          <li><strong>稳定唯一的业务 id 通常优于 index？</strong> 稳定唯一的业务 id 通常优于 index</li>
-          <li><strong>用 index 作为 key 时？</strong> 用 index 作为 <code>key</code> 时，列表插入、删除、排序可能导致状态错位</li>
+          <li><strong><code>key</code> 在 diff 中解决什么问题？</strong> 结论是帮助 React 在同级列表中判断元素身份。原因是没有稳定身份时，React 只能按位置复用组件。项目里稳定 key 能减少错误复用，并让局部状态与真实数据项保持一致。</li>
+          <li><strong>为什么列表增删排序时不推荐 index key？</strong> 结论是 index 表示位置，不表示数据身份。原因是从头插入后，同一个位置变成了另一条数据，React 却会复用旧组件状态。示例中反例列表的 checkbox 状态就可能跟错任务。</li>
+          <li><strong><code>key</code> 为什么不会出现在 props 里？</strong> 结论是 <code>key</code> 是 React 自己使用的特殊字段。原因是它参与元素协调，不属于传给组件的业务数据。项目里子组件需要 id 时必须额外传 <code>id</code> 或完整对象。</li>
+          <li><strong>什么时候可以改变 <code>key</code> 来重置状态？</strong> 结论是当你希望 React 把组件视为全新实例时可以这么做。原因是 key 变了，旧状态会被丢弃。场景包括切换用户后重置表单、切换文档后重置编辑器；边界是不要用 <code>Date.now()</code> 或随机数作为常规 key。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://react.dev/learn/rendering-lists#keeping-list-items-in-order-with-key" target="_blank" rel="noreferrer">React Docs: Keeping list items in order with key</a></li>
+          <li><a href="https://react.dev/learn/preserving-and-resetting-state" target="_blank" rel="noreferrer">React Docs: Preserving and Resetting State</a></li>
+          <li><a href="https://legacy.reactjs.org/docs/reconciliation.html#keys" target="_blank" rel="noreferrer">Legacy React Docs: Reconciliation - Keys</a></li>
         </ul>
       </div>
     </section>
