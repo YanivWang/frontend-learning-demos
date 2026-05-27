@@ -1,0 +1,99 @@
+<!--
+  分类: react18 / class 组件
+  主题: class 组件通信、状态提升与 children 组合
+  要点:
+    - 父传子: props；子传父: 父传回调，子组件调用
+    - 兄弟通信: 状态提升到共同父组件
+    - children / 具名插槽式 props（如 footer）实现组合，避免 props 爆炸
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>React · class 组件通信与 children</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    class Panel extends React.Component {
+      render() {
+        return (
+          <section style={{ border: "1px solid #ccc", padding: 12, marginBottom: 12 }}>
+            <h2>{this.props.title}</h2>
+            <div>{this.props.children}</div>
+            <footer>{this.props.footer}</footer>
+          </section>
+        );
+      }
+    }
+
+    class NameInput extends React.Component {
+      handleChange = (e) => {
+        this.props.onChangeName(e.target.value);
+      };
+
+      render() {
+        return <input value={this.props.value} onChange={this.handleChange} />;
+      }
+    }
+
+    class Preview extends React.Component {
+      render() {
+        return <p>预览: Hello, {this.props.name || "匿名用户"}</p>;
+      }
+    }
+
+    class App extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = { name: "React Class" };
+      }
+
+      handleNameChange = (name) => {
+        this.setState({ name });
+      };
+
+      clearName = () => {
+        this.setState({ name: "" });
+      };
+
+      render() {
+        return (
+          <main>
+            <h1>class 组件通信与 children</h1>
+            <Panel
+              title="资料卡片"
+              footer={<button onClick={this.clearName}>清空</button>}
+            >
+              <NameInput value={this.state.name} onChangeName={this.handleNameChange} />
+              <Preview name={this.state.name} />
+            </Panel>
+            <p>面试回答: 单向数据流；子组件通过回调请求父组件更新；children 做组合扩展。</p>
+          </main>
+        );
+      }
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="/">目录</a>
+  <a href="./14-class-%E5%88%97%E8%A1%A8key%E4%B8%8Ediff.html">← class-列表key与diff</a>
+  <a href="./16-class-%E5%90%88%E6%88%90%E4%BA%8B%E4%BB%B6%E6%9C%BA%E5%88%B6.html">class-合成事件机制 →</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!--
+  分类: react18 / 函数组件
+  主题: 函数组件事件处理与参数传递
+  要点:
+    - 函数组件没有 this，事件处理函数直接定义即可，无需 bind
+    - 需要传参时用箭头函数包装: onClick={() => handle(id)}，不要写 handle(id) 立即执行
+    - 事件对象 e 作为第一个参数传入；需要同时传参时写 (e) => handle(e, id)
+    - 父组件通过 props 传入回调，子组件在事件里调用；不是 DOM 原生事件（对比 class 13 的 this 绑定）
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>React · 函数组件事件处理</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    function TodoItem({ id, text, onRemove }) {
+      return (
+        <li>
+          {text}
+          <button onClick={() => onRemove(id)}>删除</button>
+        </li>
+      );
+    }
+
+    function App() {
+      const [items, setItems] = useState([
+        { id: 1, text: "学习 JSX" },
+        { id: 2, text: "学习 Hooks" }
+      ]);
+      const [lastEvent, setLastEvent] = useState("");
+
+      function handleRemove(id) {
+        setItems(prev => prev.filter(item => item.id !== id));
+      }
+
+      function handleClick(event) {
+        setLastEvent("type=" + event.type + ", target=" + event.target.tagName);
+      }
+
+      function handleClickWithArg(event, label) {
+        setLastEvent(label + " · " + event.type);
+      }
+
+      return (
+        <section>
+          <h1>函数组件事件处理</h1>
+          <ul>
+            {items.map(item => (
+              <TodoItem key={item.id} id={item.id} text={item.text} onRemove={handleRemove} />
+            ))}
+          </ul>
+          <button onClick={handleClick}>直接绑定函数引用</button>
+          <button onClick={(e) => handleClickWithArg(e, "带参按钮")}>箭头包装传参</button>
+          {/* 反例：onClick={handleClick()} 会在 render 时立刻执行 */}
+          <p>最近一次事件: {lastEvent || "暂无"}</p>
+          <p>面试回答: 函数组件无 this 绑定问题；传参用箭头包装，事件对象始终是第一个参数。</p>
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="/">目录</a>
+  <a href="./05-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-props.html">← 函数组件-props</a>
+  <a href="./07-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-state%E4%B8%8Eprops.html">函数组件-state与props →</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

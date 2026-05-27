@@ -6,7 +6,7 @@
 
 ## 阶段 A：全量审查修复并补注释（已完成）
 
-- [x] `learn/javascript/` **120** · `learn/css/` **36** · `learn/vue2/` **57** · `learn/vue3/` **39** · `learn/react/` **52** · `learn/typescript/` **15** · `learn/demos/` **4**
+- [x] `learn/javascript/` **120** · `learn/css/` **36** · `learn/vue2/` **57** · `learn/vue3/` **39** · `learn/react18/` **52** · `learn/typescript/` **15** · `learn/demos/` **4**
 - [x] 每个 demo 统一头注释（`分类` / `主题` / `要点`）
 - [x] 运行时 bug、过时 API、注释与代码不一致已修复
 

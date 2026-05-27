@@ -1,0 +1,80 @@
+<!--
+  分类: react18 / ref
+  主题: forwardRef 与 useImperativeHandle
+  要点:
+    - 普通函数组件不能直接接收 ref，需要 forwardRef 转发
+    - useImperativeHandle 可以限制父组件能调用的实例方法
+    - 这类命令式调用应少用，优先使用 props/state 的声明式数据流
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>React · forwardRef</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { forwardRef, useImperativeHandle, useRef, useState } = React;
+
+    const SearchInput = forwardRef(function SearchInput(props, ref) {
+      const inputRef = useRef(null);
+      const [value, setValue] = useState("");
+
+      useImperativeHandle(ref, () => ({
+        focus() {
+          inputRef.current.focus();
+        },
+        clear() {
+          setValue("");
+          inputRef.current.focus();
+        }
+      }));
+
+      return (
+        <input
+          ref={inputRef}
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          placeholder="输入关键词"
+        />
+      );
+    });
+
+    function App() {
+      const searchRef = useRef(null);
+
+      return (
+        <section>
+          <h1>forwardRef 与 useImperativeHandle</h1>
+          <SearchInput ref={searchRef} />
+          <button onClick={() => searchRef.current.focus()}>聚焦</button>
+          <button onClick={() => searchRef.current.clear()}>清空</button>
+          <p>面试回答: forwardRef 负责转发 ref，useImperativeHandle 负责暴露受控的命令式 API。</p>
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="/">目录</a>
+  <a href="./26-Fragment-Portal-StrictMode.html">← Fragment-Portal-StrictMode</a>
+  <a href="./28-lazy-Suspense%E4%BB%A3%E7%A0%81%E5%88%86%E5%89%B2.html">lazy-Suspense代码分割 →</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

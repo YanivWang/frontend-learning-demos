@@ -9,7 +9,7 @@
 | `learn/javascript/` | 纯 JavaScript，01–09 编号 |
 | `learn/css/` | CSS 布局 / 动画 / 响应式等 |
 | `learn/vue2/` `learn/vue3/` | Vue demo（`libs/` + `src/`） |
-| `learn/react/` | React 18 demo |
+| `learn/react18/` | React 18 demo |
 | `learn/typescript/` | TypeScript |
 | `learn/demos/` | 综合小项目 |
 | `docs-site/` | VitePress 文档站（唯一入口） |

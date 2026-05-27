@@ -7,7 +7,7 @@
  *   node scripts/build-index.mjs
  *
  * 约定见 CONVENTIONS.md：
- *   - 学习分类目录：learn/javascript / learn/css / learn/vue2 / learn/vue3 / learn/react / learn/react19 / learn/demos
+ *   - 学习分类目录：learn/javascript / learn/css / learn/vue2 / learn/vue3 / learn/react18 / learn/react19 / learn/demos
  *   - libs / lib 子目录视为第三方/工具，不扫描
  */
 
@@ -31,7 +31,7 @@ const SECTIONS = [
   { dir: "learn/css", title: "CSS" },
   { dir: "learn/vue2", title: "Vue 2" },
   { dir: "learn/vue3", title: "Vue 3" },
-  { dir: "learn/react", title: "React 18" },
+  { dir: "learn/react18", title: "React 18" },
   { dir: "learn/react19", title: "React 19" },
   { dir: "learn/demos", title: "综合 Demo" },
   { dir: "learn/typescript", title: "TypeScript" },

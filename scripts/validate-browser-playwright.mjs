@@ -18,7 +18,7 @@ const PRIORITY_HREFS = [
   "learn/javascript/01-基础/严格模式.html",
   "learn/javascript/06-浏览器API/HTTP缓存.html",
   "learn/vue3/src/07-路由状态工程化/06-Router与Pinia可运行示例.html",
-  "learn/react/src/function-components/34-React19新特性概览.html",
+  "learn/react18/src/function-components/34-React19新特性概览.html",
   "learn/typescript/mini-project/index.html",
   "learn/demos/todo/01-todo-本地状态.html",
 ];

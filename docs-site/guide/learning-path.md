@@ -22,7 +22,7 @@
 
 ### React 18
 
-`learn/react/src/function-components/` 按编号；类组件见 `class-components/`
+`learn/react18/src/function-components/` 按编号；类组件见 `class-components/`
 
 ### React 19
 

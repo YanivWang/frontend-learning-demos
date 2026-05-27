@@ -1,0 +1,85 @@
+<!--
+  分类: react18 / hooks
+  主题: 状态更新后读取 DOM — flushSync 与 useEffect
+  要点:
+    - setState 后立即读 state 仍是旧值；class 组件可用 setState 第二参数 callback
+    - 函数组件等价方案: useEffect 监听 state 变化后执行副作用
+    - 需要同步刷 DOM 时用 ReactDOM.flushSync（慎用，会打断批处理）
+    - 大多数场景优先 useEffect，flushSync 仅用于必须同步读 DOM 的少数情况
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>React · 更新后读取 state/DOM</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useEffect, useRef, useState } = React;
+    const { flushSync } = ReactDOM;
+
+    function Counter() {
+      const [count, setCount] = useState(0);
+      const outputRef = useRef(null);
+      const [hint, setHint] = useState("");
+
+      useEffect(() => {
+        if (count === 0) return;
+        setHint("useEffect: count 已变为 " + count + "，DOM 已提交");
+      }, [count]);
+
+      function incrementNormal() {
+        console.log("setCount 前:", count);
+        setCount(count + 1);
+        console.log("setCount 后同步读:", count);
+        if (outputRef.current) {
+          outputRef.current.textContent = "同步读 DOM 文本仍是旧值: " + outputRef.current.dataset.value;
+        }
+      }
+
+      function incrementFlushSync() {
+        flushSync(() => {
+          setCount(prev => prev + 1);
+        });
+        if (outputRef.current) {
+          outputRef.current.textContent = "flushSync 后 DOM 已同步更新";
+        }
+      }
+
+      return (
+        <section>
+          <h1>更新后读取 state / DOM</h1>
+          <p>count: {count}</p>
+          <p ref={outputRef} data-value={count}>DOM 提示区</p>
+          <p>{hint}</p>
+          <button onClick={incrementNormal}>普通 +1（看控制台）</button>
+          <button onClick={incrementFlushSync}>flushSync +1</button>
+          <p>面试回答: 函数组件用 useEffect 做 commit 后副作用；flushSync 强制同步渲染，一般少用。</p>
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<Counter />);
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="/">目录</a>
+  <a href="./08-useState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6%E4%B8%8E%E8%BF%9E%E7%BB%AD%E6%9B%B4%E6%96%B0.html">← useState-异步合并与连续更新</a>
+  <a href="./10-React18-%E8%87%AA%E5%8A%A8%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html">React18-自动批处理对比 →</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

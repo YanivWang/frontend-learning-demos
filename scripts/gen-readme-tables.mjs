@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * 从各 demo 的 HTML 头注释（分类 / 主题）生成 README 用的 Markdown 表格片段。
- * 运行：node scripts/gen-readme-tables.mjs [javascript|css|vue2|vue3|react|typescript]
+ * 运行：node scripts/gen-readme-tables.mjs [javascript|css|vue2|vue3|react18|react19|typescript]
  */
 
 import { readdir, readFile } from "node:fs/promises";
@@ -16,7 +16,7 @@ const CONFIG = {
   css: { scan: join("learn", "css"), label: "learn/css" },
   vue2: { scan: join("learn", "vue2", "src"), label: "learn/vue2/src" },
   vue3: { scan: join("learn", "vue3", "src"), label: "learn/vue3/src" },
-  react: { scan: join("learn", "react", "src"), label: "learn/react/src" },
+  react18: { scan: join("learn", "react18", "src"), label: "learn/react18/src" },
   react19: { scan: join("learn", "react19", "src"), label: "learn/react19/src" },
   typescript: { scan: join("learn", "typescript"), label: "learn/typescript" },
 };
@@ -49,7 +49,7 @@ async function collect(dirAbs, rows) {
 async function main() {
   const key = process.argv[2];
   if (!key || !CONFIG[key]) {
-    console.error("用法: node scripts/gen-readme-tables.mjs <javascript|css|vue2|vue3|react|typescript>");
+    console.error("用法: node scripts/gen-readme-tables.mjs <javascript|css|vue2|vue3|react18|react19|typescript>");
     process.exit(1);
   }
   const { scan } = CONFIG[key];

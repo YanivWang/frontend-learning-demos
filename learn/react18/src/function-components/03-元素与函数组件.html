@@ -1,0 +1,86 @@
+<!--
+  分类: react18 / function-components
+  主题: React 元素、JSX 嵌入表达式与 createRoot 渲染流程
+  要点:
+    - 文件名保留历史命名「元素与函数组件」；函数组件系统讲解见 05-函数组件-props.html 起
+    - JSX 中 {expression} 只能是表达式；函数引用 {fn} 不会执行，需写 {fn()} 才能得到返回值
+    - 元素是描述 UI 的轻量对象；createRoot(container).render(element) 触发虚拟 DOM → diff → 真实 DOM
+    - React 18 统一使用 createRoot，旧 ReactDOM.render 已废弃
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React · JSX 中嵌入表达式</title>
+
+    <!-- 引入依赖
+     1. react.development.js — React 核心库（createElement、组件等）
+     2. react-dom.development.js — 操作 DOM、提供 createRoot / render
+     -->
+    <script src="../../libs/react.development.js"></script>
+    <script src="../../libs/react-dom.development.js"></script>
+
+    <!-- 安装Babel:
+      1.用于将ES6+语法转换为es5语法，以便于能直接在浏览器中运行
+      2.用来转换 jsx 语法(babel内嵌了对jsx的支持) -->
+    <script src="../../libs/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="example"></div>
+
+    <!--
+        要在script脚本中使用jsx，要把<script>的type类型写成 text/babel， 这样浏览器不会直接执行
+        script中的内容，而是先由babel来编译这个script中的内容，然后再执行
+    -->
+    <script type="text/babel">
+
+      let abc = "12345";
+      function fun() {
+        return "八八八";
+      }
+
+      //1.元素: 一段jsx赋值给一个变量，这个变量就称作react的一个元素
+      //2. 元素是一种轻量级的js对象,描述了要渲染的UI结构
+      const element = (
+        <h1 id="wx" className="jb">
+          <span>
+            <i>我是111元素</i>
+            <span>我是span111</span>
+            {console.log("在jsx中运行js表达式")}
+            {abc}
+            {/* {fun} 是函数引用，React 无法渲染；{fun()} 执行后才得到字符串 */}
+            {fun()}
+          </span>
+          <span>
+            <i>我是222元素</i>
+            <span>我是span222</span>
+          </span>
+        </h1>
+      );
+      //3.createRoot(...).render() 会按照下列顺序执行
+      //3.1 虚拟dom构建: 会根据传入的React元素(js对象)递归构建虚拟dom树,虚拟dom是对真实dom的抽象表示
+      //它以 JavaScript 对象的形式存在，比真实 DOM 更轻量级，操作起来也更快。
+
+      //3.2 diff算法: diff算法会比对新旧虚拟dom,找出变更集合
+      //3.3 真实dom渲染,根据diff算法找出的变更集合,React会将变更集合转换为真实的dom
+      //3.4 事件绑定,创建真实dom时,react会为这些dom绑定事件
+      // React 18 使用 createRoot 渲染
+      ReactDOM.createRoot(document.getElementById("example")).render(element);
+    </script>
+  <!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="/">目录</a>
+  <a href="./02-JSX-%E6%9D%A1%E4%BB%B6%E6%B8%B2%E6%9F%93%E7%9F%AD%E8%B7%AF.html">← JSX-条件渲染短路</a>
+  <a href="./04-%E5%85%83%E7%B4%A0%E4%B8%8D%E5%8F%AF%E5%8F%98-%E6%97%B6%E9%92%9F.html">元素不可变-时钟 →</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

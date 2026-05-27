@@ -1,0 +1,90 @@
+<!--
+  分类: react18 / class 组件
+  主题: setState 函数式更新（解决合并陷阱）
+  要点:
+    - setState(prev => ({ count: prev.count + 1 })) 每次基于「最新合并后的 state」
+    - 这样连续调用 10 次会逐步从 0 累加到 10，而不是合并成一次 +1
+    - 对比 03 文件可见：值更新依赖前一次状态时一定要用函数式 setState
+    - 10 次函数式 setState 后页面展示 10；React 18 使用 createRoot 渲染
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React · setState 函数式更新</title>
+
+    <script src="../../libs/react.development.js"></script>
+    <script src="../../libs/react-dom.development.js"></script>
+    <script src="../../libs/babel.min.js"></script>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script type="text/babel">
+    //react class方式的组件
+    class Person extends React.Component {
+        //组件的属性会在构造函数中被传递过来
+        constructor(props) {
+            super(props);//调用super关键字来调用父类的构造函数，并将props传递到父类的构造器
+
+            //构造函数是唯一可以给 this.state 直接赋值的地方
+            //state的更新是异步的
+            //出于性能考虑，react会把 （短时间内） 多个setState()调用合并成一个调用
+            this.state = {
+                count: 0,
+            }
+        }
+
+        componentDidMount() {
+            for (let i = 0; i < 10; i++) {
+
+                //只能在这个回调函数中获取到先前的状态，并返回得到下一个状态
+                this.setState((prevState)=>{
+                    //这里是异步的
+                    console.log("prevState", prevState.count);//0 1 2 3 4 5 ... 9
+
+                    return {
+                        count: prevState.count + 1
+                    }
+                });
+
+                //这个是同步的
+                console.log("state", this.state.count);//10个0
+            }
+
+            setTimeout(()=>{
+                // 函数式 setState 每次基于最新值累加，最终是 10
+                console.log("2s后",this.state.count);//10
+            },2000)
+        }
+
+        render() {
+            // 函数式更新累加 10 次，页面上最终展示的是 10
+            return (
+                <div>{this.state.count}</div>
+            )
+        }
+    }
+
+    // React 18 使用 createRoot 渲染
+    ReactDOM.createRoot(document.getElementById("app")).render(<Person/>);
+</script>
+
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="/">目录</a>
+  <a href="./03-setState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6.html">← setState-异步合并</a>
+  <a href="./05-Clock-setState-%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html">Clock-setState-批处理对比 →</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

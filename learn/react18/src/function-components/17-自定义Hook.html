@@ -1,0 +1,78 @@
+<!--
+  分类: react18 / hooks
+  主题: 自定义 Hook 抽离复用逻辑
+  要点:
+    - 自定义 Hook 是以 use 开头的普通函数，内部可以调用其他 Hook
+    - 它复用的是状态逻辑，不是 UI；每次调用都会拥有独立状态
+    - 常见场景: 请求、订阅、窗口尺寸、表单字段、定时器
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>React · 自定义 Hook</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useEffect, useState } = React;
+
+    function useWindowWidth() {
+      const [width, setWidth] = useState(window.innerWidth);
+
+      useEffect(() => {
+        function handleResize() {
+          setWidth(window.innerWidth);
+        }
+
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+      }, []);
+
+      return width;
+    }
+
+    function useToggle(initialValue) {
+      const [value, setValue] = useState(initialValue);
+      const toggle = () => setValue(prev => !prev);
+      return [value, toggle];
+    }
+
+    function App() {
+      const width = useWindowWidth();
+      const [visible, toggleVisible] = useToggle(true);
+
+      return (
+        <section>
+          <h1>自定义 Hook</h1>
+          <p>窗口宽度: {width}px</p>
+          <button onClick={toggleVisible}>切换详情</button>
+          {visible && <p>这段内容由 useToggle 管理显示隐藏。</p>}
+          <p>面试回答: 自定义 Hook 让状态逻辑可复用，但不会共享状态；组件每调用一次 Hook 都是独立的一份。</p>
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="/">目录</a>
+  <a href="./16-Hooks-useReducer.html">← Hooks-useReducer</a>
+  <a href="./18-%E9%97%AD%E5%8C%85%E4%B8%8E%E4%BE%9D%E8%B5%96%E6%95%B0%E7%BB%84%E9%99%B7%E9%98%B1.html">闭包与依赖数组陷阱 →</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

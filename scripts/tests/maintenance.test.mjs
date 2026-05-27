@@ -54,7 +54,7 @@ test("sync-readmes --check validates README tables without rewriting them", () =
     "learn/css/README.md",
     "learn/vue2/README.md",
     "learn/vue3/README.md",
-    "learn/react/README.md",
+    "learn/react18/README.md",
     "learn/typescript/README.md",
   ];
   const before = Object.fromEntries(

@@ -1,0 +1,150 @@
+<!--
+  分类: react18 / class 组件
+  主题: class 组件的 state 与 props 区别 + 事件 this 绑定
+  要点:
+    - state 只能在 constructor 里直接赋值，其他地方必须用 setState
+    - props 是只读的；想通知父组件改值需通过父级传入的回调
+    - 事件函数若想拿到组件实例 this，可在 JSX 用箭头函数、constructor 里 bind、或类字段箭头函数（详见 13）
+    - onClick={console.log(this)} 会在 render 阶段立即执行，应包成箭头函数
+    - render 无参数；this.state 中无 id 字段时 <div id={this.state.id}> 为 undefined
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React · class state 与 props</title>
+
+    <!-- 引入 react 和 react-dom，这两个是react核心包 -->
+    <script src="../../libs/react.development.js"></script>
+    <script src="../../libs/react-dom.development.js"></script>
+
+    <script src="../../libs/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      class Header extends React.Component {
+        render() {
+          return <div>Header</div>;
+        }
+      }
+
+      class Footer extends React.Component {
+        render() {
+          return <div>Footer</div>;
+        }
+      }
+     
+      //定义一个React组件必须要继承 React.Component 类
+      class App extends React.Component {
+        //class类组件，被调用的时候，会自动调用类组件的constructor方法，来初始化组件
+        constructor(props) {
+          console.log("props>>>", props); // { id: 1001111 }
+
+          //将组件属性传递到父类的构造函数中
+          //Class组件应该始终使用props参数来调用父类的构造函数
+          super(props);
+         
+          //只能在 constructor 函数中初始化 组件的内部状态 state，也只能在这里直接对state进行赋值，
+          //其它地方修改state，必须通过setState方法
+          this.state = {
+            appName: "我是app组件",
+          };
+        }
+
+        //任何时候，组件都不能直接修改props
+        handleBtnClick(e){
+          console.log("通知父组件修改 props", e);
+          //通过父组件传递过来的 函数属性，回调这个函数属性，实现跟父组件的通信
+          this.props.changeAppidFn();
+        }
+
+        // React 调用 render() 时不传参，无需声明参数
+        render() {
+          {
+            /* jsx使用小写驼峰定义属性名称 className  */
+          }
+          {
+            /* jsx中事件属性也是小写驼峰 */
+          }
+          return (
+            <div className="app">
+              <Header />
+              {/* 注：this.state 中没有 id 字段，这里 id 会是 undefined（仅作 props vs state 对比） */}
+              <div id={this.state.id}>state： {this.state.appName}</div>
+              <div>props： {this.props.id}</div>
+              <button
+                onClick={(e) => {
+                  console.log("点击修改state,", e);
+
+                  //状态改变，会触发render再次执行
+                  this.setState({
+                    appName: "爸爸",
+                  });
+                }}
+              >
+                点击修改state
+              </button>
+
+              {/* onClick 须用箭头函数包装，否则 render 阶段就会执行 console.log */}
+              <button
+                onClick={() => console.log(this)}
+              >
+                点击打印this
+              </button>
+
+              {/* 事件处理函数必须是一个函数不是字符串函数名称
+                函数名和变量名一样，都是一个引用，
+                this.handleBtnClick 这个并不是函数调用，而只是作为变量传递给jsx元素
+                最后是由react负责调用这个函数，而不是当前组件实例调用的这个函数，因此
+                函数内部的this，并不指向当前组件实例
+                */}
+              <button
+                onClick={this.handleBtnClick}
+              >
+                通知父组件修改 props
+              </button>
+
+              <Footer />
+            </div>
+          );
+        }
+      }
+
+      // 父组件持有 appId，通过 setState 更新后 props 才会变化
+      class Root extends React.Component {
+        state = {
+          appId: 1001111,
+        };
+
+        changeAppid = () => {
+          this.setState({ appId: "appID 变化了" });
+        };
+
+        render() {
+          return (
+            <App id={this.state.appId} changeAppidFn={this.changeAppid} />
+          );
+        }
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<Root />);
+    </script>
+  <!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="/">目录</a>
+  <a href="./01-class-%E5%BF%85%E9%A1%BBsuper.html">← class-必须super</a>
+  <a href="./03-setState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6.html">setState-异步合并 →</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

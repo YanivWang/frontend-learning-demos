@@ -1,0 +1,90 @@
+<!--
+  分类: react18 / hooks / 原理
+  主题: React 18 自动批处理对比
+  要点:
+    - React 18 createRoot 下，事件、setTimeout、Promise 等中的多次 setState 默认都会批处理
+    - 批处理减少重复渲染，最终 state 仍按更新队列合并
+    - flushSync 可退出批处理，强制同步提交
+    - 对比 class 05：原理一致，演示函数组件在异步回调中的批处理行为
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>React · React 18 自动批处理</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useEffect, useRef, useState } = React;
+    const { flushSync } = ReactDOM;
+
+    function App() {
+      const [count, setCount] = useState(0);
+      const [flag, setFlag] = useState(false);
+      const [commitLog, setCommitLog] = useState([]);
+      const renderCount = useRef(0);
+
+      renderCount.current += 1;
+
+      useEffect(() => {
+        setCommitLog(prev => [
+          ...prev.slice(-5),
+          "effect 执行: count=" + count + ", flag=" + String(flag)
+        ]);
+      }, [count, flag]);
+
+      function batchInTimeout() {
+        setTimeout(() => {
+          console.log("setTimeout 内连续两次 setState（应批处理为一次渲染）");
+          setCount(prev => prev + 1);
+          setFlag(prev => !prev);
+        }, 0);
+      }
+
+      function noBatchWithFlushSync() {
+        flushSync(() => setCount(prev => prev + 1));
+        flushSync(() => setFlag(prev => !prev));
+      }
+
+      return (
+        <section>
+          <h1>React 18 自动批处理</h1>
+          <p>count: {count}，flag: {String(flag)}</p>
+          <p>当前 render 次数: {renderCount.current}</p>
+          <button onClick={batchInTimeout}>setTimeout 内批处理更新</button>
+          <button onClick={noBatchWithFlushSync}>flushSync 强制两次提交</button>
+          <p>commit 后 effect 日志（批处理时一次点击只应追加一条）:</p>
+          <ul>
+            {commitLog.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+          <p>面试回答: React 18 自动批处理覆盖更多场景；需要同步 DOM 时用 flushSync。</p>
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="/">目录</a>
+  <a href="./09-%E7%8A%B6%E6%80%81%E6%9B%B4%E6%96%B0%E5%90%8E%E8%AF%BB%E5%8F%96-flushSync%E4%B8%8EuseEffect.html">← 状态更新后读取-flushSync与useEffect</a>
+  <a href="./11-useEffect-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%AF%B9%E7%85%A7.html">useEffect-生命周期对照 →</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

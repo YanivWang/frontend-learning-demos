@@ -1,0 +1,157 @@
+<!--
+  分类: react18 / class 组件
+  主题: Clock 演示 setState 批处理（对象式 vs 函数式）
+  要点:
+    - counterOld：三次对象式 setState 都基于「当前 state」+1，合并后只 +1
+    - counterNew：三次函数式 setState 都拿到「最新合并 state」，最终 +3
+    - componentWillUnmount 拼写必须正确，否则 React 不会调用，定时器无法清理
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React · Clock setState 批处理对比</title>
+
+    <!-- 引入 react 和 react-dom，这两个是react核心包 -->
+    <script src="../../libs/react.development.js"></script>
+    <script src="../../libs/react-dom.development.js"></script>
+
+    <script src="../../libs/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      class Clock extends React.Component {
+        constructor(props) {
+          super(props);
+
+          //构造函数是唯一可以给state直接赋值的地方
+          this.state = {
+            date: new Date(),
+            id: 1,
+            count1: 10001,
+            count2: 20001,
+          };
+        }
+
+        componentDidMount() {
+          console.log("组件已经挂载到dom上了...");
+
+          this.timer = setInterval(() => {
+            // this.tick();
+
+            this.counterOld();
+
+            // this.counterNew();
+          }, 6000);
+        }
+        
+        //不能直接修改state
+        //state更新是异步的
+        //state更新会被合并: react会把你提供的对象合并到state中
+        counterOld() {
+          console.log("count1更新前>>>", this.state.count1);
+
+          //如果你想依赖前一个值，更新当前值
+          this.setState({
+            count1: this.state.count1 + 1
+          });
+
+          this.setState({
+            count1: this.state.count1 + 1
+          });
+
+          this.setState({
+            count1: this.state.count1 + 1
+          });
+
+          console.log("count1更新后>>>", this.state.count1);
+        }
+
+        counterNew() {
+          console.log("count2更新前>>>", this.state.count2);
+
+          //如果你想依赖前一个值，更新当前值，需要提供给 this.setState(()=>{})提供一个函数
+          //该函数的第一个参数是前一个 state，第二个参数是 props，且回调函数的内容是异步执行的
+          this.setState((preState, props) => {
+            console.log("preState", preState.count2);
+            console.log("props", props);
+
+            return {
+              count2: preState.count2 + 1,
+            };
+          });
+
+          this.setState((preState, props) => {
+            console.log("preState", preState.count2);
+            console.log("props", props);
+
+            return {
+              count2: preState.count2 + 1,
+            };
+          });
+
+          this.setState((preState, props) => {
+            console.log("preState", preState.count2);
+            console.log("props", props);
+
+            return {
+              count2: preState.count2 + 1,
+            };
+          });
+
+          console.log("count2更新后>>>", this.state.count2);
+        }
+
+        tick() {
+          //调用this.setState方法，让React找到当前组件的state发生了变化，React会重新调用组件
+          //render方法，确定页面上该展示什么。
+          //最后用新的jsx元素去更新UI界面
+          this.setState({
+            date: new Date(),
+          });
+
+          console.log("id更新前>>>", this.state.id);
+
+          //调用 setState 更新 id 后，this.state.id 的值并没有立即更新为最新的值 id：2
+          //而是下次渲染的时候
+          this.setState({
+            id: this.state.id + 1,
+          });
+
+          console.log("id更新后>>>", this.state.id);
+
+          //出于性能考虑，React会将多个setState()方法调用合并成一个调用
+        }
+
+        // componentWillUnmount 拼写必须正确，否则定时器无法清理
+        //       正确钩子是 componentWillUnmount（m 小写）
+        componentWillUnmount() {
+          clearInterval(this.timer);
+        }
+
+        render() {
+          return <div>{this.state.date.toLocaleTimeString()}</div>;
+        }
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<Clock name="IClock" />);
+    </script>
+  <!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="/">目录</a>
+  <a href="./04-setState-%E5%87%BD%E6%95%B0%E5%BC%8F%E6%9B%B4%E6%96%B0.html">← setState-函数式更新</a>
+  <a href="./06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html">class-完整生命周期与API →</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

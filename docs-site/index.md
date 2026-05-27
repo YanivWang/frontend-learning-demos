@@ -29,7 +29,7 @@ features:
 | JavaScript | `learn/javascript/` | 纯 JS，按 01–09 编号 |
 | CSS | `learn/css/` | 布局、动画、响应式、现代特性 |
 | Vue 2 / Vue 3 | `learn/vue2/` `learn/vue3/` | 框架语法与原理 |
-| React 18 | `learn/react/` | 函数组件 + 类组件 |
+| React 18 | `learn/react18/` | 函数组件 + 类组件 |
 | TypeScript | `learn/typescript/` | 基础、进阶、工程化 |
 | 综合 Demo | `learn/demos/` | 拖拽、SVG、ViewPager 等 |
 

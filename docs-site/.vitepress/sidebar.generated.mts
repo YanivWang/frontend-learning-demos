@@ -1597,79 +1597,79 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "class-必须super",
-            "link": "/learn/react/src/class-components/01-class-%E5%BF%85%E9%A1%BBsuper.html"
+            "link": "/learn/react18/src/class-components/01-class-%E5%BF%85%E9%A1%BBsuper.html"
           },
           {
             "text": "class-state与props",
-            "link": "/learn/react/src/class-components/02-class-state%E4%B8%8Eprops.html"
+            "link": "/learn/react18/src/class-components/02-class-state%E4%B8%8Eprops.html"
           },
           {
             "text": "setState-异步合并",
-            "link": "/learn/react/src/class-components/03-setState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6.html"
+            "link": "/learn/react18/src/class-components/03-setState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6.html"
           },
           {
             "text": "setState-函数式更新",
-            "link": "/learn/react/src/class-components/04-setState-%E5%87%BD%E6%95%B0%E5%BC%8F%E6%9B%B4%E6%96%B0.html"
+            "link": "/learn/react18/src/class-components/04-setState-%E5%87%BD%E6%95%B0%E5%BC%8F%E6%9B%B4%E6%96%B0.html"
           },
           {
             "text": "Clock-setState-批处理对比",
-            "link": "/learn/react/src/class-components/05-Clock-setState-%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html"
+            "link": "/learn/react18/src/class-components/05-Clock-setState-%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html"
           },
           {
             "text": "class-完整生命周期与API",
-            "link": "/learn/react/src/class-components/06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html"
+            "link": "/learn/react18/src/class-components/06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html"
           },
           {
             "text": "class-refs与DOM",
-            "link": "/learn/react/src/class-components/07-class-refs%E4%B8%8EDOM.html"
+            "link": "/learn/react18/src/class-components/07-class-refs%E4%B8%8EDOM.html"
           },
           {
             "text": "class-PureComponent性能优化",
-            "link": "/learn/react/src/class-components/08-class-PureComponent%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html"
+            "link": "/learn/react18/src/class-components/08-class-PureComponent%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html"
           },
           {
             "text": "class-getDerivedStateFromProps与getSnapshotBeforeUpdate",
-            "link": "/learn/react/src/class-components/09-class-getDerivedStateFromProps%E4%B8%8EgetSnapshotBeforeUpdate.html"
+            "link": "/learn/react18/src/class-components/09-class-getDerivedStateFromProps%E4%B8%8EgetSnapshotBeforeUpdate.html"
           },
           {
             "text": "class-Context上下文",
-            "link": "/learn/react/src/class-components/10-class-Context%E4%B8%8A%E4%B8%8B%E6%96%87.html"
+            "link": "/learn/react18/src/class-components/10-class-Context%E4%B8%8A%E4%B8%8B%E6%96%87.html"
           },
           {
             "text": "class-受控与非受控表单",
-            "link": "/learn/react/src/class-components/11-class-%E5%8F%97%E6%8E%A7%E4%B8%8E%E9%9D%9E%E5%8F%97%E6%8E%A7%E8%A1%A8%E5%8D%95.html"
+            "link": "/learn/react18/src/class-components/11-class-%E5%8F%97%E6%8E%A7%E4%B8%8E%E9%9D%9E%E5%8F%97%E6%8E%A7%E8%A1%A8%E5%8D%95.html"
           },
           {
             "text": "class-setState第二参数回调",
-            "link": "/learn/react/src/class-components/12-class-setState%E7%AC%AC%E4%BA%8C%E5%8F%82%E6%95%B0%E5%9B%9E%E8%B0%83.html"
+            "link": "/learn/react18/src/class-components/12-class-setState%E7%AC%AC%E4%BA%8C%E5%8F%82%E6%95%B0%E5%9B%9E%E8%B0%83.html"
           },
           {
             "text": "class-事件绑定三种方式",
-            "link": "/learn/react/src/class-components/13-class-%E4%BA%8B%E4%BB%B6%E7%BB%91%E5%AE%9A%E4%B8%89%E7%A7%8D%E6%96%B9%E5%BC%8F.html"
+            "link": "/learn/react18/src/class-components/13-class-%E4%BA%8B%E4%BB%B6%E7%BB%91%E5%AE%9A%E4%B8%89%E7%A7%8D%E6%96%B9%E5%BC%8F.html"
           },
           {
             "text": "class-列表key与diff",
-            "link": "/learn/react/src/class-components/14-class-%E5%88%97%E8%A1%A8key%E4%B8%8Ediff.html"
+            "link": "/learn/react18/src/class-components/14-class-%E5%88%97%E8%A1%A8key%E4%B8%8Ediff.html"
           },
           {
             "text": "class-组件通信与children",
-            "link": "/learn/react/src/class-components/15-class-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1%E4%B8%8Echildren.html"
+            "link": "/learn/react18/src/class-components/15-class-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1%E4%B8%8Echildren.html"
           },
           {
             "text": "class-合成事件机制",
-            "link": "/learn/react/src/class-components/16-class-%E5%90%88%E6%88%90%E4%BA%8B%E4%BB%B6%E6%9C%BA%E5%88%B6.html"
+            "link": "/learn/react18/src/class-components/16-class-%E5%90%88%E6%88%90%E4%BA%8B%E4%BB%B6%E6%9C%BA%E5%88%B6.html"
           },
           {
             "text": "class-defaultProps与静态属性",
-            "link": "/learn/react/src/class-components/17-class-defaultProps%E4%B8%8E%E9%9D%99%E6%80%81%E5%B1%9E%E6%80%A7.html"
+            "link": "/learn/react18/src/class-components/17-class-defaultProps%E4%B8%8E%E9%9D%99%E6%80%81%E5%B1%9E%E6%80%A7.html"
           },
           {
             "text": "class-高阶组件HOC",
-            "link": "/learn/react/src/class-components/18-class-%E9%AB%98%E9%98%B6%E7%BB%84%E4%BB%B6HOC.html"
+            "link": "/learn/react18/src/class-components/18-class-%E9%AB%98%E9%98%B6%E7%BB%84%E4%BB%B6HOC.html"
           },
           {
             "text": "错误边界与常见优化清单",
-            "link": "/learn/react/src/class-components/19-%E9%94%99%E8%AF%AF%E8%BE%B9%E7%95%8C%E4%B8%8E%E5%B8%B8%E8%A7%81%E4%BC%98%E5%8C%96%E6%B8%85%E5%8D%95.html"
+            "link": "/learn/react18/src/class-components/19-%E9%94%99%E8%AF%AF%E8%BE%B9%E7%95%8C%E4%B8%8E%E5%B8%B8%E8%A7%81%E4%BC%98%E5%8C%96%E6%B8%85%E5%8D%95.html"
           }
         ]
       },
@@ -1679,139 +1679,139 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "入门-元素与渲染",
-            "link": "/learn/react/src/function-components/01-%E5%85%A5%E9%97%A8-%E5%85%83%E7%B4%A0%E4%B8%8E%E6%B8%B2%E6%9F%93.html"
+            "link": "/learn/react18/src/function-components/01-%E5%85%A5%E9%97%A8-%E5%85%83%E7%B4%A0%E4%B8%8E%E6%B8%B2%E6%9F%93.html"
           },
           {
             "text": "JSX-条件渲染短路",
-            "link": "/learn/react/src/function-components/02-JSX-%E6%9D%A1%E4%BB%B6%E6%B8%B2%E6%9F%93%E7%9F%AD%E8%B7%AF.html"
+            "link": "/learn/react18/src/function-components/02-JSX-%E6%9D%A1%E4%BB%B6%E6%B8%B2%E6%9F%93%E7%9F%AD%E8%B7%AF.html"
           },
           {
             "text": "元素与函数组件",
-            "link": "/learn/react/src/function-components/03-%E5%85%83%E7%B4%A0%E4%B8%8E%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6.html"
+            "link": "/learn/react18/src/function-components/03-%E5%85%83%E7%B4%A0%E4%B8%8E%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6.html"
           },
           {
             "text": "元素不可变-时钟",
-            "link": "/learn/react/src/function-components/04-%E5%85%83%E7%B4%A0%E4%B8%8D%E5%8F%AF%E5%8F%98-%E6%97%B6%E9%92%9F.html"
+            "link": "/learn/react18/src/function-components/04-%E5%85%83%E7%B4%A0%E4%B8%8D%E5%8F%AF%E5%8F%98-%E6%97%B6%E9%92%9F.html"
           },
           {
             "text": "函数组件-props",
-            "link": "/learn/react/src/function-components/05-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-props.html"
+            "link": "/learn/react18/src/function-components/05-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-props.html"
           },
           {
             "text": "函数组件-事件处理与参数传递",
-            "link": "/learn/react/src/function-components/06-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-%E4%BA%8B%E4%BB%B6%E5%A4%84%E7%90%86%E4%B8%8E%E5%8F%82%E6%95%B0%E4%BC%A0%E9%80%92.html"
+            "link": "/learn/react18/src/function-components/06-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-%E4%BA%8B%E4%BB%B6%E5%A4%84%E7%90%86%E4%B8%8E%E5%8F%82%E6%95%B0%E4%BC%A0%E9%80%92.html"
           },
           {
             "text": "函数组件-state与props",
-            "link": "/learn/react/src/function-components/07-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-state%E4%B8%8Eprops.html"
+            "link": "/learn/react18/src/function-components/07-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-state%E4%B8%8Eprops.html"
           },
           {
             "text": "useState-异步合并与连续更新",
-            "link": "/learn/react/src/function-components/08-useState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6%E4%B8%8E%E8%BF%9E%E7%BB%AD%E6%9B%B4%E6%96%B0.html"
+            "link": "/learn/react18/src/function-components/08-useState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6%E4%B8%8E%E8%BF%9E%E7%BB%AD%E6%9B%B4%E6%96%B0.html"
           },
           {
             "text": "状态更新后读取-flushSync与useEffect",
-            "link": "/learn/react/src/function-components/09-%E7%8A%B6%E6%80%81%E6%9B%B4%E6%96%B0%E5%90%8E%E8%AF%BB%E5%8F%96-flushSync%E4%B8%8EuseEffect.html"
+            "link": "/learn/react18/src/function-components/09-%E7%8A%B6%E6%80%81%E6%9B%B4%E6%96%B0%E5%90%8E%E8%AF%BB%E5%8F%96-flushSync%E4%B8%8EuseEffect.html"
           },
           {
             "text": "React18-自动批处理对比",
-            "link": "/learn/react/src/function-components/10-React18-%E8%87%AA%E5%8A%A8%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html"
+            "link": "/learn/react18/src/function-components/10-React18-%E8%87%AA%E5%8A%A8%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html"
           },
           {
             "text": "useEffect-生命周期对照",
-            "link": "/learn/react/src/function-components/11-useEffect-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%AF%B9%E7%85%A7.html"
+            "link": "/learn/react18/src/function-components/11-useEffect-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%AF%B9%E7%85%A7.html"
           },
           {
             "text": "Hooks-useState基础",
-            "link": "/learn/react/src/function-components/12-Hooks-useState%E5%9F%BA%E7%A1%80.html"
+            "link": "/learn/react18/src/function-components/12-Hooks-useState%E5%9F%BA%E7%A1%80.html"
           },
           {
             "text": "Hooks-useEffect副作用",
-            "link": "/learn/react/src/function-components/13-Hooks-useEffect%E5%89%AF%E4%BD%9C%E7%94%A8.html"
+            "link": "/learn/react18/src/function-components/13-Hooks-useEffect%E5%89%AF%E4%BD%9C%E7%94%A8.html"
           },
           {
             "text": "Hooks-useRef与DOM",
-            "link": "/learn/react/src/function-components/14-Hooks-useRef%E4%B8%8EDOM.html"
+            "link": "/learn/react18/src/function-components/14-Hooks-useRef%E4%B8%8EDOM.html"
           },
           {
             "text": "Hooks-useMemo-useCallback",
-            "link": "/learn/react/src/function-components/15-Hooks-useMemo-useCallback.html"
+            "link": "/learn/react18/src/function-components/15-Hooks-useMemo-useCallback.html"
           },
           {
             "text": "Hooks-useReducer",
-            "link": "/learn/react/src/function-components/16-Hooks-useReducer.html"
+            "link": "/learn/react18/src/function-components/16-Hooks-useReducer.html"
           },
           {
             "text": "自定义Hook",
-            "link": "/learn/react/src/function-components/17-%E8%87%AA%E5%AE%9A%E4%B9%89Hook.html"
+            "link": "/learn/react18/src/function-components/17-%E8%87%AA%E5%AE%9A%E4%B9%89Hook.html"
           },
           {
             "text": "闭包与依赖数组陷阱",
-            "link": "/learn/react/src/function-components/18-%E9%97%AD%E5%8C%85%E4%B8%8E%E4%BE%9D%E8%B5%96%E6%95%B0%E7%BB%84%E9%99%B7%E9%98%B1.html"
+            "link": "/learn/react18/src/function-components/18-%E9%97%AD%E5%8C%85%E4%B8%8E%E4%BE%9D%E8%B5%96%E6%95%B0%E7%BB%84%E9%99%B7%E9%98%B1.html"
           },
           {
             "text": "列表key与diff",
-            "link": "/learn/react/src/function-components/19-%E5%88%97%E8%A1%A8key%E4%B8%8Ediff.html"
+            "link": "/learn/react18/src/function-components/19-%E5%88%97%E8%A1%A8key%E4%B8%8Ediff.html"
           },
           {
             "text": "受控与非受控表单",
-            "link": "/learn/react/src/function-components/20-%E5%8F%97%E6%8E%A7%E4%B8%8E%E9%9D%9E%E5%8F%97%E6%8E%A7%E8%A1%A8%E5%8D%95.html"
+            "link": "/learn/react18/src/function-components/20-%E5%8F%97%E6%8E%A7%E4%B8%8E%E9%9D%9E%E5%8F%97%E6%8E%A7%E8%A1%A8%E5%8D%95.html"
           },
           {
             "text": "组件通信与children组合",
-            "link": "/learn/react/src/function-components/21-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1%E4%B8%8Echildren%E7%BB%84%E5%90%88.html"
+            "link": "/learn/react18/src/function-components/21-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1%E4%B8%8Echildren%E7%BB%84%E5%90%88.html"
           },
           {
             "text": "Context跨层传递",
-            "link": "/learn/react/src/function-components/22-Context%E8%B7%A8%E5%B1%82%E4%BC%A0%E9%80%92.html"
+            "link": "/learn/react18/src/function-components/22-Context%E8%B7%A8%E5%B1%82%E4%BC%A0%E9%80%92.html"
           },
           {
             "text": "Reactmemo性能优化",
-            "link": "/learn/react/src/function-components/23-Reactmemo%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html"
+            "link": "/learn/react18/src/function-components/23-Reactmemo%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html"
           },
           {
             "text": "合成事件机制",
-            "link": "/learn/react/src/function-components/24-%E5%90%88%E6%88%90%E4%BA%8B%E4%BB%B6%E6%9C%BA%E5%88%B6.html"
+            "link": "/learn/react18/src/function-components/24-%E5%90%88%E6%88%90%E4%BA%8B%E4%BB%B6%E6%9C%BA%E5%88%B6.html"
           },
           {
             "text": "虚拟DOM-Fiber-批处理",
-            "link": "/learn/react/src/function-components/25-%E8%99%9A%E6%8B%9FDOM-Fiber-%E6%89%B9%E5%A4%84%E7%90%86.html"
+            "link": "/learn/react18/src/function-components/25-%E8%99%9A%E6%8B%9FDOM-Fiber-%E6%89%B9%E5%A4%84%E7%90%86.html"
           },
           {
             "text": "Fragment-Portal-StrictMode",
-            "link": "/learn/react/src/function-components/26-Fragment-Portal-StrictMode.html"
+            "link": "/learn/react18/src/function-components/26-Fragment-Portal-StrictMode.html"
           },
           {
             "text": "forwardRef与useImperativeHandle",
-            "link": "/learn/react/src/function-components/27-forwardRef%E4%B8%8EuseImperativeHandle.html"
+            "link": "/learn/react18/src/function-components/27-forwardRef%E4%B8%8EuseImperativeHandle.html"
           },
           {
             "text": "lazy-Suspense代码分割",
-            "link": "/learn/react/src/function-components/28-lazy-Suspense%E4%BB%A3%E7%A0%81%E5%88%86%E5%89%B2.html"
+            "link": "/learn/react18/src/function-components/28-lazy-Suspense%E4%BB%A3%E7%A0%81%E5%88%86%E5%89%B2.html"
           },
           {
             "text": "Router与状态管理面试点",
-            "link": "/learn/react/src/function-components/29-Router%E4%B8%8E%E7%8A%B6%E6%80%81%E7%AE%A1%E7%90%86%E9%9D%A2%E8%AF%95%E7%82%B9.html"
+            "link": "/learn/react18/src/function-components/29-Router%E4%B8%8E%E7%8A%B6%E6%80%81%E7%AE%A1%E7%90%86%E9%9D%A2%E8%AF%95%E7%82%B9.html"
           },
           {
             "text": "函数-defaultProps与displayName",
-            "link": "/learn/react/src/function-components/30-%E5%87%BD%E6%95%B0-defaultProps%E4%B8%8EdisplayName.html"
+            "link": "/learn/react18/src/function-components/30-%E5%87%BD%E6%95%B0-defaultProps%E4%B8%8EdisplayName.html"
           },
           {
             "text": "高阶组件HOC与renderProps",
-            "link": "/learn/react/src/function-components/31-%E9%AB%98%E9%98%B6%E7%BB%84%E4%BB%B6HOC%E4%B8%8ErenderProps.html"
+            "link": "/learn/react18/src/function-components/31-%E9%AB%98%E9%98%B6%E7%BB%84%E4%BB%B6HOC%E4%B8%8ErenderProps.html"
           },
           {
             "text": "useLayoutEffect与useEffect对比",
-            "link": "/learn/react/src/function-components/32-useLayoutEffect%E4%B8%8EuseEffect%E5%AF%B9%E6%AF%94.html"
+            "link": "/learn/react18/src/function-components/32-useLayoutEffect%E4%B8%8EuseEffect%E5%AF%B9%E6%AF%94.html"
           },
           {
             "text": "props派生状态与key重置",
-            "link": "/learn/react/src/function-components/33-props%E6%B4%BE%E7%94%9F%E7%8A%B6%E6%80%81%E4%B8%8Ekey%E9%87%8D%E7%BD%AE.html"
+            "link": "/learn/react18/src/function-components/33-props%E6%B4%BE%E7%94%9F%E7%8A%B6%E6%80%81%E4%B8%8Ekey%E9%87%8D%E7%BD%AE.html"
           },
           {
             "text": "React19新特性概览",
-            "link": "/learn/react/src/function-components/34-React19%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%A7%88.html"
+            "link": "/learn/react18/src/function-components/34-React19%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%A7%88.html"
           }
         ]
       }

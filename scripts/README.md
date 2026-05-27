@@ -11,7 +11,7 @@ node scripts/build-index.mjs
 node scripts/build-index.mjs --check
 ```
 
-**扫描范围**：`learn/javascript/`、`learn/css/`、`learn/vue2/`、`learn/vue3/`、`learn/react/`、`learn/react19/`、`learn/demos/`、`learn/typescript/` 下的 `.html`；跳过 `libs/`、`lib/`。
+**扫描范围**：`learn/javascript/`、`learn/css/`、`learn/vue2/`、`learn/vue3/`、`learn/react18/`、`learn/react19/`、`learn/demos/`、`learn/typescript/` 下的 `.html`；跳过 `libs/`、`lib/`。
 
 **什么时候运行**：
 
@@ -32,7 +32,7 @@ node scripts/build-index.mjs --check
 - `learn/css/README.md`
 - `learn/vue2/README.md`
 - `learn/vue3/README.md`
-- `learn/react/README.md`
+- `learn/react18/README.md`
 - `learn/react19/README.md`
 - `learn/typescript/README.md`
 

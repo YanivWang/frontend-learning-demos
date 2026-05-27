@@ -1,0 +1,78 @@
+<!--
+  分类: react18 / 组件通信
+  主题: Context 跨层传递
+  要点:
+    - Context 适合主题、语言、当前登录用户等跨层共享数据
+    - Provider 提供 value，useContext 读取最近的上层 Provider
+    - Context 不是全局状态管理银弹；频繁变化的大状态可能导致较大范围重渲染
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>React · Context 跨层传递</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { createContext, useContext, useMemo, useState } = React;
+
+    const ThemeContext = createContext(null);
+
+    function Toolbar() {
+      return <ThemeButton />;
+    }
+
+    function ThemeButton() {
+      const theme = useContext(ThemeContext);
+      return (
+        <button style={{ background: theme.background, color: theme.color }}>
+          当前主题: {theme.name}
+        </button>
+      );
+    }
+
+    function App() {
+      const [dark, setDark] = useState(false);
+
+      const themeValue = useMemo(() => {
+        return dark
+          ? { name: "dark", background: "#222", color: "#fff" }
+          : { name: "light", background: "#fff", color: "#222" };
+      }, [dark]);
+
+      return (
+        <ThemeContext.Provider value={themeValue}>
+          <section>
+            <h1>Context 跨层传递</h1>
+            <button onClick={() => setDark(!dark)}>切换主题</button>
+            <Toolbar />
+            <p>面试回答: Context 解决跨层传 props 的问题，但高频变化状态仍要注意拆分 Provider 或使用状态库。</p>
+          </section>
+        </ThemeContext.Provider>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="/">目录</a>
+  <a href="./21-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1%E4%B8%8Echildren%E7%BB%84%E5%90%88.html">← 组件通信与children组合</a>
+  <a href="./23-Reactmemo%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">Reactmemo性能优化 →</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

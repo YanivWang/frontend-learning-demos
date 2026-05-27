@@ -1,0 +1,98 @@
+<!--
+  分类: react18 / hooks
+  主题: useLayoutEffect 与 useEffect 对比
+  要点:
+    - useEffect 在浏览器绘制后异步执行，不阻塞视觉更新
+    - useLayoutEffect 在 DOM 变更后、浏览器绘制前同步执行
+    - 需要同步读/写 DOM 布局（测量尺寸、避免闪烁）时用 useLayoutEffect
+    - 大多数数据请求、订阅等副作用用 useEffect 即可
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>React · useLayoutEffect 对比</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useEffect, useLayoutEffect, useRef, useState } = React;
+
+    function Tooltip({ text }) {
+      const boxRef = useRef(null);
+      const [top, setTop] = useState(0);
+
+      // 绘制前调整位置，避免 tooltip 先出现在错误位置再跳动
+      useLayoutEffect(() => {
+        if (!boxRef.current) return;
+        const rect = boxRef.current.getBoundingClientRect();
+        if (rect.bottom > window.innerHeight - 40) {
+          setTop(-48);
+        } else {
+          setTop(24);
+        }
+      }, [text]);
+
+      useEffect(() => {
+        console.log("useEffect: 绘制完成后执行，适合请求/订阅");
+      }, [text]);
+
+      return (
+        <div style={{ position: "relative", marginTop: 120 }}>
+          <button>布局锚点</button>
+          <div
+            ref={boxRef}
+            style={{
+              position: "absolute",
+              top,
+              left: 0,
+              background: "#333",
+              color: "#fff",
+              padding: "4px 8px",
+              borderRadius: 4
+            }}
+          >
+            {text}
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const [text, setText] = useState("短提示");
+
+      return (
+        <section>
+          <h1>useLayoutEffect 与 useEffect</h1>
+          <button onClick={() => setText(text === "短提示" ? "这是一段更长的提示文字" : "短提示")}>
+            切换 tooltip 文案
+          </button>
+          <Tooltip text={text} />
+          <p>面试回答: useLayoutEffect 同步阻塞绘制，仅用于 DOM 测量/同步布局；其余用 useEffect。</p>
+        </section>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="/">目录</a>
+  <a href="./31-%E9%AB%98%E9%98%B6%E7%BB%84%E4%BB%B6HOC%E4%B8%8ErenderProps.html">← 高阶组件HOC与renderProps</a>
+  <a href="./33-props%E6%B4%BE%E7%94%9F%E7%8A%B6%E6%80%81%E4%B8%8Ekey%E9%87%8D%E7%BD%AE.html">props派生状态与key重置 →</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>

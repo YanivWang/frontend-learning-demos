@@ -22,7 +22,7 @@ const SECTIONS = [
   join("learn", "css"),
   join("learn", "vue2"),
   join("learn", "vue3"),
-  join("learn", "react"),
+  join("learn", "react18"),
   join("learn", "demos"),
   join("learn", "typescript"),
 ];

@@ -2,7 +2,7 @@
 
 专讲 **React 19** 新语法与高频面试点的 demo 模块。`learn/react19/src/` 下共 **11** 个 `.html`（基础语法 **6** + 面试题 **5**）。
 
-使用 **React 19** 运行时（`libs/` 内 `umd-react` 构建），与 `learn/react/`（React 18.3.1）分开，避免 API 混用。
+使用 **React 19** 运行时（`libs/` 内 `umd-react` 构建），与 `learn/react18/`（React 18.3.1）分开，避免 API 混用。
 
 ## 目录分组
 
@@ -36,8 +36,8 @@
 
 ## 与 React 18 模块的关系
 
-- 先学 `learn/react/src/function-components/` 的 Hooks 与渲染基础，再学本模块。
-- `learn/react/.../34-React19新特性概览.html` 为 **React 18 运行时** 下的概览；可运行 demo 以本目录为准。
+- 先学 `learn/react18/src/function-components/` 的 Hooks 与渲染基础，再学本模块。
+- `learn/react18/.../34-React19新特性概览.html` 为 **React 18 运行时** 下的概览；可运行 demo 以本目录为准。
 
 ## 依赖
 

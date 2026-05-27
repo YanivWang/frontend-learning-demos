@@ -1,0 +1,137 @@
+<!--
+  分类: react18 / class 组件
+  主题: getDerivedStateFromProps 与 getSnapshotBeforeUpdate
+  要点:
+    - getDerivedStateFromProps(props, state): 渲染前根据 props 派生 state，必须纯函数、无权访问 this
+    - 常见用途: 受控组件模式、props 变化时同步内部 state（慎用，易冗余 state）
+    - getSnapshotBeforeUpdate(prevProps, prevState): DOM 更新前调用，返回值传给 componentDidUpdate 第三参数
+    - 常见用途: 滚动位置恢复、聊天窗口保持在底部
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>React · getDerivedStateFromProps / getSnapshotBeforeUpdate</title>
+  <script src="../../libs/react.development.js"></script>
+  <script src="../../libs/react-dom.development.js"></script>
+  <script src="../../libs/babel.min.js"></script>
+  <style>
+    .log-box { height: 120px; overflow: auto; border: 1px solid #ccc; padding: 8px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    class ControlledInput extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = { value: props.value || "" };
+      }
+
+      static getDerivedStateFromProps(nextProps, prevState) {
+        if (nextProps.value !== prevState.value) {
+          return { value: nextProps.value };
+        }
+        return null;
+      }
+
+      handleChange = (e) => {
+        this.props.onChange(e.target.value);
+      };
+
+      render() {
+        return (
+          <input
+            value={this.state.value}
+            onChange={this.handleChange}
+            placeholder="父 props 驱动，内部 state 同步"
+          />
+        );
+      }
+    }
+
+    class MessageList extends React.Component {
+      listRef = React.createRef();
+
+      getSnapshotBeforeUpdate(prevProps) {
+        const list = this.listRef.current;
+        if (!list) return null;
+        const wasAtBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 20;
+        if (prevProps.messages.length < this.props.messages.length && wasAtBottom) {
+          return list.scrollHeight;
+        }
+        return null;
+      }
+
+      componentDidUpdate(prevProps, prevState, snapshot) {
+        if (snapshot !== null) {
+          const list = this.listRef.current;
+          list.scrollTop = list.scrollHeight - snapshot;
+        }
+      }
+
+      render() {
+        return (
+          <div ref={this.listRef} className="log-box">
+            {this.props.messages.map((msg, i) => (
+              <div key={i}>{msg}</div>
+            ))}
+          </div>
+        );
+      }
+    }
+
+    class App extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          text: "React",
+          messages: ["msg-1", "msg-2", "msg-3"]
+        };
+      }
+
+      addMessage = () => {
+        this.setState({
+          messages: [...this.state.messages, "msg-" + Date.now()]
+        });
+      };
+
+      render() {
+        return (
+          <section>
+            <h1>getDerivedStateFromProps / getSnapshotBeforeUpdate</h1>
+            <h2>派生 state（受控输入）</h2>
+            <ControlledInput
+              value={this.state.text}
+              onChange={(text) => this.setState({ text })}
+            />
+            <p>父 state.text: {this.state.text}</p>
+            <h2>快照（滚动位置恢复）</h2>
+            <button onClick={this.addMessage}>追加消息（在底部时保持滚动）</button>
+            <MessageList messages={this.state.messages} />
+            <p>面试回答: 前者派生 state 须纯函数；后者在 DOM 变更前取快照，在 didUpdate 里应用。</p>
+          </section>
+        );
+      }
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+<!-- DEMO_NAV_START -->
+<footer class="demo-nav" aria-label="Demo 导航">
+  <style>
+    .demo-nav { margin: 2.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid #e3e3e3; font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; }
+    .demo-nav a { color: #0969da; text-decoration: none; }
+    .demo-nav a:hover { text-decoration: underline; }
+    .demo-output { margin-top: 1rem; padding: 0.75rem 1rem; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; max-height: 240px; overflow: auto; }
+    .demo-output:empty { display: none; }
+  </style>
+  <a href="/">目录</a>
+  <a href="./08-class-PureComponent%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">← class-PureComponent性能优化</a>
+  <a href="./10-class-Context%E4%B8%8A%E4%B8%8B%E6%96%87.html">class-Context上下文 →</a>
+</footer>
+<!-- DEMO_NAV_END -->
+</body>
+</html>
