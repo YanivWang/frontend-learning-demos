@@ -22,11 +22,11 @@
 
 ### React 18
 
-`learn/react18/src/function-components/` 按编号；类组件见 `class-components/`
+`apps/react18/src/function-components/` 按编号；类组件见 `class-components/`
 
 ### React 19
 
-`learn/react19/src/01-基础语法` → `02-面试题`（建议在 React 18 Hooks 之后）
+`apps/react19/src/01-基础语法` → `02-面试题`（建议在 React 18 Hooks 之后）
 
 ## CSS
 
@@ -34,7 +34,7 @@
 
 ## 综合 Demo
 
-完成基础语法后，可尝试 `learn/demos/` 下的拖拽、SVG、ViewPager 等小项目。
+完成基础语法后，可尝试 `apps/demos/` 下的拖拽、SVG、ViewPager 等小项目。
 
 ## 补齐计划
 

@@ -16,9 +16,9 @@
 
 ## 可选后续
 
-- [x] React 19 独立模块 `learn/react19/`（umd-react 运行时 + `useActionState` 等可运行 demo）
+- [x] React 19 独立模块 `apps/react19/`（umd-react 运行时 + `useActionState` 等可运行 demo）
 - [ ] Webpack vs Vite 可构建最小对比仓库（子目录）
 - [ ] 全量 Playwright（当前为抽样 24 页）
-- [ ] 共享 `learn/shared/libs/` 减少 vue2/vue3 重复 vendoring
+- [x] 共享 `packages/shared/libs/` 减少 vue2/vue3 重复 vendoring（自 `apps/shared` 迁入）
 - [ ] libs 版本与 npm 最新版自动 diff 脚本（网络）
 - [ ] `@scope` CSS、Module Federation 等专题

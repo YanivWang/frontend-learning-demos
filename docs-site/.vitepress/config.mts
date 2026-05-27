@@ -7,7 +7,7 @@ import sidebar from "./sidebar.generated.mts";
 
 const configDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(configDir, "../..");
-const learnRoot = join(repoRoot, "learn");
+const appsRoot = join(repoRoot, "apps");
 
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -20,10 +20,10 @@ const MIME: Record<string, string> = {
   ".woff2": "font/woff2",
 };
 
-function safeLearnPath(urlPath: string) {
+function safeAppsPath(urlPath: string) {
   const rel = decodeURIComponent(urlPath.split("?")[0]).replace(/^\/+/, "");
-  const abs = join(learnRoot, rel);
-  if (!abs.startsWith(learnRoot)) {
+  const abs = join(appsRoot, rel);
+  if (!abs.startsWith(appsRoot)) {
     return null;
   }
   return abs;
@@ -40,13 +40,13 @@ function serveStaticFile(filePath: string, res: import("http").ServerResponse) {
   return true;
 }
 
-function serveLearnDemos(): Plugin {
+function serveAppsDemos(): Plugin {
   function attach(server: { middlewares: import("connect").Connect.Server }) {
-    server.middlewares.use("/learn", (req, res, next) => {
+    server.middlewares.use("/apps", (req, res, next) => {
       if (!req.url) {
         return next();
       }
-      const filePath = safeLearnPath(req.url);
+      const filePath = safeAppsPath(req.url);
       if (!filePath) {
         return next();
       }
@@ -62,7 +62,7 @@ function serveLearnDemos(): Plugin {
   }
 
   return {
-    name: "serve-learn-demos",
+    name: "serve-apps-demos",
     configureServer: attach,
     configurePreviewServer: attach,
   };
@@ -75,9 +75,9 @@ export default defineConfig({
   // GitHub Pages 部署时设置：VITEPRESS_BASE=/js-css-vue-react-learn/
   base: process.env.VITEPRESS_BASE || "/",
   cleanUrls: false,
-  ignoreDeadLinks: [/^\/learn\//],
+  ignoreDeadLinks: [/^\/apps\//],
   vite: {
-    plugins: [serveLearnDemos()],
+    plugins: [serveAppsDemos()],
   },
   themeConfig: {
     nav: [

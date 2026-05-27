@@ -8,13 +8,14 @@
 
 | 目录 | 用途 | 说明 |
 |---|---|---|
-| `learn/javascript/` | 纯 JavaScript 知识点 demo | 按 `01-` ~ `09-` 编号分类 |
-| `learn/css/` | CSS 布局 / 动画 / 视觉 / 响应式 / 性能 / 现代特性 | 按 `01-` ~ `07-` 编号分类 |
-| `learn/vue2/` `learn/vue3/` | Vue 框架 demo | 内含 `libs/`（运行时）与 `src/`（demo） |
-| `learn/react18/` | React 18 demo | 内含 `libs/` 与 `src/`（`function-components` + `class-components`） |
-| `learn/react19/` | React 19 新特性与面试 demo | 内含 React 19 运行时（`umd-react`）与 `src/`（`01-基础语法` + `02-面试题`） |
-| `learn/typescript/` | TypeScript 面试基础 / 进阶 / 工程与框架 demo | 按 `01-基础` / `02-进阶` / `03-工程与框架` 编号 |
-| `learn/demos/` | 综合性 / 交互小项目 | `drag`、`svg`、`viewpager` 等 |
+| `apps/javascript/` | 纯 JavaScript 知识点 demo | 按 `01-` ~ `09-` 编号分类 |
+| `apps/css/` | CSS 布局 / 动画 / 视觉 / 响应式 / 性能 / 现代特性 | 按 `01-` ~ `07-` 编号分类 |
+| `apps/vue2/` `apps/vue3/` | Vue 框架 demo | 内含 `libs/`（框架运行时）与 `src/`（demo）；通用库见 `packages/shared/libs/` |
+| `packages/` | 工作区子包与共用资源 | `shared/libs/` 放 axios、lodash、js-cookie 等；其余子包可自带 `package.json` |
+| `apps/react18/` | React 18 demo | 内含 `libs/` 与 `src/`（`function-components` + `class-components`） |
+| `apps/react19/` | React 19 新特性与面试 demo | 内含 React 19 运行时（`umd-react`）与 `src/`（`01-基础语法` + `02-面试题`） |
+| `apps/typescript/` | TypeScript 面试基础 / 进阶 / 工程与框架 demo | 按 `01-基础` / `02-进阶` / `03-工程与框架` 编号 |
+| `apps/demos/` | 综合性 / 交互小项目 | `drag`、`svg`、`viewpager` 等 |
 | `scripts/` | 仓库工具脚本 | `build-index.mjs`、`sync-readmes.mjs`、`validate-demos.mjs` 等 |
 | `docs/` | 计划与审查文档 | `plans/` 放补齐计划，`reviews/` 放审查记录 |
 
@@ -22,7 +23,7 @@
 
 - **一级分类目录**：保留中文短语，加 `NN-` 编号前缀（`01-基础`、`03-动画`；CSS 从 `01-基础` 起）。
 - **二级专题子目录**：纯中文（`正则/`、`闭包/`、`异步/`）；编号可省略。
-- **每个分类目录都应有一份 `README.md`** 作为目录索引；`learn/javascript` / `learn/css` / `learn/vue2` / `learn/vue3` / `learn/react18` / `learn/react19` / `learn/typescript` 的 README 内含由 `sync-readmes.mjs` 维护的完整 demo 清单表。
+- **每个分类目录都应有一份 `README.md`** 作为目录索引；`apps/javascript` / `apps/css` / `apps/vue2` / `apps/vue3` / `apps/react18` / `apps/react19` / `apps/typescript` 的 README 内含由 `sync-readmes.mjs` 维护的完整 demo 清单表。
 
 ## 3. 文件命名规则
 
@@ -63,7 +64,8 @@
 
 每个框架 / 第三方运行时统一放在所属目录下的 `libs/`：
 
-- `learn/react18/libs/`、`learn/vue2/libs/`、`learn/vue3/libs/`、`learn/demos/libs/`、`learn/css/05-响应式/libs/`
+- `apps/react18/libs/`、`apps/vue2/libs/`、`apps/vue3/libs/`、`packages/shared/libs/`、`apps/demos/libs/`、`apps/css/05-响应式/libs/`
+- **跨模块通用库**（axios、lodash、js-cookie 等）统一放在 `packages/shared/libs/`，demo 用相对路径 `../../../../packages/shared/libs/<file>` 引用（相对 `apps/vue2|vue3/src/<分类>/`）
 - demo 内嵌的小库放在 demo 同级的 `lib/`（注意是单数）
 - **每个第三方文件**首行必须有注释，写明：**名称 + 版本号 + 官方下载地址 + 下载日期**
 - 自己写的工具脚本不要放在 `libs/`，统一放在 `src/utils/` 或 demo 同级目录

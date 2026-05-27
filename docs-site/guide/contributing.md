@@ -1,10 +1,10 @@
 # 贡献指南
 
-完整说明见仓库 [`CONTRIBUTING.md`](https://github.com/jsAppSpace/js-css-vue-react-learn/blob/main/CONTRIBUTING.md)。
+完整说明见仓库 [`CONTRIBUTING.md`](https://github.com/jsAppSpace/js-css-vue-react-apps/blob/main/CONTRIBUTING.md)。
 
 ## 新增 demo 流程
 
-1. 在对应 `learn/` 子目录创建 `.html`，写好头注释（分类 / 主题 / 要点）
+1. 在对应 `apps/` 子目录创建 `.html`，写好头注释（分类 / 主题 / 要点）
 2. 运行维护命令：
 
 ```bash
@@ -17,7 +17,7 @@ npm run validate
 
 ## 文档站
 
-VitePress 仅作**文档壳**，demo 本体仍在 `learn/`：
+VitePress 仅作**文档壳**，demo 本体仍在 `apps/`：
 
 ```bash
 npm run docs:dev      # 本地预览

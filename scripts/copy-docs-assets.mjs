@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * VitePress build 完成后，将 learn/ 复制到 dist，确保部署后 demo 链接可访问。
+ * VitePress build 完成后，将 apps/ 复制到 dist，确保部署后 demo 链接可访问。
  */
 
 import { cp } from "node:fs/promises";
@@ -11,11 +11,11 @@ const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
 const DIST = join(ROOT, "docs-site/.vitepress/dist");
 
 async function main() {
-  await cp(join(ROOT, "learn"), join(DIST, "learn"), {
+  await cp(join(ROOT, "apps"), join(DIST, "apps"), {
     recursive: true,
     force: true,
   });
-  console.log("[copy-docs-assets] 已将 learn/ 复制到 dist");
+  console.log("[copy-docs-assets] 已将 apps/ 复制到 dist");
 }
 
 main().catch((err) => {

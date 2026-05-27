@@ -18,13 +18,14 @@ const NAV_START = "<!-- DEMO_NAV_START -->";
 const NAV_END = "<!-- DEMO_NAV_END -->";
 
 const SECTIONS = [
-  join("learn", "javascript"),
-  join("learn", "css"),
-  join("learn", "vue2"),
-  join("learn", "vue3"),
-  join("learn", "react18"),
-  join("learn", "demos"),
-  join("learn", "typescript"),
+  join("apps", "javascript"),
+  join("apps", "css"),
+  join("apps", "vue2"),
+  join("apps", "vue3"),
+  join("apps", "react18"),
+  join("apps", "react19"),
+  join("apps", "demos"),
+  join("apps", "typescript"),
 ];
 const SKIP_DIRS = new Set(["libs", "lib", "node_modules", ".git", "scripts"]);
 

@@ -50,12 +50,13 @@ test("validate-demos validates manifest consistency without rewriting generated 
 
 test("sync-readmes --check validates README tables without rewriting them", () => {
   const readmeFiles = [
-    "learn/javascript/README.md",
-    "learn/css/README.md",
-    "learn/vue2/README.md",
-    "learn/vue3/README.md",
-    "learn/react18/README.md",
-    "learn/typescript/README.md",
+    "apps/javascript/README.md",
+    "apps/css/README.md",
+    "apps/vue2/README.md",
+    "apps/vue3/README.md",
+    "apps/react18/README.md",
+    "apps/react19/README.md",
+    "apps/typescript/README.md",
   ];
   const before = Object.fromEntries(
     readmeFiles.map((file) => [file, readFileSync(join(ROOT, file), "utf8")])

@@ -12,13 +12,13 @@ const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
 const SKIP = new Set(["libs", "lib", "node_modules", ".git"]);
 
 const CONFIG = {
-  javascript: { scan: join("learn", "javascript"), label: "learn/javascript" },
-  css: { scan: join("learn", "css"), label: "learn/css" },
-  vue2: { scan: join("learn", "vue2", "src"), label: "learn/vue2/src" },
-  vue3: { scan: join("learn", "vue3", "src"), label: "learn/vue3/src" },
-  react18: { scan: join("learn", "react18", "src"), label: "learn/react18/src" },
-  react19: { scan: join("learn", "react19", "src"), label: "learn/react19/src" },
-  typescript: { scan: join("learn", "typescript"), label: "learn/typescript" },
+  javascript: { scan: join("apps", "javascript"), label: "apps/javascript" },
+  css: { scan: join("apps", "css"), label: "apps/css" },
+  vue2: { scan: join("apps", "vue2", "src"), label: "apps/vue2/src" },
+  vue3: { scan: join("apps", "vue3", "src"), label: "apps/vue3/src" },
+  react18: { scan: join("apps", "react18", "src"), label: "apps/react18/src" },
+  react19: { scan: join("apps", "react19", "src"), label: "apps/react19/src" },
+  typescript: { scan: join("apps", "typescript"), label: "apps/typescript" },
 };
 
 function parseHeader(content) {

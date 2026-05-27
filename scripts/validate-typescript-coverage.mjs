@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * TypeScript 专题覆盖度校验：
- *   - 确保 learn/typescript 下存在面试高频主题 demo
+ *   - 确保 apps/typescript 下存在面试高频主题 demo
  *   - 每个 demo 必须能被 validate-demos 的头注释规则识别
  *
  * 运行：node scripts/validate-typescript-coverage.mjs
@@ -15,63 +15,63 @@ const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
 
 const REQUIRED_DEMOS = [
   {
-    file: "learn/typescript/01-基础/01-类型注解与推断.html",
+    file: "apps/typescript/01-基础/01-类型注解与推断.html",
     keywords: ["类型注解", "unknown", "any"],
   },
   {
-    file: "learn/typescript/01-基础/02-interface与type.html",
+    file: "apps/typescript/01-基础/02-interface与type.html",
     keywords: ["interface", "type", "ApiResult"],
   },
   {
-    file: "learn/typescript/01-基础/03-泛型基础.html",
+    file: "apps/typescript/01-基础/03-泛型基础.html",
     keywords: ["泛型", "keyof", "extends"],
   },
   {
-    file: "learn/typescript/01-基础/04-函数类型与重载.html",
+    file: "apps/typescript/01-基础/04-函数类型与重载.html",
     keywords: ["函数重载", "可选参数", "剩余参数"],
   },
   {
-    file: "learn/typescript/01-基础/05-数组元组与字面量.html",
+    file: "apps/typescript/01-基础/05-数组元组与字面量.html",
     keywords: ["元组", "readonly", "as const", "satisfies"],
   },
   {
-    file: "learn/typescript/01-基础/06-class与implements.html",
+    file: "apps/typescript/01-基础/06-class与implements.html",
     keywords: ["implements", "abstract", "private"],
   },
   {
-    file: "learn/typescript/01-基础/07-enum与对象枚举.html",
+    file: "apps/typescript/01-基础/07-enum与对象枚举.html",
     keywords: ["enum", "const enum", "对象枚举"],
   },
   {
-    file: "learn/typescript/02-进阶/01-类型收窄.html",
+    file: "apps/typescript/02-进阶/01-类型收窄.html",
     keywords: ["类型收窄", "discriminated union", "类型守卫"],
   },
   {
-    file: "learn/typescript/02-进阶/02-Utility-Types.html",
+    file: "apps/typescript/02-进阶/02-Utility-Types.html",
     keywords: ["Partial", "Pick", "Omit", "Record"],
   },
   {
-    file: "learn/typescript/02-进阶/03-条件类型与infer.html",
+    file: "apps/typescript/02-进阶/03-条件类型与infer.html",
     keywords: ["条件类型", "infer", "ReturnType"],
   },
   {
-    file: "learn/typescript/02-进阶/04-映射类型与模板字面量.html",
+    file: "apps/typescript/02-进阶/04-映射类型与模板字面量.html",
     keywords: ["映射类型", "模板字面量类型", "索引访问"],
   },
   {
-    file: "learn/typescript/02-进阶/05-never与穷尽检查.html",
+    file: "apps/typescript/02-进阶/05-never与穷尽检查.html",
     keywords: ["never", "穷尽检查", "assertNever"],
   },
   {
-    file: "learn/typescript/03-工程与框架/01-tsconfig-strict配置.html",
+    file: "apps/typescript/03-工程与框架/01-tsconfig-strict配置.html",
     keywords: ["tsconfig", "strict", "noImplicitAny"],
   },
   {
-    file: "learn/typescript/03-工程与框架/02-类型声明与模块.html",
+    file: "apps/typescript/03-工程与框架/02-类型声明与模块.html",
     keywords: [".d.ts", "declare module", "类型声明"],
   },
   {
-    file: "learn/typescript/03-工程与框架/03-Vue3与React组件类型.html",
+    file: "apps/typescript/03-工程与框架/03-Vue3与React组件类型.html",
     keywords: ["defineProps", "React.FC", "组件 Props"],
   },
 ];

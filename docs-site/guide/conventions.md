@@ -1,17 +1,17 @@
 # 命名约定
 
-完整规范见仓库根目录 [`CONVENTIONS.md`](https://github.com/jsAppSpace/js-css-vue-react-learn/blob/main/CONVENTIONS.md)。下面是核心摘要。
+完整规范见仓库根目录 [`CONVENTIONS.md`](https://github.com/jsAppSpace/js-css-vue-react-apps/blob/main/CONVENTIONS.md)。下面是核心摘要。
 
 ## 目录结构
 
 | 目录 | 用途 |
 | --- | --- |
-| `learn/javascript/` | 纯 JavaScript，01–09 编号 |
-| `learn/css/` | CSS 布局 / 动画 / 响应式等 |
-| `learn/vue2/` `learn/vue3/` | Vue demo（`libs/` + `src/`） |
-| `learn/react18/` | React 18 demo |
-| `learn/typescript/` | TypeScript |
-| `learn/demos/` | 综合小项目 |
+| `apps/javascript/` | 纯 JavaScript，01–09 编号 |
+| `apps/css/` | CSS 布局 / 动画 / 响应式等 |
+| `apps/vue2/` `apps/vue3/` | Vue demo（`libs/` + `src/`） |
+| `apps/react18/` | React 18 demo |
+| `apps/typescript/` | TypeScript |
+| `apps/demos/` | 综合小项目 |
 | `docs-site/` | VitePress 文档站（唯一入口） |
 
 ## 文件命名

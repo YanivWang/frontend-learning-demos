@@ -37,91 +37,91 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "变量",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/%E5%8F%98%E9%87%8F.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E5%8F%98%E9%87%8F.html"
           },
           {
             "text": "变量进阶",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/%E5%8F%98%E9%87%8F%E8%BF%9B%E9%98%B6.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E5%8F%98%E9%87%8F%E8%BF%9B%E9%98%B6.html"
           },
           {
             "text": "函数",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/%E5%87%BD%E6%95%B0.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E5%87%BD%E6%95%B0.html"
           },
           {
             "text": "函数进阶",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/%E5%87%BD%E6%95%B0%E8%BF%9B%E9%98%B6.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E5%87%BD%E6%95%B0%E8%BF%9B%E9%98%B6.html"
           },
           {
             "text": "箭头函数",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/%E7%AE%AD%E5%A4%B4%E5%87%BD%E6%95%B0.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E7%AE%AD%E5%A4%B4%E5%87%BD%E6%95%B0.html"
           },
           {
             "text": "类型转换",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2.html"
           },
           {
             "text": "数组方法",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/%E6%95%B0%E7%BB%84%E6%96%B9%E6%B3%95.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E6%95%B0%E7%BB%84%E6%96%B9%E6%B3%95.html"
           },
           {
             "text": "严格模式",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/%E4%B8%A5%E6%A0%BC%E6%A8%A1%E5%BC%8F.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E4%B8%A5%E6%A0%BC%E6%A8%A1%E5%BC%8F.html"
           },
           {
             "text": "运算符",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/%E8%BF%90%E7%AE%97%E7%AC%A6.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E8%BF%90%E7%AE%97%E7%AC%A6.html"
           },
           {
             "text": "字符串方法",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%96%B9%E6%B3%95.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%96%B9%E6%B3%95.html"
           },
           {
             "text": "arguments",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/arguments.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/arguments.html"
           },
           {
             "text": "Date",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/Date.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/Date.html"
           },
           {
             "text": "encode-URI编码",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/encode-URI%E7%BC%96%E7%A0%81.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/encode-URI%E7%BC%96%E7%A0%81.html"
           },
           {
             "text": "escape",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/escape.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/escape.html"
           },
           {
             "text": "eval与Global",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/eval%E4%B8%8EGlobal.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/eval%E4%B8%8EGlobal.html"
           },
           {
             "text": "IIFE",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/IIFE.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/IIFE.html"
           },
           {
             "text": "JSON",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/JSON.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/JSON.html"
           },
           {
             "text": "parseInt",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/parseInt.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/parseInt.html"
           },
           {
             "text": "symbol",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/symbol.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/symbol.html"
           },
           {
             "text": "typeof",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/typeof.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/typeof.html"
           },
           {
             "text": "unicode-字符等价性",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/unicode-%E5%AD%97%E7%AC%A6%E7%AD%89%E4%BB%B7%E6%80%A7.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/unicode-%E5%AD%97%E7%AC%A6%E7%AD%89%E4%BB%B7%E6%80%A7.html"
           },
           {
             "text": "unicode",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/unicode.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/unicode.html"
           }
         ]
       },
@@ -131,19 +131,19 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "正则-URL路径匹配",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/%E6%AD%A3%E5%88%99/01-%E6%AD%A3%E5%88%99-URL%E8%B7%AF%E5%BE%84%E5%8C%B9%E9%85%8D.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E6%AD%A3%E5%88%99/01-%E6%AD%A3%E5%88%99-URL%E8%B7%AF%E5%BE%84%E5%8C%B9%E9%85%8D.html"
           },
           {
             "text": "正则-URL与图片格式",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/%E6%AD%A3%E5%88%99/02-%E6%AD%A3%E5%88%99-URL%E4%B8%8E%E5%9B%BE%E7%89%87%E6%A0%BC%E5%BC%8F.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E6%AD%A3%E5%88%99/02-%E6%AD%A3%E5%88%99-URL%E4%B8%8E%E5%9B%BE%E7%89%87%E6%A0%BC%E5%BC%8F.html"
           },
           {
             "text": "正则-全特性",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/%E6%AD%A3%E5%88%99/03-%E6%AD%A3%E5%88%99-%E5%85%A8%E7%89%B9%E6%80%A7.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E6%AD%A3%E5%88%99/03-%E6%AD%A3%E5%88%99-%E5%85%A8%E7%89%B9%E6%80%A7.html"
           },
           {
             "text": "正则-去标点",
-            "link": "/learn/javascript/01-%E5%9F%BA%E7%A1%80/%E6%AD%A3%E5%88%99/04-%E6%AD%A3%E5%88%99-%E5%8E%BB%E6%A0%87%E7%82%B9.html"
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E6%AD%A3%E5%88%99/04-%E6%AD%A3%E5%88%99-%E5%8E%BB%E6%A0%87%E7%82%B9.html"
           }
         ]
       },
@@ -153,11 +153,11 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "作用域链",
-            "link": "/learn/javascript/02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/01-%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE.html"
+            "link": "/apps/javascript/02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/01-%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE.html"
           },
           {
             "text": "柯里化",
-            "link": "/learn/javascript/02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/02-%E6%9F%AF%E9%87%8C%E5%8C%96.html"
+            "link": "/apps/javascript/02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/02-%E6%9F%AF%E9%87%8C%E5%8C%96.html"
           }
         ]
       },
@@ -167,11 +167,11 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "闭包-作用域链与变量提升",
-            "link": "/learn/javascript/02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/%E9%97%AD%E5%8C%85/01-%E9%97%AD%E5%8C%85-%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE%E4%B8%8E%E5%8F%98%E9%87%8F%E6%8F%90%E5%8D%87.html"
+            "link": "/apps/javascript/02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/%E9%97%AD%E5%8C%85/01-%E9%97%AD%E5%8C%85-%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE%E4%B8%8E%E5%8F%98%E9%87%8F%E6%8F%90%E5%8D%87.html"
           },
           {
             "text": "闭包-内存泄漏与修复",
-            "link": "/learn/javascript/02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/%E9%97%AD%E5%8C%85/02-%E9%97%AD%E5%8C%85-%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E4%B8%8E%E4%BF%AE%E5%A4%8D.html"
+            "link": "/apps/javascript/02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/%E9%97%AD%E5%8C%85/02-%E9%97%AD%E5%8C%85-%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E4%B8%8E%E4%BF%AE%E5%A4%8D.html"
           }
         ]
       },
@@ -181,19 +181,19 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "this-动态绑定",
-            "link": "/learn/javascript/02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/this%E6%8C%87%E5%90%91/01-this-%E5%8A%A8%E6%80%81%E7%BB%91%E5%AE%9A.html"
+            "link": "/apps/javascript/02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/this%E6%8C%87%E5%90%91/01-this-%E5%8A%A8%E6%80%81%E7%BB%91%E5%AE%9A.html"
           },
           {
             "text": "this-call-apply-bind",
-            "link": "/learn/javascript/02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/this%E6%8C%87%E5%90%91/02-this-call-apply-bind.html"
+            "link": "/apps/javascript/02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/this%E6%8C%87%E5%90%91/02-this-call-apply-bind.html"
           },
           {
             "text": "this-new构造函数",
-            "link": "/learn/javascript/02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/this%E6%8C%87%E5%90%91/03-this-new%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0.html"
+            "link": "/apps/javascript/02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/this%E6%8C%87%E5%90%91/03-this-new%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0.html"
           },
           {
             "text": "this-对象方法与脱离",
-            "link": "/learn/javascript/02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/this%E6%8C%87%E5%90%91/04-this-%E5%AF%B9%E8%B1%A1%E6%96%B9%E6%B3%95%E4%B8%8E%E8%84%B1%E7%A6%BB.html"
+            "link": "/apps/javascript/02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/this%E6%8C%87%E5%90%91/04-this-%E5%AF%B9%E8%B1%A1%E6%96%B9%E6%B3%95%E4%B8%8E%E8%84%B1%E7%A6%BB.html"
           }
         ]
       },
@@ -203,31 +203,31 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "创建对象",
-            "link": "/learn/javascript/03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%88%9B%E5%BB%BA%E5%AF%B9%E8%B1%A1.html"
+            "link": "/apps/javascript/03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%88%9B%E5%BB%BA%E5%AF%B9%E8%B1%A1.html"
           },
           {
             "text": "访问器",
-            "link": "/learn/javascript/03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E8%AE%BF%E9%97%AE%E5%99%A8.html"
+            "link": "/apps/javascript/03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E8%AE%BF%E9%97%AE%E5%99%A8.html"
           },
           {
             "text": "构造函数",
-            "link": "/learn/javascript/03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0.html"
+            "link": "/apps/javascript/03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0.html"
           },
           {
             "text": "函数也是对象",
-            "link": "/learn/javascript/03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%87%BD%E6%95%B0%E4%B9%9F%E6%98%AF%E5%AF%B9%E8%B1%A1.html"
+            "link": "/apps/javascript/03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%87%BD%E6%95%B0%E4%B9%9F%E6%98%AF%E5%AF%B9%E8%B1%A1.html"
           },
           {
             "text": "原型",
-            "link": "/learn/javascript/03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%8E%9F%E5%9E%8B.html"
+            "link": "/apps/javascript/03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%8E%9F%E5%9E%8B.html"
           },
           {
             "text": "原型链",
-            "link": "/learn/javascript/03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%8E%9F%E5%9E%8B%E9%93%BE.html"
+            "link": "/apps/javascript/03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%8E%9F%E5%9E%8B%E9%93%BE.html"
           },
           {
             "text": "原型属性vs实例属性",
-            "link": "/learn/javascript/03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%8E%9F%E5%9E%8B%E5%B1%9E%E6%80%A7vs%E5%AE%9E%E4%BE%8B%E5%B1%9E%E6%80%A7.html"
+            "link": "/apps/javascript/03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%8E%9F%E5%9E%8B%E5%B1%9E%E6%80%A7vs%E5%AE%9E%E4%BE%8B%E5%B1%9E%E6%80%A7.html"
           }
         ]
       },
@@ -237,7 +237,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "解构展开与模板字符串",
-            "link": "/learn/javascript/04-ES6%2B/%E8%A7%A3%E6%9E%84%E5%B1%95%E5%BC%80%E4%B8%8E%E6%A8%A1%E6%9D%BF%E5%AD%97%E7%AC%A6%E4%B8%B2.html"
+            "link": "/apps/javascript/04-ES6%2B/%E8%A7%A3%E6%9E%84%E5%B1%95%E5%BC%80%E4%B8%8E%E6%A8%A1%E6%9D%BF%E5%AD%97%E7%AC%A6%E4%B8%B2.html"
           }
         ]
       },
@@ -247,19 +247,19 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "Map",
-            "link": "/learn/javascript/04-ES6%2B/%E9%9B%86%E5%90%88/Map.html"
+            "link": "/apps/javascript/04-ES6%2B/%E9%9B%86%E5%90%88/Map.html"
           },
           {
             "text": "Set",
-            "link": "/learn/javascript/04-ES6%2B/%E9%9B%86%E5%90%88/Set.html"
+            "link": "/apps/javascript/04-ES6%2B/%E9%9B%86%E5%90%88/Set.html"
           },
           {
             "text": "WeakMap",
-            "link": "/learn/javascript/04-ES6%2B/%E9%9B%86%E5%90%88/WeakMap.html"
+            "link": "/apps/javascript/04-ES6%2B/%E9%9B%86%E5%90%88/WeakMap.html"
           },
           {
             "text": "WeakSet",
-            "link": "/learn/javascript/04-ES6%2B/%E9%9B%86%E5%90%88/WeakSet.html"
+            "link": "/apps/javascript/04-ES6%2B/%E9%9B%86%E5%90%88/WeakSet.html"
           }
         ]
       },
@@ -269,7 +269,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "CommonJS-vs-ESM",
-            "link": "/learn/javascript/04-ES6%2B/%E6%A8%A1%E5%9D%97%E5%8C%96/CommonJS-vs-ESM.html"
+            "link": "/apps/javascript/04-ES6%2B/%E6%A8%A1%E5%9D%97%E5%8C%96/CommonJS-vs-ESM.html"
           }
         ]
       },
@@ -279,27 +279,27 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "generator-基础yield与next",
-            "link": "/learn/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/generator%E4%B8%8Easync/01-generator-%E5%9F%BA%E7%A1%80yield%E4%B8%8Enext.html"
+            "link": "/apps/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/generator%E4%B8%8Easync/01-generator-%E5%9F%BA%E7%A1%80yield%E4%B8%8Enext.html"
           },
           {
             "text": "async-await-串行流程",
-            "link": "/learn/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/generator%E4%B8%8Easync/02-async-await-%E4%B8%B2%E8%A1%8C%E6%B5%81%E7%A8%8B.html"
+            "link": "/apps/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/generator%E4%B8%8Easync/02-async-await-%E4%B8%B2%E8%A1%8C%E6%B5%81%E7%A8%8B.html"
           },
           {
             "text": "async-是generator语法糖",
-            "link": "/learn/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/generator%E4%B8%8Easync/03-async-%E6%98%AFgenerator%E8%AF%AD%E6%B3%95%E7%B3%96.html"
+            "link": "/apps/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/generator%E4%B8%8Easync/03-async-%E6%98%AFgenerator%E8%AF%AD%E6%B3%95%E7%B3%96.html"
           },
           {
             "text": "async-错误重试机制",
-            "link": "/learn/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/generator%E4%B8%8Easync/04-async-%E9%94%99%E8%AF%AF%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6.html"
+            "link": "/apps/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/generator%E4%B8%8Easync/04-async-%E9%94%99%E8%AF%AF%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6.html"
           },
           {
             "text": "async-await-表达式与异常",
-            "link": "/learn/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/generator%E4%B8%8Easync/05-async-await-%E8%A1%A8%E8%BE%BE%E5%BC%8F%E4%B8%8E%E5%BC%82%E5%B8%B8.html"
+            "link": "/apps/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/generator%E4%B8%8Easync/05-async-await-%E8%A1%A8%E8%BE%BE%E5%BC%8F%E4%B8%8E%E5%BC%82%E5%B8%B8.html"
           },
           {
             "text": "async-声明形式与异常综合",
-            "link": "/learn/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/generator%E4%B8%8Easync/06-async-%E5%A3%B0%E6%98%8E%E5%BD%A2%E5%BC%8F%E4%B8%8E%E5%BC%82%E5%B8%B8%E7%BB%BC%E5%90%88.html"
+            "link": "/apps/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/generator%E4%B8%8Easync/06-async-%E5%A3%B0%E6%98%8E%E5%BD%A2%E5%BC%8F%E4%B8%8E%E5%BC%82%E5%B8%B8%E7%BB%BC%E5%90%88.html"
           }
         ]
       },
@@ -309,23 +309,23 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "Promise-all并发与then串行",
-            "link": "/learn/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/Promise/01-Promise-all%E5%B9%B6%E5%8F%91%E4%B8%8Ethen%E4%B8%B2%E8%A1%8C.html"
+            "link": "/apps/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/Promise/01-Promise-all%E5%B9%B6%E5%8F%91%E4%B8%8Ethen%E4%B8%B2%E8%A1%8C.html"
           },
           {
             "text": "Promise-与事件循环",
-            "link": "/learn/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/Promise/02-Promise-%E4%B8%8E%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF.html"
+            "link": "/apps/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/Promise/02-Promise-%E4%B8%8E%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF.html"
           },
           {
             "text": "Promise-包装图片预加载",
-            "link": "/learn/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/Promise/03-Promise-%E5%8C%85%E8%A3%85%E5%9B%BE%E7%89%87%E9%A2%84%E5%8A%A0%E8%BD%BD.html"
+            "link": "/apps/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/Promise/03-Promise-%E5%8C%85%E8%A3%85%E5%9B%BE%E7%89%87%E9%A2%84%E5%8A%A0%E8%BD%BD.html"
           },
           {
             "text": "Promise-执行函数与状态机",
-            "link": "/learn/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/Promise/04-Promise-%E6%89%A7%E8%A1%8C%E5%87%BD%E6%95%B0%E4%B8%8E%E7%8A%B6%E6%80%81%E6%9C%BA.html"
+            "link": "/apps/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/Promise/04-Promise-%E6%89%A7%E8%A1%8C%E5%87%BD%E6%95%B0%E4%B8%8E%E7%8A%B6%E6%80%81%E6%9C%BA.html"
           },
           {
             "text": "Promise-串行三种写法",
-            "link": "/learn/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/Promise/05-Promise-%E4%B8%B2%E8%A1%8C%E4%B8%89%E7%A7%8D%E5%86%99%E6%B3%95.html"
+            "link": "/apps/javascript/04-ES6%2B/%E5%BC%82%E6%AD%A5/Promise/05-Promise-%E4%B8%B2%E8%A1%8C%E4%B8%89%E7%A7%8D%E5%86%99%E6%B3%95.html"
           }
         ]
       },
@@ -335,35 +335,35 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "抽象基类",
-            "link": "/learn/javascript/04-ES6%2B/class%E8%AF%A6%E8%A7%A3/%E6%8A%BD%E8%B1%A1%E5%9F%BA%E7%B1%BB.html"
+            "link": "/apps/javascript/04-ES6%2B/class%E8%AF%A6%E8%A7%A3/%E6%8A%BD%E8%B1%A1%E5%9F%BA%E7%B1%BB.html"
           },
           {
             "text": "类与原型",
-            "link": "/learn/javascript/04-ES6%2B/class%E8%AF%A6%E8%A7%A3/%E7%B1%BB%E4%B8%8E%E5%8E%9F%E5%9E%8B.html"
+            "link": "/apps/javascript/04-ES6%2B/class%E8%AF%A6%E8%A7%A3/%E7%B1%BB%E4%B8%8E%E5%8E%9F%E5%9E%8B.html"
           },
           {
             "text": "私有构造函数",
-            "link": "/learn/javascript/04-ES6%2B/class%E8%AF%A6%E8%A7%A3/%E7%A7%81%E6%9C%89%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0.html"
+            "link": "/apps/javascript/04-ES6%2B/class%E8%AF%A6%E8%A7%A3/%E7%A7%81%E6%9C%89%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0.html"
           },
           {
             "text": "class静态初始化块",
-            "link": "/learn/javascript/04-ES6%2B/class%E8%AF%A6%E8%A7%A3/class%E9%9D%99%E6%80%81%E5%88%9D%E5%A7%8B%E5%8C%96%E5%9D%97.html"
+            "link": "/apps/javascript/04-ES6%2B/class%E8%AF%A6%E8%A7%A3/class%E9%9D%99%E6%80%81%E5%88%9D%E5%A7%8B%E5%8C%96%E5%9D%97.html"
           },
           {
             "text": "class静态初始化块extends",
-            "link": "/learn/javascript/04-ES6%2B/class%E8%AF%A6%E8%A7%A3/class%E9%9D%99%E6%80%81%E5%88%9D%E5%A7%8B%E5%8C%96%E5%9D%97extends.html"
+            "link": "/apps/javascript/04-ES6%2B/class%E8%AF%A6%E8%A7%A3/class%E9%9D%99%E6%80%81%E5%88%9D%E5%A7%8B%E5%8C%96%E5%9D%97extends.html"
           },
           {
             "text": "class类表达式",
-            "link": "/learn/javascript/04-ES6%2B/class%E8%AF%A6%E8%A7%A3/class%E7%B1%BB%E8%A1%A8%E8%BE%BE%E5%BC%8F.html"
+            "link": "/apps/javascript/04-ES6%2B/class%E8%AF%A6%E8%A7%A3/class%E7%B1%BB%E8%A1%A8%E8%BE%BE%E5%BC%8F.html"
           },
           {
             "text": "class类声明",
-            "link": "/learn/javascript/04-ES6%2B/class%E8%AF%A6%E8%A7%A3/class%E7%B1%BB%E5%A3%B0%E6%98%8E.html"
+            "link": "/apps/javascript/04-ES6%2B/class%E8%AF%A6%E8%A7%A3/class%E7%B1%BB%E5%A3%B0%E6%98%8E.html"
           },
           {
             "text": "extends",
-            "link": "/learn/javascript/04-ES6%2B/class%E8%AF%A6%E8%A7%A3/extends.html"
+            "link": "/apps/javascript/04-ES6%2B/class%E8%AF%A6%E8%A7%A3/extends.html"
           }
         ]
       },
@@ -373,7 +373,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/javascript/04-ES6%2B/ES6%E6%A8%A1%E5%9D%97/index.html"
+            "link": "/apps/javascript/04-ES6%2B/ES6%E6%A8%A1%E5%9D%97/index.html"
           }
         ]
       },
@@ -383,19 +383,19 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "代理的缺点",
-            "link": "/learn/javascript/05-%E5%85%83%E7%BC%96%E7%A8%8B/%E4%BB%A3%E7%90%86%E7%9A%84%E7%BC%BA%E7%82%B9.html"
+            "link": "/apps/javascript/05-%E5%85%83%E7%BC%96%E7%A8%8B/%E4%BB%A3%E7%90%86%E7%9A%84%E7%BC%BA%E7%82%B9.html"
           },
           {
             "text": "defineProperty",
-            "link": "/learn/javascript/05-%E5%85%83%E7%BC%96%E7%A8%8B/defineProperty.html"
+            "link": "/apps/javascript/05-%E5%85%83%E7%BC%96%E7%A8%8B/defineProperty.html"
           },
           {
             "text": "defineProperty访问器属性",
-            "link": "/learn/javascript/05-%E5%85%83%E7%BC%96%E7%A8%8B/defineProperty%E8%AE%BF%E9%97%AE%E5%99%A8%E5%B1%9E%E6%80%A7.html"
+            "link": "/apps/javascript/05-%E5%85%83%E7%BC%96%E7%A8%8B/defineProperty%E8%AE%BF%E9%97%AE%E5%99%A8%E5%B1%9E%E6%80%A7.html"
           },
           {
             "text": "proxy",
-            "link": "/learn/javascript/05-%E5%85%83%E7%BC%96%E7%A8%8B/proxy.html"
+            "link": "/apps/javascript/05-%E5%85%83%E7%BC%96%E7%A8%8B/proxy.html"
           }
         ]
       },
@@ -405,43 +405,43 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "剪贴板",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%89%AA%E8%B4%B4%E6%9D%BF.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%89%AA%E8%B4%B4%E6%9D%BF.html"
           },
           {
             "text": "浏览器渲染与性能",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E6%B5%8F%E8%A7%88%E5%99%A8%E6%B8%B2%E6%9F%93%E4%B8%8E%E6%80%A7%E8%83%BD.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E6%B5%8F%E8%A7%88%E5%99%A8%E6%B8%B2%E6%9F%93%E4%B8%8E%E6%80%A7%E8%83%BD.html"
           },
           {
             "text": "DOM操作",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/DOM%E6%93%8D%E4%BD%9C.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/DOM%E6%93%8D%E4%BD%9C.html"
           },
           {
             "text": "fetch与跨域",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/fetch%E4%B8%8E%E8%B7%A8%E5%9F%9F.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/fetch%E4%B8%8E%E8%B7%A8%E5%9F%9F.html"
           },
           {
             "text": "HTTP缓存",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/HTTP%E7%BC%93%E5%AD%98.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/HTTP%E7%BC%93%E5%AD%98.html"
           },
           {
             "text": "IntersectionObserver",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/IntersectionObserver.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/IntersectionObserver.html"
           },
           {
             "text": "MutationObserver",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/MutationObserver.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/MutationObserver.html"
           },
           {
             "text": "Notification",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/Notification.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/Notification.html"
           },
           {
             "text": "requestAnimation",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/requestAnimation.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/requestAnimation.html"
           },
           {
             "text": "ServiceWorker",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/ServiceWorker.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/ServiceWorker.html"
           }
         ]
       },
@@ -451,31 +451,31 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "存储方案对比",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/00-%E5%AD%98%E5%82%A8%E6%96%B9%E6%A1%88%E5%AF%B9%E6%AF%94.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/00-%E5%AD%98%E5%82%A8%E6%96%B9%E6%A1%88%E5%AF%B9%E6%AF%94.html"
           },
           {
             "text": "localforage-基础API",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/01-localforage-%E5%9F%BA%E7%A1%80API.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/01-localforage-%E5%9F%BA%E7%A1%80API.html"
           },
           {
             "text": "获取已用容量",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/02-%E8%8E%B7%E5%8F%96%E5%B7%B2%E7%94%A8%E5%AE%B9%E9%87%8F.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/02-%E8%8E%B7%E5%8F%96%E5%B7%B2%E7%94%A8%E5%AE%B9%E9%87%8F.html"
           },
           {
             "text": "获取剩余容量",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/03-%E8%8E%B7%E5%8F%96%E5%89%A9%E4%BD%99%E5%AE%B9%E9%87%8F.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/03-%E8%8E%B7%E5%8F%96%E5%89%A9%E4%BD%99%E5%AE%B9%E9%87%8F.html"
           },
           {
             "text": "封装-获取存储容量",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/04-%E5%B0%81%E8%A3%85-%E8%8E%B7%E5%8F%96%E5%AD%98%E5%82%A8%E5%AE%B9%E9%87%8F.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/04-%E5%B0%81%E8%A3%85-%E8%8E%B7%E5%8F%96%E5%AD%98%E5%82%A8%E5%AE%B9%E9%87%8F.html"
           },
           {
             "text": "测试最大容量",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/05-%E6%B5%8B%E8%AF%95%E6%9C%80%E5%A4%A7%E5%AE%B9%E9%87%8F.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/05-%E6%B5%8B%E8%AF%95%E6%9C%80%E5%A4%A7%E5%AE%B9%E9%87%8F.html"
           },
           {
             "text": "存储文件-FileReader",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/06-%E5%AD%98%E5%82%A8%E6%96%87%E4%BB%B6-FileReader.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%AD%98%E5%82%A8/06-%E5%AD%98%E5%82%A8%E6%96%87%E4%BB%B6-FileReader.html"
           }
         ]
       },
@@ -485,15 +485,15 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "事件循环",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E4%BA%8B%E4%BB%B6%E6%A8%A1%E5%9E%8B/01-%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E4%BA%8B%E4%BB%B6%E6%A8%A1%E5%9E%8B/01-%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF.html"
           },
           {
             "text": "dom事件-冒泡捕获委托",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E4%BA%8B%E4%BB%B6%E6%A8%A1%E5%9E%8B/02-dom%E4%BA%8B%E4%BB%B6-%E5%86%92%E6%B3%A1%E6%8D%95%E8%8E%B7%E5%A7%94%E6%89%98.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E4%BA%8B%E4%BB%B6%E6%A8%A1%E5%9E%8B/02-dom%E4%BA%8B%E4%BB%B6-%E5%86%92%E6%B3%A1%E6%8D%95%E8%8E%B7%E5%A7%94%E6%89%98.html"
           },
           {
             "text": "Node与浏览器事件循环对比",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E4%BA%8B%E4%BB%B6%E6%A8%A1%E5%9E%8B/03-Node%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E5%AF%B9%E6%AF%94.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E4%BA%8B%E4%BB%B6%E6%A8%A1%E5%9E%8B/03-Node%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E5%AF%B9%E6%AF%94.html"
           }
         ]
       },
@@ -503,11 +503,11 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "贴边侧栏拖拽",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E6%8B%96%E6%9B%B3%E6%89%8B%E6%9F%84/01-%E8%B4%B4%E8%BE%B9%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E6%8B%96%E6%9B%B3%E6%89%8B%E6%9F%84/01-%E8%B4%B4%E8%BE%B9%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html"
           },
           {
             "text": "悬浮侧栏拖拽",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E6%8B%96%E6%9B%B3%E6%89%8B%E6%9F%84/02-%E6%82%AC%E6%B5%AE%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E6%8B%96%E6%9B%B3%E6%89%8B%E6%9F%84/02-%E6%82%AC%E6%B5%AE%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html"
           }
         ]
       },
@@ -517,11 +517,11 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "hash",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/BOM/hash.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/BOM/hash.html"
           },
           {
             "text": "history",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/BOM/history.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/BOM/history.html"
           }
         ]
       },
@@ -531,7 +531,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/toolTips/index.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/toolTips/index.html"
           }
         ]
       },
@@ -541,7 +541,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "Worker-基础与子脚本",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/WebWorker/01-%E5%9F%BA%E7%A1%80/01-Worker-%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%AD%90%E8%84%9A%E6%9C%AC.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/WebWorker/01-%E5%9F%BA%E7%A1%80/01-Worker-%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%AD%90%E8%84%9A%E6%9C%AC.html"
           }
         ]
       },
@@ -551,7 +551,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "Worker-命名与消息分发",
-            "link": "/learn/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/WebWorker/02-%E5%91%BD%E5%90%8D%E4%B8%8E%E6%B6%88%E6%81%AF%E5%88%86%E5%8F%91/01-Worker-%E5%91%BD%E5%90%8D%E4%B8%8E%E6%B6%88%E6%81%AF%E5%88%86%E5%8F%91.html"
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/WebWorker/02-%E5%91%BD%E5%90%8D%E4%B8%8E%E6%B6%88%E6%81%AF%E5%88%86%E5%8F%91/01-Worker-%E5%91%BD%E5%90%8D%E4%B8%8E%E6%B6%88%E6%81%AF%E5%88%86%E5%8F%91.html"
           }
         ]
       },
@@ -561,11 +561,11 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "垃圾回收",
-            "link": "/learn/javascript/07-%E8%BF%9B%E9%98%B6/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6.html"
+            "link": "/apps/javascript/07-%E8%BF%9B%E9%98%B6/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6.html"
           },
           {
             "text": "深拷贝",
-            "link": "/learn/javascript/07-%E8%BF%9B%E9%98%B6/%E6%B7%B1%E6%8B%B7%E8%B4%9D.html"
+            "link": "/apps/javascript/07-%E8%BF%9B%E9%98%B6/%E6%B7%B1%E6%8B%B7%E8%B4%9D.html"
           }
         ]
       },
@@ -575,7 +575,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "XSS与CSRF",
-            "link": "/learn/javascript/07-%E8%BF%9B%E9%98%B6/%E5%AE%89%E5%85%A8/XSS%E4%B8%8ECSRF.html"
+            "link": "/apps/javascript/07-%E8%BF%9B%E9%98%B6/%E5%AE%89%E5%85%A8/XSS%E4%B8%8ECSRF.html"
           }
         ]
       },
@@ -585,15 +585,15 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/javascript/07-%E8%BF%9B%E9%98%B6/%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/index.html"
+            "link": "/apps/javascript/07-%E8%BF%9B%E9%98%B6/%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/index.html"
           },
           {
             "text": "leakSuccess",
-            "link": "/learn/javascript/07-%E8%BF%9B%E9%98%B6/%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/leakSuccess.html"
+            "link": "/apps/javascript/07-%E8%BF%9B%E9%98%B6/%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/leakSuccess.html"
           },
           {
             "text": "timeline",
-            "link": "/learn/javascript/07-%E8%BF%9B%E9%98%B6/%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/timeline.html"
+            "link": "/apps/javascript/07-%E8%BF%9B%E9%98%B6/%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/timeline.html"
           }
         ]
       },
@@ -603,7 +603,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "promiseAll",
-            "link": "/learn/javascript/07-%E8%BF%9B%E9%98%B6/%E6%89%8B%E5%86%99Promise/promiseAll.html"
+            "link": "/apps/javascript/07-%E8%BF%9B%E9%98%B6/%E6%89%8B%E5%86%99Promise/promiseAll.html"
           }
         ]
       },
@@ -613,7 +613,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/javascript/07-%E8%BF%9B%E9%98%B6/%E8%B5%84%E6%BA%90%E9%A2%84%E5%8A%A0%E8%BD%BD/index.html"
+            "link": "/apps/javascript/07-%E8%BF%9B%E9%98%B6/%E8%B5%84%E6%BA%90%E9%A2%84%E5%8A%A0%E8%BD%BD/index.html"
           }
         ]
       },
@@ -623,7 +623,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/javascript/07-%E8%BF%9B%E9%98%B6/UMD%E6%8F%92%E4%BB%B6%E6%A8%A1%E5%BC%8F/index.html"
+            "link": "/apps/javascript/07-%E8%BF%9B%E9%98%B6/UMD%E6%8F%92%E4%BB%B6%E6%A8%A1%E5%BC%8F/index.html"
           }
         ]
       },
@@ -633,11 +633,11 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "防抖节流",
-            "link": "/learn/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E9%98%B2%E6%8A%96%E8%8A%82%E6%B5%81.html"
+            "link": "/apps/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E9%98%B2%E6%8A%96%E8%8A%82%E6%B5%81.html"
           },
           {
             "text": "加权随机",
-            "link": "/learn/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA.html"
+            "link": "/apps/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA.html"
           }
         ]
       },
@@ -647,31 +647,31 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "call-apply",
-            "link": "/learn/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/01-call-apply.html"
+            "link": "/apps/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/01-call-apply.html"
           },
           {
             "text": "bind",
-            "link": "/learn/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/02-bind.html"
+            "link": "/apps/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/02-bind.html"
           },
           {
             "text": "new",
-            "link": "/learn/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/03-new.html"
+            "link": "/apps/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/03-new.html"
           },
           {
             "text": "instanceof",
-            "link": "/learn/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/04-instanceof.html"
+            "link": "/apps/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/04-instanceof.html"
           },
           {
             "text": "Promise",
-            "link": "/learn/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/05-Promise.html"
+            "link": "/apps/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/05-Promise.html"
           },
           {
             "text": "EventEmitter",
-            "link": "/learn/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/06-EventEmitter.html"
+            "link": "/apps/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/06-EventEmitter.html"
           },
           {
             "text": "LRU缓存",
-            "link": "/learn/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/07-LRU%E7%BC%93%E5%AD%98.html"
+            "link": "/apps/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/07-LRU%E7%BC%93%E5%AD%98.html"
           }
         ]
       },
@@ -681,27 +681,27 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "this指向与作用域链",
-            "link": "/learn/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E4%BD%9C%E7%94%A8%E5%9F%9F/01-this%E6%8C%87%E5%90%91%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE.html"
+            "link": "/apps/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E4%BD%9C%E7%94%A8%E5%9F%9F/01-this%E6%8C%87%E5%90%91%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE.html"
           },
           {
             "text": "嵌套作用域-返回值",
-            "link": "/learn/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E4%BD%9C%E7%94%A8%E5%9F%9F/02-%E5%B5%8C%E5%A5%97%E4%BD%9C%E7%94%A8%E5%9F%9F-%E8%BF%94%E5%9B%9E%E5%80%BC.html"
+            "link": "/apps/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E4%BD%9C%E7%94%A8%E5%9F%9F/02-%E5%B5%8C%E5%A5%97%E4%BD%9C%E7%94%A8%E5%9F%9F-%E8%BF%94%E5%9B%9E%E5%80%BC.html"
           },
           {
             "text": "嵌套作用域-返回函数",
-            "link": "/learn/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E4%BD%9C%E7%94%A8%E5%9F%9F/03-%E5%B5%8C%E5%A5%97%E4%BD%9C%E7%94%A8%E5%9F%9F-%E8%BF%94%E5%9B%9E%E5%87%BD%E6%95%B0.html"
+            "link": "/apps/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E4%BD%9C%E7%94%A8%E5%9F%9F/03-%E5%B5%8C%E5%A5%97%E4%BD%9C%E7%94%A8%E5%9F%9F-%E8%BF%94%E5%9B%9E%E5%87%BD%E6%95%B0.html"
           },
           {
             "text": "var重复声明",
-            "link": "/learn/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E4%BD%9C%E7%94%A8%E5%9F%9F/04-var%E9%87%8D%E5%A4%8D%E5%A3%B0%E6%98%8E.html"
+            "link": "/apps/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E4%BD%9C%E7%94%A8%E5%9F%9F/04-var%E9%87%8D%E5%A4%8D%E5%A3%B0%E6%98%8E.html"
           },
           {
             "text": "let-for循环闭包",
-            "link": "/learn/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E4%BD%9C%E7%94%A8%E5%9F%9F/05-let-for%E5%BE%AA%E7%8E%AF%E9%97%AD%E5%8C%85.html"
+            "link": "/apps/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E4%BD%9C%E7%94%A8%E5%9F%9F/05-let-for%E5%BE%AA%E7%8E%AF%E9%97%AD%E5%8C%85.html"
           },
           {
             "text": "var与function同名提升",
-            "link": "/learn/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E4%BD%9C%E7%94%A8%E5%9F%9F/06-var%E4%B8%8Efunction%E5%90%8C%E5%90%8D%E6%8F%90%E5%8D%87.html"
+            "link": "/apps/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E4%BD%9C%E7%94%A8%E5%9F%9F/06-var%E4%B8%8Efunction%E5%90%8C%E5%90%8D%E6%8F%90%E5%8D%87.html"
           }
         ]
       },
@@ -711,7 +711,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "firework",
-            "link": "/learn/javascript/09-Canvas/%E5%8A%A8%E7%94%BB/firework.html"
+            "link": "/apps/javascript/09-Canvas/%E5%8A%A8%E7%94%BB/firework.html"
           }
         ]
       },
@@ -721,7 +721,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/javascript/09-Canvas/%E5%9F%BA%E7%A1%80/index.html"
+            "link": "/apps/javascript/09-Canvas/%E5%9F%BA%E7%A1%80/index.html"
           }
         ]
       }
@@ -737,7 +737,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/index.html"
+            "link": "/apps/css/index.html"
           }
         ]
       },
@@ -747,7 +747,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/01-%E5%9F%BA%E7%A1%80/%E5%8D%95%E4%BD%8D%E4%B8%8E%E5%87%BD%E6%95%B0/index.html"
+            "link": "/apps/css/01-%E5%9F%BA%E7%A1%80/%E5%8D%95%E4%BD%8D%E4%B8%8E%E5%87%BD%E6%95%B0/index.html"
           }
         ]
       },
@@ -757,7 +757,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/01-%E5%9F%BA%E7%A1%80/%E7%9B%92%E6%A8%A1%E5%9E%8B/index.html"
+            "link": "/apps/css/01-%E5%9F%BA%E7%A1%80/%E7%9B%92%E6%A8%A1%E5%9E%8B/index.html"
           }
         ]
       },
@@ -767,7 +767,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/01-%E5%9F%BA%E7%A1%80/%E9%80%89%E6%8B%A9%E5%99%A8%E4%B8%8E%E4%BC%98%E5%85%88%E7%BA%A7/index.html"
+            "link": "/apps/css/01-%E5%9F%BA%E7%A1%80/%E9%80%89%E6%8B%A9%E5%99%A8%E4%B8%8E%E4%BC%98%E5%85%88%E7%BA%A7/index.html"
           }
         ]
       },
@@ -777,7 +777,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/01-%E5%9F%BA%E7%A1%80/display%E4%B8%8E%E6%96%87%E6%A1%A3%E6%B5%81/index.html"
+            "link": "/apps/css/01-%E5%9F%BA%E7%A1%80/display%E4%B8%8E%E6%96%87%E6%A1%A3%E6%B5%81/index.html"
           }
         ]
       },
@@ -787,7 +787,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/02-%E5%B8%83%E5%B1%80/%E5%B8%B8%E8%A7%81%E5%B8%83%E5%B1%80%E9%A2%98/index.html"
+            "link": "/apps/css/02-%E5%B8%83%E5%B1%80/%E5%B8%B8%E8%A7%81%E5%B8%83%E5%B1%80%E9%A2%98/index.html"
           }
         ]
       },
@@ -797,7 +797,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/02-%E5%B8%83%E5%B1%80/%E5%AE%9A%E4%BD%8D%E4%B8%8E%E5%B1%82%E5%8F%A0%E4%B8%8A%E4%B8%8B%E6%96%87/index.html"
+            "link": "/apps/css/02-%E5%B8%83%E5%B1%80/%E5%AE%9A%E4%BD%8D%E4%B8%8E%E5%B1%82%E5%8F%A0%E4%B8%8A%E4%B8%8B%E6%96%87/index.html"
           }
         ]
       },
@@ -807,7 +807,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/02-%E5%B8%83%E5%B1%80/%E6%BB%9A%E5%8A%A8%E8%A1%A8%E6%A0%BC/index.html"
+            "link": "/apps/css/02-%E5%B8%83%E5%B1%80/%E6%BB%9A%E5%8A%A8%E8%A1%A8%E6%A0%BC/index.html"
           }
         ]
       },
@@ -817,7 +817,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/02-%E5%B8%83%E5%B1%80/%E7%80%91%E5%B8%83%E6%B5%81/index.html"
+            "link": "/apps/css/02-%E5%B8%83%E5%B1%80/%E7%80%91%E5%B8%83%E6%B5%81/index.html"
           }
         ]
       },
@@ -827,7 +827,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/02-%E5%B8%83%E5%B1%80/BFC%E4%B8%8E%E6%B8%85%E9%99%A4%E6%B5%AE%E5%8A%A8/index.html"
+            "link": "/apps/css/02-%E5%B8%83%E5%B1%80/BFC%E4%B8%8E%E6%B8%85%E9%99%A4%E6%B5%AE%E5%8A%A8/index.html"
           }
         ]
       },
@@ -837,7 +837,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/02-%E5%B8%83%E5%B1%80/flex/index.html"
+            "link": "/apps/css/02-%E5%B8%83%E5%B1%80/flex/index.html"
           }
         ]
       },
@@ -847,7 +847,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/02-%E5%B8%83%E5%B1%80/grid/index.html"
+            "link": "/apps/css/02-%E5%B8%83%E5%B1%80/grid/index.html"
           }
         ]
       },
@@ -857,7 +857,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/02-%E5%B8%83%E5%B1%80/rem/index.html"
+            "link": "/apps/css/02-%E5%B8%83%E5%B1%80/rem/index.html"
           }
         ]
       },
@@ -867,7 +867,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/03-%E5%8A%A8%E7%94%BB/%E5%85%89%E6%A0%87%E9%97%AA%E7%83%81/index.html"
+            "link": "/apps/css/03-%E5%8A%A8%E7%94%BB/%E5%85%89%E6%A0%87%E9%97%AA%E7%83%81/index.html"
           }
         ]
       },
@@ -877,7 +877,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/03-%E5%8A%A8%E7%94%BB/%E5%BA%8F%E5%88%97%E5%B8%A7/index.html"
+            "link": "/apps/css/03-%E5%8A%A8%E7%94%BB/%E5%BA%8F%E5%88%97%E5%B8%A7/index.html"
           }
         ]
       },
@@ -887,7 +887,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/03-%E5%8A%A8%E7%94%BB/%E5%B1%95%E5%BC%80%E6%8A%98%E5%8F%A0/index.html"
+            "link": "/apps/css/03-%E5%8A%A8%E7%94%BB/%E5%B1%95%E5%BC%80%E6%8A%98%E5%8F%A0/index.html"
           }
         ]
       },
@@ -897,7 +897,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/03-%E5%8A%A8%E7%94%BB/keyframes/index.html"
+            "link": "/apps/css/03-%E5%8A%A8%E7%94%BB/keyframes/index.html"
           }
         ]
       },
@@ -907,19 +907,19 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "竖条呼吸",
-            "link": "/learn/css/03-%E5%8A%A8%E7%94%BB/loading/01-%E7%AB%96%E6%9D%A1%E5%91%BC%E5%90%B8.html"
+            "link": "/apps/css/03-%E5%8A%A8%E7%94%BB/loading/01-%E7%AB%96%E6%9D%A1%E5%91%BC%E5%90%B8.html"
           },
           {
             "text": "竖条弹跳",
-            "link": "/learn/css/03-%E5%8A%A8%E7%94%BB/loading/02-%E7%AB%96%E6%9D%A1%E5%BC%B9%E8%B7%B3.html"
+            "link": "/apps/css/03-%E5%8A%A8%E7%94%BB/loading/02-%E7%AB%96%E6%9D%A1%E5%BC%B9%E8%B7%B3.html"
           },
           {
             "text": "圆环旋转",
-            "link": "/learn/css/03-%E5%8A%A8%E7%94%BB/loading/03-%E5%9C%86%E7%8E%AF%E6%97%8B%E8%BD%AC.html"
+            "link": "/apps/css/03-%E5%8A%A8%E7%94%BB/loading/03-%E5%9C%86%E7%8E%AF%E6%97%8B%E8%BD%AC.html"
           },
           {
             "text": "文字淡出",
-            "link": "/learn/css/03-%E5%8A%A8%E7%94%BB/loading/04-%E6%96%87%E5%AD%97%E6%B7%A1%E5%87%BA.html"
+            "link": "/apps/css/03-%E5%8A%A8%E7%94%BB/loading/04-%E6%96%87%E5%AD%97%E6%B7%A1%E5%87%BA.html"
           }
         ]
       },
@@ -929,7 +929,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/03-%E5%8A%A8%E7%94%BB/nprogress/index.html"
+            "link": "/apps/css/03-%E5%8A%A8%E7%94%BB/nprogress/index.html"
           }
         ]
       },
@@ -939,11 +939,11 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "3dButton",
-            "link": "/learn/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E6%8C%89%E9%92%AE/3dButton.html"
+            "link": "/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E6%8C%89%E9%92%AE/3dButton.html"
           },
           {
             "text": "button",
-            "link": "/learn/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E6%8C%89%E9%92%AE/button.html"
+            "link": "/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E6%8C%89%E9%92%AE/button.html"
           }
         ]
       },
@@ -953,7 +953,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E7%99%BE%E5%88%86%E6%AF%94%E5%9C%86%E7%8E%AF/index.html"
+            "link": "/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E7%99%BE%E5%88%86%E6%AF%94%E5%9C%86%E7%8E%AF/index.html"
           }
         ]
       },
@@ -963,7 +963,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E6%96%87%E6%9C%AC%E4%B8%8E%E5%9B%BE%E7%89%87%E5%A4%84%E7%90%86/index.html"
+            "link": "/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E6%96%87%E6%9C%AC%E4%B8%8E%E5%9B%BE%E7%89%87%E5%A4%84%E7%90%86/index.html"
           }
         ]
       },
@@ -973,7 +973,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/background-blend-mode/index.html"
+            "link": "/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/background-blend-mode/index.html"
           }
         ]
       },
@@ -983,7 +983,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/drop-shadow/index.html"
+            "link": "/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/drop-shadow/index.html"
           }
         ]
       },
@@ -993,7 +993,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/tooltip/index.html"
+            "link": "/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/tooltip/index.html"
           }
         ]
       },
@@ -1003,11 +1003,11 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "基础布局",
-            "link": "/learn/css/05-%E5%93%8D%E5%BA%94%E5%BC%8F/media-queries/01-%E5%9F%BA%E7%A1%80%E5%B8%83%E5%B1%80.html"
+            "link": "/apps/css/05-%E5%93%8D%E5%BA%94%E5%BC%8F/media-queries/01-%E5%9F%BA%E7%A1%80%E5%B8%83%E5%B1%80.html"
           },
           {
             "text": "响应式最终页",
-            "link": "/learn/css/05-%E5%93%8D%E5%BA%94%E5%BC%8F/media-queries/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E6%9C%80%E7%BB%88%E9%A1%B5.html"
+            "link": "/apps/css/05-%E5%93%8D%E5%BA%94%E5%BC%8F/media-queries/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E6%9C%80%E7%BB%88%E9%A1%B5.html"
           }
         ]
       },
@@ -1017,7 +1017,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/05-%E5%93%8D%E5%BA%94%E5%BC%8F/vw-vh/index.html"
+            "link": "/apps/css/05-%E5%93%8D%E5%BA%94%E5%BC%8F/vw-vh/index.html"
           }
         ]
       },
@@ -1027,7 +1027,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/06-%E6%80%A7%E8%83%BD/%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD/index.html"
+            "link": "/apps/css/06-%E6%80%A7%E8%83%BD/%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD/index.html"
           }
         ]
       },
@@ -1037,7 +1037,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/01-has%E9%80%89%E6%8B%A9%E5%99%A8/index.html"
+            "link": "/apps/css/07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/01-has%E9%80%89%E6%8B%A9%E5%99%A8/index.html"
           }
         ]
       },
@@ -1047,7 +1047,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/02-layer%E5%B1%82%E5%8F%A0%E7%AE%A1%E7%90%86/index.html"
+            "link": "/apps/css/07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/02-layer%E5%B1%82%E5%8F%A0%E7%AE%A1%E7%90%86/index.html"
           }
         ]
       },
@@ -1057,7 +1057,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/03-container-queries%E5%AE%B9%E5%99%A8%E6%9F%A5%E8%AF%A2/index.html"
+            "link": "/apps/css/07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/03-container-queries%E5%AE%B9%E5%99%A8%E6%9F%A5%E8%AF%A2/index.html"
           }
         ]
       },
@@ -1067,7 +1067,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/04-is-where%E9%80%89%E6%8B%A9%E5%99%A8/index.html"
+            "link": "/apps/css/07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/04-is-where%E9%80%89%E6%8B%A9%E5%99%A8/index.html"
           }
         ]
       },
@@ -1077,7 +1077,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/05-view-transitions/index.html"
+            "link": "/apps/css/07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/05-view-transitions/index.html"
           }
         ]
       },
@@ -1087,7 +1087,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/css/07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/06-subgrid/index.html"
+            "link": "/apps/css/07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/06-subgrid/index.html"
           }
         ]
       }
@@ -1103,79 +1103,79 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "模板语法-base",
-            "link": "/learn/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/01-%E6%A8%A1%E6%9D%BF%E8%AF%AD%E6%B3%95-base.html"
+            "link": "/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/01-%E6%A8%A1%E6%9D%BF%E8%AF%AD%E6%B3%95-base.html"
           },
           {
             "text": "模板插值与指令",
-            "link": "/learn/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/02-%E6%A8%A1%E6%9D%BF%E6%8F%92%E5%80%BC%E4%B8%8E%E6%8C%87%E4%BB%A4.html"
+            "link": "/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/02-%E6%A8%A1%E6%9D%BF%E6%8F%92%E5%80%BC%E4%B8%8E%E6%8C%87%E4%BB%A4.html"
           },
           {
             "text": "v-if-v-show",
-            "link": "/learn/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/03-v-if-v-show.html"
+            "link": "/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/03-v-if-v-show.html"
           },
           {
             "text": "bindClass",
-            "link": "/learn/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/04-bindClass.html"
+            "link": "/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/04-bindClass.html"
           },
           {
             "text": "bindStyle",
-            "link": "/learn/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/05-bindStyle.html"
+            "link": "/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/05-bindStyle.html"
           },
           {
             "text": "computed",
-            "link": "/learn/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/06-computed.html"
+            "link": "/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/06-computed.html"
           },
           {
             "text": "watch",
-            "link": "/learn/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/07-watch.html"
+            "link": "/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/07-watch.html"
           },
           {
             "text": "nextTick",
-            "link": "/learn/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/08-nextTick.html"
+            "link": "/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/08-nextTick.html"
           },
           {
             "text": "事件修饰符",
-            "link": "/learn/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/09-%E4%BA%8B%E4%BB%B6%E4%BF%AE%E9%A5%B0%E7%AC%A6.html"
+            "link": "/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/09-%E4%BA%8B%E4%BB%B6%E4%BF%AE%E9%A5%B0%E7%AC%A6.html"
           },
           {
             "text": "v-on事件",
-            "link": "/learn/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/10-v-on%E4%BA%8B%E4%BB%B6.html"
+            "link": "/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/10-v-on%E4%BA%8B%E4%BB%B6.html"
           },
           {
             "text": "mouseenter与mouseover",
-            "link": "/learn/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/11-mouseenter%E4%B8%8Emouseover.html"
+            "link": "/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/11-mouseenter%E4%B8%8Emouseover.html"
           },
           {
             "text": "key与v-for",
-            "link": "/learn/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/12-key%E4%B8%8Ev-for.html"
+            "link": "/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/12-key%E4%B8%8Ev-for.html"
           },
           {
             "text": "ref引用",
-            "link": "/learn/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/13-ref%E5%BC%95%E7%94%A8.html"
+            "link": "/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/13-ref%E5%BC%95%E7%94%A8.html"
           },
           {
             "text": "v-model原理",
-            "link": "/learn/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/14-v-model%E5%8E%9F%E7%90%86.html"
+            "link": "/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/14-v-model%E5%8E%9F%E7%90%86.html"
           },
           {
             "text": "指令简写",
-            "link": "/learn/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/15-%E6%8C%87%E4%BB%A4%E7%AE%80%E5%86%99.html"
+            "link": "/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/15-%E6%8C%87%E4%BB%A4%E7%AE%80%E5%86%99.html"
           },
           {
             "text": "自定义指令-过滤器-mixin-插件",
-            "link": "/learn/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/16-%E8%87%AA%E5%AE%9A%E4%B9%89%E6%8C%87%E4%BB%A4-%E8%BF%87%E6%BB%A4%E5%99%A8-mixin-%E6%8F%92%E4%BB%B6.html"
+            "link": "/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/16-%E8%87%AA%E5%AE%9A%E4%B9%89%E6%8C%87%E4%BB%A4-%E8%BF%87%E6%BB%A4%E5%99%A8-mixin-%E6%8F%92%E4%BB%B6.html"
           },
           {
             "text": "综合复习",
-            "link": "/learn/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/17-%E7%BB%BC%E5%90%88%E5%A4%8D%E4%B9%A0.html"
+            "link": "/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/17-%E7%BB%BC%E5%90%88%E5%A4%8D%E4%B9%A0.html"
           },
           {
             "text": "VueCLI笔记",
-            "link": "/learn/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/18-VueCLI%E7%AC%94%E8%AE%B0.html"
+            "link": "/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/18-VueCLI%E7%AC%94%E8%AE%B0.html"
           },
           {
             "text": "设备信息BOM",
-            "link": "/learn/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/19-%E8%AE%BE%E5%A4%87%E4%BF%A1%E6%81%AFBOM.html"
+            "link": "/apps/vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/19-%E8%AE%BE%E5%A4%87%E4%BF%A1%E6%81%AFBOM.html"
           }
         ]
       },
@@ -1185,27 +1185,27 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "手写Observer-Dep-Watcher",
-            "link": "/learn/vue2/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/01-%E6%89%8B%E5%86%99Observer-Dep-Watcher.html"
+            "link": "/apps/vue2/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/01-%E6%89%8B%E5%86%99Observer-Dep-Watcher.html"
           },
           {
             "text": "defineProperty访问器",
-            "link": "/learn/vue2/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/02-defineProperty%E8%AE%BF%E9%97%AE%E5%99%A8.html"
+            "link": "/apps/vue2/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/02-defineProperty%E8%AE%BF%E9%97%AE%E5%99%A8.html"
           },
           {
             "text": "Vue-set实战",
-            "link": "/learn/vue2/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/03-Vue-set%E5%AE%9E%E6%88%98.html"
+            "link": "/apps/vue2/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/03-Vue-set%E5%AE%9E%E6%88%98.html"
           },
           {
             "text": "数组响应式限制",
-            "link": "/learn/vue2/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/04-%E6%95%B0%E7%BB%84%E5%93%8D%E5%BA%94%E5%BC%8F%E9%99%90%E5%88%B6.html"
+            "link": "/apps/vue2/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/04-%E6%95%B0%E7%BB%84%E5%93%8D%E5%BA%94%E5%BC%8F%E9%99%90%E5%88%B6.html"
           },
           {
             "text": "实例与data代理",
-            "link": "/learn/vue2/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/05-%E5%AE%9E%E4%BE%8B%E4%B8%8Edata%E4%BB%A3%E7%90%86.html"
+            "link": "/apps/vue2/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/05-%E5%AE%9E%E4%BE%8B%E4%B8%8Edata%E4%BB%A3%E7%90%86.html"
           },
           {
             "text": "响应式性能timeline",
-            "link": "/learn/vue2/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/06-%E5%93%8D%E5%BA%94%E5%BC%8F%E6%80%A7%E8%83%BDtimeline.html"
+            "link": "/apps/vue2/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/06-%E5%93%8D%E5%BA%94%E5%BC%8F%E6%80%A7%E8%83%BDtimeline.html"
           }
         ]
       },
@@ -1215,7 +1215,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "八个钩子速记",
-            "link": "/learn/vue2/src/03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/01-%E5%85%AB%E4%B8%AA%E9%92%A9%E5%AD%90%E9%80%9F%E8%AE%B0.html"
+            "link": "/apps/vue2/src/03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/01-%E5%85%AB%E4%B8%AA%E9%92%A9%E5%AD%90%E9%80%9F%E8%AE%B0.html"
           }
         ]
       },
@@ -1225,51 +1225,51 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "全局与局部组件",
-            "link": "/learn/vue2/src/04-%E7%BB%84%E4%BB%B6/01-%E5%85%A8%E5%B1%80%E4%B8%8E%E5%B1%80%E9%83%A8%E7%BB%84%E4%BB%B6.html"
+            "link": "/apps/vue2/src/04-%E7%BB%84%E4%BB%B6/01-%E5%85%A8%E5%B1%80%E4%B8%8E%E5%B1%80%E9%83%A8%E7%BB%84%E4%BB%B6.html"
           },
           {
             "text": "父子通信-props与emit",
-            "link": "/learn/vue2/src/04-%E7%BB%84%E4%BB%B6/02-%E7%88%B6%E5%AD%90%E9%80%9A%E4%BF%A1-props%E4%B8%8Eemit.html"
+            "link": "/apps/vue2/src/04-%E7%BB%84%E4%BB%B6/02-%E7%88%B6%E5%AD%90%E9%80%9A%E4%BF%A1-props%E4%B8%8Eemit.html"
           },
           {
             "text": "组件嵌套与局部注册",
-            "link": "/learn/vue2/src/04-%E7%BB%84%E4%BB%B6/03-%E7%BB%84%E4%BB%B6%E5%B5%8C%E5%A5%97%E4%B8%8E%E5%B1%80%E9%83%A8%E6%B3%A8%E5%86%8C.html"
+            "link": "/apps/vue2/src/04-%E7%BB%84%E4%BB%B6/03-%E7%BB%84%E4%BB%B6%E5%B5%8C%E5%A5%97%E4%B8%8E%E5%B1%80%E9%83%A8%E6%B3%A8%E5%86%8C.html"
           },
           {
             "text": "props与动态组件",
-            "link": "/learn/vue2/src/04-%E7%BB%84%E4%BB%B6/04-props%E4%B8%8E%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6.html"
+            "link": "/apps/vue2/src/04-%E7%BB%84%E4%BB%B6/04-props%E4%B8%8E%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6.html"
           },
           {
             "text": "插槽slot",
-            "link": "/learn/vue2/src/04-%E7%BB%84%E4%BB%B6/05-%E6%8F%92%E6%A7%BDslot.html"
+            "link": "/apps/vue2/src/04-%E7%BB%84%E4%BB%B6/05-%E6%8F%92%E6%A7%BDslot.html"
           },
           {
             "text": "动态组件is",
-            "link": "/learn/vue2/src/04-%E7%BB%84%E4%BB%B6/06-%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6is.html"
+            "link": "/apps/vue2/src/04-%E7%BB%84%E4%BB%B6/06-%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6is.html"
           },
           {
             "text": "异步组件",
-            "link": "/learn/vue2/src/04-%E7%BB%84%E4%BB%B6/07-%E5%BC%82%E6%AD%A5%E7%BB%84%E4%BB%B6.html"
+            "link": "/apps/vue2/src/04-%E7%BB%84%E4%BB%B6/07-%E5%BC%82%E6%AD%A5%E7%BB%84%E4%BB%B6.html"
           },
           {
             "text": "keep-alive生命周期",
-            "link": "/learn/vue2/src/04-%E7%BB%84%E4%BB%B6/08-keep-alive%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.html"
+            "link": "/apps/vue2/src/04-%E7%BB%84%E4%BB%B6/08-keep-alive%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.html"
           },
           {
             "text": "自定义v-model与sync",
-            "link": "/learn/vue2/src/04-%E7%BB%84%E4%BB%B6/09-%E8%87%AA%E5%AE%9A%E4%B9%89v-model%E4%B8%8Esync.html"
+            "link": "/apps/vue2/src/04-%E7%BB%84%E4%BB%B6/09-%E8%87%AA%E5%AE%9A%E4%B9%89v-model%E4%B8%8Esync.html"
           },
           {
             "text": "bindComponent-class",
-            "link": "/learn/vue2/src/04-%E7%BB%84%E4%BB%B6/10-bindComponent-class.html"
+            "link": "/apps/vue2/src/04-%E7%BB%84%E4%BB%B6/10-bindComponent-class.html"
           },
           {
             "text": "组件通信汇总",
-            "link": "/learn/vue2/src/04-%E7%BB%84%E4%BB%B6/11-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1%E6%B1%87%E6%80%BB.html"
+            "link": "/apps/vue2/src/04-%E7%BB%84%E4%BB%B6/11-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1%E6%B1%87%E6%80%BB.html"
           },
           {
             "text": "参数解构",
-            "link": "/learn/vue2/src/04-%E7%BB%84%E4%BB%B6/12-%E5%8F%82%E6%95%B0%E8%A7%A3%E6%9E%84.html"
+            "link": "/apps/vue2/src/04-%E7%BB%84%E4%BB%B6/12-%E5%8F%82%E6%95%B0%E8%A7%A3%E6%9E%84.html"
           }
         ]
       },
@@ -1279,63 +1279,63 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "动态路由参数",
-            "link": "/learn/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/01-%E5%8A%A8%E6%80%81%E8%B7%AF%E7%94%B1%E5%8F%82%E6%95%B0.html"
+            "link": "/apps/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/01-%E5%8A%A8%E6%80%81%E8%B7%AF%E7%94%B1%E5%8F%82%E6%95%B0.html"
           },
           {
             "text": "命名路由",
-            "link": "/learn/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/02-%E5%91%BD%E5%90%8D%E8%B7%AF%E7%94%B1.html"
+            "link": "/apps/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/02-%E5%91%BD%E5%90%8D%E8%B7%AF%E7%94%B1.html"
           },
           {
             "text": "嵌套路由",
-            "link": "/learn/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/03-%E5%B5%8C%E5%A5%97%E8%B7%AF%E7%94%B1.html"
+            "link": "/apps/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/03-%E5%B5%8C%E5%A5%97%E8%B7%AF%E7%94%B1.html"
           },
           {
             "text": "嵌套路由复杂-命名视图",
-            "link": "/learn/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/04-%E5%B5%8C%E5%A5%97%E8%B7%AF%E7%94%B1%E5%A4%8D%E6%9D%82-%E5%91%BD%E5%90%8D%E8%A7%86%E5%9B%BE.html"
+            "link": "/apps/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/04-%E5%B5%8C%E5%A5%97%E8%B7%AF%E7%94%B1%E5%A4%8D%E6%9D%82-%E5%91%BD%E5%90%8D%E8%A7%86%E5%9B%BE.html"
           },
           {
             "text": "命名视图",
-            "link": "/learn/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/05-%E5%91%BD%E5%90%8D%E8%A7%86%E5%9B%BE.html"
+            "link": "/apps/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/05-%E5%91%BD%E5%90%8D%E8%A7%86%E5%9B%BE.html"
           },
           {
             "text": "默认子路由",
-            "link": "/learn/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/06-%E9%BB%98%E8%AE%A4%E5%AD%90%E8%B7%AF%E7%94%B1.html"
+            "link": "/apps/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/06-%E9%BB%98%E8%AE%A4%E5%AD%90%E8%B7%AF%E7%94%B1.html"
           },
           {
             "text": "编程式导航",
-            "link": "/learn/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/07-%E7%BC%96%E7%A8%8B%E5%BC%8F%E5%AF%BC%E8%88%AA.html"
+            "link": "/apps/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/07-%E7%BC%96%E7%A8%8B%E5%BC%8F%E5%AF%BC%E8%88%AA.html"
           },
           {
             "text": "路由重定向与alias",
-            "link": "/learn/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/08-%E8%B7%AF%E7%94%B1%E9%87%8D%E5%AE%9A%E5%90%91%E4%B8%8Ealias.html"
+            "link": "/apps/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/08-%E8%B7%AF%E7%94%B1%E9%87%8D%E5%AE%9A%E5%90%91%E4%B8%8Ealias.html"
           },
           {
             "text": "路由props解耦",
-            "link": "/learn/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/09-%E8%B7%AF%E7%94%B1props%E8%A7%A3%E8%80%A6.html"
+            "link": "/apps/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/09-%E8%B7%AF%E7%94%B1props%E8%A7%A3%E8%80%A6.html"
           },
           {
             "text": "导航守卫",
-            "link": "/learn/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/10-%E5%AF%BC%E8%88%AA%E5%AE%88%E5%8D%AB.html"
+            "link": "/apps/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/10-%E5%AF%BC%E8%88%AA%E5%AE%88%E5%8D%AB.html"
           },
           {
             "text": "路由懒加载",
-            "link": "/learn/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/11-%E8%B7%AF%E7%94%B1%E6%87%92%E5%8A%A0%E8%BD%BD.html"
+            "link": "/apps/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/11-%E8%B7%AF%E7%94%B1%E6%87%92%E5%8A%A0%E8%BD%BD.html"
           },
           {
             "text": "Vuex核心",
-            "link": "/learn/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/12-Vuex%E6%A0%B8%E5%BF%83.html"
+            "link": "/apps/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/12-Vuex%E6%A0%B8%E5%BF%83.html"
           },
           {
             "text": "Vuex-actions",
-            "link": "/learn/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/13-Vuex-actions.html"
+            "link": "/apps/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/13-Vuex-actions.html"
           },
           {
             "text": "Vuex-Module",
-            "link": "/learn/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/14-Vuex-Module.html"
+            "link": "/apps/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/14-Vuex-Module.html"
           },
           {
             "text": "Promise前置回顾",
-            "link": "/learn/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/15-Promise%E5%89%8D%E7%BD%AE%E5%9B%9E%E9%A1%BE.html"
+            "link": "/apps/vue2/src/05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/15-Promise%E5%89%8D%E7%BD%AE%E5%9B%9E%E9%A1%BE.html"
           }
         ]
       },
@@ -1345,15 +1345,15 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "虚拟DOM-diff-key",
-            "link": "/learn/vue2/src/06-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD/01-%E8%99%9A%E6%8B%9FDOM-diff-key.html"
+            "link": "/apps/vue2/src/06-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD/01-%E8%99%9A%E6%8B%9FDOM-diff-key.html"
           },
           {
             "text": "模板编译-render",
-            "link": "/learn/vue2/src/06-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD/02-%E6%A8%A1%E6%9D%BF%E7%BC%96%E8%AF%91-render.html"
+            "link": "/apps/vue2/src/06-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD/02-%E6%A8%A1%E6%9D%BF%E7%BC%96%E8%AF%91-render.html"
           },
           {
             "text": "性能优化",
-            "link": "/learn/vue2/src/06-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD/03-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html"
+            "link": "/apps/vue2/src/06-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD/03-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html"
           }
         ]
       },
@@ -1363,7 +1363,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "源码阅读前置-Symbol",
-            "link": "/learn/vue2/src/07-%E6%BA%90%E7%A0%81%E7%AE%80%E8%AF%BB/01-%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E5%89%8D%E7%BD%AE-Symbol.html"
+            "link": "/apps/vue2/src/07-%E6%BA%90%E7%A0%81%E7%AE%80%E8%AF%BB/01-%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E5%89%8D%E7%BD%AE-Symbol.html"
           }
         ]
       }
@@ -1379,27 +1379,27 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "应用实例与模板语法",
-            "link": "/learn/vue3/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/01-%E5%BA%94%E7%94%A8%E5%AE%9E%E4%BE%8B%E4%B8%8E%E6%A8%A1%E6%9D%BF%E8%AF%AD%E6%B3%95.html"
+            "link": "/apps/vue3/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/01-%E5%BA%94%E7%94%A8%E5%AE%9E%E4%BE%8B%E4%B8%8E%E6%A8%A1%E6%9D%BF%E8%AF%AD%E6%B3%95.html"
           },
           {
             "text": "条件列表与key",
-            "link": "/learn/vue3/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/02-%E6%9D%A1%E4%BB%B6%E5%88%97%E8%A1%A8%E4%B8%8Ekey.html"
+            "link": "/apps/vue3/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/02-%E6%9D%A1%E4%BB%B6%E5%88%97%E8%A1%A8%E4%B8%8Ekey.html"
           },
           {
             "text": "事件与表单v-model",
-            "link": "/learn/vue3/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/03-%E4%BA%8B%E4%BB%B6%E4%B8%8E%E8%A1%A8%E5%8D%95v-model.html"
+            "link": "/apps/vue3/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/03-%E4%BA%8B%E4%BB%B6%E4%B8%8E%E8%A1%A8%E5%8D%95v-model.html"
           },
           {
             "text": "class与style绑定",
-            "link": "/learn/vue3/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/04-class%E4%B8%8Estyle%E7%BB%91%E5%AE%9A.html"
+            "link": "/apps/vue3/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/04-class%E4%B8%8Estyle%E7%BB%91%E5%AE%9A.html"
           },
           {
             "text": "模板ref与nextTick",
-            "link": "/learn/vue3/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/05-%E6%A8%A1%E6%9D%BFref%E4%B8%8EnextTick.html"
+            "link": "/apps/vue3/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/05-%E6%A8%A1%E6%9D%BFref%E4%B8%8EnextTick.html"
           },
           {
             "text": "useTemplateRef模板ref",
-            "link": "/learn/vue3/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/06-useTemplateRef%E6%A8%A1%E6%9D%BFref.html"
+            "link": "/apps/vue3/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/06-useTemplateRef%E6%A8%A1%E6%9D%BFref.html"
           }
         ]
       },
@@ -1409,31 +1409,31 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "ref-reactive与解构",
-            "link": "/learn/vue3/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/01-ref-reactive%E4%B8%8E%E8%A7%A3%E6%9E%84.html"
+            "link": "/apps/vue3/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/01-ref-reactive%E4%B8%8E%E8%A7%A3%E6%9E%84.html"
           },
           {
             "text": "computed-watch-watchEffect",
-            "link": "/learn/vue3/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/02-computed-watch-watchEffect.html"
+            "link": "/apps/vue3/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/02-computed-watch-watchEffect.html"
           },
           {
             "text": "toRef-toRefs",
-            "link": "/learn/vue3/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/03-toRef-toRefs.html"
+            "link": "/apps/vue3/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/03-toRef-toRefs.html"
           },
           {
             "text": "readonly-shallow-markRaw",
-            "link": "/learn/vue3/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/04-readonly-shallow-markRaw.html"
+            "link": "/apps/vue3/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/04-readonly-shallow-markRaw.html"
           },
           {
             "text": "effectScope与副作用清理",
-            "link": "/learn/vue3/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/05-effectScope%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8%E6%B8%85%E7%90%86.html"
+            "link": "/apps/vue3/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/05-effectScope%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8%E6%B8%85%E7%90%86.html"
           },
           {
             "text": "onWatcherCleanup与watch清理",
-            "link": "/learn/vue3/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html"
+            "link": "/apps/vue3/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html"
           },
           {
             "text": "ref-reactive-shallowRef对比",
-            "link": "/learn/vue3/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/07-ref-reactive-shallowRef%E5%AF%B9%E6%AF%94.html"
+            "link": "/apps/vue3/src/02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/07-ref-reactive-shallowRef%E5%AF%B9%E6%AF%94.html"
           }
         ]
       },
@@ -1443,19 +1443,19 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "生命周期钩子",
-            "link": "/learn/vue3/src/03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E7%BB%84%E5%90%88%E5%BC%8F/01-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E9%92%A9%E5%AD%90.html"
+            "link": "/apps/vue3/src/03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E7%BB%84%E5%90%88%E5%BC%8F/01-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E9%92%A9%E5%AD%90.html"
           },
           {
             "text": "composable复用",
-            "link": "/learn/vue3/src/03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E7%BB%84%E5%90%88%E5%BC%8F/02-composable%E5%A4%8D%E7%94%A8.html"
+            "link": "/apps/vue3/src/03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E7%BB%84%E5%90%88%E5%BC%8F/02-composable%E5%A4%8D%E7%94%A8.html"
           },
           {
             "text": "setup与script-setup",
-            "link": "/learn/vue3/src/03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E7%BB%84%E5%90%88%E5%BC%8F/03-setup%E4%B8%8Escript-setup.html"
+            "link": "/apps/vue3/src/03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E7%BB%84%E5%90%88%E5%BC%8F/03-setup%E4%B8%8Escript-setup.html"
           },
           {
             "text": "全量钩子与KeepAlive",
-            "link": "/learn/vue3/src/03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E7%BB%84%E5%90%88%E5%BC%8F/04-%E5%85%A8%E9%87%8F%E9%92%A9%E5%AD%90%E4%B8%8EKeepAlive.html"
+            "link": "/apps/vue3/src/03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E7%BB%84%E5%90%88%E5%BC%8F/04-%E5%85%A8%E9%87%8F%E9%92%A9%E5%AD%90%E4%B8%8EKeepAlive.html"
           }
         ]
       },
@@ -1465,27 +1465,27 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "props与emit",
-            "link": "/learn/vue3/src/04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/01-props%E4%B8%8Eemit.html"
+            "link": "/apps/vue3/src/04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/01-props%E4%B8%8Eemit.html"
           },
           {
             "text": "attrs与透传",
-            "link": "/learn/vue3/src/04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/02-attrs%E4%B8%8E%E9%80%8F%E4%BC%A0.html"
+            "link": "/apps/vue3/src/04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/02-attrs%E4%B8%8E%E9%80%8F%E4%BC%A0.html"
           },
           {
             "text": "provide-inject",
-            "link": "/learn/vue3/src/04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/03-provide-inject.html"
+            "link": "/apps/vue3/src/04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/03-provide-inject.html"
           },
           {
             "text": "组件v-model",
-            "link": "/learn/vue3/src/04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/04-%E7%BB%84%E4%BB%B6v-model.html"
+            "link": "/apps/vue3/src/04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/04-%E7%BB%84%E4%BB%B6v-model.html"
           },
           {
             "text": "defineModel组件v-model",
-            "link": "/learn/vue3/src/04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/05-defineModel%E7%BB%84%E4%BB%B6v-model.html"
+            "link": "/apps/vue3/src/04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/05-defineModel%E7%BB%84%E4%BB%B6v-model.html"
           },
           {
             "text": "props解构保持响应式",
-            "link": "/learn/vue3/src/04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/06-props%E8%A7%A3%E6%9E%84%E4%BF%9D%E6%8C%81%E5%93%8D%E5%BA%94%E5%BC%8F.html"
+            "link": "/apps/vue3/src/04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/06-props%E8%A7%A3%E6%9E%84%E4%BF%9D%E6%8C%81%E5%93%8D%E5%BA%94%E5%BC%8F.html"
           }
         ]
       },
@@ -1495,11 +1495,11 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "默认具名作用域插槽",
-            "link": "/learn/vue3/src/05-%E6%8F%92%E6%A7%BD%E4%B8%8E%E7%BB%84%E4%BB%B6%E5%BD%A2%E6%80%81/01-%E9%BB%98%E8%AE%A4%E5%85%B7%E5%90%8D%E4%BD%9C%E7%94%A8%E5%9F%9F%E6%8F%92%E6%A7%BD.html"
+            "link": "/apps/vue3/src/05-%E6%8F%92%E6%A7%BD%E4%B8%8E%E7%BB%84%E4%BB%B6%E5%BD%A2%E6%80%81/01-%E9%BB%98%E8%AE%A4%E5%85%B7%E5%90%8D%E4%BD%9C%E7%94%A8%E5%9F%9F%E6%8F%92%E6%A7%BD.html"
           },
           {
             "text": "动态组件与异步组件",
-            "link": "/learn/vue3/src/05-%E6%8F%92%E6%A7%BD%E4%B8%8E%E7%BB%84%E4%BB%B6%E5%BD%A2%E6%80%81/02-%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6%E4%B8%8E%E5%BC%82%E6%AD%A5%E7%BB%84%E4%BB%B6.html"
+            "link": "/apps/vue3/src/05-%E6%8F%92%E6%A7%BD%E4%B8%8E%E7%BB%84%E4%BB%B6%E5%BD%A2%E6%80%81/02-%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6%E4%B8%8E%E5%BC%82%E6%AD%A5%E7%BB%84%E4%BB%B6.html"
           }
         ]
       },
@@ -1509,19 +1509,19 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "KeepAlive",
-            "link": "/learn/vue3/src/06-%E5%86%85%E7%BD%AE%E7%BB%84%E4%BB%B6/01-KeepAlive.html"
+            "link": "/apps/vue3/src/06-%E5%86%85%E7%BD%AE%E7%BB%84%E4%BB%B6/01-KeepAlive.html"
           },
           {
             "text": "Teleport",
-            "link": "/learn/vue3/src/06-%E5%86%85%E7%BD%AE%E7%BB%84%E4%BB%B6/02-Teleport.html"
+            "link": "/apps/vue3/src/06-%E5%86%85%E7%BD%AE%E7%BB%84%E4%BB%B6/02-Teleport.html"
           },
           {
             "text": "Suspense",
-            "link": "/learn/vue3/src/06-%E5%86%85%E7%BD%AE%E7%BB%84%E4%BB%B6/03-Suspense.html"
+            "link": "/apps/vue3/src/06-%E5%86%85%E7%BD%AE%E7%BB%84%E4%BB%B6/03-Suspense.html"
           },
           {
             "text": "Transition",
-            "link": "/learn/vue3/src/06-%E5%86%85%E7%BD%AE%E7%BB%84%E4%BB%B6/04-Transition.html"
+            "link": "/apps/vue3/src/06-%E5%86%85%E7%BD%AE%E7%BB%84%E4%BB%B6/04-Transition.html"
           }
         ]
       },
@@ -1531,31 +1531,31 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "Vue-Router-4核心面试点",
-            "link": "/learn/vue3/src/07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/01-Vue-Router-4%E6%A0%B8%E5%BF%83%E9%9D%A2%E8%AF%95%E7%82%B9.html"
+            "link": "/apps/vue3/src/07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/01-Vue-Router-4%E6%A0%B8%E5%BF%83%E9%9D%A2%E8%AF%95%E7%82%B9.html"
           },
           {
             "text": "Pinia核心面试点",
-            "link": "/learn/vue3/src/07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/02-Pinia%E6%A0%B8%E5%BF%83%E9%9D%A2%E8%AF%95%E7%82%B9.html"
+            "link": "/apps/vue3/src/07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/02-Pinia%E6%A0%B8%E5%BF%83%E9%9D%A2%E8%AF%95%E7%82%B9.html"
           },
           {
             "text": "工程化与组合式组织",
-            "link": "/learn/vue3/src/07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/03-%E5%B7%A5%E7%A8%8B%E5%8C%96%E4%B8%8E%E7%BB%84%E5%90%88%E5%BC%8F%E7%BB%84%E7%BB%87.html"
+            "link": "/apps/vue3/src/07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/03-%E5%B7%A5%E7%A8%8B%E5%8C%96%E4%B8%8E%E7%BB%84%E5%90%88%E5%BC%8F%E7%BB%84%E7%BB%87.html"
           },
           {
             "text": "Vite工程化面试点",
-            "link": "/learn/vue3/src/07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/04-Vite%E5%B7%A5%E7%A8%8B%E5%8C%96%E9%9D%A2%E8%AF%95%E7%82%B9.html"
+            "link": "/apps/vue3/src/07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/04-Vite%E5%B7%A5%E7%A8%8B%E5%8C%96%E9%9D%A2%E8%AF%95%E7%82%B9.html"
           },
           {
             "text": "script-setup编译宏",
-            "link": "/learn/vue3/src/07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/05-script-setup%E7%BC%96%E8%AF%91%E5%AE%8F.html"
+            "link": "/apps/vue3/src/07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/05-script-setup%E7%BC%96%E8%AF%91%E5%AE%8F.html"
           },
           {
             "text": "Router与Pinia可运行示例",
-            "link": "/learn/vue3/src/07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html"
+            "link": "/apps/vue3/src/07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html"
           },
           {
             "text": "Vitest单元测试面试点",
-            "link": "/learn/vue3/src/07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/07-Vitest%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E9%9D%A2%E8%AF%95%E7%82%B9.html"
+            "link": "/apps/vue3/src/07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/07-Vitest%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E9%9D%A2%E8%AF%95%E7%82%B9.html"
           }
         ]
       },
@@ -1565,23 +1565,23 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "Proxy响应式原理",
-            "link": "/learn/vue3/src/08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/01-Proxy%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86.html"
+            "link": "/apps/vue3/src/08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/01-Proxy%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86.html"
           },
           {
             "text": "虚拟DOM-diff-key",
-            "link": "/learn/vue3/src/08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/02-%E8%99%9A%E6%8B%9FDOM-diff-key.html"
+            "link": "/apps/vue3/src/08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/02-%E8%99%9A%E6%8B%9FDOM-diff-key.html"
           },
           {
             "text": "调度器与nextTick",
-            "link": "/learn/vue3/src/08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/03-%E8%B0%83%E5%BA%A6%E5%99%A8%E4%B8%8EnextTick.html"
+            "link": "/apps/vue3/src/08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/03-%E8%B0%83%E5%BA%A6%E5%99%A8%E4%B8%8EnextTick.html"
           },
           {
             "text": "Vue2与Vue3差异",
-            "link": "/learn/vue3/src/08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/04-Vue2%E4%B8%8EVue3%E5%B7%AE%E5%BC%82.html"
+            "link": "/apps/vue3/src/08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/04-Vue2%E4%B8%8EVue3%E5%B7%AE%E5%BC%82.html"
           },
           {
             "text": "性能优化",
-            "link": "/learn/vue3/src/08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/05-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html"
+            "link": "/apps/vue3/src/08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/05-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html"
           }
         ]
       }
@@ -1597,79 +1597,79 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "class-必须super",
-            "link": "/learn/react18/src/class-components/01-class-%E5%BF%85%E9%A1%BBsuper.html"
+            "link": "/apps/react18/src/class-components/01-class-%E5%BF%85%E9%A1%BBsuper.html"
           },
           {
             "text": "class-state与props",
-            "link": "/learn/react18/src/class-components/02-class-state%E4%B8%8Eprops.html"
+            "link": "/apps/react18/src/class-components/02-class-state%E4%B8%8Eprops.html"
           },
           {
             "text": "setState-异步合并",
-            "link": "/learn/react18/src/class-components/03-setState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6.html"
+            "link": "/apps/react18/src/class-components/03-setState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6.html"
           },
           {
             "text": "setState-函数式更新",
-            "link": "/learn/react18/src/class-components/04-setState-%E5%87%BD%E6%95%B0%E5%BC%8F%E6%9B%B4%E6%96%B0.html"
+            "link": "/apps/react18/src/class-components/04-setState-%E5%87%BD%E6%95%B0%E5%BC%8F%E6%9B%B4%E6%96%B0.html"
           },
           {
             "text": "Clock-setState-批处理对比",
-            "link": "/learn/react18/src/class-components/05-Clock-setState-%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html"
+            "link": "/apps/react18/src/class-components/05-Clock-setState-%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html"
           },
           {
             "text": "class-完整生命周期与API",
-            "link": "/learn/react18/src/class-components/06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html"
+            "link": "/apps/react18/src/class-components/06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html"
           },
           {
             "text": "class-refs与DOM",
-            "link": "/learn/react18/src/class-components/07-class-refs%E4%B8%8EDOM.html"
+            "link": "/apps/react18/src/class-components/07-class-refs%E4%B8%8EDOM.html"
           },
           {
             "text": "class-PureComponent性能优化",
-            "link": "/learn/react18/src/class-components/08-class-PureComponent%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html"
+            "link": "/apps/react18/src/class-components/08-class-PureComponent%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html"
           },
           {
             "text": "class-getDerivedStateFromProps与getSnapshotBeforeUpdate",
-            "link": "/learn/react18/src/class-components/09-class-getDerivedStateFromProps%E4%B8%8EgetSnapshotBeforeUpdate.html"
+            "link": "/apps/react18/src/class-components/09-class-getDerivedStateFromProps%E4%B8%8EgetSnapshotBeforeUpdate.html"
           },
           {
             "text": "class-Context上下文",
-            "link": "/learn/react18/src/class-components/10-class-Context%E4%B8%8A%E4%B8%8B%E6%96%87.html"
+            "link": "/apps/react18/src/class-components/10-class-Context%E4%B8%8A%E4%B8%8B%E6%96%87.html"
           },
           {
             "text": "class-受控与非受控表单",
-            "link": "/learn/react18/src/class-components/11-class-%E5%8F%97%E6%8E%A7%E4%B8%8E%E9%9D%9E%E5%8F%97%E6%8E%A7%E8%A1%A8%E5%8D%95.html"
+            "link": "/apps/react18/src/class-components/11-class-%E5%8F%97%E6%8E%A7%E4%B8%8E%E9%9D%9E%E5%8F%97%E6%8E%A7%E8%A1%A8%E5%8D%95.html"
           },
           {
             "text": "class-setState第二参数回调",
-            "link": "/learn/react18/src/class-components/12-class-setState%E7%AC%AC%E4%BA%8C%E5%8F%82%E6%95%B0%E5%9B%9E%E8%B0%83.html"
+            "link": "/apps/react18/src/class-components/12-class-setState%E7%AC%AC%E4%BA%8C%E5%8F%82%E6%95%B0%E5%9B%9E%E8%B0%83.html"
           },
           {
             "text": "class-事件绑定三种方式",
-            "link": "/learn/react18/src/class-components/13-class-%E4%BA%8B%E4%BB%B6%E7%BB%91%E5%AE%9A%E4%B8%89%E7%A7%8D%E6%96%B9%E5%BC%8F.html"
+            "link": "/apps/react18/src/class-components/13-class-%E4%BA%8B%E4%BB%B6%E7%BB%91%E5%AE%9A%E4%B8%89%E7%A7%8D%E6%96%B9%E5%BC%8F.html"
           },
           {
             "text": "class-列表key与diff",
-            "link": "/learn/react18/src/class-components/14-class-%E5%88%97%E8%A1%A8key%E4%B8%8Ediff.html"
+            "link": "/apps/react18/src/class-components/14-class-%E5%88%97%E8%A1%A8key%E4%B8%8Ediff.html"
           },
           {
             "text": "class-组件通信与children",
-            "link": "/learn/react18/src/class-components/15-class-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1%E4%B8%8Echildren.html"
+            "link": "/apps/react18/src/class-components/15-class-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1%E4%B8%8Echildren.html"
           },
           {
             "text": "class-合成事件机制",
-            "link": "/learn/react18/src/class-components/16-class-%E5%90%88%E6%88%90%E4%BA%8B%E4%BB%B6%E6%9C%BA%E5%88%B6.html"
+            "link": "/apps/react18/src/class-components/16-class-%E5%90%88%E6%88%90%E4%BA%8B%E4%BB%B6%E6%9C%BA%E5%88%B6.html"
           },
           {
             "text": "class-defaultProps与静态属性",
-            "link": "/learn/react18/src/class-components/17-class-defaultProps%E4%B8%8E%E9%9D%99%E6%80%81%E5%B1%9E%E6%80%A7.html"
+            "link": "/apps/react18/src/class-components/17-class-defaultProps%E4%B8%8E%E9%9D%99%E6%80%81%E5%B1%9E%E6%80%A7.html"
           },
           {
             "text": "class-高阶组件HOC",
-            "link": "/learn/react18/src/class-components/18-class-%E9%AB%98%E9%98%B6%E7%BB%84%E4%BB%B6HOC.html"
+            "link": "/apps/react18/src/class-components/18-class-%E9%AB%98%E9%98%B6%E7%BB%84%E4%BB%B6HOC.html"
           },
           {
             "text": "错误边界与常见优化清单",
-            "link": "/learn/react18/src/class-components/19-%E9%94%99%E8%AF%AF%E8%BE%B9%E7%95%8C%E4%B8%8E%E5%B8%B8%E8%A7%81%E4%BC%98%E5%8C%96%E6%B8%85%E5%8D%95.html"
+            "link": "/apps/react18/src/class-components/19-%E9%94%99%E8%AF%AF%E8%BE%B9%E7%95%8C%E4%B8%8E%E5%B8%B8%E8%A7%81%E4%BC%98%E5%8C%96%E6%B8%85%E5%8D%95.html"
           }
         ]
       },
@@ -1679,139 +1679,139 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "入门-元素与渲染",
-            "link": "/learn/react18/src/function-components/01-%E5%85%A5%E9%97%A8-%E5%85%83%E7%B4%A0%E4%B8%8E%E6%B8%B2%E6%9F%93.html"
+            "link": "/apps/react18/src/function-components/01-%E5%85%A5%E9%97%A8-%E5%85%83%E7%B4%A0%E4%B8%8E%E6%B8%B2%E6%9F%93.html"
           },
           {
             "text": "JSX-条件渲染短路",
-            "link": "/learn/react18/src/function-components/02-JSX-%E6%9D%A1%E4%BB%B6%E6%B8%B2%E6%9F%93%E7%9F%AD%E8%B7%AF.html"
+            "link": "/apps/react18/src/function-components/02-JSX-%E6%9D%A1%E4%BB%B6%E6%B8%B2%E6%9F%93%E7%9F%AD%E8%B7%AF.html"
           },
           {
             "text": "元素与函数组件",
-            "link": "/learn/react18/src/function-components/03-%E5%85%83%E7%B4%A0%E4%B8%8E%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6.html"
+            "link": "/apps/react18/src/function-components/03-%E5%85%83%E7%B4%A0%E4%B8%8E%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6.html"
           },
           {
             "text": "元素不可变-时钟",
-            "link": "/learn/react18/src/function-components/04-%E5%85%83%E7%B4%A0%E4%B8%8D%E5%8F%AF%E5%8F%98-%E6%97%B6%E9%92%9F.html"
+            "link": "/apps/react18/src/function-components/04-%E5%85%83%E7%B4%A0%E4%B8%8D%E5%8F%AF%E5%8F%98-%E6%97%B6%E9%92%9F.html"
           },
           {
             "text": "函数组件-props",
-            "link": "/learn/react18/src/function-components/05-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-props.html"
+            "link": "/apps/react18/src/function-components/05-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-props.html"
           },
           {
             "text": "函数组件-事件处理与参数传递",
-            "link": "/learn/react18/src/function-components/06-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-%E4%BA%8B%E4%BB%B6%E5%A4%84%E7%90%86%E4%B8%8E%E5%8F%82%E6%95%B0%E4%BC%A0%E9%80%92.html"
+            "link": "/apps/react18/src/function-components/06-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-%E4%BA%8B%E4%BB%B6%E5%A4%84%E7%90%86%E4%B8%8E%E5%8F%82%E6%95%B0%E4%BC%A0%E9%80%92.html"
           },
           {
             "text": "函数组件-state与props",
-            "link": "/learn/react18/src/function-components/07-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-state%E4%B8%8Eprops.html"
+            "link": "/apps/react18/src/function-components/07-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-state%E4%B8%8Eprops.html"
           },
           {
             "text": "useState-异步合并与连续更新",
-            "link": "/learn/react18/src/function-components/08-useState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6%E4%B8%8E%E8%BF%9E%E7%BB%AD%E6%9B%B4%E6%96%B0.html"
+            "link": "/apps/react18/src/function-components/08-useState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6%E4%B8%8E%E8%BF%9E%E7%BB%AD%E6%9B%B4%E6%96%B0.html"
           },
           {
             "text": "状态更新后读取-flushSync与useEffect",
-            "link": "/learn/react18/src/function-components/09-%E7%8A%B6%E6%80%81%E6%9B%B4%E6%96%B0%E5%90%8E%E8%AF%BB%E5%8F%96-flushSync%E4%B8%8EuseEffect.html"
+            "link": "/apps/react18/src/function-components/09-%E7%8A%B6%E6%80%81%E6%9B%B4%E6%96%B0%E5%90%8E%E8%AF%BB%E5%8F%96-flushSync%E4%B8%8EuseEffect.html"
           },
           {
             "text": "React18-自动批处理对比",
-            "link": "/learn/react18/src/function-components/10-React18-%E8%87%AA%E5%8A%A8%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html"
+            "link": "/apps/react18/src/function-components/10-React18-%E8%87%AA%E5%8A%A8%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html"
           },
           {
             "text": "useEffect-生命周期对照",
-            "link": "/learn/react18/src/function-components/11-useEffect-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%AF%B9%E7%85%A7.html"
+            "link": "/apps/react18/src/function-components/11-useEffect-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%AF%B9%E7%85%A7.html"
           },
           {
             "text": "Hooks-useState基础",
-            "link": "/learn/react18/src/function-components/12-Hooks-useState%E5%9F%BA%E7%A1%80.html"
+            "link": "/apps/react18/src/function-components/12-Hooks-useState%E5%9F%BA%E7%A1%80.html"
           },
           {
             "text": "Hooks-useEffect副作用",
-            "link": "/learn/react18/src/function-components/13-Hooks-useEffect%E5%89%AF%E4%BD%9C%E7%94%A8.html"
+            "link": "/apps/react18/src/function-components/13-Hooks-useEffect%E5%89%AF%E4%BD%9C%E7%94%A8.html"
           },
           {
             "text": "Hooks-useRef与DOM",
-            "link": "/learn/react18/src/function-components/14-Hooks-useRef%E4%B8%8EDOM.html"
+            "link": "/apps/react18/src/function-components/14-Hooks-useRef%E4%B8%8EDOM.html"
           },
           {
             "text": "Hooks-useMemo-useCallback",
-            "link": "/learn/react18/src/function-components/15-Hooks-useMemo-useCallback.html"
+            "link": "/apps/react18/src/function-components/15-Hooks-useMemo-useCallback.html"
           },
           {
             "text": "Hooks-useReducer",
-            "link": "/learn/react18/src/function-components/16-Hooks-useReducer.html"
+            "link": "/apps/react18/src/function-components/16-Hooks-useReducer.html"
           },
           {
             "text": "自定义Hook",
-            "link": "/learn/react18/src/function-components/17-%E8%87%AA%E5%AE%9A%E4%B9%89Hook.html"
+            "link": "/apps/react18/src/function-components/17-%E8%87%AA%E5%AE%9A%E4%B9%89Hook.html"
           },
           {
             "text": "闭包与依赖数组陷阱",
-            "link": "/learn/react18/src/function-components/18-%E9%97%AD%E5%8C%85%E4%B8%8E%E4%BE%9D%E8%B5%96%E6%95%B0%E7%BB%84%E9%99%B7%E9%98%B1.html"
+            "link": "/apps/react18/src/function-components/18-%E9%97%AD%E5%8C%85%E4%B8%8E%E4%BE%9D%E8%B5%96%E6%95%B0%E7%BB%84%E9%99%B7%E9%98%B1.html"
           },
           {
             "text": "列表key与diff",
-            "link": "/learn/react18/src/function-components/19-%E5%88%97%E8%A1%A8key%E4%B8%8Ediff.html"
+            "link": "/apps/react18/src/function-components/19-%E5%88%97%E8%A1%A8key%E4%B8%8Ediff.html"
           },
           {
             "text": "受控与非受控表单",
-            "link": "/learn/react18/src/function-components/20-%E5%8F%97%E6%8E%A7%E4%B8%8E%E9%9D%9E%E5%8F%97%E6%8E%A7%E8%A1%A8%E5%8D%95.html"
+            "link": "/apps/react18/src/function-components/20-%E5%8F%97%E6%8E%A7%E4%B8%8E%E9%9D%9E%E5%8F%97%E6%8E%A7%E8%A1%A8%E5%8D%95.html"
           },
           {
             "text": "组件通信与children组合",
-            "link": "/learn/react18/src/function-components/21-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1%E4%B8%8Echildren%E7%BB%84%E5%90%88.html"
+            "link": "/apps/react18/src/function-components/21-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1%E4%B8%8Echildren%E7%BB%84%E5%90%88.html"
           },
           {
             "text": "Context跨层传递",
-            "link": "/learn/react18/src/function-components/22-Context%E8%B7%A8%E5%B1%82%E4%BC%A0%E9%80%92.html"
+            "link": "/apps/react18/src/function-components/22-Context%E8%B7%A8%E5%B1%82%E4%BC%A0%E9%80%92.html"
           },
           {
             "text": "Reactmemo性能优化",
-            "link": "/learn/react18/src/function-components/23-Reactmemo%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html"
+            "link": "/apps/react18/src/function-components/23-Reactmemo%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html"
           },
           {
             "text": "合成事件机制",
-            "link": "/learn/react18/src/function-components/24-%E5%90%88%E6%88%90%E4%BA%8B%E4%BB%B6%E6%9C%BA%E5%88%B6.html"
+            "link": "/apps/react18/src/function-components/24-%E5%90%88%E6%88%90%E4%BA%8B%E4%BB%B6%E6%9C%BA%E5%88%B6.html"
           },
           {
             "text": "虚拟DOM-Fiber-批处理",
-            "link": "/learn/react18/src/function-components/25-%E8%99%9A%E6%8B%9FDOM-Fiber-%E6%89%B9%E5%A4%84%E7%90%86.html"
+            "link": "/apps/react18/src/function-components/25-%E8%99%9A%E6%8B%9FDOM-Fiber-%E6%89%B9%E5%A4%84%E7%90%86.html"
           },
           {
             "text": "Fragment-Portal-StrictMode",
-            "link": "/learn/react18/src/function-components/26-Fragment-Portal-StrictMode.html"
+            "link": "/apps/react18/src/function-components/26-Fragment-Portal-StrictMode.html"
           },
           {
             "text": "forwardRef与useImperativeHandle",
-            "link": "/learn/react18/src/function-components/27-forwardRef%E4%B8%8EuseImperativeHandle.html"
+            "link": "/apps/react18/src/function-components/27-forwardRef%E4%B8%8EuseImperativeHandle.html"
           },
           {
             "text": "lazy-Suspense代码分割",
-            "link": "/learn/react18/src/function-components/28-lazy-Suspense%E4%BB%A3%E7%A0%81%E5%88%86%E5%89%B2.html"
+            "link": "/apps/react18/src/function-components/28-lazy-Suspense%E4%BB%A3%E7%A0%81%E5%88%86%E5%89%B2.html"
           },
           {
             "text": "Router与状态管理面试点",
-            "link": "/learn/react18/src/function-components/29-Router%E4%B8%8E%E7%8A%B6%E6%80%81%E7%AE%A1%E7%90%86%E9%9D%A2%E8%AF%95%E7%82%B9.html"
+            "link": "/apps/react18/src/function-components/29-Router%E4%B8%8E%E7%8A%B6%E6%80%81%E7%AE%A1%E7%90%86%E9%9D%A2%E8%AF%95%E7%82%B9.html"
           },
           {
             "text": "函数-defaultProps与displayName",
-            "link": "/learn/react18/src/function-components/30-%E5%87%BD%E6%95%B0-defaultProps%E4%B8%8EdisplayName.html"
+            "link": "/apps/react18/src/function-components/30-%E5%87%BD%E6%95%B0-defaultProps%E4%B8%8EdisplayName.html"
           },
           {
             "text": "高阶组件HOC与renderProps",
-            "link": "/learn/react18/src/function-components/31-%E9%AB%98%E9%98%B6%E7%BB%84%E4%BB%B6HOC%E4%B8%8ErenderProps.html"
+            "link": "/apps/react18/src/function-components/31-%E9%AB%98%E9%98%B6%E7%BB%84%E4%BB%B6HOC%E4%B8%8ErenderProps.html"
           },
           {
             "text": "useLayoutEffect与useEffect对比",
-            "link": "/learn/react18/src/function-components/32-useLayoutEffect%E4%B8%8EuseEffect%E5%AF%B9%E6%AF%94.html"
+            "link": "/apps/react18/src/function-components/32-useLayoutEffect%E4%B8%8EuseEffect%E5%AF%B9%E6%AF%94.html"
           },
           {
             "text": "props派生状态与key重置",
-            "link": "/learn/react18/src/function-components/33-props%E6%B4%BE%E7%94%9F%E7%8A%B6%E6%80%81%E4%B8%8Ekey%E9%87%8D%E7%BD%AE.html"
+            "link": "/apps/react18/src/function-components/33-props%E6%B4%BE%E7%94%9F%E7%8A%B6%E6%80%81%E4%B8%8Ekey%E9%87%8D%E7%BD%AE.html"
           },
           {
             "text": "React19新特性概览",
-            "link": "/learn/react18/src/function-components/34-React19%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%A7%88.html"
+            "link": "/apps/react18/src/function-components/34-React19%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%A7%88.html"
           }
         ]
       }
@@ -1827,27 +1827,27 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "入门-createRoot与元素",
-            "link": "/learn/react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/01-%E5%85%A5%E9%97%A8-createRoot%E4%B8%8E%E5%85%83%E7%B4%A0.html"
+            "link": "/apps/react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/01-%E5%85%A5%E9%97%A8-createRoot%E4%B8%8E%E5%85%83%E7%B4%A0.html"
           },
           {
             "text": "JSX表达式与自动批处理",
-            "link": "/learn/react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/02-JSX%E8%A1%A8%E8%BE%BE%E5%BC%8F%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%89%B9%E5%A4%84%E7%90%86.html"
+            "link": "/apps/react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/02-JSX%E8%A1%A8%E8%BE%BE%E5%BC%8F%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%89%B9%E5%A4%84%E7%90%86.html"
           },
           {
             "text": "Actions与useActionState",
-            "link": "/learn/react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/03-Actions%E4%B8%8EuseActionState.html"
+            "link": "/apps/react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/03-Actions%E4%B8%8EuseActionState.html"
           },
           {
             "text": "useOptimistic乐观更新",
-            "link": "/learn/react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/04-useOptimistic%E4%B9%90%E8%A7%82%E6%9B%B4%E6%96%B0.html"
+            "link": "/apps/react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/04-useOptimistic%E4%B9%90%E8%A7%82%E6%9B%B4%E6%96%B0.html"
           },
           {
             "text": "use读取Promise与Context",
-            "link": "/learn/react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/05-use%E8%AF%BB%E5%8F%96Promise%E4%B8%8EContext.html"
+            "link": "/apps/react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/05-use%E8%AF%BB%E5%8F%96Promise%E4%B8%8EContext.html"
           },
           {
             "text": "ref作为prop传递",
-            "link": "/learn/react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/06-ref%E4%BD%9C%E4%B8%BAprop%E4%BC%A0%E9%80%92.html"
+            "link": "/apps/react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/06-ref%E4%BD%9C%E4%B8%BAprop%E4%BC%A0%E9%80%92.html"
           }
         ]
       },
@@ -1857,23 +1857,23 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "React19相对18变化速记",
-            "link": "/learn/react19/src/02-%E9%9D%A2%E8%AF%95%E9%A2%98/01-React19%E7%9B%B8%E5%AF%B918%E5%8F%98%E5%8C%96%E9%80%9F%E8%AE%B0.html"
+            "link": "/apps/react19/src/02-%E9%9D%A2%E8%AF%95%E9%A2%98/01-React19%E7%9B%B8%E5%AF%B918%E5%8F%98%E5%8C%96%E9%80%9F%E8%AE%B0.html"
           },
           {
             "text": "表单Action与useFormStatus",
-            "link": "/learn/react19/src/02-%E9%9D%A2%E8%AF%95%E9%A2%98/02-%E8%A1%A8%E5%8D%95Action%E4%B8%8EuseFormStatus.html"
+            "link": "/apps/react19/src/02-%E9%9D%A2%E8%AF%95%E9%A2%98/02-%E8%A1%A8%E5%8D%95Action%E4%B8%8EuseFormStatus.html"
           },
           {
             "text": "并发渲染与Transitions面试",
-            "link": "/learn/react19/src/02-%E9%9D%A2%E8%AF%95%E9%A2%98/03-%E5%B9%B6%E5%8F%91%E6%B8%B2%E6%9F%93%E4%B8%8ETransitions%E9%9D%A2%E8%AF%95.html"
+            "link": "/apps/react19/src/02-%E9%9D%A2%E8%AF%95%E9%A2%98/03-%E5%B9%B6%E5%8F%91%E6%B8%B2%E6%9F%93%E4%B8%8ETransitions%E9%9D%A2%E8%AF%95.html"
           },
           {
             "text": "错误边界与状态边界",
-            "link": "/learn/react19/src/02-%E9%9D%A2%E8%AF%95%E9%A2%98/04-%E9%94%99%E8%AF%AF%E8%BE%B9%E7%95%8C%E4%B8%8E%E7%8A%B6%E6%80%81%E8%BE%B9%E7%95%8C.html"
+            "link": "/apps/react19/src/02-%E9%9D%A2%E8%AF%95%E9%A2%98/04-%E9%94%99%E8%AF%AF%E8%BE%B9%E7%95%8C%E4%B8%8E%E7%8A%B6%E6%80%81%E8%BE%B9%E7%95%8C.html"
           },
           {
             "text": "RSC与Server-Components边界",
-            "link": "/learn/react19/src/02-%E9%9D%A2%E8%AF%95%E9%A2%98/05-RSC%E4%B8%8EServer-Components%E8%BE%B9%E7%95%8C.html"
+            "link": "/apps/react19/src/02-%E9%9D%A2%E8%AF%95%E9%A2%98/05-RSC%E4%B8%8EServer-Components%E8%BE%B9%E7%95%8C.html"
           }
         ]
       }
@@ -1889,11 +1889,11 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "drag-原生",
-            "link": "/learn/demos/drag/01-drag-%E5%8E%9F%E7%94%9F.html"
+            "link": "/apps/demos/drag/01-drag-%E5%8E%9F%E7%94%9F.html"
           },
           {
             "text": "drag-HTML5拖放复制",
-            "link": "/learn/demos/drag/02-drag-HTML5%E6%8B%96%E6%94%BE%E5%A4%8D%E5%88%B6.html"
+            "link": "/apps/demos/drag/02-drag-HTML5%E6%8B%96%E6%94%BE%E5%A4%8D%E5%88%B6.html"
           }
         ]
       },
@@ -1903,7 +1903,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "SVG-基础",
-            "link": "/learn/demos/svg/01-SVG-%E5%9F%BA%E7%A1%80.html"
+            "link": "/apps/demos/svg/01-SVG-%E5%9F%BA%E7%A1%80.html"
           }
         ]
       },
@@ -1913,7 +1913,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "todo-本地状态",
-            "link": "/learn/demos/todo/01-todo-%E6%9C%AC%E5%9C%B0%E7%8A%B6%E6%80%81.html"
+            "link": "/apps/demos/todo/01-todo-%E6%9C%AC%E5%9C%B0%E7%8A%B6%E6%80%81.html"
           }
         ]
       },
@@ -1923,7 +1923,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "viewpager-翻页与缓动",
-            "link": "/learn/demos/viewpager/01-viewpager-%E7%BF%BB%E9%A1%B5%E4%B8%8E%E7%BC%93%E5%8A%A8.html"
+            "link": "/apps/demos/viewpager/01-viewpager-%E7%BF%BB%E9%A1%B5%E4%B8%8E%E7%BC%93%E5%8A%A8.html"
           }
         ]
       }
@@ -1939,31 +1939,31 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "类型注解与推断",
-            "link": "/learn/typescript/01-%E5%9F%BA%E7%A1%80/01-%E7%B1%BB%E5%9E%8B%E6%B3%A8%E8%A7%A3%E4%B8%8E%E6%8E%A8%E6%96%AD.html"
+            "link": "/apps/typescript/01-%E5%9F%BA%E7%A1%80/01-%E7%B1%BB%E5%9E%8B%E6%B3%A8%E8%A7%A3%E4%B8%8E%E6%8E%A8%E6%96%AD.html"
           },
           {
             "text": "interface与type",
-            "link": "/learn/typescript/01-%E5%9F%BA%E7%A1%80/02-interface%E4%B8%8Etype.html"
+            "link": "/apps/typescript/01-%E5%9F%BA%E7%A1%80/02-interface%E4%B8%8Etype.html"
           },
           {
             "text": "泛型基础",
-            "link": "/learn/typescript/01-%E5%9F%BA%E7%A1%80/03-%E6%B3%9B%E5%9E%8B%E5%9F%BA%E7%A1%80.html"
+            "link": "/apps/typescript/01-%E5%9F%BA%E7%A1%80/03-%E6%B3%9B%E5%9E%8B%E5%9F%BA%E7%A1%80.html"
           },
           {
             "text": "函数类型与重载",
-            "link": "/learn/typescript/01-%E5%9F%BA%E7%A1%80/04-%E5%87%BD%E6%95%B0%E7%B1%BB%E5%9E%8B%E4%B8%8E%E9%87%8D%E8%BD%BD.html"
+            "link": "/apps/typescript/01-%E5%9F%BA%E7%A1%80/04-%E5%87%BD%E6%95%B0%E7%B1%BB%E5%9E%8B%E4%B8%8E%E9%87%8D%E8%BD%BD.html"
           },
           {
             "text": "数组元组与字面量",
-            "link": "/learn/typescript/01-%E5%9F%BA%E7%A1%80/05-%E6%95%B0%E7%BB%84%E5%85%83%E7%BB%84%E4%B8%8E%E5%AD%97%E9%9D%A2%E9%87%8F.html"
+            "link": "/apps/typescript/01-%E5%9F%BA%E7%A1%80/05-%E6%95%B0%E7%BB%84%E5%85%83%E7%BB%84%E4%B8%8E%E5%AD%97%E9%9D%A2%E9%87%8F.html"
           },
           {
             "text": "class与implements",
-            "link": "/learn/typescript/01-%E5%9F%BA%E7%A1%80/06-class%E4%B8%8Eimplements.html"
+            "link": "/apps/typescript/01-%E5%9F%BA%E7%A1%80/06-class%E4%B8%8Eimplements.html"
           },
           {
             "text": "enum与对象枚举",
-            "link": "/learn/typescript/01-%E5%9F%BA%E7%A1%80/07-enum%E4%B8%8E%E5%AF%B9%E8%B1%A1%E6%9E%9A%E4%B8%BE.html"
+            "link": "/apps/typescript/01-%E5%9F%BA%E7%A1%80/07-enum%E4%B8%8E%E5%AF%B9%E8%B1%A1%E6%9E%9A%E4%B8%BE.html"
           }
         ]
       },
@@ -1973,27 +1973,27 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "类型收窄",
-            "link": "/learn/typescript/02-%E8%BF%9B%E9%98%B6/01-%E7%B1%BB%E5%9E%8B%E6%94%B6%E7%AA%84.html"
+            "link": "/apps/typescript/02-%E8%BF%9B%E9%98%B6/01-%E7%B1%BB%E5%9E%8B%E6%94%B6%E7%AA%84.html"
           },
           {
             "text": "Utility-Types",
-            "link": "/learn/typescript/02-%E8%BF%9B%E9%98%B6/02-Utility-Types.html"
+            "link": "/apps/typescript/02-%E8%BF%9B%E9%98%B6/02-Utility-Types.html"
           },
           {
             "text": "条件类型与infer",
-            "link": "/learn/typescript/02-%E8%BF%9B%E9%98%B6/03-%E6%9D%A1%E4%BB%B6%E7%B1%BB%E5%9E%8B%E4%B8%8Einfer.html"
+            "link": "/apps/typescript/02-%E8%BF%9B%E9%98%B6/03-%E6%9D%A1%E4%BB%B6%E7%B1%BB%E5%9E%8B%E4%B8%8Einfer.html"
           },
           {
             "text": "映射类型与模板字面量",
-            "link": "/learn/typescript/02-%E8%BF%9B%E9%98%B6/04-%E6%98%A0%E5%B0%84%E7%B1%BB%E5%9E%8B%E4%B8%8E%E6%A8%A1%E6%9D%BF%E5%AD%97%E9%9D%A2%E9%87%8F.html"
+            "link": "/apps/typescript/02-%E8%BF%9B%E9%98%B6/04-%E6%98%A0%E5%B0%84%E7%B1%BB%E5%9E%8B%E4%B8%8E%E6%A8%A1%E6%9D%BF%E5%AD%97%E9%9D%A2%E9%87%8F.html"
           },
           {
             "text": "never与穷尽检查",
-            "link": "/learn/typescript/02-%E8%BF%9B%E9%98%B6/05-never%E4%B8%8E%E7%A9%B7%E5%B0%BD%E6%A3%80%E6%9F%A5.html"
+            "link": "/apps/typescript/02-%E8%BF%9B%E9%98%B6/05-never%E4%B8%8E%E7%A9%B7%E5%B0%BD%E6%A3%80%E6%9F%A5.html"
           },
           {
             "text": "手写Utility-Types练习",
-            "link": "/learn/typescript/02-%E8%BF%9B%E9%98%B6/06-%E6%89%8B%E5%86%99Utility-Types%E7%BB%83%E4%B9%A0.html"
+            "link": "/apps/typescript/02-%E8%BF%9B%E9%98%B6/06-%E6%89%8B%E5%86%99Utility-Types%E7%BB%83%E4%B9%A0.html"
           }
         ]
       },
@@ -2003,19 +2003,19 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "tsconfig-strict配置",
-            "link": "/learn/typescript/03-%E5%B7%A5%E7%A8%8B%E4%B8%8E%E6%A1%86%E6%9E%B6/01-tsconfig-strict%E9%85%8D%E7%BD%AE.html"
+            "link": "/apps/typescript/03-%E5%B7%A5%E7%A8%8B%E4%B8%8E%E6%A1%86%E6%9E%B6/01-tsconfig-strict%E9%85%8D%E7%BD%AE.html"
           },
           {
             "text": "类型声明与模块",
-            "link": "/learn/typescript/03-%E5%B7%A5%E7%A8%8B%E4%B8%8E%E6%A1%86%E6%9E%B6/02-%E7%B1%BB%E5%9E%8B%E5%A3%B0%E6%98%8E%E4%B8%8E%E6%A8%A1%E5%9D%97.html"
+            "link": "/apps/typescript/03-%E5%B7%A5%E7%A8%8B%E4%B8%8E%E6%A1%86%E6%9E%B6/02-%E7%B1%BB%E5%9E%8B%E5%A3%B0%E6%98%8E%E4%B8%8E%E6%A8%A1%E5%9D%97.html"
           },
           {
             "text": "Vue3与React组件类型",
-            "link": "/learn/typescript/03-%E5%B7%A5%E7%A8%8B%E4%B8%8E%E6%A1%86%E6%9E%B6/03-Vue3%E4%B8%8EReact%E7%BB%84%E4%BB%B6%E7%B1%BB%E5%9E%8B.html"
+            "link": "/apps/typescript/03-%E5%B7%A5%E7%A8%8B%E4%B8%8E%E6%A1%86%E6%9E%B6/03-Vue3%E4%B8%8EReact%E7%BB%84%E4%BB%B6%E7%B1%BB%E5%9E%8B.html"
           },
           {
             "text": "React表单与Vue-emits类型",
-            "link": "/learn/typescript/03-%E5%B7%A5%E7%A8%8B%E4%B8%8E%E6%A1%86%E6%9E%B6/04-React%E8%A1%A8%E5%8D%95%E4%B8%8EVue-emits%E7%B1%BB%E5%9E%8B.html"
+            "link": "/apps/typescript/03-%E5%B7%A5%E7%A8%8B%E4%B8%8E%E6%A1%86%E6%9E%B6/04-React%E8%A1%A8%E5%8D%95%E4%B8%8EVue-emits%E7%B1%BB%E5%9E%8B.html"
           }
         ]
       },
@@ -2025,7 +2025,7 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "items": [
           {
             "text": "index",
-            "link": "/learn/typescript/mini-project/index.html"
+            "link": "/apps/typescript/mini-project/index.html"
           }
         ]
       }

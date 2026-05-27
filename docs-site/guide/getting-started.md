@@ -23,7 +23,7 @@ npm run docs:preview   # 或 npm run serve
 
 ## 直接打开单个 demo
 
-开发单个文件时，可在 IDE 中用 Live Server 打开 `learn/**/*.html`。页脚「目录」会链回 VitePress 首页（`/`）。
+开发单个文件时，可在 IDE 中用 Live Server 打开 `apps/**/*.html`。页脚「目录」会链回 VitePress 首页（`/`）。
 
 ## 维护命令
 
@@ -45,14 +45,14 @@ npm run validate
 
 ```bash
 npm run docs:build
-# 产物：docs-site/.vitepress/dist/（含 learn/ demo）
+# 产物：docs-site/.vitepress/dist/（含 apps/ demo）
 ```
 
 GitHub Pages 子路径部署：
 
 ```bash
-VITEPRESS_BASE=/js-css-vue-react-learn/ npm run build:index
-VITEPRESS_BASE=/js-css-vue-react-learn/ npm run docs:build
+VITEPRESS_BASE=/js-css-vue-react-apps/ npm run build:index
+VITEPRESS_BASE=/js-css-vue-react-apps/ npm run docs:build
 ```
 
 部署前请用相同的 `VITEPRESS_BASE` 运行 `build:index`，确保 demo 页脚「目录」链接正确。

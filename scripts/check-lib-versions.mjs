@@ -10,11 +10,12 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
 const LIB_ROOTS = [
-  "learn/react18/libs",
-  "learn/react19/libs",
-  "learn/vue2/libs",
-  "learn/vue3/libs",
-  "learn/demos/libs",
+  "apps/react18/libs",
+  "apps/react19/libs",
+  "apps/vue2/libs",
+  "apps/vue3/libs",
+  "packages/shared/libs",
+  "apps/demos/libs",
 ];
 const SKIP = new Set(["README.md"]);
 const errors = [];

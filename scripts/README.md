@@ -11,7 +11,7 @@ node scripts/build-index.mjs
 node scripts/build-index.mjs --check
 ```
 
-**扫描范围**：`learn/javascript/`、`learn/css/`、`learn/vue2/`、`learn/vue3/`、`learn/react18/`、`learn/react19/`、`learn/demos/`、`learn/typescript/` 下的 `.html`；跳过 `libs/`、`lib/`。
+**扫描范围**：`apps/javascript/`、`apps/css/`、`apps/vue2/`、`apps/vue3/`、`apps/react18/`、`apps/react19/`、`apps/demos/`、`apps/typescript/` 下的 `.html`；跳过 `libs/`、`lib/`。
 
 **什么时候运行**：
 
@@ -28,13 +28,13 @@ node scripts/build-index.mjs --check
 
 读取各 demo 头注释中的 **主题** 行，更新以下 README 中 `<!-- DEMO_TABLE_START -->` … `<!-- DEMO_TABLE_END -->` 之间的完整 demo 清单表：
 
-- `learn/javascript/README.md`
-- `learn/css/README.md`
-- `learn/vue2/README.md`
-- `learn/vue3/README.md`
-- `learn/react18/README.md`
-- `learn/react19/README.md`
-- `learn/typescript/README.md`
+- `apps/javascript/README.md`
+- `apps/css/README.md`
+- `apps/vue2/README.md`
+- `apps/vue3/README.md`
+- `apps/react18/README.md`
+- `apps/react19/README.md`
+- `apps/typescript/README.md`
 
 ```bash
 node scripts/sync-readmes.mjs
@@ -60,7 +60,7 @@ node scripts/gen-readme-tables.mjs react
 
 ## `validate-topic-coverage.mjs`
 
-校验 JS/CSS/Vue/React/TS 扩展主题 demo 及 `learn/typescript/mini-project/` 是否存在。
+校验 JS/CSS/Vue/React/TS 扩展主题 demo 及 `apps/typescript/mini-project/` 是否存在。
 
 ## `validate-browser-playwright.mjs`
 
@@ -91,7 +91,7 @@ CI（`.github/workflows/ci.yml`）在 push / PR 时自动执行。
 
 ## `validate-typescript-coverage.mjs`
 
-校验 `learn/typescript/` 是否覆盖 TypeScript 基础语法、进阶类型、工程配置与框架组件类型中的高频主题。
+校验 `apps/typescript/` 是否覆盖 TypeScript 基础语法、进阶类型、工程配置与框架组件类型中的高频主题。
 
 ```bash
 node scripts/validate-typescript-coverage.mjs

@@ -15,12 +15,12 @@ const BASE = process.env.DEMO_BASE_URL || "http://127.0.0.1:4173";
 const SAMPLE_SIZE = Number(process.env.PLAYWRIGHT_SAMPLE || 24);
 
 const PRIORITY_HREFS = [
-  "learn/javascript/01-基础/严格模式.html",
-  "learn/javascript/06-浏览器API/HTTP缓存.html",
-  "learn/vue3/src/07-路由状态工程化/06-Router与Pinia可运行示例.html",
-  "learn/react18/src/function-components/34-React19新特性概览.html",
-  "learn/typescript/mini-project/index.html",
-  "learn/demos/todo/01-todo-本地状态.html",
+  "apps/javascript/01-基础/严格模式.html",
+  "apps/javascript/06-浏览器API/HTTP缓存.html",
+  "apps/vue3/src/07-路由状态工程化/06-Router与Pinia可运行示例.html",
+  "apps/react18/src/function-components/34-React19新特性概览.html",
+  "apps/typescript/mini-project/index.html",
+  "apps/demos/todo/01-todo-本地状态.html",
 ];
 
 async function loadManifestPaths() {

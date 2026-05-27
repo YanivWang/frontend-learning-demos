@@ -7,7 +7,7 @@
  *   node scripts/build-index.mjs
  *
  * 约定见 CONVENTIONS.md：
- *   - 学习分类目录：learn/javascript / learn/css / learn/vue2 / learn/vue3 / learn/react18 / learn/react19 / learn/demos
+ *   - 学习分类目录：apps/javascript / apps/css / apps/vue2 / apps/vue3 / apps/react18 / apps/react19 / apps/demos
  *   - libs / lib 子目录视为第三方/工具，不扫描
  */
 
@@ -27,14 +27,14 @@ for (const arg of args) {
 }
 
 const SECTIONS = [
-  { dir: "learn/javascript", title: "JavaScript" },
-  { dir: "learn/css", title: "CSS" },
-  { dir: "learn/vue2", title: "Vue 2" },
-  { dir: "learn/vue3", title: "Vue 3" },
-  { dir: "learn/react18", title: "React 18" },
-  { dir: "learn/react19", title: "React 19" },
-  { dir: "learn/demos", title: "综合 Demo" },
-  { dir: "learn/typescript", title: "TypeScript" },
+  { dir: "apps/javascript", title: "JavaScript" },
+  { dir: "apps/css", title: "CSS" },
+  { dir: "apps/vue2", title: "Vue 2" },
+  { dir: "apps/vue3", title: "Vue 3" },
+  { dir: "apps/react18", title: "React 18" },
+  { dir: "apps/react19", title: "React 19" },
+  { dir: "apps/demos", title: "综合 Demo" },
+  { dir: "apps/typescript", title: "TypeScript" },
 ];
 
 const SKIP_DIRS = new Set(["libs", "lib", "node_modules", ".git", "scripts"]);

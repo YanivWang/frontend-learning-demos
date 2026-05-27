@@ -1,0 +1,19 @@
+# vue3/libs
+
+Vue 3 核心运行时与常见生态预置库（全局构建版本，浏览器直接 `<script src>` 即可使用）。通用 HTTP/工具库见 [`../../../packages/shared/libs/README.md`](../../../packages/shared/libs/README.md)。
+
+| 文件 | 版本 | 用途 | 官方地址 |
+|---|---|---|---|
+| `vue.global.js` | **3.5.34** | Vue 3 核心库（global build） | https://unpkg.com/vue@3.5.34/dist/vue.global.js |
+| `vue-router.global.js` | **4.6.4** | 路由（Vue Router 4） | https://unpkg.com/vue-router@4.6.4/dist/vue-router.global.js |
+| `pinia.iife.js` | **3.0.4** | 状态管理 | https://unpkg.com/pinia@3.0.4/dist/pinia.iife.js |
+
+## 说明
+
+当前 `apps/vue3/src/` 的可运行 demo 引用 `vue.global.js`；**Router + Pinia 可运行示例**见 `07-路由状态工程化/06-Router与Pinia可运行示例.html`（需 `vue-router.global.js`、`pinia.iife.js`）。
+
+`axios`、`lodash`、`js-cookie` 在 `packages/shared/libs/`，需要时引用 `../../../../packages/shared/libs/<file>`。
+
+## 升级方式
+
+直接下载新版本覆盖即可，文件名保持不变；如果改名记得同步更新 `vue3/src/*.html` 里的 `<script src>` 引用。

@@ -52,7 +52,7 @@ git config core.hooksPath .githooks
 
 ## TypeScript mini-project
 
-真实 `.ts` 工程在 `learn/typescript/mini-project/`，校验：
+真实 `.ts` 工程在 `apps/typescript/mini-project/`，校验：
 
 ```bash
 npm run validate:tsc

@@ -6,14 +6,14 @@
 
 | 分类 | 路径 | demo 数量 | 说明文档 |
 |---|---|---:|---|
-| JavaScript | `learn/javascript/` | 124 | [`learn/javascript/README.md`](learn/javascript/README.md) |
-| CSS | `learn/css/` | 39 | [`learn/css/README.md`](learn/css/README.md) |
-| Vue 2 | `learn/vue2/src/` | 57 | [`learn/vue2/README.md`](learn/vue2/README.md) |
-| Vue 3 | `learn/vue3/src/` | 41 | [`learn/vue3/README.md`](learn/vue3/README.md) |
-| React 18 | `learn/react18/src/` | 53 | [`learn/react18/README.md`](learn/react18/README.md) |
-| React 19 | `learn/react19/src/` | 11 | [`learn/react19/README.md`](learn/react19/README.md) |
-| TypeScript | `learn/typescript/` | 18 | [`learn/typescript/README.md`](learn/typescript/README.md) |
-| 综合 Demo | `learn/demos/` | 5 | [`learn/demos/README.md`](learn/demos/README.md) |
+| JavaScript | `apps/javascript/` | 124 | [`apps/javascript/README.md`](apps/javascript/README.md) |
+| CSS | `apps/css/` | 39 | [`apps/css/README.md`](apps/css/README.md) |
+| Vue 2 | `apps/vue2/src/` | 57 | [`apps/vue2/README.md`](apps/vue2/README.md) |
+| Vue 3 | `apps/vue3/src/` | 41 | [`apps/vue3/README.md`](apps/vue3/README.md) |
+| React 18 | `apps/react18/src/` | 53 | [`apps/react18/README.md`](apps/react18/README.md) |
+| React 19 | `apps/react19/src/` | 11 | [`apps/react19/README.md`](apps/react19/README.md) |
+| TypeScript | `apps/typescript/` | 18 | [`apps/typescript/README.md`](apps/typescript/README.md) |
+| 综合 Demo | `apps/demos/` | 5 | [`apps/demos/README.md`](apps/demos/README.md) |
 | **合计** | — | **348** | 统一头注释 + 页脚导航 + VitePress 搜索（见 [`CONVENTIONS.md`](CONVENTIONS.md)） |
 
 ## 快速开始
@@ -47,13 +47,14 @@ npm run serve
 │   ├── plans/               # 面试知识点 / 工程化补齐计划
 │   └── reviews/             # 全量审查与演进记录
 ├── package.json             # npm 维护命令（playwright 为可选 devDependency）
+├── packages/                # 共用库与子包（shared/libs、见 packages/README.md）
 ├── CONTRIBUTING.md          # 贡献与必跑命令
 ├── .githooks/pre-commit     # 可选 Git Hook 模板
 ├── .github/workflows/ci.yml # CI：test + validate
 ├── .gitignore .editorconfig
 │
-├── learn/                   # 学习 demo 主目录
-│   ├── javascript/          # 纯 JavaScript（详见 learn/javascript/README.md）
+├── apps/                   # 学习 demo 主目录
+│   ├── javascript/          # 纯 JavaScript（详见 apps/javascript/README.md）
 │   ├── css/                 # CSS（含 07-现代特性）
 │   ├── vue2/                # Vue 2.7.16
 │   ├── vue3/                # Vue 3.5.34
@@ -61,6 +62,9 @@ npm run serve
 │   ├── react19/             # React 19（基础语法 + 面试题，umd-react 运行时）
 │   ├── typescript/          # TypeScript 面试基础 / 进阶 / 工程与框架
 │   └── demos/               # 综合 Demo（drag / svg / viewpager）
+│
+├── packages/
+│   └── shared/libs/         # axios、lodash、js-cookie（vue2/vue3 共用）
 │
 └── scripts/
     ├── build-index.mjs      # 扫描生成 manifest.json
@@ -85,8 +89,8 @@ npm run serve
 
 1. **Vue 2** → `src/响应式原理` → `src/基础语法` → `src/生命周期` → `src/组件` → `src/路由与状态` → `src/原理与性能`
 2. **Vue 3** → `src/01-基础语法` → … → `src/07-路由状态工程化`（含 Vite / script setup 宏）→ `src/08-原理与性能面试`
-3. **React 18** → `learn/react18/src/function-components/` 按编号；类组件见 `class-components/`
-4. **React 19** → `learn/react19/src/01-基础语法` → `02-面试题`（需先掌握 React 18 Hooks）
+3. **React 18** → `apps/react18/src/function-components/` 按编号；类组件见 `class-components/`
+4. **React 19** → `apps/react19/src/01-基础语法` → `02-面试题`（需先掌握 React 18 Hooks）
 
 ### CSS
 
