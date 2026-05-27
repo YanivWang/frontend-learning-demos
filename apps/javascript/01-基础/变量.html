@@ -2,9 +2,15 @@
   分类: javascript / 01-基础
   主题: 变量声明、提升、null vs undefined、constructor
   要点:
-    - var 有声明提升，可重复声明；let/const 在块作用域内，禁重复声明
-    - null vs undefined：== 相等，=== 不等；typeof null 是 'object'
-    - 原始类型 7 种：number/string/boolean/null/undefined/symbol/bigint
+    - var 函数作用域 + 声明提升，可重复声明；let/const 块级作用域，禁重复声明
+    - null 主动空值，undefined 未赋值；== 相等、=== 不等；typeof null 为 object
+    - 原始类型 7 种 + object；function 的 typeof 返回 'function' 是特例
+    - 隐式全局赋值会污染 window；严格模式下会报 ReferenceError
+  面试:
+    - var / let / const 区别？什么是暂时性死区？
+    - null 和 undefined 区别？如何判断空值？
+    - typeof null 为什么是 object？如何精准判断类型？
+  相关: 变量进阶, typeof
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -12,11 +18,30 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>变量</title>
+    <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>
 </head>
   <body>
   <h1>变量声明、提升、null vs undefined、constructor</h1>
   <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+  <section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li><code>var</code> 是函数作用域，声明会提升到函数顶部，重复声明后者被忽略；<code>for (var i…)</code> 的 <code>i</code> 在循环外仍可访问。</li>
+      <li><code>let</code> / <code>const</code> 是块级作用域，不可重复声明；<code>const</code> 必须初始化，但对象/数组内部属性仍可改。</li>
+      <li>声明提升：在 <code>var</code> 声明前访问得到 <code>undefined</code>；<code>let</code> / <code>const</code> 有暂时性死区，声明前访问抛 <code>ReferenceError</code>（详见 <a href="./变量进阶.html">变量进阶</a>）。</li>
+      <li><code>undefined</code> 表示「已声明未赋值」；<code>null</code> 表示开发者主动赋的「空值」；<code>null == undefined</code> 为 true，<code>===</code> 为 false。</li>
+      <li>原始类型 7 种：number、string、boolean、null、undefined、symbol、bigint；引用类型 object；<code>typeof null === 'object'</code> 是历史遗留 bug。</li>
+      <li>不加声明直接赋值（非严格模式）会在全局对象上创建属性，污染全局命名空间。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>var / let / const 区别？</strong> var 函数作用域、可重复声明、会提升；let/const 块级、不可重复声明；const 绑定不可重新赋值。业务代码优先 let/const。</li>
+      <li><strong>什么是暂时性死区（TDZ）？</strong> let/const 在词法上也会提升，但在声明语句执行前处于 TDZ，访问会 ReferenceError。var 提升后可直接读到 undefined。</li>
+      <li><strong>null 和 undefined 区别？</strong> undefined 是缺省/未赋值；null 是刻意清空引用。判断空值推荐 <code>value == null</code>（同时覆盖两者）或 <code>value === null || value === undefined</code>。</li>
+      <li><strong>typeof null 为什么是 object？</strong> 早期 JS 用二进制低位 tag 表示类型，null 的 tag 与 object 相同。精准类型检测用 <code>Object.prototype.toString.call</code>（见 <a href="./typeof.html">typeof</a>）。</li>
+    </ul>
+  </section>
   <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
       <script src="../../../packages/shared/demo-log.js"></script>
 <script>
@@ -98,6 +123,8 @@
     .demo-output:empty { display: none; }
   </style>
   <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+  <a href="./%E5%8F%98%E9%87%8F%E8%BF%9B%E9%98%B6.html">相关 · 变量进阶</a>
+  <a href="./typeof.html">相关 · typeof</a>
   <a href="./%E5%8F%98%E9%87%8F%E8%BF%9B%E9%98%B6.html">变量进阶 →</a>
   <script>
     (function () {

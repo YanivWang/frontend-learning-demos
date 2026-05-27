@@ -2,9 +2,14 @@
   分类: javascript / 01-基础
   主题: JSON.stringify 进阶用法
   要点:
-    - 第二个参数 replacer 既能传数组（白名单），也能传函数（按 key 变换 value）
-    - 第三个参数控制缩进，便于调试输出
-    - 易错点：function/undefined/Symbol/Date/RegExp/NaN/Infinity 等序列化时会丢失或被处理为 null
+    - replacer 可传数组白名单或函数变换 value
+    - 第三参 space 控制缩进；parse 与 stringify 成对使用
+    - function/undefined/Symbol/Date 等序列化会丢失或变 null
+  面试:
+    - JSON.stringify 有哪些限制？
+    - replacer 怎么用？
+    - 如何实现深拷贝？JSON 方式的局限？
+  相关: 深拷贝
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -12,11 +17,28 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>JSON.stringify</title>
+    <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>
 </head>
   <body>
   <h1>JSON.stringify 进阶用法</h1>
   <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+  <section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li><code>JSON.stringify(value, replacer?, space?)</code> 仅支持 object、array、string、number、boolean、null。</li>
+      <li>replacer 为数组时作属性白名单；为函数时按 (key, value) 返回值，返回 undefined 则忽略该属性。</li>
+      <li>undefined、function、Symbol 在对象中会被忽略；数组中变成 null；Date 变 ISO 字符串。</li>
+      <li>循环引用会抛 TypeError；NaN/Infinity 变成 null。</li>
+      <li><code>JSON.parse</code> 不能解析 trailing comma、单引号等非标准 JSON。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>JSON.stringify 限制？</strong> 不支持 function、undefined、Symbol、循环引用；Date 变字符串；Map/Set 需自行转换。</li>
+      <li><strong>replacer 用法？</strong> 数组过滤字段；函数自定义序列化（如 Date 转时间戳）。</li>
+      <li><strong>JSON 深拷贝？</strong> <code>JSON.parse(JSON.stringify(obj))</code> 简单但丢函数/Date/undefined/循环引用。完整方案见手写深拷贝。</li>
+    </ul>
+  </section>
   <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
       <script src="../../../packages/shared/demo-log.js"></script>
 <script>
@@ -75,6 +97,7 @@
     .demo-output:empty { display: none; }
   </style>
   <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+  <a href="../07-%E8%BF%9B%E9%98%B6/%E6%B7%B1%E6%8B%B7%E8%B4%9D.html">相关 · 深拷贝</a>
   <a href="./IIFE.html">← IIFE</a>
   <a href="./parseInt.html">parseInt →</a>
   <script>

@@ -5,6 +5,10 @@
     - 用 requestAnimationFrame 驱动帧循环（含旧浏览器兼容 shim）
     - 每帧用半透明黑色覆盖画布，实现「拖尾消散」的效果
     - 烟花 = 上升小球；炸开后变成多个粒子（particle），各自带速度衰减
+  面试:
+    - requestAnimationFrame 与 setInterval 做动画的区别？
+    - Canvas 拖尾效果如何实现？
+    - 粒子系统在游戏/可视化里如何抽象？
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -24,7 +28,27 @@
             display: block;
         }
     </style>
-</head>
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+    <style>.hint { color: #999; font-size: 0.9rem; margin: 0.5rem 1rem 1rem; }</style>
+  </head>
+<body>
+  <h1>Canvas 烟花动画</h1>
+  <p class="hint">在黑色画布上点击或自动发射烟花；复习要点见上方，动画逻辑见源码与 DevTools。</p>
+  <section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li>动画主循环优先用 <code>requestAnimationFrame</code>，与显示器刷新对齐；旧浏览器可用 shim 降级到 <code>setTimeout</code>。</li>
+      <li>每帧用半透明黑色矩形覆盖全画布，上一帧内容未完全擦除，形成<strong>拖尾消散</strong>效果。</li>
+      <li>烟花分两段：上升阶段为小球；到达顶点后炸开为多颗粒子，各自带初速度与衰减。</li>
+      <li>粒子位置每帧按速度积分更新，配合随机颜色与生命周期控制视觉丰富度。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>requestAnimationFrame 与 setInterval 做动画的区别？</strong> rAF 在页面不可见时会暂停，更省电；时间步长与刷新率绑定，避免掉帧时「快进」。setInterval 固定间隔，与绘制不同步易抖动。</li>
+      <li><strong>Canvas 拖尾效果如何实现？</strong> 每帧不用 clearRect 全清，而用 <code>fillStyle</code> 半透明黑色 fill 全画布，保留上一帧残影，多次叠加后自然淡出。</li>
+      <li><strong>粒子系统如何抽象？</strong> 统一维护粒子数组，每粒子有位置、速度、寿命、颜色；每帧 update + draw，寿命归零则移除，发射器定时 push 新粒子。</li>
+    </ul>
+  </section>
 <div style="text-align:center;clear:both">
 
 </div>
@@ -32,6 +56,7 @@
 
 <!-- (function(){})() 立即运行的匿名函数 -->
 <!-- Function对象是js中的固有对象，所有的函数实际上都是一个Function的实例 -->
+  <script src="../../../../packages/shared/demo-log.js"></script>
 <script>
 
     // when animating on canvas, it is best to use requestAnimationFrame instead of setTimeout or setInterval

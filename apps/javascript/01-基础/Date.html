@@ -3,8 +3,13 @@
   主题: Date 常用工具：月初/月末、格式化、时间差
   要点:
     - getMonth() 从 0 计；getDay() 是星期几（0 表周日）
-    - new Date(year, month, 0) 巧用：month 为 1-based 时得到该月最后一天
-    - 现代格式化推荐 Intl.DateTimeFormat，避免手写易出错
+    - new Date(year, month, 0) 得到上月最后一天，可算当月月末
+    - 格式化推荐 Intl.DateTimeFormat；时区用 toLocaleString 或 dayjs 等库
+  面试:
+    - Date 有哪些常见坑？
+    - 如何获取某月最后一天？
+    - 前端如何处理时区？
+  相关: JSON
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -12,11 +17,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Date / 时间工具</title>
+  <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
+  <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>
 </head>
 <body>
-  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
   <h1>Date 常用工具函数</h1>
-  <p>JavaScript 原生 Date 用法简单但容易踩坑（月份从 0 开始；getDate 是日不是星期…）。</p>
+  <p class="hint">JavaScript 原生 Date 用法简单但容易踩坑（月份从 0 开始；getDate 是日不是星期…）。</p>
+  <section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li><code>getMonth()</code> 0～11；<code>getDay()</code> 0=周日；<code>getDate()</code> 是「日」不是星期。</li>
+      <li><code>new Date(y, m, 0)</code> 中 m 为 1-based 月份时，day=0 表示上个月的最后一天，即当月月末。</li>
+      <li>时间戳：<code>Date.now()</code>、<code>getTime()</code>；解析字符串推荐 ISO 8601。</li>
+      <li>格式化：优先 <code>Intl.DateTimeFormat</code> 或 dayjs/date-fns，避免手写 pad。</li>
+      <li>Date 是可变对象，运算前注意 clone；跨时区业务用 UTC 或专用库。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>Date 常见坑？</strong> 月份从 0 起；<code>new Date('2024-01-01')</code> 时区差异；直接改实例会 mutate。</li>
+      <li><strong>某月最后一天？</strong> <code>new Date(year, month, 0).getDate()</code>（month 为下一月 1-based）或 dayjs 的 endOf('month')。</li>
+      <li><strong>时区处理？</strong> 存储 UTC 时间戳；展示用 toLocaleString + timeZone；复杂场景用 Temporal（未来）或 dayjs timezone 插件。</li>
+    </ul>
+  </section>
+  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
 
     <script src="../../../packages/shared/demo-log.js"></script>
 <script>
@@ -86,6 +109,7 @@
     .demo-output:empty { display: none; }
   </style>
   <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+  <a href="./JSON.html">相关 · JSON</a>
   <a href="./arguments.html">← arguments</a>
   <a href="./encode-URI%E7%BC%96%E7%A0%81.html">encode-URI编码 →</a>
   <script>

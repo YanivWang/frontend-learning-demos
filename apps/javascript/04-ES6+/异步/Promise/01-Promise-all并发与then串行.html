@@ -1,10 +1,17 @@
 <!--
-  分类: javascript / 04-ES6+ / 异步 / Promise
+分类: javascript / 04-ES6+ / 异步 / Promise
   主题: Promise.all 并发 与 then 串行
   要点:
     - Promise.all：并发执行，总耗时 ≈ max(各任务耗时)；任一失败立刻 reject
     - 串行：.then(() => taskFn()) 返回新 Promise；不能直接 .then(promiseInstance)
     - new Promise(executor) 的 executor 是同步执行的
+  面试:
+    - Promise.all 并发 与 then 串行的核心概念是什么
+    - Promise.all 并发 与 then 串行在实际项目里怎么用
+    - Promise.all 并发 与 then 串行有哪些常见坑或易错点
+    - Promise.all 并发 与 then 串行和相近 API 如何区分选型
+    - 面试中如何简洁讲清 Promise.all 并发 与 then 串行
+
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -12,9 +19,31 @@
     <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Promise.all 并发 与 then 串行</title>
-</head>
+    <link rel="stylesheet" href="../../../../../packages/shared/demo-notes.css" />
+      <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>
+  </head>
 <body>
+  <h1>Promise.all 并发 与 then 串行</h1>
+  <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+<section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li><code>Promise</code>.all：并发执行，总耗时 ≈ max(各任务耗时)；任一失败立刻 reject。</li>
+      <li>串行：.then(() =&gt; taskFn()) 返回新 <code>Promise</code>；不能直接 .then(promiseInstance)。</li>
+      <li>new <code>Promise</code>(executor) 的 executor 是同步执行的。</li>
+      <li><code>Promise</code>.all：并发执行，总耗时 ≈ max(各任务耗时)；任一失败立刻 reject（补充）。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>Promise.all？</strong> <code>Promise</code>.all：并发执行，总耗时 ≈ max(各任务耗时)；任一失败立刻 reject；串行：.then(() =&gt; taskFn()) 返回新 <code>Promise</code>；不能直接 .then(promiseInstance)</li>
+      <li><strong>new Promise(executor) 的 executor 是同步执行的？</strong> new <code>Promise</code>(executor) 的 executor 是同步执行的</li>
+      <li><strong>Promise.all 并发 与 then 串行的核心概念是什么？</strong> <code>Promise</code>.all：并发执行，总耗时 ≈ max(各任务耗时)；任一失败立刻 reject；串行：.then(() =&gt; taskFn()) 返回新 <code>Promise</code>；不能直接 .then(promiseInstance)</li>
+    </ul>
+  </section>
 
+  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
+
+  <script src="../../../../../packages/shared/demo-log.js"></script>
 <script>
     // 把任务封装为「返回 Promise 的函数」，方便串行 then 调用
     const taskP1 = () => new Promise((resolve) => {

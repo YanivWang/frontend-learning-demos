@@ -7,6 +7,13 @@
     - componentWillUnmount ≈ useEffect 返回的 cleanup
     - 没有一一对应关系：一个 useEffect 可组合多种时机，应按「副作用语义」拆分
     - StrictMode 下（见 26）开发环境会 mount → unmount → mount，effect 与 cleanup 各执行两次；生产环境不受影响
+  面试:
+    - useEffect 与 class 生命周期对照的核心概念是什么
+    - useEffect 与 class 生命周期对照在实际项目里怎么用
+    - useEffect 与 class 生命周期对照有哪些常见坑或易错点
+    - useEffect 与 class 生命周期对照和相近 API 如何区分选型
+    - 面试中如何简洁讲清 useEffect 与 class 生命周期对照
+
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -17,8 +24,31 @@
   <script src="../../libs/react.development.js"></script>
   <script src="../../libs/react-dom.development.js"></script>
   <script src="../../libs/babel.min.js"></script>
-</head>
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+      <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>
+  </head>
 <body>
+  <h1>useEffect 与 class 生命周期对照</h1>
+  <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+<section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li>componentDidMount ≈ <code>useEffect</code>(fn, [])。</li>
+      <li>componentDidUpdate ≈ <code>useEffect</code>(fn, [deps]) 在 deps 变化时的行为（注意：带 deps 的 effect 在 <code>mount</code> 时也会执行，与 componentDidUpdate 不同）。</li>
+      <li>componentWillUnmount ≈ <code>useEffect</code> 返回的 cleanup。</li>
+      <li>没有一一对应关系：一个 <code>useEffect</code> 可组合多种时机，应按「副作用语义」拆分。</li>
+      <li>StrictMode 下（见 26）开发环境会 <code>mount</code> → unmount → <code>mount</code>，effect 与 cleanup 各执行两次；生产环境不受影响。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>componentDidMount ≈ useEffect(fn？</strong> componentDidMount ≈ <code>useEffect</code>(fn, [])；componentDidUpdate ≈ <code>useEffect</code>(fn, [deps]) 在 deps 变化时的行为（注意：带 deps 的 effect 在 <code>mount</code> 时也会执行，与 componentDidUpdate 不同）</li>
+      <li><strong>componentDidUpdate ≈ useEffect(fn？</strong> componentDidMount ≈ <code>useEffect</code>(fn, [])；componentDidUpdate ≈ <code>useEffect</code>(fn, [deps]) 在 deps 变化时的行为（注意：带 deps 的 effect 在 <code>mount</code> 时也会执行，与 componentDidUpdate 不同）</li>
+      <li><strong>componentWillUnmount ≈ useEffect 返回的 cle？</strong> componentDidMount ≈ <code>useEffect</code>(fn, [])；componentDidUpdate ≈ <code>useEffect</code>(fn, [deps]) 在 deps 变化时的行为（注意：带 deps 的 effect 在 <code>mount</code> 时也会执行，与 componentDidUpdate 不同）</li>
+      <li><strong>StrictMode 下（见 26）开发环境会 mount → unmount？</strong> StrictMode 下（见 26）开发环境会 <code>mount</code> → unmount → <code>mount</code>，effect 与 cleanup 各执行两次；生产环境不受影响</li>
+    </ul>
+  </section>
+
+
   <div id="root"></div>
 
   <script type="text/babel">
@@ -67,6 +97,7 @@
       return (
         <section>
           <h1>useEffect 与生命周期对照</h1>
+
           <table border="1" cellPadding="6" style={{ borderCollapse: "collapse", marginBottom: 12 }}>
             <thead>
               <tr><th>class 生命周期</th><th>Hooks 近似写法</th></tr>

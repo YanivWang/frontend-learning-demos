@@ -54,30 +54,60 @@
   要点:
     - Promise.all 并发执行，时长 = max(任务时长)
     - Promise.resolve().then(f1).then(f2) 串行执行
+  面试:
+    - Promise.all 与 allSettled、race 的区别？
+    - then 链与 async/await 如何等价？
 -->
 <!DOCTYPE html>
 ```
 
 - **`分类`**：顶层模块 + 子路径
 - **`主题`**：一句话概括，会同步到 README 清单表
-- **`要点`**：3～5 条 bullet
+- **`要点`**：3～5 条 bullet（概念 + 行为 + 常见坑）
+- **`面试`**（全库 demo 必填）：3～5 条 bullet，供 manifest 搜索
 - **`难度`**（可选）：`入门` | `进阶` | `面试`
 - **`前置`**（可选）：建议先学的 demo 名或知识点
 - **`相关`**（可选）：逗号分隔的相关 demo 标题，会注入页脚链接
 
-### 4.1 JavaScript 页面骨架（`01-基础` / `08-面试题/手写`）
+### 4.1 页面骨架（全库 demo，对标 `01-基础/变量进阶.html`）
 
 ```html
 <body>
   <h1><!-- 与「主题」一致 --></h1>
   <p class="hint">下方为 console.log 同步输出。</p>
+  <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
+  <section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul><!-- 4～6 条展开说明 --></ul>
+    <h2>面试考点</h2>
+    <ul><!-- 问句标题 + 标准答法 --></ul>
+  </section>
   <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
   <script src="../../../packages/shared/demo-log.js"></script>
   <script>/* demo 逻辑 */</script>
 </body>
 ```
 
-运行 `npm run enhance:js-demos` 可批量补齐上述结构。
+- 运行 `npm run transform:all-demos` 可批量补齐头注释 `面试:`、`.demo-notes`、h1 / 输出区 / demo-log（不覆盖已有 `.demo-notes` 正文）
+- 运行 `npm run enhance:js-demos` 可仅为 JavaScript 补齐 h1 / 输出区 / demo-log 骨架
+- 运行 `npm run enhance:demo-notes` 可批量补齐 `.demo-notes` 占位骨架（不覆盖已有正文）
+- 运行 `npm run report:demo-notes` 查看全库复习区块覆盖率
+
+- **JavaScript（含 console）**：须有 `<h1>`、`#demo-output`、`demo-log.js`
+- **CSS / 可视化 demo**：须有 `<h1>` 与 `.demo-notes`，演示区保留原有样式与交互
+- **Vue / React**：在 `#app` / `#root` 之前放静态 `<h1>` + `.demo-notes`；原「面试回答」并入「面试考点」
+
+### 4.2 复习区块写作规范（全库）
+
+| 区块 | 条数 | 写法 |
+|---|---|---|
+| 头注释 `要点:` | 3～5 条 | 精炼 bullet，写入 manifest 搜索关键词 |
+| 头注释 `面试:` | 3～5 条 | 精炼问句或考点短语 |
+| 正文「知识点要点」 | 4～6 条 | 概念 + 行为 + 易错点；可比重注释多 1～2 句 |
+| 正文「面试考点」 | 3～5 条 | `<strong>问句？</strong>` + 2～4 句标准答法；可链到下方 demo 或 `08-面试题/` |
+| 低频 API demo | 面试可写「了解即可」 | 说明现代替代方案，避免硬凑 |
+
+**分工**：头注释供检索速览；正文供打开 HTML 直接复习；下方 `<script>` / `<h2>` 演示区负责「跑起来看结果」。
 
 ## 5. libs 目录
 

@@ -1,10 +1,17 @@
 <!--
-  分类: javascript / 05-元编程
+分类: javascript / 05-元编程
   主题: Proxy 代理与基本拦截器
   要点:
     - Proxy 通过 handler 拦截目标对象的 get/set/has 等基础操作
     - get(targetObj, property, proxyInstance) 三参数；set 多了 newValue
     - Proxy 实例无 __proto__，instanceof Proxy 不可用；Reflect 提供配套反射 API
+  面试:
+    - Proxy 代理与基本拦截器的核心概念是什么
+    - Proxy 代理与基本拦截器在实际项目里怎么用
+    - Proxy 代理与基本拦截器有哪些常见坑或易错点
+    - Proxy 代理与基本拦截器和相近 API 如何区分选型
+    - 面试中如何简洁讲清 Proxy 代理与基本拦截器
+
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -12,10 +19,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Proxy 与 Reflect</title>
-</head>
+    <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
+      <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>
+  </head>
 <body>
+  <h1>Proxy 代理与基本拦截器</h1>
+  <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+<section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li><code>Proxy</code> 通过 handler 拦截目标对象的 get/set/has 等基础操作。</li>
+      <li>get(targetObj, property, proxyInstance) 三参数；set 多了 newValue。</li>
+      <li><code>Proxy</code> 实例无 __proto__，<code>instanceof</code> <code>Proxy</code> 不可用；<code>Reflect</code> 提供配套反射 API。</li>
+      <li><code>Proxy</code> 通过 handler 拦截目标对象的 get/set/has 等基础操作（补充）。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>Proxy 通过 handler 拦截目标对象的 get/set/has 等基础？</strong> <code>Proxy</code> 通过 handler 拦截目标对象的 get/set/has 等基础操作；<code>Proxy</code> 实例无 __proto__，<code>instanceof</code> <code>Proxy</code> 不可用；<code>Reflect</code> 提供配套反射 API</li>
+      <li><strong>get(targetObj？</strong> <code>Proxy</code> 通过 handler 拦截目标对象的 get/set/has 等基础操作；get(targetObj, property, proxyInstance) 三参数；set 多了 newValue</li>
+      <li><strong>Proxy 实例无 __proto__？</strong> <code>Proxy</code> 通过 handler 拦截目标对象的 get/set/has 等基础操作；<code>Proxy</code> 实例无 __proto__，<code>instanceof</code> <code>Proxy</code> 不可用；<code>Reflect</code> 提供配套反射 API</li>
+    </ul>
+  </section>
 
-  <script>
+  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
+
+    <script src="../../../packages/shared/demo-log.js"></script>
+<script>
     //被代理的目标对象
     const person = {
       name: "wangcheng",

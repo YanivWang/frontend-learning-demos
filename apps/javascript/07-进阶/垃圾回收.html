@@ -1,10 +1,17 @@
 <!--
-  分类: javascript / 07-进阶
+分类: javascript / 07-进阶
   主题: 垃圾回收、可达性、标记清除与分代回收
   要点:
     - JS 引擎主要根据对象是否从根对象可达来判断能否回收
     - 标记清除能处理循环引用；单纯引用计数会被循环引用困住
     - WeakMap / WeakSet 不会阻止键对象被 GC，适合存对象关联元数据
+  面试:
+    - 垃圾回收、可达性、标记清除与分代回收的核心概念是什么
+    - 垃圾回收、可达性、标记清除与分代回收在实际项目里怎么用
+    - 垃圾回收、可达性、标记清除与分代回收有哪些常见坑或易错点
+    - 垃圾回收、可达性、标记清除与分代回收和相近 API 如何区分选型
+    - 面试中如何简洁讲清 垃圾回收、可达性、标记清除与分代回收
+
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -12,12 +19,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>垃圾回收</title>
-</head>
+    <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
+  </head>
 <body>
+  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
   <h1>垃圾回收：可达性与常见泄漏</h1>
+<section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li>JS 引擎主要根据对象是否从根对象可达来判断能否回收。</li>
+      <li>标记清除能处理循环引用；单纯引用计数会被循环引用困住。</li>
+      <li><code>WeakMap</code> / <code>WeakSet</code> 不会阻止键对象被 GC，适合存对象关联元数据。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>JS 引擎主要根据对象是否从根对象可达来判断能否回收？</strong> JS 引擎主要根据对象是否从根对象可达来判断能否回收</li>
+      <li><strong>标记清除能处理循环引用？</strong> 标记清除能处理循环引用；单纯引用计数会被循环引用困住</li>
+      <li><strong>WeakMap / WeakSet 不会阻止键对象被 GC？</strong> <code>WeakMap</code> / <code>WeakSet</code> 不会阻止键对象被 GC，适合存对象关联元数据</li>
+    </ul>
+  </section>
+
   <p>打开控制台查看输出。内存回收由 JS 引擎决定，无法手动强制稳定触发。</p>
 
-  <script>
+    <script src="../../../packages/shared/demo-log.js"></script>
+<script>
     // ============ 1. 可达性 ============
     let user = { name: "Ada" };
     let admin = user;

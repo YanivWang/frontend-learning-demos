@@ -5,6 +5,11 @@
     - 函数执行时形成「作用域链」：先找自己变量对象，找不到逐级向外
     - 内层函数能看到外层函数与全局作用域的变量，反之不行
     - debugger 在 DevTools 打开时能命中断点，便于查看 Scope 列表
+  面试:
+    - 什么是作用域链？变量查找顺序是什么？
+    - 词法作用域和动态作用域的区别？
+    - 闭包与作用域链的关系？
+  相关: 01-基础/变量进阶, 08-面试题/作用域
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -12,9 +17,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>作用域链</title>
-</head>
+    <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
+      <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>
+  </head>
 <body>
-  <script>
+  <h1>作用域链与变量查找</h1>
+  <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+  <section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li>函数执行时会创建活动对象（AO）/ 词法环境，并与外层环境引用串联成<strong>作用域链</strong>。</li>
+      <li>标识符查找沿作用域链由内向外：当前函数 → 外层函数 → … → 全局；找不到则 <code>ReferenceError</code>。</li>
+      <li>内层函数可访问外层与全局变量（闭包的基础）；外层无法访问内层局部变量。</li>
+      <li>JS 采用<strong>词法作用域</strong>：作用域在写代码时确定，与调用位置无关（对比动态作用域）。</li>
+      <li>在 DevTools 中对 <code>debugger</code> 断点查看 <strong>Scope</strong> 面板，可直观看到当前链上的各层绑定。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>什么是作用域链？变量查找顺序是什么？</strong> 执行函数时沿词法环境外层引用向外查找；先当前环境记录，再外层，直到全局。与原型链不同：作用域链管标识符，原型链管属性访问。</li>
+      <li><strong>词法作用域和动态作用域的区别？</strong> JS 是词法作用域，函数写在哪儿就继承哪儿的外层；动态作用域（如部分 Bash）按调用栈决定，JS 没有。</li>
+      <li><strong>闭包与作用域链的关系？</strong> 内层函数引用外层变量时，外层已返回，内层仍通过作用域链上的环境记录保持访问权，即闭包。常考 for 循环 + var/let，见 <a href="../08-面试题/作用域/05-let-for循环闭包.html">let for 循环闭包</a>。</li>
+    </ul>
+  </section>
+
+  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
+    <script src="../../../packages/shared/demo-log.js"></script>
+<script>
     var outerColor = "red"
 
     function changeColor(){
@@ -53,6 +81,7 @@
     .demo-output:empty { display: none; }
   </style>
   <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+  <a href="../01-%E5%9F%BA%E7%A1%80/%E5%8F%98%E9%87%8F%E8%BF%9B%E9%98%B6.html">相关 · 01-基础/变量进阶</a>
   <a href="../01-%E5%9F%BA%E7%A1%80/%E6%AD%A3%E5%88%99/04-%E6%AD%A3%E5%88%99-%E5%8E%BB%E6%A0%87%E7%82%B9.html">← 正则-去标点</a>
   <a href="./02-%E6%9F%AF%E9%87%8C%E5%8C%96.html">柯里化 →</a>
   <script>

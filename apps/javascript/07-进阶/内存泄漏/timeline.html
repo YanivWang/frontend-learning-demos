@@ -1,10 +1,17 @@
 <!--
-  分类: javascript / 07-进阶 / 内存泄漏
+分类: javascript / 07-进阶 / 内存泄漏
   主题: 用 Performance 面板观察 DOM 节点 + 内存增长
   要点:
     - 不断 appendChild 但不清理，DOM 节点数会线性增长（Detached 节点）
     - Array.concat + 大数据反复合并会触发频繁 GC
     - 现代 DevTools Performance Monitor 可实时跟踪 JS heap / DOM nodes
+  面试:
+    - 用 Performance 面板观察 DOM 节点 + 内存增长的核心概念是什么
+    - 用 Performance 面板观察 DOM 节点 + 内存增长在实际项目里怎么用
+    - 用 Performance 面板观察 DOM 节点 + 内存增长有哪些常见坑或易错点
+    - 用 Performance 面板观察 DOM 节点 + 内存增长和相近 API 如何区分选型
+    - 面试中如何简洁讲清 用 Performance 面板观察 DOM 节点 + 内存增长
+
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -12,10 +19,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>内存泄漏 - timeline 观察</title>
+      <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+      <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>
   </head>
   <body>
+  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
+  <h1>用 Performance 面板观察 DOM 节点 + 内存增长</h1>
+  <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+<section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li>不断 appendChild 但不清理，DOM 节点数会线性增长（Detached 节点）。</li>
+      <li><code>Array</code>.concat + 大数据反复合并会触发频繁 GC。</li>
+      <li>现代 DevTools Performance Monitor 可实时跟踪 JS heap / DOM nodes。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>不断 appendChild 但不清理？</strong> 不断 appendChild 但不清理，DOM 节点数会线性增长（Detached 节点）</li>
+      <li><strong>Array.concat + 大数据反复合并会触发频繁 GC？</strong> <code>Array</code>.concat + 大数据反复合并会触发频繁 GC</li>
+      <li><strong>现代 DevTools Performance Monitor 可实时跟踪 JS？</strong> 现代 DevTools Performance Monitor 可实时跟踪 JS heap / DOM nodes</li>
+    </ul>
+  </section>
+
     <button id="grow">增长</button>
-    <script>
+      <script src="../../../../packages/shared/demo-log.js"></script>
+<script>
       var x = [];
 
       function grow() {

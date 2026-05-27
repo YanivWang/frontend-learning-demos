@@ -2,9 +2,15 @@
   分类: javascript / 01-基础
   主题: arguments 类数组对象与剩余参数
   要点:
-    - arguments 是类数组（有 length、可下标，但没数组方法），普通函数独有
-    - 转真数组三招：Array.prototype.slice.call / Array.from / 展开运算符
-    - 箭头函数没有自己的 arguments，会向外层非箭头作用域查找
+    - arguments 是类数组，普通函数独有，有 length 和下标但无数组方法
+    - 转真数组：slice.call / Array.from / 展开运算符
+    - 箭头函数无 arguments，会向外层非箭头作用域查找
+    - 现代写法优先剩余参数 ...rest
+  面试:
+    - arguments 是什么？如何转数组？
+    - 箭头函数有 arguments 吗？
+    - arguments 和剩余参数区别？
+  相关: 函数进阶, 箭头函数
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -12,11 +18,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>arguments 详解</title>
+  <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
+  <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>
 </head>
 <body>
-  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
   <h1>arguments 类数组对象</h1>
-  <p>每个普通函数（非箭头函数）内部都隐式存在 <code>arguments</code>，存储调用时的所有实参。</p>
+  <p class="hint">每个普通函数内部隐式存在 <code>arguments</code>，存储调用时的所有实参。</p>
+  <section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li><code>arguments</code> 是每个<strong>普通函数</strong>内部的类数组对象，按索引存全部实参，有 <code>length</code>。</li>
+      <li>形参与 <code>arguments</code> 在首次传入时共享同一值；严格模式下不再联动。</li>
+      <li>没有 map/filter 等数组方法，需转成真数组：<code>Array.prototype.slice.call(arguments)</code>、<code>Array.from</code>、<code>[...arguments]</code>。</li>
+      <li>箭头函数没有自己的 arguments，会沿作用域链找外层函数的 arguments。</li>
+      <li>ES6 推荐剩余参数 <code>function fn(a, ...rest) {}</code>，<code>rest</code> 是真数组。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>arguments 是什么？</strong> 函数实参的类数组集合。仅普通函数有；严格模式下 <code>arguments.callee</code> 禁用。</li>
+      <li><strong>如何转数组？</strong> slice.call、Array.from、展开运算符三选一；剩余参数 ...rest 可直接当数组用。</li>
+      <li><strong>箭头函数有 arguments 吗？</strong> 没有自己的；若内层箭头在外层普通函数里，访问的是外层的 arguments。</li>
+      <li><strong>arguments vs ...rest？</strong> rest 只收集剩余形参之后的多余实参，且是真数组；arguments 包含全部实参但是类数组。新代码优先 rest。</li>
+    </ul>
+  </section>
+  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
     <script src="../../../packages/shared/demo-log.js"></script>
 <script>
     function f1(x, y) {
@@ -71,6 +96,8 @@
     .demo-output:empty { display: none; }
   </style>
   <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+  <a href="./%E5%87%BD%E6%95%B0%E8%BF%9B%E9%98%B6.html">相关 · 函数进阶</a>
+  <a href="./%E7%AE%AD%E5%A4%B4%E5%87%BD%E6%95%B0.html">相关 · 箭头函数</a>
   <a href="./%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%96%B9%E6%B3%95.html">← 字符串方法</a>
   <a href="./Date.html">Date →</a>
   <script>

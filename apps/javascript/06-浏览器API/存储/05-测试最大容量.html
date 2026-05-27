@@ -1,10 +1,17 @@
 <!--
-  分类: javascript / 06-浏览器API / 存储
+分类: javascript / 06-浏览器API / 存储
   主题: 测试 localforage 最大可写容量
   要点:
     - 不同浏览器、不同后端（IndexedDB/WebSQL/localStorage）限制差异巨大
     - 一次写入巨大数组可触发 QuotaExceededError，需要 try/catch
     - JS 字符串按 UTF-16 存储，一个字符约 2 字节（emoji 等更多）
+  面试:
+    - 测试 localforage 最大可写容量的核心概念是什么
+    - 测试 localforage 最大可写容量在实际项目里怎么用
+    - 测试 localforage 最大可写容量有哪些常见坑或易错点
+    - 测试 localforage 最大可写容量和相近 API 如何区分选型
+    - 面试中如何简洁讲清 测试 localforage 最大可写容量
+
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -12,9 +19,30 @@
     <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>测试最大容量</title>
-    <script src="lib/localforage.js"></script>
-</head>
+      <script src="../../../../packages/shared/demo-log.js"></script>
+<script src="lib/localforage.js"></script>
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+      <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>
+  </head>
 <body>
+  <h1>测试 localforage 最大可写容量</h1>
+  <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+<section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li>不同浏览器、不同后端（IndexedDB/WebSQL/localStorage）限制差异巨大。</li>
+      <li>一次写入巨大数组可触发 QuotaExceededError，需要 try/catch。</li>
+      <li>JS 字符串按 UTF-16 存储，一个字符约 2 字节（emoji 等更多）。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>不同浏览器、不同后端（IndexedDB/WebSQL/localStorage？</strong> 不同浏览器、不同后端（IndexedDB/WebSQL/localStorage）限制差异巨大</li>
+      <li><strong>一次写入巨大数组可触发 QuotaExceededError？</strong> 一次写入巨大数组可触发 QuotaExceededError，需要 try/catch</li>
+      <li><strong>JS 字符串按 UTF-16 存储？</strong> JS 字符串按 UTF-16 存储，一个字符约 2 字节（emoji 等更多）</li>
+    </ul>
+  </section>
+
+  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
 
 <script>
     // 压测：约 550 万次 push，每条 testStr 为 10 个字符，用于探测 IndexedDB 配额上限

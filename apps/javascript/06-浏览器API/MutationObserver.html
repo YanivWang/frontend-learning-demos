@@ -1,10 +1,17 @@
 <!--
-  分类: javascript / 06-浏览器API
+分类: javascript / 06-浏览器API
   主题: MutationObserver 监听 DOM 变化
   要点:
     - 回调在微任务队列中批量执行，多次变更会合并触发一次
     - config 中的 subtree:true 会扩大监听到所有后代，开销较大
     - 易错点：在回调中再修改 DOM 容易死循环；observer.disconnect 用完要解绑
+  面试:
+    - MutationObserver 监听 DOM 变化的核心概念是什么
+    - MutationObserver 监听 DOM 变化在实际项目里怎么用
+    - MutationObserver 监听 DOM 变化有哪些常见坑或易错点
+    - MutationObserver 监听 DOM 变化和相近 API 如何区分选型
+    - 面试中如何简洁讲清 MutationObserver 监听 DOM 变化
+
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -12,11 +19,32 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MutationObserver</title>
+      <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
+      <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>
   </head>
   <body>
-    <div id="app" class="app"></div>
+  <h1>MutationObserver 监听 DOM 变化</h1>
+  <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+<section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li>回调在微任务队列中批量执行，多次变更会合并触发一次。</li>
+      <li>config 中的 subtree:true 会扩大监听到所有后代，开销较大。</li>
+      <li>易错点：在回调中再修改 DOM 容易死循环；observer.disconnect 用完要解绑。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>回调在微任务队列中批量执行？</strong> 回调在微任务队列中批量执行，多次变更会合并触发一次</li>
+      <li><strong>config 中的 subtree？</strong> config 中的 subtree:true 会扩大监听到所有后代，开销较大；易错点：在回调中再修改 DOM 容易死循环；observer.disconnect 用完要解绑</li>
+      <li><strong>MutationObserver 监听 DOM 变化的核心概念是什么？</strong> 回调在微任务队列中批量执行，多次变更会合并触发一次；config 中的 subtree:true 会扩大监听到所有后代，开销较大</li>
+    </ul>
+  </section>
 
-    <script>
+  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
+  <div id="app" class="app"></div>
+
+      <script src="../../../packages/shared/demo-log.js"></script>
+<script>
       //new MutationObserver 创建并返回一个突变观察器 => 它会在触发指定 DOM 事件时，调用指定的回调函数
       //MutationObserver 对DOM的观察不会立即启动，而是必须调用observe()方法，来确定监听哪一部分的DOM以及要响应哪些更改
       

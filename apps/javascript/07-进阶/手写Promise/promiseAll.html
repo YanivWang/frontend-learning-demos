@@ -1,10 +1,17 @@
 <!--
-  分类: javascript / 07-进阶 / 手写Promise
+分类: javascript / 07-进阶 / 手写Promise
   主题: 手写 Promise.all
   要点:
     - 全部 resolve 才整体 resolve；任一 reject 立刻整体 reject
     - 易错点：用 retArray.length 判断完成数会失败（稀疏数组的 length 是「最大索引+1」）
     - 用独立计数器 doneCount 判断完成数，避免稀疏数组 length 陷阱
+  面试:
+    - 手写 Promise.all的核心概念是什么
+    - 手写 Promise.all在实际项目里怎么用
+    - 手写 Promise.all有哪些常见坑或易错点
+    - 手写 Promise.all和相近 API 如何区分选型
+    - 面试中如何简洁讲清 手写 Promise.all
+
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -12,9 +19,30 @@
     <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>手写 Promise.all</title>
-</head>
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+      <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>
+  </head>
 <body>
+  <h1>手写 Promise.all</h1>
+  <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+<section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li>全部 resolve 才整体 resolve；任一 reject 立刻整体 reject。</li>
+      <li>易错点：用 retArray.length 判断完成数会失败（稀疏数组的 length 是「最大索引+1」）。</li>
+      <li>用独立计数器 doneCount 判断完成数，避免稀疏数组 length 陷阱。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>全部 resolve 才整体 resolve？</strong> 全部 resolve 才整体 resolve；任一 reject 立刻整体 reject</li>
+      <li><strong>用独立计数器 doneCount 判断完成数？</strong> 用独立计数器 doneCount 判断完成数，避免稀疏数组 length 陷阱</li>
+      <li><strong>手写 Promise.all的核心概念是什么？</strong> 全部 resolve 才整体 resolve；任一 reject 立刻整体 reject；易错点：用 retArray.length 判断完成数会失败（稀疏数组的 length 是「最大索引+1」）</li>
+    </ul>
+  </section>
 
+  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
+
+  <script src="../../../../packages/shared/demo-log.js"></script>
 <script>
     let p1 = new Promise((resolve) => {
         setTimeout(() => resolve("p1 ok!"), 1500);

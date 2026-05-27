@@ -6,6 +6,13 @@
     - 同一事件回调里多次 setCount(count + 1) 都基于当前 render 快照，连续 +1 三次通常只 +1
     - 函数式更新 setCount(prev => ...) 每次基于队列最新值，可正确累加
     - 对比 class 03：原理相同，只是 API 从 this.setState 换成 useState 返回的 setter
+  面试:
+    - useState 异步合并与连续更新的核心概念是什么
+    - useState 异步合并与连续更新在实际项目里怎么用
+    - useState 异步合并与连续更新有哪些常见坑或易错点
+    - useState 异步合并与连续更新和相近 API 如何区分选型
+    - 面试中如何简洁讲清 useState 异步合并与连续更新
+
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -16,8 +23,30 @@
   <script src="../../libs/react.development.js"></script>
   <script src="../../libs/react-dom.development.js"></script>
   <script src="../../libs/babel.min.js"></script>
-</head>
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+      <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>
+  </head>
 <body>
+  <h1>useState 异步合并与连续更新</h1>
+  <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+<section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li>setCount 不会立刻改变当前 <code>render</code> 中的 count 变量，而是请求下一次渲染。</li>
+      <li>同一事件回调里多次 setCount(count + 1) 都基于当前 <code>render</code> 快照，连续 +1 三次通常只 +1。</li>
+      <li>函数式更新 setCount(prev =&gt; ...) 每次基于队列最新值，可正确累加。</li>
+      <li>对比 class 03：原理相同，只是 API 从 <code>this</code>.setState 换成 <code>useState</code> 返回的 setter。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>setCount 不会立刻改变当前 render 中的 count 变量？</strong> setCount 不会立刻改变当前 <code>render</code> 中的 count 变量，而是请求下一次渲染；同一事件回调里多次 setCount(count + 1) 都基于当前 <code>render</code> 快照，连续 +1 三次通常只 +1</li>
+      <li><strong>同一事件回调里多次 setCount(count + 1) 都基于当前 rend？</strong> 同一事件回调里多次 setCount(count + 1) 都基于当前 <code>render</code> 快照，连续 +1 三次通常只 +1</li>
+      <li><strong>函数式更新 setCount(prev =&gt; ...) 每次基于队列最新值？</strong> 函数式更新 setCount(prev =&gt; ...) 每次基于队列最新值，可正确累加</li>
+      <li><strong>对比 class 03？</strong> 对比 class 03：原理相同，只是 API 从 <code>this</code>.setState 换成 <code>useState</code> 返回的 setter</li>
+    </ul>
+  </section>
+
+
   <div id="root"></div>
 
   <script type="text/babel">
@@ -47,6 +76,7 @@
       return (
         <section>
           <h1>useState 异步合并</h1>
+
           <p>count: {count}</p>
           <button onClick={addThreeWrong}>快照式连续 +3（实际 +1）</button>
           <button onClick={addThreeRight}>函数式连续 +3（正确 +3）</button>

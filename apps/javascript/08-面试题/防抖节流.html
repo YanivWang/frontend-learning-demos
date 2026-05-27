@@ -1,10 +1,17 @@
 <!--
-  分类: javascript / 08-面试题
+分类: javascript / 08-面试题
   主题: 防抖（debounce）与节流（throttle）
   要点:
     - debounce：每次触发都重置定时器，沉默超过 wait 才真正执行（场景：搜索建议）
     - throttle（时间戳版）：每 wait ms 最多执行一次（场景：scroll/mousemove）
     - throttle（定时器版）：trailing 调用，等到 wait 末尾再执行一次
+  面试:
+    - 防抖（debounce）与节流（throttle）的核心概念是什么
+    - 防抖（debounce）与节流（throttle）在实际项目里怎么用
+    - 防抖（debounce）与节流（throttle）有哪些常见坑或易错点
+    - 防抖（debounce）与节流（throttle）和相近 API 如何区分选型
+    - 面试中如何简洁讲清 防抖（debounce）与节流（throttle）
+
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -17,9 +24,26 @@
     .box { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; min-height: 36px; }
     input { padding: 6px 8px; width: 240px; }
   </style>
-</head>
+    <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
+  </head>
 <body>
+  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
   <h1>防抖（debounce）/ 节流（throttle）</h1>
+<section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li>debounce：每次触发都重置定时器，沉默超过 wait 才真正执行（场景：搜索建议）。</li>
+      <li>throttle（时间戳版）：每 wait ms 最多执行一次（场景：scroll/mousemove）。</li>
+      <li>throttle（定时器版）：trailing 调用，等到 wait 末尾再执行一次。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>throttle（时间戳版）？</strong> throttle（时间戳版）：每 wait ms 最多执行一次（场景：scroll/mousemove）；throttle（定时器版）：trailing 调用，等到 wait 末尾再执行一次</li>
+      <li><strong>throttle（定时器版）？</strong> throttle（时间戳版）：每 wait ms 最多执行一次（场景：scroll/mousemove）；throttle（定时器版）：trailing 调用，等到 wait 末尾再执行一次</li>
+      <li><strong>防抖（debounce）与节流（throttle）的核心概念是什么？</strong> debounce：每次触发都重置定时器，沉默超过 wait 才真正执行（场景：搜索建议）；throttle（时间戳版）：每 wait ms 最多执行一次（场景：scroll/mousemove）</li>
+    </ul>
+  </section>
+
 
   <h3>1. 防抖：触发 n 次只在最后一次后执行（适合：搜索建议、按钮防连点）</h3>
   <input id="searchInput" placeholder="输入关键词搜索..." />
@@ -28,7 +52,8 @@
   <h3>2. 节流：n 毫秒内最多执行一次（适合：scroll、resize、mousemove）</h3>
   <div class="box" id="throttleBox">移动鼠标试试...</div>
 
-  <script>
+    <script src="../../../packages/shared/demo-log.js"></script>
+<script>
     // ===== 防抖 =====
     // 关键点：每次触发都重置定时器；只有"沉默"超过 wait 才会真正执行
     function debounce(fn, wait) {

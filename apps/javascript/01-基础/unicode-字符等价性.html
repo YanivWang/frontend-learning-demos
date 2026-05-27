@@ -2,10 +2,14 @@
   分类: javascript / 01-基础
   主题: Unicode 字符等价性（NFC / NFD）
   要点:
-    - 视觉上相同的字符可能由不同 Unicode 码点序列构成
-    - 直接用 === 比较可能为 false
-    - 语义比较前用 String.prototype.normalize('NFC') 统一规范化
-    - 用户输入清洗：trim + 折叠空白后再比较
+    - 视觉相同字符可能由不同码点序列构成
+    - 直接 === 可能 false；比较前 normalize('NFC')
+    - 用户输入：trim + 折叠空白 + normalize
+  面试:
+    - 为什么相同外观的字符串不相等？
+    - normalize 有什么用？
+    - 用户名校验要注意什么？
+  相关: unicode
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -13,11 +17,27 @@
     <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Unicode 字符等价性</title>
+    <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
   <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>
 </head>
 <body>
   <h1>Unicode 字符等价性（NFC / NFD）</h1>
   <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+  <section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li>Unicode 允许多种编码表示同一「字符」（如 é 可以是单码点或 e+组合重音）。</li>
+      <li>NFC（组合形式）与 NFD（分解形式）是两种标准规范化；<code>str.normalize('NFC')</code> 统一后再比较。</li>
+      <li>全角/半角、不同空格（NBSP）也会导致 === 失败。</li>
+      <li>用户输入清洗流程：trim → 折叠连续空白 → normalize → 再比较/入库。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>相同外观为何不相等？</strong> 不同 Unicode 码点序列（组合字符 vs 预组合字符）。需 normalize 后比较。</li>
+      <li><strong>normalize 作用？</strong> 将字符串转为 NFC/NFD 等规范形式，便于搜索、去重、数据库唯一约束。</li>
+      <li><strong>用户名校验？</strong> 不能只做 ===；要 normalize、考虑大小写/全半角、防 homoglyph 攻击（国际化产品）。</li>
+    </ul>
+  </section>
   <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
 
 <div>ぎ</div>
@@ -69,6 +89,7 @@
     .demo-output:empty { display: none; }
   </style>
   <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+  <a href="./unicode.html">相关 · unicode</a>
   <a href="./typeof.html">← typeof</a>
   <a href="./unicode.html">unicode →</a>
   <script>

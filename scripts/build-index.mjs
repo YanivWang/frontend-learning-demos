@@ -14,6 +14,7 @@
 import { readFile, readdir, stat, writeFile } from "node:fs/promises";
 import { join, relative, sep, posix } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parseDemoMetaFromContent } from "./lib/parse-demo-meta.mjs";
 
 const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
 const args = new Set(process.argv.slice(2));
@@ -61,21 +62,7 @@ function sortFiles(a, b) {
 
 async function parseDemoMeta(absPath) {
   const content = await readFile(absPath, "utf8");
-  const comment = content.match(/<!--\s*([\s\S]*?)\s*-->/);
-  const block = comment?.[1] || "";
-  const theme = (block.match(/主题:\s*(.+)/) || [])[1]?.trim() || "";
-  const category = (block.match(/分类:\s*(.+)/) || [])[1]?.trim() || "";
-  const difficulty = (block.match(/难度:\s*(.+)/) || [])[1]?.trim() || "";
-  const prerequisite = (block.match(/前置:\s*(.+)/) || [])[1]?.trim() || "";
-  const relatedRaw = (block.match(/相关:\s*(.+)/) || [])[1]?.trim() || "";
-  const related = relatedRaw
-    ? relatedRaw.split(/[,，]/).map((s) => s.trim()).filter(Boolean)
-    : [];
-  const bullets = [...block.matchAll(/^\s*-\s*(.+)$/gm)].map((m) => m[1].trim());
-  const keywords = [difficulty, prerequisite, related.join(" "), bullets.join(" ")]
-    .filter(Boolean)
-    .join(" ");
-  return { theme, category, difficulty, prerequisite, related, keywords };
+  return parseDemoMetaFromContent(content);
 }
 
 async function collect(dirAbs, results) {
@@ -141,6 +128,8 @@ async function buildManifest() {
             difficulty: meta.difficulty,
             prerequisite: meta.prerequisite,
             related: meta.related,
+            points: meta.points,
+            interviewPoints: meta.interviewPoints,
             searchText: [fileToTitle(f), meta.theme, meta.category, meta.keywords].join(" "),
           };
         })

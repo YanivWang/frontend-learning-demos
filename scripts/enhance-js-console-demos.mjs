@@ -14,10 +14,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
 const DEMO_LOG = join(ROOT, "packages/shared/demo-log.js");
-const TARGET_DIRS = [
-  join("apps", "javascript", "01-基础"),
-  join("apps", "javascript", "08-面试题", "手写"),
-];
+const TARGET_DIRS = [join("apps", "javascript")];
 
 function toPosix(p) {
   return p.split(sep).join("/");

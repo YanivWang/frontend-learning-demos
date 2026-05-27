@@ -14,6 +14,7 @@ import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync, spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
+import { parseDemoMetaFromContent } from "./lib/parse-demo-meta.mjs";
 
 const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
 
@@ -71,22 +72,53 @@ function validateFilename(name, fileRel) {
   }
 }
 
-function validateVisibleLearningSurface(content, fileRel) {
-  const jsTargets = [
-    /^apps\/javascript\/01-基础\//,
-    /^apps\/javascript\/08-面试题\/手写\//,
-  ];
-  if (!jsTargets.some((re) => re.test(fileRel))) return;
-  if (!/<h1[\s>]/i.test(content)) {
-    errors.push(`${fileRel}: 01-基础 / 08-手写 demo 须有 <h1>（运行 node scripts/enhance-js-console-demos.mjs）`);
+const DEMO_NOTES_SECTIONS = [
+  /^apps\/javascript\//,
+  /^apps\/css\//,
+  /^apps\/vue2\//,
+  /^apps\/vue3\//,
+  /^apps\/react18\//,
+  /^apps\/react19\//,
+  /^apps\/demos\//,
+  /^apps\/typescript\//,
+];
+
+function validateDemoNotes(content, fileRel) {
+  if (!DEMO_NOTES_SECTIONS.some((re) => re.test(fileRel))) return;
+  const meta = parseDemoMetaFromContent(content);
+  if (!content.includes("面试:")) {
+    errors.push(`${fileRel}: demo 头注释缺少「面试:」（见 CONVENTIONS.md §4.2）`);
+  } else if (meta.interviewPoints.length < 3) {
+    errors.push(`${fileRel}: demo「面试:」至少 3 条 bullet`);
   }
+  if (!/<section[^>]*class\s*=\s*["'][^"']*\bdemo-notes\b/i.test(content)) {
+    errors.push(`${fileRel}: 缺少 section.demo-notes（运行 npm run transform:all-demos）`);
+    return;
+  }
+  if (!/知识点要点/.test(content)) {
+    errors.push(`${fileRel}: demo-notes 缺少 h2「知识点要点」`);
+  }
+  if (!/面试考点/.test(content)) {
+    errors.push(`${fileRel}: demo-notes 缺少 h2「面试考点」`);
+  }
+  if (/待补充答法|<!-- 待补充 -->/.test(content)) {
+    errors.push(`${fileRel}: demo-notes 含未完成的占位内容`);
+  }
+}
+
+function validateVisibleLearningSurface(content, fileRel) {
+  if (!/^apps\/javascript\//.test(fileRel)) return;
+  if (!/<h1[\s>]/i.test(content)) {
+    errors.push(`${fileRel}: JavaScript demo 须有 <h1>（运行 npm run enhance:js-demos）`);
+  }
+  if (!/console\.(log|info|warn|error|dir)\s*\(/i.test(content)) return;
   const hasOutput =
     /id\s*=\s*["']demo-output["']/i.test(content) ||
     /id\s*=\s*["']log["']/i.test(content) ||
     /class\s*=\s*["'][^"']*\bdemo-output\b/i.test(content) ||
     /id\s*=\s*["']out["']/i.test(content);
   if (!hasOutput) {
-    errors.push(`${fileRel}: 01-基础 / 08-手写 demo 须有可见输出区（#demo-output / #log / .demo-output）`);
+    errors.push(`${fileRel}: 含 console 输出的 JavaScript demo 须有可见输出区（#demo-output）`);
   }
 }
 
@@ -156,6 +188,7 @@ async function main() {
     validateHeader(content, rel);
     validateFilename(abs.split(sep).pop(), rel);
     validatePageMeta(content, rel);
+    validateDemoNotes(content, rel);
     validateVisibleLearningSurface(content, rel);
     await checkScripts(content, rel);
   }

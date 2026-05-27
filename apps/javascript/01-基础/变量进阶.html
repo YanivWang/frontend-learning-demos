@@ -2,9 +2,15 @@
   分类: javascript / 01-基础
   主题: var / let / const 变量提升与暂时性死区
   要点:
-    - var 声明会被提升到函数顶部，访问得到 undefined（不报错）
-    - let / const 也存在「提升」，但有暂时性死区，声明前访问抛 ReferenceError
-    - 函数声明同样会被整体提升，可以在声明前调用
+    - var 声明提升到函数顶部，声明前访问得 undefined（不报错）
+    - let / const 也会提升，但有暂时性死区，声明前访问抛 ReferenceError
+    - 函数声明整体提升，可在声明语句之前调用
+    - const 必须初始化；块级作用域在 if/for 等语句块内同样生效
+  面试:
+    - 什么是暂时性死区？let 真的不提升吗？
+    - 函数声明和 var 声明的提升顺序？
+    - 块级作用域在哪些场景容易踩坑？
+  相关: 变量, 08-面试题/作用域
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -12,11 +18,29 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>变量进阶</title>
+    <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>
 </head>
   <body>
   <h1>var / let / const 变量提升与暂时性死区</h1>
   <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+  <section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li><code>var</code> 在函数内提升到函数顶部，声明前访问得到 <code>undefined</code>，不会抛错。</li>
+      <li><code>let</code> / <code>const</code> 在词法上也会提升，但从块开始到声明语句之间是<strong>暂时性死区（TDZ）</strong>，访问会 <code>ReferenceError</code>。</li>
+      <li><code>const</code> 必须在声明时初始化；绑定不可改，但对象/数组的内容仍可变。</li>
+      <li>函数声明会被<strong>整体提升</strong>，函数名在声明前就是可用的函数对象（见下方 <code>typeof example2</code>）。</li>
+      <li>块级作用域对 <code>if</code>、<code>for</code>、<code>{}</code> 均生效；<code>var</code> 在 <code>if</code> 块内声明仍属于外层函数作用域。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>什么是暂时性死区？</strong> 从块级作用域开始到 <code>let/const</code> 声明执行前，变量已存在于词法环境但不可访问。这是规范行为，不是「没提升」。</li>
+      <li><strong>let 真的不提升吗？</strong> 会提升，只是 TDZ 内访问报错。与 var 的区别是：var 提升后值为 undefined；let/const 在 TDZ 内访问直接 ReferenceError。</li>
+      <li><strong>函数声明 vs 变量声明的提升？</strong> 同作用域内函数声明优先于 var；函数声明整体提升，var 只提升声明不赋值。经典题见 <a href="../08-面试题/作用域/06-var与function同名提升.html">var 与 function 同名提升</a>。</li>
+      <li><strong>块级作用域踩坑？</strong> <code>for (var i…)</code> 的 i 泄漏到外层；<code>for (let i…)</code> 每次迭代有独立绑定。闭包题见 <a href="../08-面试题/作用域/05-let-for循环闭包.html">let for 循环闭包</a>。</li>
+    </ul>
+  </section>
   <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
    <script src="../../../packages/shared/demo-log.js"></script>
 <script>
@@ -61,6 +85,7 @@ example();
     .demo-output:empty { display: none; }
   </style>
   <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+  <a href="./%E5%8F%98%E9%87%8F.html">相关 · 变量</a>
   <a href="./%E5%8F%98%E9%87%8F.html">← 变量</a>
   <a href="./%E5%87%BD%E6%95%B0.html">函数 →</a>
   <script>

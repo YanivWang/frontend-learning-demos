@@ -2,9 +2,14 @@
   分类: javascript / 01-基础 / 正则
   主题: 正则去除多语言标点
   要点:
-    - 手工列举 Unicode 码点更可控；现代写法用 \p{P} + u 修饰符更简洁
-    - 多次 replace 链式调用，便于按语言切割条件
-    - 易错点：- _ + 等符号是否清理依赖业务语义，不能粗暴一刀切
+    - 手工列举 Unicode 码点可控；\p{P} + u 更简洁
+    - 链式 replace 便于分语言处理
+    - 是否保留 - _ + 等依赖业务语义
+  面试:
+    - 如何用正则去标点？
+    - \p{P} 是什么？
+    - 正则清洗文本要注意什么？
+  相关: 正则-全特性, unicode
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -12,11 +17,28 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>正则去标点</title>
+  <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+  <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; font-family: system-ui, sans-serif; }</style>
 </head>
 <body>
-  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
   <h1>用正则批量去除中英文 / 特殊语言标点</h1>
-  <p>常见的多语言场景需要同时处理：中文标点、ASCII 标点、西文重音/感叹/问号、连续空格归并等。</p>
+  <p class="hint">多语言场景需处理中文标点、ASCII 标点、西文重音/问号及连续空格归并等。</p>
+  <section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li>中文标点可手工列举 Unicode（如 \u3002 句号）或使用 <code>\p{P}</code>（需 <code>u</code> 标志）。</li>
+      <li><code>/\p{P}/gu</code> 匹配所有 Unicode 标点类别；比手工列表简洁但可能误删业务需要的符号。</li>
+      <li>链式 <code>replace</code> 便于分语言、分规则处理；最后 <code>\s+</code> 归并空白。</li>
+      <li>连字符、下划线、加号是否删除取决于搜索/.slug 等业务语义，不能一刀切。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>如何去标点？</strong> 按语言建字符类或 \p{P}；replace 为空串；注意保留用户意图字符（如 email 的 @）。</li>
+      <li><strong>\p{P} 是什么？</strong> Unicode 属性转义，P=标点；须 u 标志。还有 \p{L} 字母、\p{N} 数字等。</li>
+      <li><strong>清洗注意？</strong> normalize 后再匹配；考虑多语言；性能上简单 replace 优于复杂嵌套量词；极长文本注意回溯。</li>
+    </ul>
+  </section>
+  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
 
     <script src="../../../../packages/shared/demo-log.js"></script>
 <script>
@@ -63,6 +85,8 @@
     .demo-output:empty { display: none; }
   </style>
   <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+  <a href="./03-%E6%AD%A3%E5%88%99-%E5%85%A8%E7%89%B9%E6%80%A7.html">相关 · 正则-全特性</a>
+  <a href="../unicode.html">相关 · unicode</a>
   <a href="./03-%E6%AD%A3%E5%88%99-%E5%85%A8%E7%89%B9%E6%80%A7.html">← 正则-全特性</a>
   <a href="../../02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/01-%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE.html">作用域链 →</a>
   <script>

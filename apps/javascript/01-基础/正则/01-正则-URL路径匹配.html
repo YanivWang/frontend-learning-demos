@@ -2,9 +2,14 @@
   分类: javascript / 01-基础 / 正则
   主题: 用正则匹配 URL 中的语言段与路径段
   要点:
-    - 易错点：[course|unit] 是字符类「c o u r s e | n i t」，与「course 或 unit」无关
-    - 多选必须用分组：(?:course|unit) 表示「course 或 unit」
-    - g 修饰的正则在多次 test 时会推进 lastIndex，单次匹配请避免复用同一个正则对象
+    - [course|unit] 是字符类不是或；多选用 (?:course|unit)
+    - g 修饰符会推进 lastIndex，重复 test 需注意
+    - 捕获组 () 与非捕获 (?:) 的区别
+  面试:
+    - [] 和 () 在正则里区别？
+    - 什么是贪婪/非贪婪量词？
+    - g 标志对 test/exec 的影响？
+  相关: 正则-全特性
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -12,11 +17,27 @@
     <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>正则 - URL 路径匹配</title>
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
   <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>
 </head>
 <body>
   <h1>用正则匹配 URL 中的语言段与路径段</h1>
   <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+  <section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li><code>[course|unit]</code> 是<strong>字符类</strong>，匹配 c/o/u/r/s/e/|/n/i/t 中任一字符，不是「course 或 unit」。</li>
+      <li>多选分支用分组：<code>(?:course|unit)</code> 非捕获，<code>(course|unit)</code> 捕获。</li>
+      <li><code>g</code> 全局匹配时 <code>lastIndex</code> 会递增；同一 RegExp 对象多次 <code>test</code> 可能因 lastIndex 得到不同结果。</li>
+      <li>单次校验建议不用 g，或每次 <code>new RegExp</code> / <code>lastIndex=0</code>。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>[] vs ()？</strong> [] 字符类/范围；() 分组与捕获。(a|b) 是或；[ab] 是 a 或 b 单字符。</li>
+      <li><strong>贪婪/非贪婪？</strong> * + 默认贪婪；*? +? 非贪婪。URL/query 长串用非贪婪或限定字符集防回溯。</li>
+      <li><strong>g 对 test 的影响？</strong> test 从 lastIndex 开始；匹配成功后 lastIndex 前进。循环 test 同一对象需重置或不用 g。</li>
+    </ul>
+  </section>
   <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
 
   <script src="../../../../packages/shared/demo-log.js"></script>
@@ -52,6 +73,7 @@
     .demo-output:empty { display: none; }
   </style>
   <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+  <a href="./03-%E6%AD%A3%E5%88%99-%E5%85%A8%E7%89%B9%E6%80%A7.html">相关 · 正则-全特性</a>
   <a href="../unicode.html">← unicode</a>
   <a href="./02-%E6%AD%A3%E5%88%99-URL%E4%B8%8E%E5%9B%BE%E7%89%87%E6%A0%BC%E5%BC%8F.html">正则-URL与图片格式 →</a>
   <script>

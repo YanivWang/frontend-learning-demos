@@ -5,6 +5,13 @@
     - 在 watch 回调内注册清理函数，下次触发或停止 watch 时自动执行
     - 适合在 watch 里开定时器、订阅、AbortController 等副作用
     - watchEffect 仍可用第一个参数 onCleanup；onWatcherCleanup 主要补 watch 场景
+  面试:
+    - onWatcherCleanup（Vue 3.5+）的核心概念是什么
+    - onWatcherCleanup（Vue 3.5+）在实际项目里怎么用
+    - onWatcherCleanup（Vue 3.5+）有哪些常见坑或易错点
+    - onWatcherCleanup（Vue 3.5+）和相近 API 如何区分选型
+    - 面试中如何简洁讲清 onWatcherCleanup（Vue 3.5+）
+
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -21,10 +28,32 @@
       pre { padding: 12px; overflow: auto; max-height: 280px; }
       .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 820px; }
     </style>
+      <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+      <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>
   </head>
   <body>
-    <div id="app">
+  <h1>onWatcherCleanup（Vue 3.5+）</h1>
+  <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+<section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li>在 <code>watch</code> 回调内注册清理函数，下次触发或停止 <code>watch</code> 时自动执行。</li>
+      <li>适合在 <code>watch</code> 里开定时器、订阅、AbortController 等副作用。</li>
+      <li>watchEffect 仍可用第一个参数 onCleanup；onWatcherCleanup 主要补 <code>watch</code> 场景。</li>
+      <li>在 <code>watch</code> 回调内注册清理函数，下次触发或停止 <code>watch</code> 时自动执行（补充）。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>在 watch 回调内注册清理函数？</strong> 在 <code>watch</code> 回调内注册清理函数，下次触发或停止 <code>watch</code> 时自动执行；适合在 <code>watch</code> 里开定时器、订阅、AbortController 等副作用</li>
+      <li><strong>适合在 watch 里开定时器、订阅、AbortController 等副作用？</strong> 适合在 <code>watch</code> 里开定时器、订阅、AbortController 等副作用</li>
+      <li><strong>watchEffect 仍可用第一个参数 onCleanup？</strong> 在 <code>watch</code> 回调内注册清理函数，下次触发或停止 <code>watch</code> 时自动执行；适合在 <code>watch</code> 里开定时器、订阅、AbortController 等副作用</li>
+    </ul>
+  </section>
+
+
+  <div id="app">
       <h1>onWatcherCleanup（Vue 3.5+）</h1>
+
       <div class="box">
         <p>当前 id：{{ activeId }}</p>
         <button @click="activeId = 'A'">切到 A</button>
@@ -33,12 +62,7 @@
         <pre>{{ logs.join("\n") }}</pre>
       </div>
 
-      <h2>面试回答</h2>
-      <ul>
-        <li><code>watch(source, cb)</code> 的回调里若创建了副作用，应在下次执行前清理，否则旧副作用会泄漏。</li>
-        <li>Vue 3.5 提供 <code>onWatcherCleanup(fn)</code>，在 watch 回调同步调用即可注册清理；比手动保存 stop 函数更直观。</li>
-        <li><code>watchEffect</code> 仍推荐用 effect 函数第一个参数 <code>onCleanup</code>；两者语义类似，适用场景不同。</li>
-      </ul>
+      
     </div>
 
     <script>

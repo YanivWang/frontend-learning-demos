@@ -2,9 +2,14 @@
   分类: javascript / 01-基础
   主题: eval 与全局对象 window
   要点:
-    - 浏览器中 window 即 Global 对象，全局变量/函数都挂在它身上
-    - eval 把字符串当代码执行，共享调用处作用域；严格模式下隔离
-    - 易错点：eval 存在 XSS 与性能（JIT 失效）风险，生产代码应避免
+    - 浏览器 window 即 Global，全局变量/函数挂在其上
+    - eval 把字符串当代码执行，共享调用处词法作用域
+    - 严格模式下 eval 有独立作用域；生产环境应避免 eval
+  面试:
+    - 全局对象是什么？
+    - eval 有什么风险？
+    - eval 和 new Function 区别？
+  相关: 函数进阶, IIFE
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -12,11 +17,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>eval / Global 对象</title>
+  <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
+  <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>
 </head>
 <body>
-  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
   <h1>eval 与 Global 对象（window）</h1>
-  <p>所有不属于其它对象的属性和函数，在浏览器环境下都挂在 <code>window</code> 上（即 Global 对象）。</p>
+  <p class="hint">浏览器中不属于其它对象的属性和函数都挂在 <code>window</code> 上（Global 对象）。</p>
+  <section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li>浏览器全局对象是 <code>window</code>；Node 是 <code>global</code>；ES2020 标准 <code>globalThis</code> 跨环境统一。</li>
+      <li>顶层 <code>var</code> 和 function 声明会成为 window 属性；let/const 不会。</li>
+      <li><code>eval(str)</code> 在运行时把字符串当 JS 执行，能访问外层词法变量。</li>
+      <li>严格模式 + 直接 eval 有独立词法环境；indirect eval（如 (0,eval)(s)）在全局执行。</li>
+      <li>风险：XSS 注入、CSP 禁止、引擎难以 JIT 优化、调试困难。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>全局对象？</strong> 宿主提供的根对象；浏览器 window。全局This 用 globalThis。模块顶层变量不在 window 上。</li>
+      <li><strong>eval 风险？</strong> 执行不可信字符串 → XSS；性能差；违反 CSP。替代：JSON.parse、Function 构造器（仍慎用）、配置 DSL。</li>
+      <li><strong>eval vs new Function？</strong> eval 共享调用处闭包；Function 只有全局作用域（+自身参数），不闭包外层 let。两者都不推荐在生产使用。</li>
+    </ul>
+  </section>
+  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
 
     <script src="../../../packages/shared/demo-log.js"></script>
 <script>
@@ -66,6 +89,8 @@
     .demo-output:empty { display: none; }
   </style>
   <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+  <a href="./%E5%87%BD%E6%95%B0%E8%BF%9B%E9%98%B6.html">相关 · 函数进阶</a>
+  <a href="./IIFE.html">相关 · IIFE</a>
   <a href="./escape.html">← escape</a>
   <a href="./IIFE.html">IIFE →</a>
   <script>

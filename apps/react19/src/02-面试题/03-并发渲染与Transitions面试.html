@@ -6,6 +6,13 @@
     - useTransition：isPending + startTransition 包裹低优先级更新
     - React 19 Actions 常在 startTransition 内执行，isPending 与 useActionState 的 pending 呼应
     - 面试区分：紧急更新（输入）vs 过渡更新（筛选、路由、提交反馈）
+  面试:
+    - 并发渲染与 Transitions 面试的核心概念是什么
+    - 并发渲染与 Transitions 面试在实际项目里怎么用
+    - 并发渲染与 Transitions 面试有哪些常见坑或易错点
+    - 并发渲染与 Transitions 面试和相近 API 如何区分选型
+    - 面试中如何简洁讲清 并发渲染与 Transitions 面试
+
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -22,8 +29,29 @@
     .slow-list { margin-top: 1rem; max-height: 200px; overflow: auto; font-size: 0.9rem; }
     .pending { color: #0969da; }
   </style>
-</head>
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+      <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>
+  </head>
 <body>
+  <h1>并发渲染与 Transitions 面试</h1>
+  <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+<section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li>并发：可中断渲染，优先响应用户输入（时间切片 + 优先级）。</li>
+      <li>useTransition：isPending + startTransition 包裹低优先级更新。</li>
+      <li>React 19 Actions 常在 startTransition 内执行，isPending 与 useActionState 的 pending 呼应。</li>
+      <li>面试区分：紧急更新（输入）vs 过渡更新（筛选、路由、提交反馈）。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>useTransition？</strong> useTransition：isPending + startTransition 包裹低优先级更新；React 19 Actions 常在 startTransition 内执行，isPending 与 useActionState 的 pending 呼应</li>
+      <li><strong>React 19 Actions 常在 startTransition 内执行？</strong> React 19 Actions 常在 startTransition 内执行，isPending 与 useActionState 的 pending 呼应</li>
+      <li><strong>并发渲染与 Transitions 面试的核心概念是什么？</strong> 并发：可中断渲染，优先响应用户输入（时间切片 + 优先级）；useTransition：isPending + startTransition 包裹低优先级更新</li>
+    </ul>
+  </section>
+
+
   <div id="root"></div>
   <script type="text/babel">
     const { useMemo, useState, useTransition } = React;
@@ -57,6 +85,7 @@
       return (
         <section>
           <h1>useTransition 保持输入流畅</h1>
+
           <p>输入框（紧急更新）与下方列表（过渡更新）分离。</p>
           <input value={query} onChange={onChange} placeholder="过滤数字，如 12" />
           {isPending && <p className="pending">列表更新中（isPending）…</p>}

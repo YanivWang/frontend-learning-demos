@@ -1,10 +1,17 @@
 <!--
-  分类: javascript / 05-元编程
+分类: javascript / 05-元编程
   主题: Proxy 的局限性
   要点:
     - Proxy 对依赖「内部槽位」的方法不透明，例如 Date.getDate 调用会丢失内部 this
     - 解决：在 get 拦截中显式 bind 原对象，或对方法做手动转发
     - instanceof 判断不一定可靠：Date 的内部检测会失败
+  面试:
+    - Proxy 的局限性的核心概念是什么
+    - Proxy 的局限性在实际项目里怎么用
+    - Proxy 的局限性有哪些常见坑或易错点
+    - Proxy 的局限性和相近 API 如何区分选型
+    - 面试中如何简洁讲清 Proxy 的局限性
+
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -12,9 +19,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Proxy 的局限</title>
+      <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
+      <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>
   </head>
   <body>
-    <script>
+  <h1>Proxy 的局限性</h1>
+  <p class="hint">下方为 <code>console.log</code> 同步输出；也可打开 DevTools Console 查看。</p>
+<section class="demo-notes" aria-label="复习与面试要点">
+    <h2>知识点要点</h2>
+    <ul>
+      <li><code>Proxy</code> 对依赖「内部槽位」的方法不透明，例如 Date.getDate 调用会丢失内部 <code>this</code>。</li>
+      <li>解决：在 get 拦截中显式 <code>bind</code> 原对象，或对方法做手动转发。</li>
+      <li><code>instanceof</code> 判断不一定可靠：Date 的内部检测会失败。</li>
+      <li><code>Proxy</code> 对依赖「内部槽位」的方法不透明，例如 Date.getDate 调用会丢失内部 <code>this</code>（补充）。</li>
+    </ul>
+    <h2>面试考点</h2>
+    <ul>
+      <li><strong>Proxy 对依赖「内部槽位」的方法不透明？</strong> <code>Proxy</code> 对依赖「内部槽位」的方法不透明，例如 Date.getDate 调用会丢失内部 <code>this</code></li>
+      <li><strong>instanceof 判断不一定可靠？</strong> <code>instanceof</code> 判断不一定可靠：Date 的内部检测会失败</li>
+      <li><strong>Proxy 的局限性的核心概念是什么？</strong> <code>Proxy</code> 对依赖「内部槽位」的方法不透明，例如 Date.getDate 调用会丢失内部 <code>this</code></li>
+    </ul>
+  </section>
+
+  <pre id="demo-output" class="demo-output" aria-live="polite"></pre>
+      <script src="../../../packages/shared/demo-log.js"></script>
+<script>
       const target = new Date();
 
       const proxy = new Proxy(target, {});
