@@ -535,6 +535,7 @@
 - [script-setup编译宏](/apps/vue3/src/07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/05-script-setup%E7%BC%96%E8%AF%91%E5%AE%8F.html) — script setup 编译宏与工程约定
 - [Router与Pinia可运行示例](/apps/vue3/src/07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html) — Vue Router 4 + Pinia 可运行最小示例
 - [Vitest单元测试面试点](/apps/vue3/src/07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/07-Vitest%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E9%9D%A2%E8%AF%95%E7%82%B9.html) — Vitest 单元测试面试边界
+- [路由懒加载可运行示例](/apps/vue3/src/07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/08-%E8%B7%AF%E7%94%B1%E6%87%92%E5%8A%A0%E8%BD%BD%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html) — Vue Router 4 路由懒加载可运行示例
 
 ### 08-原理与性能面试
 
@@ -543,6 +544,7 @@
 - [调度器与nextTick](/apps/vue3/src/08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/03-%E8%B0%83%E5%BA%A6%E5%99%A8%E4%B8%8EnextTick.html) — 调度器 / nextTick
 - [Vue2与Vue3差异](/apps/vue3/src/08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/04-Vue2%E4%B8%8EVue3%E5%B7%AE%E5%BC%82.html) — Vue2 与 Vue3 差异
 - [性能优化](/apps/vue3/src/08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/05-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html) — Vue3 性能优化
+- [综合复习](/apps/vue3/src/08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/06-%E7%BB%BC%E5%90%88%E5%A4%8D%E4%B9%A0.html) — Vue 3 综合复习
 
 ## React 18
 

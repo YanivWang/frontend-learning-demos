@@ -1,0 +1,158 @@
+<!--
+  分类: vue3 / 08-原理与性能面试
+  主题: Vue 3 综合复习
+  要点:
+    - createApp + setup + Composition API 是 Vue 3 项目主线；Options API 仍支持但 demo 以 setup 为主
+    - ref / reactive / computed / watch 分工：派生值用 computed，副作用用 watch，基本类型用 ref
+    - 组件通信 props/emit、provide/inject、v-model；跨路由共享状态用 Pinia
+    - 性能与原理：Proxy 响应式、虚拟 DOM + key、调度器与 nextTick、按需懒加载
+  面试:
+    - Vue 3 相对 Vue 2 的核心变化有哪些？
+    - ref 与 reactive、computed 与 watch 如何快速选型？
+    - 组件通信与全局状态如何分层？
+    - 列表渲染与性能优化有哪些必答点？
+    - 本仓库 HTML demo 与真实 Vite 工程的边界是什么？
+-->
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · 综合复习</title>
+    <script src="../../libs/vue.global.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; max-width: 900px; }
+      button { margin-right: 8px; margin-top: 4px; padding: 6px 12px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; max-height: 200px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin: 16px 0; }
+      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
+      .links { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); font-size: 14px; }
+      .links a { color: #0969da; text-decoration: none; }
+      .links a:hover { text-decoration: underline; }
+      input { padding: 6px 8px; margin-right: 8px; }
+    </style>
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
+  </head>
+  <body class="demo-page">
+    <!-- NOTES_START -->
+    <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
+      <h1>Vue 3 综合复习</h1>
+      <p class="hint">下方迷你 demo 串联 ref / computed / watch；章节索引见「按章回顾」。建议按 README 01→08 顺序系统学习后再用本页冲刺面试。</p>
+      <div class="demo-notes">
+        <h2>知识点要点</h2>
+        <ul>
+          <li><strong>应用入口：</strong> <code>createApp()</code> 创建实例，<code>app.use()</code> 安装插件，<code>mount()</code> 只能调用一次。In-DOM 模板见 <a href="../01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/01-%E5%BA%94%E7%94%A8%E5%AE%9E%E4%BE%8B%E4%B8%8E%E6%A8%A1%E6%9D%BF%E8%AF%AD%E6%B3%95.html">01-应用实例与模板语法</a>。</li>
+          <li><strong>响应式：</strong> 基本类型 <code>ref</code>，对象 <code>reactive</code>；解构丢响应用 <code>toRefs</code>；派生 <code>computed</code>，副作用 <code>watch</code> / <code>watchEffect</code>。详见 <a href="../02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/02-computed-watch-watchEffect.html">02-computed-watch-watchEffect</a>。</li>
+          <li><strong>组件：</strong> <code>props</code> / <code>emit</code>、<code>provide/inject</code>、组件 <code>v-model</code>、插槽与动态组件。通信汇总见 <a href="../04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/01-props%E4%B8%8Eemit.html">04-props与emit</a>。</li>
+          <li><strong>工程化：</strong> Vite + Pinia + Vue Router 4；本仓库 HTML 用 CDN 全局构建，Router/Pinia 可运行见 <a href="../07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html">06-Router与Pinia</a>、<a href="../07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/08-%E8%B7%AF%E7%94%B1%E6%87%92%E5%8A%A0%E8%BD%BD%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html">08-路由懒加载</a>。</li>
+          <li><strong>原理与性能：</strong> Proxy 响应式、虚拟 DOM diff + 稳定 <code>key</code>、调度器与 <code>nextTick</code>、<code>shallowRef</code> / <code>markRaw</code> 等优化。见本章 01–05 页。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>Vue 3 相对 Vue 2 的核心变化？</strong> 结论是 Composition API、Proxy 响应式、Fragment/Teleport、更小的运行时与更好的 TS 支持。Options API 仍可用。详见 <a href="./04-Vue2%E4%B8%8EVue3%E5%B7%AE%E5%BC%82.html">04-Vue2与Vue3差异</a>。</li>
+          <li><strong>ref / reactive / computed / watch 如何选型？</strong> 结论是基本类型 ref，对象 reactive，展示派生 computed，异步/日志/同步外部系统 watch。下方 demo 改关键词可观察 computed 缓存与 watch 日志。</li>
+          <li><strong>组件通信与全局状态如何分层？</strong> 结论是父子 props/emit，跨层 provide/inject，多页面共享 Pinia；不要把所有状态都塞进 composable 或 props  drilling。</li>
+          <li><strong>列表与性能必答点？</strong> 稳定 <code>key</code>、<code>v-memo</code> / 异步组件 / 路由懒加载、避免模板无副作用方法、大对象用 shallow。见 <a href="./05-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">05-性能优化</a>。</li>
+          <li><strong>HTML demo 与 Vite 工程的边界？</strong> 结论是 CDN demo 验证 API 行为；SFC 编译宏、Vitest、history 路由部署、真实 chunk 拆分需在 Vite 工程验证。本库 07 章概念页已标注边界。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://vuejs.org/guide/introduction.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Introduction</a></li>
+          <li><a href="https://vuejs.org/guide/extras/composition-api-faq.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Composition API FAQ</a></li>
+          <li><a href="../../README.md">本系列 README：推荐学习顺序</a></li>
+        </ul>
+      </div>
+    </section>
+    <!-- NOTES_END -->
+
+    <!-- PAGE_DOM_START -->
+    <div id="app">
+      <h1>Vue 3 综合复习</h1>
+
+      <div class="box">
+        <h2>迷你 demo：computed vs watch</h2>
+        <p class="hint-inline">改输入观察 computed 派生值与 watch 日志；点「触发重渲染」验证 computed 缓存。</p>
+        <label>关键词：<input v-model="keyword" /></label>
+        <p>computed 派生：{{ normalized }}（重算 {{ computedRuns }} 次）</p>
+        <button type="button" @click="bump">触发重渲染（不改 keyword）</button>
+        <pre>{{ watchLogs.length ? watchLogs.join("\n") : "（改 keyword 后出现 watch 日志）" }}</pre>
+      </div>
+
+      <div class="box">
+        <h2>按章回顾（点击跳转）</h2>
+        <div class="links">
+          <a href="../01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/01-%E5%BA%94%E7%94%A8%E5%AE%9E%E4%BE%8B%E4%B8%8E%E6%A8%A1%E6%9D%BF%E8%AF%AD%E6%B3%95.html">01 · 应用实例与模板</a>
+          <a href="../02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/01-ref-reactive%E4%B8%8E%E8%A7%A3%E6%9E%84.html">02 · ref / reactive</a>
+          <a href="../03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E7%BB%84%E5%90%88%E5%BC%8F/02-composable%E5%A4%8D%E7%94%A8.html">03 · composable</a>
+          <a href="../04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/05-defineModel%E7%BB%84%E4%BB%B6v-model.html">04 · defineModel</a>
+          <a href="../06-%E5%86%85%E7%BD%AE%E7%BB%84%E4%BB%B6/01-KeepAlive.html">06 · KeepAlive</a>
+          <a href="../07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html">07 · Router + Pinia</a>
+          <a href="./01-Proxy%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86.html">08 · Proxy 原理</a>
+        </div>
+      </div>
+    </div>
+    <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      const { createApp, ref, computed, watch, onMounted } = Vue;
+
+      const app = createApp({
+        setup() {
+          const keyword = ref(" Vue3 ");
+          const computedRuns = ref(0);
+          const renderTick = ref(0);
+          const watchLogs = ref([]);
+
+          const normalized = computed(() => {
+            computedRuns.value++;
+            console.log("[review-computed] 重算");
+            return keyword.value.trim().toLowerCase();
+          });
+
+          watch(keyword, (val, oldVal) => {
+            watchLogs.value.push(`watch: 「${oldVal}」→「${val}」`);
+            if (watchLogs.value.length > 6) watchLogs.value.shift();
+            console.log("[review-watch]", oldVal, "→", val);
+          });
+
+          function bump() {
+            renderTick.value++;
+          }
+
+          onMounted(() => {
+            console.log("[mounted] Vue3 综合复习 demo 已挂载");
+          });
+
+          return { keyword, normalized, computedRuns, watchLogs, bump, renderTick };
+        },
+      });
+
+      app.mount("#app");
+    </script>
+    <!-- SCRIPT_END -->
+
+    <!-- NAV_START -->
+    <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
+      <h2 class="demo-block__label">页面导航</h2>
+      <nav class="demo-nav" aria-label="相关链接">
+  <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="./05-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">← 性能优化</a>
+        <a href="../../../react18/src/class-components/01-class-%E5%BF%85%E9%A1%BBsuper.html">class-必须super →</a>
+      </nav>
+  <script>
+    (function () {
+      var a = document.querySelector("[data-demo-catalog]");
+      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+        a.setAttribute("href", a.dataset.fileCatalog);
+      }
+    })();
+  </script>
+</footer>
+<!-- NAV_END -->
+</body>
+</html>

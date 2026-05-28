@@ -1,0 +1,175 @@
+<!--
+  分类: vue3 / 07-路由状态工程化
+  主题: Vue Router 4 路由懒加载可运行示例
+  要点:
+    - 路由 component 可以是返回 Promise 的异步组件工厂；Vite 工程中常写 () => import('./views/About.vue')
+    - 本页用 setTimeout + Promise 模拟 chunk 加载延迟，无构建步骤的 HTML demo 仍可观察 pending 过程
+    - 首次进入懒加载路由会等待组件 resolved；再次访问通常直接复用已解析组件
+    - 懒加载要配合 loading、error、timeout 与重试策略，不能只考虑成功路径
+  面试:
+    - Vue Router 4 路由懒加载在工程里怎么写？
+    - 路由懒加载解决什么性能问题，首次进入懒路由有什么代价？
+    - HTML demo 为什么用 Promise 模拟而不是 dynamic import？
+    - 懒加载、keep-alive 和预加载分别解决什么问题？
+-->
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 · 路由懒加载可运行</title>
+    <script src="../../libs/vue.global.js"></script>
+    <script src="../../libs/vue-router.global.js"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      nav { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+      nav a { color: #0969da; text-decoration: none; }
+      nav a.router-link-active { font-weight: 700; text-decoration: underline; }
+      .box { border: 1px solid #ddd; border-radius: 10px; padding: 16px; max-width: 560px; }
+      .box .hint-inline { margin: 0 0 12px; color: #5f6368; font-size: 14px; }
+      pre { background: #f6f8fa; border-radius: 6px; padding: 10px; font-size: 13px; overflow: auto; max-height: 140px; }
+      .pending { color: #b06000; }
+    </style>
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
+  </head>
+  <body class="demo-page">
+    <!-- NOTES_START -->
+    <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
+      <h1>Vue Router 4 路由懒加载</h1>
+      <p class="hint">本页为<strong>可运行示例</strong>；点击「About Lazy」首次进入约延迟 800ms。守卫 + Pinia 见 <a href="./06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html">06-Router与Pinia可运行示例</a>。</p>
+      <div class="demo-notes">
+        <h2>知识点要点</h2>
+        <ul>
+          <li>Vue Router 4 的 <code>component</code> 可以是返回 Promise 的异步组件工厂。Vite 工程常见写法是 <code>component: () =&gt; import('@/views/About.vue')</code>，构建工具会把动态 import 识别为代码分割点。</li>
+          <li>本仓库 HTML demo 没有打包步骤，因此用 <code>new Promise</code> + <code>setTimeout</code> 模拟 chunk 下载与解析延迟；行为上仍会在导航解析阶段等待 Promise resolved。</li>
+          <li>点「About Lazy」首次进入时，下方会先显示 pending 文案，约 800ms 后显示异步组件内容；控制台会打印 <code>[lazy-route] chunk resolved</code>。再次切换 Home ↔ About 可对比同步路由与懒路由。</li>
+          <li>懒加载减少<strong>首屏未访问页面</strong>的初始 JS 体积，但用户<strong>首次进入</strong>懒路由会多一次异步等待；弱网还要考虑 loading、error、timeout 和重试。</li>
+          <li><code>keep-alive</code> 缓存已创建组件实例，懒加载延后下载未访问页面；二者可配合，但分别解决「重复渲染」和「首屏体积」问题。概念见 <a href="../06-%E5%86%85%E7%BD%AE%E7%BB%84%E4%BB%B6/01-KeepAlive.html">06-KeepAlive</a>。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>Vue Router 4 路由懒加载在工程里怎么写？</strong> 结论是路由 <code>component</code> 写返回 Promise 的工厂，常用 <code>() =&gt; import('./views/X.vue')</code>。原因是 Router 在导航解析时会等待异步组件 resolved。边界是无构建 HTML 只能用 Promise 模拟，不能真正拆 chunk。</li>
+          <li><strong>路由懒加载解决什么性能问题？</strong> 结论是把非首屏页面延后加载，降低初始 bundle。原因是大型 SPA 一次加载所有页面会拖慢首屏。边界是首次进入懒路由会等待 chunk，不能把全部性能问题都归因于懒加载。</li>
+          <li><strong>懒加载失败要怎么兜底？</strong> 结论是要提供 loading、失败提示、超时和重试。原因是 chunk 可能 404、网络超时或发版后缓存不一致。项目里常配合全局错误监控与刷新提示。</li>
+          <li><strong>懒加载、预加载、keep-alive 怎么区分？</strong> 结论是懒加载延后下载，预加载提前下载可能需要的资源，<code>keep-alive</code> 缓存已创建组件。三者优化阶段不同，应按路由热度取舍。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://router.vuejs.org/guide/advanced/lazy-loading.html" target="_blank" rel="noreferrer">Vue Router 4 官方指南：Lazy Loading Routes</a></li>
+          <li><a href="https://vuejs.org/guide/components/async.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Async Components</a></li>
+          <li><a href="https://vite.dev/guide/features.html#async-chunk-loading-optimization" target="_blank" rel="noreferrer">Vite 官方指南：Async Chunk Loading</a></li>
+          <li><a href="./06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html">本系列：Router 与 Pinia 可运行示例</a></li>
+        </ul>
+      </div>
+    </section>
+    <!-- NOTES_END -->
+
+    <!-- PAGE_DOM_START -->
+    <div id="app">
+      <h1>路由懒加载可运行示例</h1>
+      <p class="hint-inline">首次点「About Lazy」约 800ms 后显示内容；下方日志记录每次导航与 chunk 解析。</p>
+      <nav>
+        <router-link to="/">Home（同步）</router-link>
+        <router-link to="/about">About Lazy</router-link>
+      </nav>
+      <div class="box">
+        <p v-if="pending" class="pending">正在模拟加载 chunk…</p>
+        <router-view></router-view>
+      </div>
+      <pre>{{ logs.length ? logs.join("\n") : "（点击导航后出现日志）" }}</pre>
+      <p style="font-size:0.875rem;color:#666;margin-top:1rem">工程写法：<code>component: () =&gt; import('./views/About.vue')</code></p>
+    </div>
+    <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      // 从全局 Vue / Vue Router 解构本页 API
+      const { createApp, ref, onMounted } = Vue;
+      const { createRouter, createWebHashHistory } = VueRouter;
+
+      const Home = {
+        template: "<h2>Home</h2><p>同步组件，路由切换后立即渲染。</p>",
+      };
+
+      // 模拟 Vite dynamic import：返回 Promise 的异步组件工厂
+      let aboutResolveCount = 0;
+      function loadAboutLazy() {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            aboutResolveCount++;
+            console.log("[lazy-route] chunk resolved，第", aboutResolveCount, "次");
+            resolve({
+              template: "<h2>About Lazy</h2><p>异步组件模拟加载完成（Promise resolved）。</p>",
+            });
+          }, 800);
+        });
+      }
+
+      const router = createRouter({
+        history: createWebHashHistory(),
+        routes: [
+          { path: "/", component: Home },
+          { path: "/about", component: loadAboutLazy },
+        ],
+      });
+
+      const app = createApp({
+        setup() {
+          const pending = ref(false);
+          const logs = ref([]);
+
+          function pushLog(line) {
+            logs.value.push(line);
+            if (logs.value.length > 8) logs.value.shift();
+            console.log("[lazy-nav]", line);
+          }
+
+          router.beforeEach((to, from) => {
+            pushLog(`导航：${from.path || "(初始)"} → ${to.path}`);
+            if (to.path === "/about") {
+              pending.value = true;
+              pushLog("进入懒路由，等待 chunk…");
+            } else {
+              pending.value = false;
+            }
+          });
+
+          router.afterEach((to) => {
+            if (to.path === "/about") pending.value = false;
+          });
+
+          onMounted(() => {
+            console.log("[mounted] 路由懒加载 demo 已挂载");
+          });
+
+          return { pending, logs };
+        },
+      });
+
+      app.use(router);
+      app.mount("#app");
+    </script>
+    <!-- SCRIPT_END -->
+
+    <!-- NAV_START -->
+    <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
+      <h2 class="demo-block__label">页面导航</h2>
+      <nav class="demo-nav" aria-label="相关链接">
+  <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="./07-Vitest%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E9%9D%A2%E8%AF%95%E7%82%B9.html">← Vitest单元测试面试点</a>
+        <a href="../08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/01-Proxy%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86.html">Proxy响应式原理 →</a>
+      </nav>
+  <script>
+    (function () {
+      var a = document.querySelector("[data-demo-catalog]");
+      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+        a.setAttribute("href", a.dataset.fileCatalog);
+      }
+    })();
+  </script>
+</footer>
+<!-- NAV_END -->
+</body>
+</html>
