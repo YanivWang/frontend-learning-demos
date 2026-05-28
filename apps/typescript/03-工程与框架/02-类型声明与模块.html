@@ -1,6 +1,7 @@
 <!--
   分类: typescript / 03-工程与框架
   主题: .d.ts、declare module 与第三方库类型声明
+  相关: tsconfig-strict配置, Vue3与React组件类型
   要点:
     - .d.ts 声明文件只描述类型形状，不提供运行时实现
     - declare module 可为无类型包或非代码资源补充模块声明
@@ -22,7 +23,7 @@
     <style>
       body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 900px; line-height: 1.6; }
       pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
-      #out { background: #f6f8fa; color: #222; }
+      #log { background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; white-space: pre-wrap; font-size: 0.85rem; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -31,7 +32,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>类型声明与模块声明</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；声明文件本身须在 IDE/tsc 中验证，下方 JS 演示「声明 vs 实现」边界。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -50,50 +51,56 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html" target="_blank" rel="noreferrer">TypeScript Handbook: Declaration Files</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/declaration-files/by-example.html" target="_blank" rel="noreferrer">TypeScript Handbook: Declaration Files by Example</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/declaration-merging.html" target="_blank" rel="noreferrer">TypeScript Handbook: Declaration Merging</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html" target="_blank" rel="noopener">TypeScript Handbook: Declaration Files</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/declaration-files/by-example.html" target="_blank" rel="noopener">TypeScript Handbook: Declaration Files by Example</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/declaration-merging.html" target="_blank" rel="noopener">TypeScript Handbook: Declaration Merging</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
+    <p>上方为 <code>.d.ts</code> 声明片段（须 IDE/tsc 验证）；下方 JS 演示声明与实现的运行时边界。</p>
     <pre>// src/types/vendor.d.ts
-      declare module "legacy-chart" {
-      export interface ChartOptions {
-      el: string;
-      data: number[];
-      }
-      export function renderChart(options: ChartOptions): void;
-      }
-      // src/types/env.d.ts
-      declare global {
-      interface Window {
-      appVersion: string;
-      }
-      }</pre>
-      <pre id="out"></pre>
+declare module "legacy-chart" {
+  export interface ChartOptions { el: string; data: number[]; }
+  export function renderChart(options: ChartOptions): void;
+}
+
+// src/types/env.d.ts
+declare global {
+  interface Window { appVersion: string; }
+}
+export {};</pre>
+    <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // 对照 declare global { interface Window { appVersion: string } }。
+      // ============ 1. declare global 扩展 Window ============
       // 声明文件只告诉 TS “这个全局字段存在”，真实运行时仍要由 JS 代码赋值。
       window.appVersion = "1.0.0";
-      // 对照 declare module "legacy-chart"：.d.ts 只描述模块类型，不会创建模块实现。
-      // 本页用同名函数模拟第三方库真实存在时的运行时代码。
+
+      // ============ 2. declare module 对应的运行时实现 ============
+      // .d.ts 只描述模块类型，不会创建模块实现；本页用同名函数模拟第三方库。
       function renderChart(options) {
         return `render ${options.data.length} points into ${options.el}`;
       }
 
-      // 输出分别对应 declare module 和 declare global，强调“声明”和“实现”不能混为一谈。
-      document.getElementById("out").textContent = [
-        `.d.ts 描述类型，本页 JS 提供真实实现: ${renderChart({ el: "#chart", data: [1, 2, 3] })}`,
-        `declare global 扩展 Window: appVersion = ${window.appVersion}`,
-        "面试重点：声明文件不会生成运行时代码；如果包本身不存在，declare module 也不会凭空创建实现。",
-      ].join("\n");
+      const lines = [];
+      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
 
+      assert(
+        renderChart({ el: "#chart", data: [1, 2, 3] }) === "render 3 points into #chart",
+        "declare module 描述类型，JS 提供真实 renderChart 实现"
+      );
+      assert(window.appVersion === "1.0.0", "declare global 扩展 Window.appVersion");
+      assert(
+        typeof renderChart === "function",
+        "声明文件不会生成运行时代码（TS 可拦类型错误、JS 仍需真实包）"
+      );
+
+      document.getElementById("log").textContent = lines.join("\n");
     </script>
     <!-- SCRIPT_END -->
 

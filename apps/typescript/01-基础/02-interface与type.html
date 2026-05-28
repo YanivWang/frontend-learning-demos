@@ -1,6 +1,7 @@
 <!--
   分类: typescript / 01-基础
   主题: interface 与 type 别名
+  相关: 类型注解与推断, 泛型基础
   要点:
     - interface 主要声明对象形状，支持 extends 和同名声明合并
     - type 是类型别名，可表达联合、交叉、元组、条件类型等非对象形状
@@ -23,6 +24,7 @@
       body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 760px; line-height: 1.6; }
       pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; font-size: 0.85rem; overflow: auto; }
       .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-top: 12px; }
+      #log { background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; white-space: pre-wrap; font-size: 0.85rem; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -30,7 +32,7 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>interface vs type</h1>
+      <h1>interface 与 type</h1>
       <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
@@ -59,47 +61,68 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <pre>interface User {
-      id: number;
-      name: string;
-      }
-      interface User {
-      email?: string; // 同名 interface 会声明合并
-      }
-      type Role = "admin" | "guest";
-      type UserWithRole = User & { role: Role };
-      type ApiResult&lt;T&gt; =
-      | { ok: true; data: T }
-      | { ok: false; error: string };</pre>
-      <div id="app" class="card"></div>
+    <p>上方为 TypeScript 源码（在 .ts / IDE 中检查），下方 DOM 渲染与断言输出验证等价 JavaScript 逻辑。</p>
+    <p class="ts"><strong>TypeScript</strong></p>
+    <pre>// —— interface 声明对象形状与声明合并 ——
+interface User {
+  id: number;
+  name: string;
+}
+interface User {
+  email?: string; // 同名 interface 会声明合并
+}
+
+// —— type 表达联合与交叉 ——
+type Role = "admin" | "guest";
+type UserWithRole = User & { role: Role };
+
+// —— type 可辨识联合 ApiResult ——
+type ApiResult&lt;T&gt; =
+  | { ok: true; data: T }
+  | { ok: false; error: string };</pre>
+    <div id="app" class="card"></div>
+    <p><strong>运行时 JavaScript（本页执行）</strong></p>
+    <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // 浏览器不能直接执行 interface/type；这里用 JSDoc typedef 表达 UserWithRole 的对象形状。
-      // 对照上方：interface User + type Role + 交叉类型 User & { role: Role }。
+      // ============ 1. interface 声明合并 + type 交叉类型 ============
+      // 浏览器不能直接执行 interface/type；JSDoc @typedef 表达 UserWithRole 的对象形状。
+      // 对照上方：interface User 第二段声明会合并出可选 email 字段。
       /** @typedef {{ id: number, name: string, email?: string, role: string }} UserWithRole */
 
-      // 对照 interface 适合描述对象 API：User 的第二段声明会合并出可选 email 字段。
       /** @type {UserWithRole} */
       const user = { id: 1, name: "Alice", email: "alice@example.com", role: "admin" };
 
-      // 对照 type ApiResult<T> 联合类型：成功分支有 data，失败分支有 error。
-      // 运行时通过 result.ok 收窄；TypeScript 中这个判定能让 IDE 知道当前分支有哪些字段。
+      // ============ 2. type ApiResult 可辨识联合 ============
+      // 对照 type ApiResult&lt;T&gt;：成功分支有 data，失败分支有 error。
+      // TS 中 result.ok 收窄后 IDE 知道当前分支有哪些字段；JS 运行时仍需要同样分支逻辑。
       /** @type {{ ok: true, data: UserWithRole } | { ok: false, error: string }} */
       function fetchUser() {
         return user.id > 0
-        ? { ok: true, data: user }
-        : { ok: false, error: "not found" };
+          ? { ok: true, data: user }
+          : { ok: false, error: "not found" };
       }
 
       const result = fetchUser();
       const el = document.getElementById("app");
-      // 对照 ApiResult<T> 的 discriminated union：ok 为 true 时读取 data，false 时读取 error。
       el.innerHTML = result.ok
-      ? `<p>✓ 成功：${result.data.name}（${result.data.role}，${result.data.email}）</p>`
-      : `<p>✗ ${result.error}</p>`;
+        ? `<p>✓ 成功：${result.data.name}（${result.data.role}，${result.data.email}）</p>`
+        : `<p>✗ ${result.error}</p>`;
 
+      const lines = [];
+      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+
+      assert(result.ok === true, "fetchUser 成功分支 ok === true");
+      assert(result.data.name === "Alice", "interface 合并后 email 可选，name 仍可访问");
+      assert(user.role === "admin", "type Role 联合约束 role 为 admin | guest");
+      assert(
+        typeof fetchUser === "function",
+        "interface/type 编译后擦除，运行时只剩普通 JS 函数（TS 可拦、JS 仍会执行）"
+      );
+
+      document.getElementById("log").textContent = lines.join("\n");
     </script>
     <!-- SCRIPT_END -->
 

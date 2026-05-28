@@ -1,6 +1,7 @@
 <!--
   分类: typescript / 02-进阶
   主题: 手写 Utility Types 练习
+  相关: never与穷尽检查, tsconfig-strict配置
   要点:
     - MyPartial 通过映射类型给每个属性加 ?，是浅层可选
     - MyPick 约束 K extends keyof T，只允许挑选真实存在的键
@@ -50,50 +51,60 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#partialtype" target="_blank" rel="noreferrer">TypeScript Handbook: Partial</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#picktype-keys" target="_blank" rel="noreferrer">TypeScript Handbook: Pick</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#omittype-keys" target="_blank" rel="noreferrer">TypeScript Handbook: Omit</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#excludeuniontype-excludedmembers" target="_blank" rel="noreferrer">TypeScript Handbook: Exclude</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#partialtype" target="_blank" rel="noopener">TypeScript Handbook: Partial</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#picktype-keys" target="_blank" rel="noopener">TypeScript Handbook: Pick</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#omittype-keys" target="_blank" rel="noopener">TypeScript Handbook: Omit</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#excludeuniontype-excludedmembers" target="_blank" rel="noopener">TypeScript Handbook: Exclude</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
+    <p>上方为 TypeScript 手写 Utility Types；点击下方按钮，观察运行时 <code>myPick</code> / <code>myOmit</code> 等价逻辑。</p>
+    <p class="ts"><strong>TypeScript</strong></p>
     <pre>type MyPartial&lt;T&gt; = { [K in keyof T]?: T[K] };
-      type MyPick&lt;T, K extends keyof T&gt; = { [P in K]: T[P] };
-      type MyOmit&lt;T, K extends keyof T&gt; = Pick&lt;T, Exclude&lt;keyof T, K&gt;&gt;;</pre>
-      <button type="button" id="run">运行 Pick / Omit 演示</button>
-      <div id="log"></div>
+type MyPick&lt;T, K extends keyof T&gt; = { [P in K]: T[P] };
+type MyOmit&lt;T, K extends keyof T&gt; = Pick&lt;T, Exclude&lt;keyof T, K&gt;&gt;;</pre>
+    <button type="button" id="run">运行 Pick / Omit 演示</button>
+    <div id="log">点击按钮开始演示…</div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // 对照 MyPick<T, K extends keyof T>：TS 在类型层限制 keys 必须属于对象键名。
-      // JS 运行时需要自己遍历 keys 并复制字段。
+      // ============ 1. 运行时 myPick（对照 MyPick&lt;T, K extends keyof T&gt;） ============
       function myPick(obj, keys) {
         return keys.reduce((acc, k) => {
           if (k in obj) acc[k] = obj[k];
           return acc;
         }, {});
       }
-      // 对照 MyOmit<T, K>：类型层用 Exclude<keyof T, K> 排除键，运行时用 Set 过滤真实对象条目。
+
+      // ============ 2. 运行时 myOmit（对照 MyOmit = Pick + Exclude） ============
       function myOmit(obj, keys) {
         const omit = new Set(keys);
         return Object.fromEntries(Object.entries(obj).filter(([k]) => !omit.has(k)));
       }
 
-      // 点击后输出 Pick/Omit 的运行结果，便于和上方手写 Utility Types 的类型变换逐行对照。
       document.getElementById("run").onclick = () => {
         const user = { id: 1, name: "Ada", email: "a@ex.com", role: "admin" };
         const picked = myPick(user, ["id", "name"]);
         const omitted = myOmit(user, ["email", "role"]);
-        document.getElementById("log").textContent =
-        "原对象: " + JSON.stringify(user, null, 2) + "\n\n" +
-        "Pick id,name: " + JSON.stringify(picked, null, 2) + "\n\n" +
-        "Omit email,role: " + JSON.stringify(omitted, null, 2);
-      };
 
+        const lines = [];
+        const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+
+        assert(Object.keys(picked).length === 2, "MyPick 运行时 myPick 只保留 id/name");
+        assert(!("email" in omitted) && !("role" in omitted), "MyOmit 运行时 myOmit 移除 email/role");
+        assert(picked.name === "Ada", "Pick 后 name 值不变");
+        assert(omitted.id === 1, "Omit 后保留 id");
+
+        document.getElementById("log").textContent =
+          lines.join("\n") + "\n\n" +
+          "原对象: " + JSON.stringify(user, null, 2) + "\n\n" +
+          "Pick id,name: " + JSON.stringify(picked, null, 2) + "\n\n" +
+          "Omit email,role: " + JSON.stringify(omitted, null, 2);
+      };
     </script>
     <!-- SCRIPT_END -->
 

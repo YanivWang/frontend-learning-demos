@@ -1,6 +1,7 @@
 <!--
   分类: typescript / 01-基础
   主题: enum、const enum 与对象枚举
+  相关: class与implements, 类型收窄
   要点:
     - enum 会生成运行时代码，数字 enum 还会生成反向映射
     - const enum 会被内联，发布库和 isolatedModules 场景要谨慎使用
@@ -22,7 +23,7 @@
     <style>
       body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 820px; line-height: 1.6; }
       pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
-      #out { background: #f6f8fa; color: #222; }
+      #log { background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; white-space: pre-wrap; font-size: 0.85rem; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -50,59 +51,66 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/enums.html" target="_blank" rel="noreferrer">TypeScript Handbook: Enums</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#literal-types" target="_blank" rel="noreferrer">TypeScript Handbook: Literal Types</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-4.html#const-assertions" target="_blank" rel="noreferrer">TypeScript 3.4 Release Notes: const assertions</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/enums.html" target="_blank" rel="noopener">TypeScript Handbook: Enums</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#literal-types" target="_blank" rel="noopener">TypeScript Handbook: Literal Types</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-4.html#const-assertions" target="_blank" rel="noopener">TypeScript 3.4 Release Notes: const assertions</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <pre>enum OrderStatus {
-      Pending = "pending",
-      Paid = "paid",
-      Canceled = "canceled",
-      }
-      const enum Direction {
-      Up,
-      Down,
-      }
-      const UserRole = {
-      Admin: "admin",
-      Guest: "guest",
-      } as const;
-      type UserRole = typeof UserRole[keyof typeof UserRole];</pre>
-      <pre id="out"></pre>
+    <p>上方为 TypeScript 源码（在 .ts / IDE 中检查），下方为等价的可运行 JavaScript + 断言输出。</p>
+    <p class="ts"><strong>TypeScript</strong></p>
+    <pre>// —— 字符串 enum（生成运行时对象） ——
+enum OrderStatus { Pending = "pending", Paid = "paid", Canceled = "canceled" }
+
+// —— 数字 enum（含反向映射） ——
+enum Direction { Up, Down }  // Direction[0] === "Up"
+
+// —— const enum（编译期内联，浏览器脚本中通常看不到独立对象） ——
+const enum DirectionConst { Up, Down }
+
+// —— as const 对象枚举 + 联合类型 ——
+const UserRole = { Admin: "admin", Guest: "guest" } as const;
+type UserRole = typeof UserRole[keyof typeof UserRole];</pre>
+    <p><strong>运行时 JavaScript（本页执行）</strong></p>
+    <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // 对照 enum OrderStatus：普通 enum 会生成运行时对象；这里用冻结对象模拟可读取的状态表。
+      // ============ 1. 字符串 enum 运行时对象 ============
       const OrderStatus = Object.freeze({
         Pending: "pending",
         Paid: "paid",
         Canceled: "canceled",
       });
-      // 对照 const UserRole = { ... } as const：对象枚举保留运行时值，TS 再用 typeof/keyof 推出联合类型。
-      const UserRole = Object.freeze({
-        Admin: "admin",
-        Guest: "guest",
-      });
 
-      // role 在 TS 中可写成 UserRole 联合类型，调用者传错字符串会在编译期被拦住。
+      // ============ 2. 数字 enum 反向映射 ============
+      // TS 编译后数字 enum 会生成 { Up: 0, Down: 1, 0: "Up", 1: "Down" }。
+      const Direction = Object.freeze({ Up: 0, Down: 1, 0: "Up", 1: "Down" });
+
+      // ============ 3. as const 对象枚举 ============
+      const UserRole = Object.freeze({ Admin: "admin", Guest: "guest" });
+
       function canEdit(role) {
         return role === UserRole.Admin;
       }
 
-      // const enum 通常会被内联，浏览器脚本里看不到独立对象；因此本页只演示普通 enum 与对象枚举的运行时形态。
-      document.getElementById("out").textContent = [
-        `字符串 enum 运行时值: ${OrderStatus.Paid}`,
-        `对象枚举 UserRole.Admin: ${UserRole.Admin}`,
-        `canEdit("guest") = ${canEdit(UserRole.Guest)}`,
-        "面试重点：需要运行时对象时可用 enum；现代前端配置常用 as const 对象枚举 + 联合类型。",
-      ].join("\n");
+      const lines = [];
+      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
 
+      assert(OrderStatus.Paid === "paid", "字符串 enum 运行时值 OrderStatus.Paid");
+      assert(Direction.Up === 0 && Direction[0] === "Up", "数字 enum 反向映射 Direction[0] === 'Up'");
+      assert(UserRole.Admin === "admin", "as const 对象枚举 UserRole.Admin");
+      assert(canEdit(UserRole.Guest) === false, "canEdit(guest) = false");
+      assert(
+        Object.keys(Direction).length === 4,
+        "数字 enum 反向映射使 Object.keys 含数字键（体积/遍历副作用）"
+      );
+
+      document.getElementById("log").textContent = lines.join("\n");
     </script>
     <!-- SCRIPT_END -->
 

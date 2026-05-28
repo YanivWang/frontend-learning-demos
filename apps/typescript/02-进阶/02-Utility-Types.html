@@ -1,6 +1,7 @@
 <!--
   分类: typescript / 02-进阶
   主题: Utility Types：Partial、Pick、Omit、Record、Readonly、Required
+  相关: 类型收窄, 条件类型与infer
   要点:
     - Utility Types 是内置泛型类型工具，主要复用和变换已有对象类型
     - Partial、Required、Readonly 改变属性修饰符，不会改变运行时对象
@@ -22,7 +23,7 @@
     <style>
       body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 860px; line-height: 1.6; }
       pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
-      #out { background: #f6f8fa; color: #222; }
+      #log { background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; white-space: pre-wrap; font-size: 0.85rem; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -50,54 +51,55 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html" target="_blank" rel="noreferrer">TypeScript Handbook: Utility Types</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/mapped-types.html" target="_blank" rel="noreferrer">TypeScript Handbook: Mapped Types</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/keyof-types.html" target="_blank" rel="noreferrer">TypeScript Handbook: keyof Type Operator</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html" target="_blank" rel="noopener">TypeScript Handbook: Utility Types</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/mapped-types.html" target="_blank" rel="noopener">TypeScript Handbook: Mapped Types</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/keyof-types.html" target="_blank" rel="noopener">TypeScript Handbook: keyof Type Operator</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
+    <p>上方为 TypeScript 源码（在 .ts / IDE 中检查），下方为等价的可运行 JavaScript + 断言输出。</p>
+    <p class="ts"><strong>TypeScript</strong></p>
     <pre>interface User {
-      id: number;
-      name: string;
-      email: string;
-      role: "admin" | "guest";
-      }
-      type UserPatch = Partial&lt;Pick&lt;User, "name" | "email"&gt;&gt;;
-      type PublicUser = Omit&lt;User, "email"&gt;;
-      type CompleteUser = Required&lt;User&gt;;
-      type FrozenUser = Readonly&lt;User&gt;;
-      type RoleLabels = Record&lt;User["role"], string&gt;;
-      const roleLabels: RoleLabels = { admin: "管理员", guest: "访客" };</pre>
-      <pre id="out"></pre>
+  id: number; name: string; email: string; role: "admin" | "guest";
+}
+type UserPatch = Partial&lt;Pick&lt;User, "name" | "email"&gt;&gt;;
+type PublicUser = Omit&lt;User, "email"&gt;;
+type CompleteUser = Required&lt;User&gt;;
+type FrozenUser = Readonly&lt;User&gt;;
+type RoleLabels = Record&lt;User["role"], string&gt;;</pre>
+    <p><strong>运行时 JavaScript（本页执行）</strong></p>
+    <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // Utility Types 只存在于 TypeScript 类型层；下面用普通对象模拟它们约束出的运行时数据。
+      // ============ 1. Partial + Pick：更新入参 ============
       const user = { id: 1, name: "Ada", email: "ada@example.com", role: "admin" };
-      // 对照 Partial<Pick<User, "name" | "email">>：更新入参只允许出现 name/email，且字段可选。
       const patch = { name: "Ada Lovelace" };
-      // 对照 Record<User["role"], string>：每个角色字面量都必须配置文案。
-      const roleLabels = { admin: "管理员", guest: "访客" };
-      // 对照 Omit<User, "email">：对外展示时去掉敏感 email 字段。
+
+      // ============ 2. Omit：对外展示 ============
       const publicUser = { id: user.id, name: patch.name ?? user.name, role: user.role };
-      // 对照 Required<User> 与 Readonly<User>：它们改变类型层修饰符，运行时是否补字段或冻结要自己处理。
+
+      // ============ 3. Required + Readonly ============
       const completeUser = { ...user, email: user.email ?? "missing@example.com" };
       const frozenUser = Object.freeze({ ...user });
 
-      // 输出按 Partial/Pick、Omit、Required/Readonly、Record 的顺序和上方 TS 示例逐行对应。
-      document.getElementById("out").textContent = [
-        `Partial<Pick<User, ...>> 更新入参: ${JSON.stringify(patch)}`,
-        `Omit<User, "email"> 对外展示: ${JSON.stringify(publicUser)}`,
-        `Required<User> 补齐 email: ${completeUser.email}`,
-        `Readonly<User> 运行时冻结需 Object.freeze: ${Object.isFrozen(frozenUser)}`,
-        `Record<User["role"], string> 角色文案: ${roleLabels[user.role]}`,
-        "面试重点：能说用途，也要知道这些工具底层多基于 keyof、映射类型和条件类型。",
-      ].join("\n");
+      // ============ 4. Record：角色文案映射 ============
+      const roleLabels = { admin: "管理员", guest: "访客" };
 
+      const lines = [];
+      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+
+      assert(patch.name === "Ada Lovelace" && !("id" in patch), "Partial&lt;Pick&lt;User,'name'|'email'&gt;&gt; 更新入参");
+      assert(!("email" in publicUser), "Omit&lt;User,'email'&gt; 对外展示无 email");
+      assert(completeUser.email === "ada@example.com", "Required&lt;User&gt; 类型层必填（运行时须自己补齐）");
+      assert(Object.isFrozen(frozenUser), "Readonly&lt;User&gt; 运行时冻结需 Object.freeze");
+      assert(roleLabels[user.role] === "管理员", "Record&lt;User['role'], string&gt; 角色文案");
+
+      document.getElementById("log").textContent = lines.join("\n");
     </script>
     <!-- SCRIPT_END -->
 

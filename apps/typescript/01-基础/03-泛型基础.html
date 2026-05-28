@@ -1,6 +1,7 @@
 <!--
   分类: typescript / 01-基础
   主题: 泛型函数与约束
+  相关: interface与type, 函数类型与重载
   要点:
     - 泛型把类型作为参数传入函数、接口或类，让输入和输出保持类型关系
     - extends 约束限制类型参数必须满足某种结构，避免在泛型里访问不存在的属性
@@ -20,8 +21,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TypeScript · 泛型基础</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 760px; }
-      pre { background: #f6f8fa; padding: 12px; border-radius: 8px; font-size: 0.85rem; }
+      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 760px; line-height: 1.6; }
+      pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; font-size: 0.85rem; overflow: auto; }
+      #log { background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; white-space: pre-wrap; font-size: 0.85rem; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -58,25 +60,33 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <pre>function first&lt;T&gt;(arr: T[]): T | undefined {
-      return arr[0];
-      }
-      function pluck&lt;T, K extends keyof T&gt;(obj: T, key: K): T[K] {
-      return obj[key];
-      }</pre>
-      <pre id="out"></pre>
+    <p>上方为 TypeScript 源码（在 .ts / IDE 中检查），下方为等价的可运行 JavaScript + 断言输出。</p>
+    <p class="ts"><strong>TypeScript</strong></p>
+    <pre>// —— 泛型函数保留输入输出关系 ——
+function first&lt;T&gt;(arr: T[]): T | undefined {
+  return arr[0];
+}
+
+// —— extends 约束 + keyof 索引访问 ——
+function pluck&lt;T, K extends keyof T&gt;(obj: T, key: K): T[K] {
+  return obj[key];
+}
+// pluck(user, "age");  // ❌ 编译错误：age 不在 keyof User 中</pre>
+    <p><strong>运行时 JavaScript（本页执行）</strong></p>
+    <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // 浏览器运行的是泛型擦除后的 JavaScript；JSDoc @template 用来表达“输入元素类型和输出有关”。
-      // 对照上方 first<T>(arr: T[]): T | undefined，数组为空时返回 undefined。
+      // ============ 1. 泛型函数 first&lt;T&gt; ============
+      // 浏览器运行的是泛型擦除后的 JavaScript；JSDoc @template 表达“输入元素类型和输出有关”。
+      // 对照上方 first&lt;T&gt;(arr: T[]): T | undefined，数组为空时返回 undefined。
       /** @template T @param {T[]} arr @returns {T|undefined} */
       function first(arr) {
         return arr[0];
       }
 
-      // 对照 pluck<T, K extends keyof T>(obj, key): T[K]。
+      // ============ 2. pluck&lt;T, K extends keyof T&gt; ============
       // keyof 约束在 TS 中会阻止传入不存在的 key；JS 运行时仍只是普通属性读取。
       /** @template T @template {keyof T} K @param {T} obj @param {K} key */
       function pluck(obj, key) {
@@ -86,15 +96,20 @@
       const nums = [10, 20, 30];
       const user = { id: 1, name: "Bob" };
 
-      // 每个输出都和上方 TS 泛型示例逐行对应：first 保留元素关系，pluck 保留 key/value 关系。
-      const lines = [
-        `first(nums) = ${first(nums)}`,
-        `first(['a','b']) = ${first(["a", "b"])}`,
-        `pluck(user, 'name') = ${pluck(user, "name")}`,
-        `pluck(user, 'id') = ${pluck(user, "id")}`,
-      ];
-      document.getElementById("out").textContent = lines.join("\n");
+      const lines = [];
+      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
 
+      assert(first(nums) === 10, "first&lt;number&gt;(nums) 保留 number 元素关系");
+      assert(first(["a", "b"]) === "a", "first&lt;string&gt;(['a','b']) 保留 string 元素关系");
+      assert(first([]) === undefined, "空数组 first 返回 undefined");
+      assert(pluck(user, "name") === "Bob", "pluck&lt;User, 'name'&gt; 返回 T[K] = string");
+      assert(pluck(user, "id") === 1, "pluck&lt;User, 'id'&gt; 返回 T[K] = number");
+      assert(
+        typeof pluck === "function",
+        "泛型 T/K 编译后擦除，运行时无法 if (T === 'string')（TS 可拦、JS 无 T）"
+      );
+
+      document.getElementById("log").textContent = lines.join("\n");
     </script>
     <!-- SCRIPT_END -->
 

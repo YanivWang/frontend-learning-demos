@@ -1,6 +1,7 @@
 <!--
   分类: typescript / 03-工程与框架
   主题: Vue3 与 React 中的组件 Props 类型
+  相关: 类型声明与模块, React表单与Vue-emits类型
   要点:
     - Vue 3 script setup 常用 defineProps<T>() 和 defineEmits<T>() 描述组件边界
     - React 组件可直接给函数参数标 Props，React.FC 可用但不是必须
@@ -22,7 +23,7 @@
     <style>
       body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 920px; line-height: 1.6; }
       pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
-      #out { background: #f6f8fa; color: #222; }
+      #log { background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; white-space: pre-wrap; font-size: 0.85rem; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -31,7 +32,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vue3 / React 组件类型</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">下方展示 Vue/React Props 类型片段；完整组件类型须在 Vue/React 工程中由 IDE/tsc 验证，本页用等价 JS 演示运行时形态。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -50,55 +51,60 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/guide/typescript/composition-api.html#typing-component-props" target="_blank" rel="noreferrer">Vue 3 Guide: Typing Component Props</a></li>
-          <li><a href="https://vuejs.org/guide/typescript/composition-api.html#typing-component-emits" target="_blank" rel="noreferrer">Vue 3 Guide: Typing Component Emits</a></li>
-          <li><a href="https://react.dev/learn/typescript#typescript-with-react-components" target="_blank" rel="noreferrer">React Docs: TypeScript with React Components</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#literal-types" target="_blank" rel="noreferrer">TypeScript Handbook: Literal Types</a></li>
+          <li><a href="https://vuejs.org/guide/typescript/composition-api.html#typing-component-props" target="_blank" rel="noopener">Vue 3 Guide: Typing Component Props</a></li>
+          <li><a href="https://vuejs.org/guide/typescript/composition-api.html#typing-component-emits" target="_blank" rel="noopener">Vue 3 Guide: Typing Component Emits</a></li>
+          <li><a href="https://react.dev/learn/typescript#typescript-with-react-components" target="_blank" rel="noopener">React Docs: TypeScript with React Components</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#literal-types" target="_blank" rel="noopener">TypeScript Handbook: Literal Types</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
+    <p>上方为 Vue/React 组件 Props 类型片段（须完整工程 + IDE/tsc 验证）；下方为等价 JS 运行时形态。</p>
     <pre>// Vue3 &lt;script setup lang="ts"&gt;
-      type UserCardProps = {
-      id: number;
-      name: string;
-      role?: "admin" | "guest";
-      };
-      const props = defineProps&lt;UserCardProps&gt;();
-      // React
-      type ButtonProps = {
-      variant: "primary" | "danger";
-      onClick: (event: React.MouseEvent&lt;HTMLButtonElement&gt;) =&gt; void;
-      };
-      function Button(props: ButtonProps) {
-      return &lt;button onClick={props.onClick} /&gt;;
-      }</pre>
-      <pre id="out"></pre>
+type UserCardProps = { id: number; name: string; role?: "admin" | "guest" };
+const props = defineProps&lt;UserCardProps&gt;();
+
+// React
+type ButtonProps = {
+  variant: "primary" | "danger";
+  onClick: (event: React.MouseEvent&lt;HTMLButtonElement&gt;) =&gt; void;
+};
+function Button(props: ButtonProps) { return &lt;button onClick={props.onClick} /&gt;; }</pre>
+    <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // 对照 Vue defineProps<UserCardProps>()：JS 中 props 是普通对象，TS 负责在父子组件边界检查字段。
+      // ============ 1. Vue defineProps&lt;UserCardProps&gt; 等价逻辑 ============
       function renderUserCard(props) {
         const role = props.role ?? "guest";
         return `${props.name} (${role})`;
       }
 
-      // 对照 React ButtonProps：variant 是字面量联合，onClick 是事件回调契约。
-      // 这里不引入 React，只用等价函数展示 props 类型约束的运行时形态。
+      // ============ 2. React ButtonProps 等价逻辑 ============
       function createButton(props) {
         return `[${props.variant}] button`;
       }
 
-      // 输出分别对应 Vue props 和 React props；真正的价值是在 IDE/tsc 阶段拦截错误传参。
-      document.getElementById("out").textContent = [
-        `Vue defineProps<T>() 的 Props 示例: ${renderUserCard({ id: 1, name: "Evan", role: "admin" })}`,
-        `React 函数组件 Props 示例: ${createButton({ variant: "primary", onClick: () => {} })}`,
-        "面试重点：组件类型的价值在边界处，父组件传错 props、事件参数用错，都应尽早被 IDE/tsc 拦住。",
-      ].join("\n");
+      const lines = [];
+      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
 
+      assert(
+        renderUserCard({ id: 1, name: "Evan", role: "admin" }) === "Evan (admin)",
+        "Vue defineProps: role 字面量联合 admin | guest"
+      );
+      assert(
+        createButton({ variant: "primary", onClick: () => {} }) === "[primary] button",
+        "React ButtonProps: variant 字面量联合 primary | danger"
+      );
+      assert(
+        typeof renderUserCard === "function",
+        "Props 类型在编译期检查；运行时 props 仍是普通对象（需 IDE/tsc 验证传参）"
+      );
+
+      document.getElementById("log").textContent = lines.join("\n");
     </script>
     <!-- SCRIPT_END -->
 

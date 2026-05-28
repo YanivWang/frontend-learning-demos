@@ -1,6 +1,7 @@
 <!--
   分类: typescript / 02-进阶
   主题: 类型收窄与 discriminated union
+  相关: enum与对象枚举, Utility-Types
   要点:
     - typeof、instanceof、in 和相等性判断都能让控制流分析缩窄联合类型
     - 可辨识联合依赖共同字面量字段，switch 分支内会得到精确成员类型
@@ -21,9 +22,9 @@
     <title>TypeScript · 类型收窄</title>
     <style>
       body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 760px; line-height: 1.6; }
-      pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; font-size: 0.85rem; }
+      pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; font-size: 0.85rem; overflow: auto; }
       button { margin: 4px 8px 4px 0; padding: 6px 12px; cursor: pointer; }
-      #log { white-space: pre-wrap; background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; }
+      #log { white-space: pre-wrap; background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; font-size: 0.85rem; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -51,58 +52,101 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html" target="_blank" rel="noreferrer">TypeScript Handbook: Narrowing</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#union-types" target="_blank" rel="noreferrer">TypeScript Handbook: Union Types</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html" target="_blank" rel="noopener">TypeScript Handbook: Narrowing</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#union-types" target="_blank" rel="noopener">TypeScript Handbook: Union Types</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <pre>type Shape =
-      | { kind: "circle"; radius: number }
-      | { kind: "rect"; width: number; height: number };
-      function area(s: Shape): number {
-      switch (s.kind) {
-      case "circle": return Math.PI * s.radius ** 2;
-      case "rect": return s.width * s.height;
-      }
-      }</pre>
-      <button type="button" id="btn-circle">计算圆面积</button>
-      <button type="button" id="btn-rect">计算矩形面积</button>
-      <div id="log"></div>
+    <p>上方为 TypeScript 源码；点击下方按钮触发等价 JavaScript，观察 <code>#log</code> 输出。</p>
+    <p class="ts"><strong>TypeScript</strong></p>
+    <pre>// —— typeof / in 收窄 ——
+function format(value: string | number) {
+  if (typeof value === "string") return value.toUpperCase();
+  return value.toFixed(2);
+}
+
+// —— 可辨识联合 + switch ——
+type Shape =
+  | { kind: "circle"; radius: number }
+  | { kind: "rect"; width: number; height: number };
+function area(s: Shape): number {
+  switch (s.kind) {
+    case "circle": return Math.PI * s.radius ** 2;
+    case "rect": return s.width * s.height;
+  }
+}
+
+// —— 用户自定义类型守卫 ——
+function isCircle(s: Shape): s is { kind: "circle"; radius: number } {
+  return s.kind === "circle";
+}</pre>
+    <button type="button" id="btn-circle">计算圆面积</button>
+    <button type="button" id="btn-rect">计算矩形面积</button>
+    <button type="button" id="btn-narrow">typeof / 类型守卫演示</button>
+    <div id="log">点击按钮开始演示…</div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // 对照上方 discriminated union：kind 是判别字段，决定当前对象能安全读取哪些属性。
+      // ============ 1. typeof 收窄 ============
+      /** @param {string|number} value */
+      function format(value) {
+        if (typeof value === "string") return value.toUpperCase();
+        return value.toFixed(2);
+      }
+
+      // ============ 2. 可辨识联合 Shape + switch ============
       /** @typedef {{ kind: 'circle', radius: number } | { kind: 'rect', width: number, height: number }} Shape */
 
-      // TypeScript 在 switch (s.kind) 的每个 case 中自动收窄 s 的具体分支。
-      // JS 运行时仍需要同样的分支逻辑，否则无法知道该读 radius 还是 width/height。
       /** @param {Shape} s */
       function area(s) {
         switch (s.kind) {
           case "circle":
-          return Math.PI * s.radius ** 2;
+            return Math.PI * s.radius ** 2;
           case "rect":
-          return s.width * s.height;
+            return s.width * s.height;
           default:
-          throw new Error("unknown shape");
+            throw new Error("unknown shape");
         }
       }
 
+      // ============ 3. 用户自定义类型守卫 isCircle ============
+      /** @param {Shape} s @returns {s is { kind: 'circle', radius: number }} */
+      function isCircle(s) {
+        return s.kind === "circle";
+      }
+
       const log = document.getElementById("log");
-      // 两个按钮分别构造 Shape 的不同分支，输出能和上方 circle/rect case 对照。
+      const lines = [];
+      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+
       document.getElementById("btn-circle").onclick = () => {
-        const result = area({ kind: "circle", radius: 3 });
-        log.textContent = `circle r=3 → area ≈ ${result.toFixed(2)}`;
-      };
-      document.getElementById("btn-rect").onclick = () => {
-        const result = area({ kind: "rect", width: 4, height: 5 });
-        log.textContent = `rect 4×5 → area = ${result}`;
+        const shape = { kind: "circle", radius: 3 };
+        const result = area(shape);
+        lines.length = 0;
+        assert(isCircle(shape), "类型守卫 isCircle(shape) 为 true");
+        assert(Math.abs(result - 28.27) < 0.01, `circle r=3 → area ≈ ${result.toFixed(2)}`);
+        log.textContent = lines.join("\n");
       };
 
+      document.getElementById("btn-rect").onclick = () => {
+        const shape = { kind: "rect", width: 4, height: 5 };
+        const result = area(shape);
+        lines.length = 0;
+        assert(!isCircle(shape), "rect 分支 isCircle 为 false");
+        assert(result === 20, "rect 4×5 → area = 20");
+        log.textContent = lines.join("\n");
+      };
+
+      document.getElementById("btn-narrow").onclick = () => {
+        lines.length = 0;
+        assert(format("ts") === "TS", "typeof 收窄 string → toUpperCase()");
+        assert(format(3.14159) === "3.14", "typeof 收窄 number → toFixed(2)");
+        log.textContent = lines.join("\n");
+      };
     </script>
     <!-- SCRIPT_END -->
 

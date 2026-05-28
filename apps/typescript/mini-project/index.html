@@ -1,6 +1,7 @@
 <!--
   分类: typescript / mini-project
   主题: TypeScript mini-project 与 tsc --noEmit
+  相关: React表单与Vue-emits类型
   要点:
     - 本目录用真实 .ts、tsconfig.json 和 npm 脚本演示可落地的类型检查闭环
     - tsc --noEmit 只做类型检查不产物输出，适合 CI、pre-commit 和学习验证
@@ -23,6 +24,7 @@
       body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 720px; line-height: 1.65; }
       code { background: #f6f8fa; padding: 2px 6px; border-radius: 4px; }
       pre { background: #f6f8fa; padding: 12px; border-radius: 8px; font-size: 0.875rem; }
+      #log { margin-top: 12px; white-space: pre-wrap; font-size: 0.85rem; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -50,18 +52,18 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/intro.html">TypeScript Handbook：TypeScript 入门与类型检查定位</a></li>
-          <li><a href="https://www.typescriptlang.org/tsconfig/#noEmit">TSConfig Reference：noEmit</a></li>
-          <li><a href="https://www.typescriptlang.org/tsconfig/#strict">TSConfig Reference：strict</a></li>
-          <li><a href="https://www.typescriptlang.org/tsconfig/#moduleResolution">TSConfig Reference：moduleResolution</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html">TypeScript 3.8 Release Notes：type-only imports and exports</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noopener">TypeScript Handbook：TypeScript 入门与类型检查定位</a></li>
+          <li><a href="https://www.typescriptlang.org/tsconfig/#noEmit" target="_blank" rel="noopener">TSConfig Reference：noEmit</a></li>
+          <li><a href="https://www.typescriptlang.org/tsconfig/#strict" target="_blank" rel="noopener">TSConfig Reference：strict</a></li>
+          <li><a href="https://www.typescriptlang.org/tsconfig/#moduleResolution" target="_blank" rel="noopener">TSConfig Reference：moduleResolution</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html" target="_blank" rel="noopener">TypeScript 3.8 Release Notes：type-only imports and exports</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>目录 <code>apps/typescript/mini-project/</code> 包含可编译的 TypeScript 源码。</p>
+    <p>目录 <code>apps/typescript/mini-project/</code> 包含可编译的 TypeScript 源码；类型检查须 CLI 验证。</p>
     <pre>npm run validate:tsc
 # 等价于：
 npx --yes -p typescript@5.8.3 tsc --noEmit -p apps/typescript/mini-project/tsconfig.json</pre>
@@ -75,28 +77,33 @@ export function formatUser(u: User): string {
 
 // 取消下面这行注释，validate:tsc 应报错：
 // const bad: User = { id: "x", name: 1 };</pre>
-    <pre id="out"></pre>
+    <p><strong>运行时 JavaScript（本页执行，对照 src/user.ts）</strong></p>
+    <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // mini-project 的核心验证发生在 tsc --noEmit，本页浏览器脚本只演示源码里的运行时等价逻辑。
-      // 对照 src/user.ts 的 User 类型：JSDoc 表达对象形状，TypeScript 工程中由 type User 负责静态约束。
+      // ============ 1. User 类型 + formatUser（对照 src/user.ts） ============
       /** @typedef {{ id: number, name: string, email?: string }} User */
-
-      // 对照 formatUser(u: User): string：email 可选，所以函数体必须处理缺省分支。
       /** @param {User} user @returns {string} */
       function formatUser(user) {
         return user.email ? `${user.name} <${user.email}>` : user.name;
       }
 
-      // 对照 import type：浏览器脚本没有类型导入；工程里 import type 会在 emit 阶段擦除。
+      // ============ 2. import type 边界说明 ============
       const sample = { id: 1, name: "Ada", email: "ada@example.com" };
-      document.getElementById("out").textContent = [
-        `formatUser(sample) = ${formatUser(sample)}`,
-        "tsc --noEmit 负责检查 User/formatUser/import type 是否符合 tsconfig strict 规则。",
-        "面试重点：类型检查是工程质量门禁，但外部 JSON 和用户输入仍需要运行时校验。",
-      ].join("\n");
+
+      const lines = [];
+      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+
+      assert(formatUser(sample) === "Ada <ada@example.com>", "formatUser(sample) 运行时等价逻辑");
+      assert(formatUser({ id: 2, name: "Bob" }) === "Bob", "email 可选分支：无 email 时只返回 name");
+      assert(
+        typeof formatUser === "function",
+        "tsc --noEmit 负责 strict 类型检查；import type 在 emit 阶段擦除"
+      );
+
+      document.getElementById("log").textContent = lines.join("\n");
     </script>
     <!-- SCRIPT_END -->
 

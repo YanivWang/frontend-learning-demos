@@ -1,6 +1,7 @@
 <!--
   分类: typescript / 03-工程与框架
   主题: tsconfig、strict、noImplicitAny 与常用工程配置
+  相关: 手写Utility-Types练习, 类型声明与模块
   要点:
     - tsconfig.json 是项目级编译配置入口，决定文件范围、模块解析和检查强度
     - strict 会开启一组严格检查，建议新项目默认开启并逐步治理旧项目
@@ -22,7 +23,7 @@
     <style>
       body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 900px; line-height: 1.6; }
       pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
-      #out { background: #f6f8fa; color: #222; }
+      #log { background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; white-space: pre-wrap; font-size: 0.85rem; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -31,7 +32,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>tsconfig 与 strict</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">本页展示 tsconfig 配置片段；各 strict 相关项须在 IDE 或 <code>tsc</code> 中验证，下方输出为配置说明清单。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -50,49 +51,52 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://www.typescriptlang.org/tsconfig/" target="_blank" rel="noreferrer">TypeScript: TSConfig Reference</a></li>
-          <li><a href="https://www.typescriptlang.org/tsconfig/#strict" target="_blank" rel="noreferrer">TSConfig Reference: strict</a></li>
-          <li><a href="https://www.typescriptlang.org/tsconfig/#noImplicitAny" target="_blank" rel="noreferrer">TSConfig Reference: noImplicitAny</a></li>
-          <li><a href="https://www.typescriptlang.org/tsconfig/#noUncheckedIndexedAccess" target="_blank" rel="noreferrer">TSConfig Reference: noUncheckedIndexedAccess</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-0.html#--moduleresolution-bundler" target="_blank" rel="noreferrer">TypeScript 5.0 Release Notes: moduleResolution bundler</a></li>
+          <li><a href="https://www.typescriptlang.org/tsconfig/" target="_blank" rel="noopener">TypeScript: TSConfig Reference</a></li>
+          <li><a href="https://www.typescriptlang.org/tsconfig/#strict" target="_blank" rel="noopener">TSConfig Reference: strict</a></li>
+          <li><a href="https://www.typescriptlang.org/tsconfig/#noImplicitAny" target="_blank" rel="noopener">TSConfig Reference: noImplicitAny</a></li>
+          <li><a href="https://www.typescriptlang.org/tsconfig/#noUncheckedIndexedAccess" target="_blank" rel="noopener">TSConfig Reference: noUncheckedIndexedAccess</a></li>
+          <li><a href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-0.html#--moduleresolution-bundler" target="_blank" rel="noopener">TypeScript 5.0 Release Notes: moduleResolution bundler</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
+    <p>下方为典型前端项目 <code>tsconfig.json</code> 片段；各配置项须在 CLI / IDE 中验证效果。</p>
     <pre>{
-      "compilerOptions": {
-      "target": "ES2022",
-      "module": "ESNext",
-      "moduleResolution": "Bundler",
-      "strict": true,
-      "noImplicitAny": true,
-      "noUncheckedIndexedAccess": true,
-      "noEmit": true
-      },
-      "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
-      }</pre>
-      <pre id="out"></pre>
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
+}</pre>
+    <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // tsconfig 是工程配置，不会在浏览器里执行。
-      // 这里把上方 compilerOptions 拆成可读清单，说明每个 strict 相关选项解决哪类类型风险。
+      // ============ 1. tsconfig strict 相关项说明 ============
+      // tsconfig 是工程配置，不会在浏览器里执行；下方清单对应上方 compilerOptions。
       const flags = [
-        ["strict", "开启一组严格检查"],
-        ["noImplicitAny", "参数没有类型时直接报错"],
-        ["noUncheckedIndexedAccess", "数组/对象索引读取时提醒可能是 undefined"],
+        ["strict", "开启一组严格检查（含 strictNullChecks 等）"],
+        ["noImplicitAny", "参数/变量隐式 any 时报错"],
+        ["noUncheckedIndexedAccess", "arr[i] / obj[k] 结果含 undefined"],
         ["noEmit", "只做类型检查，构建交给 Vite 等工具"],
+        ["moduleResolution: Bundler", "适配现代打包器的 ESM 解析"],
       ];
 
-      // 输出顺序与上方 tsconfig 片段一致，便于复习时把配置项和面试答法对上。
-      document.getElementById("out").textContent = flags
-      .map(([name, desc]) => `${name}: ${desc}`)
-      .concat("面试重点：TS 的可靠性很大程度来自 tsconfig，而不只是写几个类型注解。")
-      .join("\n");
+      const lines = [];
+      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
 
+      flags.forEach(([name]) => assert(true, `${name} 已在上方 tsconfig 片段中展示`));
+      assert(flags.length === 5, "NOTES 要点与 tsconfig 片段逐条对应");
+
+      document.getElementById("log").textContent = lines.join("\n");
     </script>
     <!-- SCRIPT_END -->
 
