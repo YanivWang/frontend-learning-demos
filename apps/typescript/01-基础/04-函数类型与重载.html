@@ -82,7 +82,8 @@ function logEvent(...args: [level: "info" | "warn", message: string]): string { 
 // —— 函数重载 ——
 function toArray(value: string): string[];
 function toArray(value: number): number[];
-function toArray(value: string | number): string[] | number[] { /* ... */ }</pre>
+function toArray(value: string | number): string[] | number[] { /* ... */ }
+// toArray(true);                  // ❌ 编译错误：无匹配的重载签名</pre>
     <p><strong>运行时 JavaScript（本页执行）</strong></p>
     <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
@@ -142,6 +143,10 @@ function toArray(value: string | number): string[] | number[] { /* ... */ }</pre
       assert(normalizeId(7) === "7", "联合类型适合返回类型不随入参形态变化");
       assert(JSON.stringify(toArray("ts")) === '["t","s"]', "重载 string 分支 → string[]");
       assert(JSON.stringify(toArray(9)) === "[9]", "重载 number 分支 → number[]");
+      assert(
+        JSON.stringify(toArray(true)) === "[true]",
+        "JS 运行时 toArray(true) 仍会执行 — TS 重载无 boolean 分支应报错"
+      );
 
       document.getElementById("log").textContent = lines.join("\n");
     </script>

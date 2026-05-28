@@ -115,8 +115,12 @@ type ApiResult&lt;T&gt; =
       const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
 
       assert(result.ok === true, "fetchUser 成功分支 ok === true");
-      assert(result.data.name === "Alice", "interface 合并后 email 可选，name 仍可访问");
+      assert(result.data.name === "Alice", "interface 合并后 name 仍可访问");
+      assert(result.data.email === "alice@example.com", "声明合并后可选 email 字段可正常读取");
       assert(user.role === "admin", "type Role 联合约束 role 为 admin | guest");
+
+      const userMinimal = { id: 2, name: "Bob", role: "guest" };
+      assert(!("email" in userMinimal), "声明合并 email? 可选：无 email 字段的对象仍合法");
       assert(
         typeof fetchUser === "function",
         "interface/type 编译后擦除，运行时只剩普通 JS 函数（TS 可拦、JS 仍会执行）"

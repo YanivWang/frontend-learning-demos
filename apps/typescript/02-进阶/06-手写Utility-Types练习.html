@@ -39,7 +39,7 @@
           <li><code>MyPartial&lt;T&gt;</code> 的核心是 <code>{ [K in keyof T]?: T[K] }</code>：遍历所有键，保留原值类型，并给属性加上可选修饰符。</li>
           <li><code>MyPick&lt;T, K extends keyof T&gt;</code> 的核心是限制 <code>K</code> 必须来自 <code>T</code> 的键集合，再用 <code>[P in K]: T[P]</code> 只保留这些字段。</li>
           <li><code>MyOmit&lt;T, K&gt;</code> 常组合 <code>Pick&lt;T, Exclude&lt;keyof T, K&gt;&gt;</code> 实现：先从键集合里排除 K，再挑剩余键。</li>
-          <li>本页按钮演示的是运行时 <code>myPick</code> / <code>myOmit</code> 对对象做拷贝过滤；类型层 <code>Pick</code> / <code>Omit</code> 只负责静态约束，两者需要同时理解。</li>
+          <li>本页按钮演示的是运行时 <code>myPartial</code> / <code>myPick</code> / <code>myOmit</code> 对对象做拷贝过滤；类型层工具只负责静态约束，两者需要同时理解。</li>
           <li>常见坑是忘记 <code>K extends keyof T</code> 导致可以挑不存在的键，或误以为 <code>Partial</code> 会递归处理嵌套对象；面试答题要说清“浅层”和“编译期”。</li>
         </ul>
         <h2>面试考点</h2>
@@ -61,18 +61,23 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>上方为 TypeScript 手写 Utility Types；点击下方按钮，观察运行时 <code>myPick</code> / <code>myOmit</code> 等价逻辑。</p>
+    <p>上方为 TypeScript 手写 Utility Types；点击下方按钮，观察运行时 <code>myPartial</code> / <code>myPick</code> / <code>myOmit</code> 等价逻辑。</p>
     <p class="ts"><strong>TypeScript</strong></p>
     <pre>type MyPartial&lt;T&gt; = { [K in keyof T]?: T[K] };
 type MyPick&lt;T, K extends keyof T&gt; = { [P in K]: T[P] };
 type MyOmit&lt;T, K extends keyof T&gt; = Pick&lt;T, Exclude&lt;keyof T, K&gt;&gt;;</pre>
-    <button type="button" id="run">运行 Pick / Omit 演示</button>
+    <button type="button" id="run">运行 Partial / Pick / Omit 演示</button>
     <div id="log">点击按钮开始演示…</div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // ============ 1. 运行时 myPick（对照 MyPick&lt;T, K extends keyof T&gt;） ============
+      // ============ 1. 运行时 myPartial（对照 MyPartial&lt;T&gt;：浅层可选 patch） ============
+      function applyPartialPatch(base, patch) {
+        return { ...base, ...patch };
+      }
+
+      // ============ 2. 运行时 myPick（对照 MyPick&lt;T, K extends keyof T&gt;） ============
       function myPick(obj, keys) {
         return keys.reduce((acc, k) => {
           if (k in obj) acc[k] = obj[k];
@@ -80,7 +85,7 @@ type MyOmit&lt;T, K extends keyof T&gt; = Pick&lt;T, Exclude&lt;keyof T, K&gt;&g
         }, {});
       }
 
-      // ============ 2. 运行时 myOmit（对照 MyOmit = Pick + Exclude） ============
+      // ============ 3. 运行时 myOmit（对照 MyOmit = Pick + Exclude） ============
       function myOmit(obj, keys) {
         const omit = new Set(keys);
         return Object.fromEntries(Object.entries(obj).filter(([k]) => !omit.has(k)));
@@ -88,12 +93,19 @@ type MyOmit&lt;T, K extends keyof T&gt; = Pick&lt;T, Exclude&lt;keyof T, K&gt;&g
 
       document.getElementById("run").onclick = () => {
         const user = { id: 1, name: "Ada", email: "a@ex.com", role: "admin" };
+        const patch = { name: "Ada Lovelace" };
+        const patched = applyPartialPatch(user, patch);
         const picked = myPick(user, ["id", "name"]);
         const omitted = myOmit(user, ["email", "role"]);
 
         const lines = [];
         const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
 
+        assert(
+          patched.name === "Ada Lovelace" && patched.id === 1,
+          "MyPartial 运行时 patch 只更新 name，其余字段保留"
+        );
+        assert(!("email" in patch), "Partial 入参可只含部分字段（类型层所有键可选）");
         assert(Object.keys(picked).length === 2, "MyPick 运行时 myPick 只保留 id/name");
         assert(!("email" in omitted) && !("role" in omitted), "MyOmit 运行时 myOmit 移除 email/role");
         assert(picked.name === "Ada", "Pick 后 name 值不变");

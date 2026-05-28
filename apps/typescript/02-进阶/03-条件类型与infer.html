@@ -91,16 +91,21 @@ type B = MyAwaited&lt;Promise&lt;Promise&lt;string&gt;&gt;&gt;;    // string</pr
 
       const lines = [];
       const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+      const logEl = document.getElementById("log");
 
-      loadName().then((name) => {
-        assert(getUser().name === "Grace", "ReturnType&lt;typeof getUser&gt; 运行时 getUser().name");
-        assert(name === "Grace", "Awaited&lt;Promise&lt;string&gt;&gt; 对应 await 结果");
-        assert(
-          typeof getUser === "function",
-          "infer 是类型层占位，编译后擦除，运行时无额外分支（TS 可验证、JS 无 infer）"
-        );
-        document.getElementById("log").textContent = lines.join("\n");
-      });
+      loadName()
+        .then((name) => {
+          assert(getUser().name === "Grace", "ReturnType&lt;typeof getUser&gt; 运行时 getUser().name");
+          assert(name === "Grace", "Awaited&lt;Promise&lt;string&gt;&gt; 对应 await 结果");
+          assert(
+            typeof getUser === "function",
+            "infer 是类型层占位，编译后擦除，运行时无额外分支（TS 可验证、JS 无 infer）"
+          );
+          logEl.textContent = lines.join("\n");
+        })
+        .catch((err) => {
+          logEl.textContent = "✗ 演示失败：" + (err && err.message ? err.message : String(err));
+        });
     </script>
     <!-- SCRIPT_END -->
 
