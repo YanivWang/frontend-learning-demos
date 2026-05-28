@@ -28,8 +28,8 @@
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>手写 Vue2 响应式核心（Observer / Dep / Watcher / Computed）</h1>
       <p class="hint">
-        打开浏览器 DevTools → Console，刷新本页后观察日志：改 <code>vm.message</code>、读
-        <code>vm.messageLength</code> 与 watch 回调，对照 Observer / Dep / Watcher / Computed 链路；复习要点与面试答法见本区块。
+        在下方输入新 message 并点「写入 message」观察 watch 回调；点「读取 messageLength」验证 computed 的 lazy
+        缓存（依赖未变时不会重复求值）；日志区与 Console 同步输出 Observer / Dep / Watcher / Computed 链路。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
@@ -58,6 +58,23 @@
       </div>
     </section>
     <!-- NOTES_END -->
+
+    <!-- PAGE_DOM_START -->
+    <section class="demo-block demo-block--run" aria-label="手写响应式交互演示">
+      <h2 class="demo-block__label">交互演示</h2>
+      <p>message: <strong id="msg-display">—</strong></p>
+      <p>messageLength（computed）: <strong id="len-display">—</strong></p>
+      <p>
+        <label for="msg-input">新 message：</label>
+        <input id="msg-input" type="text" value="Hello Vue2" />
+      </p>
+      <p>
+        <button type="button" id="btn-set">写入 message（触发 setter + watch）</button>
+        <button type="button" id="btn-read-len">读取 messageLength（lazy computed）</button>
+      </p>
+      <pre id="reactive-log" class="demo-output" aria-live="polite"></pre>
+    </section>
+    <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
@@ -207,7 +224,7 @@
 
         // 获取计算属性的值时触发
         get() {
-          console.log("计算属性的get方法被触发...");
+          appendLog("计算属性 getter 执行（lazy：dirty 时才重新求值）");
           if (this.watcher.dirty) {
             // 执行计算并更新值
             this.watcher.evaluate();
@@ -266,7 +283,32 @@
       }
 
       // ---------------------------------------------------------------------------
-      // 使用示例：Console 观察 getter/setter、watch 回调与 computed 缓存
+      // 页面日志与展示：同步写入 #reactive-log 与 Console
+      // ---------------------------------------------------------------------------
+      var logEl = document.getElementById("reactive-log");
+      var msgDisplay = document.getElementById("msg-display");
+      var lenDisplay = document.getElementById("len-display");
+      var msgInput = document.getElementById("msg-input");
+
+      function appendLog(text) {
+        var line = new Date().toLocaleTimeString() + "  " + text;
+        if (logEl) {
+          logEl.textContent = line + "\n" + logEl.textContent;
+        }
+        console.log(line);
+      }
+
+      function refreshDisplay(vmRef) {
+        if (msgDisplay) {
+          msgDisplay.textContent = vmRef.message;
+        }
+        if (lenDisplay) {
+          lenDisplay.textContent = String(vmRef.messageLength);
+        }
+      }
+
+      // ---------------------------------------------------------------------------
+      // 使用示例：改 message、读 computed、观察 watch 与 lazy 缓存
       // ---------------------------------------------------------------------------
       const vm = {
         $options: {
@@ -277,36 +319,37 @@
             };
           },
           watch: {
-            //适用场景: 当关心的数据发生变化了，执行一个异步或者开销较大的操作（api请求），有用
-            //通过watch选项声明一个用户watcher(自定义侦听器)，
-            //key: 响应式属性
-            //value: 是一个回调函数callback(当监听的响应式属性发生变化的时候，执行回调)
             message: function (newValue, oldValue) {
-              console.log("执行watch回调，", newValue, oldValue);
+              appendLog("watch 回调：'" + oldValue + "' → '" + newValue + "'");
             },
           },
           computed: {
-            //适用场景:
-            // 1.读取响应式属性，并对其进行相关计算后，供程序其他地方使用（比如模板）
-            // 同时当响应式属性，发生变化的时候，再次访问该计算属性，才会重新计算结果
-            //声明了一个计算属性 messageLength，我们提供的函数作为 vm.messageLength 的 getter 函数
             messageLength: function () {
-              console.log("计算属性触发");
               return this.message.length;
             },
           },
         },
       };
 
-      initData(vm); // 初始化数据劫持
+      initData(vm);
 
-      //1.访问普通响应式属性
-      console.log(vm.message); // 触发 getter
-      vm.message = "Changed"; // 触发 setter，Dep 通知 Watcher 更新
-      vm.nested.count = 5; // 嵌套对象的属性也会被劫持
+      appendLog("初始化完成：读取 message 触发 getter");
+      appendLog("message = " + vm.message);
+      refreshDisplay(vm);
 
-      //2.访问计算属性
-      console.log(vm.messageLength);
+      document.getElementById("btn-set").addEventListener("click", function () {
+        var next = msgInput.value;
+        appendLog("写入 vm.message = '" + next + "'（触发 setter）");
+        vm.message = next;
+        refreshDisplay(vm);
+      });
+
+      document.getElementById("btn-read-len").addEventListener("click", function () {
+        appendLog("读取 vm.messageLength");
+        var len = vm.messageLength;
+        appendLog("messageLength = " + len);
+        refreshDisplay(vm);
+      });
 
     </script>
     <!-- SCRIPT_END -->

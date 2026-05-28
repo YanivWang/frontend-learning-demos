@@ -31,8 +31,9 @@
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vuex 全家桶（state / mutations / actions / getters / mapState / mapGetters）</h1>
       <p class="hint">
-        下方区域展示根组件、User、About 的 store 映射结果（count、name、getCount、doneTodos）；打开
-        Console 查看 getter 与 commit/dispatch 的演示输出。
+        点「commit increment」「dispatch increment」「dispatch incrementAsync（约 3 秒）」观察
+        <code>count</code>、<code>getCount</code>、<code>doneTodosCount</code> 变化；下方 User / About 子组件展示
+        <code>mapState</code> / <code>mapGetters</code> 映射结果。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
@@ -95,9 +96,12 @@
             context.commit('increment');
           },
           incrementAsync({commit}){
-            setTimeout(()=>{
-              commit('increment');
-            },3000)
+            return new Promise(function (resolve) {
+              setTimeout(function () {
+                commit('increment');
+                resolve();
+              }, 3000);
+            });
           }
         },
         //相当于的store的state的computed属性(访问它store.getters.getCount，并不是一个函数，而是一个值)
@@ -123,35 +127,9 @@
       });
 
       // ---------------------------------------------------------------------------
-      // 根组件 + User / About：mapState、mapGetters 映射
-      // 官方：mapState 生成 computed；访问组件局部 state 时映射函数须用普通 function。
+      // 根组件 + User / About：mapState、mapGetters 映射与交互按钮
+      // 官方：mapState 生成 computed；mutation 同步改 state；action 可异步后 commit。
       // ---------------------------------------------------------------------------
-      console.log(store.getters.getCount);
-      console.log(store.getters.doneTodos(2));
-      console.log(store.getters.doneTodosCount);
-
-      //通过store的commit方法，提交mutation
-      store.commit('increment');
-
-      // 通过 store.dispatch 分发 action；payload 是传给 action 的业务参数
-      store.dispatch('incrementAsync',{
-        amount: 10
-      });
-      store.dispatch({
-        type:'incrementAsync',
-        amount: 10
-      });
-
-      let mapStateUser = Vuex.mapState(['count', 'name']);
-      let complexUser = {
-        //计算属性一定要return一个值(相当于属性的get函数)
-        reverseMsg: function () {
-          return this.msg.split("").reverse().join("");
-        },
-        ...mapStateUser
-      };
-
-      // Vue 模板绑定中：是一个 javascript 表达式
       const About = {
         data() {
           return {
@@ -160,12 +138,13 @@
         },
         template: `
         <div>
-          <div>About</div>
-          <div>getCount:{{getCount}}</div>
-          <div>doneTodos:{{doneTodos(2)}}</div>
+          <div>About（mapGetters）</div>
+          <div>getCount: {{ getCount }}</div>
+          <div>doneTodos(2): {{ doneTodos(2) && doneTodos(2).text }}</div>
+          <div>doneTodosCount: {{ doneTodosCount }}</div>
         </div>`,
         computed: {
-          ...Vuex.mapGetters(["getCount","doneTodos"])
+          ...Vuex.mapGetters(["getCount", "doneTodos", "doneTodosCount"])
         }
       };
 
@@ -177,61 +156,74 @@
         },
         template: `
         <div>
-          <div>User</div>
-          <div>{{count}}</div>
-          <div>{{name}}</div>
-          <div>{{reverseMsg}}</div>
+          <div>User（mapState）</div>
+          <div>count: {{ count }}</div>
+          <div>name: {{ name }}</div>
+          <div>reverseMsg: {{ reverseMsg }}</div>
         </div>`,
-        //使用mapState更方便的将Vuex的状态，映射为组件内部的计算属性(计算属性是响应式的依赖)
-        computed: complexUser
-      };
-
-      let mapStateRoot = Vuex.mapState({
-        count: state => state.count,
-        countAlias: 'count',
-        countPlusLocalState(state) {
-          //要想在使用了mapState映射生成的计算属性中访问组件的局部状态，必须使用常规的函数
-          return state.count + this.localCount
+        computed: {
+          reverseMsg: function () {
+            return this.msg.split("").reverse().join("");
+          },
+          ...Vuex.mapState(["count", "name"])
         }
-      });
-      let complexRoot = {
-        //计算属性一定要return一个值(相当于属性的get函数)
-        reverseMsg: function () {
-          return this.msg.split("").reverse().join("");
-        },
-        //使用对象展开运算符，将
-        ...mapStateRoot
       };
 
       new Vue({
-        //state: 驱动应用的数据源
+        store,
         data() {
           return {
             msg: "cheng",
-            localCount: 2
+            localCount: 2,
+            status: "点击按钮触发 commit / dispatch"
           }
         },
-        store,//vuex通过store属性，将状态从根组件“注入”到每一个子组件中
         computed: {
-          //计算属性依赖于原始数据对象，如果原始数据对象，发生改变，计算属性，会自动的重新求值
-          count: function () {
-            return this.$store.state.count;
-          },
-          ...complexRoot
+          ...Vuex.mapState({
+            count: state => state.count,
+            countAlias: 'count',
+            countPlusLocalState(state) {
+              return state.count + this.localCount
+            }
+          }),
+          ...Vuex.mapGetters(["getCount", "doneTodos", "doneTodosCount"]),
+          reverseMsg: function () {
+            return this.msg.split("").reverse().join("");
+          }
         },
-        //view： 以声明方式将state映射到视图
         template: `
         <div>
-          <div>根：{{ count }}</div>
-          <div>localCount: {{localCount}}</div>
+          <div>state.count: {{ count }}</div>
+          <div>mapState countAlias: {{ countAlias }}</div>
+          <div>count + localCount: {{ countPlusLocalState }}</div>
+          <div>getter getCount: {{ getCount }}</div>
+          <div>doneTodos(2): {{ doneTodos(2) && doneTodos(2).text }}</div>
+          <div>doneTodosCount: {{ doneTodosCount }}</div>
+          <div>reverseMsg: {{ reverseMsg }}</div>
+          <div>{{ status }}</div>
+          <button type="button" @click="commitIncrement">commit increment</button>
+          <button type="button" @click="dispatchIncrement">dispatch increment</button>
+          <button type="button" @click="dispatchAsync">dispatch incrementAsync（约 3 秒）</button>
           <User/>
           <About/>
         </div>
         `,
-        //actions：响应在view上的用户输入导致的状态变化
         methods: {
-          increment() {
-            this.count++;
+          commitIncrement: function () {
+            this.$store.commit('increment');
+            this.status = '已 commit increment，count = ' + this.$store.state.count;
+            console.log('getCount =', this.$store.getters.getCount);
+          },
+          dispatchIncrement: function () {
+            this.$store.dispatch('increment');
+            this.status = '已 dispatch increment，count = ' + this.$store.state.count;
+          },
+          dispatchAsync: function () {
+            var vm = this;
+            vm.status = 'incrementAsync 进行中（约 3 秒）…';
+            vm.$store.dispatch('incrementAsync').then(function () {
+              vm.status = 'incrementAsync 完成，count = ' + vm.$store.state.count;
+            });
           }
         },
         components: {
