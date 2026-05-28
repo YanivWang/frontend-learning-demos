@@ -85,6 +85,14 @@ function resolveRelatedHref(fromAbs, relatedTitle, flat) {
   return relHref(fromAbs, join(ROOT, decodeHref(hit.href)));
 }
 
+function isSectionCatalog(relPath) {
+  return /^apps\/[^/]+\/index\.html$/i.test(relPath);
+}
+
+function sectionDirFromCatalog(relPath) {
+  return relPath.replace(/\/index\.html$/i, "");
+}
+
 function buildNavHtml(fromAbs, prev, nextItem, current, flat) {
   const catalogServer = docsHomeHref();
   const catalogFile = appsIndexRel(fromAbs);
@@ -188,8 +196,17 @@ async function main() {
     if (idx === undefined) continue;
 
     const prev = idx > 0 ? flat[idx - 1] : null;
-    const nextItem = idx < flat.length - 1 ? flat[idx + 1] : null;
-    const navBlock = buildNavHtml(abs, prev, nextItem, flat[idx], flat);
+    let nextItem = idx < flat.length - 1 ? flat[idx + 1] : null;
+    let navPrev = prev;
+
+    if (isSectionCatalog(rel)) {
+      navPrev = { href: "apps/index.html", title: "总目录" };
+      const sectionDir = sectionDirFromCatalog(rel);
+      const firstInSection = flat.find((it, i) => i > idx && it.href.startsWith(`${sectionDir}/`));
+      if (firstInSection) nextItem = firstInSection;
+    }
+
+    const navBlock = buildNavHtml(abs, navPrev, nextItem, flat[idx], flat);
 
     let content = await readFile(abs, "utf8");
     const before = content;

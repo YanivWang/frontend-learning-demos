@@ -31,6 +31,42 @@
         border: 1px solid #ddd;
         background: #f8f8f8;
       }
+      .compare-row { display: flex; gap: 16px; flex-wrap: wrap; max-width: 760px; }
+      .compare-col { flex: 1; min-width: 280px; }
+      .compare-track {
+        position: relative;
+        width: 100%;
+        max-width: 360px;
+        height: 72px;
+        padding: 12px;
+        border: 1px solid #ddd;
+        background: #f8f8f8;
+        box-sizing: border-box;
+      }
+      .compare-ball {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+      }
+      .compare-ball--bad {
+        background: #eb5757;
+        animation: move-left 1.6s ease-in-out infinite alternate;
+      }
+      @keyframes move-left {
+        from { left: 12px; }
+        to { left: calc(100% - 60px); }
+      }
+      .compare-ball--good {
+        background: #27ae60;
+        animation: move-transform 1.6s ease-in-out infinite alternate;
+      }
+      @keyframes move-transform {
+        from { transform: translateX(0); }
+        to { transform: translateX(calc(360px - 108px)); }
+      }
       .ball {
         width: 48px;
         height: 48px;
@@ -117,6 +153,22 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
+    <h2>layout 属性 vs transform 并排对比</h2>
+    <p class="tip">左侧用 <code>left</code> 做位移动画（每帧可能触发布局），右侧用 <code>transform: translateX()</code>（通常走合成阶段）。配合 DevTools Performance 对比帧率。</p>
+    <div class="compare-row">
+      <div class="compare-col">
+        <p class="tip" style="margin-top:0;">❌ 改 <code>left</code>（layout 属性）</p>
+        <div class="compare-track" id="track-bad">
+          <div class="compare-ball compare-ball--bad" id="ball-bad"></div>
+        </div>
+      </div>
+      <div class="compare-col">
+        <p class="tip" style="margin-top:0;">✓ 改 <code>transform</code>（合成友好）</p>
+        <div class="compare-track" id="track-good">
+          <div class="compare-ball compare-ball--good" id="ball-good"></div>
+        </div>
+      </div>
+    </div>
     <h2>动画优先 transform / opacity（合成层友好）</h2>
     <p class="tip">蓝色圆点用 <code>transform: translateX()</code> 与 <code>opacity</code> 动画，通常可在合成阶段更新而避免每帧重排。</p>
     <div class="track">
@@ -147,6 +199,8 @@
 
         /** 输出动画球与 will-change 卡片的 computed 属性，对照 MDN transform/opacity/will-change */
         function renderPerformanceMetrics() {
+          var ballBad = document.getElementById("ball-bad");
+          var ballGood = document.getElementById("ball-good");
           var ball = document.getElementById("anim-ball");
           var card = document.getElementById("will-card");
           var contain = document.getElementById("contain-box");
@@ -158,6 +212,14 @@
           var containStyle = contain ? getComputedStyle(contain) : null;
 
           output.textContent = [
+            "── layout vs transform 对比 ──",
+            ballBad
+              ? "#ball-bad left: " + getComputedStyle(ballBad).left + "（动画属性: left → 可能触发布局）"
+              : "",
+            ballGood
+              ? "#ball-good transform: " + getComputedStyle(ballGood).transform + "（动画属性: transform → 合成友好）"
+              : "",
+            "",
             "── 重排/重绘/合成友好属性实测 ──",
             ballStyle
               ? "#anim-ball transform: " + ballStyle.transform
