@@ -92,6 +92,10 @@ const sidebar: DefaultTheme.SidebarItem[] = [
             "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/encode-URI%E7%BC%96%E7%A0%81.html"
           },
           {
+            "text": "Error与异常",
+            "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/Error%E4%B8%8E%E5%BC%82%E5%B8%B8.html"
+          },
+          {
             "text": "escape",
             "link": "/apps/javascript/01-%E5%9F%BA%E7%A1%80/escape.html"
           },
@@ -239,6 +243,10 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         "text": "04-ES6+",
         "collapsed": true,
         "items": [
+          {
+            "text": "迭代器与for-of",
+            "link": "/apps/javascript/04-ES6%2B/%E8%BF%AD%E4%BB%A3%E5%99%A8%E4%B8%8Efor-of.html"
+          },
           {
             "text": "解构展开与模板字符串",
             "link": "/apps/javascript/04-ES6%2B/%E8%A7%A3%E6%9E%84%E5%B1%95%E5%BC%80%E4%B8%8E%E6%A8%A1%E6%9D%BF%E5%AD%97%E7%AC%A6%E4%B8%B2.html"
@@ -528,6 +536,10 @@ const sidebar: DefaultTheme.SidebarItem[] = [
           {
             "text": "悬浮侧栏拖拽",
             "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E6%8B%96%E6%9B%B3%E6%89%8B%E6%9F%84/02-%E6%82%AC%E6%B5%AE%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html"
+          },
+          {
+            "text": "原生侧栏拖拽",
+            "link": "/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E6%8B%96%E6%9B%B3%E6%89%8B%E6%9F%84/03-%E5%8E%9F%E7%94%9F%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html"
           }
         ]
       },
@@ -1894,6 +1906,10 @@ const sidebar: DefaultTheme.SidebarItem[] = [
           {
             "text": "React19新特性概览",
             "link": "/apps/react18/src/function-components/34-React19%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%A7%88.html"
+          },
+          {
+            "text": "useTransition与useDeferredValue",
+            "link": "/apps/react18/src/function-components/35-useTransition%E4%B8%8EuseDeferredValue.html"
           }
         ]
       }
@@ -2006,16 +2022,6 @@ const sidebar: DefaultTheme.SidebarItem[] = [
           {
             "text": "todo-本地状态",
             "link": "/apps/demos/todo/01-todo-%E6%9C%AC%E5%9C%B0%E7%8A%B6%E6%80%81.html"
-          }
-        ]
-      },
-      {
-        "text": "viewpager",
-        "collapsed": true,
-        "items": [
-          {
-            "text": "viewpager-翻页与缓动",
-            "link": "/apps/demos/viewpager/01-viewpager-%E7%BF%BB%E9%A1%B5%E4%B8%8E%E7%BC%93%E5%8A%A8.html"
           }
         ]
       },

@@ -14,7 +14,7 @@
 | `apps/react18/` | React 18 demo | 内含 `libs/` 与 `src/`（`function-components` + `class-components`） |
 | `apps/react19/` | React 19 新特性与面试 demo | 内含 React 19 运行时与 `src/` |
 | `apps/typescript/` | TypeScript 面试基础 / 进阶 / 工程与框架 demo | 按 `01-基础` / `02-进阶` / `03-工程与框架` 编号 |
-| `apps/demos/` | 综合性 / 交互小项目 | `drag`、`viewpager`、`todo`、`virtual-list` 等 |
+| `apps/demos/` | 综合性 / 交互小项目 | `drag`、`todo`、`virtual-list` 等 |
 | `apps/index.html` | file:// 与本地静态服务的总入口 | VitePress 仍为推荐入口 |
 | `packages/shared/` | 跨 demo 共用脚本与 vendored 库 | `demo-log.js`、`libs/`（axios、lodash 等） |
 | `scripts/` | 仓库工具脚本 | `build-index.mjs`、`sync-readmes.mjs`、`validate-demos.mjs` 等 |

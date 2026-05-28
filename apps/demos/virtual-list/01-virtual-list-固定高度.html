@@ -23,6 +23,8 @@
     <title>虚拟列表 · 固定行高</title>
     <style>
       body { font-family: system-ui, sans-serif; margin: 2rem; }
+      .stats { font-size: 0.875rem; color: #555; margin-bottom: 0.75rem; font-variant-numeric: tabular-nums; }
+      .stats strong { color: #111; }
       .viewport { height: 320px; overflow: auto; border: 1px solid #ddd; border-radius: 8px; position: relative; }
       .phantom { position: relative; }
       .rows { position: absolute; left: 0; right: 0; top: 0; }
@@ -43,7 +45,7 @@
           <li><strong>核心思想：</strong>虚拟列表不是真的渲染 10000 个 DOM 节点，而是用 <code>.phantom</code> 撑开总高度，只渲染视口可见行和少量 buffer。</li>
           <li><strong>固定行高公式：</strong><code>start = floor(scrollTop / ROW_H) - BUFFER</code>，<code>end = ceil((scrollTop + viewportHeight) / ROW_H) + BUFFER</code>，再夹到 <code>0..TOTAL</code> 范围内。</li>
           <li><strong>位置还原：</strong>真实行容器用 <code>transform: translateY(start * ROW_H)</code> 移动到它在完整列表中的位置，视觉上仍像完整列表在滚动。</li>
-          <li><strong>性能边界：</strong><code>scroll</code> 事件可能高频触发，行数少时普通列表更简单；行内容复杂时还要考虑节流、<code>requestAnimationFrame</code>、复用节点和避免同步布局读取。</li>
+          <li><strong>性能边界：</strong><code>scroll</code> 事件可能高频触发，示例用 <code>requestAnimationFrame</code> 合并同一帧内的多次滚动回调；行数少时普通列表更简单；行内容复杂时还要考虑 DOM 复用和避免同步布局读取。</li>
           <li><strong>动态高度差异：</strong>固定高度可以直接用除法定位，动态高度需要缓存每行高度、前缀和或二分查找，否则滚动位置和占位高度会不准。</li>
         </ul>
         <h2>面试考点</h2>
@@ -67,6 +69,7 @@
 
     <!-- PAGE_DOM_START -->
     <p>共 10000 条，DOM 中仅保留可见行。</p>
+    <p class="stats" id="stats" aria-live="polite"></p>
     <div class="viewport" id="viewport">
       <div class="phantom" id="phantom"><div class="rows" id="rows"></div></div>
     </div>
@@ -81,7 +84,10 @@
       const viewport = document.getElementById("viewport");
       const phantom = document.getElementById("phantom");
       const rowsEl = document.getElementById("rows");
+      const statsEl = document.getElementById("stats");
       phantom.style.height = TOTAL * ROW_H + "px";
+
+      let rafId = 0;
 
       function render() {
         const scrollTop = viewport.scrollTop;
@@ -98,8 +104,24 @@
           return row;
         });
         rowsEl.replaceChildren(...rowNodes);
+
+        statsEl.textContent = "";
+        statsEl.append(
+          `渲染范围：${start} ~ ${end - 1}（共 ${end - start} 行） · `,
+          `DOM 节点：${rowNodes.length} · `,
+          `scrollTop：${Math.round(scrollTop)}px`
+        );
       }
-      viewport.addEventListener("scroll", render, { passive: true });
+
+      function scheduleRender() {
+        if (rafId) return;
+        rafId = requestAnimationFrame(() => {
+          rafId = 0;
+          render();
+        });
+      }
+
+      viewport.addEventListener("scroll", scheduleRender, { passive: true });
       render();
 
     </script>
@@ -110,7 +132,7 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="../viewpager/01-viewpager-%E7%BF%BB%E9%A1%B5%E4%B8%8E%E7%BC%93%E5%8A%A8.html">← viewpager-翻页与缓动</a>
+        <a href="../todo/01-todo-%E6%9C%AC%E5%9C%B0%E7%8A%B6%E6%80%81.html">← todo-本地状态</a>
         <a href="../../typescript/01-%E5%9F%BA%E7%A1%80/01-%E7%B1%BB%E5%9E%8B%E6%B3%A8%E8%A7%A3%E4%B8%8E%E6%8E%A8%E6%96%AD.html">类型注解与推断 →</a>
       </nav>
       <script>

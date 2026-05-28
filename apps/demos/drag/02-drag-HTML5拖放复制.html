@@ -1,6 +1,7 @@
 <!--
 分类: demos / drag
   主题: HTML5 拖放复制（带 UI 反馈）
+  难度: 入门
   要点:
     - dragstart 写入 data-item-id，dragover preventDefault 后才能在 drop 中读取
     - 用 effectAllowed / dropEffect 表达复制语义，UI 反馈要和实际行为一致
@@ -118,7 +119,7 @@
           <li><strong>操作语义：</strong><code>effectAllowed = "copy"</code> 表示拖动源允许复制，<code>dropEffect = "copy"</code> 表示当前放置目标按复制处理；两者配合能让光标反馈和真实行为一致。</li>
           <li><strong>克隆边界：</strong><code>cloneNode(true)</code> 会复制元素和后代，但不会复制通过 <code>addEventListener()</code> 绑定的监听器。示例给副本重新创建删除按钮监听器，而不是依赖源节点事件。</li>
           <li><strong>副本清理：</strong>副本不再保留 <code>draggable</code>，并用 <code>data-cloned</code> 标记，避免被继续拖拽、误当成源数据或产生重复 id。</li>
-          <li><strong>交互边界：</strong><code>dragleave</code> 在进入子元素时也可能触发高亮变化，复杂卡片或嵌套放置区通常要结合计数器、<code>relatedTarget</code> 或命中检测稳定 UI。</li>
+          <li><strong>交互边界：</strong>放置区高亮用 <code>dragenter</code> / <code>dragleave</code> 计数器稳定状态，避免拖过内部子元素时高亮闪烁；复杂嵌套放置区还可结合 <code>relatedTarget</code> 判断。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
@@ -179,6 +180,7 @@
       const draggableItems = document.querySelectorAll('.draggable-item');
       const dropTarget = document.getElementById('drop-target');
       const dropHint = document.querySelector('.drop-hint');
+      let dragDepth = 0;
 
       draggableItems.forEach(item => {
         item.addEventListener('dragstart', (e) => {
@@ -194,18 +196,28 @@
         });
       });
 
-      dropTarget.addEventListener('dragover', (e) => {
+      dropTarget.addEventListener('dragenter', (e) => {
         e.preventDefault();
-        e.dataTransfer.dropEffect = 'copy';
+        dragDepth++;
         dropTarget.classList.add('drop-area-active');
       });
 
-      dropTarget.addEventListener('dragleave', () => {
-        dropTarget.classList.remove('drop-area-active');
+      dropTarget.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+      });
+
+      dropTarget.addEventListener('dragleave', (e) => {
+        dragDepth--;
+        if (dragDepth <= 0) {
+          dragDepth = 0;
+          e.currentTarget.classList.remove('drop-area-active');
+        }
       });
 
       dropTarget.addEventListener('drop', (e) => {
         e.preventDefault();
+        dragDepth = 0;
         dropTarget.classList.remove('drop-area-active');
 
         const itemId = e.dataTransfer.getData('text/plain');

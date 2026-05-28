@@ -111,18 +111,18 @@ function buildNavHtml(fromAbs, prev, nextItem, current, flat) {
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
-  ${parts.join("\n        ")}
+        ${parts.join("\n        ")}
       </nav>
-  <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
-</footer>
-${NAV_END}`;
+      <script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
+    </footer>
+    ${NAV_END}`;
 }
 
 function escapeHtml(s) {

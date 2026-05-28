@@ -1,6 +1,19 @@
 # 综合 Demo
 
-不属于单一知识点的小项目 / 交互实验。共 **7** 个 `.html` 文件`.html`，均已具备与 [`CONVENTIONS.md`](../../CONVENTIONS.md) §4 一致的头注释。
+不属于单一知识点的小项目 / 交互实验。共 **6** 个 `.html` 文件，均已具备与 [`CONVENTIONS.md`](../../CONVENTIONS.md) §4 一致的头注释。
+
+## 推荐学习顺序
+
+| 顺序 | Demo | 难度 | 前置 |
+|---|---|---|---|
+| 1 | [todo 本地状态](todo/01-todo-本地状态.html) | 入门 | JS 基础、DOM API |
+| 2 | [drag 原生 API](drag/01-drag-原生.html) | 入门 | 事件模型 |
+| 3 | [drag 拖放复制](drag/02-drag-HTML5拖放复制.html) | 入门 | 上一页 |
+| 4 | [form-wizard 分步表单](form-wizard/01-form-wizard-分步表单.html) | 进阶 | 表单校验 |
+| 5 | [hash-router 简易路由](hash-router/01-hash-router-简易路由.html) | 进阶 | URL、事件 |
+| 6 | [virtual-list 固定高度](virtual-list/01-virtual-list-固定高度.html) | 进阶 | scroll 事件 |
+
+与 `apps/javascript/06-浏览器API/拖曳手柄/`（Pointer Events 手写拖拽）互补，不重复。
 
 ## 说明
 
@@ -10,7 +23,7 @@
 
 <!-- DEMO_TABLE_START -->
 
-共 **7** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
+共 **6** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
 
 | 文件 | 主题 |
 |---|---|
@@ -19,7 +32,6 @@
 | `form-wizard/01-form-wizard-分步表单.html` | 分步表单向导与逐步校验 |
 | `hash-router/01-hash-router-简易路由.html` | Hash 路由简易 SPA 与 fallback |
 | `todo/01-todo-本地状态.html` | Todo 本地状态管理 |
-| `viewpager/01-viewpager-翻页与缓动.html` | ViewPager 翻页组件 + 多种缓动插值器 |
 | `virtual-list/01-virtual-list-固定高度.html` | 固定高度虚拟列表 |
 
 <!-- DEMO_TABLE_END -->

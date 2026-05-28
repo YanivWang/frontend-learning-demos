@@ -76,7 +76,7 @@
 
 ### 第一批：综合 demos + JavaScript 基础高频
 
-- [ ] 审核 `apps/demos/` 剩余 demo：拖拽、分步表单、hash-router、viewpager、virtual-list。
+- [ ] 审核 `apps/demos/` 剩余 demo：拖拽、分步表单、hash-router、virtual-list。
 - [ ] 审核 `apps/javascript/01-基础/`：变量、函数、数组、字符串、类型转换、正则、JSON、Date、parseInt、Symbol、Unicode、严格模式、URI 编码、`eval`。
 - [ ] 审核 `apps/javascript/02-函数与作用域/`：作用域链、闭包、this、柯里化。
 - [ ] 审核 `apps/javascript/03-对象与原型/`：对象创建、属性描述符、原型链、继承、class 与原型关系。

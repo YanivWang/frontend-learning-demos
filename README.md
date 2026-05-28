@@ -13,7 +13,7 @@
 | React 18 | `apps/react18/src/` | 53 | [`apps/react18/README.md`](apps/react18/README.md) |
 | React 19 | `apps/react19/src/` | 11 | [`apps/react19/README.md`](apps/react19/README.md) |
 | TypeScript | `apps/typescript/` | 18 | [`apps/typescript/README.md`](apps/typescript/README.md) |
-| 综合 Demo | `apps/demos/` | 7 | [`apps/demos/README.md`](apps/demos/README.md) |
+| 综合 Demo | `apps/demos/` | 6 | [`apps/demos/README.md`](apps/demos/README.md) |
 | **合计** | — | **360** | 统一头注释 + 页脚导航 + VitePress 搜索（见 [`CONVENTIONS.md`](CONVENTIONS.md)） |
 
 ## 快速开始
@@ -58,7 +58,7 @@ npm run serve
 │   ├── react18/             # React 18.3.1（function-components + class-components）
 │   ├── react19/             # React 19（基础语法 + 面试题，umd-react 运行时）
 │   ├── typescript/          # TypeScript 面试基础 / 进阶 / 工程与框架
-│   └── demos/               # 综合 Demo（drag / viewpager）
+│   └── demos/               # 综合 Demo（drag / todo / virtual-list）
 │
 ├── packages/
 │   └── shared/libs/         # axios、lodash、js-cookie（vue2/vue3 共用）

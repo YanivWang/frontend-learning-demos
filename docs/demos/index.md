@@ -2,7 +2,7 @@
 
 # Demo 索引
 
-共 **362** 个可运行 demo。点击链接打开对应 HTML 页面。
+共 **365** 个可运行 demo。点击链接打开对应 HTML 页面。
 
 ## JavaScript
 
@@ -23,6 +23,7 @@
 - [arguments](/apps/javascript/01-%E5%9F%BA%E7%A1%80/arguments.html) — arguments 类数组对象与剩余参数
 - [Date](/apps/javascript/01-%E5%9F%BA%E7%A1%80/Date.html) — Date 常用工具：月初/月末、格式化、时间差
 - [encode-URI编码](/apps/javascript/01-%E5%9F%BA%E7%A1%80/encode-URI%E7%BC%96%E7%A0%81.html) — URI 编码 API（encodeURI / encodeURIComponent / decode）
+- [Error与异常](/apps/javascript/01-%E5%9F%BA%E7%A1%80/Error%E4%B8%8E%E5%BC%82%E5%B8%B8.html) — Error 类型、try/catch/finally 与 error.cause
 - [escape](/apps/javascript/01-%E5%9F%BA%E7%A1%80/escape.html) — 字符串中反斜杠转义与 JSON 序列化
 - [eval与Global](/apps/javascript/01-%E5%9F%BA%E7%A1%80/eval%E4%B8%8EGlobal.html) — eval 与全局对象 window
 - [IIFE](/apps/javascript/01-%E5%9F%BA%E7%A1%80/IIFE.html) — IIFE 立即执行函数表达式
@@ -69,6 +70,7 @@
 
 ### 04-ES6+
 
+- [迭代器与for-of](/apps/javascript/04-ES6%2B/%E8%BF%AD%E4%BB%A3%E5%99%A8%E4%B8%8Efor-of.html) — 迭代器协议、for...of 与可迭代对象
 - [解构展开与模板字符串](/apps/javascript/04-ES6%2B/%E8%A7%A3%E6%9E%84%E5%B1%95%E5%BC%80%E4%B8%8E%E6%A8%A1%E6%9D%BF%E5%AD%97%E7%AC%A6%E4%B8%B2.html) — 解构、rest/spread、模板字符串、可选链与空值合并
 
 ### 集合
@@ -158,6 +160,7 @@
 
 - [贴边侧栏拖拽](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E6%8B%96%E6%9B%B3%E6%89%8B%E6%9F%84/01-%E8%B4%B4%E8%BE%B9%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html) — 拖拽调整侧栏宽度（Vue3 + requestAnimationFrame 版）
 - [悬浮侧栏拖拽](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E6%8B%96%E6%9B%B3%E6%89%8B%E6%9F%84/02-%E6%82%AC%E6%B5%AE%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html) — 悬浮侧栏拖拽 V2（带圆角与外边距）
+- [原生侧栏拖拽](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E6%8B%96%E6%9B%B3%E6%89%8B%E6%9F%84/03-%E5%8E%9F%E7%94%9F%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html) — 原生 DOM 拖拽调整侧栏宽度（Pointer Events + rAF）
 
 ### BOM
 
@@ -616,6 +619,7 @@
 - [useLayoutEffect与useEffect对比](/apps/react18/src/function-components/32-useLayoutEffect%E4%B8%8EuseEffect%E5%AF%B9%E6%AF%94.html) — useLayoutEffect 与 useEffect 对比
 - [props派生状态与key重置](/apps/react18/src/function-components/33-props%E6%B4%BE%E7%94%9F%E7%8A%B6%E6%80%81%E4%B8%8Ekey%E9%87%8D%E7%BD%AE.html) — props 派生状态与 key 重置
 - [React19新特性概览](/apps/react18/src/function-components/34-React19%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%A7%88.html) — React 19 新特性概览
+- [useTransition与useDeferredValue](/apps/react18/src/function-components/35-useTransition%E4%B8%8EuseDeferredValue.html) — useTransition 与 useDeferredValue
 
 ## React 19
 
@@ -658,10 +662,6 @@ Actions、use()、useOptimistic、RSC 面试边界等 React 19 专题
 ### todo
 
 - [todo-本地状态](/apps/demos/todo/01-todo-%E6%9C%AC%E5%9C%B0%E7%8A%B6%E6%80%81.html) — Todo 本地状态管理
-
-### viewpager
-
-- [viewpager-翻页与缓动](/apps/demos/viewpager/01-viewpager-%E7%BF%BB%E9%A1%B5%E4%B8%8E%E7%BC%93%E5%8A%A8.html) — ViewPager 翻页组件 + 多种缓动插值器
 
 ### virtual-list
 

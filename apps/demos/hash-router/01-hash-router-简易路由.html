@@ -40,7 +40,7 @@
         <ul>
           <li><strong>核心机制：</strong><code>#</code> 后面的 fragment 改变会触发 <code>hashchange</code>，但页面首次加载不会自动触发一次，所以初始化时必须主动调用 <code>render()</code>。</li>
           <li><strong>静态托管优势：</strong>fragment 不会作为请求路径发送给服务器，刷新 <code>#/user/42</code> 仍然请求当前 HTML，因此 hash 路由通常不需要额外后端 fallback。</li>
-          <li><strong>动态段处理：</strong>示例用正则匹配 <code>/user/:id</code>，并只接受数字 ID；真实项目需要对参数做解码、校验和权限判断。</li>
+          <li><strong>动态段处理：</strong>示例用正则匹配 <code>/user/:id</code>，并只接受数字 ID；路径经 <code>decodeURIComponent</code> 解码后再匹配，真实项目还需要校验和权限判断。</li>
           <li><strong>安全渲染：</strong>路由参数来自地址栏，属于用户可控输入；示例用 DOM API 和 <code>textContent</code> 写入页面，不把参数拼进 <code>innerHTML</code>。</li>
           <li><strong>模式取舍：</strong>hash 模式部署简单但 URL 带 <code>#</code>；History API URL 更自然，但刷新深层路径需要服务器把请求回退到入口 HTML。</li>
         </ul>
@@ -94,8 +94,15 @@
         if (m) return { handler: routes["/user/:id"], params: { id: m[1] } };
         return { handler: () => createView("404 Not Found", `没有匹配到路由：${path}`), params: {} };
       }
+      function decodeHashPath(raw) {
+        try {
+          return decodeURIComponent(raw || "/");
+        } catch {
+          return raw || "/";
+        }
+      }
       function render() {
-        const path = location.hash.slice(1) || "/";
+        const path = decodeHashPath(location.hash.slice(1) || "/");
         const { handler, params } = match(path);
         document.getElementById("view").replaceChildren(handler(params));
         document.querySelectorAll("nav a").forEach((a) => {
