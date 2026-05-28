@@ -35,13 +35,13 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>并发渲染与 Transitions 面试</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">下方 #root 为搜索过滤演示区：在输入框快速输入数字（如 12），观察输入即时回显而列表更新可能滞后并显示 isPending；请打开 DevTools Console 查看紧急/过渡更新日志。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
           <li>并发渲染不是把 React 变成多线程，而是让渲染工作可被中断、恢复或丢弃；用户输入这类紧急更新可以先提交，列表筛选、路由切换这类过渡更新可延后。</li>
           <li><code>startTransition</code> 标记低优先级更新，<code>useTransition</code> 在此基础上返回 <code>isPending</code>；本页把输入框的 <code>query</code> 作为紧急更新，把慢列表的 <code>deferredQuery</code> 放入 transition。</li>
-          <li>版本边界：React 18 已提供并发根和 <code>useTransition</code>；React 19 的 Actions、表单 Action、<code>useOptimistic</code> 等常和 transition 一起解释异步交互状态。</li>
+          <li>版本边界：React 18 已提供并发根和 <code>useTransition</code>；React 19 的 Actions、表单 Action、<code>useOptimistic</code> 等常和 transition 一起解释异步交互状态；<code>createRoot</code> 是并发前提，但并发更新需 opt-in（transition / deferredValue）。</li>
           <li>Transition 不会减少慢计算本身的耗时，也不会替代防抖、虚拟列表、缓存或 Web Worker；如果渲染或计算太重，仍要降低工作量。</li>
           <li>受控输入的 value 更新必须保持紧急，不能只放进 transition；否则输入会滞后，甚至出现用户输入和 UI 回显不一致的体验问题。</li>
         </ul>
@@ -54,10 +54,10 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/useTransition" target="_blank" rel="noopener">React Reference: useTransition</a></li>
-          <li><a href="https://react.dev/reference/react/startTransition" target="_blank" rel="noopener">React Reference: startTransition</a></li>
-          <li><a href="https://react.dev/reference/react/useDeferredValue" target="_blank" rel="noopener">React Reference: useDeferredValue</a></li>
-          <li><a href="https://react.dev/blog/2022/03/29/react-v18#what-is-concurrent-react" target="_blank" rel="noopener">React 18 Blog: What is Concurrent React?</a></li>
+          <li><a href="https://react.dev/reference/react/useTransition" target="_blank" rel="noreferrer">React Reference: useTransition</a></li>
+          <li><a href="https://react.dev/reference/react/startTransition" target="_blank" rel="noreferrer">React Reference: startTransition</a></li>
+          <li><a href="https://react.dev/reference/react/useDeferredValue" target="_blank" rel="noreferrer">React Reference: useDeferredValue</a></li>
+          <li><a href="https://react.dev/blog/2022/03/29/react-v18#what-is-concurrent-react" target="_blank" rel="noreferrer">React 18 Blog: What is Concurrent React?</a></li>
         </ul>
       </div>
     </section>
@@ -71,6 +71,7 @@
     <script type="text/babel">
       const { useMemo, useState, useTransition } = React;
 
+      // ====== 1. 模拟慢计算：transition 不会让它变快，只是让输入先响应 ======
       function slowFilter(text) {
         const items = [];
         for (let i = 0; i < 8000; i++) {
@@ -80,42 +81,46 @@
       }
 
       function App() {
+        // query：紧急更新，驱动受控输入即时回显
         const [query, setQuery] = useState("");
+        // deferredQuery：过渡更新，驱动慢列表
         const [deferredQuery, setDeferredQuery] = useState("");
         const [isPending, startTransition] = useTransition();
 
         const list = useMemo(
-        () => slowFilter(deferredQuery),
-        [deferredQuery]
-      );
+          () => slowFilter(deferredQuery),
+          [deferredQuery]
+        );
 
-      const onChange = (e) => {
-        const value = e.target.value;
-        setQuery(value);
-        startTransition(() => {
-          setDeferredQuery(value);
-        });
-      };
+        // ====== 2. 输入分离：value 紧急更新，列表筛选放进 transition ======
+        const onChange = (e) => {
+          const value = e.target.value;
+          setQuery(value);
+          console.log("[并发] 紧急更新 query:", value);
+          startTransition(() => {
+            setDeferredQuery(value);
+            console.log("[并发] 过渡更新 deferredQuery:", value);
+          });
+        };
 
-      return (
-      <section>
-        <h1>useTransition 保持输入流畅</h1>
+        return (
+          <section>
+            <h1>useTransition 保持输入流畅</h1>
 
-        <p>输入框（紧急更新）与下方列表（过渡更新）分离。</p>
-        <input value={query} onChange={onChange} placeholder="过滤数字，如 12" />
-        {isPending && <p className="pending">列表更新中（isPending）…</p>}
-        <ul className="slow-list">
-          {list.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-        <p><strong>面试答法：</strong>startTransition 标记低优先级更新；它让 React 优先提交输入反馈，但不会减少慢计算本身的耗时。</p>
-      </section>
-      );
+            <p>输入框（紧急更新）与下方列表（过渡更新）分离。</p>
+            <input value={query} onChange={onChange} placeholder="过滤数字，如 12" />
+            {isPending && <p className="pending">列表更新中（isPending）…</p>}
+            <ul className="slow-list">
+              {list.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+            <p><strong>面试答法：</strong>startTransition 标记低优先级更新；它让 React 优先提交输入反馈，但不会减少慢计算本身的耗时。</p>
+          </section>
+        );
       }
 
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 

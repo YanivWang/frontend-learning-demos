@@ -6,6 +6,7 @@
     - updateFn(state, optimisticValue) 根据乐观输入计算下一屏状态
     - 真实 state 更新后，乐观层自动与服务器结果对齐
     - 失败时不要沉默回滚，要给用户可见错误和重试路径
+    - 与直接 setState 临时追加不同，乐观层由 React 管理并在提交完成后对齐
   面试:
     - useOptimistic 解决的核心体验问题是什么？
     - 乐观 UI 为什么必须设计失败回滚？
@@ -37,22 +38,23 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>useOptimistic 乐观更新</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">下方 #root 为发消息演示区：输入普通文本可观察乐观项立即出现；输入含「失败」可观察回滚与错误提示。请打开 DevTools Console 查看乐观层与真实 state 对齐日志。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>useOptimistic(state, updateFn)</code> 用于异步 Action 完成前先展示临时 UI，让用户马上看到“发送中”“已点赞”等反馈。</li>
+          <li><code>useOptimistic(state, updateFn)</code> 用于异步 Action 完成前先展示临时 UI，让用户马上看到「发送中」「已点赞」等反馈；返回 <code>[optimisticState, addOptimistic]</code>。</li>
           <li><code>updateFn</code> 必须是纯函数，根据当前权威 state 和乐观输入计算下一屏状态；不要在里面发请求、改外部变量或生成不可控副作用。</li>
           <li>真实 state 更新后，乐观层会和最终结果对齐；如果请求失败且权威 state 没变，临时项应消失，并显示可理解的错误。</li>
+          <li>与直接 <code>setState</code> 临时追加不同，乐观层由 React 在 Action / transition 生命周期内管理，提交完成或失败后会自动与权威 state 对齐，无需手动删除临时项。</li>
           <li>适合发消息、点赞、列表追加等成功概率高、失败可回滚的交互；支付、库存扣减、权限变更这类强一致场景通常不应乐观确认。</li>
-          <li>本页输入“失败”会模拟服务端拒绝，消息会从乐观列表中回滚，并展示错误提示，避免用户误以为已经发送成功。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>useOptimistic</code> 解决什么问题？</strong> 结论是提升异步提交的即时反馈。原因是用户发消息或点赞后不希望等待网络返回才看到变化。边界是它只处理临时 UI 层，服务端结果、失败文案和重试仍由业务负责。</li>
-          <li><strong>乐观 UI 为什么必须处理失败？</strong> 结论是失败时要回滚或标记失败，不能静默保留假状态。原因是乐观结果不是权威数据，和服务端冲突时必须以真实 state 为准。项目里常见做法是显示错误、提供重试或把条目标成“发送失败”。</li>
+          <li><strong><code>useOptimistic</code> 解决的核心体验问题是什么？</strong> 结论是提升异步提交的即时反馈。原因是用户发消息或点赞后不希望等待网络返回才看到变化。边界是它只处理临时 UI 层，服务端结果、失败文案和重试仍由业务负责。</li>
+          <li><strong>乐观 UI 为什么必须设计失败回滚？</strong> 结论是失败时要回滚或标记失败，不能静默保留假状态。原因是乐观结果不是权威数据，和服务端冲突时必须以真实 state 为准。本页输入「失败」会触发回滚并展示错误。</li>
           <li><strong><code>updateFn</code> 为什么要求纯函数？</strong> 结论是它只应该计算乐观状态。原因是 React 可能根据渲染和 Action 生命周期重新计算乐观层，副作用会造成重复请求或状态污染。边界是 ID、时间戳等输入应在调用 <code>addOptimistic</code> 前准备好。</li>
-          <li><strong>什么时候不适合乐观更新？</strong> 结论是强一致、失败代价高或权限不确定的操作不适合直接乐观确认。原因是用户看到的结果如果随后回滚，会带来信任和业务风险。支付、审批、库存扣减通常应等待服务端确认再展示成功态。</li>
+          <li><strong><code>useOptimistic</code> 与直接 <code>setState</code> 临时追加有什么区别？</strong> 结论是乐观层由 React 管理，提交完成后自动与权威 state 对齐；手写临时 state 需自己维护添加、删除和对齐逻辑。原因是 <code>useOptimistic</code> 与 transition / Action 集成，失败时权威 state 不变则临时项自动消失。</li>
+          <li><strong>哪些业务不适合做乐观更新？</strong> 结论是强一致、失败代价高或权限不确定的操作不适合直接乐观确认。原因是用户看到的结果如果随后回滚，会带来信任和业务风险。支付、审批、库存扣减通常应等待服务端确认再展示成功态。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -76,65 +78,74 @@
       }
 
       function MessageList() {
+        // ====== 1. 权威 state：服务端确认后的消息列表 ======
         const [messages, setMessages] = useState([
           { id: 1, text: "欢迎学习 React 19", sent: true },
         ]);
         const [error, setError] = useState("");
+
+        // ====== 2. useOptimistic：在 Action 完成前展示临时 UI ======
+        // updateFn 必须是纯函数：根据当前 state 和乐观输入计算下一屏
         const [optimisticMessages, addOptimistic] = useOptimistic(
-        messages,
-        (state, newMsg) => [...state, { ...newMsg, sending: true }]
-      );
-      const [isPending, startTransition] = useTransition();
+          messages,
+          (state, newMsg) => [...state, { ...newMsg, sending: true }]
+        );
 
-      const send = (text) => {
-        const optimistic = { id: Date.now(), text, sent: false };
-        setError("");
-        startTransition(async () => {
-          addOptimistic(optimistic);
-          await delay(900);
-          if (text.includes("失败")) {
-            setError("服务端拒绝了这条消息，乐观项已回滚。请修改后重试。");
-            return;
-          }
-          setMessages((prev) => [
-            ...prev,
-            { id: optimistic.id, text, sent: true },
-          ]);
-        });
-      };
+        const [isPending, startTransition] = useTransition();
 
-      return (
-      <section>
-        <h2>useOptimistic 发消息</h2>
-        <ul>
-          {optimisticMessages.map((m) => (
-            <li key={m.id} className={m.sending ? "sending" : ""}>
-              {m.text}
-              {m.sending ? "（发送中…）" : ""}
-            </li>
-          ))}
-        </ul>
-        {error ? <p className="err">{error}</p> : null}
-        <form
-          onSubmit={(e) => {
-              e.preventDefault();
-              const text = e.target.message.value.trim();
-              if (!text || isPending) return;
-              e.target.reset();
-              send(text);
-            }}
+        // ====== 3. 发送流程：先 addOptimistic，再异步更新权威 state 或失败回滚 ======
+        const send = (text) => {
+          const optimistic = { id: Date.now(), text, sent: false };
+          setError("");
+          console.log("[乐观] 开始发送:", text);
+          startTransition(async () => {
+            addOptimistic(optimistic);
+            console.log("[乐观] addOptimistic 后列表长度:", messages.length + 1, "（临时 +1）");
+            await delay(900);
+            if (text.includes("失败")) {
+              console.log("[乐观] 服务端拒绝，权威 state 不变，乐观项自动回滚");
+              setError("服务端拒绝了这条消息，乐观项已回滚。请修改后重试。");
+              return;
+            }
+            setMessages((prev) => {
+              const next = [...prev, { id: optimistic.id, text, sent: true }];
+              console.log("[乐观] 权威 state 更新，乐观层与真实列表对齐，长度:", next.length);
+              return next;
+            });
+          });
+        };
+
+        return (
+          <section>
+            <h2>useOptimistic 发消息</h2>
+            <ul>
+              {optimisticMessages.map((m) => (
+                <li key={m.id} className={m.sending ? "sending" : ""}>
+                  {m.text}
+                  {m.sending ? "（发送中…）" : ""}
+                </li>
+              ))}
+            </ul>
+            {error ? <p className="err">{error}</p> : null}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const text = e.target.message.value.trim();
+                if (!text || isPending) return;
+                e.target.reset();
+                send(text);
+              }}
             >
-            <input name="message" placeholder="输入消息" disabled={isPending} />
-            <button type="submit" disabled={isPending}>
-              发送
-            </button>
-          </form>
-        </section>
-      );
+              <input name="message" placeholder="输入消息（含「失败」模拟拒绝）" disabled={isPending} />
+              <button type="submit" disabled={isPending}>
+                发送
+              </button>
+            </form>
+          </section>
+        );
       }
 
       ReactDOM.createRoot(document.getElementById("root")).render(<MessageList />);
-
     </script>
     <!-- SCRIPT_END -->
 

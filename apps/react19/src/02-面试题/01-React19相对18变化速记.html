@@ -5,7 +5,8 @@
     - 新 Hooks：useActionState、useOptimistic、use（及 useFormStatus 在 react-dom）
     - Actions：表单 action、transition 内异步更新标准化
     - ref 可作为 prop；React 18 消费者仍需要 forwardRef 兼容
-    - 文档元数据、资源预加载、UMD 移除与 RSC 框架集成是升级关注点
+    - ReactDOM.render / hydrate 已移除；官方 UMD 已移除
+    - 文档元数据、资源预加载、RSC 框架集成是升级关注点
   面试:
     - React 19 相对 React 18 最值得记住的变化有哪些？
     - Actions、useActionState、useFormStatus 分别负责什么？
@@ -37,22 +38,23 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>React 19 相对 18 变化速记</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">下方 #root 为对照表与高频追问速记区，无需 Console；对照上方知识点复习后可直接背诵表格内容。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>React 19 的高频变化可以按四组记：Actions 表单提交流程、乐观 UI、渲染中读取资源、ref 传递简化。</li>
+          <li>React 19 的高频变化可以按四组记：Actions 表单提交流程、乐观 UI、渲染中读取资源、ref 传递简化；另加破坏性变化 <code>ReactDOM.render</code> / <code>hydrate</code> 移除与 UMD 构建移除。</li>
           <li><code>useActionState</code> 管理 Action 返回状态和 pending，<code>useFormStatus</code> 读取当前表单提交状态，<code>useOptimistic</code> 负责提交完成前的临时 UI。</li>
           <li><code>use()</code> 可读取 Promise 或 Context；读取 Promise 需要 <code>Suspense</code>，失败交给 Error Boundary，不是把所有客户端请求都替换掉。</li>
           <li>React 19 允许 <code>ref</code> 作为函数组件 prop，但 React 18 消费者仍依赖 <code>forwardRef</code>；组件库升级要看最低支持版本。</li>
-          <li>升级还要关注 UMD 构建移除、函数组件 <code>defaultProps</code> 等废弃项、文档元数据和资源预加载 API，以及 RSC 通常通过框架落地。</li>
+          <li>升级还要关注函数组件 <code>defaultProps</code> 等废弃项、文档元数据和资源预加载 API，以及 RSC 通常通过 Next.js 等框架落地，本仓库 UMD demo 只讲概念边界。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>React 19 相对 React 18 怎么概括？</strong> 结论是 React 19 重点增强异步交互和资源读取，同时调整 ref 与发布形态。原因是 Actions、<code>useActionState</code>、<code>useOptimistic</code>、<code>use()</code> 直接覆盖表单、乐观 UI 和 Suspense 数据读取。项目里要按版本边界逐步迁移，而不是把 React 18 写法立即全部替换。</li>
-          <li><strong>Actions、<code>useActionState</code>、<code>useFormStatus</code> 怎么区分？</strong> 结论是 Action 是异步提交函数，<code>useActionState</code> 拿提交结果和 pending，<code>useFormStatus</code> 在表单子组件里读取所属表单状态。原因是它们分别对应“做提交”“保存结果”“显示提交状态”。复杂表单仍可能结合路由框架或表单库。</li>
-          <li><strong><code>use()</code> 的边界怎么答？</strong> 结论是它能读取 Promise / Context，但读取 Promise 要配合 <code>Suspense</code> 和 Error Boundary。原因是 pending 会挂起，reject 会进入错误边界。边界是事件触发的请求、订阅和副作用仍常用事件处理或 <code>useEffect</code>。</li>
-          <li><strong>升级到 React 19 前要检查什么？</strong> 结论是先跑官方 upgrade guide / codemod，再查依赖兼容。原因是 UMD 构建移除、函数组件 <code>defaultProps</code>、字符串 ref、旧测试工具等都可能影响项目。组件库还要确认是否继续支持 React 18 的 <code>forwardRef</code> 消费方式。</li>
+          <li><strong>React 19 相对 React 18 最值得记住的变化有哪些？</strong> 结论是 Actions / <code>useActionState</code> / <code>useOptimistic</code> / <code>use()</code> 增强异步交互与资源读取，ref 可作为 prop，同时 <code>ReactDOM.render</code>、<code>hydrate</code>、官方 UMD 已移除。原因是 React 19 聚焦表单、乐观 UI 和 Suspense 数据读取标准化。项目里要按版本边界逐步迁移。</li>
+          <li><strong>Actions、<code>useActionState</code>、<code>useFormStatus</code> 分别负责什么？</strong> 结论是 Action 是异步提交函数，<code>useActionState</code> 拿提交结果和 pending，<code>useFormStatus</code> 在表单子组件里读取所属表单状态。原因是它们分别对应「做提交」「保存结果」「显示提交状态」。复杂表单仍可能结合路由框架或表单库。</li>
+          <li><strong><code>use()</code>、Suspense、Error Boundary 的边界怎么答？</strong> 结论是它能读取 Promise / Context，但读取 Promise 要配合 <code>Suspense</code> 和 Error Boundary。原因是 pending 会挂起，reject 会进入错误边界。边界是事件触发的请求、订阅和副作用仍常用事件处理或 <code>useEffect</code>。</li>
+          <li><strong>ref as prop 升级会影响哪些组件库代码？</strong> 结论是封装 input、button、modal 等需透传 ref 的组件库可直接用 ref prop，但 React 18 消费者仍依赖 <code>forwardRef</code>。原因是 ref 在 React 18 是特殊 prop。组件库需保留 <code>forwardRef</code> 兼容层或提高最低 React 版本到 19。</li>
+          <li><strong>React 18 升级 19 前应该检查哪些破坏性变化？</strong> 结论是先跑官方 upgrade guide / codemod，再查依赖兼容。原因是 <code>ReactDOM.render</code> / <code>hydrate</code> 移除、UMD 构建移除、函数组件 <code>defaultProps</code>、字符串 ref、旧测试工具等都可能影响项目。组件库还要确认是否继续支持 React 18 的 <code>forwardRef</code> 消费方式。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -72,53 +74,60 @@
 
     <!-- SCRIPT_START -->
     <script type="text/babel">
+      // ====== 1. 对照表数据：React 18 vs React 19 高频差异 ======
       const rows = [
         ["表单异步状态", "useState + 手写 pending", "useActionState + form action"],
         ["乐观 UI", "手动临时 state", "useOptimistic"],
         ["读 Promise / Context", "useEffect + useContext", "use() + Suspense"],
-        ["ref 传给函数组件", "forwardRef 包裹", "ref 作为普通 prop"],
-        ["script 标签引入", "官方 UMD 包", "ESM（esm.sh）或 umd-react 社区包"],
-        ["服务端组件", "无官方 RSC", "react-server 包 + 框架集成"],
+        ["ref 传给函数组件", "forwardRef 包裹", "ref 作为普通 prop（React 19）"],
+        ["客户端挂载", "ReactDOM.render（18 已废弃）", "createRoot（19 唯一入口；render 已移除）"],
+        ["SSR 注水", "ReactDOM.hydrate（18 已废弃）", "hydrateRoot（19 唯一入口）"],
+        ["script 标签引入", "官方 UMD 包", "官方 UMD 已移除；本仓库用本地运行时教学"],
+        ["服务端组件", "无官方 RSC", "react-server 包 + 框架集成（Next.js 等）"],
       ];
 
       function CheatSheet() {
-        return (
-        <section>
-          <h1>React 19 相对 18 — 面试速记</h1>
+        console.log("[速记] React.version:", React.version);
 
-          <p>
-            当前运行时：<strong>React {React.version}</strong>（本模块 umd-react）
-          </p>
-          <table>
-            <thead>
-              <tr>
-                <th>主题</th>
-                <th>React 18</th>
-                <th>React 19</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map(([topic, r18, r19]) => (
-                <tr key={topic}>
-                  <td>{topic}</td>
-                  <td>{r18}</td>
-                  <td>{r19}</td>
+        return (
+          <section>
+            <h1>React 19 相对 18 — 面试速记</h1>
+
+            <p>
+              当前运行时：<strong>React {React.version}</strong>（本仓库本地 React 19 运行时，非官方 UMD）
+            </p>
+            <table>
+              <thead>
+                <tr>
+                  <th>主题</th>
+                  <th>React 18</th>
+                  <th>React 19</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          <h2>高频追问</h2>
-          <ul>
-            <li><span className="tag">Actions</span>为何要把异步提交放进 transition？— 保持 UI 可响应，pending 状态可追踪。</li>
-            <li><span className="tag">use()</span>为何能在 if 里调用？— 它是 React 19 的特殊读取 API，规则不同于 useState / useEffect，但仍只能在组件或 Hook 中调用。</li>
-            <li><span className="tag">升级</span>18→19 先跑 codemod，检查 defaultProps on function components、字符串 ref 等废弃用法。</li>
-          </ul>
-        </section>
-      );
+              </thead>
+              <tbody>
+                {rows.map(([topic, r18, r19]) => (
+                  <tr key={topic}>
+                    <td>{topic}</td>
+                    <td>{r18}</td>
+                    <td>{r19}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* ====== 2. 高频追问：Actions / use() / 升级检查 ====== */}
+            <h2>高频追问</h2>
+            <ul>
+              <li><span className="tag">Actions</span>为何要把异步提交放进 transition？— 保持 UI 可响应，pending 状态可追踪。</li>
+              <li><span className="tag">use()</span>为何能在 if 里调用？— 它是 React 19 的特殊读取 API，规则不同于 useState / useEffect，但仍只能在组件或 Hook 中调用。</li>
+              <li><span className="tag">ref</span>组件库如何兼容 React 18？— 保留 forwardRef 或提高最低版本到 React 19。</li>
+              <li><span className="tag">升级</span>18→19 先跑 codemod，检查 ReactDOM.render、defaultProps on function components、字符串 ref 等废弃用法。</li>
+            </ul>
+          </section>
+        );
       }
 
       ReactDOM.createRoot(document.getElementById("root")).render(<CheatSheet />);
-
     </script>
     <!-- SCRIPT_END -->
 

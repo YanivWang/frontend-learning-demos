@@ -2,15 +2,21 @@
   分类: react19 / 01-基础语法
   主题: React 19 元素与 createRoot 渲染
   要点:
-    - JSX 经 Babel 转译为 React.createElement，得到 React 元素（普通对象）
-    - ReactDOM.createRoot(container).render(element) 为唯一推荐挂载方式
-    - React 19 仍基于元素不可变：更新界面需 render 新元素树
-    - 本模块使用 React 19 运行时（umd-react），与 apps/react18 的 18.3.1 分离
+    - JSX 由 Babel 转译；本页 classic runtime 为 React.createElement，现代工程 automatic 为 react/jsx-runtime
+    - React element 是描述 UI 的不可变对象（type / props / key / ref），不是真实 DOM
+    - React 19 客户端 CSR 入口：ReactDOM.createRoot(container).render(element)；ReactDOM.render 已移除
+    - 全 React 应用启动时 createRoot + render 一次；后续更新靠 state 触发组件 re-render 返回新 JSX
+    - 组件名必须大写；root.render(<App />) 正确，root.render(App) 会报错
+    - SSR 场景用 hydrateRoot，不是 createRoot
+    - React 19 官方不再提供 UMD；本仓库用本地运行时文件教学，与 apps/react18 分离
   面试:
     - React 元素为什么说是不可变描述对象？
-    - createRoot(container).render(element) 做了哪两件事？
-    - 为什么 React 19 项目仍从根节点重新 render 新元素树？
-    - JSX 与 React.createElement 在运行结果上是什么关系？
+    - createRoot 和 render 分别做什么？为什么不要每次 state 变化都 createRoot？
+    - state 更新后 UI 如何变化？与 root.render 是什么关系？
+    - JSX、React.createElement 和 React element 是什么关系？
+    - React 19 为什么必须使用 createRoot？ReactDOM.render 怎么了？
+    - root.render(<App />) 和 root.render(App) 有什么区别？
+    - 自定义组件为什么必须以大写字母开头？
     - React 19 官方不再提供 UMD 时本仓库运行时边界是什么？
 -->
 
@@ -20,6 +26,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>React 19 · 元素与 createRoot</title>
+    <!-- react.development.js：React 核心；react-dom.development.js：createRoot / render 等 DOM 渲染 API -->
     <script src="../../libs/react.development.js"></script>
     <script src="../../libs/react-dom.development.js"></script>
     <script src="../../libs/babel.min.js"></script>
@@ -35,29 +42,39 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>React 19 元素与 createRoot 渲染</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看 element 结构输出；下方 #root 为 React 挂载与交互演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>JSX</code> 是 JavaScript 的语法扩展，本页用 Babel 在浏览器中转译；转译后会创建 React 元素，元素本质上是描述 UI 的不可变对象。</li>
-          <li><code>ReactDOM.createRoot(container)</code> 创建并管理一个 React 根，<code>root.render(element)</code> 把元素树交给 React 协调并提交到容器。</li>
-          <li>更新界面不是修改已有元素对象，而是根据新 state / props 重新返回一棵元素树；React 再比较前后树并更新必要 DOM。</li>
-          <li>本页同时展示 <code>React.createElement</code> 与 JSX，说明两者最终都表达同一类 React 元素；项目代码通常使用 JSX 可读性更好。</li>
-          <li>React 19 官方移除了 UMD 构建，本仓库通过本地 React 19 运行时文件教学演示；真实项目应优先使用构建工具或 ESM CDN，并和 React 18 demo 区分版本。</li>
+          <li><code>JSX</code> 是 JavaScript 的语法扩展。Babel 转译有两种 runtime：<strong>classic</strong> 生成 <code>React.createElement(type, props, ...children)</code>；React 19 真实项目要求的 <strong>automatic</strong> 生成 <code>react/jsx-runtime</code> 中的 <code>jsx()</code> 调用。本 demo 用 <code>babel.min.js</code> 做浏览器运行时转译（classic），只适合学习演示。</li>
+          <li><code>React.createElement</code> 返回 React element：描述 UI 的不可变普通对象（含 <code>type</code>、<code>props</code>、<code>key</code>、<code>ref</code>），不是真实 DOM。创建 element 不会立刻渲染组件或创建 DOM 节点。</li>
+          <li>React 19 客户端 CSR 入口为 <code>ReactDOM.createRoot(container).render(element)</code>。旧版 <code>ReactDOM.render</code> 在 React 18 已废弃，<strong>React 19 已移除</strong>，必须迁移到 <code>createRoot</code>。</li>
+          <li>全 React 应用通常只在启动时 <code>createRoot</code> 一次并 <code>root.render(&lt;App /&gt;)</code> 一次；之后 UI 更新靠 <code>setState</code> / <code>useState</code> 触发组件 <strong>re-render</strong>，组件返回新 JSX，React 经 Trigger → Render → Commit 三阶段更新 DOM，<strong>不需要</strong> 每次 state 变化都再调 <code>root.render</code>。</li>
+          <li>自定义组件名必须大写，例如 <code>&lt;Greeting /&gt;</code>。小写 <code>&lt;ele1 /&gt;</code> 等价于 <code>createElement('ele1')</code>，会渲染为未知 HTML 标签，<strong>不会</strong> 抛 ReferenceError。花括号 <code>{ele1}</code> 在变量未定义时才会 <code>ReferenceError</code>。</li>
+          <li>挂载时须传入 React element：<code>root.render(&lt;App /&gt;)</code> 正确；<code>root.render(App)</code> 传入函数引用会报 <em>Functions are not valid as a React child</em>。</li>
+          <li>服务端渲染或静态生成的 HTML 需用 <code>hydrateRoot</code> 接管已有 DOM，而不是 <code>createRoot</code>（后者首次 render 会清空容器内 HTML）。</li>
+          <li>React 19 官方移除了 UMD 构建，本仓库通过本地 React 19 运行时文件教学演示；真实项目应优先使用构建工具或 ESM CDN（如 esm.sh），并与 React 18 demo 区分版本。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>React 元素是什么？</strong> 结论是 React 元素是描述 UI 的不可变对象，不是真实 DOM。原因是 React 需要用元素树表达“此刻 UI 应该长什么样”，再由协调过程决定 DOM 更新。项目里通常用 JSX 创建元素，而不是手写大量 <code>React.createElement</code>。</li>
-          <li><strong><code>createRoot</code> 和 <code>render</code> 分别做什么？</strong> 结论是 <code>createRoot</code> 创建 React 根，<code>render</code> 提交元素树。原因是根对象负责后续调度、协调和卸载。边界是一个 DOM 容器通常只创建一个 root，不要在每次状态变化时重复 <code>createRoot</code>。</li>
-          <li><strong>为什么更新时要返回新元素树？</strong> 结论是 React 不修改旧元素，而是根据最新 state / props 重新描述 UI。原因是不可变描述能让 React 比较前后结果并最小化 DOM 操作。本页点击“改名”就是通过 state 触发新 props 和新元素树。</li>
-          <li><strong>React 19 的浏览器脚本引入有什么版本边界？</strong> 结论是官方不再发布 UMD 构建，真实项目应使用构建工具或 ESM CDN。原因是 React 19 发布策略转向现代模块生态。本仓库为教学保留本地运行时文件，不代表生产项目推荐继续用 script 标签直连。</li>
+          <li><strong>React 元素是什么？</strong> 结论是 React 元素是描述 UI 的不可变对象（含 <code>type</code>、<code>props</code>、<code>key</code>、<code>ref</code>），不是真实 DOM。原因是 React 用 element 树表达「此刻 UI 应该长什么样」，再由协调（Render）与提交（Commit）决定 DOM 更新。项目里通常用 JSX 创建元素，而不是手写大量 <code>React.createElement</code>。</li>
+          <li><strong><code>createRoot</code> 和 <code>render</code> 分别做什么？</strong> 结论是 <code>createRoot</code> 创建并管理 React 根对象，<code>render</code> 把 React element 提交进该根。原因是根对象负责后续调度、协调和卸载（<code>root.unmount()</code>）。边界：一个 DOM 容器通常只 <code>createRoot</code> 一次；全 React 应用启动后一般不再重复 <code>root.render</code>，更新交给 state。</li>
+          <li><strong>state 更新后 UI 如何变化？</strong> 结论是 <code>setState</code> / <code>useState</code> 的 setter 触发组件 re-render，组件根据最新 state / props 返回新 JSX（新 element 描述），React 比较前后结果并最小化 DOM 更新。本页点击「改名」演示的是 state → re-render → 新 props，<strong>不是</strong> 再次调用 <code>root.render</code>。</li>
+          <li><strong>JSX、React.createElement 和 React element 是什么关系？</strong> 结论是 JSX 被 Babel 转译为 <code>createElement</code>（classic）或 <code>jsx()</code>（automatic），调用结果是 React element。React 19 要求现代 JSX transform；本页 classic 写法便于对照学习。</li>
+          <li><strong>React 19 为什么必须使用 createRoot？</strong> 结论是 <code>ReactDOM.render</code> 已在 React 19 移除，客户端挂载只能走 <code>createRoot</code>。SSR 场景对应 <code>hydrateRoot</code>，不是 <code>ReactDOM.hydrate</code>（同样已移除）。</li>
+          <li><strong>root.render(&lt;App /&gt;) 和 root.render(App) 有什么区别？</strong> 结论是前者传入 React element，后者传入函数引用。原因是 <code>render</code> 需要的是描述 UI 的 element/node，不是组件函数本身。</li>
+          <li><strong>自定义组件为什么必须以大写字母开头？</strong> 结论是 React 用大小写区分组件与内置标签。小写 <code>&lt;div&gt;</code> 的 <code>type</code> 是字符串 <code>'div'</code>；大写 <code>&lt;App&gt;</code> 的 <code>type</code> 是组件函数本身。</li>
+          <li><strong>React 19 的浏览器脚本引入有什么版本边界？</strong> 结论是官方不再发布 UMD 构建，真实项目应使用构建工具或 ESM CDN。本仓库为教学保留本地运行时文件，不代表生产项目推荐继续用 script 标签直连 UMD。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://react.dev/reference/react/createElement" target="_blank" rel="noreferrer">React Docs: <code>createElement</code></a></li>
           <li><a href="https://react.dev/reference/react-dom/client/createRoot" target="_blank" rel="noreferrer">React DOM Docs: <code>createRoot</code></a></li>
+          <li><a href="https://react.dev/learn/render-and-commit" target="_blank" rel="noreferrer">React Docs: Render and Commit</a></li>
           <li><a href="https://react.dev/learn/writing-markup-with-jsx" target="_blank" rel="noreferrer">React Docs: Writing Markup with JSX</a></li>
+          <li><a href="https://react.dev/blog/2024/04/25/react-19-upgrade-guide#removed-reactdom-render" target="_blank" rel="noreferrer">React 19 Upgrade Guide: ReactDOM.render removed</a></li>
           <li><a href="https://react.dev/blog/2024/04/25/react-19-upgrade-guide#umd-builds-removed" target="_blank" rel="noreferrer">React 19 Upgrade Guide: UMD builds removed</a></li>
+          <li><a href="https://babeljs.io/docs/babel-plugin-transform-react-jsx" target="_blank" rel="noreferrer">Babel: Transform React JSX</a></li>
         </ul>
       </div>
     </section>
@@ -71,37 +88,81 @@
     <script type="text/babel">
       const { useState } = React;
 
-      const element = React.createElement(
-      "p",
-      { className: "hint" },
-      "createElement 返回的就是 React 元素对象"
+      // ====== 1. JSX 与 React.createElement：同一 UI 的两种写法 ======
+      // JSX 写法；本页 Babel（classic runtime）会转译为下方的 createElement 调用
+      // React 19 真实项目默认 automatic runtime → react/jsx-runtime 的 jsx()，结果同样是 React element
+      const elementFromJsx = (
+        <p className="hint">JSX 转译后得到的也是 React element</p>
       );
 
+      // 与 elementFromJsx 等价的显式 createElement 写法
+      const elementFromCreateElement = React.createElement(
+        "p",
+        { className: "hint" },
+        "createElement 返回的就是 React element 对象"
+      );
+
+      // createElement 返回的 React element 结构示意（真实对象还含 $$typeof 等内部字段）
+      const elementShape = {
+        type: "p",
+        props: { className: "hint", children: "..." },
+        key: null,
+        ref: null,
+      };
+
+      // 对比：两种写法产出的 element.type / props 一致；可在 Console 查看
+      console.log("elementFromJsx.type:", elementFromJsx.type);
+      console.log("elementFromCreateElement.props:", elementFromCreateElement.props);
+      console.log("element 结构示意 elementShape:", elementShape);
+      console.log("React.version:", React.version);
+
+      // ====== 2. 函数组件：接收 props，返回 React element 树 ======
+      // React 调用 Greeting 时传入 props；组件 return 的 JSX 会被转成 element 树
       function Greeting({ name }) {
         return (
-        <div className="box">
-          <h1>你好，{name}</h1>
-
-          {element}
-          <p>当前 React 版本标识：{React.version}</p>
-        </div>
-      );
+          <div className="box">
+            <h1>你好，{name}</h1>
+            {/* 花括号可嵌入已有 element 变量 */}
+            {elementFromCreateElement}
+            {elementFromJsx}
+            <p>当前 React 版本标识：{React.version}</p>
+          </div>
+        );
       }
 
+      // ====== 3. state 驱动 re-render（不是再次 root.render） ======
       function App() {
         const [name, setName] = useState("React 19");
+
+        // setName 触发 App re-render → Greeting 收到新 name prop → React 比较前后 JSX 并更新 DOM
         return (
-        <section>
-          <Greeting name={name} />
-          <button type="button" onClick={() => setName("学习者")}>
-            改名（重新 render 新 props）
-          </button>
-        </section>
-      );
+          <section>
+            <Greeting name={name} />
+            <button type="button" onClick={() => setName("学习者")}>
+              改名（state 更新 → 组件 re-render）
+            </button>
+          </section>
+        );
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      // ====== 4. React 19 挂载三步骤：容器 → 根 → render ======
+      // ① 获取 HTML 中的挂载容器（须先于 script 存在于 DOM 中）
+      const domContainer = document.getElementById("root");
 
+      // ② 创建 React 19 客户端根（ReactDOM.render 已在 React 19 移除，勿用旧 API）
+      const appRoot = ReactDOM.createRoot(domContainer);
+
+      // ③ 启动时 render 一次；<App /> 本身是 React element，type 为 App 函数
+      // 正确：传 element；错误：appRoot.render(App) → Functions are not valid as a React child
+      // 全 React 应用后续更新靠 state，不需要每次 setState 后再 appRoot.render(...)
+      appRoot.render(<App />);
+
+      /*
+        反面教材（取消注释可观察差异）：
+        - appRoot.render(App)     → 传函数引用，报错
+        - <ele1 />                → createElement('ele1')，渲染未知 HTML 标签，不报错
+        - {ele1}                  → 变量 ele1 未定义，渲染时 ReferenceError
+      */
     </script>
     <!-- SCRIPT_END -->
 

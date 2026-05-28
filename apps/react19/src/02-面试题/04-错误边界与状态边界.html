@@ -34,14 +34,14 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>错误边界与 Action 状态边界</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">下方 #root 为三类错误处理演示区：点击「触发渲染错误」观察 Error Boundary 兜底；点击「业务失败」观察 Action 返回 state 而非进入边界。请打开 DevTools Console 查看边界捕获日志。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
           <li>Error Boundary 捕获子组件渲染、生命周期方法和构造函数中的错误；React 19 仍使用 class 组件的 <code>static getDerivedStateFromError</code> 与 <code>componentDidCatch</code> 实现边界。</li>
           <li>边界不会自动捕获事件处理器、定时器、Promise 回调、服务端渲染阶段或边界自身抛出的错误；这些位置需要 <code>try/catch</code>、状态建模或框架级错误处理。</li>
-          <li><code>useActionState</code> 适合把表单 Action 的可预期业务失败返回为状态，例如本页的“库存不足”；它不会代替错误边界，也不应该把用户可修正错误都变成兜底异常页。</li>
-          <li>状态边界处理“还能继续交互”的失败，错误边界隔离“子树无法继续渲染”的未知错误；项目里常按路由、卡片或高风险组件设置边界，避免整页白屏。</li>
+          <li><code>useActionState</code> 适合把表单 Action 的可预期业务失败返回为状态，例如本页的「库存不足」；它不会代替错误边界，也不应该把用户可修正错误都变成兜底异常页。</li>
+          <li>状态边界处理「还能继续交互」的失败，错误边界隔离「子树无法继续渲染」的未知错误；项目里常按路由、卡片或高风险组件设置边界，避免整页白屏。</li>
           <li>重置错误边界时要同步修复触发错误的状态；本页按钮同时清掉边界内部错误和外层 <code>throwRender</code>，真实项目也可通过重置 key 重新挂载子树。</li>
         </ul>
         <h2>面试考点</h2>
@@ -53,10 +53,10 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary" target="_blank" rel="noopener">React Reference: Catching rendering errors with an Error Boundary</a></li>
-          <li><a href="https://react.dev/reference/react/Component#static-getderivedstatefromerror" target="_blank" rel="noopener">React Reference: static getDerivedStateFromError</a></li>
-          <li><a href="https://react.dev/reference/react/Component#componentdidcatch" target="_blank" rel="noopener">React Reference: componentDidCatch</a></li>
-          <li><a href="https://react.dev/reference/react/useActionState" target="_blank" rel="noopener">React Reference: useActionState</a></li>
+          <li><a href="https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary" target="_blank" rel="noreferrer">React Reference: Catching rendering errors with an Error Boundary</a></li>
+          <li><a href="https://react.dev/reference/react/Component#static-getderivedstatefromerror" target="_blank" rel="noreferrer">React Reference: static getDerivedStateFromError</a></li>
+          <li><a href="https://react.dev/reference/react/Component#componentdidcatch" target="_blank" rel="noreferrer">React Reference: componentDidCatch</a></li>
+          <li><a href="https://react.dev/reference/react/useActionState" target="_blank" rel="noreferrer">React Reference: useActionState</a></li>
         </ul>
       </div>
     </section>
@@ -70,43 +70,48 @@
     <script type="text/babel">
       const { Component, useActionState, useState } = React;
 
+      // ====== 1. Error Boundary：捕获渲染期错误（React 19 仍须 class 组件） ======
       class ErrorBoundary extends Component {
         state = { error: null };
         static getDerivedStateFromError(error) {
           return { error };
         }
         componentDidCatch(error, info) {
-          console.log("边界捕获", error, info.componentStack);
+          console.log("[ErrorBoundary] 边界捕获渲染错误:", error.message, info.componentStack);
         }
         render() {
           if (this.state.error) {
             return (
-            <div className="err-ui">
-              <h3>错误边界兜底</h3>
-              <p>{String(this.state.error.message)}</p>
-              <button
-                type="button"
-                onClick={() => {
-                  this.props.onReset?.();
-                  this.setState({ error: null });
-                }}
-              >
-                重置
-              </button>
-            </div>
-          );
+              <div className="err-ui">
+                <h3>错误边界兜底</h3>
+                <p>{String(this.state.error.message)}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    this.props.onReset?.();
+                    this.setState({ error: null });
+                    console.log("[ErrorBoundary] 重置边界");
+                  }}
+                >
+                  重置
+                </button>
+              </div>
+            );
+          }
+          return this.props.children;
         }
-        return this.props.children;
-      }
       }
 
+      // ====== 2. 渲染期故意抛错：由 Error Boundary 捕获 ======
       function Buggy({ shouldThrow }) {
         if (shouldThrow) throw new Error("渲染期故意抛错");
         return <p>子树正常</p>;
       }
 
+      // ====== 3. Action 业务失败：返回 state，不走 Error Boundary ======
       async function riskyAction(prev, formData) {
         const mode = formData.get("mode");
+        console.log("[Action] riskyAction mode=", mode);
         await new Promise((r) => setTimeout(r, 400));
         if (mode === "fail") return "模拟业务失败：库存不足";
         return null;
@@ -115,38 +120,43 @@
       function ActionDemo() {
         const [msg, action, pending] = useActionState(riskyAction, null);
         return (
-        <form action={action} style={{ marginTop: "1.5rem" }}>
-          <h3>Action 错误走 state，不走边界</h3>
-          <button name="mode" value="ok" type="submit" disabled={pending}>
-            成功提交
-          </button>
-          <button name="mode" value="fail" type="submit" disabled={pending}>
-            业务失败
-          </button>
-          {msg && <p>{msg}</p>}
-        </form>
-      );
+          <form action={action} style={{ marginTop: "1.5rem" }}>
+            <h3>Action 错误走 state，不走边界</h3>
+            <button name="mode" value="ok" type="submit" disabled={pending}>
+              成功提交
+            </button>
+            <button name="mode" value="fail" type="submit" disabled={pending}>
+              业务失败
+            </button>
+            {msg && <p>{msg}</p>}
+          </form>
+        );
       }
 
       function App() {
         const [throwRender, setThrowRender] = useState(false);
         return (
-        <section>
-          <h1>三类错误处理位置</h1>
+          <section>
+            <h1>三类错误处理位置</h1>
 
-          <button type="button" onClick={() => setThrowRender(true)}>
-            触发渲染错误（由边界捕获）
-          </button>
-          <ErrorBoundary onReset={() => setThrowRender(false)}>
-            <Buggy shouldThrow={throwRender} />
-          </ErrorBoundary>
-          <ActionDemo />
-        </section>
-      );
+            <button type="button" onClick={() => setThrowRender(true)}>
+              触发渲染错误（由边界捕获）
+            </button>
+            <ErrorBoundary onReset={() => setThrowRender(false)}>
+              <Buggy shouldThrow={throwRender} />
+            </ErrorBoundary>
+            <ActionDemo />
+          </section>
+        );
       }
 
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 
+      /*
+        事件处理器错误不由 Error Boundary 捕获示例（取消注释可验证）：
+        <button onClick={() => { throw new Error("事件错误"); }}>事件抛错</button>
+        → 不会进入 Error Boundary，需在 onClick 内 try/catch
+      */
     </script>
     <!-- SCRIPT_END -->
 
