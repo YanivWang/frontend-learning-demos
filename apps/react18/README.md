@@ -1,6 +1,6 @@
 # React 18
 
-按学习顺序编号的 React 18 demo。`apps/react18/src/` 下共 **53** 个 `.html` 文件`.html`（函数组件 **34** + 类组件 **19**）。
+按学习顺序编号的 React 18 demo。`apps/react18/src/` 下共 **54** 个 `.html` 文件（函数组件 **35** + 类组件 **19**）。
 
 **React 19 可运行 demo** 见独立模块 [`../react19/README.md`](../react19/README.md)（`useActionState`、`useOptimistic`、`use()` 等）。
 
@@ -10,7 +10,7 @@
 
 | 目录 | 数量 | 说明 |
 |---|---:|---|
-| `src/function-components/` | 33 | JSX、函数组件、Hooks、Context、性能优化、路由状态等 |
+| `src/function-components/` | 35 | JSX、函数组件、Hooks、并发特性、Context、性能优化、路由状态等 |
 | `src/class-components/` | 19 | class 组件、`setState`、生命周期、Error Boundary 等 |
 
 > **关于 `03-元素与函数组件.html`**：文件名保留历史命名，当前代码侧重 **React 元素**、**JSX 嵌入表达式** 与 **`createRoot` 渲染流程**；函数组件从 `05-函数组件-props.html` 起系统讲解。
@@ -54,6 +54,8 @@
 | 31 | `31-高阶组件HOC与renderProps.html` | HOC、render props 与自定义 Hook 对比 |
 | 32 | `32-useLayoutEffect与useEffect对比.html` | `useLayoutEffect` 与 `useEffect` 使用边界 |
 | 33 | `33-props派生状态与key重置.html` | props 派生状态、`key` 重置替代 mirror props |
+| 34 | `34-React19新特性概览.html` | React 19 能力边界概览（运行时仍为 React 18，可运行 demo 见 `react19/`） |
+| 35 | `35-useTransition与useDeferredValue.html` | `useTransition`、`useDeferredValue` 与 React 18 并发 opt-in |
 
 ### 类组件 `class-components`
 
@@ -79,6 +81,21 @@
 | 18 | `18-class-高阶组件HOC.html` | 高阶组件模式、逻辑复用 |
 | 19 | `19-错误边界与常见优化清单.html` | Error Boundary、错误兜底、性能优化清单 |
 
+## 重复主题导读
+
+部分主题在多条学习线或多篇 demo 中反复出现，侧重点不同。可按下表选读，避免误以为内容重复写错：
+
+| 主题 | 优先阅读 | 补充阅读 | 分工说明 |
+|---|---|---|---|
+| React 元素 / 渲染入口 | `01-入门-元素与渲染` | `03-元素与函数组件`、`04-元素不可变-时钟` | 01 讲 element 与 `createRoot`；03 补 JSX 表达式；04 讲不可变更新 |
+| `useState` 合并 / 快照 | `12-Hooks-useState基础` | `08-useState-异步合并与连续更新`、`07-函数组件-state与props` | 12 系统讲 Hook；08 专讲连续更新陷阱；07 是 props/state 综合 |
+| 批处理 / 更新后读取 | `10-React18-自动批处理对比` | `09-状态更新后读取-flushSync与useEffect`、`25-虚拟DOM-Fiber-批处理` | 10 对比批处理与 `flushSync`；09 讲 commit 后读取；25 补原理 |
+| 并发 opt-in | `35-useTransition与useDeferredValue` | `10-React18-自动批处理对比`、`25-虚拟DOM-Fiber-批处理` | 35 讲 Transition / deferred；10/25 讲批处理与调度背景 |
+| 列表 `key` | `19-列表key与diff`（函数） | `14-class-列表key与diff`（class） | 规则相同；class 版用内部 state 演示 index key 错位 |
+| 受控 / 非受控表单 | `20-受控与非受控表单` | `11-class-受控与非受控表单` | 函数与 class 各一套，表单语义一致 |
+| Router / 状态管理 | `29-Router与状态管理面试点` | `22-Context跨层传递`、`16-Hooks-useReducer` | 29 为面试边界 + 模拟路由；22/16 补 Context 与 reducer 基础 |
+| Error Boundary | `19-错误边界与常见优化清单`（class） | `28-lazy-Suspense代码分割` | 错误边界仍只能用 class；28 演示 lazy 失败交给边界 |
+
 ## 面试覆盖范围
 
 当前 `apps/react18/src` 已覆盖 React 基础面试中的常见主干：
@@ -86,6 +103,7 @@
 - 基础渲染：JSX、React 元素、`createRoot`、元素不可变、条件渲染
 - 组件基础：函数组件、class 组件、`props`、`state`、生命周期、refs、PureComponent、HOC
 - 状态更新：`setState` 异步合并、函数式更新、React 18 自动批处理
+- 并发 opt-in：`useTransition`、`useDeferredValue`（需 `createRoot`，非默认全面开启）
 - Hooks：`useState`、`useEffect`、`useLayoutEffect`、`useRef`、`useMemo`、`useCallback`、`useReducer`、自定义 Hook
 - 函数组件专题：事件处理、批处理、`flushSync`、生命周期对照、`defaultProps`、HOC、props 派生与 key 重置
 - 高频陷阱：闭包与依赖数组、列表 `key`、index key、受控/非受控表单
@@ -103,7 +121,7 @@
 
 <!-- DEMO_TABLE_START -->
 
-共 **53** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
+共 **54** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
 
 | 文件 | 主题 |
 |---|---|
@@ -160,5 +178,6 @@
 | `function-components/32-useLayoutEffect与useEffect对比.html` | useLayoutEffect 与 useEffect 对比 |
 | `function-components/33-props派生状态与key重置.html` | props 派生状态与 key 重置 |
 | `function-components/34-React19新特性概览.html` | React 19 新特性概览 |
+| `function-components/35-useTransition与useDeferredValue.html` | useTransition 与 useDeferredValue |
 
 <!-- DEMO_TABLE_END -->

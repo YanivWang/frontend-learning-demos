@@ -2,7 +2,7 @@
 
 你是本仓库的前端学习 Demo 维护者。请参照已完成的标杆页面
 `apps/react18/src/function-components/01-入门-元素与渲染.html`，
-对 `apps/react18/src/function-components/` 目录下**全部 34 个 `.html` demo 页**
+对 `apps/react18/src/function-components/` 目录下**全部 35 个 `.html` demo 页**
 进行内容修复、补全与增强。
 
 ---
@@ -155,7 +155,7 @@ NOTES / 面试里提到但脚本缺失的常见项，**按主题补**：
 
 ---
 
-## 四、执行策略（一次改完 34 个文件）
+## 四、执行策略（一次改完 35 个文件）
 
 ### 步骤
 
@@ -195,7 +195,7 @@ NOTES / 面试里提到但脚本缺失的常见项，**按主题补**：
 | 19～21 | key/diff、受控表单、children 组合 |
 | 22～24 | Context、memo、合成事件 |
 | 25～28 | 协调/批处理概念、Fragment/Portal/StrictMode、forwardRef、lazy/Suspense |
-| 29～34 | Router/状态管理面试、defaultProps/displayName、HOC/renderProps、useLayoutEffect、派生状态、React 19 概览 |
+| 29～35 | Router/状态管理面试、defaultProps/displayName、HOC/renderProps、useLayoutEffect、派生状态、React 19 概览、并发 opt-in |
 
 ---
 
@@ -243,7 +243,7 @@ NOTES / 面试里提到但脚本缺失的常见项，**按主题补**：
 
 ---
 
-## 九、待改文件清单（共 34 个）
+## 九、待改文件清单（共 35 个）
 
 - `01-入门-元素与渲染.html`（**已完成**，跳过或仅做一致性检查）
 - `02-JSX-条件渲染短路.html`
@@ -279,6 +279,7 @@ NOTES / 面试里提到但脚本缺失的常见项，**按主题补**：
 - `32-useLayoutEffect与useEffect对比.html`
 - `33-props派生状态与key重置.html`
 - `34-React19新特性概览.html`
+- `35-useTransition与useDeferredValue.html`
 
 ---
 
