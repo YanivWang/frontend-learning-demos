@@ -7,14 +7,14 @@
 | 分类 | 路径 | demo 数量 | 说明文档 |
 |---|---|---:|---|
 | JavaScript | `apps/javascript/` | 129 | [`apps/javascript/README.md`](apps/javascript/README.md) |
-| CSS | `apps/css/` | 41 | [`apps/css/README.md`](apps/css/README.md) |
+| CSS | `apps/css/` | 44 | [`apps/css/README.md`](apps/css/README.md) |
 | Vue 2 | `apps/vue2/src/` | 57 | [`apps/vue2/README.md`](apps/vue2/README.md) |
 | Vue 3 | `apps/vue3/src/` | 41 | [`apps/vue3/README.md`](apps/vue3/README.md) |
 | React 18 | `apps/react18/src/` | 53 | [`apps/react18/README.md`](apps/react18/README.md) |
 | React 19 | `apps/react19/src/` | 11 | [`apps/react19/README.md`](apps/react19/README.md) |
 | TypeScript | `apps/typescript/` | 18 | [`apps/typescript/README.md`](apps/typescript/README.md) |
 | 综合 Demo | `apps/demos/` | 7 | [`apps/demos/README.md`](apps/demos/README.md) |
-| **合计** | — | **357** | 统一头注释 + 页脚导航 + VitePress 搜索（见 [`CONVENTIONS.md`](CONVENTIONS.md)） |
+| **合计** | — | **360** | 统一头注释 + 页脚导航 + VitePress 搜索（见 [`CONVENTIONS.md`](CONVENTIONS.md)） |
 
 ## 快速开始
 

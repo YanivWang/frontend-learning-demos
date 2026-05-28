@@ -2,7 +2,7 @@
 
 # Demo 索引
 
-共 **357** 个可运行 demo。点击链接打开对应 HTML 页面。
+共 **360** 个可运行 demo。点击链接打开对应 HTML 页面。
 
 ## JavaScript
 
@@ -65,7 +65,7 @@
 - [函数也是对象](/apps/javascript/03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%87%BD%E6%95%B0%E4%B9%9F%E6%98%AF%E5%AF%B9%E8%B1%A1.html) — 函数也是对象
 - [原型](/apps/javascript/03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%8E%9F%E5%9E%8B.html) — 原型对象（prototype）与共享属性
 - [原型链](/apps/javascript/03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%8E%9F%E5%9E%8B%E9%93%BE.html) — 原型链与组合继承
-- [原型属性vs实例属性](/apps/javascript/03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%8E%9F%E5%9E%8B%E5%B1%9E%E6%80%A7vs%E5%AE%9E%E4%BE%8B%E5%B1%9E%E6%80%A7.html) — 原型属性 vs 实例属性、hasOwnProperty 与 in
+- [原型属性vs实例属性](/apps/javascript/03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%8E%9F%E5%9E%8B%E5%B1%9E%E6%80%A7vs%E5%AE%9E%E4%BE%8B%E5%B1%9E%E6%80%A7.html) — 原型属性 vs 实例属性
 
 ### 04-ES6+
 
@@ -250,7 +250,11 @@
 
 ### 盒模型
 
-- [index](/apps/css/01-%E5%9F%BA%E7%A1%80/%E7%9B%92%E6%A8%A1%E5%9E%8B/index.html) — 标准盒模型、IE 盒模型、margin 折叠
+- [index](/apps/css/01-%E5%9F%BA%E7%A1%80/%E7%9B%92%E6%A8%A1%E5%9E%8B/index.html) — 盒模型四层、content-box、border-box、margin 折叠
+
+### 继承与层叠
+
+- [index](/apps/css/01-%E5%9F%BA%E7%A1%80/%E7%BB%A7%E6%89%BF%E4%B8%8E%E5%B1%82%E5%8F%A0/index.html) — CSS 继承、inherit / initial / unset / revert
 
 ### 选择器与优先级
 
@@ -319,6 +323,10 @@
 
 - [index](/apps/css/03-%E5%8A%A8%E7%94%BB/nprogress/index.html) — NProgress 顶部进度条第三方库
 
+### transition与animation
+
+- [index](/apps/css/03-%E5%8A%A8%E7%94%BB/transition%E4%B8%8Eanimation/index.html) — transition 与 animation 对比
+
 ### 按钮
 
 - [立体按钮](/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E6%8C%89%E9%92%AE/02-%E7%AB%8B%E4%BD%93%E6%8C%89%E9%92%AE.html) — 拟物 3D 按钮的按下动效
@@ -327,6 +335,10 @@
 ### 百分比圆环
 
 - [index](/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E7%99%BE%E5%88%86%E6%AF%94%E5%9C%86%E7%8E%AF/index.html) — CSS3 transform 百分比圆环组件
+
+### 多行省略
+
+- [index](/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E5%A4%9A%E8%A1%8C%E7%9C%81%E7%95%A5/index.html) — 多行文本省略、line-clamp
 
 ### 文本与图片处理
 
@@ -426,7 +438,7 @@
 
 ### 03-生命周期
 
-- [八个钩子速记](/apps/vue2/src/03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/01-%E5%85%AB%E4%B8%AA%E9%92%A9%E5%AD%90%E9%80%9F%E8%AE%B0.html) — Vue2 八个生命周期钩子速记
+- [八个钩子速记](/apps/vue2/src/03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/01-%E5%85%AB%E4%B8%AA%E9%92%A9%E5%AD%90%E9%80%9F%E8%AE%B0.html) — Vue 2 八个生命周期钩子速记
 
 ### 04-组件
 
@@ -477,7 +489,7 @@
 
 ### 01-基础语法
 
-- [应用实例与模板语法](/apps/vue3/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/01-%E5%BA%94%E7%94%A8%E5%AE%9E%E4%BE%8B%E4%B8%8E%E6%A8%A1%E6%9D%BF%E8%AF%AD%E6%B3%95.html) — createApp / mount / 模板语法
+- [应用实例与模板语法](/apps/vue3/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/01-%E5%BA%94%E7%94%A8%E5%AE%9E%E4%BE%8B%E4%B8%8E%E6%A8%A1%E6%9D%BF%E8%AF%AD%E6%B3%95.html) — createApp / mount / In-DOM 模板 / 模板语法
 - [条件列表与key](/apps/vue3/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/02-%E6%9D%A1%E4%BB%B6%E5%88%97%E8%A1%A8%E4%B8%8Ekey.html) — v-if / v-show / v-for / key
 - [事件与表单v-model](/apps/vue3/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/03-%E4%BA%8B%E4%BB%B6%E4%B8%8E%E8%A1%A8%E5%8D%95v-model.html) — 事件绑定 / 表单 v-model
 - [class与style绑定](/apps/vue3/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/04-class%E4%B8%8Estyle%E7%BB%91%E5%AE%9A.html) — class / style 绑定
@@ -547,9 +559,9 @@
 ### class-components
 
 - [class-必须super](/apps/react18/src/class-components/01-class-%E5%BF%85%E9%A1%BBsuper.html) — class 组件 constructor 必须调用 super()
-- [class-state与props](/apps/react18/src/class-components/02-class-state%E4%B8%8Eprops.html) — class 组件的 state 与 props 区别 + 事件 this 绑定
-- [setState-异步合并](/apps/react18/src/class-components/03-setState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6.html) — setState 异步合并（同步触发多次只会更新一次）
-- [setState-函数式更新](/apps/react18/src/class-components/04-setState-%E5%87%BD%E6%95%B0%E5%BC%8F%E6%9B%B4%E6%96%B0.html) — setState 函数式更新（解决合并陷阱）
+- [class-state与props](/apps/react18/src/class-components/02-class-state%E4%B8%8Eprops.html) — class 组件的 state 与 props
+- [setState-异步合并](/apps/react18/src/class-components/03-setState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6.html) — setState 异步合并（对象式连续更新只加 1）
+- [setState-函数式更新](/apps/react18/src/class-components/04-setState-%E5%87%BD%E6%95%B0%E5%BC%8F%E6%9B%B4%E6%96%B0.html) — setState 函数式更新（解决对象式合并陷阱）
 - [Clock-setState-批处理对比](/apps/react18/src/class-components/05-Clock-setState-%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html) — Clock 演示 setState 批处理（对象式 vs 函数式）
 - [class-完整生命周期与API](/apps/react18/src/class-components/06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html) — class 组件生命周期与常用实例 API
 - [class-refs与DOM](/apps/react18/src/class-components/07-class-refs%E4%B8%8EDOM.html) — class 组件 refs 访问 DOM 与实例

@@ -786,6 +786,16 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         ]
       },
       {
+        "text": "继承与层叠",
+        "collapsed": true,
+        "items": [
+          {
+            "text": "index",
+            "link": "/apps/css/01-%E5%9F%BA%E7%A1%80/%E7%BB%A7%E6%89%BF%E4%B8%8E%E5%B1%82%E5%8F%A0/index.html"
+          }
+        ]
+      },
+      {
         "text": "选择器与优先级",
         "collapsed": true,
         "items": [
@@ -958,6 +968,16 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         ]
       },
       {
+        "text": "transition与animation",
+        "collapsed": true,
+        "items": [
+          {
+            "text": "index",
+            "link": "/apps/css/03-%E5%8A%A8%E7%94%BB/transition%E4%B8%8Eanimation/index.html"
+          }
+        ]
+      },
+      {
         "text": "按钮",
         "collapsed": true,
         "items": [
@@ -978,6 +998,16 @@ const sidebar: DefaultTheme.SidebarItem[] = [
           {
             "text": "index",
             "link": "/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E7%99%BE%E5%88%86%E6%AF%94%E5%9C%86%E7%8E%AF/index.html"
+          }
+        ]
+      },
+      {
+        "text": "多行省略",
+        "collapsed": true,
+        "items": [
+          {
+            "text": "index",
+            "link": "/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E5%A4%9A%E8%A1%8C%E7%9C%81%E7%95%A5/index.html"
           }
         ]
       },
