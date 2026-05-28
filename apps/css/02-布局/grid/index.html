@@ -22,6 +22,19 @@
     <style>
       body { font-family: system-ui, sans-serif; margin: 1rem; color: #333; }
       h2 { font-size: 1rem; margin: 2rem 0 0.5rem; border-bottom: 1px solid #eee; padding-bottom: 0.25rem; }
+      .tip { margin: 0 0 0.75rem; color: #666; font-size: 0.875rem; }
+      .measure { margin: 0.35rem 0 1rem; font-size: 0.875rem; color: #444; font-family: ui-monospace, monospace; }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
       .compare-row { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 1rem; }
       .compare-col { flex: 1; min-width: 280px; }
       .compare-col p { margin: 0 0 8px; font-size: 0.875rem; color: #666; }
@@ -141,7 +154,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Grid 布局练习</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出网格轨道实测宽度。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -169,62 +182,18 @@
     </section>
     <!-- NOTES_END -->
 
-    <!-- SCRIPT_START -->
-    <script>
-      /*
-      * flex布局是基于轴线的布局只能指定项目针对轴向的位置，可以看成是一维布局
-      * grid布局将容器划分为行和列产生单元格，然后指定项目所在的单元格，可以看成是二维布局
-      * 1.采用网格布局的区域叫做容器，内部的直接子元素叫做项目，布局只对顶级子元素有效
-      * */
-
-    </script>
-    <!-- SCRIPT_END -->
-
     <!-- PAGE_DOM_START -->
-    <h2>grid8 · auto 列宽</h2>
-    <div class="grid8">
-      <div>age</div>
-      <div>name</div>
-      <div>address</div>
-      <div>age</div>
-      <div>name</div>
-      <div>address</div>
-    </div>
-    <h2>grid7 · fr + minmax</h2>
-    <div class="grid7">
-      <div>age</div>
-      <div>name</div>
-      <div>address</div>
-      <div>age</div>
-      <div>name</div>
-      <div>address</div>
-    </div>
-    <h2>grid6 · fr 比例分配</h2>
-    <div class="grid6">
-      <div>age</div>
-      <div>name</div>
-      <div>address</div>
-      <div>age</div>
-      <div>name</div>
-      <div>address</div>
-    </div>
-    <h2>grid5 · repeat(auto-fill)</h2>
-    <div class="grid5">
-      <div>age</div>
-      <div>name</div>
-      <div>address</div>
-      <div>age</div>
-      <div>name</div>
-      <div>address</div>
-    </div>
     <h2>grid1 · 固定像素列</h2>
-    <div class="grid1">
+    <p class="tip">三列分别为 100px、200px、300px，总宽 600px，与脚本实测一致。</p>
+    <div class="grid1" id="grid1">
       <div>age</div>
       <div>name</div>
       <div>address</div>
     </div>
+    <p class="measure" id="measure-grid1"></p>
     <h2>grid2 · 百分比列</h2>
-    <div class="grid2">
+    <p class="tip">三列各 33.33%，叠加边框时可能超出容器；对比下方 fr 方案。</p>
+    <div class="grid2" id="grid2">
       <div>age</div>
       <div>name</div>
       <div>address</div>
@@ -233,7 +202,7 @@
     <div class="compare-row">
       <div class="compare-col">
         <p>grid3：<code>repeat(3, 33.33%)</code> 纯列重复</p>
-        <div class="grid3">
+        <div class="grid3" id="grid3">
           <div>age</div>
           <div>name</div>
           <div>address</div>
@@ -241,7 +210,7 @@
       </div>
       <div class="compare-col">
         <p>grid4：<code>grid-template-areas</code> 语义化命名单元格</p>
-        <div class="grid4">
+        <div class="grid4" id="grid4">
           <div>age</div>
           <div>name</div>
           <div>address</div>
@@ -251,7 +220,100 @@
         </div>
       </div>
     </div>
+    <h2>grid5 · repeat(auto-fill)</h2>
+    <p class="tip">容器 400px 宽、列宽 100px，<code>auto-fill</code> 会尽量多放列；脚本输出当前列数。</p>
+    <div class="grid5" id="grid5">
+      <div>age</div>
+      <div>name</div>
+      <div>address</div>
+      <div>age</div>
+      <div>name</div>
+      <div>address</div>
+    </div>
+    <h2>grid6 · fr 比例分配</h2>
+    <p class="tip">列轨道为 <code>100px 1fr 2fr</code>，剩余空间按 1:2 分给后两列。</p>
+    <div class="grid6" id="grid6">
+      <div>age</div>
+      <div>name</div>
+      <div>address</div>
+      <div>age</div>
+      <div>name</div>
+      <div>address</div>
+    </div>
+    <p class="measure" id="measure-grid6"></p>
+    <h2>grid7 · fr + minmax</h2>
+    <p class="tip">第三列 <code>minmax(90px, 0.9fr)</code> 有最小宽度下限。</p>
+    <div class="grid7" id="grid7">
+      <div>age</div>
+      <div>name</div>
+      <div>address</div>
+      <div>age</div>
+      <div>name</div>
+      <div>address</div>
+    </div>
+    <h2>grid8 · auto 列宽</h2>
+    <p class="tip"><code>auto</code> 列宽由内容决定，适合内容驱动列宽的场景。</p>
+    <div class="grid8" id="grid8">
+      <div>age</div>
+      <div>name</div>
+      <div>address</div>
+      <div>age</div>
+      <div>name</div>
+      <div>address</div>
+    </div>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 读取 grid 容器第一行各列子项宽度，验证 grid-template-columns 分配 */
+        function getGridColumnWidths(container) {
+          var children = container.children;
+          if (!children.length) return [];
+          var firstRowTop = children[0].offsetTop;
+          var widths = [];
+          for (var i = 0; i < children.length; i++) {
+            if (children[i].offsetTop !== firstRowTop) break;
+            widths.push(children[i].offsetWidth);
+          }
+          return widths;
+        }
+
+        /** 统计 auto-fill 网格当前可见列数 */
+        function countGridColumns(container) {
+          return getGridColumnWidths(container).length;
+        }
+
+        function renderGridMetrics() {
+          var grid1 = document.getElementById("grid1");
+          var grid6 = document.getElementById("grid6");
+          var grid5 = document.getElementById("grid5");
+          var w1 = getGridColumnWidths(grid1);
+          var w6 = getGridColumnWidths(grid6);
+
+          document.getElementById("measure-grid1").textContent =
+            "三列实测: " + w1.join("px · ") + "px（期望 100 · 200 · 300）";
+          document.getElementById("measure-grid6").textContent =
+            "三列实测: " + w6.join("px · ") + "px（1fr:2fr ≈ " +
+            (w6[1] / w6[2]).toFixed(2) + "）";
+
+          document.getElementById("runtime-output").textContent = [
+            "── grid 轨道实测 ──",
+            "#grid1 列宽: " + w1.join(", ") + " px",
+            "#grid5 auto-fill 当前列数: " + countGridColumns(grid5),
+            "#grid6 列宽: " + w6.join(", ") + " px（100px + 1fr + 2fr）",
+            "#grid6 容器宽度: " + grid6.offsetWidth + "px",
+            "",
+            "提示: 百分比列(#grid2)叠加 border 时总宽可能 > 容器，fr 列更适合剩余空间分配。",
+          ].join("\n");
+        }
+
+        renderGridMetrics();
+        window.addEventListener("resize", renderGridMetrics);
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

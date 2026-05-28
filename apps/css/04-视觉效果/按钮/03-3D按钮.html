@@ -20,6 +20,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>3D 按钮（渐变 + 下沿）</title>
     <style>
+      h2 { font-size: 1rem; margin-top: 2rem; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      .subscribe { padding: 24px 0; }
       .btn-3d-sub {
         display: block;
         margin: 0 auto;
@@ -58,6 +61,17 @@
           transition: none;
         }
       }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -66,7 +80,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>渐变 + 下边框 + box-shadow 的 3D 按钮</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，按住按钮时脚本会读取渐变与边框变化。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -95,10 +109,58 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
+    <h2>渐变 + 下边框 + 投影</h2>
+    <p class="tip">上亮下暗的 <code>linear-gradient</code> 模拟光照，<code>border-bottom</code> 表示厚度，<code>:active</code> 反转渐变并下移（MDN linear-gradient）。</p>
     <div class="subscribe">
-      <button class="btn-3d-sub" type="button">submit</button><br/>
+      <button class="btn-3d-sub" id="btn-3d-gradient" type="button">submit</button>
     </div>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        var btn = document.getElementById("btn-3d-gradient");
+        var output = document.getElementById("runtime-output");
+
+        /** 读取渐变、边框与 transform，对应 MDN linear-gradient / border / transform */
+        function readButtonState() {
+          var style = getComputedStyle(btn);
+          return {
+            backgroundImage: style.backgroundImage,
+            borderBottomWidth: style.borderBottomWidth,
+            boxShadow: style.boxShadow,
+            transform: style.transform,
+          };
+        }
+
+        function renderButtonMetrics(label) {
+          var state = readButtonState();
+          output.textContent = [
+            "── 3D 渐变按钮实测（" + label + "）──",
+            "background-image=" + state.backgroundImage,
+            "border-bottom-width=" + state.borderBottomWidth,
+            "box-shadow=" + state.boxShadow,
+            "transform=" + state.transform,
+            "",
+            "提示：:active 应反转渐变、缩短 border-bottom 并 translateY(3px)",
+          ].join("\n");
+        }
+
+        renderButtonMetrics("默认");
+        btn.addEventListener("pointerdown", function () {
+          requestAnimationFrame(function () {
+            renderButtonMetrics(":active");
+          });
+        });
+        btn.addEventListener("pointerup", function () {
+          requestAnimationFrame(function () {
+            renderButtonMetrics("默认");
+          });
+        });
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

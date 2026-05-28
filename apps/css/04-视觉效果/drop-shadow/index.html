@@ -20,23 +20,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>box-shadow vs drop-shadow</title>
     <style type="text/css">
-      * {
-        padding: 0;
-        margin: 0;
-      }
+      body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
+      h2 { font-size: 1rem; margin-top: 2rem; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
       .dash1 {
         width: 50px;
         height: 50px;
-        margin: 0 auto;
+        margin: 24px auto;
         border: dashed 10px #beceeb;
         box-shadow: 5px 5px 10px black;
       }
       .dash2 {
         width: 50px;
         height: 50px;
-        margin: 50px auto;
+        margin: 24px auto;
         border: dashed 10px #beceeb;
         filter: drop-shadow(100px 10px 0px yellow);
+      }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
       }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
@@ -46,7 +56,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>box-shadow vs filter: drop-shadow 对比</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会读取 box-shadow 与 filter 实测值。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -74,9 +84,48 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <div class="dash1"></div>
-    <div class="dash2"></div>
+    <h2>box-shadow：矩形边框盒投影</h2>
+    <p class="tip">虚线边框仍按<strong>边框盒</strong>投影，阴影轮廓是矩形（MDN box-shadow）。</p>
+    <div class="dash1" id="demo-box-shadow"></div>
+
+    <h2>filter: drop-shadow()：alpha 轮廓投影</h2>
+    <p class="tip">投影跟随<strong>可见像素</strong>轮廓，虚线只在线段处出现阴影（MDN drop-shadow）。</p>
+    <div class="dash2" id="demo-drop-shadow"></div>
+
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 读取 box-shadow 计算值，对应 MDN box-shadow */
+        function getBoxShadow(el) {
+          return getComputedStyle(el).boxShadow;
+        }
+
+        /** 读取 filter 计算值，对应 MDN filter-function/drop-shadow */
+        function getFilter(el) {
+          return getComputedStyle(el).filter;
+        }
+
+        /** 对比两种阴影属性的实测输出 */
+        function renderShadowMetrics() {
+          var boxEl = document.getElementById("demo-box-shadow");
+          var dropEl = document.getElementById("demo-drop-shadow");
+          document.getElementById("runtime-output").textContent = [
+            "── 阴影属性实测 ──",
+            "#demo-box-shadow: box-shadow=" + getBoxShadow(boxEl),
+            "#demo-drop-shadow: filter=" + getFilter(dropEl),
+            "",
+            "观察：box-shadow 围绕 50×50 边框盒；drop-shadow 只沿虚线 border 的可见线段投影",
+            "能力边界：drop-shadow() 无 spread/inset，复杂多层阴影仍常用 box-shadow",
+          ].join("\n");
+        }
+
+        renderShadowMetrics();
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

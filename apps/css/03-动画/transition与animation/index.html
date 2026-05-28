@@ -78,6 +78,17 @@
         vertical-align: top;
       }
       .compare th { background: #f6f8fa; }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
       @media (prefers-reduced-motion: reduce) {
         .transition-btn { transition: none; }
         .transition-btn:hover { transform: none; box-shadow: none; }
@@ -91,7 +102,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>transition 与 animation 对比</h1>
-      <p class="hint">左侧是 hover 触发的 <code>transition</code>，右侧是自动循环的 <code>animation</code>；下方表格总结选型差异。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出 transition / animation 计算值与 prefers-reduced-motion 状态。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -124,16 +135,16 @@
       <div>
         <h2>transition · 需要触发</h2>
         <p class="tip">悬停按钮，观察 transform / box-shadow / background 的平滑过渡。</p>
-        <button type="button" class="card transition-btn">hover 我</button>
+        <button type="button" class="card transition-btn" id="transition-btn">hover 我</button>
       </div>
       <div>
         <h2>animation · 自动播放</h2>
         <p class="tip">loading 圆环与 pulse 都不依赖 hover，会自动循环。</p>
         <div class="card" style="background:#2f80ed;">
-          <div class="spinner" aria-hidden="true"></div>
+          <div class="spinner" id="spinner-el" aria-hidden="true"></div>
           <p style="margin:12px 0 0;">旋转 loading</p>
         </div>
-        <div class="card pulse" style="margin-top:12px;">pulse 强调</div>
+        <div class="card pulse" id="pulse-el" style="margin-top:12px;">pulse 强调</div>
       </div>
     </div>
 
@@ -168,7 +179,71 @@
         </tr>
       </tbody>
     </table>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 读取元素 transition 相关计算值，对应 MDN transition 子属性 */
+        function getTransitionInfo(el) {
+          var s = getComputedStyle(el);
+          return {
+            property: s.transitionProperty,
+            duration: s.transitionDuration,
+            timing: s.transitionTimingFunction,
+          };
+        }
+
+        /** 读取元素 animation 相关计算值，对应 MDN animation 子属性 */
+        function getAnimationInfo(el) {
+          var s = getComputedStyle(el);
+          return {
+            name: s.animationName,
+            duration: s.animationDuration,
+            iteration: s.animationIterationCount,
+            timing: s.animationTimingFunction,
+          };
+        }
+
+        /** 检测 prefers-reduced-motion，对应 MDN @media prefers-reduced-motion */
+        function isReducedMotion() {
+          return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        }
+
+        /** 汇总 transition / animation 实测并写入 #runtime-output */
+        function renderMetrics() {
+          var output = document.getElementById("runtime-output");
+          var btn = document.getElementById("transition-btn");
+          var spinner = document.getElementById("spinner-el");
+          var pulse = document.getElementById("pulse-el");
+          var t = getTransitionInfo(btn);
+          var spin = getAnimationInfo(spinner);
+          var pul = getAnimationInfo(pulse);
+
+          output.textContent = [
+            "── transition 实测（#transition-btn）──",
+            "transition-property: " + t.property,
+            "transition-duration: " + t.duration,
+            "transition-timing-function: " + t.timing,
+            "（需 hover 触发，不会自动播放）",
+            "",
+            "── animation 实测 ──",
+            "#spinner-el: name=" + spin.name + ", duration=" + spin.duration +
+              ", iteration=" + spin.iteration + ", timing=" + spin.timing,
+            "#pulse-el:   name=" + pul.name + ", duration=" + pul.duration +
+              ", iteration=" + pul.iteration + ", timing=" + pul.timing,
+            "",
+            "── prefers-reduced-motion ──",
+            "matchMedia('(prefers-reduced-motion: reduce)'): " + (isReducedMotion() ? "匹配（动效已降级）" : "未匹配"),
+          ].join("\n");
+        }
+
+        renderMetrics();
+        window.matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", renderMetrics);
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

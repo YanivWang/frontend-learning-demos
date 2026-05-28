@@ -40,6 +40,18 @@
       }
       .will-card:hover { will-change: transform; transform: translateY(-6px) scale(1.03); box-shadow: 0 8px 20px rgba(39,174,96,.35); }
       .note { font-size: 0.875rem; color: #666; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -48,7 +60,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>合成层与 GPU 加速</h1>
-      <p class="hint">在 DevTools 的 Layers 或 Performance 面板观察动画元素是否被单独合成；页面示例重点演示 transform 动画和 will-change 的边界。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出合成友好属性的 computed 值。可配合 DevTools Layers 面板观察。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -77,13 +89,51 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p class="note">在 DevTools → Layers 面板可观察元素是否被提升为合成层。</p>
-    <h2>transform 动画（合成层友好）</h2>
-    <div class="track"><div class="ball"></div></div>
+    <h2>合成层与 transform 动画</h2>
+    <p class="tip">在 DevTools → Layers 面板观察 <code>#composite-ball</code> 是否被提升；<code>transform</code>/<code>opacity</code> 动画通常可在合成阶段更新。</p>
+    <div class="track"><div class="ball" id="composite-ball"></div></div>
     <h2>will-change 短期提示</h2>
-    <div class="will-card">悬停我</div>
+    <p class="tip">悬停 <code>#will-card</code> 观察 :hover 时 <code>will-change: transform</code> 的声明时机。</p>
+    <div class="will-card" id="will-card">悬停我</div>
     <p class="note">只在即将动画前声明 will-change，动画结束后移除。</p>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 输出合成友好动画元素的 computed 属性（MDN transform / will-change） */
+        function renderCompositeMetrics() {
+          var ball = document.getElementById("composite-ball");
+          var card = document.getElementById("will-card");
+          var output = document.getElementById("runtime-output");
+          if (!output) return;
+
+          var ballStyle = ball ? getComputedStyle(ball) : null;
+          var cardStyle = card ? getComputedStyle(card) : null;
+
+          output.textContent = [
+            "── 合成层友好属性实测 ──",
+            ballStyle ? "#composite-ball transform: " + ballStyle.transform : "",
+            ballStyle ? "#composite-ball opacity: " + ballStyle.opacity : "",
+            ballStyle ? "#composite-ball animation: " + ballStyle.animationName + " " + ballStyle.animationDuration : "",
+            cardStyle
+              ? "#will-card will-change: " + (cardStyle.willChange || "auto")
+              : "",
+            "",
+            "说明: 「GPU 加速」是实现细节，非规范保证；是否提升为合成层需 DevTools Layers 实测",
+          ].filter(Boolean).join("\n");
+        }
+
+        renderCompositeMetrics();
+        var card = document.getElementById("will-card");
+        if (card) {
+          card.addEventListener("mouseenter", renderCompositeMetrics);
+          card.addEventListener("mouseleave", renderCompositeMetrics);
+        }
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

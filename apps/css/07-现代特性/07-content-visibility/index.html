@@ -32,6 +32,18 @@
       }
       .block h2 { margin: 0 0 0.5rem; font-size: 1rem; }
       .block p { margin: 0; color: #555; line-height: 1.6; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      #runtime-output {
+        margin: 0.75rem 1rem;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -40,7 +52,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>content-visibility: auto</h1>
-      <p class="hint">向下滚动观察长文档区块；本页用 DOM API 生成静态区块，并用 content-visibility 让浏览器跳过首屏外渲染工作。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会生成区块并输出 content-visibility 实测信息。向下滚动观察首屏外渲染跳过。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -69,25 +81,57 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <header><p style="margin:0;color:#666;font-size:.875rem">向下滚动，屏幕外区块可跳过渲染以提升首屏性能。</p></header>
+    <header><p class="tip" style="margin:0">向下滚动，屏幕外区块可跳过渲染以提升首屏性能（MDN content-visibility）。</p></header>
     <div id="list"></div>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      const list = document.getElementById("list");
-      for (let i = 1; i <= 40; i++) {
-        const el = document.createElement("section");
-        const title = document.createElement("h2");
-        const text = document.createElement("p");
+      (function () {
+        var list = document.getElementById("list");
+        var blockCount = 40;
 
-        el.className = "block";
-        title.textContent = `区块 #${i}`;
-        text.textContent = "模拟长文档中的一段内容。content-visibility 让浏览器延迟绘制视口外的节点。";
-        el.append(title, text);
-        list.appendChild(el);
-      }
+        /** 用 DOM API 生成长文档区块，配合 content-visibility: auto（MDN content-visibility） */
+        function buildBlocks() {
+          if (!list) return;
+          for (var i = 1; i <= blockCount; i++) {
+            var el = document.createElement("section");
+            var title = document.createElement("h2");
+            var text = document.createElement("p");
 
+            el.className = "block";
+            el.id = "block-" + i;
+            title.textContent = "区块 #" + i;
+            text.textContent =
+              "模拟长文档中的一段内容。content-visibility 让浏览器延迟绘制视口外的节点。";
+            el.append(title, text);
+            list.appendChild(el);
+          }
+        }
+
+        /** 读取首个区块的 computed content-visibility 与 contain-intrinsic-size */
+        function renderContentVisibilityMetrics() {
+          var first = document.getElementById("block-1");
+          var output = document.getElementById("runtime-output");
+          if (!output) return;
+
+          var style = first ? getComputedStyle(first) : null;
+          output.textContent = [
+            "── content-visibility 实测 ──",
+            "CSS.supports('content-visibility: auto'): " + CSS.supports("content-visibility: auto"),
+            "生成区块数: " + blockCount + "（DOM 全部存在，非虚拟列表）",
+            style ? "#block-1 content-visibility: " + style.contentVisibility : "",
+            style ? "#block-1 contain-intrinsic-size: " + style.getPropertyValue("contain-intrinsic-size") : "",
+            "document height: " + document.documentElement.scrollHeight + "px",
+            "",
+            "提示: 首屏外区块浏览器可跳过部分 layout/paint，接近视口时再补渲染",
+          ].filter(Boolean).join("\n");
+        }
+
+        buildBlocks();
+        renderContentVisibilityMetrics();
+      })();
     </script>
     <!-- SCRIPT_END -->
 

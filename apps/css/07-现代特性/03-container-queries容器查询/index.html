@@ -64,6 +64,19 @@
         .card .actions { flex-direction: row; margin-left: auto; }
       }
       .hint { color: #666; font-size: 0.875rem; margin-top: 1rem; max-width: 640px; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        max-width: 640px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -72,7 +85,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Container Queries — 按父容器宽度自适应</h1>
-      <p class="hint">拖动左侧虚线框改变容器宽度。容器 ≥ 360px 时卡片由纵向堆叠变为横向排列（与浏览器视口无关）。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出容器宽度与卡片 flex-direction。拖动虚线框改变容器宽度。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -101,10 +114,12 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
+    <h2>容器查询 vs 视口</h2>
+    <p class="tip">拖动虚线框改变容器宽度；当 <code>@container card (min-width: 360px)</code> 匹配时卡片变为横向布局，与浏览器视口无关（MDN container queries）。</p>
     <div class="layout">
-      <div class="sidebar-wrap">
-        <div class="card-container">
-          <article class="card">
+      <div class="sidebar-wrap" id="narrow-wrap">
+        <div class="card-container" id="narrow-container">
+          <article class="card" id="narrow-card">
             <div>
               <h2>可复用卡片</h2>
               <p>@container card (min-width: 360px) 触发横向布局。</p>
@@ -116,9 +131,9 @@
           </article>
         </div>
       </div>
-      <div class="sidebar-wrap" style="flex: 2 1 320px;">
-        <div class="card-container">
-          <article class="card">
+      <div class="sidebar-wrap" style="flex: 2 1 320px;" id="wide-wrap">
+        <div class="card-container" id="wide-container">
+          <article class="card" id="wide-card">
             <div>
               <h2>宽容器中的同一组件</h2>
               <p>相同 HTML/CSS，仅因容器宽度不同而呈现不同布局。</p>
@@ -131,7 +146,56 @@
         </div>
       </div>
     </div>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 读取容器与卡片 computed 布局，验证 @container 断点是否生效（MDN @container） */
+        function renderContainerMetrics() {
+          var pairs = [
+            { wrapId: "narrow-wrap", cardId: "narrow-card", label: "窄容器" },
+            { wrapId: "wide-wrap", cardId: "wide-card", label: "宽容器" },
+          ];
+          var output = document.getElementById("runtime-output");
+          if (!output) return;
+
+          var lines = [
+            "── 容器查询实测 ──",
+            "CSS.supports('container-type: inline-size'): " + CSS.supports("container-type: inline-size"),
+            "layout viewport (innerWidth): " + window.innerWidth + "px（与容器查询无关）",
+            "",
+          ];
+
+          pairs.forEach(function (pair) {
+            var wrap = document.getElementById(pair.wrapId);
+            var card = document.getElementById(pair.cardId);
+            if (!wrap || !card) return;
+            var cardStyle = getComputedStyle(card);
+            lines.push(
+              pair.label + " #" + pair.wrapId + " clientWidth: " + wrap.clientWidth + "px",
+              "  → #" + pair.cardId + " flex-direction: " + cardStyle.flexDirection +
+                ", background: " + cardStyle.backgroundColor +
+                (wrap.clientWidth >= 360 ? "（≥360px 触发横向）" : "（<360px 纵向）")
+            );
+          });
+
+          output.textContent = lines.join("\n");
+        }
+
+        renderContainerMetrics();
+        window.addEventListener("resize", renderContainerMetrics);
+        if (typeof ResizeObserver !== "undefined") {
+          var observer = new ResizeObserver(renderContainerMetrics);
+          ["narrow-wrap", "wide-wrap"].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) observer.observe(el);
+          });
+        }
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

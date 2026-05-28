@@ -66,6 +66,19 @@
         box-shadow: 0 8px 20px rgba(39, 174, 96, 0.35);
       }
       .will-note { margin-top: 8px; font-size: 0.875rem; color: #666; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        max-width: 420px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -74,7 +87,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>CSS 重排与重绘</h1>
-      <p class="hint">打开 DevTools Performance 或 Rendering 面板观察动画：示例用 transform/opacity 做运动，并对比容易触发布局或绘制的属性。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出动画元素的 computed 属性。可配合 DevTools Performance 面板观察。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -105,19 +118,72 @@
 
     <!-- PAGE_DOM_START -->
     <h2>动画优先 transform / opacity（合成层友好）</h2>
+    <p class="tip">蓝色圆点用 <code>transform: translateX()</code> 与 <code>opacity</code> 动画，通常可在合成阶段更新而避免每帧重排。</p>
     <div class="track">
-      <div class="ball"></div>
+      <div class="ball" id="anim-ball"></div>
     </div>
     <h2>will-change：短期提示浏览器优化</h2>
-    <div class="will-card">悬停我（:hover 时设置 will-change: transform）</div>
+    <p class="tip">悬停卡片观察 <code>will-change: transform</code> 仅在 :hover 时生效；脚本读取 computed 值。</p>
+    <div class="will-card" id="will-card">悬停我（:hover 时设置 will-change: transform）</div>
     <p class="will-note">只在即将动画前声明 will-change，动画结束后移除，避免长期占用显存。</p>
-    <h2>面试回答框架</h2>
-    <div class="bad">容易重排：width、height、margin、padding、top、left、font-size</div>
-    <div class="bad">容易重绘：color、background、box-shadow</div>
-    <div class="good">常用于高性能动画：transform、opacity</div>
+    <h2>属性分类（MDN Animation performance）</h2>
+    <p class="tip">对比哪些 CSS 属性更容易触发布局（reflow）或绘制（repaint）。</p>
+    <div class="bad" id="reflow-props">容易重排：width、height、margin、padding、top、left、font-size</div>
+    <div class="bad" id="repaint-props">容易重绘：color、background、box-shadow</div>
+    <div class="good" id="composite-props">常用于高性能动画：transform、opacity</div>
     <h2>隔离影响范围</h2>
-    <div class="contain">contain: layout paint 可把布局和绘制影响限制在局部，适合复杂组件谨慎使用。</div>
+    <p class="tip"><code>contain: layout paint</code> 把布局和绘制影响限制在组件内部（MDN contain）。</p>
+    <div class="contain" id="contain-box">contain: layout paint 可把布局和绘制影响限制在局部，适合复杂组件谨慎使用。</div>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 读取元素 computed 样式中的指定属性 */
+        function getComputedProp(el, prop) {
+          return el ? getComputedStyle(el).getPropertyValue(prop) : "";
+        }
+
+        /** 输出动画球与 will-change 卡片的 computed 属性，对照 MDN transform/opacity/will-change */
+        function renderPerformanceMetrics() {
+          var ball = document.getElementById("anim-ball");
+          var card = document.getElementById("will-card");
+          var contain = document.getElementById("contain-box");
+          var output = document.getElementById("runtime-output");
+          if (!output) return;
+
+          var ballStyle = ball ? getComputedStyle(ball) : null;
+          var cardStyle = card ? getComputedStyle(card) : null;
+          var containStyle = contain ? getComputedStyle(contain) : null;
+
+          output.textContent = [
+            "── 重排/重绘/合成友好属性实测 ──",
+            ballStyle
+              ? "#anim-ball transform: " + ballStyle.transform
+              : "",
+            ballStyle ? "#anim-ball opacity: " + ballStyle.opacity : "",
+            ballStyle ? "#anim-ball animation-name: " + ballStyle.animationName : "",
+            cardStyle
+              ? "#will-card will-change: " + (cardStyle.willChange || "auto") + "（未 hover 时为 auto）"
+              : "",
+            containStyle
+              ? "#contain-box contain: " + containStyle.contain
+              : "",
+            "",
+            "提示: 悬停 #will-card 后重新查看 DevTools computed 中 will-change 是否变为 transform",
+          ].filter(Boolean).join("\n");
+        }
+
+        renderPerformanceMetrics();
+        var card = document.getElementById("will-card");
+        if (card) {
+          card.addEventListener("mouseenter", renderPerformanceMetrics);
+          card.addEventListener("mouseleave", renderPerformanceMetrics);
+        }
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

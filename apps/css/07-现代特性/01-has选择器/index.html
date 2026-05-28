@@ -45,6 +45,18 @@
       form:has(:valid) .submit-hint { color: #1a7f37; }
       input { padding: 6px 8px; margin: 6px 0 12px; width: 100%; box-sizing: border-box; }
       .submit-hint { font-size: 0.9rem; margin-top: 8px; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -53,7 +65,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>:has() — 根据子节点状态匹配父元素</h1>
-      <p class="hint">切换套餐和输入邮箱，观察父级卡片和表单提示如何被子元素状态驱动，不需要额外 JavaScript。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出 :has() 支持与选中卡片样式。切换套餐和输入邮箱观察父级样式变化。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -82,25 +94,86 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>选中下方卡片，观察 <code>.card:has(input:checked)</code> 如何高亮父级，无需 JavaScript。</p>
-    <div class="cards">
-      <div class="card">
+    <h2>卡片选中：.card:has(input:checked)</h2>
+    <p class="tip">切换单选框，观察父级 <code>.card</code> 边框与背景如何被子元素 <code>:checked</code> 状态驱动（MDN :has）。</p>
+    <div class="cards" id="plan-cards">
+      <div class="card" id="card-basic">
         <label><input type="radio" name="plan" value="basic" checked /> 基础版</label>
       </div>
-      <div class="card">
+      <div class="card" id="card-pro">
         <label><input type="radio" name="plan" value="pro" /> 专业版</label>
       </div>
-      <div class="card">
+      <div class="card" id="card-team">
         <label><input type="radio" name="plan" value="team" /> 团队版</label>
       </div>
     </div>
     <h2>表单校验提示</h2>
-    <form>
+    <p class="tip">输入合法/非法邮箱，观察 <code>form:has(:invalid)</code> 与 <code>form:has(:valid)</code> 如何改变提示颜色。</p>
+    <form id="demo-form">
       <label>邮箱（必填）</label>
-      <input type="email" required placeholder="you@example.com" />
-      <p class="submit-hint">form:has(:invalid) 时显示红色提示；全部合法时变绿。</p>
+      <input type="email" id="demo-email" required placeholder="you@example.com" />
+      <p class="submit-hint" id="form-hint">form:has(:invalid) 时显示红色提示；全部合法时变绿。</p>
     </form>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 检测浏览器是否支持 :has()（MDN :has） */
+        function supportsHas() {
+          try {
+            return CSS.supports("selector(:has(*))");
+          } catch (e) {
+            return false;
+          }
+        }
+
+        /** 读取当前选中卡片与表单的 computed 样式，验证 :has 规则生效 */
+        function renderHasMetrics() {
+          var cards = document.querySelectorAll("#plan-cards .card");
+          var form = document.getElementById("demo-form");
+          var hint = document.getElementById("form-hint");
+          var output = document.getElementById("runtime-output");
+          if (!output) return;
+
+          var lines = [
+            "── :has() 实测 ──",
+            "CSS.supports('selector(:has(*))'): " + supportsHas(),
+          ];
+
+          cards.forEach(function (card) {
+            var style = getComputedStyle(card);
+            var radio = card.querySelector('input[type="radio"]');
+            lines.push(
+              "#" + card.id +
+                (radio && radio.checked ? " [checked]" : "") +
+                " → border-color: " + style.borderColor +
+                ", background: " + style.backgroundColor
+            );
+          });
+
+          if (form && hint) {
+            lines.push(
+              "#demo-form :valid → " + form.matches(":valid"),
+              "#form-hint color: " + getComputedStyle(hint).color
+            );
+          }
+
+          output.textContent = lines.join("\n");
+        }
+
+        renderHasMetrics();
+        document.querySelectorAll('#plan-cards input[type="radio"]').forEach(function (input) {
+          input.addEventListener("change", renderHasMetrics);
+        });
+        var email = document.getElementById("demo-email");
+        if (email) {
+          email.addEventListener("input", renderHasMetrics);
+        }
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

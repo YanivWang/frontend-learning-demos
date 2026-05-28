@@ -58,7 +58,7 @@
 | 文件 | 主题 |
 |---|---|
 | `01-基础/单位与函数/index.html` | px、em、rem、百分比、vw/vh、calc、clamp、CSS 变量 |
-| `01-基础/盒模型/index.html` | 标准盒模型、IE 盒模型、margin 折叠 |
+| `01-基础/盒模型/index.html` | 盒模型四层、content-box、border-box、margin 折叠 |
 | `01-基础/继承与层叠/index.html` | CSS 继承、inherit / initial / unset / revert |
 | `01-基础/选择器与优先级/index.html` | 选择器种类与优先级（specificity） |
 | `01-基础/display与文档流/index.html` | block、inline、inline-block、none、visibility |

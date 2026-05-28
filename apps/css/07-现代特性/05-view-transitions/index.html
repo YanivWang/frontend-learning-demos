@@ -33,6 +33,18 @@
         }
       }
       .hint { font-size: 0.875rem; color: #666; margin-top: 1rem; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -41,7 +53,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>View Transitions</h1>
-      <p class="hint">点击下方色块切换状态。支持 View Transitions 的浏览器会对旧状态和新状态做快照过渡，不支持时直接切换颜色。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会检测 View Transitions API 支持并输出状态。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -70,30 +82,65 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>点击色块切换颜色，支持 View Transitions 的浏览器会有平滑过渡。</p>
+    <h2>View Transitions 主题切换</h2>
+    <p class="tip">点击色块切换背景色；支持 <code>document.startViewTransition</code> 的浏览器会在旧/新快照间过渡（MDN View Transition API）。</p>
     <p id="support" class="hint" aria-live="polite"></p>
     <div class="panel" id="box">点击</div>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      const box = document.getElementById("box");
-      const support = document.getElementById("support");
-      const colors = ["#0969da", "#8250df", "#1a7f37", "#bf8700"];
-      let i = 0;
-      box.style.background = colors[0];
-      support.textContent =
-        typeof document.startViewTransition === "function"
-          ? "当前浏览器支持 startViewTransition，将使用快照过渡。"
-          : "当前浏览器不支持 View Transitions，将直接切换背景色。";
+      (function () {
+        var box = document.getElementById("box");
+        var support = document.getElementById("support");
+        var output = document.getElementById("runtime-output");
+        var colors = ["#0969da", "#8250df", "#1a7f37", "#bf8700"];
+        var i = 0;
 
-      box.onclick = () => {
-        i = (i + 1) % colors.length;
-        const next = () => { box.style.background = colors[i]; box.textContent = colors[i]; };
-        if (document.startViewTransition) document.startViewTransition(next);
-        else next();
-      };
+        /** 检测 View Transitions API 是否可用（MDN Document.startViewTransition） */
+        function hasViewTransition() {
+          return typeof document.startViewTransition === "function";
+        }
 
+        /** 更新支持状态与当前面板 computed 背景色 */
+        function renderTransitionMetrics() {
+          if (support) {
+            support.textContent = hasViewTransition()
+              ? "当前浏览器支持 startViewTransition，将使用快照过渡。"
+              : "当前浏览器不支持 View Transitions，将直接切换背景色。";
+          }
+          if (output && box) {
+            output.textContent = [
+              "── View Transitions 实测 ──",
+              "document.startViewTransition: " + (hasViewTransition() ? "可用" : "不可用"),
+              "CSS @supports(view-transition-name): " + CSS.supports("view-transition-name: none"),
+              "#box background: " + getComputedStyle(box).backgroundColor,
+              "当前索引: " + i + " / " + (colors.length - 1),
+            ].join("\n");
+          }
+        }
+
+        if (box) {
+          box.style.background = colors[0];
+          box.onclick = function () {
+            i = (i + 1) % colors.length;
+            /** DOM 更新回调：同步修改背景与文本，供快照过渡捕获（MDN updateCallback） */
+            var next = function () {
+              box.style.background = colors[i];
+              box.textContent = colors[i];
+              renderTransitionMetrics();
+            };
+            if (hasViewTransition()) {
+              document.startViewTransition(next);
+            } else {
+              next();
+            }
+          };
+        }
+
+        renderTransitionMetrics();
+      })();
     </script>
     <!-- SCRIPT_END -->
 

@@ -63,6 +63,25 @@
       .page header, .page footer { padding: 10px; background: #f1f1f1; }
       .page main { flex: 1; padding: 10px; }
       .layout-row { display: flex; gap: 16px; flex-wrap: wrap; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      .overflow-demo { display: flex; width: 260px; border: 1px solid #ddd; margin-bottom: 8px; }
+      .overflow-demo .side { flex: 0 0 80px; padding: 8px; background: #2f80ed; color: #fff; font-size: 0.75rem; }
+      .overflow-demo .main-bad, .overflow-demo .main-good {
+        flex: 1; padding: 8px; background: #fff0d6; font-size: 0.75rem;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .overflow-demo .main-good { min-width: 0; }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -71,7 +90,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>常见布局题</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出布局尺寸实测值。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -98,34 +117,78 @@
 
     <!-- PAGE_DOM_START -->
     <h2>水平垂直居中</h2>
+    <p class="tip">Grid 的 <code>place-items:center</code> 与 absolute+transform 两种方案对比。</p>
     <div class="layout-row">
       <div>
         <p style="margin:0 0 6px;font-size:0.875rem;color:#666;">Grid · place-items: center</p>
-        <div class="center-grid">grid 居中</div>
+        <div class="center-grid" id="center-grid">grid 居中</div>
       </div>
       <div>
         <p style="margin:0 0 6px;font-size:0.875rem;color:#666;">Absolute + transform（经典方案）</p>
-        <div class="center-abs"><div class="inner">absolute 居中</div></div>
+        <div class="center-abs" id="center-abs"><div class="inner">absolute 居中</div></div>
       </div>
     </div>
     <h2>两栏布局：左固定，右自适应</h2>
-    <div class="two-col">
+    <p class="tip">侧栏 <code>flex:0 0 140px</code>，主栏 <code>flex:1; min-width:0</code> 防止长内容撑破。</p>
+    <div class="two-col" id="two-col">
       <aside class="side">固定 140px</aside>
       <main class="main">flex: 1 自适应，min-width:0 防止长内容撑破。</main>
     </div>
     <h2>三栏布局：左右固定，中间自适应</h2>
-    <div class="three-col">
+    <p class="tip">左右侧栏固定宽度，中间主栏 <code>flex:1</code> 占满剩余空间。</p>
+    <div class="three-col" id="three-col">
       <aside class="side">左栏</aside>
       <main class="main">中间自适应</main>
       <aside class="side right">右栏</aside>
     </div>
     <h2>粘性 footer（min-height: 50vh + flex:1）</h2>
-    <div class="page">
+    <p class="tip">内容少时 footer 贴底，内容多时随页面自然下推；不是 <code>position:fixed</code>。</p>
+    <div class="page" id="sticky-footer">
       <header>header</header>
       <main>main 使用 flex:1 撑开剩余空间，内容少时 footer 仍贴底</main>
       <footer>footer 贴底</footer>
     </div>
+    <h2>min-width:0 对比</h2>
+    <p class="tip">长文本在主栏：无 <code>min-width:0</code> 可能撑破 260px 容器，有则正常收缩。</p>
+    <div class="overflow-demo" id="overflow-bad">
+      <div class="side">固定</div>
+      <div class="main-bad">VeryLongUnbreakableTextWithoutSpaces</div>
+    </div>
+    <div class="overflow-demo" id="overflow-good">
+      <div class="side">固定</div>
+      <div class="main-good">VeryLongUnbreakableTextWithoutSpaces</div>
+    </div>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        function renderLayoutMetrics() {
+          var twoCol = document.getElementById("two-col");
+          var main = twoCol.querySelector(".main");
+          var footerPage = document.getElementById("sticky-footer");
+          var bad = document.getElementById("overflow-bad");
+          var good = document.getElementById("overflow-good");
+
+          document.getElementById("runtime-output").textContent = [
+            "── 布局尺寸实测 ──",
+            "两栏主栏宽度: " + main.offsetWidth + "px（flex:1 占剩余空间）",
+            "粘性 footer 容器高度: " + Math.round(footerPage.getBoundingClientRect().height) + "px",
+            "",
+            "── min-width 对比 ──",
+            "无 min-width:0 容器: " + bad.offsetWidth + "px",
+            "有 min-width:0 容器: " + good.offsetWidth + "px",
+            "主栏 min-width: " + getComputedStyle(bad.querySelector(".main-bad")).minWidth +
+              " vs " + getComputedStyle(good.querySelector(".main-good")).minWidth,
+          ].join("\n");
+        }
+
+        renderLayoutMetrics();
+        window.addEventListener("resize", renderLayoutMetrics);
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

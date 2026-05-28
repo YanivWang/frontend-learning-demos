@@ -26,6 +26,18 @@
       .override-test p { color: #cf222e; }
       .override-test :where(p) { color: #1a7f37; font-weight: 600; }
       .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin: 1rem 0; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -34,7 +46,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>:is() 与 :where()</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出 :is() / :where() 命中元素的 computed color。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -63,24 +75,62 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p><code>:is(h2, h3, strong)</code> 等价于分别写三条规则；<code>:where(p, li)</code> 特异性为 0，易被后续规则覆盖。</p>
-    <div class="demo card">
+    <h2>:is() 合并选择器</h2>
+    <p class="tip"><code>:is(h2, h3, strong)</code> 合并多条规则；特异性取参数中最高项（MDN :is）。</p>
+    <div class="demo card" id="is-demo">
       <article>
-        <h2>标题 h2（:is 命中，蓝色）</h2>
-        <h3>标题 h3（:is 命中）</h3>
-        <p>正文段落</p>
-        <p><strong>强调 strong</strong></p>
+        <h2 id="is-h2">标题 h2（:is 命中，蓝色）</h2>
+        <h3 id="is-h3">标题 h3（:is 命中）</h3>
+        <p id="is-p">正文段落</p>
+        <p><strong id="is-strong">强调 strong</strong></p>
       </article>
     </div>
-    <div class="override-test card">
-      <p>这条 p 同时被 <code>.override-test p</code> 和后面的 <code>.override-test :where(p)</code> 命中；最终仍是红色，因为 <code>:where(p)</code> 自身特异性为 0，整条规则权重低于普通后代选择器。</p>
+    <h2>:where() 特异性为 0</h2>
+    <p class="tip"><code>:where(p)</code> 特异性为 0，易被同等元素选择器覆盖；脚本对比 computed color。</p>
+    <div class="override-test card" id="where-demo">
+      <p id="where-p">这条 p 同时被 <code>.override-test p</code> 和后面的 <code>.override-test :where(p)</code> 命中；最终仍是红色，因为 <code>:where(p)</code> 自身特异性为 0，整条规则权重低于普通后代选择器。</p>
     </div>
-    <h2>面试对比</h2>
+    <h2>特异性对比</h2>
     <ul>
       <li><code>:is(.a, #b)</code> 特异性 = 100（#b 决定）</li>
       <li><code>:where(.a, #b)</code> 特异性 = 0</li>
     </ul>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 读取元素 computed color，验证 :is() / :where() 特异性差异（MDN Specificity） */
+        function renderSelectorMetrics() {
+          var targets = [
+            { id: "is-h2", label: ":is 命中 h2" },
+            { id: "is-h3", label: ":is 命中 h3" },
+            { id: "is-strong", label: ":is 命中 strong" },
+            { id: "is-p", label: "普通 p（未命中 :is）" },
+            { id: "where-p", label: ":where 覆盖测试 p" },
+          ];
+          var output = document.getElementById("runtime-output");
+          if (!output) return;
+
+          var lines = ["── :is() / :where() computed color 实测 ──"];
+          targets.forEach(function (item) {
+            var el = document.getElementById(item.id);
+            if (!el) return;
+            lines.push("#" + item.id + "（" + item.label + "）→ color: " + getComputedStyle(el).color);
+          });
+          lines.push(
+            "",
+            "结论: #where-p 为红色 → .override-test p（0,0,1,1）胜 .override-test :where(p)（0,0,1,0）"
+          );
+
+          output.textContent = lines.join("\n");
+        }
+
+        renderSelectorMetrics();
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

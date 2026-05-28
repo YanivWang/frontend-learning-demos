@@ -23,6 +23,7 @@
       body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
       h1 { font-size: 1.3rem; }
       h2 { font-size: 1rem; margin-top: 2rem; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
       .section { margin-bottom: 1.5rem; }
       button { padding: 6px 14px; margin-right: 6px; margin-bottom: 8px; }
       /* 方案 1：固定 height 过渡 */
@@ -63,6 +64,17 @@
           transition: none;
         }
       }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -71,7 +83,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>展开折叠 · 三种方案对比</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出面板高度与 transition 实测值。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -102,6 +114,7 @@
     <!-- PAGE_DOM_START -->
     <div class="section">
       <h2>方案 1 · 固定 height 过渡</h2>
+      <p class="tip">点击切换，观察 <code>height: 0 → 140px</code> 过渡；内容超过 140px 会被截断。</p>
       <button type="button" data-toggle-panel="panel-height" aria-expanded="false" aria-controls="panel-height">切换</button>
       <div class="panel-height" id="panel-height">
         <div>列表项 1</div>
@@ -113,6 +126,7 @@
     </div>
     <div class="section">
       <h2>方案 2 · max-height 过渡</h2>
+      <p class="tip">点击切换，观察 <code>max-height: 0 → 200px</code>；内容真实高度小于上限时，展开速度可能不均匀。</p>
       <button type="button" data-toggle-panel="panel-max" aria-expanded="false" aria-controls="panel-max">切换</button>
       <div class="panel-max" id="panel-max">
         <div>内容高度未知时，过渡到足够大的 max-height</div>
@@ -122,6 +136,7 @@
     </div>
     <div class="section">
       <h2>方案 3 · grid-template-rows: 0fr → 1fr（推荐）</h2>
+      <p class="tip">点击切换，观察 <code>grid-template-rows</code> 过渡；高度自适应，无需猜像素。</p>
       <button type="button" data-toggle-panel="panel-grid" aria-expanded="false" aria-controls="panel-grid">切换</button>
       <div class="panel-grid" id="panel-grid">
         <div class="panel-grid-inner">
@@ -131,17 +146,68 @@
         </div>
       </div>
     </div>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      document.querySelectorAll("[data-toggle-panel]").forEach((button) => {
-        button.addEventListener("click", () => {
-          const panel = document.getElementById(button.dataset.togglePanel);
-          const isOpen = panel.classList.toggle("open");
-          button.setAttribute("aria-expanded", String(isOpen));
+      (function () {
+        var panelIds = ["panel-height", "panel-max", "panel-grid"];
+        var output = document.getElementById("runtime-output");
+
+        /** 读取面板 transition 与尺寸计算值，对应 MDN transition / height / max-height / grid-template-rows */
+        function getPanelMetrics(id) {
+          var el = document.getElementById(id);
+          var s = getComputedStyle(el);
+          return {
+            id: id,
+            open: el.classList.contains("open"),
+            height: s.height,
+            maxHeight: s.maxHeight,
+            gridRows: s.gridTemplateRows,
+            transition: s.transitionProperty + " " + s.transitionDuration + " " + s.transitionTimingFunction,
+            scrollHeight: el.scrollHeight,
+            offsetHeight: el.offsetHeight,
+          };
+        }
+
+        /** 渲染三种方案面板实测报告 */
+        function renderMetrics() {
+          var lines = ["── 展开折叠实测 ──"];
+          panelIds.forEach(function (id) {
+            var m = getPanelMetrics(id);
+            lines.push(
+              "#" + m.id + ": open=" + m.open +
+                ", height=" + m.height +
+                ", max-height=" + m.maxHeight +
+                ", grid-template-rows=" + m.gridRows +
+                ", offsetHeight=" + m.offsetHeight + "px" +
+                ", scrollHeight=" + m.scrollHeight + "px"
+            );
+            lines.push("  transition: " + m.transition);
+          });
+          lines.push("");
+          lines.push("── prefers-reduced-motion ──");
+          lines.push(
+            "matchMedia('(prefers-reduced-motion: reduce)'): " +
+              (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "匹配（过渡已关闭）" : "未匹配")
+          );
+          output.textContent = lines.join("\n");
+        }
+
+        /** 切换面板 open 状态并同步 aria-expanded，过渡结束后刷新实测 */
+        document.querySelectorAll("[data-toggle-panel]").forEach(function (button) {
+          button.addEventListener("click", function () {
+            var panel = document.getElementById(button.dataset.togglePanel);
+            var isOpen = panel.classList.toggle("open");
+            button.setAttribute("aria-expanded", String(isOpen));
+            panel.addEventListener("transitionend", renderMetrics, { once: true });
+            renderMetrics();
+          });
         });
-      });
+
+        renderMetrics();
+      })();
     </script>
     <!-- SCRIPT_END -->
 

@@ -20,9 +20,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>display 与文档流</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.7; }
-      h1 { font-size: 1.3rem; }
+      body { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.7; color: #222; }
       h2 { font-size: 1rem; margin-top: 2rem; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
       .demo { border: 1px solid #ddd; padding: 12px; max-width: 680px; }
       .block { display: block; width: 180px; height: 44px; background: #dff0ff; }
       .inline { display: inline; width: 180px; height: 44px; background: #ffe3d1; }
@@ -30,6 +30,23 @@
       .none { display: none; }
       .hidden { visibility: hidden; }
       .item { display: inline-block; width: 90px; padding: 10px; margin-right: 8px; background: #f1f1f1; text-align: center; }
+      .measure {
+        margin: 0.35rem 0 0;
+        font-size: 0.875rem;
+        color: #444;
+        font-family: ui-monospace, monospace;
+      }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -38,7 +55,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>display 与文档流</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出尺寸与布局实测值。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -67,28 +84,108 @@
 
     <!-- PAGE_DOM_START -->
     <h2>block / inline / inline-block</h2>
-    <div class="demo">
+    <p class="tip">三者都写了 <code>width: 180px; height: 44px</code>；观察换行与尺寸是否生效，脚本读取 offsetWidth/offsetHeight。</p>
+    <div class="demo" id="display-types-demo">
       前文
-      <span class="block">block</span>
+      <span class="block" id="el-block">block</span>
       中间
-      <span class="inline">inline 设置宽高不明显</span>
-      <span class="inline-block">inline-block 可设宽高</span>
+      <span class="inline" id="el-inline">inline 设置宽高不明显</span>
+      <span class="inline-block" id="el-inline-block">inline-block 可设宽高</span>
       后文
     </div>
+    <p class="measure" id="measure-display"></p>
+
     <h2>display:none vs visibility:hidden</h2>
-    <div class="demo">
+    <p class="tip">对比 B 项占位：none 不占位置，hidden 仍占位置；脚本测量容器宽度变化。</p>
+    <div class="demo" id="none-demo">
       <span class="item">A</span>
-      <span class="item none">B none</span>
+      <span class="item none" id="item-none">B none</span>
       <span class="item">C</span>
     </div>
-    <p>上面 B 使用 <code>display:none</code>，不占位置。</p>
-    <div class="demo">
+    <p class="tip">上面 B 使用 <code>display:none</code>，不占位置。</p>
+    <div class="demo" id="hidden-demo">
       <span class="item">A</span>
-      <span class="item hidden">B hidden</span>
+      <span class="item hidden" id="item-hidden">B hidden</span>
       <span class="item">C</span>
     </div>
-    <p>上面 B 使用 <code>visibility:hidden</code>，仍然占位置。</p>
+    <p class="tip">上面 B 使用 <code>visibility:hidden</code>，仍然占位置。</p>
+
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 读取 border box 尺寸，对应 MDN offsetWidth/offsetHeight */
+        function getBoxSize(el) {
+          return { width: el.offsetWidth, height: el.offsetHeight };
+        }
+
+        /** 读取 display 计算值 */
+        function getDisplay(el) {
+          return getComputedStyle(el).display;
+        }
+
+        /** 测量 block/inline/inline-block 尺寸差异 */
+        function renderDisplayTypeMetrics() {
+          var blockEl = document.getElementById("el-block");
+          var inlineEl = document.getElementById("el-inline");
+          var inlineBlockEl = document.getElementById("el-inline-block");
+          var measure = document.getElementById("measure-display");
+
+          var blockSize = getBoxSize(blockEl);
+          var inlineSize = getBoxSize(inlineEl);
+          var inlineBlockSize = getBoxSize(inlineBlockEl);
+
+          measure.textContent =
+            "block " +
+            blockSize.width +
+            "×" +
+            blockSize.height +
+            "px；inline " +
+            inlineSize.width +
+            "×" +
+            inlineSize.height +
+            "px（宽高通常不按声明生效）；inline-block " +
+            inlineBlockSize.width +
+            "×" +
+            inlineBlockSize.height +
+            "px";
+        }
+
+        /** 测量 none/hidden 对布局占位的影响 */
+        function renderVisibilityMetrics() {
+          var noneDemo = document.getElementById("none-demo");
+          var hiddenDemo = document.getElementById("hidden-demo");
+          var itemNone = document.getElementById("item-none");
+          var itemHidden = document.getElementById("item-hidden");
+          var output = document.getElementById("runtime-output");
+
+          output.textContent = [
+            "── display 类型实测 ──",
+            "#el-block: display=" + getDisplay(document.getElementById("el-block")) +
+              ", size=" + getBoxSize(document.getElementById("el-block")).width +
+              "×" + getBoxSize(document.getElementById("el-block")).height,
+            "#el-inline: display=" + getDisplay(document.getElementById("el-inline")) +
+              ", size=" + getBoxSize(document.getElementById("el-inline")).width +
+              "×" + getBoxSize(document.getElementById("el-inline")).height,
+            "#el-inline-block: display=" + getDisplay(document.getElementById("el-inline-block")) +
+              ", size=" + getBoxSize(document.getElementById("el-inline-block")).width +
+              "×" + getBoxSize(document.getElementById("el-inline-block")).height,
+            "",
+            "── none / hidden 实测 ──",
+            "#none-demo 容器宽: " + Math.round(noneDemo.getBoundingClientRect().width) + "px（B 不占位，仅 A+C）",
+            "#item-none offsetWidth: " + itemNone.offsetWidth + "（display:none 不生成盒）",
+            "#hidden-demo 容器宽: " + Math.round(hiddenDemo.getBoundingClientRect().width) + "px（B 仍占位）",
+            "#item-hidden offsetWidth: " + itemHidden.offsetWidth + "（visibility:hidden 仍占布局）",
+          ].join("\n");
+        }
+
+        renderDisplayTypeMetrics();
+        renderVisibilityMetrics();
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

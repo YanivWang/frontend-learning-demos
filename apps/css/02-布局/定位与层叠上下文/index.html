@@ -79,6 +79,18 @@
       }
       .a { left: 20px; top: 20px; z-index: 2; background: #2f80ed; }
       .b { left: 80px; top: 50px; z-index: 1; background: #eb5757; transform: translateZ(0); }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -87,7 +99,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>定位与层叠上下文</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出定位与层叠上下文实测信息。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -117,26 +129,81 @@
 
     <!-- PAGE_DOM_START -->
     <h2>absolute 的包含块</h2>
-    <div class="relative">
+    <p class="tip">子元素 <code>position:absolute</code> 相对最近的非 static 祖先定位；父级 <code>position:relative</code> 建立包含块。</p>
+    <div class="relative" id="demo-absolute">
       父级 position: relative
-      <div class="absolute">absolute 相对父级</div>
+      <div class="absolute" id="abs-child">absolute 相对父级</div>
     </div>
     <h2>fixed 相对视口</h2>
-    <p>右下角红色徽章使用 <code>position: fixed</code>，滚动页面时始终贴在视口右下角。</p>
+    <p class="tip">右下角红色徽章使用 <code>position: fixed</code>，滚动页面时始终贴在视口右下角。</p>
     <h2>sticky 依赖滚动祖先</h2>
-    <div class="scroll">
-      <div class="sticky">sticky top: 0</div>
+    <p class="tip">向下滚动下方容器，标题会吸附在滚动容器顶部；sticky 需要 <code>top</code> 阈值和正确的滚动祖先。</p>
+    <div class="scroll" id="demo-sticky">
+      <div class="sticky" id="sticky-header">sticky top: 0</div>
       <p>向下滚动，标题会吸附在滚动容器顶部。</p>
       <p style="height:180px;">占位内容</p>
     </div>
     <h2>z-index 与层叠</h2>
-    <div class="stack">
-      <div class="card a">z-index: 2</div>
-      <div class="card b">z-index: 1 + transform</div>
+    <p class="tip">红色卡片的 <code>transform</code> 会创建独立层叠上下文，但它整体仍按 <code>z-index: 1</code> 与蓝色卡片比较。</p>
+    <div class="stack" id="demo-stack">
+      <div class="card a" id="card-a">z-index: 2</div>
+      <div class="card b" id="card-b">z-index: 1 + transform</div>
     </div>
-    <p style="color:#666;font-size:0.875rem;">红色卡片的 <code>transform</code> 会创建独立层叠上下文，但它整体仍按 <code>z-index: 1</code> 与蓝色卡片比较。</p>
-    <div class="fixed-badge">fixed · 视口右下角</div>
+    <div class="fixed-badge" id="fixed-badge">fixed · 视口右下角</div>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 读取元素 position 与 z-index，对应 MDN stacking context */
+        function getPositionInfo(el) {
+          var s = getComputedStyle(el);
+          return {
+            position: s.position,
+            zIndex: s.zIndex,
+            transform: s.transform !== "none" ? "有 transform" : "无",
+          };
+        }
+
+        /** 判断 absolute 子元素是否相对指定父级定位 */
+        function isPositionedWithin(child, parent) {
+          var childRect = child.getBoundingClientRect();
+          var parentRect = parent.getBoundingClientRect();
+          return (
+            Math.round(childRect.right) <= Math.round(parentRect.right) + 1 &&
+            Math.round(childRect.bottom) <= Math.round(parentRect.bottom) + 1
+          );
+        }
+
+        function renderPositionMetrics() {
+          var absParent = document.getElementById("demo-absolute");
+          var absChild = document.getElementById("abs-child");
+          var stickyHeader = document.getElementById("sticky-header");
+          var cardA = document.getElementById("card-a");
+          var cardB = document.getElementById("card-b");
+          var fixedBadge = document.getElementById("fixed-badge");
+
+          var aInfo = getPositionInfo(cardA);
+          var bInfo = getPositionInfo(cardB);
+
+          document.getElementById("runtime-output").textContent = [
+            "── 定位实测 ──",
+            "absolute 子元素在父级内: " + (isPositionedWithin(absChild, absParent) ? "是" : "否"),
+            "sticky position: " + getComputedStyle(stickyHeader).position,
+            "fixed position: " + getComputedStyle(fixedBadge).position,
+            "",
+            "── 层叠上下文 ──",
+            "#card-a: position=" + aInfo.position + ", z-index=" + aInfo.zIndex + ", " + aInfo.transform,
+            "#card-b: position=" + bInfo.position + ", z-index=" + bInfo.zIndex + ", " + bInfo.transform,
+            "视觉结果: 蓝色(z-index:2)应覆盖红色(z-index:1)，尽管红色内部也创建了层叠上下文。",
+          ].join("\n");
+        }
+
+        renderPositionMetrics();
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

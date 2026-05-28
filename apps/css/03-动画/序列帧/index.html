@@ -50,6 +50,19 @@
       .laba.run  { animation-play-state: running; }
       .laba.stop { animation-play-state: paused; }
       button { margin: 1rem 6px 0; padding: 6px 14px; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        text-align: left;
+      }
       @media (prefers-reduced-motion: reduce) {
         .laba {
           animation: none;
@@ -64,7 +77,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>序列帧动画（精灵图）</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出 animation-play-state 与 background-position 实测值。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -93,20 +106,69 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>实战中常用：把多帧合成一张大图，用 <code>background-position</code> + <code>steps(5, end)</code> 跳变播放，比 GIF 可控性强、比 JS 性能好。</p>
+    <h2>精灵图序列帧</h2>
+    <p class="tip">点击播放/暂停，观察 5 帧色块逐帧跳变（<code>steps(5, end)</code>）；暂停后恢复会从当前进度继续。</p>
+    <p class="tip">实战中常用：把多帧合成一张大图，用 <code>background-position</code> + <code>steps(5, end)</code> 跳变播放，比 GIF 可控性强、比 JS 性能好。</p>
     <div class="laba" id="laba"></div>
     <div>
-      <button id="play">播放</button>
-      <button id="pause">暂停</button>
+      <button type="button" id="play">播放</button>
+      <button type="button" id="pause">暂停</button>
     </div>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      const laba = document.getElementById("laba");
-      document.getElementById("play").onclick  = () => { laba.classList.add("run"); laba.classList.remove("stop"); };
-      document.getElementById("pause").onclick = () => { laba.classList.add("stop"); laba.classList.remove("run"); };
+      (function () {
+        var laba = document.getElementById("laba");
+        var output = document.getElementById("runtime-output");
 
+        /** 读取序列帧 animation 与 background 计算值，对应 MDN animation-play-state / background-position */
+        function getSpriteMetrics() {
+          var s = getComputedStyle(laba);
+          return {
+            playState: s.animationPlayState,
+            name: s.animationName,
+            duration: s.animationDuration,
+            timing: s.animationTimingFunction,
+            iteration: s.animationIterationCount,
+            bgPos: s.backgroundPosition,
+            bgSize: s.backgroundSize,
+          };
+        }
+
+        /** 输出序列帧实测报告 */
+        function renderMetrics() {
+          var m = getSpriteMetrics();
+          output.textContent = [
+            "── 序列帧实测（#laba）──",
+            "animation-play-state: " + m.playState,
+            "animation-name: " + m.name,
+            "animation-duration: " + m.duration,
+            "animation-timing-function: " + m.timing + "（steps(5,end) 离散跳变）",
+            "animation-iteration-count: " + m.iteration,
+            "background-position: " + m.bgPos,
+            "background-size: " + m.bgSize,
+            "",
+            "── prefers-reduced-motion ──",
+            "matchMedia('(prefers-reduced-motion: reduce)'): " +
+              (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "匹配（动画已关闭）" : "未匹配"),
+          ].join("\n");
+        }
+
+        document.getElementById("play").addEventListener("click", function () {
+          laba.classList.add("run");
+          laba.classList.remove("stop");
+          renderMetrics();
+        });
+        document.getElementById("pause").addEventListener("click", function () {
+          laba.classList.add("stop");
+          laba.classList.remove("run");
+          renderMetrics();
+        });
+
+        renderMetrics();
+      })();
     </script>
     <!-- SCRIPT_END -->
 

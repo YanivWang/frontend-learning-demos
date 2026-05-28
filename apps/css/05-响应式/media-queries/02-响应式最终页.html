@@ -3,7 +3,7 @@
   主题: 基于 @media 断点的旧式页面响应式改造
   要点:
     - 在固定宽度桌面样式之上加载 media-queries.css，通过 980 / 650 / 480 三档断点逐级覆盖布局
-    - 980px 以下改成百分比容器，650px 以下取消内容区和侧栏浮动，480px 以下压缩导航文字与间距
+    - 980px 以下改成百分比 Grid 列宽，650px 以下塌成单列，480px 以下压缩导航文字与间距
     - viewport meta 让断点按设备 CSS 像素匹配，但真正的重排来自 @media 中的覆盖规则
     - 嵌入视频、第三方脚本和旧式 Flash/object 是历史样例，现代实现应使用 HTTPS iframe、固定比例容器和失败占位
   面试:
@@ -26,25 +26,41 @@
     <link href="media-queries.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
+    <style>
+      .demo-page > h2 { font-size: 1rem; margin: 1.5rem 0 0; }
+      .demo-page > p.tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      #runtime-output {
+        margin: 0.75rem auto;
+        max-width: 980px;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
+    </style>
   </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>基于 @media 断点的旧式页面响应式改造</h1>
-      <p class="hint">缩窄浏览器窗口观察 980px、650px、480px 附近的变化，并和上一页的固定宽度基线对比。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出当前生效断点与布局实测值。缩窄窗口观察 980 / 650 / 480px 附近变化。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
           <li>本页先加载 <code>style.css</code> 提供桌面端基线，再加载 <code>media-queries.css</code> 覆盖窄屏样式；后加载的同等优先级规则会在级联中胜出，这是断点改造能生效的前提。</li>
           <li><code>@media screen and (max-width: 980px)</code> 把外层容器改为 <code>95%</code>，内容区和侧栏改成百分比宽度，并让嵌入视频宽度跟随容器，解决固定 <code>980px</code> 在平板宽度下溢出的问题。</li>
-          <li><code>650px</code> 断点取消 <code>#content</code> 与 <code>#sidebar</code> 的浮动，把多列布局改成单列；同时把导航、搜索框和站点标题从绝对定位调回普通文档流，避免小屏重叠。</li>
-          <li><code>480px</code> 断点进一步压缩导航字号和点击区域，并关闭旧 WebKit 的文字自动放大。现代项目通常不会全局禁用文字缩放，应优先保证可读字号和无障碍缩放。</li>
+          <li><code>650px</code> 断点把 Grid 改为单列，内容区与侧栏堆叠；同时把导航、搜索框和站点标题从绝对定位调回普通文档流，避免小屏重叠。</li>
+          <li><code>480px</code> 断点进一步压缩导航字号和点击区域。现代项目应优先保证可读字号和无障碍缩放。</li>
           <li>响应式不只改容器：图片、iframe、object/embed 等替换元素也要限制最大宽度，并按设计稿给媒体区域准备稳定尺寸。示例中的 HTTP 视频、Flash <code>object</code> 和第三方脚本属于历史写法，真实项目要准备加载失败、混合内容和移动端播放限制的兜底。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
           <li><strong>这个页面的三个 max-width 断点分别解决了什么布局问题？</strong> 结论是 980px 处理固定桌面容器溢出，650px 把多列改为单列，480px 继续压缩导航和文字细节。原因是响应式改造应按真实破版点逐步覆盖，而不是随便凑设备宽度。项目里断点通常来自内容何时失衡，再映射到设计稿和主流设备区间。</li>
-          <li><strong>@media 规则为什么要放在基础样式之后加载？</strong> 结论是为了让断点规则在级联顺序上覆盖基础规则。原因是这些选择器大多与基础样式优先级相同，如果先加载断点文件，后面的基础样式会把宽度、浮动和定位覆盖回去。边界是也可以用更高优先级或层叠层管理，但普通项目里保持加载顺序更直观。</li>
+          <li><strong>@media 规则为什么要放在基础样式之后加载？</strong> 结论是为了让断点规则在级联顺序上覆盖基础规则。原因是这些选择器大多与基础样式优先级相同，如果先加载断点文件，后面的基础样式会把宽度、Grid 列和定位覆盖回去。边界是也可以用更高优先级或层叠层管理，但普通项目里保持加载顺序更直观。</li>
           <li><strong>max-width 桌面优先和 min-width 移动优先怎么取舍？</strong> 结论是旧站改造常用 <code>max-width</code> 桌面优先，新项目更推荐移动优先。原因是旧站通常已有完整桌面 CSS，逐步向小屏覆盖成本低；新项目从单列、低复杂度开始，再用 <code>min-width</code> 增强大屏，通常 CSS 更少。边界是团队设计流程、流量设备和历史代码会影响选择。</li>
           <li><strong>响应式页面里的图片、iframe 和第三方内容为什么要单独处理？</strong> 结论是它们有自身固有尺寸或外部加载状态，不会天然遵守父容器。原因是替换元素、嵌入媒体和第三方脚本可能撑破布局、加载失败或被浏览器拦截。项目中应设置 <code>max-width: 100%</code>、明确宽高或外层固定比例容器，并提供 HTTPS、错误占位和懒加载策略。</li>
         </ul>
@@ -60,6 +76,8 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
+    <h2>@media 断点响应式布局</h2>
+    <p class="tip">缩窄窗口观察 <code>media-queries.css</code> 在 980 / 650 / 480px 的覆盖效果；脚本用 <code>matchMedia</code> 报告当前断点与 Grid 列宽。</p>
     <div id="pagewrap">
       <header id="header">
         <hgroup>
@@ -67,7 +85,7 @@
           <h2 id="site-description">Site Description</h2>
         </hgroup>
         <nav>
-          <ul id="main-nav" class="clearfix">
+          <ul id="main-nav">
             <li><a href="http://webdesignerwall.com">Home</a></li>
             <li><a href="http://themify.me">Themify</a></li>
             <li><a href="http://icondock.com">IconDock</a></li>
@@ -81,7 +99,7 @@
       </header>
       <!-- /#header -->
       <div id="content">
-        <article class="post clearfix">
+        <article class="post">
           <header>
             <h1 class="post-title"><a href="#">Just a Post Title</a></h1>
             <p class="post-meta">
@@ -138,7 +156,7 @@
         </ul>
       </section>
       <!-- /.widget -->
-      <section class="widget clearfix">
+      <section class="widget widget--gallery">
         <h4 class="widgettitle">Flickr</h4>
         <script type="text/javascript"
           src="http://www.flickr.com/badge_code_v2.gne?count=8.&display=latest&size=s&layout=x&source=user&user=52839779@N02"></script>
@@ -152,7 +170,64 @@
       <!-- /#footer -->
     </div>
     <!-- /#pagewrap -->
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 检测 max-width 媒体查询是否匹配（MDN Using media queries） */
+        function matchesMaxWidth(px) {
+          return window.matchMedia("(max-width: " + px + "px)").matches;
+        }
+
+        /** 根据 media-queries.css 三档断点推断当前生效层级 */
+        function getActiveBreakpointLabel() {
+          if (matchesMaxWidth(480)) return "≤480px（导航字号/间距压缩）";
+          if (matchesMaxWidth(650)) return "≤650px（Grid 单列、导航回文档流）";
+          if (matchesMaxWidth(980)) return "≤980px（容器 95%、百分比 Grid 列）";
+          return ">980px（style.css 桌面基线：980px 固定宽）";
+        }
+
+        /** 读取 #pagewrap / #content / #sidebar 布局尺寸与 Grid 列 */
+        function renderResponsiveMetrics() {
+          var pagewrap = document.getElementById("pagewrap");
+          var content = document.getElementById("content");
+          var sidebar = document.getElementById("sidebar");
+          var output = document.getElementById("runtime-output");
+          if (!pagewrap || !output) return;
+
+          var wrapStyle = getComputedStyle(pagewrap);
+          var contentStyle = content ? getComputedStyle(content) : null;
+          var sidebarStyle = sidebar ? getComputedStyle(sidebar) : null;
+
+          output.textContent = [
+            "── 响应式断点实测 ──",
+            "layout viewport (innerWidth): " + window.innerWidth + "px",
+            "当前生效断点: " + getActiveBreakpointLabel(),
+            "",
+            "#pagewrap offsetWidth: " + pagewrap.offsetWidth + "px",
+            "#pagewrap computed width: " + wrapStyle.width,
+            "grid-template-columns: " + wrapStyle.gridTemplateColumns,
+            contentStyle
+              ? "#content grid-column: " + contentStyle.gridColumn + ", width: " + contentStyle.width
+              : "",
+            sidebarStyle
+              ? "#sidebar grid-column: " + sidebarStyle.gridColumn + ", width: " + sidebarStyle.width
+              : "",
+            "",
+            "matchMedia 对照:",
+            "  max-width:980px → " + matchesMaxWidth(980),
+            "  max-width:650px → " + matchesMaxWidth(650),
+            "  max-width:480px → " + matchesMaxWidth(480),
+          ].filter(Boolean).join("\n");
+        }
+
+        renderResponsiveMetrics();
+        window.addEventListener("resize", renderResponsiveMetrics);
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

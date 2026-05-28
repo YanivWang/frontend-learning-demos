@@ -21,6 +21,7 @@
       body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
       h1 { font-size: 1.3rem; }
       h2 { font-size: 1rem; margin-top: 2rem; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
       .box { width: 320px; border: 1px solid #ddd; padding: 12px; }
       .single {
         white-space: nowrap;
@@ -40,6 +41,25 @@
         background: #eef2ff;
         display: block;
       }
+      .baseline img {
+        width: 48px;
+        height: 48px;
+        background: #2f80ed;
+      }
+      .baseline-default img {
+        vertical-align: baseline;
+      }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -48,13 +68,15 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>单行省略、行内图片对齐与替换元素适配</h1>
-      <p class="hint">下方依次演示单行省略、图片基线空隙，以及用 <code>object-fit</code> 让图片裁切填满固定尺寸盒子。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出溢出、对齐与 object-fit 实测值。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
           <li>单行省略的条件是容器有可计算宽度，文本不换行，溢出被裁掉，最后由 <code>text-overflow: ellipsis</code> 显示省略号；少任一条件都可能只溢出或换行。</li>
-          <li><code>vertical-align</code> 只影响行内、行内块和表格单元格的对齐。本页图片默认参与行内格式化，会按基线对齐而留下底部空隙；可用 <code>vertical-align: middle</code> 或把图片改为 <code>display: block</code> 处理。</li>
-          <li><code>object-fit</code> 控制替换元素内容如何填充自身盒子，常见值有 <code>cover</code>、<code>contain</code>、<code>fill</code>；它不作用于普通 <code>div</code> 背景。</li>
+          <li><code>vertical-align</code> 只影响行内、行内块和表格单元格的对齐。MDN 指出替换元素默认按基线对齐，行盒会为文字下伸部预留空间，图片底部常出现空隙。</li>
+          <li>消除基线空隙常见两种做法：<code>vertical-align: middle</code>（或其他非 baseline 值）调整对齐，或设 <code>display: block</code> 让图片脱离行内排版。</li>
+          <li><code>object-fit</code> 控制替换元素（<code>img</code>、<code>video</code> 等）内容如何填充自身盒子，常见值有 <code>cover</code>、<code>contain</code>、<code>fill</code>；它不作用于普通元素的 <code>background-image</code>。</li>
+          <li><code>background-size</code> 管背景图层缩放，<code>object-fit</code> 管替换元素内容缩放；语义化内容图应优先 <code>img + object-fit</code> 以保留 <code>alt</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
@@ -74,16 +96,69 @@
 
     <!-- PAGE_DOM_START -->
     <h2>单行省略</h2>
-    <div class="box single">这是一段很长很长的标题，超出容器后应该显示省略号。</div>
-    <h2>图片基线空隙</h2>
-    <p class="baseline"><img alt="" /> 图片默认按基线对齐，常用 vertical-align: middle 或 display:block 处理底部空隙。</p>
+    <p class="tip">需同时满足 <code>nowrap</code>、<code>overflow: hidden</code> 与 <code>text-overflow: ellipsis</code>（MDN text-overflow）。</p>
+    <div class="box single" id="demo-single">这是一段很长很长的标题，超出容器后应该显示省略号。</div>
+
+    <h2>图片基线空隙（默认 baseline）</h2>
+    <p class="tip">对比默认 baseline 与 <code>vertical-align: middle</code>：行内替换元素参与基线对齐时，底部常留空隙。</p>
+    <p class="baseline baseline-default" id="demo-baseline-default"><img id="img-baseline-default" alt="" /> 默认 baseline 对齐，注意图片下方空隙。</p>
+    <p class="baseline"><img id="img-baseline-middle" alt="" style="vertical-align: middle" /> vertical-align: middle 可减小底部空隙。</p>
+
     <h2>object-fit 固定尺寸裁切</h2>
+    <p class="tip">固定 240×135 盒子，<code>object-fit: cover</code> 裁切填充（MDN object-fit）。</p>
     <img
       class="photo"
+      id="demo-photo"
       src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%232f80ed'/%3E%3Crect x='80' width='160' height='300' fill='%2327ae60'/%3E%3Ccircle cx='330' cy='150' r='90' fill='%23eb5757'/%3E%3C/svg%3E"
       alt="用于演示 object-fit 裁切的彩色示意图"
     />
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 判断文本是否溢出容器，对应 text-overflow 前提 */
+        function isOverflowing(el) {
+          return el.scrollWidth > el.clientWidth;
+        }
+
+        /** 测量行内图片与段落高度差，辅助理解 baseline 空隙 */
+        function measureBaselineGap(paragraph, img) {
+          var pRect = paragraph.getBoundingClientRect();
+          var imgRect = img.getBoundingClientRect();
+          return Math.round(pRect.bottom - imgRect.bottom);
+        }
+
+        /** 输出单行省略、vertical-align 与 object-fit 实测报告 */
+        function renderTextImageMetrics() {
+          var single = document.getElementById("demo-single");
+          var imgDefault = document.getElementById("img-baseline-default");
+          var imgMiddle = document.getElementById("img-baseline-middle");
+          var pDefault = document.getElementById("demo-baseline-default");
+          var photo = document.getElementById("demo-photo");
+          var photoStyle = getComputedStyle(photo);
+
+          document.getElementById("runtime-output").textContent = [
+            "── 单行 ellipsis ──",
+            "#demo-single: 溢出=" + isOverflowing(single) +
+              ", text-overflow=" + getComputedStyle(single).textOverflow,
+            "",
+            "── vertical-align ──",
+            "#img-baseline-default: vertical-align=" + getComputedStyle(imgDefault).verticalAlign +
+              ", 段落底-图片底≈" + measureBaselineGap(pDefault, imgDefault) + "px",
+            "#img-baseline-middle: vertical-align=" + getComputedStyle(imgMiddle).verticalAlign,
+            "",
+            "── object-fit ──",
+            "#demo-photo: object-fit=" + photoStyle.objectFit +
+              ", 渲染尺寸=" + photo.clientWidth + "×" + photo.clientHeight + "px",
+          ].join("\n");
+        }
+
+        renderTextImageMetrics();
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

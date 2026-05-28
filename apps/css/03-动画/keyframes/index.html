@@ -20,6 +20,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@keyframes 旋转动画</title>
     <style>
+      body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
+      h2 { font-size: 1rem; margin-top: 0; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
       .testDiv {
         width: 50px;
         height: 50px;
@@ -42,6 +45,17 @@
           animation: none;
         }
       }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -50,7 +64,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>@keyframes 与 animation 旋转动画</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出 animation 计算值与 prefers-reduced-motion 状态。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -79,9 +93,58 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <div class="testDiv">
-    </div>
+    <h2>@keyframes 旋转演示</h2>
+    <p class="tip">观察红色方块沿 0° → 180° → 360° 旋转；下方输出 <code>getComputedStyle</code> 读取的 animation 子属性。</p>
+    <div class="testDiv" id="spinner-box"></div>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 读取 animation 计算值，对应 MDN animation 子属性 */
+        function getAnimationInfo(el) {
+          var s = getComputedStyle(el);
+          return {
+            name: s.animationName,
+            duration: s.animationDuration,
+            timing: s.animationTimingFunction,
+            iteration: s.animationIterationCount,
+            direction: s.animationDirection,
+            playState: s.animationPlayState,
+          };
+        }
+
+        /** 检测 prefers-reduced-motion，对应 MDN @media prefers-reduced-motion */
+        function isReducedMotion() {
+          return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        }
+
+        /** 输出 animation 实测报告到 #runtime-output */
+        function renderMetrics() {
+          var el = document.getElementById("spinner-box");
+          var info = getAnimationInfo(el);
+          var output = document.getElementById("runtime-output");
+
+          output.textContent = [
+            "── animation 实测（#spinner-box）──",
+            "animation-name: " + info.name,
+            "animation-duration: " + info.duration,
+            "animation-timing-function: " + info.timing,
+            "animation-iteration-count: " + info.iteration,
+            "animation-direction: " + info.direction,
+            "animation-play-state: " + info.playState,
+            "",
+            "── prefers-reduced-motion ──",
+            "matchMedia('(prefers-reduced-motion: reduce)'): " + (isReducedMotion() ? "匹配（animation 已关闭）" : "未匹配"),
+          ].join("\n");
+        }
+
+        renderMetrics();
+        window.matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", renderMetrics);
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

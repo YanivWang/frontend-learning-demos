@@ -26,7 +26,8 @@
         font-size: 16px;
       }
       body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
-      h1 { font-size: clamp(1.25rem, 2vw + 1rem, 2rem); }
+      h2 { font-size: 1rem; margin-top: 2rem; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
       .parent {
         font-size: 20px;
         width: min(720px, 90vw);
@@ -45,6 +46,23 @@
       .em { font-size: 1.5em; }
       .rem { font-size: 1.5rem; }
       .viewport { width: 50vw; height: 12vh; background: #e5f6df; margin-top: 16px; padding: 8px; }
+      .measure {
+        margin: 0.35rem 0 0;
+        font-size: 0.875rem;
+        color: #444;
+        font-family: ui-monospace, monospace;
+      }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -52,12 +70,12 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>单位与现代 CSS 函数</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <h1>CSS 单位与函数：px、em、rem、calc、clamp、var()</h1>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出实际测量值。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>px</code> 是 CSS 绝对长度单位；<code>em</code> 用在 <code>font-size</code> 上时参考父元素字体大小，用在其他长度属性上通常参考当前元素已计算字体大小；<code>rem</code> 始终参考根元素字体大小。</li>
+          <li><code>px</code> 是 CSS 绝对长度单位；<code>em</code> 用在 <code>font-size</code> 上时参考父元素字体大小，用在其他长度属性上通常参考当前元素已计算字体大小；<code>rem</code> 始终参考根元素（<code>&lt;html&gt;</code>）字体大小。</li>
           <li>百分比不是永远参考父元素宽度，它的参考对象由具体属性定义；本例卡片宽度的百分比来自包含块宽度，而 <code>vw</code>/<code>vh</code> 来自视口尺寸，适合视口相关区域但在移动端地址栏变化时要谨慎。</li>
           <li><code>calc()</code> 允许不同单位在同一个属性值里按表达式计算，例如 <code>calc(50% - var(--gap) / 2)</code>；表达式结果必须适合当前属性，单位不兼容或语法无效会导致声明失效。</li>
           <li><code>clamp(min, preferred, max)</code> 会把首选值限制在最小值和最大值之间，常用于流式字号、容器宽度和间距，让布局随视口变化但不突破可读性边界。</li>
@@ -65,9 +83,9 @@
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>em 和 rem 的计算基准有什么区别？</strong> 结论是 <code>em</code> 跟当前字体环境走，<code>rem</code> 跟根元素字体走。原因是 <code>em</code> 会受到父级字体和自身计算结果影响，嵌套组件里可能层层放大；<code>rem</code> 更稳定，适合全局字号和间距体系。项目里组件内部相对当前文字的 padding 可用 <code>em</code>，全站设计 token 更常用 <code>rem</code>。</li>
-          <li><strong>百分比、vw/vh 和容器宽度在响应式布局里如何选？</strong> 结论是跟随父容器用百分比，跟随浏览器视口用 <code>vw</code>/<code>vh</code>，跟随组件容器则优先考虑容器查询或基于布局上下文计算。原因是百分比的参考对象由属性决定，而视口单位不关心父容器。边界是移动端浏览器 UI 会改变可视视口，满屏高度场景要测试 <code>vh</code> 行为或使用现代动态视口单位。</li>
-          <li><strong>calc() 与 clamp() 分别适合解决什么问题？</strong> 结论是 <code>calc()</code> 解决混合单位和变量运算，<code>clamp()</code> 解决响应式值的上下限。原因是 <code>calc()</code> 返回一个表达式计算结果，<code>clamp()</code> 等价于在最小值、首选值、最大值之间夹取。项目里两列卡片可用 <code>calc(50% - gap)</code>，流式标题可用 <code>clamp(1.25rem, 2vw + 1rem, 2rem)</code>。</li>
+          <li><strong>em 和 rem 的计算基准有什么区别？</strong> 结论是 <code>em</code> 跟当前字体环境走，<code>rem</code> 跟根元素字体走。原因是 <code>em</code> 用在 <code>font-size</code> 上时参考父级，嵌套组件里可能层层放大；<code>rem</code> 更稳定，适合全局字号和间距体系。项目里组件内部相对当前文字的 padding 可用 <code>em</code>，全站设计 token 更常用 <code>rem</code>。</li>
+          <li><strong>百分比、vw/vh 和容器宽度在响应式布局里如何选？</strong> 结论是跟随父容器用百分比，跟随浏览器视口用 <code>vw</code>/<code>vh</code>，跟随组件容器则优先考虑容器查询或基于布局上下文计算。原因是百分比的参考对象由属性决定，而视口单位不关心父容器。边界是移动端浏览器 UI 会改变可视视口，满屏高度场景要测试 <code>vh</code> 行为或使用现代动态视口单位（<code>dvh</code> 等）。</li>
+          <li><strong>calc() 与 clamp() 分别适合解决什么问题？</strong> 结论是 <code>calc()</code> 解决混合单位和变量运算，<code>clamp()</code> 解决响应式值的上下限。原因是 <code>calc()</code> 返回一个表达式计算结果，<code>clamp()</code> 等价于 <code>max(min, min(preferred, max))</code>。项目里两列卡片可用 <code>calc(50% - gap)</code>，流式标题可用 <code>clamp(1.25rem, 2vw + 1rem, 2rem)</code>。</li>
           <li><strong>CSS 变量在主题系统里有哪些继承和失效边界？</strong> 结论是 CSS 变量适合主题切换和局部覆盖，但要管理作用域和 fallback。原因是自定义属性会继承，并在 <code>var()</code> 替换时才校验最终属性值；变量未定义或替换后类型不合法会让声明失效。项目里通常把基础 token 放在 <code>:root</code>，组件内覆盖局部 token，并用 <code>var(--brand, #2f80ed)</code> 兜底关键值。</li>
         </ul>
         <h2>参考资料</h2>
@@ -82,17 +100,137 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <div class="parent">
+    <h2>em vs rem（字体大小）</h2>
+    <p class="tip">父级 <code>font-size: 20px</code>，根元素 <code>:root { font-size: 16px }</code>；观察 <code>1.5em</code> 与 <code>1.5rem</code> 的实际像素。</p>
+    <div class="parent" id="parent-box">
       <p>父级字体是 20px。</p>
-      <p class="em">1.5em = 30px，跟父级走。</p>
-      <p class="rem">1.5rem = 24px，跟 html 根字号走。</p>
-      <div class="cards">
-        <div class="card">calc() 计算两列宽度</div>
-        <div class="card">var() 复用主题色和间距</div>
+      <p class="em" id="em-demo">1.5em → 期望 30px（20 × 1.5），跟父级走。</p>
+      <p class="rem" id="rem-demo">1.5rem → 期望 24px（16 × 1.5），跟 html 根字号走。</p>
+      <p class="measure" id="measure-font"></p>
+
+      <h2>calc() 与 var()（两列卡片）</h2>
+      <p class="tip">卡片宽度 <code>calc(50% - var(--gap) / 2)</code>，背景色和间距来自 CSS 变量；脚本读取实际宽度。</p>
+      <div class="cards" id="cards-row">
+        <div class="card" id="card-a">calc() 计算两列宽度</div>
+        <div class="card" id="card-b">var() 复用主题色和间距</div>
       </div>
-      <div class="viewport">50vw 宽，12vh 高，跟视口走。</div>
+      <p class="measure" id="measure-cards"></p>
+
+      <h2>vw / vh（视口单位）</h2>
+      <p class="tip">下方盒子写 <code>width: 50vw; height: 12vh</code>，尺寸随浏览器视口变化，与父容器宽度无关。</p>
+      <div class="viewport" id="viewport-box">50vw 宽，12vh 高，跟视口走。</div>
+      <p class="measure" id="measure-viewport"></p>
     </div>
+
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 读取元素 font-size 计算值（px），对应 MDN font-size 与 em/rem 基准 */
+        function getFontSizePx(el) {
+          return parseFloat(getComputedStyle(el).fontSize);
+        }
+
+        /** 读取 border box 宽度，用于验证 calc() 与百分比布局 */
+        function getBorderBoxWidth(el) {
+          return el.offsetWidth;
+        }
+
+        /** 读取视口尺寸，对应 MDN vw/vh 参考视口 */
+        function getViewportSize() {
+          return {
+            width: window.innerWidth,
+            height: window.innerHeight,
+          };
+        }
+
+        /** 渲染 em/rem 实测字号 */
+        function renderFontMetrics() {
+          var parentEl = document.getElementById("parent-box");
+          var emEl = document.getElementById("em-demo");
+          var remEl = document.getElementById("rem-demo");
+          var measure = document.getElementById("measure-font");
+
+          var parentFont = getFontSizePx(parentEl);
+          var emFont = getFontSizePx(emEl);
+          var remFont = getFontSizePx(remEl);
+          var rootFont = getFontSizePx(document.documentElement);
+
+          measure.textContent =
+            "父级 font-size = " +
+            Math.round(parentFont) +
+            "px；#em-demo = " +
+            Math.round(emFont) +
+            "px（1.5 × " +
+            Math.round(parentFont) +
+            "）；#rem-demo = " +
+            Math.round(remFont) +
+            "px（1.5 × 根 " +
+            Math.round(rootFont) +
+            "）";
+        }
+
+        /** 渲染 calc/var 卡片与 vw/vh 实测报告 */
+        function renderLayoutMetrics() {
+          var cardA = document.getElementById("card-a");
+          var cardB = document.getElementById("card-b");
+          var viewportBox = document.getElementById("viewport-box");
+          var cardsMeasure = document.getElementById("measure-cards");
+          var viewportMeasure = document.getElementById("measure-viewport");
+          var output = document.getElementById("runtime-output");
+          var vp = getViewportSize();
+
+          var cardWidthA = getBorderBoxWidth(cardA);
+          var cardWidthB = getBorderBoxWidth(cardB);
+          var viewportWidth = getBorderBoxWidth(viewportBox);
+          var viewportHeight = viewportBox.offsetHeight;
+          var expectedVw = Math.round(vp.width * 0.5);
+          var expectedVh = Math.round(vp.height * 0.12);
+
+          cardsMeasure.textContent =
+            "#card-a 宽 " +
+            cardWidthA +
+            "px，#card-b 宽 " +
+            cardWidthB +
+            "px（两列应接近相等）";
+
+          viewportMeasure.textContent =
+            "视口 " +
+            vp.width +
+            "×" +
+            vp.height +
+            " → 50vw ≈ " +
+            expectedVw +
+            "px，12vh ≈ " +
+            expectedVh +
+            "px";
+
+          output.textContent = [
+            "── 字号实测 ──",
+            "html 根 font-size: " + Math.round(getFontSizePx(document.documentElement)) + "px",
+            "#em-demo font-size: " + Math.round(getFontSizePx(document.getElementById("em-demo"))) + "px",
+            "#rem-demo font-size: " + Math.round(getFontSizePx(document.getElementById("rem-demo"))) + "px",
+            "",
+            "── calc / var 实测 ──",
+            "#card-a border box 宽: " + cardWidthA + "px",
+            "#card-b border box 宽: " + cardWidthB + "px",
+            "--brand 计算色: " + getComputedStyle(cardA).backgroundColor,
+            "",
+            "── vw / vh 实测 ──",
+            "视口 innerWidth × innerHeight: " + vp.width + " × " + vp.height,
+            "#viewport-box 宽: " + viewportWidth + "px（≈ 50vw = " + expectedVw + "）",
+            "#viewport-box 高: " + viewportHeight + "px（≈ 12vh = " + expectedVh + "）",
+          ].join("\n");
+        }
+
+        renderFontMetrics();
+        renderLayoutMetrics();
+        window.addEventListener("resize", renderLayoutMetrics);
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

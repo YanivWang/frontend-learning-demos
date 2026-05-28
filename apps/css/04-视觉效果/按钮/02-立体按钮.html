@@ -20,6 +20,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>3D 按钮按下动效</title>
     <style>
+      h2 { font-size: 1rem; margin-top: 2rem; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      .demo-wrap { position: relative; min-height: 120px; padding: 24px 0; }
       .css-3d-btn {
         left: 100px;
         top: 100px;
@@ -52,6 +55,17 @@
           transition: none;
         }
       }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -60,7 +74,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>拟物 3D 按钮的按下动效</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，按住按钮时脚本会读取 :active 阴影变化。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -89,10 +103,57 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <div>
-      <button class="css-3d-btn" type="button">点击</button>
+    <h2>box-shadow 模拟厚度</h2>
+    <p class="tip">默认 <code>box-shadow: 0 4px 0</code> 表示凸起；<code>:active</code> 时阴影缩短并 <code>translateY(2px)</code> 模拟按下（MDN :active）。</p>
+    <div class="demo-wrap">
+      <button class="css-3d-btn" id="btn-3d-flat" type="button">点击</button>
     </div>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        var btn = document.getElementById("btn-3d-flat");
+        var output = document.getElementById("runtime-output");
+
+        /** 读取 box-shadow 与 transform，对应 MDN box-shadow / transform */
+        function readButtonState() {
+          var style = getComputedStyle(btn);
+          return {
+            boxShadow: style.boxShadow,
+            transform: style.transform,
+            transition: style.transitionDuration,
+          };
+        }
+
+        /** 渲染默认状态，并在 pointer 按下时刷新 :active 实测值 */
+        function renderButtonMetrics(label) {
+          var state = readButtonState();
+          output.textContent = [
+            "── 立体按钮实测（" + label + "）──",
+            "box-shadow=" + state.boxShadow,
+            "transform=" + state.transform,
+            "transition-duration=" + state.transition,
+            "",
+            "提示：鼠标按住或空格/回车激活时，:active 应缩短阴影并 translateY(2px)",
+          ].join("\n");
+        }
+
+        renderButtonMetrics("默认");
+        btn.addEventListener("pointerdown", function () {
+          requestAnimationFrame(function () {
+            renderButtonMetrics(":active");
+          });
+        });
+        btn.addEventListener("pointerup", function () {
+          requestAnimationFrame(function () {
+            renderButtonMetrics("默认");
+          });
+        });
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

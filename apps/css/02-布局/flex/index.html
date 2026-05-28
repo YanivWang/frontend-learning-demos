@@ -23,6 +23,8 @@
       body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
       h1 { font-size: 1.3rem; }
       h2 { font-size: 1rem; margin-top: 2rem; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      .measure { margin: 0.35rem 0 0; font-size: 0.875rem; color: #444; font-family: ui-monospace, monospace; }
       .demo {
         display: flex;
         gap: 12px;
@@ -46,6 +48,42 @@
         background: #ffe3d1;
         border: 1px solid #f2a36d;
       }
+      .minwidth-row { display: flex; gap: 16px; flex-wrap: wrap; max-width: 680px; }
+      .minwidth-col { flex: 1; min-width: 280px; }
+      .minwidth-bad, .minwidth-good {
+        display: flex;
+        width: 260px;
+        border: 1px solid #ddd;
+        background: #f8f8f8;
+      }
+      .minwidth-bad .side, .minwidth-good .side {
+        flex: 0 0 80px;
+        padding: 8px;
+        background: #2f80ed;
+        color: #fff;
+        font-size: 0.75rem;
+      }
+      .minwidth-bad .main, .minwidth-good .main {
+        flex: 1;
+        padding: 8px;
+        background: #fff0d6;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .minwidth-good .main { min-width: 0; }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -53,8 +91,8 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>Flex 布局核心</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <h1>Flex 一维布局</h1>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出 flex 子项实测宽度。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -75,6 +113,7 @@
         <ul>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_flexible_box_layout/Basic_concepts_of_flexbox">MDN: Basic concepts of flexbox</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/flex">MDN: flex</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/min-width">MDN: min-width</a></li>
           <li><a href="https://www.w3.org/TR/css-flexbox-1/">W3C: CSS Flexible Box Layout Module Level 1</a></li>
         </ul>
       </div>
@@ -83,20 +122,119 @@
 
     <!-- PAGE_DOM_START -->
     <h2>主轴和交叉轴</h2>
-    <div class="demo">
+    <p class="tip">观察 <code>justify-content: space-between</code> 如何在主轴分配剩余空间，<code>align-items: center</code> 如何在交叉轴居中。</p>
+    <div class="demo" id="demo-axis">
       <div class="item">A</div>
       <div class="item">B</div>
       <div class="item">C</div>
     </div>
     <h2>flex: grow shrink basis</h2>
-    <div class="demo grow">
-      <div class="item">固定 120px</div>
-      <div class="item">剩余空间 1 份</div>
-      <div class="item">剩余空间 2 份</div>
+    <p class="tip">固定 120px 后，剩余空间按 grow 比例 1:2 分配；下方脚本输出各子项实测宽度。</p>
+    <div class="demo grow" id="demo-grow">
+      <div class="item" id="grow-fixed">固定 120px</div>
+      <div class="item" id="grow-1">剩余空间 1 份</div>
+      <div class="item" id="grow-2">剩余空间 2 份</div>
     </div>
+    <p class="measure" id="measure-grow"></p>
     <h2>水平垂直居中</h2>
-    <div class="center">align-items + justify-content</div>
+    <p class="tip"><code>align-items</code> + <code>justify-content</code> 双轴居中，子元素无需知道自身尺寸。</p>
+    <div class="center" id="demo-center">align-items + justify-content</div>
+    <h2>min-width: 0 防止长文本撑破</h2>
+    <p class="tip">左栏对比：无 <code>min-width:0</code> 时主栏可能被长文本撑出容器；右侧加 <code>min-width:0</code> 后可在 flex 内正常收缩并省略。</p>
+    <div class="minwidth-row">
+      <div class="minwidth-col">
+        <p class="tip" style="margin-top:0;">默认 min-width:auto</p>
+        <div class="minwidth-bad" id="minwidth-bad">
+          <div class="side">侧栏</div>
+          <div class="main">VeryLongUnbreakableTextWithoutSpacesThatBreaksFlexLayout</div>
+        </div>
+      </div>
+      <div class="minwidth-col">
+        <p class="tip" style="margin-top:0;">主栏 min-width:0</p>
+        <div class="minwidth-good" id="minwidth-good">
+          <div class="side">侧栏</div>
+          <div class="main">VeryLongUnbreakableTextWithoutSpacesThatBreaksFlexLayout</div>
+        </div>
+      </div>
+    </div>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 读取元素 border box 宽度（offsetWidth），用于验证 flex 分配结果 */
+        function getBorderBoxWidth(el) {
+          return el.offsetWidth;
+        }
+
+        /** 读取 flex 简写三要素，对应 MDN flex 属性 */
+        function getFlexProps(el) {
+          var s = getComputedStyle(el);
+          return {
+            grow: s.flexGrow,
+            shrink: s.flexShrink,
+            basis: s.flexBasis,
+          };
+        }
+
+        /** 测量 grow 演示区三个子项宽度，并写入 #measure-grow */
+        function renderGrowMetrics() {
+          var fixed = document.getElementById("grow-fixed");
+          var one = document.getElementById("grow-1");
+          var two = document.getElementById("grow-2");
+          var container = document.getElementById("demo-grow");
+          var containerWidth = getBorderBoxWidth(container);
+          var gap = parseFloat(getComputedStyle(container).gap) || 0;
+          var used = getBorderBoxWidth(fixed) + getBorderBoxWidth(one) + getBorderBoxWidth(two) + gap * 2;
+
+          document.getElementById("measure-grow").textContent =
+            "容器 " + containerWidth + "px · 固定项 " + getBorderBoxWidth(fixed) +
+            "px · 1份 " + getBorderBoxWidth(one) + "px · 2份 " + getBorderBoxWidth(two) +
+            "px（1:2 ≈ " + (getBorderBoxWidth(one) / getBorderBoxWidth(two)).toFixed(2) + "）";
+
+          return { containerWidth: containerWidth, used: used, one: getBorderBoxWidth(one), two: getBorderBoxWidth(two) };
+        }
+
+        /** 对比 min-width:auto 与 min-width:0 对 flex 主栏宽度的影响 */
+        function renderMinWidthMetrics() {
+          var bad = document.getElementById("minwidth-bad");
+          var good = document.getElementById("minwidth-good");
+          return {
+            badContainer: getBorderBoxWidth(bad),
+            goodContainer: getBorderBoxWidth(good),
+            badMain: getBorderBoxWidth(bad.querySelector(".main")),
+            goodMain: getBorderBoxWidth(good.querySelector(".main")),
+            badMinWidth: getComputedStyle(bad.querySelector(".main")).minWidth,
+            goodMinWidth: getComputedStyle(good.querySelector(".main")).minWidth,
+          };
+        }
+
+        function renderRuntimeOutput() {
+          var grow = renderGrowMetrics();
+          var minw = renderMinWidthMetrics();
+          var g2 = document.getElementById("grow-2");
+          var flex2 = getFlexProps(g2);
+
+          document.getElementById("runtime-output").textContent = [
+            "── flex-grow 分配实测 ──",
+            "#demo-grow 容器宽度: " + grow.containerWidth + "px",
+            "#grow-2 flex-grow/shrink/basis: " + flex2.grow + " / " + flex2.shrink + " / " + flex2.basis,
+            "grow 1份 vs 2份 宽度比: " + grow.one + " : " + grow.two,
+            "",
+            "── min-width 对比 ──",
+            "无 min-width:0 容器宽度: " + minw.badContainer + "px（可能被内容撑破 260px 限制）",
+            "有 min-width:0 容器宽度: " + minw.goodContainer + "px",
+            "主栏 min-width: " + minw.badMinWidth + " vs " + minw.goodMinWidth,
+            "主栏实测宽度: " + minw.badMain + "px vs " + minw.goodMain + "px",
+          ].join("\n");
+        }
+
+        renderRuntimeOutput();
+        window.addEventListener("resize", renderRuntimeOutput);
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

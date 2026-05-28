@@ -21,7 +21,6 @@
     <title>CSS 继承与层叠</title>
     <style>
       body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; line-height: 1.6; }
-      h1 { font-size: 1.3rem; }
       h2 { font-size: 1rem; margin-top: 2rem; }
       .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
       .parent {
@@ -40,7 +39,6 @@
         margin-top: 8px;
       }
       .child-no-width {
-        /* width 不继承，不会自动变成和父级一样宽 */
         padding: 8px 12px;
         background: #ffe3d1;
         margin-top: 8px;
@@ -76,6 +74,17 @@
         background: #dff0ff;
         margin-top: 8px;
       }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -84,7 +93,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>CSS 继承与层叠</h1>
-      <p class="hint">观察父级样式如何影响子元素，以及 <code>inherit</code>、<code>initial</code>、<code>unset</code> 对继承属性的不同效果。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出继承与关键字实测值。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -117,24 +126,24 @@
     <!-- PAGE_DOM_START -->
     <h2>可继承 vs 不可继承</h2>
     <p class="tip">父级有蓝色文字、18px 字号和蓝色边框；子元素没写 color/font-size 时会继承，但不会继承 width。</p>
-    <div class="parent">
+    <div class="parent" id="parent-inherit">
       父级：color + font-size 会传给后代
-      <div class="child-inherit">border-color: inherit — 边框颜色跟随父级文字色</div>
-      <div class="child-no-width">未设置 width — 宽度由自身内容和块级规则决定，不会继承父级</div>
+      <div class="child-inherit" id="child-inherit-border">border-color: inherit — 边框颜色跟随父级文字色</div>
+      <div class="child-no-width" id="child-no-width">未设置 width — 宽度由自身内容和块级规则决定，不会继承父级</div>
     </div>
 
     <h2>unset：撤销当前声明</h2>
-    <p class="tip">外层故意设为 tomato / 22px，内层 <code>color: unset; font-size: unset</code> 会回到继承链上的值（通常表现为回到 body 默认样式）。</p>
-    <div class="unset-demo">
+    <p class="tip">外层故意设为 tomato / 22px，内层 <code>color: unset; font-size: unset</code> 会回到继承链上的值。</p>
+    <div class="unset-demo" id="unset-outer">
       外层文字
-      <div class="unset-child">unset 后不再使用外层的 tomato / 22px</div>
+      <div class="unset-child" id="unset-inner">unset 后不再使用外层的 tomato / 22px</div>
     </div>
 
     <h2>initial：回到规范初始值</h2>
     <p class="tip"><code>color: initial</code> 通常回到默认文字色，而不是继续继承父级红色。</p>
-    <div class="initial-demo">
+    <div class="initial-demo" id="initial-outer">
       外层红色斜体
-      <div class="initial-child">color/font-style: initial</div>
+      <div class="initial-child" id="initial-inner">color/font-style: initial</div>
     </div>
 
     <h2>inherit / initial / unset 对照</h2>
@@ -143,25 +152,84 @@
       <div class="keyword-box"><code>initial</code>使用 CSS 规范初始值，不等于“继承父级”。</div>
       <div class="keyword-box"><code>unset</code>可继承属性 → inherit；不可继承属性 → initial。</div>
     </div>
+
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 读取计算样式，对应 MDN getComputedStyle 与继承链 */
+        function getComputed(el, prop) {
+          return getComputedStyle(el).getPropertyValue(prop);
+        }
+
+        /** 将 rgb 颜色转为可读字符串 */
+        function formatColor(color) {
+          return (color || "").trim() || "(none)";
+        }
+
+        /** 测量可继承与不可继承属性的实际计算值 */
+        function renderInheritanceMetrics() {
+          var parent = document.getElementById("parent-inherit");
+          var childInherit = document.getElementById("child-inherit-border");
+          var childNoWidth = document.getElementById("child-no-width");
+          var unsetOuter = document.getElementById("unset-outer");
+          var unsetInner = document.getElementById("unset-inner");
+          var initialOuter = document.getElementById("initial-outer");
+          var initialInner = document.getElementById("initial-inner");
+          var output = document.getElementById("runtime-output");
+
+          var parentWidth = parent.offsetWidth;
+          var childWidth = childNoWidth.offsetWidth;
+
+          output.textContent = [
+            "── 可继承属性实测 ──",
+            "#parent-inherit color: " + formatColor(getComputed(parent, "color")),
+            "#parent-inherit font-size: " + getComputed(parent, "font-size"),
+            "#child-inherit-border color（继承）: " + formatColor(getComputed(childInherit, "color")),
+            "#child-inherit-border border-color（inherit）: " + formatColor(getComputed(childInherit, "border-top-color")),
+            "",
+            "── 不可继承属性实测 ──",
+            "#parent-inherit width: " + parentWidth + "px",
+            "#child-no-width width: " + childWidth + "px（≠ 父级，width 不继承）",
+            "",
+            "── unset 实测 ──",
+            "#unset-outer color: " + formatColor(getComputed(unsetOuter, "color")) +
+              ", font-size: " + getComputed(unsetOuter, "font-size"),
+            "#unset-inner color: " + formatColor(getComputed(unsetInner, "color")) +
+              ", font-size: " + getComputed(unsetInner, "font-size"),
+            "",
+            "── initial 实测 ──",
+            "#initial-outer color: " + formatColor(getComputed(initialOuter, "color")) +
+              ", font-style: " + getComputed(initialOuter, "font-style"),
+            "#initial-inner color: " + formatColor(getComputed(initialInner, "color")) +
+              ", font-style: " + getComputed(initialInner, "font-style"),
+          ].join("\n");
+        }
+
+        renderInheritanceMetrics();
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
-  <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="../%E7%9B%92%E6%A8%A1%E5%9E%8B/index.html">← index</a>
         <a href="../%E9%80%89%E6%8B%A9%E5%99%A8%E4%B8%8E%E4%BC%98%E5%85%88%E7%BA%A7/index.html">index →</a>
       </nav>
-  <script>
-    (function () {
-      var a = document.querySelector("[data-demo-catalog]");
-      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-        a.setAttribute("href", a.dataset.fileCatalog);
-      }
-    })();
-  </script>
-</footer>
-<!-- NAV_END -->
+      <script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
+    </footer>
+    <!-- NAV_END -->
 </body>
 </html>

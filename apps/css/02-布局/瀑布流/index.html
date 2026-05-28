@@ -48,6 +48,18 @@
       .h4 { height: 140px; background: linear-gradient(135deg, #43e97b, #38f9d7); }
       .h5 { height: 90px; background: linear-gradient(135deg, #fa709a, #fee140); }
       .h6 { height: 130px; background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
+      .tip { margin: 0 0 1rem; color: #666; font-size: 0.875rem; }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -56,7 +68,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>瀑布流布局（CSS column-count，无需 JS）</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出 column-count 实测值。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -85,7 +97,9 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <div class="masonry">
+    <h2>CSS 多列瀑布流</h2>
+    <p class="tip">观察不同视口宽度下 <code>column-count</code> 变化，以及卡片按列流动的视觉顺序（DOM 顺序不变）。</p>
+    <div class="masonry" id="masonry">
       <div class="item h1">卡片 1</div>
       <div class="item h2">卡片 2</div>
       <div class="item h3">卡片 3</div>
@@ -99,7 +113,35 @@
       <div class="item h5">卡片 11</div>
       <div class="item h6">卡片 12</div>
     </div>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 读取多列布局 computed 值，对应 MDN column-count / column-gap */
+        function renderMasonryMetrics() {
+          var masonry = document.getElementById("masonry");
+          var s = getComputedStyle(masonry);
+          var items = masonry.querySelectorAll(".item");
+
+          document.getElementById("runtime-output").textContent = [
+            "── 多列布局实测 ──",
+            "column-count: " + s.columnCount,
+            "column-gap: " + s.columnGap,
+            "容器宽度: " + masonry.offsetWidth + "px",
+            "卡片数量: " + items.length,
+            "break-inside: " + getComputedStyle(items[0]).breakInside,
+            "",
+            "提示: 视觉按列流动，DOM/键盘顺序仍按文档流；resize 窗口观察 column-count 媒体查询变化。",
+          ].join("\n");
+        }
+
+        renderMasonryMetrics();
+        window.addEventListener("resize", renderMasonryMetrics);
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

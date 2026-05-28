@@ -21,6 +21,8 @@
     <title>光标闪烁 · @keyframes</title>
     <style>
       body { font-family: system-ui, sans-serif; margin: 2rem; }
+      h2 { font-size: 1rem; margin-top: 0; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
       .row { display: flex; align-items: center; font-size: 28px; }
       /* steps(1, start) —— 阶梯函数：跳变而非渐变，模拟终端光标 */
       .cursor {
@@ -39,6 +41,17 @@
           animation: none;
         }
       }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -47,7 +60,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>命令行式闪烁光标</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出 animation-timing-function 与 prefers-reduced-motion 状态。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -75,9 +88,52 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <div class="row">$ npm run dev<span class="cursor"></span></div>
-    <p>核心：用 <code>steps(1, start)</code> 让背景色"跳变"而不是渐变，模拟终端光标。</p>
+    <h2>终端式闪烁光标</h2>
+    <p class="tip">观察竖线背景色在 <code>#000</code> 与 <code>transparent</code> 之间跳变（<code>steps(1, start)</code>），而非渐变。</p>
+    <div class="row">$ npm run dev<span class="cursor" id="blink-cursor"></span></div>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 读取光标 animation 计算值，对应 MDN animation-timing-function / steps() */
+        function getBlinkMetrics() {
+          var el = document.getElementById("blink-cursor");
+          var s = getComputedStyle(el);
+          return {
+            name: s.animationName,
+            duration: s.animationDuration,
+            timing: s.animationTimingFunction,
+            iteration: s.animationIterationCount,
+            playState: s.animationPlayState,
+            bgColor: s.backgroundColor,
+          };
+        }
+
+        /** 输出闪烁光标实测报告 */
+        function renderMetrics() {
+          var m = getBlinkMetrics();
+          document.getElementById("runtime-output").textContent = [
+            "── 闪烁光标实测（#blink-cursor）──",
+            "animation-name: " + m.name,
+            "animation-duration: " + m.duration,
+            "animation-timing-function: " + m.timing + "（steps(1,start) 离散跳变）",
+            "animation-iteration-count: " + m.iteration,
+            "animation-play-state: " + m.playState,
+            "background-color（当前帧）: " + m.bgColor,
+            "",
+            "── prefers-reduced-motion ──",
+            "matchMedia('(prefers-reduced-motion: reduce)'): " +
+              (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "匹配（动画已关闭）" : "未匹配"),
+          ].join("\n");
+        }
+
+        renderMetrics();
+        window.matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", renderMetrics);
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

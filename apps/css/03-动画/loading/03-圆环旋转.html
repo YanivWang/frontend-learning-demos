@@ -20,6 +20,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>loading - lds-ring 圆环</title>
     <style>
+      body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
+      h2 { font-size: 1rem; margin-top: 0; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
       .lds-ring {
         display: inline-block;
         position: relative;
@@ -60,6 +63,17 @@
           animation: none;
         }
       }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -68,7 +82,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>lds-ring 圆环旋转 loading</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出负 animation-delay 与 cubic-bezier 实测值。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -98,13 +112,60 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <div class="lds-ring">
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
+    <h2>lds-ring 圆环旋转 loading</h2>
+    <p class="tip">观察 4 个圆环叠放旋转，负 <code>animation-delay</code> 让首屏即呈现追逐状态；<code>border-color</code> 透明三边形成弧线。</p>
+    <div class="lds-ring" id="lds-ring">
+      <div id="ring-1"></div>
+      <div id="ring-2"></div>
+      <div id="ring-3"></div>
+      <div id="ring-4"></div>
     </div>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        var ringIds = ["ring-1", "ring-2", "ring-3", "ring-4"];
+
+        /** 读取圆环 animation 计算值，对应 MDN animation-delay / cubic-bezier / border-color */
+        function getRingMetrics(id) {
+          var s = getComputedStyle(document.getElementById(id));
+          return {
+            id: id,
+            delay: s.animationDelay,
+            duration: s.animationDuration,
+            timing: s.animationTimingFunction,
+            borderColor: s.borderTopColor + " / " + s.borderRightColor,
+            transform: s.transform,
+          };
+        }
+
+        /** 输出圆环 animation 实测报告 */
+        function renderMetrics() {
+          var lines = ["── lds-ring 实测 ──"];
+          ringIds.forEach(function (id, i) {
+            var m = getRingMetrics(id);
+            lines.push(
+              "#" + m.id + " (nth-child " + (i + 1) + "): delay=" + m.delay +
+                ", duration=" + m.duration +
+                ", timing=" + m.timing
+            );
+            lines.push("  border-top/right: " + m.borderColor);
+          });
+          lines.push("");
+          lines.push("── prefers-reduced-motion ──");
+          lines.push(
+            "matchMedia('(prefers-reduced-motion: reduce)'): " +
+              (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "匹配（动画已关闭）" : "未匹配")
+          );
+          document.getElementById("runtime-output").textContent = lines.join("\n");
+        }
+
+        renderMetrics();
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

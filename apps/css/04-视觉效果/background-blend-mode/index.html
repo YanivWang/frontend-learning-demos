@@ -22,12 +22,25 @@
     <link rel="stylesheet" href="blend.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
+    <style>
+      #runtime-output {
+        margin: 0.75rem 10px 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
+    </style>
   </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>background-blend-mode 与 mix-blend-mode 混合模式</h1>
-      <p class="hint">观察下方原图、渐变调色和文字混合效果：前半部分是背景图层混合，后半部分是元素与后方背景混合。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会读取混合模式实测值。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -55,18 +68,60 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <div class="g-flex">
-      <div class="pic">原图</div>
-      <div class="pic pic1">粉色</div>
-      <div class="pic pic2">绿色</div>
-      <div class="pic pic3">渐变</div>
+    <h2>background-blend-mode：多层背景混合</h2>
+    <p class="tip">同一元素的图片层与渐变层用 <code>lighten</code> 混合调色（MDN background-blend-mode）。</p>
+    <div class="g-flex" id="demo-bg-blend">
+      <div class="pic" id="pic-original">原图</div>
+      <div class="pic pic1" id="pic-pink">粉色</div>
+      <div class="pic pic2" id="pic-green">绿色</div>
+      <div class="pic pic3" id="pic-gradient">渐变</div>
     </div>
+
     <h2 class="mix-title">mix-blend-mode：元素与下层背景混合</h2>
-    <div class="mix-scene">
-      <p class="mix-text">difference 反白文字</p>
-      <p class="mix-text screen">screen 提亮混合</p>
+    <p class="tip">文字与后方渐变背景做 <code>difference</code> / <code>screen</code> 混合（MDN mix-blend-mode）。</p>
+    <div class="mix-scene" id="demo-mix-scene">
+      <p class="mix-text" id="mix-difference">difference 反白文字</p>
+      <p class="mix-text screen" id="mix-screen">screen 提亮混合</p>
     </div>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 读取 background-blend-mode，对应 MDN background-blend-mode */
+        function getBackgroundBlendMode(el) {
+          return getComputedStyle(el).backgroundBlendMode;
+        }
+
+        /** 读取 mix-blend-mode，对应 MDN mix-blend-mode */
+        function getMixBlendMode(el) {
+          return getComputedStyle(el).mixBlendMode;
+        }
+
+        /** 输出背景混合与元素混合的 computed 值 */
+        function renderBlendMetrics() {
+          var lines = ["── background-blend-mode 实测 ──"];
+          ["pic-original", "pic-pink", "pic-green", "pic-gradient"].forEach(function (id) {
+            var el = document.getElementById(id);
+            lines.push(
+              "#" + id + ": background-blend-mode=" + getBackgroundBlendMode(el) +
+                ", background-image层数≈" + getComputedStyle(el).backgroundImage.split(",").length
+            );
+          });
+          lines.push("");
+          lines.push("── mix-blend-mode 实测 ──");
+          lines.push("#mix-difference: mix-blend-mode=" + getMixBlendMode(document.getElementById("mix-difference")));
+          lines.push("#mix-screen: mix-blend-mode=" + getMixBlendMode(document.getElementById("mix-screen")));
+          lines.push("");
+          lines.push("注意：外链背景图加载失败时只剩渐变层，混合效果会退化");
+          document.getElementById("runtime-output").textContent = lines.join("\n");
+        }
+
+        renderBlendMetrics();
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

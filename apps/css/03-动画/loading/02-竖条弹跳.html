@@ -20,6 +20,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>loading - 五条竖条弹跳</title>
     <style>
+      body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
+      h2 { font-size: 1rem; margin-top: 0; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
       .loading {
         position: absolute;
         left: 50%;
@@ -73,6 +76,17 @@
           transform: scaleY(0.8);
         }
       }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -81,7 +95,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>5 条竖条交错弹跳的加载动画</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出 nth-child 对应 animation-delay 实测值。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -110,16 +124,62 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
+    <h2>5 条竖条交错弹跳 loading</h2>
+    <p class="tip">观察 <code>:nth-child()</code> 为第 2～5 个竖条设置递增 delay，形成波浪式弹跳；同样用 <code>transform: scaleY()</code> 而非 height。</p>
     <div class="loading">
-      <div class="loadWrap">
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
+      <div class="loadWrap" id="load-wrap">
+        <span id="bar-1"></span>
+        <span id="bar-2"></span>
+        <span id="bar-3"></span>
+        <span id="bar-4"></span>
+        <span id="bar-5"></span>
       </div>
     </div>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        var barIds = ["bar-1", "bar-2", "bar-3", "bar-4", "bar-5"];
+
+        /** 读取竖条 animation 计算值，对应 MDN animation-delay / :nth-child 错峰 */
+        function getBarMetrics(id) {
+          var s = getComputedStyle(document.getElementById(id));
+          return {
+            id: id,
+            delay: s.animationDelay,
+            duration: s.animationDuration,
+            timing: s.animationTimingFunction,
+            transform: s.transform,
+          };
+        }
+
+        /** 输出各竖条 animation-delay 实测报告 */
+        function renderMetrics() {
+          var lines = ["── 竖条弹跳 loading 实测 ──"];
+          barIds.forEach(function (id, i) {
+            var m = getBarMetrics(id);
+            lines.push(
+              "#" + m.id + " (nth-child " + (i + 1) + "): delay=" + m.delay +
+                ", duration=" + m.duration +
+                ", timing=" + m.timing +
+                ", transform=" + m.transform
+            );
+          });
+          lines.push("");
+          lines.push("── prefers-reduced-motion ──");
+          lines.push(
+            "matchMedia('(prefers-reduced-motion: reduce)'): " +
+              (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "匹配（动画已关闭）" : "未匹配")
+          );
+          document.getElementById("runtime-output").textContent = lines.join("\n");
+        }
+
+        renderMetrics();
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

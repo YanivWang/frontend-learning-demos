@@ -45,6 +45,18 @@
       .card h3 { margin: 0; font-size: 1rem; }
       .card p { margin: 0; font-size: 0.875rem; color: #555; }
       .card button { justify-self: start; padding: 6px 12px; cursor: pointer; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -53,7 +65,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>subgrid 卡片对齐</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会检测 subgrid 支持并测量按钮行对齐。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -82,25 +94,65 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>三列卡片中，标题/正文/按钮行在支持 <code>subgrid</code> 的浏览器里会跨卡对齐。</p>
-    <div class="cards">
-      <article class="card">
+    <h2>subgrid 跨卡对齐</h2>
+    <p class="tip">支持 subgrid 的浏览器中，三列卡片的标题/正文/按钮行共享父级行轨道；不支持时仍可用普通 grid 展示。</p>
+    <div class="cards" id="subgrid-cards">
+      <article class="card" id="card-1">
         <h3>短标题</h3>
         <p>一行描述</p>
-        <button type="button">操作</button>
+        <button type="button" id="btn-1">操作</button>
       </article>
-      <article class="card">
+      <article class="card" id="card-2">
         <h3>较长的产品名称</h3>
         <p>多行描述：subgrid 让按钮行贴底对齐，不受中间正文高度影响。</p>
-        <button type="button">操作</button>
+        <button type="button" id="btn-2">操作</button>
       </article>
-      <article class="card">
+      <article class="card" id="card-3">
         <h3>中等标题</h3>
         <p>两行左右的说明文字。</p>
-        <button type="button">操作</button>
+        <button type="button" id="btn-3">操作</button>
       </article>
     </div>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 检测浏览器是否支持 subgrid（MDN Subgrid） */
+        function supportsSubgrid() {
+          return CSS.supports("grid-template-rows", "subgrid");
+        }
+
+        /** 读取卡片按钮的 offsetTop，验证跨卡按钮行是否对齐 */
+        function renderSubgridMetrics() {
+          var buttons = [
+            document.getElementById("btn-1"),
+            document.getElementById("btn-2"),
+            document.getElementById("btn-3"),
+          ];
+          var tops = buttons.map(function (btn) {
+            return Math.round(btn.getBoundingClientRect().top);
+          });
+          var aligned = tops.every(function (t) { return t === tops[0]; });
+
+          document.getElementById("runtime-output").textContent = [
+            "── subgrid 支持检测 ──",
+            "CSS.supports('grid-template-rows: subgrid'): " + supportsSubgrid(),
+            "",
+            "── 按钮行 offsetTop 实测 ──",
+            "#btn-1 top: " + tops[0] + "px",
+            "#btn-2 top: " + tops[1] + "px",
+            "#btn-3 top: " + tops[2] + "px",
+            "三按钮 top 对齐: " + (aligned ? "是（subgrid 生效或内容高度巧合）" : "否（可能未支持 subgrid）"),
+          ].join("\n");
+        }
+
+        renderSubgridMetrics();
+        window.addEventListener("resize", renderSubgridMetrics);
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

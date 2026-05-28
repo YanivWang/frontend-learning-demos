@@ -16,8 +16,9 @@
 <!doctype html>
 <html lang="zh-CN">
   <head>
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>纯 CSS tooltip</title>
     <style>
       * {
         margin: 0px;
@@ -40,8 +41,6 @@
         /*鼠标放上元素上时的动画，鼠标放上后效果在.tip-*:hover:before, .tip-*:hover:after中设置;
         0.3s:规定完成过渡效果需要多少秒或毫秒,ease:规定慢速开始，然后变快，然后慢速结束的过渡效果*/
         transition: 0.3s ease;
-        -webkit-transition: 0.3s ease;
-        -moz-transition: 0.3s ease;
       }
       .tip:before {
         content: '';
@@ -166,6 +165,26 @@
       .tip-left:focus-visible:after {
         margin-right: 6px;
       }
+      .demo-page p.tip {
+        display: block;
+        position: static;
+        margin: 0.5rem 0 1rem;
+        color: #666;
+        font-size: 0.875rem;
+      }
+      #runtime-output {
+        margin: 0.75rem auto;
+        max-width: 640px;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        text-align: left;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -174,7 +193,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>纯 CSS tooltip（上下左右四方向）</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出伪元素与 attr() 的实测信息。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -203,19 +222,63 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
+    <h2>四方向 tooltip</h2>
+    <p class="tip">鼠标悬停或 Tab 聚焦按钮，观察 <code>::before</code> 箭头与 <code>::after</code> 气泡；<code>content: attr(data-tip)</code> 读取提示文案（MDN attr）。</p>
     <p>
-      <button class="tip tip-top" data-tip="我是上边提示">上边提示</button>
+      <button class="tip tip-top" id="tip-top" type="button" data-tip="我是上边提示">上边提示</button>
     </p>
     <p>
-      <button class="tip tip-bottom" data-tip="我是下边提示">下边提示</button>
+      <button class="tip tip-bottom" id="tip-bottom" type="button" data-tip="我是下边提示">下边提示</button>
     </p>
     <p>
-      <button class="tip tip-right" data-tip="我是右边提示">右边提示</button>
+      <button class="tip tip-right" id="tip-right" type="button" data-tip="我是右边提示">右边提示</button>
     </p>
     <p>
-      <button class="tip tip-left" data-tip="我是左边提示">左边提示</button>
+      <button class="tip tip-left" id="tip-left" type="button" data-tip="我是左边提示">左边提示</button>
     </p>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /**
+         * 读取触发元素的 data-tip，对应 MDN attr() 在 content 中的用法。
+         */
+        function getTipText(el) {
+          return el.getAttribute("data-tip") || "";
+        }
+
+        /**
+         * 读取 ::after 伪元素的 content 计算值，验证 attr(data-tip) 是否生效。
+         * 对应 MDN ::after 与 attr() 文档。
+         */
+        function getAfterContent(el) {
+          return getComputedStyle(el, "::after").content;
+        }
+
+        /** 汇总四个方向按钮的 data-tip 与伪元素 content，写入 #runtime-output */
+        function renderTooltipMetrics() {
+          var ids = ["tip-top", "tip-bottom", "tip-right", "tip-left"];
+          var lines = ["── tooltip 属性与伪元素 content ──"];
+          ids.forEach(function (id) {
+            var el = document.getElementById(id);
+            lines.push(
+              "#" + id +
+                ": data-tip=\"" + getTipText(el) + "\"" +
+                ", ::after content=" + getAfterContent(el) +
+                ", position=" + getComputedStyle(el).position
+            );
+          });
+          lines.push("");
+          lines.push("交互：:hover 与 :focus-visible 均会显示 tooltip（键盘 Tab 可验证）");
+          document.getElementById("runtime-output").textContent = lines.join("\n");
+        }
+
+        renderTooltipMetrics();
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

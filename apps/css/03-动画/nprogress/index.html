@@ -19,6 +19,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NProgress 顶部进度条</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      #runtime-output {
+        margin: 0.75rem 0 0;
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
+    </style>
     <script src="lib/nprogress.js"></script>
     <link href="lib/nprogress.css" rel="stylesheet" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
@@ -28,7 +43,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>NProgress 顶部进度条</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出 NProgress 状态与任务结果。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -58,57 +73,112 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block">
       <h2 class="demo-block__label">异步任务演示</h2>
-      <p>点击按钮后顶部会出现 NProgress。成功和失败路径都会在结束时关闭进度条。</p>
+      <p class="tip">点击按钮后顶部会出现 NProgress 进度条；成功和失败路径都会在 <code>finally</code> 中调用 <code>done()</code> 收尾。</p>
       <button type="button" id="successTask">模拟成功任务</button>
       <button type="button" id="failTask">模拟失败任务</button>
       <p id="taskStatus" role="status" aria-live="polite">等待触发任务。</p>
     </section>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      const status = document.getElementById("taskStatus");
-      const buttons = [document.getElementById("successTask"), document.getElementById("failTask")];
+      (function () {
+        var status = document.getElementById("taskStatus");
+        var output = document.getElementById("runtime-output");
+        var buttons = [
+          document.getElementById("successTask"),
+          document.getElementById("failTask"),
+        ];
 
-      function setBusy(isBusy) {
-        buttons.forEach((button) => {
-          button.disabled = isBusy;
-        });
-      }
-
-      function runTask(shouldFail) {
-        if (!window.NProgress) {
-          status.textContent = "NProgress 资源加载失败，无法显示顶部进度条。";
-          return;
+        /** 检测 NProgress 是否可用，对应第三方库 start/done API */
+        function getNProgressState() {
+          if (!window.NProgress) {
+            return { available: false, isStarted: false, status: null };
+          }
+          return {
+            available: true,
+            isStarted: NProgress.isStarted(),
+            status: NProgress.status,
+          };
         }
 
-        setBusy(true);
-        status.textContent = shouldFail ? "任务执行中，稍后会模拟失败。" : "任务执行中，稍后会模拟成功。";
-        NProgress.start();
+        /** 渲染 NProgress 运行时状态到 #runtime-output */
+        function renderRuntimeState(extra) {
+          var np = getNProgressState();
+          var lines = [
+            "── NProgress 状态 ──",
+            "NProgress 可用: " + (np.available ? "是" : "否"),
+          ];
+          if (np.available) {
+            lines.push("NProgress.isStarted(): " + np.isStarted);
+            lines.push("NProgress.status: " + (np.status === null ? "null（未显示）" : np.status));
+          }
+          if (extra) {
+            lines.push("");
+            lines.push("── 最近任务 ──");
+            lines.push(extra);
+          }
+          output.textContent = lines.join("\n");
+        }
 
-        new Promise((resolve, reject) => {
-          setTimeout(() => {
-            if (shouldFail) {
-              reject(new Error("模拟接口失败"));
-              return;
-            }
-            resolve();
-          }, 1200);
-        })
-          .then(() => {
-            status.textContent = "任务成功：进度条已完成。";
-          })
-          .catch((error) => {
-            status.textContent = `${error.message}：进度条同样需要收尾，并给用户错误反馈。`;
-          })
-          .finally(() => {
-            NProgress.done();
-            setBusy(false);
+        /** 禁用/启用按钮，防止重复触发 */
+        function setBusy(isBusy) {
+          buttons.forEach(function (button) {
+            button.disabled = isBusy;
           });
-      }
+        }
 
-      document.getElementById("successTask").addEventListener("click", () => runTask(false));
-      document.getElementById("failTask").addEventListener("click", () => runTask(true));
+        /**
+         * 模拟异步任务：start → Promise → finally done
+         * 对应 MDN Promise.prototype.finally 与 try/catch 错误路径
+         */
+        function runTask(shouldFail) {
+          if (!window.NProgress) {
+            status.textContent = "NProgress 资源加载失败，无法显示顶部进度条。";
+            renderRuntimeState("资源加载失败");
+            return;
+          }
+
+          setBusy(true);
+          status.textContent = shouldFail
+            ? "任务执行中，稍后会模拟失败。"
+            : "任务执行中，稍后会模拟成功。";
+          NProgress.start();
+          renderRuntimeState("任务进行中…");
+
+          new Promise(function (resolve, reject) {
+            setTimeout(function () {
+              if (shouldFail) {
+                reject(new Error("模拟接口失败"));
+                return;
+              }
+              resolve();
+            }, 1200);
+          })
+            .then(function () {
+              status.textContent = "任务成功：进度条已完成。";
+            })
+            .catch(function (error) {
+              status.textContent =
+                error.message + "：进度条同样需要收尾，并给用户错误反馈。";
+            })
+            .finally(function () {
+              NProgress.done();
+              setBusy(false);
+              renderRuntimeState(status.textContent);
+            });
+        }
+
+        document.getElementById("successTask").addEventListener("click", function () {
+          runTask(false);
+        });
+        document.getElementById("failTask").addEventListener("click", function () {
+          runTask(true);
+        });
+
+        renderRuntimeState("等待触发任务");
+      })();
     </script>
     <!-- SCRIPT_END -->
 

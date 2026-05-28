@@ -22,12 +22,29 @@
     <link rel="stylesheet" href="responseDisplay.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
+    <style>
+      .demo-page > h2 { font-size: 1rem; margin: 1.5rem 0 0; }
+      .demo-page > p.tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      #runtime-output {
+        margin: 0.75rem auto;
+        max-width: min(980px, 96vw);
+        padding: 0.75rem 1rem;
+        background: #f6f8fa;
+        border: 1px solid #d8dee4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: ui-monospace, monospace;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        color: #222;
+      }
+    </style>
   </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>rem、@media 与 vw/vh 的组合响应式布局</h1>
-      <p class="hint">调整浏览器宽高，观察顶部 50vw / 12vh 演示块、30vh 主图和 rem 字号在断点附近的变化。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出 vw/vh/rem 实测值。调整浏览器宽高观察断点与视口单位变化。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -58,8 +75,9 @@
     <!-- PAGE_DOM_START -->
     <section class="vw-vh-demo" aria-label="vw/vh 视口单位演示">
       <h2>vw / vh 视口单位演示</h2>
-      <div class="vw-box">宽 50vw</div>
-      <div class="vh-box">高 12vh</div>
+      <p class="tip">观察 <code>#vw-box</code> 宽 50vw、<code>#vh-box</code> 高 12vh 如何随窗口变化；下方脚本输出 computed 尺寸。</p>
+      <div class="vw-box" id="vw-box">宽 50vw</div>
+      <div class="vh-box" id="vh-box">高 12vh</div>
       <p class="vw-vh-note">页面主体另用 rem + @media 做字号适配，容器宽 <code>min(980px, 96vw)</code>，主图区高 <code>30vh</code>。</p>
     </section>
     <header>
@@ -77,7 +95,7 @@
       <article>
         <figure>
           <figcaption></figcaption>
-          <div class="placeholder placeholder-lg"></div>
+          <div class="placeholder placeholder-lg" id="hero-placeholder"></div>
         </figure>
         <section>
           <p>
@@ -149,7 +167,61 @@
               </aside>
             </div>
             <footer><em>关于站长之家</em> <em>联系我们(电话)</em> <em>广告服务</em> <em>友情链接</em> <em>网站地图</em> <em>版权声明</em> <em>人才招聘</em></footer>
+    <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        /** 检测 rem 根字号所在 @media 区间（responseDisplay.css 1600/1280/960 断点） */
+        function getRemBreakpointLabel() {
+          var w = window.innerWidth;
+          if (w <= 960) return "≤960px → html font-size: 10px";
+          if (w <= 1280) return "960–1280px → html font-size: 12px";
+          if (w <= 1600) return "1280–1600px → html font-size: 14px";
+          return ">1600px → html font-size: 14px（默认）";
+        }
+
+        /** 输出 vw/vh/rem 相关 computed 尺寸（MDN viewport-relative lengths） */
+        function renderViewportMetrics() {
+          var vwBox = document.getElementById("vw-box");
+          var vhBox = document.getElementById("vh-box");
+          var container = document.getElementById("container");
+          var hero = document.getElementById("hero-placeholder");
+          var output = document.getElementById("runtime-output");
+          if (!output) return;
+
+          var htmlStyle = getComputedStyle(document.documentElement);
+          var vwStyle = vwBox ? getComputedStyle(vwBox) : null;
+          var vhStyle = vhBox ? getComputedStyle(vhBox) : null;
+          var containerStyle = container ? getComputedStyle(container) : null;
+          var heroStyle = hero ? getComputedStyle(hero) : null;
+          var expected50vw = Math.round(window.innerWidth * 0.5);
+
+          output.textContent = [
+            "── vw / vh / rem 实测 ──",
+            "innerWidth × innerHeight: " + window.innerWidth + " × " + window.innerHeight + "px",
+            "1vw ≈ " + (window.innerWidth / 100).toFixed(2) + "px，1vh ≈ " + (window.innerHeight / 100).toFixed(2) + "px",
+            "",
+            "html font-size: " + htmlStyle.fontSize + "（" + getRemBreakpointLabel() + "）",
+            vwStyle ? "#vw-box width: " + vwStyle.width + "（50vw，心算 ≈ " + expected50vw + "px）" : "",
+            vhStyle ? "#vh-box height: " + vhStyle.height + "（12vh）" : "",
+            heroStyle ? "#hero-placeholder height: " + heroStyle.height + "（30vh）" : "",
+            containerStyle ? "#container width: " + containerStyle.width + "（min(980px, 96vw)）" : "",
+            containerStyle ? "#container grid-template-columns: " + containerStyle.gridTemplateColumns : "",
+            "",
+            "matchMedia 对照:",
+            "  max-width:1600px → " + window.matchMedia("(max-width: 1600px)").matches,
+            "  max-width:1280px → " + window.matchMedia("(max-width: 1280px)").matches,
+            "  max-width:960px → " + window.matchMedia("(max-width: 960px)").matches,
+          ].filter(Boolean).join("\n");
+        }
+
+        renderViewportMetrics();
+        window.addEventListener("resize", renderViewportMetrics);
+      })();
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
