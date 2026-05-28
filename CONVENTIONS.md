@@ -129,7 +129,7 @@
 
 每个框架 / 第三方运行时统一放在所属目录下的 `libs/`：
 
-- `apps/react18/libs/`、`apps/vue2/libs/`、`apps/vue3/libs/`、`packages/shared/libs/`、`apps/css/05-响应式/libs/`
+- `apps/react18/libs/`、`apps/vue2/libs/`、`apps/vue3/libs/`、`packages/shared/libs/`
 - **跨模块通用库**（axios、lodash、js-cookie 等）统一放在 `packages/shared/libs/`，demo 用相对路径 `../../../../packages/shared/libs/<file>` 引用（相对 `apps/vue2|vue3/src/<分类>/`）
 - demo 内嵌的小库放在 demo 同级的 `lib/`（注意是单数）
 - **每个第三方文件**首行必须有注释，写明：**名称 + 版本号 + 官方下载地址 + 下载日期**

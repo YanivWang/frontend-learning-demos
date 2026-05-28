@@ -38,7 +38,7 @@ Vue 2.7 时代的 demo（`libs/vue.js` 为 **2.7.16**，Vue 2 最终版）。`ap
 
 | 文件 | 主题 |
 |---|---|
-| `01-基础语法/01-模板语法-base.html` | Vue 五大基础特性合集 |
+| `01-基础语法/01-模板语法-base.html` | Vue 2 基础指令与响应式绑定合集 |
 | `01-基础语法/02-模板插值与指令.html` | Mustache 插值 / v-html / v-bind / v-once |
 | `01-基础语法/03-v-if-v-show.html` | v-if / v-else / v-show / <template v-if> |
 | `01-基础语法/04-bindClass.html` | v-bind:class 三种写法（对象 / 对象引用 / 数组） |
@@ -90,10 +90,10 @@ Vue 2.7 时代的 demo（`libs/vue.js` 为 **2.7.16**，Vue 2 最终版）。`ap
 | `05-路由与状态/12-Vuex核心.html` | Vuex 全家桶（state / mutations / actions / getters / mapState / mapGetters） |
 | `05-路由与状态/13-Vuex-actions.html` | Vuex actions 详解（载荷 / 异步 / Promise / 嵌套 dispatch） |
 | `05-路由与状态/14-Vuex-Module.html` | Vuex Module 演示（按模块拆分 store） |
-| `05-路由与状态/15-Promise前置回顾.html` | Promise 基础（与本目录主题关系不强，仅作前置回顾） |
+| `05-路由与状态/15-Promise前置回顾.html` | Promise 基础与 Vue 异步流程前置 |
 | `06-原理与性能/01-虚拟DOM-diff-key.html` | 虚拟 DOM / diff / key |
 | `06-原理与性能/02-模板编译-render.html` | template 编译到 render 函数 |
 | `06-原理与性能/03-性能优化.html` | Vue2 常见性能优化 |
-| `07-源码简读/01-源码阅读前置-Symbol.html` | Vue2 源码阅读前置知识占位（Symbol） |
+| `07-源码简读/01-源码阅读前置-Symbol.html` | Vue2 源码阅读前置：Symbol 与源码标记 |
 
 <!-- DEMO_TABLE_END -->

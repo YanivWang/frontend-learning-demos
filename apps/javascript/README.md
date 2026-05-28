@@ -1,6 +1,6 @@
 # JavaScript
 
-按学习顺序编号的纯 JS 知识点 demo，共 **129** 个 `.html` 文件`.html` 文件。每个文件都可以直接在浏览器打开，无需构建。
+按学习顺序编号的纯 JS 知识点 demo，共 **129** 个 `.html` 文件。每个文件都可以直接在浏览器打开，无需构建。
 
 每个 demo 在 `<!DOCTYPE html>` 前有统一头注释（`分类` / `主题` / `要点`），详见 [`../../CONVENTIONS.md`](../../CONVENTIONS.md) §4。
 
@@ -35,7 +35,7 @@
 |---|---|
 | `01-基础/变量.html` | 变量声明、提升、null vs undefined、constructor |
 | `01-基础/变量进阶.html` | var / let / const 变量提升与暂时性死区 |
-| `01-基础/函数.html` | 函数声明的最小可运行示例 |
+| `01-基础/函数.html` | 函数声明、参数与返回值基础 |
 | `01-基础/函数进阶.html` | 函数声明、函数表达式、Function 构造器、严格模式 this |
 | `01-基础/箭头函数.html` | 箭头函数与普通函数差异 |
 | `01-基础/类型转换.html` | 类型转换、相等比较与浮点精度 |
@@ -60,7 +60,7 @@
 | `01-基础/unicode-字符等价性.html` | Unicode 字符等价性（NFC / NFD） |
 | `01-基础/unicode.html` | Unicode 码点与字符串互转 |
 | `02-函数与作用域/01-作用域链.html` | 作用域链与变量查找 |
-| `02-函数与作用域/02-柯里化.html` | 函数柯里化基础 |
+| `02-函数与作用域/02-柯里化.html` | 柯里化与参数收集 |
 | `02-函数与作用域/闭包/01-闭包-作用域链与变量提升.html` | 闭包的作用域链与变量提升 |
 | `02-函数与作用域/闭包/02-闭包-内存泄漏与修复.html` | 闭包导致的内存泄漏与修复手段 |
 | `02-函数与作用域/this指向/01-this-动态绑定.html` | this 的动态绑定 |
@@ -107,8 +107,8 @@
 | `06-浏览器API/存储/00-存储方案对比.html` | Cookie、sessionStorage、localStorage、IndexedDB 对比 |
 | `06-浏览器API/存储/01-localforage-基础API.html` | localforage 基础 API |
 | `06-浏览器API/存储/02-获取已用容量.html` | 通过 iterate 统计已用容量 |
-| `06-浏览器API/存储/03-获取剩余容量.html` | 用 localforage.iterate 估算剩余容量 |
-| `06-浏览器API/存储/04-封装-获取存储容量.html` | 封装获取存储容量（已用 / 剩余） |
+| `06-浏览器API/存储/03-获取剩余容量.html` | 结合 localforage 与 StorageManager 估算剩余容量 |
+| `06-浏览器API/存储/04-封装-获取存储容量.html` | 封装 localforage 容量估算工具 |
 | `06-浏览器API/存储/05-测试最大容量.html` | 测试 localforage 最大可写容量 |
 | `06-浏览器API/存储/06-存储文件-FileReader.html` | FileReader 读取文件并存入 localforage |
 | `06-浏览器API/剪贴板.html` | 文本复制到剪贴板的新旧两种方案 |
@@ -130,7 +130,7 @@
 | `06-浏览器API/Performance-API.html` | Performance API 计时与导航指标 |
 | `06-浏览器API/requestAnimation.html` | requestAnimationFrame 与递归调用对比 |
 | `06-浏览器API/ServiceWorker.html` | Service Worker 基础注册 |
-| `06-浏览器API/toolTips/index.html` | Vue3 实现可交互的 Tooltip |
+| `06-浏览器API/toolTips/index.html` | Vue3 实现悬停与键盘可访问的交互浮层 |
 | `06-浏览器API/WebComponents.html` | Web Components 自定义元素与 Shadow DOM |
 | `06-浏览器API/WebSocket.html` | WebSocket 连接与消息收发 |
 | `06-浏览器API/WebWorker/01-基础/01-Worker-基础与子脚本.html` | Worker 基础与子脚本 |
@@ -144,7 +144,7 @@
 | `07-进阶/手写Promise/promiseAll.html` | 手写 Promise.all |
 | `07-进阶/无障碍-a11y.html` | 无障碍 a11y：语义化、焦点与 ARIA |
 | `07-进阶/资源预加载/index.html` | 用 new Image / new Audio 触发浏览器预加载 |
-| `07-进阶/UMD插件模式/index.html` | UMD（Universal Module Definition）演示 |
+| `07-进阶/UMD插件模式/index.html` | UMD 插件模式与多模块环境兼容 |
 | `08-面试题/防抖节流.html` | 防抖（debounce）与节流（throttle） |
 | `08-面试题/加权随机.html` | 加权随机（按概率抽奖） |
 | `08-面试题/手写/01-call-apply.html` | 手写 call / apply |

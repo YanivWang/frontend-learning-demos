@@ -16,8 +16,8 @@
 |---|---|
 | `drag/01-drag-原生.html` | 原生 HTML5 拖拽 API（drag & drop） |
 | `drag/02-drag-HTML5拖放复制.html` | HTML5 拖放复制（带 UI 反馈） |
-| `form-wizard/01-form-wizard-分步表单.html` | 分步表单向导 |
-| `hash-router/01-hash-router-简易路由.html` | Hash 路由简易 SPA |
+| `form-wizard/01-form-wizard-分步表单.html` | 分步表单向导与逐步校验 |
+| `hash-router/01-hash-router-简易路由.html` | Hash 路由简易 SPA 与 fallback |
 | `todo/01-todo-本地状态.html` | Todo 本地状态管理 |
 | `viewpager/01-viewpager-翻页与缓动.html` | ViewPager 翻页组件 + 多种缓动插值器 |
 | `virtual-list/01-virtual-list-固定高度.html` | 固定高度虚拟列表 |

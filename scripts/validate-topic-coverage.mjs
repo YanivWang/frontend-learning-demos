@@ -23,7 +23,7 @@ const REQUIRED = [
   { file: "apps/css/07-现代特性/06-subgrid/index.html", keywords: ["subgrid", "grid"] },
   { file: "apps/css/06-性能/01-重排重绘/index.html", keywords: ["重排", "重绘", "transform"] },
   { file: "apps/css/06-性能/02-合成层/index.html", keywords: ["合成层", "will-change", "GPU"] },
-  { file: "apps/css/06-性能/03-content-visibility/index.html", keywords: ["content-visibility", "contain-intrinsic-size"] },
+  { file: "apps/css/07-现代特性/07-content-visibility/index.html", keywords: ["content-visibility", "contain-intrinsic-size"] },
   { file: "apps/javascript/06-浏览器API/WebSocket.html", keywords: ["WebSocket", "readyState", "OPEN"] },
   { file: "apps/javascript/06-浏览器API/Performance-API.html", keywords: ["performance.now", "mark", "measure"] },
   { file: "apps/javascript/07-进阶/无障碍-a11y.html", keywords: ["aria-expanded", "aria-live", "focus"] },

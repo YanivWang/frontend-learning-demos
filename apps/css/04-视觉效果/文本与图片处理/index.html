@@ -1,16 +1,14 @@
 <!--
 分类: css / 04-视觉效果 / 文本与图片处理
-  主题: 文本省略、vertical-align、object-fit、aspect-ratio
+  主题: 单行文本省略、vertical-align、object-fit
   要点:
     - 单行省略需要 nowrap、overflow hidden 和 text-overflow ellipsis 同时成立
-    - 多行省略常用 -webkit-line-clamp 组合，需接受兼容性和可访问性边界
     - vertical-align 处理行内替换元素的基线对齐，不是通用垂直居中方案
-    - object-fit 只作用于 img/video 等替换元素，aspect-ratio 控制盒子首选比例
+    - object-fit 只作用于 img/video 等替换元素，固定宽高时可控制裁切或完整显示
   面试:
     - 单行文本省略为什么必须同时设置三类属性？
-    - 多行省略为什么常用 -webkit-line-clamp，风险是什么？
     - img 底部空隙和 vertical-align 的关系是什么？
-    - object-fit 与 background-size、aspect-ratio 如何区分？
+    - object-fit 与 background-size 如何区分？
 -->
 
 <!doctype html>
@@ -29,12 +27,6 @@
         overflow: hidden;
         text-overflow: ellipsis;
       }
-      .multi {
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
-        overflow: hidden;
-      }
       .baseline img {
         width: 48px;
         height: 48px;
@@ -43,7 +35,7 @@
       }
       .photo {
         width: 240px;
-        aspect-ratio: 16 / 9;
+        height: 135px;
         object-fit: cover;
         background: #eef2ff;
         display: block;
@@ -55,31 +47,26 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>文本省略、行内图片对齐与替换元素适配</h1>
-      <p class="hint">下方依次演示单行省略、多行省略、图片基线空隙，以及用 <code>object-fit</code> 让图片裁切填满固定比例盒子。</p>
+      <h1>单行省略、行内图片对齐与替换元素适配</h1>
+      <p class="hint">下方依次演示单行省略、图片基线空隙，以及用 <code>object-fit</code> 让图片裁切填满固定尺寸盒子。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
           <li>单行省略的条件是容器有可计算宽度，文本不换行，溢出被裁掉，最后由 <code>text-overflow: ellipsis</code> 显示省略号；少任一条件都可能只溢出或换行。</li>
-          <li>多行省略常用 <code>display: -webkit-box</code>、<code>-webkit-box-orient: vertical</code>、<code>-webkit-line-clamp</code> 和 <code>overflow: hidden</code> 的组合。它适合摘要卡片，但被截断内容仍要通过详情页、标题或展开按钮让用户可访问。</li>
           <li><code>vertical-align</code> 只影响行内、行内块和表格单元格的对齐。本页图片默认参与行内格式化，会按基线对齐而留下底部空隙；可用 <code>vertical-align: middle</code> 或把图片改为 <code>display: block</code> 处理。</li>
           <li><code>object-fit</code> 控制替换元素内容如何填充自身盒子，常见值有 <code>cover</code>、<code>contain</code>、<code>fill</code>；它不作用于普通 <code>div</code> 背景。</li>
-          <li><code>aspect-ratio</code> 给盒子一个首选宽高比，适合头像、卡片封面和视频占位；如果同时写死宽高或内容最小尺寸更大，最终尺寸仍会被其他约束影响。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
           <li><strong>单行省略为什么必须同时设置三类属性？</strong> 结论是省略号不是单靠 <code>text-overflow</code> 生成的。原因是浏览器只有在文本不换行、溢出被隐藏且容器发生行内方向溢出时，才会用省略号表示裁剪。项目里标题、表格单元格和面包屑都要先确认容器宽度是否明确。</li>
-          <li><strong>多行省略为什么常用 -webkit-line-clamp？</strong> 结论是它是目前工程里最常见、效果稳定的多行截断方案。原因是标准 <code>line-clamp</code> 仍存在实现和语法历史包袱，实际兼容通常依赖 <code>-webkit-</code> 组合。边界是内容被视觉截断，搜索、复制和读屏体验可能不完整，重要信息应提供展开或详情入口。</li>
           <li><strong>img 底部空隙和 vertical-align 有什么关系？</strong> 结论是底部空隙来自图片作为行内替换元素参与基线对齐。原因是行盒会为文字下伸部预留空间，图片默认贴基线而不是贴容器底边。项目里可以设 <code>display: block</code> 让图片脱离行内排版，或按需求用 <code>vertical-align</code> 调整。</li>
-          <li><strong>object-fit、background-size 和 aspect-ratio 如何区分？</strong> 结论是 <code>object-fit</code> 管替换元素内容，<code>background-size</code> 管背景图，<code>aspect-ratio</code> 管盒子比例。原因是它们作用对象不同，不能互相替代。比如商品图用 <code>img + object-fit</code> 保留语义和 alt，装饰背景才用 background，卡片占位比例用 <code>aspect-ratio</code>。</li>
+          <li><strong>object-fit 和 background-size 如何区分？</strong> 结论是 <code>object-fit</code> 管替换元素内容，<code>background-size</code> 管背景图。原因是它们作用对象不同，不能互相替代。比如商品图用 <code>img + object-fit</code> 保留语义和 alt，装饰背景才用 background。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/text-overflow">MDN: text-overflow</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/line-clamp">MDN: line-clamp</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/vertical-align">MDN: vertical-align</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/object-fit">MDN: object-fit</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/aspect-ratio">MDN: aspect-ratio</a></li>
         </ul>
       </div>
     </section>
@@ -88,11 +75,9 @@
     <!-- PAGE_DOM_START -->
     <h2>单行省略</h2>
     <div class="box single">这是一段很长很长的标题，超出容器后应该显示省略号。</div>
-    <h2>多行省略</h2>
-    <div class="box multi">这是一段多行内容。面试常问多行省略怎么实现，工程里常用 -webkit-line-clamp，但要知道它不是纯标准的所有浏览器通用方案。</div>
     <h2>图片基线空隙</h2>
     <p class="baseline"><img alt="" /> 图片默认按基线对齐，常用 vertical-align: middle 或 display:block 处理底部空隙。</p>
-    <h2>object-fit 与 aspect-ratio</h2>
+    <h2>object-fit 固定尺寸裁切</h2>
     <img
       class="photo"
       src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%232f80ed'/%3E%3Crect x='80' width='160' height='300' fill='%2327ae60'/%3E%3Ccircle cx='330' cy='150' r='90' fill='%23eb5757'/%3E%3C/svg%3E"

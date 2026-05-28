@@ -1,96 +1,59 @@
 <!--
 分类: css / 04-视觉效果 / 百分比圆环
-  主题: 旧式纯 CSS 百分比圆环组件
+  主题: CSS3 transform 百分比圆环组件
   要点:
-    - .p1 到 .p100 把百分比映射为半圆 transform 旋转角度
-    - 组件用 clip: rect() 裁出左右半圆，51% 以上再显示 .fill 补足另一半
-    - dark、green、orange、big、small 是外观修饰类，不改变进度算法
-    - clip 已废弃，现代项目可优先考虑 conic-gradient 或 SVG 圆环
+    - 两个半圆容器通过 overflow:hidden 裁出左右半边，不使用废弃 clip 属性
+    - transform: rotate() 将百分比换算为角度，1% 对应 3.6deg
+    - 50% 以内只旋转右半圆，超过 50% 后右半圆固定 180deg，左半圆继续旋转
+    - 进度环必须同时提供可见文本和 progressbar ARIA 语义，避免只有视觉信息
   面试:
-    - 纯 CSS 圆环如何用两个半圆和 transform 表示百分比？
-    - 为什么 50% 以上需要额外的 fill 半圆？
-    - 这类旧组件里的 clip: rect() 有什么维护风险？
-    - 百分比圆环在 CSS、SVG、Canvas 方案之间如何选型？
+    - CSS3 百分比圆环如何用两个半圆和 transform 表示进度？
+    - 为什么 50% 以上需要左右半圆分段处理？
+    - transform 方案和 SVG / Canvas 圆环怎么选？
+    - 进度环如何补齐可访问性语义？
 -->
 
 <!doctype html>
-<!--[if lt IE 7]>      <html lang="zh-CN" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
-    <head>
-
-        <meta charset="utf-8">
-
-        <title>Pure CSS Percentage Circle</title>
-
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-
-
-        <!-- styles for this little demo page -->
-        <style type="text/css">
-
-            body{
-                background-color: #f5f5f5;
-                margin: 0;
-                padding: 0;
-                font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
-            }
-
-            .page {
-                margin: 40px;
-            }
-
-            h1{
-                margin: 40px 0 60px 0;
-            }
-
-            .dark-area {
-                background-color: #666;
-                padding: 40px;
-                margin: 0 -40px 20px -40px;
-                clear: both;
-            }
-
-            .clearfix:before,.clearfix:after {content: " "; display: table;}
-            .clearfix:after {clear: both;}
-            .clearfix {*zoom: 1;}
-
-        </style>
-
-        <link rel="stylesheet" href="css/circle.css">
-
-        <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>CSS3 transform 百分比圆环</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body { margin: 0; font-family: system-ui, sans-serif; background: #f6f8fa; color: #24292f; }
+      .page { max-width: 860px; margin: 0 auto; padding: 16px; }
+      .page h2 { margin: 24px 0 8px; font-size: 17px; }
+    </style>
+    <link rel="stylesheet" href="css/circle.css" />
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
   </head>
-
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>旧式纯 CSS 百分比圆环组件</h1>
-      <p class="hint">下方组件来自 Pure CSS Percentage Circle：通过百分比类名、半圆裁剪和旋转展示 12%、25%、50% 等静态进度。</p>
+      <h1>CSS3 transform 百分比圆环组件</h1>
+      <p class="hint">下方圆环用两个半圆、<code>overflow:hidden</code> 和 <code>transform: rotate()</code> 表达 12%、25%、50%、72%、88% 等进度，只依赖 CSS3 常见能力。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>这个组件把进度写成类名：<code>.p25</code>、<code>.p50</code>、<code>.p75</code> 等分别对应百分比，样式表中按 <code>百分比 * 3.6deg</code> 生成 <code>transform: rotate(...)</code>。</li>
-          <li>圆环由两个半圆拼出：<code>.slice</code> 负责裁出可见区域，<code>.bar</code> 旋转显示当前半圆进度，超过 50% 时再让 <code>.fill</code> 显示另一半。</li>
-          <li><code>dark</code>、<code>green</code>、<code>orange</code>、<code>big</code>、<code>small</code> 都只是修饰类，改变颜色或字号尺寸，不改变百分比计算逻辑。</li>
-          <li>配套样式使用了已废弃的 <code>clip: rect()</code> 和大量预生成选择器，适合理解早期 CSS 技巧；新项目通常更推荐 <code>conic-gradient()</code>、SVG <code>stroke-dasharray</code> 或组件库进度环。</li>
-          <li>可访问性边界是圆环视觉本身不等于进度语义。真实进度组件应提供文本数值，必要时补 <code>role="progressbar"</code>、<code>aria-valuenow</code>、<code>aria-valuemin</code> 和 <code>aria-valuemax</code>。</li>
+          <li>圆环由左右两个半圆容器组成，半圆容器本身负责裁剪；内部 <code>.ring-fill</code> 是真正旋转的彩色半圆。</li>
+          <li>一个完整圆是 360 度，所以 1% 对应 3.6 度；例如 25% 是 90 度，50% 是 180 度。</li>
+          <li>0-50% 只需要旋转右半圆；超过 50% 后，右半圆固定到 180 度，左半圆再旋转剩余角度，例如 72% 的左半圆旋转 <code>(72 - 50) * 3.6 = 79.2deg</code>。</li>
+          <li>这种方案比旧式 <code>clip</code> 属性更适合 CSS3 教学，但如果要做连续动态进度、圆角描边、刻度或复杂图表，SVG 的 <code>stroke-dasharray</code> 往往更精确。</li>
+          <li>进度环不能只靠颜色表达信息。本页每个圆环都有可见数值，并提供 <code>role="progressbar"</code>、<code>aria-valuenow</code>、<code>aria-valuemin</code> 和 <code>aria-valuemax</code>，方便辅助技术读取。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>纯 CSS 圆环如何用两个半圆表示百分比？</strong> 结论是把圆环拆成左右两个可裁剪半圆，再用旋转角度映射进度。原因是一个完整圆是 360 度，每 1% 对应 3.6 度，<code>.p25</code> 就让半圆旋转到 90 度。这个 demo 的算法写在 <code>css/circle.css</code> 的 <code>.p1</code> 到 <code>.p100</code> 选择器里。</li>
-          <li><strong>为什么 50% 以上需要 fill 半圆？</strong> 结论是单个半圆最多只能覆盖半个圆环。原因是前 0-50% 只需要旋转一个被裁剪的半圆，超过 180 度后必须解除或改变裁剪，并显示另一个固定半圆补足剩余区域。项目里如果用这种旧方案，要特别检查 50% 临界点是否跳变。</li>
-          <li><strong>clip: rect() 有什么维护风险？</strong> 结论是它能解释旧组件机制，但不适合作为新代码首选。原因是 <code>clip</code> 已废弃，且只适用于绝对定位元素；大量百分比类也让动态进度更新不灵活。现代项目通常用 <code>conic-gradient()</code> 写静态圆环，或用 SVG 更精确地控制动画、圆角和可访问性。</li>
-          <li><strong>CSS、SVG、Canvas 圆环如何选型？</strong> 结论是静态装饰圆环用 CSS，数据型进度环优先 SVG，高频复杂绘制再考虑 Canvas。原因是 CSS 轻量但语义和精细控制有限，SVG 有图形语义、描边和动画能力，Canvas 适合大量绘制但需要自己补可访问性。后台仪表盘或上传进度通常更偏向 SVG/组件库方案。</li>
+          <li><strong>CSS3 百分比圆环如何用两个半圆和 transform 表示进度？</strong> 结论是把圆环拆成左右两个可裁剪半圆，再用 <code>rotate()</code> 映射进度角度。原因是 CSS3 transform 可以稳定旋转元素，配合 <code>border-radius</code> 和 <code>overflow:hidden</code> 就能模拟环形进度。</li>
+          <li><strong>为什么 50% 以上需要左右半圆分段处理？</strong> 结论是单个半圆最多只覆盖 180 度。原因是右半圆旋转到 180 度后已经到达半圈，再继续转会超出它的裁剪区域；超过部分必须交给左半圆补足。项目里要特别检查 50% 临界值是否跳变。</li>
+          <li><strong>transform 方案和 SVG / Canvas 圆环怎么选？</strong> 结论是静态展示和 CSS3 教学可以用 transform 半圆方案，数据型组件优先 SVG，大量图形或高频绘制再考虑 Canvas。原因是 CSS 轻量但状态类较多，SVG 更容易控制描边、圆角、动画和语义，Canvas 则需要额外补可访问性。</li>
+          <li><strong>进度环如何补齐可访问性语义？</strong> 结论是要同时给人看和给机器读。原因是颜色和圆环形状本身不能保证所有用户都能理解进度，辅助技术也无法从旋转角度推断数值。项目里应提供文本百分比、<code>role="progressbar"</code> 和 aria 数值；如果进度会变化，还要考虑状态更新提示。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/rotate">MDN: rotate()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/clip">MDN: clip</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/gradient/conic-gradient">MDN: conic-gradient()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transform-origin">MDN: transform-origin</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/border-radius">MDN: border-radius</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Roles/progressbar_role">MDN: ARIA progressbar role</a></li>
         </ul>
       </div>
@@ -98,161 +61,62 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <div class="page">
-      <!-- default -->
-      <div class="clearfix">
-        <div class="c100 p50 big">
-          <span>50%</span>
-          <div class="slice">
-            <div class="bar"></div>
-            <div class="fill"></div>
+    <main class="page">
+      <h2>基础尺寸</h2>
+      <section class="ring-grid" aria-label="基础百分比圆环">
+        <article class="ring-panel">
+          <div class="progress-ring progress-ring--large progress-ring--p72" role="progressbar" aria-label="任务完成度" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100">
+            <span class="ring-half ring-half--right"><span class="ring-fill"></span></span>
+            <span class="ring-half ring-half--left"><span class="ring-fill"></span></span>
+            <span class="progress-ring__value">72%</span>
           </div>
-        </div>
-        <div class="c100 p25">
-          <span>25%</span>
-          <div class="slice">
-            <div class="bar"></div>
-            <div class="fill"></div>
+          <p class="ring-caption">大尺寸：右半圆满后，左半圆继续补足 22%</p>
+        </article>
+        <article class="ring-panel">
+          <div class="progress-ring progress-ring--p50" role="progressbar" aria-label="加载进度" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">
+            <span class="ring-half ring-half--right"><span class="ring-fill"></span></span>
+            <span class="ring-half ring-half--left"><span class="ring-fill"></span></span>
+            <span class="progress-ring__value">50%</span>
           </div>
-        </div>
-        <div class="c100 p12 small">
-          <span>12%</span>
-          <div class="slice">
-            <div class="bar"></div>
-            <div class="fill"></div>
+          <p class="ring-caption">默认尺寸：正好半圈</p>
+        </article>
+        <article class="ring-panel">
+          <div class="progress-ring progress-ring--small progress-ring--p12" role="progressbar" aria-label="资料完整度" aria-valuenow="12" aria-valuemin="0" aria-valuemax="100">
+            <span class="ring-half ring-half--right"><span class="ring-fill"></span></span>
+            <span class="ring-half ring-half--left"><span class="ring-fill"></span></span>
+            <span class="progress-ring__value">12%</span>
           </div>
-        </div>
-      </div>
-      <!-- /default -->
-      <!-- green -->
-      <div class="clearfix">
-        <div class="c100 p50 big green">
-          <span>50%</span>
-          <div class="slice">
-            <div class="bar"></div>
-            <div class="fill"></div>
+          <p class="ring-caption">小尺寸：低进度仍只旋转右半圆</p>
+        </article>
+      </section>
+      <h2>颜色主题</h2>
+      <section class="ring-grid" aria-label="不同颜色主题的百分比圆环">
+        <article class="ring-panel">
+          <div class="progress-ring progress-ring--green progress-ring--p88" role="progressbar" aria-label="测试通过率" aria-valuenow="88" aria-valuemin="0" aria-valuemax="100">
+            <span class="ring-half ring-half--right"><span class="ring-fill"></span></span>
+            <span class="ring-half ring-half--left"><span class="ring-fill"></span></span>
+            <span class="progress-ring__value">88%</span>
           </div>
-        </div>
-        <div class="c100 p25 green">
-          <span>25%</span>
-          <div class="slice">
-            <div class="bar"></div>
-            <div class="fill"></div>
+          <p class="ring-caption">绿色主题：用于成功或健康状态</p>
+        </article>
+        <article class="ring-panel">
+          <div class="progress-ring progress-ring--orange progress-ring--p25" role="progressbar" aria-label="风险项占比" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+            <span class="ring-half ring-half--right"><span class="ring-fill"></span></span>
+            <span class="ring-half ring-half--left"><span class="ring-fill"></span></span>
+            <span class="progress-ring__value">25%</span>
           </div>
-        </div>
-        <div class="c100 p12 small green">
-          <span>12%</span>
-          <div class="slice">
-            <div class="bar"></div>
-            <div class="fill"></div>
+          <p class="ring-caption">橙色主题：用于提醒类指标</p>
+        </article>
+        <article class="ring-panel dark">
+          <div class="progress-ring progress-ring--green progress-ring--p64" role="progressbar" aria-label="深色背景完成度" aria-valuenow="64" aria-valuemin="0" aria-valuemax="100">
+            <span class="ring-half ring-half--right"><span class="ring-fill"></span></span>
+            <span class="ring-half ring-half--left"><span class="ring-fill"></span></span>
+            <span class="progress-ring__value">64%</span>
           </div>
-        </div>
-      </div>
-      <!-- /green -->
-      <!-- orange -->
-      <div class="clearfix">
-        <div class="c100 p50 big orange">
-          <span>50%</span>
-          <div class="slice">
-            <div class="bar"></div>
-            <div class="fill"></div>
-          </div>
-        </div>
-        <div class="c100 p25 orange">
-          <span>25%</span>
-          <div class="slice">
-            <div class="bar"></div>
-            <div class="fill"></div>
-          </div>
-        </div>
-        <div class="c100 p12 small orange">
-          <span>12%</span>
-          <div class="slice">
-            <div class="bar"></div>
-            <div class="fill"></div>
-          </div>
-        </div>
-      </div>
-      <!-- /orange -->
-      <div class="dark-area clearfix">
-        <!-- default -->
-        <div class="clearfix">
-          <div class="c100 p50 big dark">
-            <span>50%</span>
-            <div class="slice">
-              <div class="bar"></div>
-              <div class="fill"></div>
-            </div>
-          </div>
-          <div class="c100 p25 dark">
-            <span>25%</span>
-            <div class="slice">
-              <div class="bar"></div>
-              <div class="fill"></div>
-            </div>
-          </div>
-          <div class="c100 p12 small dark">
-            <span>12%</span>
-            <div class="slice">
-              <div class="bar"></div>
-              <div class="fill"></div>
-            </div>
-          </div>
-        </div>
-        <!-- /default -->
-        <!-- green -->
-        <div class="clearfix">
-          <div class="c100 p50 big dark green">
-            <span>50%</span>
-            <div class="slice">
-              <div class="bar"></div>
-              <div class="fill"></div>
-            </div>
-          </div>
-          <div class="c100 p25 dark green">
-            <span>25%</span>
-            <div class="slice">
-              <div class="bar"></div>
-              <div class="fill"></div>
-            </div>
-          </div>
-          <div class="c100 p12 dark small green">
-            <span>12%</span>
-            <div class="slice">
-              <div class="bar"></div>
-              <div class="fill"></div>
-            </div>
-          </div>
-        </div>
-        <!-- /green -->
-        <!-- orange -->
-        <div class="clearfix">
-          <div class="c100 p50 dark big orange">
-            <span>50%</span>
-            <div class="slice">
-              <div class="bar"></div>
-              <div class="fill"></div>
-            </div>
-          </div>
-          <div class="c100 p25 dark orange">
-            <span>25%</span>
-            <div class="slice">
-              <div class="bar"></div>
-              <div class="fill"></div>
-            </div>
-          </div>
-          <div class="c100 p12 dark small orange">
-            <span>12%</span>
-            <div class="slice">
-              <div class="bar"></div>
-              <div class="fill"></div>
-            </div>
-          </div>
-        </div>
-        <!-- /orange -->
-      </div><!-- /.dark-area -->
-      <small>Andre Firchow | <a href="http://firchow.net">Blog</a></small>
-    </div>
+          <p class="ring-caption">深色背景：轨道色和中心色要保持对比</p>
+        </article>
+      </section>
+    </main>
     <!-- PAGE_DOM_END -->
 
     <!-- NAV_START -->
@@ -273,5 +137,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

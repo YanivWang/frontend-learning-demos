@@ -112,7 +112,7 @@
 | `class-components/03-setState-异步合并.html` | setState 异步合并（同步触发多次只会更新一次） |
 | `class-components/04-setState-函数式更新.html` | setState 函数式更新（解决合并陷阱） |
 | `class-components/05-Clock-setState-批处理对比.html` | Clock 演示 setState 批处理（对象式 vs 函数式） |
-| `class-components/06-class-完整生命周期与API.html` | class 组件完整生命周期与常用 API 大杂烩 |
+| `class-components/06-class-完整生命周期与API.html` | class 组件生命周期与常用实例 API |
 | `class-components/07-class-refs与DOM.html` | class 组件 refs 访问 DOM 与实例 |
 | `class-components/08-class-PureComponent性能优化.html` | PureComponent 与 shouldComponentUpdate 浅比较 |
 | `class-components/09-class-getDerivedStateFromProps与getSnapshotBeforeUpdate.html` | getDerivedStateFromProps 与 getSnapshotBeforeUpdate |

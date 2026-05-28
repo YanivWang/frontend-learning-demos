@@ -1066,16 +1066,6 @@ const sidebar: DefaultTheme.SidebarItem[] = [
         ]
       },
       {
-        "text": "03-content-visibility",
-        "collapsed": true,
-        "items": [
-          {
-            "text": "index",
-            "link": "/apps/css/06-%E6%80%A7%E8%83%BD/03-content-visibility/index.html"
-          }
-        ]
-      },
-      {
         "text": "01-has选择器",
         "collapsed": true,
         "items": [
@@ -1132,6 +1122,16 @@ const sidebar: DefaultTheme.SidebarItem[] = [
           {
             "text": "index",
             "link": "/apps/css/07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/06-subgrid/index.html"
+          }
+        ]
+      },
+      {
+        "text": "07-content-visibility",
+        "collapsed": true,
+        "items": [
+          {
+            "text": "index",
+            "link": "/apps/css/07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/07-content-visibility/index.html"
           }
         ]
       }

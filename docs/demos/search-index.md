@@ -258,7 +258,7 @@
 
 ### 常见布局题
 
-- [index](/apps/css/02-%E5%B8%83%E5%B1%80/%E5%B8%B8%E8%A7%81%E5%B8%83%E5%B1%80%E9%A2%98/index.html) — 居中、两栏、三栏、粘性 footer、等比例盒子
+- [index](/apps/css/02-%E5%B8%83%E5%B1%80/%E5%B8%B8%E8%A7%81%E5%B8%83%E5%B1%80%E9%A2%98/index.html) — 居中、两栏、三栏、粘性 footer
 
 ### 定位与层叠上下文
 
@@ -322,11 +322,11 @@
 
 ### 百分比圆环
 
-- [index](/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E7%99%BE%E5%88%86%E6%AF%94%E5%9C%86%E7%8E%AF/index.html) — 旧式纯 CSS 百分比圆环组件
+- [index](/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E7%99%BE%E5%88%86%E6%AF%94%E5%9C%86%E7%8E%AF/index.html) — CSS3 transform 百分比圆环组件
 
 ### 文本与图片处理
 
-- [index](/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E6%96%87%E6%9C%AC%E4%B8%8E%E5%9B%BE%E7%89%87%E5%A4%84%E7%90%86/index.html) — 文本省略、vertical-align、object-fit、aspect-ratio
+- [index](/apps/css/04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E6%96%87%E6%9C%AC%E4%B8%8E%E5%9B%BE%E7%89%87%E5%A4%84%E7%90%86/index.html) — 单行文本省略、vertical-align、object-fit
 
 ### background-blend-mode
 
@@ -357,10 +357,6 @@
 
 - [index](/apps/css/06-%E6%80%A7%E8%83%BD/02-%E5%90%88%E6%88%90%E5%B1%82/index.html) — 合成层、合成动画与 will-change 使用边界
 
-### 03-content-visibility
-
-- [index](/apps/css/06-%E6%80%A7%E8%83%BD/03-content-visibility/index.html) — content-visibility 与屏幕外内容跳过渲染
-
 ### 01-has选择器
 
 - [index](/apps/css/07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/01-has%E9%80%89%E6%8B%A9%E5%99%A8/index.html) — :has() 父选择器与条件样式
@@ -384,6 +380,10 @@
 ### 06-subgrid
 
 - [index](/apps/css/07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/06-subgrid/index.html) — CSS Grid subgrid
+
+### 07-content-visibility
+
+- [index](/apps/css/07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/07-content-visibility/index.html) — content-visibility 与屏幕外内容跳过渲染
 
 ## Vue 2
 

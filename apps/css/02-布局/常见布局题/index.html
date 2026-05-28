@@ -1,16 +1,14 @@
 <!--
 分类: css / 02-布局 / 常见布局题
-  主题: 居中、两栏、三栏、粘性 footer、等比例盒子
+  主题: 居中、两栏、三栏、粘性 footer
   要点:
     - 水平垂直居中优先用 grid place-items 或 flex 对齐，absolute + transform 适合旧代码
     - 两栏/三栏常用 flex，固定侧栏 + 主区域 flex:1，并给主区域 min-width:0
     - 粘性 footer 可用 min-height:100vh + flex column + main flex:1
-    - 等比例盒子现代写法优先 aspect-ratio，旧 padding 百分比方案只作兼容备选
   面试:
     - 水平垂直居中有哪些现代写法，分别适合什么场景
     - 两栏和三栏布局为什么要给自适应主栏 min-width:0
     - 粘性 footer 与 fixed footer 有什么区别
-    - aspect-ratio 相比 padding 百分比盒子解决了什么问题
 -->
 
 <!doctype html>
@@ -55,14 +53,6 @@
       .side { flex: 0 0 140px; padding: 16px; color: #fff; background: #2f80ed; }
       .main { flex: 1; min-width: 0; padding: 16px; background: #e5f6df; }
       .three-col .right { flex: 0 0 120px; background: #eb5757; }
-      .ratio {
-        width: 260px;
-        aspect-ratio: 16 / 9;
-        display: grid;
-        place-items: center;
-        color: #fff;
-        background: #333;
-      }
       .page {
         display: flex;
         flex-direction: column;
@@ -89,20 +79,17 @@
           <li><code>absolute + transform</code> 不依赖 flex/grid，适合维护旧项目或需要相对定位点的场景；代价是元素脱离普通流，周围布局不会为它预留空间。</li>
           <li>两栏/三栏布局常用 flex：侧栏 <code>flex: 0 0 固定宽度</code>，主栏 <code>flex: 1</code>；主栏需要 <code>min-width: 0</code>，否则长内容可能把容器撑破。</li>
           <li>粘性 footer 不是 <code>position: fixed</code>。它通过页面容器 <code>min-height: 100vh</code>、纵向 flex 和 <code>main { flex: 1 }</code> 在内容少时贴底、内容多时自然下推。</li>
-          <li>等比例盒子现代写法优先 <code>aspect-ratio</code>，语义清晰且能与宽高约束一起工作；旧的 padding 百分比 hack 主要用于兼容老浏览器。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
           <li><strong>水平垂直居中有哪些现代写法？</strong> 结论是单元素居中优先 Grid 的 <code>place-items:center</code> 或 Flex 的双轴对齐。原因是它们不需要知道子元素尺寸，也不会脱离普通流。边界是旧项目或特殊定位点场景仍可能使用 <code>absolute + transform</code>。</li>
           <li><strong>两栏/三栏布局为什么要给主栏 <code>min-width:0</code>？</strong> 结论是为了允许 flex 主栏小于内容的默认最小宽度。原因是 flex item 默认 <code>min-width:auto</code>，长文本、表格和代码块会撑破容器。项目里自适应内容区通常同时处理溢出省略、换行或横向滚动。</li>
           <li><strong>粘性 footer 和 fixed footer 有什么区别？</strong> 结论是粘性 footer 属于正常文档流，内容少时贴近视口底部，内容多时跟随页面被推下去；fixed footer 永远固定在视口底部。原因是粘性 footer 依靠 flex 分配剩余高度。移动端固定底栏要额外处理安全区和内容遮挡。</li>
-          <li><strong><code>aspect-ratio</code> 相比 padding 百分比盒子解决了什么问题？</strong> 结论是它用属性直接声明宽高比，代码更直观。原因是浏览器会把比例纳入尺寸计算，而不是依赖 padding 相对宽度的 hack。边界是需要兼容很老浏览器时才考虑 padding 方案。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_box_alignment">MDN: CSS box alignment</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_flexible_box_layout">MDN: CSS flexible box layout</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/aspect-ratio">MDN: aspect-ratio</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/min-width">MDN: min-width</a></li>
         </ul>
       </div>
@@ -138,8 +125,6 @@
       <main>main 使用 flex:1 撑开剩余空间，内容少时 footer 仍贴底</main>
       <footer>footer 贴底</footer>
     </div>
-    <h2>等比例盒子</h2>
-    <div class="ratio">aspect-ratio: 16 / 9</div>
     <!-- PAGE_DOM_END -->
 
     <!-- NAV_START -->

@@ -34,7 +34,7 @@ const PRIORITY_HREFS = [
   "apps/demos/hash-router/01-hash-router-简易路由.html",
   "apps/css/06-性能/01-重排重绘/index.html",
   "apps/css/06-性能/02-合成层/index.html",
-  "apps/css/06-性能/03-content-visibility/index.html",
+  "apps/css/07-现代特性/07-content-visibility/index.html",
 ];
 
 async function loadManifestPaths() {

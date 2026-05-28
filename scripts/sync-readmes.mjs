@@ -64,7 +64,7 @@ function buildTable(rows) {
 }
 
 function patchIntroCount(content, count) {
-  return content.replace(/共 \*\*\d+\*\* 个[^`\n]*/u, `共 **${count}** 个 \`.html\` 文件`);
+  return content.replace(/共 \*\*\d+\*\* 个(?:(?: ?`\.html` 文件)+| demo)/u, `共 **${count}** 个 \`.html\` 文件`);
 }
 
 async function patchReadme(readmePath, scanRoot) {
