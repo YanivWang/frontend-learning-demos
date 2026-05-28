@@ -7,6 +7,7 @@
     - 真实 state 更新后，乐观层自动与服务器结果对齐
     - 失败时不要沉默回滚，要给用户可见错误和重试路径
     - 与直接 setState 临时追加不同，乐观层由 React 管理并在提交完成后对齐
+    - 本页用 startTransition 包裹异步发送；上一页用 form action，二者都可驱动乐观更新
   面试:
     - useOptimistic 解决的核心体验问题是什么？
     - 乐观 UI 为什么必须设计失败回滚？
@@ -46,6 +47,7 @@
           <li><code>updateFn</code> 必须是纯函数，根据当前权威 state 和乐观输入计算下一屏状态；不要在里面发请求、改外部变量或生成不可控副作用。</li>
           <li>真实 state 更新后，乐观层会和最终结果对齐；如果请求失败且权威 state 没变，临时项应消失，并显示可理解的错误。</li>
           <li>与直接 <code>setState</code> 临时追加不同，乐观层由 React 在 Action / transition 生命周期内管理，提交完成或失败后会自动与权威 state 对齐，无需手动删除临时项。</li>
+          <li>本页用 <code>onSubmit</code> + <code>startTransition</code> 触发发送，而非上一页的 <code>&lt;form action&gt;</code>：原因是发消息常从按钮/快捷键触发，不一定走标准表单提交；乐观更新只要处在 transition / Action 生命周期内即可，与是否绑定 <code>form action</code> 无强绑定。</li>
           <li>适合发消息、点赞、列表追加等成功概率高、失败可回滚的交互；支付、库存扣减、权限变更这类强一致场景通常不应乐观确认。</li>
         </ul>
         <h2>面试考点</h2>
@@ -93,7 +95,8 @@
 
         const [isPending, startTransition] = useTransition();
 
-        // ====== 3. 发送流程：先 addOptimistic，再异步更新权威 state 或失败回滚 ======
+        // ====== 3. 发送流程：startTransition 内 addOptimistic，再更新权威 state 或失败回滚 ======
+        // 与 03 页 form action 不同：此处用 transition 包裹非表单触发的异步更新（react.dev useOptimistic 常见写法）
         const send = (text) => {
           const optimistic = { id: Date.now(), text, sent: false };
           setError("");

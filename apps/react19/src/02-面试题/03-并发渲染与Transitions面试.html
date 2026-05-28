@@ -10,6 +10,7 @@
     - 并发渲染是不是多线程？它真正改变了什么？
     - startTransition 与普通 setState 的优先级差异是什么？
     - useTransition、useDeferredValue 和防抖分别适合什么场景？
+    - 本页演示 useTransition 与 useDeferredValue 两种延后列表更新的写法
     - 为什么 transition 不能包住受控输入本身？
 -->
 
@@ -27,6 +28,8 @@
       input { padding: 0.4rem; width: 100%; max-width: 320px; }
       .slow-list { margin-top: 1rem; max-height: 200px; overflow: auto; font-size: 0.9rem; }
       .pending { color: #0969da; }
+      .demo-split { border-top: 1px solid #ddd; margin-top: 2rem; padding-top: 1.5rem; }
+      h2 { font-size: 1.1rem; margin-top: 0; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -35,12 +38,13 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>并发渲染与 Transitions 面试</h1>
-      <p class="hint">下方 #root 为搜索过滤演示区：在输入框快速输入数字（如 12），观察输入即时回显而列表更新可能滞后并显示 isPending；请打开 DevTools Console 查看紧急/过渡更新日志。</p>
+      <p class="hint">下方 #root 有两组演示：先试「useTransition」输入框，再试「useDeferredValue」输入框；快速输入数字（如 12）观察输入即时回显、列表滞后与 isPending；请打开 DevTools Console 查看日志。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
           <li>并发渲染不是把 React 变成多线程，而是让渲染工作可被中断、恢复或丢弃；用户输入这类紧急更新可以先提交，列表筛选、路由切换这类过渡更新可延后。</li>
-          <li><code>startTransition</code> 标记低优先级更新，<code>useTransition</code> 在此基础上返回 <code>isPending</code>；本页把输入框的 <code>query</code> 作为紧急更新，把慢列表的 <code>deferredQuery</code> 放入 transition。</li>
+          <li><code>startTransition</code> 标记低优先级更新，<code>useTransition</code> 在此基础上返回 <code>isPending</code>；本页第一组演示把 <code>query</code> 紧急更新、<code>deferredQuery</code> 放进 transition。</li>
+          <li><code>useDeferredValue(value)</code> 返回值的延迟版本，适合「已有 state，派生 UI 想延后」的场景；本页第二组只需一个 <code>query</code>，列表消费 <code>useDeferredValue(query)</code>，无需手写第二个 state。</li>
           <li>版本边界：React 18 已提供并发根和 <code>useTransition</code>；React 19 的 Actions、表单 Action、<code>useOptimistic</code> 等常和 transition 一起解释异步交互状态；<code>createRoot</code> 是并发前提，但并发更新需 opt-in（transition / deferredValue）。</li>
           <li>Transition 不会减少慢计算本身的耗时，也不会替代防抖、虚拟列表、缓存或 Web Worker；如果渲染或计算太重，仍要降低工作量。</li>
           <li>受控输入的 value 更新必须保持紧急，不能只放进 transition；否则输入会滞后，甚至出现用户输入和 UI 回显不一致的体验问题。</li>
@@ -69,9 +73,9 @@
 
     <!-- SCRIPT_START -->
     <script type="text/babel">
-      const { useMemo, useState, useTransition } = React;
+      const { useDeferredValue, useMemo, useState, useTransition } = React;
 
-      // ====== 1. 模拟慢计算：transition 不会让它变快，只是让输入先响应 ======
+      // ====== 1. 模拟慢计算：transition / deferredValue 不会让它变快，只是让输入先响应 ======
       function slowFilter(text) {
         const items = [];
         for (let i = 0; i < 8000; i++) {
@@ -80,42 +84,79 @@
         return items.slice(0, 40);
       }
 
-      function App() {
-        // query：紧急更新，驱动受控输入即时回显
+      function SlowList({ items }) {
+        return (
+          <ul className="slow-list">
+            {items.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        );
+      }
+
+      // ====== 2. useTransition：query 紧急更新，deferredQuery 过渡更新 ======
+      function TransitionDemo() {
         const [query, setQuery] = useState("");
-        // deferredQuery：过渡更新，驱动慢列表
         const [deferredQuery, setDeferredQuery] = useState("");
         const [isPending, startTransition] = useTransition();
 
-        const list = useMemo(
-          () => slowFilter(deferredQuery),
-          [deferredQuery]
-        );
+        const list = useMemo(() => slowFilter(deferredQuery), [deferredQuery]);
 
-        // ====== 2. 输入分离：value 紧急更新，列表筛选放进 transition ======
         const onChange = (e) => {
           const value = e.target.value;
           setQuery(value);
-          console.log("[并发] 紧急更新 query:", value);
+          console.log("[useTransition] 紧急 query:", value);
           startTransition(() => {
             setDeferredQuery(value);
-            console.log("[并发] 过渡更新 deferredQuery:", value);
+            console.log("[useTransition] 过渡 deferredQuery:", value);
           });
         };
 
         return (
           <section>
-            <h1>useTransition 保持输入流畅</h1>
-
-            <p>输入框（紧急更新）与下方列表（过渡更新）分离。</p>
+            <h2>方式 A：useTransition</h2>
+            <p>维护 query + deferredQuery 两个 state；列表消费 deferredQuery。</p>
             <input value={query} onChange={onChange} placeholder="过滤数字，如 12" />
             {isPending && <p className="pending">列表更新中（isPending）…</p>}
-            <ul className="slow-list">
-              {list.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-            <p><strong>面试答法：</strong>startTransition 标记低优先级更新；它让 React 优先提交输入反馈，但不会减少慢计算本身的耗时。</p>
+            <SlowList items={list} />
+          </section>
+        );
+      }
+
+      // ====== 3. useDeferredValue：单 state，派生 UI 消费延迟值 ======
+      function DeferredValueDemo() {
+        const [query, setQuery] = useState("");
+        const deferredQuery = useDeferredValue(query);
+        const isStale = query !== deferredQuery;
+
+        const list = useMemo(() => slowFilter(deferredQuery), [deferredQuery]);
+
+        const onChange = (e) => {
+          const value = e.target.value;
+          setQuery(value);
+          console.log("[useDeferredValue] query:", value, "→ 列表将跟随 deferred 值");
+        };
+
+        return (
+          <section className="demo-split">
+            <h2>方式 B：useDeferredValue</h2>
+            <p>只维护 query；<code>useDeferredValue(query)</code> 供慢列表使用，无需第二个 setState。</p>
+            <input value={query} onChange={onChange} placeholder="过滤数字，如 12" />
+            {isStale && <p className="pending">列表滞后于输入（query !== deferredQuery）…</p>}
+            <SlowList items={list} />
+          </section>
+        );
+      }
+
+      function App() {
+        return (
+          <section>
+            <h1>并发渲染：Transition 与 DeferredValue</h1>
+            <TransitionDemo />
+            <DeferredValueDemo />
+            <p className="demo-split">
+              <strong>面试答法：</strong>两者都让 React 优先提交输入；<code>useTransition</code> 适合你能控制「哪次 setState 进 transition」，<code>useDeferredValue</code> 适合延后消费某个已有值。都不会减少慢计算耗时。
+            </p>
           </section>
         );
       }

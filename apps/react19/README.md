@@ -1,6 +1,6 @@
 # React 19
 
-专讲 **React 19** 新语法与高频面试点的 demo 模块。`apps/react19/src/` 下共 **11** 个 `.html` 文件`.html`（基础语法 **6** + 面试题 **5**）。
+专讲 **React 19** 新语法与高频面试点的 demo 模块。`apps/react19/src/` 下共 **11** 个 `.html` 文件（基础语法 **6** + 面试题 **5**）。
 
 使用 **React 19** 运行时（`libs/` 内 `umd-react` 构建），与 `apps/react18/`（React 18.3.1）分开，避免 API 混用。
 
