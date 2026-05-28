@@ -1,0 +1,204 @@
+<!--
+  分类: javascript / 06-浏览器API / 拖曳手柄
+  主题: 原生 DOM 拖拽调整侧栏宽度（Pointer Events + rAF）
+  要点:
+    - pointerdown 起点 → pointermove 计算偏移 → pointerup/cancel 解绑，覆盖鼠标与触屏
+    - move/up 监听绑在 document，避免指针移出手柄后丢失事件
+    - 拖拽中禁用 transition、user-select:none，避免宽度滞后或误选文字
+    - requestAnimationFrame 合并高频 pointermove，只提交最新宽度
+    - 限制 min/max 宽度；生产环境优先 Pointer Events 而非仅 Mouse Events
+  面试:
+    - 拖拽为什么要把 move/up 绑到 document？
+    - requestAnimationFrame 在拖拽里解决什么问题？
+    - Pointer Events 相比 Mouse Events 有什么优势？
+    - 拖拽过程中为什么要禁用 transition？
+  相关: 贴边侧栏拖拽, dom事件-冒泡捕获委托, requestAnimation
+-->
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>原生侧栏拖拽（Pointer Events）</title>
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
+    <style>
+      * { box-sizing: border-box; }
+      body.demo-page { margin: 0; font-family: system-ui, sans-serif; }
+      .layout { display: flex; min-height: 70vh; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+      .sidebar {
+        flex-shrink: 0;
+        width: 200px;
+        background: #1e293b;
+        color: #f8fafc;
+        transition: width 0.2s ease;
+        position: relative;
+      }
+      .sidebar.is-dragging { transition: none; user-select: none; }
+      .sidebar__inner { padding: 1rem; }
+      .resize-handle {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 8px;
+        height: 100%;
+        cursor: col-resize;
+        touch-action: none;
+        background: linear-gradient(to right, transparent, rgba(255,255,255,0.15));
+      }
+      .main { flex: 1; padding: 1rem; background: #f8fafc; }
+      #width-label { font-variant-numeric: tabular-nums; color: #475569; }
+    </style>
+  </head>
+  <body class="demo-page">
+    <!-- NOTES_START -->
+    <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
+      <h1>原生 DOM 拖拽调整侧栏宽度</h1>
+      <p class="hint">请在下方面板拖拽右侧手柄调整宽度；本页纯原生 DOM，不依赖 Vue/React。细节可打开 DevTools Console。</p>
+      <div class="demo-notes">
+        <h2>知识点要点</h2>
+        <ul>
+          <li>拖拽三段式：<code>pointerdown</code> 记录起点与初始宽度 → <code>pointermove</code> 计算新宽度 → <code>pointerup</code> / <code>pointercancel</code> 解绑并恢复样式。</li>
+          <li><code>mousemove</code> / <code>pointermove</code> 应绑在 <code>document</code> 上，否则指针移出手柄后无法继续拖动。</li>
+          <li>拖拽期间给侧栏加 <code>transition: none</code> 和 <code>user-select: none</code>，避免 CSS 过渡与文字选中干扰操作。</li>
+          <li><code>requestAnimationFrame</code> 把同一帧内多次 move 合并为一次 DOM 写入，减少 layout thrashing。</li>
+          <li><code>Pointer Events</code> 统一鼠标、触屏、笔输入；手柄设置 <code>touch-action: none</code> 阻止浏览器默认滚动。对比 Vue 版见 <a href="./01-%E8%B4%B4%E8%BE%B9%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html">贴边侧栏拖拽</a>。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>为什么 move/up 绑 document？</strong> 结论：指针会移出拖拽手柄元素。原因是事件目标随指针移动变化，只在手柄上监听会中断拖拽。项目里 document/window 级监听是侧栏、列宽、面板分割线的常见写法。</li>
+          <li><strong>rAF 在拖拽里做什么？</strong> 结论：合并高频 move，每帧最多写一次宽度。原因是 pointermove 可能一帧触发多次，直接改 style 会造成多余 reflow。边界是最终仍须 pointerup 时提交 pending 值。</li>
+          <li><strong>Pointer Events 的优势？</strong> 结论：一套 API 覆盖鼠标与触屏。原因是 Mobile 上仅 Mouse Events 可能不触发或行为不一致。新项目优先 pointer*，Legacy 再补 mouse*。</li>
+          <li><strong>为什么要禁用 transition？</strong> 结论：过渡动画会延迟宽度视觉反馈，拖拽 feels 滞后。原因是 transition 在每次 width 变化时插值。拖拽结束后再恢复 transition 即可。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events">MDN: Pointer events</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame">MDN: requestAnimationFrame</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/touch-action">MDN: touch-action</a></li>
+        </ul>
+      </div>
+    </section>
+    <!-- NOTES_END -->
+
+    <!-- PAGE_DOM_START -->
+    <section class="demo-block" aria-label="原生侧栏拖拽演示">
+      <p class="tip">拖拽深色侧栏右缘手柄；当前宽度：<strong id="width-label">200px</strong></p>
+      <div class="layout">
+        <aside class="sidebar" id="sidebar" style="width: 200px">
+          <div class="sidebar__inner">
+            <strong>导航</strong>
+            <ul>
+              <li>首页</li>
+              <li>设置</li>
+            </ul>
+          </div>
+          <div class="resize-handle" id="handle" role="separator" aria-orientation="vertical" aria-label="调整侧栏宽度"></div>
+        </aside>
+        <main class="main">
+          <h2>主内容区</h2>
+          <p>本 demo 用原生 DOM + Pointer Events 演示侧栏宽度拖拽，与 Vue3 版对比学习事件模型即可。</p>
+        </main>
+      </div>
+    </section>
+    <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      (function () {
+        const sidebar = document.getElementById("sidebar");
+        const handle = document.getElementById("handle");
+        const widthLabel = document.getElementById("width-label");
+
+        const MIN = 160;
+        const MAX = 320;
+        let dragging = false;
+        let startX = 0;
+        let startWidth = 0;
+        let pendingWidth = 0;
+        let rafId = null;
+
+        function clamp(n) {
+          return Math.max(MIN, Math.min(n, MAX));
+        }
+
+        function applyWidth(px) {
+          sidebar.style.width = px + "px";
+          widthLabel.textContent = px + "px";
+        }
+
+        function onPointerMove(e) {
+          if (!dragging) return;
+          pendingWidth = clamp(startWidth + (e.clientX - startX));
+          if (!rafId) {
+            rafId = requestAnimationFrame(function () {
+              applyWidth(pendingWidth);
+              rafId = null;
+            });
+          }
+        }
+
+        function stopDrag(e) {
+          if (!dragging) return;
+          dragging = false;
+          sidebar.classList.remove("is-dragging");
+          document.removeEventListener("pointermove", onPointerMove);
+          document.removeEventListener("pointerup", stopDrag);
+          document.removeEventListener("pointercancel", stopDrag);
+          if (rafId) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+          }
+          applyWidth(pendingWidth);
+          if (handle.releasePointerCapture && e.pointerId != null) {
+            try {
+              handle.releasePointerCapture(e.pointerId);
+            } catch (_) {
+              /* 已释放时忽略 */
+            }
+          }
+          console.log("拖拽结束，宽度:", pendingWidth);
+        }
+
+        handle.addEventListener("pointerdown", function (e) {
+          dragging = true;
+          startX = e.clientX;
+          startWidth = sidebar.offsetWidth;
+          pendingWidth = startWidth;
+          sidebar.classList.add("is-dragging");
+          if (handle.setPointerCapture) {
+            handle.setPointerCapture(e.pointerId);
+          }
+          document.addEventListener("pointermove", onPointerMove);
+          document.addEventListener("pointerup", stopDrag);
+          document.addEventListener("pointercancel", stopDrag);
+          e.preventDefault();
+          console.log("pointerdown，起点宽度:", startWidth);
+        });
+      })();
+    </script>
+    <!-- SCRIPT_END -->
+
+    <!-- NAV_START -->
+    <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
+      <h2 class="demo-block__label">页面导航</h2>
+      <nav class="demo-nav" aria-label="相关链接">
+        <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="./01-%E8%B4%B4%E8%BE%B9%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html">相关 · Vue3 贴边版</a>
+        <a href="../requestAnimation.html">相关 · rAF</a>
+        <a href="./02-%E6%82%AC%E6%B5%AE%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html">← 悬浮侧栏 V2</a>
+        <a href="../%E4%BA%8B%E4%BB%B6%E6%A8%A1%E5%9E%8B/02-dom%E4%BA%8B%E4%BB%B6-%E5%86%92%E6%B3%A1%E6%8D%95%E8%8B%81%E5%A7%94%E6%89%98.html">DOM 事件 →</a>
+      </nav>
+      <script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
+    </footer>
+    <!-- NAV_END -->
+  </body>
+</html>

@@ -1,0 +1,160 @@
+<!--
+  分类: javascript / 01-基础
+  主题: Error 类型、try/catch/finally 与 error.cause
+  要点:
+    - try/catch 捕获同步 throw；finally 无论是否抛错都会执行
+    - Error 子类（TypeError、ReferenceError 等）表达不同失败语义
+    - error.cause 链式记录根因，配合 cause 选项构造 Error
+    - 未捕获的 Promise rejection 不会自动被外层 try/catch 捕获
+    - 自定义 Error 通过 extends Error 并设置 name
+  面试:
+    - try/catch/finally 的执行顺序是什么？
+    - error.cause 解决什么问题？
+    - 为什么 async 函数里的 throw 外层 try/catch 接不住？
+    - 如何设计可观测的错误类型与日志？
+  相关: 严格模式, 04-ES6+/异步/Promise
+-->
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Error 与异常</title>
+    <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
+  </head>
+  <body class="demo-page">
+    <!-- NOTES_START -->
+    <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
+      <h1>Error 类型、try/catch/finally 与 error.cause</h1>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <div class="demo-notes">
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>try</code> 包裹可能抛错的代码；<code>catch (err)</code> 接收任意 thrown 值（不一定是 Error 实例）；<code>finally</code> 在 try/catch 之后<strong>总会</strong>执行，常用于释放资源。</li>
+          <li>内置 <code>Error</code> 子类表达语义：<code>TypeError</code>、<code>ReferenceError</code>、<code>SyntaxError</code>、<code>RangeError</code> 等；<code>err.message</code> 是人类可读描述，<code>err.stack</code> 含调用栈（非标准但普遍实现）。</li>
+          <li><code>new Error("msg", { cause: rootErr })</code> 或 <code>err.cause = rootErr</code> 建立错误链，便于日志与监控还原根因（ES2022）。</li>
+          <li>Promise 的 rejection 是异步的，外层同步 <code>try/catch</code> 接不住未 await 的 Promise；须 <code>.catch()</code>、<code>try { await p }</code> 或全局 <code>unhandledrejection</code>。</li>
+          <li>自定义错误：<code>class AppError extends Error { constructor(msg) { super(msg); this.name = "AppError"; } }</code>，配合 <code>instanceof</code> 区分业务错误与系统错误。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>try/catch/finally 执行顺序？</strong> 结论：try 抛错则进 catch，finally 总在 try/catch 之后执行；finally 里的 return 可能覆盖 try/catch 的 return。原因是 finally 设计用于清理。项目中避免在 finally 里 return，以免掩盖真实结果。</li>
+          <li><strong>error.cause 解决什么问题？</strong> 结论：包装错误时保留原始异常，便于排查。原因是高层 API 常把底层错误转成统一格式，若只留 message 会丢栈。监控上报应递归展开 <code>cause</code> 链。</li>
+          <li><strong>async throw 外层 try/catch 为什么接不住？</strong> 结论：async 函数返回 Promise，throw 变成 rejection。原因是同步 try 只包当前调用栈，Promise 在微任务阶段才 reject。必须 <code>await</code> 或在 Promise 链上 <code>.catch</code>。</li>
+          <li><strong>如何设计错误类型？</strong> 结论：用 Error 子类区分可恢复/不可恢复、用户输入/系统故障。原因是统一 <code>catch (e)</code> 后可根据 <code>instanceof</code> 或 <code>code</code> 字段分支。避免 throw 字符串，优先 Error 对象保留 stack。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch">MDN: try...catch</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error">MDN: Error</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause">MDN: Error: cause</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise#incidents">MDN: Promise rejection handling</a></li>
+        </ul>
+      </div>
+    </section>
+    <!-- NOTES_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      // ============ 1. try / catch / finally 顺序 ============
+      function demoFinally() {
+        try {
+          console.log("try 开始");
+          return "from-try";
+        } catch (e) {
+          return "from-catch";
+        } finally {
+          console.log("finally 总会执行");
+        }
+      }
+      console.log("demoFinally 返回:", demoFinally()); // "from-try"
+
+      // ============ 2. 内置 Error 类型 ============
+      try {
+        null.foo;
+      } catch (err) {
+        console.log("TypeError:", err.name, err.message);
+      }
+
+      try {
+        console.log(notDefinedVar);
+      } catch (err) {
+        console.log("ReferenceError:", err.name);
+      }
+
+      // ============ 3. error.cause 链 ============
+      const root = new TypeError("invalid payload");
+      const wrapped = new Error("请求处理失败", { cause: root });
+      console.log("wrapped.message:", wrapped.message);
+      console.log("wrapped.cause === root:", wrapped.cause === root);
+      console.log("cause 仍是 TypeError:", wrapped.cause.name);
+
+      // ============ 4. throw 非 Error 值（可 catch，但丢失 stack） ============
+      try {
+        throw "plain string error";
+      } catch (err) {
+        console.log("throw 字符串:", typeof err, err);
+      }
+
+      // ============ 5. 自定义 Error ============
+      class ValidationError extends Error {
+        constructor(message, field) {
+          super(message);
+          this.name = "ValidationError";
+          this.field = field;
+        }
+      }
+
+      try {
+        throw new ValidationError("邮箱格式无效", "email");
+      } catch (err) {
+        console.log(
+          "自定义错误:",
+          err instanceof ValidationError,
+          err.field,
+          err.message
+        );
+      }
+
+      // ============ 6. Promise rejection 不会被同步 try/catch 捕获 ============
+      try {
+        Promise.reject(new Error("async rejection"));
+        console.log("同步 try 不会等到 Promise reject");
+      } catch (e) {
+        console.log("不会进这里");
+      }
+
+      (async function () {
+        try {
+          await Promise.reject(new Error("await 后可 catch"));
+        } catch (err) {
+          console.log("await + try/catch:", err.message);
+        }
+      })();
+    </script>
+    <!-- SCRIPT_END -->
+
+    <!-- NAV_START -->
+    <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
+      <h2 class="demo-block__label">页面导航</h2>
+      <nav class="demo-nav" aria-label="相关链接">
+        <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+        <a href="./%E4%B8%A5%E6%A0%BC%E6%A8%A1%E5%BC%8F.html">相关 · 严格模式</a>
+        <a href="../04-ES6%2B/%E5%BC%82%E6%AD%A5/Promise/02-Promise-%E4%B8%8E%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF.html">相关 · Promise 异常</a>
+        <a href="./JSON.html">← JSON</a>
+        <a href="./eval%E4%B8%8EGlobal.html">eval 与 Global →</a>
+      </nav>
+      <script>
+        (function () {
+          var a = document.querySelector("[data-demo-catalog]");
+          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+            a.setAttribute("href", a.dataset.fileCatalog);
+          }
+        })();
+      </script>
+    </footer>
+    <!-- NAV_END -->
+  </body>
+</html>

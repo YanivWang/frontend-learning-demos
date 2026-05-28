@@ -1,6 +1,6 @@
 # JavaScript
 
-按学习顺序编号的纯 JS 知识点 demo，共 **129** 个 `.html` 文件。每个文件都可以直接在浏览器打开，无需构建。
+按学习顺序编号的纯 JS 知识点 demo，共 **132** 个 `.html` 文件。每个文件都可以直接在浏览器打开，无需构建。
 
 每个 demo 在 `<!DOCTYPE html>` 前有统一头注释（`分类` / `主题` / `要点`），详见 [`../../CONVENTIONS.md`](../../CONVENTIONS.md) §4。
 
@@ -8,15 +8,29 @@
 
 | 目录 | 数量 | 知识点 |
 |---|---:|---|
-| `01-基础/` | 26 | 变量（含 null/undefined）、函数、箭头函数、`arguments`、IIFE、严格模式、JSON、Symbol、`typeof` / 类型检测、类型转换、运算符（`\|\|` `&&` `??`）、`eval` / Global、字符串方法、数组方法（迭代、查找、是否改变原数组、去重、扁平化）、Unicode（码点互转、字符等价性 NFC）、Date、parseInt、`encodeURI` / `encodeURIComponent`、escape、正则（含全特性、去标点） |
+| `01-基础/` | 27 | 变量（含 null/undefined）、函数、箭头函数、`arguments`、IIFE、严格模式、JSON、Symbol、`typeof` / 类型检测、类型转换、运算符（`\|\|` `&&` `??`）、`eval` / Global、字符串方法、数组方法（迭代、查找、是否改变原数组、去重、扁平化）、Unicode（码点互转、字符等价性 NFC）、Date、parseInt、`encodeURI` / `encodeURIComponent`、escape、正则（含全特性、去标点）、Error 与异常（含 `cause`） |
 | `02-函数与作用域/` | 8 | 作用域链、柯里化、闭包（基础、内存泄漏与修复）、this 指向（动态绑定、call/apply/bind、new 构造、对象方法脱离） |
 | `03-对象与原型/` | 7 | 原型、原型链、创建对象（含 delete）、访问器、构造函数、原型属性 vs 实例属性（`hasOwnProperty` / `in`） |
-| `04-ES6+/` | 26 | 解构、rest/spread、模板字符串、可选链、空值合并、Class（声明、表达式、extends、抽象基类、私有构造函数、静态初始化块）、ES6 模块、CommonJS vs ESM、集合（Map / Set / WeakMap / WeakSet）、异步（Promise、generator、async/await） |
-| `05-元编程/` | 4 | `defineProperty`（含访问器属性）、`Proxy`（含缺点） |
-| `06-浏览器API/` | 25 | BOM（hash / history）、DOM 操作、DOM 事件流（捕获 / 冒泡 / 委托）、Observer（Intersection / Mutation）、事件循环、fetch / CORS 跨域、浏览器渲染与性能、Notification、剪贴板、Service Worker、Web Worker（基础 / 命名分发）、存储方案对比、localforage 存储（容量、文件存储）、`requestAnimationFrame`、拖曳手柄、Tooltips |
-| `07-进阶/` | 8 | 垃圾回收、内存泄漏（含 timeline 实验）、深拷贝、手写 Promise.all、UMD 插件模式、资源预加载（ResLoader） |
-| `08-面试题/` | 14 | 作用域经典题（var1~6 / function 同名提升）、手写 call/apply/bind/new/instanceof/Promise/EventEmitter、防抖节流、加权随机 |
+| `04-ES6+/` | 27 | 解构、rest/spread、模板字符串、可选链、空值合并、迭代器与 `for...of`、Class（声明、表达式、extends、抽象基类、私有构造函数、静态初始化块）、ES6 模块、CommonJS vs ESM、集合（Map / Set / WeakMap / WeakSet）、异步（Promise、generator、async/await） |
+| `05-元编程/` | 4 | `defineProperty`（含访问器属性）、`Proxy`（含 Reflect 转发与缺点） |
+| `06-浏览器API/` | 32 | BOM（hash / history）、DOM 操作、DOM 事件流（捕获 / 冒泡 / 委托）、Observer（Intersection / Mutation）、事件循环、fetch / CORS 跨域、HTTP 缓存、Import Maps、浏览器渲染与性能、Performance API、Notification、剪贴板、Service Worker、WebSocket、Web Components、Web Worker（基础 / 命名分发）、存储方案对比、localforage 存储（容量、文件存储）、`requestAnimationFrame`、拖曳手柄（原生 / Vue3）、Tooltips |
+| `07-进阶/` | 10 | 垃圾回收、内存泄漏（含 timeline 实验）、深拷贝（含 `structuredClone`）、手写 Promise.all、UMD 插件模式、资源预加载（ResLoader）、安全（XSS / CSRF）、无障碍 a11y |
+| `08-面试题/` | 15 | 作用域经典题（var / function 同名提升等）、手写 call/apply/bind/new/instanceof/Promise/EventEmitter/LRU、防抖节流、加权随机 |
 | `09-Canvas/` | 2 | 2D 基础绘图、动画（烟花 + `requestAnimationFrame`） |
+
+## 运行环境说明
+
+多数 demo 可直接用 `file://` 打开；下列页面**需本地静态服务（`http://localhost`）或 HTTPS**，或需要**用户手势 / 权限**，否则只能阅读复习区、无法在页面内完整验证：
+
+| 类型 | 代表 demo | 限制 |
+|---|---|---|
+| 安全上下文 | `ServiceWorker.html`、`Notification.html`、部分剪贴板 API | 须 HTTPS 或 `localhost`，`file://` 不可用 |
+| 用户手势 | `剪贴板.html`、`Notification.html` | 须点击等用户操作触发 |
+| 真实网络 | `fetch与跨域.html`、`WebSocket.html` | 需可访问的后端或公共 WS 服务 |
+| ES Module | `ES6模块/index.html`、`ImportMaps.html` | 建议本地静态服务，避免 `file://` CORS 限制 |
+| 框架依赖 | `拖曳手柄/01`、`02`、`toolTips` | 依赖 Vue3 本地脚本；纯 JS 拖拽见 `拖曳手柄/03-原生侧栏拖拽.html` |
+
+本地启动示例：`npx serve apps` 或 `npm run docs:dev` 后从文档站跳转。
 
 ## 推荐顺序
 
@@ -29,7 +43,7 @@
 
 <!-- DEMO_TABLE_START -->
 
-共 **129** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
+共 **132** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
 
 | 文件 | 主题 |
 |---|---|
@@ -50,6 +64,7 @@
 | `01-基础/arguments.html` | arguments 类数组对象与剩余参数 |
 | `01-基础/Date.html` | Date 常用工具：月初/月末、格式化、时间差 |
 | `01-基础/encode-URI编码.html` | URI 编码 API（encodeURI / encodeURIComponent / decode） |
+| `01-基础/Error与异常.html` | Error 类型、try/catch/finally 与 error.cause |
 | `01-基础/escape.html` | 字符串中反斜杠转义与 JSON 序列化 |
 | `01-基础/eval与Global.html` | eval 与全局对象 window |
 | `01-基础/IIFE.html` | IIFE 立即执行函数表达式 |
@@ -74,6 +89,7 @@
 | `03-对象与原型/原型.html` | 原型对象（prototype）与共享属性 |
 | `03-对象与原型/原型链.html` | 原型链与组合继承 |
 | `03-对象与原型/原型属性vs实例属性.html` | 原型属性 vs 实例属性 |
+| `04-ES6+/迭代器与for-of.html` | 迭代器协议、for...of 与可迭代对象 |
 | `04-ES6+/集合/Map.html` | Map 键值对集合 |
 | `04-ES6+/集合/Set.html` | Set 值的集合 |
 | `04-ES6+/集合/WeakMap.html` | WeakMap 弱引用映射 |
@@ -118,6 +134,7 @@
 | `06-浏览器API/事件模型/03-Node与浏览器事件循环对比.html` | Node.js 与浏览器事件循环对比 |
 | `06-浏览器API/拖曳手柄/01-贴边侧栏拖拽.html` | 拖拽调整侧栏宽度（Vue3 + requestAnimationFrame 版） |
 | `06-浏览器API/拖曳手柄/02-悬浮侧栏拖拽.html` | 悬浮侧栏拖拽 V2（带圆角与外边距） |
+| `06-浏览器API/拖曳手柄/03-原生侧栏拖拽.html` | 原生 DOM 拖拽调整侧栏宽度（Pointer Events + rAF） |
 | `06-浏览器API/BOM/hash.html` | hash 路由的基本演示 |
 | `06-浏览器API/BOM/history.html` | history pushState / replaceState 与 popstate |
 | `06-浏览器API/DOM操作.html` | DOM 基础操作（选择 / 属性 / 数据集 / 类） |
