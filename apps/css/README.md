@@ -1,6 +1,6 @@
 # CSS
 
-按主题编号的 CSS demo，共 **41** 个 `.html` 文件，兼顾常用效果、CSS 面试基础与现代特性。每个 demo 可直接在浏览器打开。
+按主题编号的 CSS demo，共 **44** 个 `.html` 文件，兼顾常用效果、CSS 面试基础与现代特性。每个 demo 可直接在浏览器打开。
 
 目录按 `01-基础` ~ `07-现代特性` 编号分类。`05-响应式/media-queries/` 下 `01-基础布局.html` → `02-响应式最终页.html` 演示媒体查询的渐进增强。
 
@@ -17,10 +17,10 @@
 
 | 目录 | 知识点 |
 |---|---|
-| `01-基础/` | 选择器与优先级、盒模型、`display` 与文档流、常用单位、`calc()`、`clamp()`、CSS 变量 |
+| `01-基础/` | 选择器与优先级、盒模型、`display` 与文档流、继承与层叠、常用单位、`calc()`、`clamp()`、CSS 变量 |
 | `02-布局/` | Flex、Grid、BFC、清除浮动、定位、层叠上下文、常见布局题、rem 适配、瀑布流、滚动表格（`thead` 固定） |
-| `03-动画/` | Loading 四种、`@keyframes`、NProgress、光标闪烁、展开折叠（height / max-height / grid）、序列帧（精灵图） |
-| `04-视觉效果/` | 文本省略、图片处理、百分比圆环、3D 按钮、`drop-shadow`、`background-blend-mode`、Tooltip |
+| `03-动画/` | Loading 四种、`@keyframes`、`transition` 与 `animation` 对比、NProgress、光标闪烁、展开折叠（height / max-height / grid）、序列帧（精灵图） |
+| `04-视觉效果/` | 单行/多行文本省略、图片处理、百分比圆环、3D 按钮、`drop-shadow`、`background-blend-mode`、Tooltip |
 | `05-响应式/` | Media Queries（含基础布局 → 响应式最终页演进对比）、rem + @media + vw / vh 综合适配 |
 | `06-性能/` | 重排、重绘、合成层、`transform` / `opacity` 动画性能、`will-change`、`contain` |
 | `07-现代特性/` | `:has()` 父选择器、`@layer` 层叠管理、Container Queries 容器查询、`content-visibility` |
@@ -32,6 +32,7 @@
 | 选择器、优先级、层叠规则 | `01-基础/选择器与优先级/` |
 | 盒模型、`box-sizing`、margin 折叠 | `01-基础/盒模型/` |
 | `display`、文档流、隐藏方式区别 | `01-基础/display与文档流/` |
+| CSS 继承、`inherit` / `initial` / `unset` | `01-基础/继承与层叠/` |
 | CSS 单位、`calc()`、`clamp()`、CSS 变量 | `01-基础/单位与函数/` |
 | Flex 一维布局 | `02-布局/flex/` |
 | Grid 二维布局 | `02-布局/grid/` |
@@ -39,9 +40,9 @@
 | 定位、包含块、`z-index`、层叠上下文 | `02-布局/定位与层叠上下文/` |
 | 居中、两栏、三栏、粘性 footer | `02-布局/常见布局题/` |
 | 响应式、媒体查询、rem、vw/vh | `02-布局/rem/`、`05-响应式/media-queries/`、`05-响应式/vw-vh/` |
-| 动画、过渡、`transform` | `03-动画/` |
-| 单行文本省略、图片适配、基线空隙 | `04-视觉效果/文本与图片处理/` |
-| CSS 渲染性能 | `06-性能/渲染性能/` |
+| 动画、过渡、`transform` | `03-动画/`（含 `transition与animation/` 对比） |
+| 单行文本省略、多行省略、图片适配、基线空隙 | `04-视觉效果/文本与图片处理/`、`04-视觉效果/多行省略/` |
+| CSS 渲染性能 | `06-性能/01-重排重绘/` |
 | `:has()` / `@layer` / Container Queries / `content-visibility` | `07-现代特性/` |
 
 ## 推荐顺序
@@ -52,12 +53,13 @@
 
 <!-- DEMO_TABLE_START -->
 
-共 **41** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
+共 **44** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
 
 | 文件 | 主题 |
 |---|---|
 | `01-基础/单位与函数/index.html` | px、em、rem、百分比、vw/vh、calc、clamp、CSS 变量 |
 | `01-基础/盒模型/index.html` | 标准盒模型、IE 盒模型、margin 折叠 |
+| `01-基础/继承与层叠/index.html` | CSS 继承、inherit / initial / unset / revert |
 | `01-基础/选择器与优先级/index.html` | 选择器种类与优先级（specificity） |
 | `01-基础/display与文档流/index.html` | block、inline、inline-block、none、visibility |
 | `02-布局/常见布局题/index.html` | 居中、两栏、三栏、粘性 footer |
@@ -77,9 +79,11 @@
 | `03-动画/loading/03-圆环旋转.html` | lds-ring 圆环旋转 loading |
 | `03-动画/loading/04-文字淡出.html` | 文字逐字淡出的 loading 动画 |
 | `03-动画/nprogress/index.html` | NProgress 顶部进度条第三方库 |
+| `03-动画/transition与animation/index.html` | transition 与 animation 对比 |
 | `04-视觉效果/按钮/02-立体按钮.html` | 拟物 3D 按钮的按下动效 |
 | `04-视觉效果/按钮/03-3D按钮.html` | 渐变 + 下边框 + box-shadow 的 3D 按钮 |
 | `04-视觉效果/百分比圆环/index.html` | CSS3 transform 百分比圆环组件 |
+| `04-视觉效果/多行省略/index.html` | 多行文本省略、line-clamp |
 | `04-视觉效果/文本与图片处理/index.html` | 单行文本省略、vertical-align、object-fit |
 | `04-视觉效果/background-blend-mode/index.html` | background-blend-mode 与 mix-blend-mode 混合模式 |
 | `04-视觉效果/drop-shadow/index.html` | box-shadow vs filter: drop-shadow 对比 |

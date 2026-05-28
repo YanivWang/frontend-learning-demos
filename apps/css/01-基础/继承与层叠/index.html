@@ -1,0 +1,167 @@
+<!--
+分类: css / 01-基础 / 继承与层叠
+  主题: CSS 继承、inherit / initial / unset / revert
+  要点:
+    - color、font-family、line-height 等属性默认会继承，width、margin、border 等通常不继承
+    - inherit 强制取父级计算值，initial 取规范初始值，unset 在可继承属性上等价 inherit
+    - 层叠冲突时先看来源、重要性、@layer，再比 specificity 和声明顺序
+    - CSS 变量（自定义属性）会继承，并在 var() 替换阶段参与最终值计算
+  面试:
+    - CSS 哪些属性会继承，哪些不会？
+    - inherit、initial、unset、revert 分别是什么意思？
+    - 继承和 CSS 层叠（cascade）有什么区别？
+    - 为什么子元素改 color 不会影响父元素，但父元素改 color 会影响子元素？
+-->
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSS 继承与层叠</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; line-height: 1.6; }
+      h1 { font-size: 1.3rem; }
+      h2 { font-size: 1rem; margin-top: 2rem; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      .parent {
+        color: #0969da;
+        font-size: 18px;
+        line-height: 1.8;
+        border: 3px solid #2f80ed;
+        padding: 16px;
+        max-width: 560px;
+        background: #f6f8fa;
+      }
+      .child-inherit {
+        border-color: inherit;
+        padding: 8px 12px;
+        background: #fff;
+        margin-top: 8px;
+      }
+      .child-no-width {
+        /* width 不继承，不会自动变成和父级一样宽 */
+        padding: 8px 12px;
+        background: #ffe3d1;
+        margin-top: 8px;
+      }
+      .keyword-row { display: flex; flex-wrap: wrap; gap: 12px; max-width: 720px; }
+      .keyword-box {
+        flex: 1 1 200px;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #fff;
+      }
+      .keyword-box code { display: block; margin-bottom: 6px; font-weight: 600; }
+      .unset-demo {
+        color: tomato;
+        font-size: 22px;
+      }
+      .unset-demo .unset-child {
+        color: unset;
+        font-size: unset;
+        padding: 8px 12px;
+        background: #e5f6df;
+        margin-top: 8px;
+      }
+      .initial-demo {
+        color: #eb5757;
+        font-style: italic;
+      }
+      .initial-demo .initial-child {
+        color: initial;
+        font-style: initial;
+        padding: 8px 12px;
+        background: #dff0ff;
+        margin-top: 8px;
+      }
+    </style>
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
+  </head>
+  <body class="demo-page">
+    <!-- NOTES_START -->
+    <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
+      <h1>CSS 继承与层叠</h1>
+      <p class="hint">观察父级样式如何影响子元素，以及 <code>inherit</code>、<code>initial</code>、<code>unset</code> 对继承属性的不同效果。</p>
+      <div class="demo-notes">
+        <h2>知识点要点</h2>
+        <ul>
+          <li>CSS 继承指子元素会取得父元素某些属性的<strong>计算值</strong>，常见可继承属性包括 <code>color</code>、<code>font-*</code>、<code>line-height</code>、<code>text-align</code>、<code>visibility</code> 等；<code>width</code>、<code>height</code>、<code>margin</code>、<code>padding</code>、<code>border</code> 等盒模型属性通常<strong>不继承</strong>。</li>
+          <li>本页父容器设置了蓝色文字和 18px 字号，内部未声明 <code>color</code>/<code>font-size</code> 的子元素会自动继承；但子元素不会因为没有写 <code>width</code> 就和父级同宽，因为宽度不是继承属性。</li>
+          <li><code>inherit</code> 显式让属性继承父级计算值，例如 <code>border-color: inherit</code> 可以让边框颜色和父级文字颜色保持一致。</li>
+          <li><code>initial</code> 把属性重置为 CSS 规范定义的初始值，不一定等于“看起来像没设置”；例如 <code>color: initial</code> 通常会回到浏览器默认文字色，而不是继续继承父级颜色。</li>
+          <li><code>unset</code> 对可继承属性等价于 <code>inherit</code>，对不可继承属性等价于 <code>initial</code>；它是“撤销当前元素上的声明，回到继承/初始规则”的通用写法。</li>
+          <li>“层叠（cascade）”和“继承（inheritance）”不是一回事：层叠解决<strong>多条规则冲突</strong>时选哪条；继承解决<strong>子元素没写值</strong>时从哪里取值。冲突比较顺序通常是来源 → 重要性 → 层 → specificity → 顺序。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>CSS 哪些属性会继承，哪些不会？</strong> 结论是文字和排版类属性（如 <code>color</code>、<code>font-family</code>、<code>line-height</code>）常继承，盒模型和定位类属性（如 <code>width</code>、<code>margin</code>、<code>position</code>）通常不继承。原因是继承适合表达“同一文本环境”，而尺寸和布局应由每个元素自己决定。项目里表单、按钮、链接常依赖继承统一字体，但宽高仍要单独声明。</li>
+          <li><strong><code>inherit</code>、<code>initial</code>、<code>unset</code> 分别是什么意思？</strong> 结论是 <code>inherit</code> 强制继承父值，<code>initial</code> 回到规范初始值，<code>unset</code> 在可继承属性上等价 <code>inherit</code>、否则等价 <code>initial</code>。原因是三者解决的是“当前元素这个属性该从哪里取值”。项目里组件 reset 常用 <code>unset</code> 或 <code>revert</code>，而不是把所有属性都写死成 initial。</li>
+          <li><strong>继承和 CSS 层叠有什么区别？</strong> 结论是继承是“没写值时向上找”，层叠是“写了多条规则时挑一条生效”。原因是它们发生在级联过程的不同阶段。面试里不要混成“优先级继承”；样式冲突应回到 cascade 顺序和 specificity 排查。</li>
+          <li><strong>为什么父元素改 <code>color</code> 会影响子元素，子元素改 <code>color</code> 不会影响父元素？</strong> 结论是继承是单向从祖先传给后代，不会反向传播。原因是 CSS 继承树只向下传递计算值。项目里如果某个子组件不想继承主题色，应显式声明 <code>color</code> 或使用独立作用域/token。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_cascade/Inheritance" target="_blank" rel="noreferrer">MDN: Inheritance</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/inherit" target="_blank" rel="noreferrer">MDN: inherit</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/initial" target="_blank" rel="noreferrer">MDN: initial</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/unset" target="_blank" rel="noreferrer">MDN: unset</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_cascade/Cascade" target="_blank" rel="noreferrer">MDN: Cascade</a></li>
+        </ul>
+      </div>
+    </section>
+    <!-- NOTES_END -->
+
+    <!-- PAGE_DOM_START -->
+    <h2>可继承 vs 不可继承</h2>
+    <p class="tip">父级有蓝色文字、18px 字号和蓝色边框；子元素没写 color/font-size 时会继承，但不会继承 width。</p>
+    <div class="parent">
+      父级：color + font-size 会传给后代
+      <div class="child-inherit">border-color: inherit — 边框颜色跟随父级文字色</div>
+      <div class="child-no-width">未设置 width — 宽度由自身内容和块级规则决定，不会继承父级</div>
+    </div>
+
+    <h2>unset：撤销当前声明</h2>
+    <p class="tip">外层故意设为 tomato / 22px，内层 <code>color: unset; font-size: unset</code> 会回到继承链上的值（通常表现为回到 body 默认样式）。</p>
+    <div class="unset-demo">
+      外层文字
+      <div class="unset-child">unset 后不再使用外层的 tomato / 22px</div>
+    </div>
+
+    <h2>initial：回到规范初始值</h2>
+    <p class="tip"><code>color: initial</code> 通常回到默认文字色，而不是继续继承父级红色。</p>
+    <div class="initial-demo">
+      外层红色斜体
+      <div class="initial-child">color/font-style: initial</div>
+    </div>
+
+    <h2>inherit / initial / unset 对照</h2>
+    <div class="keyword-row">
+      <div class="keyword-box"><code>inherit</code>强制使用父级计算值，例如 border-color: inherit。</div>
+      <div class="keyword-box"><code>initial</code>使用 CSS 规范初始值，不等于“继承父级”。</div>
+      <div class="keyword-box"><code>unset</code>可继承属性 → inherit；不可继承属性 → initial。</div>
+    </div>
+    <!-- PAGE_DOM_END -->
+
+    <!-- NAV_START -->
+    <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
+      <h2 class="demo-block__label">页面导航</h2>
+      <nav class="demo-nav" aria-label="相关链接">
+  <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="../%E7%9B%92%E6%A8%A1%E5%9E%8B/index.html">← index</a>
+        <a href="../%E9%80%89%E6%8B%A9%E5%99%A8%E4%B8%8E%E4%BC%98%E5%85%88%E7%BA%A7/index.html">index →</a>
+      </nav>
+  <script>
+    (function () {
+      var a = document.querySelector("[data-demo-catalog]");
+      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+        a.setAttribute("href", a.dataset.fileCatalog);
+      }
+    })();
+  </script>
+</footer>
+<!-- NAV_END -->
+</body>
+</html>

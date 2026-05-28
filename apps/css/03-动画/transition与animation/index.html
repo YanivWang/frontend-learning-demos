@@ -1,0 +1,192 @@
+<!--
+分类: css / 03-动画 / transition与animation
+  主题: transition 与 animation 对比
+  要点:
+    - transition 需要触发条件（如 :hover、class 切换）在两个状态间过渡
+    - animation 通过 @keyframes 定义时间线，可自动播放、循环、反向
+    - 两者都优先动画 transform 和 opacity，避免触发布局属性
+    - transition 适合交互反馈，animation 适合 loading、循环强调动效
+  面试:
+    - transition 和 animation 的核心区别是什么？
+    - 为什么 transition 不能直接过渡 height: auto？
+    - animation 简写里两个时间值分别表示什么？
+    - 什么时候用 transition，什么时候用 @keyframes？
+-->
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>transition 与 animation 对比</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; line-height: 1.6; }
+      h1 { font-size: 1.3rem; }
+      h2 { font-size: 1rem; margin-top: 2rem; }
+      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      .row { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+      .card {
+        width: 220px;
+        padding: 16px;
+        border-radius: 10px;
+        color: #fff;
+        text-align: center;
+      }
+      .transition-btn {
+        background: #2f80ed;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+        cursor: pointer;
+        border: none;
+        font: inherit;
+        color: inherit;
+      }
+      .transition-btn:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(47, 128, 237, 0.35);
+        background: #1366d6;
+      }
+      .spinner {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto;
+        border-radius: 50%;
+        border: 4px solid rgba(255, 255, 255, 0.35);
+        border-top-color: #fff;
+        animation: spin 0.9s linear infinite;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      .pulse {
+        background: #27ae60;
+        animation: pulse 1.4s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.85; }
+        50% { transform: scale(1.06); opacity: 1; }
+      }
+      .compare {
+        max-width: 720px;
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 0.9375rem;
+      }
+      .compare th, .compare td {
+        border: 1px solid #ddd;
+        padding: 10px 12px;
+        text-align: left;
+        vertical-align: top;
+      }
+      .compare th { background: #f6f8fa; }
+      @media (prefers-reduced-motion: reduce) {
+        .transition-btn { transition: none; }
+        .transition-btn:hover { transform: none; box-shadow: none; }
+        .spinner, .pulse { animation: none; }
+      }
+    </style>
+    <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
+  </head>
+  <body class="demo-page">
+    <!-- NOTES_START -->
+    <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
+      <h1>transition 与 animation 对比</h1>
+      <p class="hint">左侧是 hover 触发的 <code>transition</code>，右侧是自动循环的 <code>animation</code>；下方表格总结选型差异。</p>
+      <div class="demo-notes">
+        <h2>知识点要点</h2>
+        <ul>
+          <li><code>transition</code> 描述元素从<strong>起始状态</strong>到<strong>结束状态</strong>的过渡，必须有一次属性变化作为触发，例如 <code>:hover</code>、focus、class 切换；它不会自己开始播放。</li>
+          <li><code>animation</code> 通过 <code>@keyframes</code> 定义完整时间线，并由 <code>animation-name</code>、时长、次数、方向等控制播放；它可以自动开始、无限循环、往返或暂停。</li>
+          <li>两者都适合优先动画 <code>transform</code> 和 <code>opacity</code>；按钮 hover、卡片浮起、颜色渐变反馈通常用 transition，loading 旋转、呼吸强调、序列动效通常用 animation。</li>
+          <li><code>transition</code> 只能过渡<strong>可插值</strong>的值，所以 <code>height: auto</code> 不能直接平滑过渡；这类场景见 `展开折叠` demo，常用固定值、<code>max-height</code> 或 <code>grid-template-rows</code> 方案。</li>
+          <li><code>animation</code> 简写若出现两个时间值，第一个是 <code>duration</code>，第二个是 <code>delay</code>；例如 <code>animation: 2s 0.5s linear infinite spin</code> 表示延迟 0.5s 后开始，每轮 2s，线性无限循环。</li>
+        </ul>
+        <h2>面试考点</h2>
+        <ul>
+          <li><strong>transition 和 animation 的核心区别是什么？</strong> 结论是 transition 需要状态变化触发，在两个值之间过渡；animation 基于关键帧时间线，可自动播放和控制循环。原因是 transition 是“从 A 到 B”，animation 是“沿时间线走完整段表演”。项目里按钮/卡片交互优先 transition，loading/徽标脉冲优先 animation。</li>
+          <li><strong>为什么 transition 不能直接过渡 height: auto？</strong> 结论是 auto 不是可插值长度，浏览器不知道中间帧该怎么算。原因是 transition 需要明确的起始值和结束值。项目里折叠面板常用 max-height、grid 0fr→1fr 或 JS 测量高度，而不是写 <code>transition: height 0.3s</code> 搭配 auto。</li>
+          <li><strong>animation 简写里两个时间值分别表示什么？</strong> 结论是第一个是 duration，第二个是 delay。原因是 animation 简写会把时间值按顺序分配给这两个子属性。边界是只有一个时间值时它表示 duration；名称建议放末尾，避免和关键字混淆。</li>
+          <li><strong>什么时候用 transition，什么时候用 @keyframes？</strong> 结论是交互反馈、状态切换、hover/focus 这类“从当前样式过渡到目标样式”用 transition；需要自动播放、多段状态、无限循环或复杂节奏时用 @keyframes。原因是 transition 更简单，animation 表达力更强但维护成本也更高。非必要无限动画要配合 <code>prefers-reduced-motion</code> 降级。</li>
+        </ul>
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transition" target="_blank" rel="noreferrer">MDN: transition</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/animation" target="_blank" rel="noreferrer">MDN: animation</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes" target="_blank" rel="noreferrer">MDN: @keyframes</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion" target="_blank" rel="noreferrer">MDN: prefers-reduced-motion</a></li>
+        </ul>
+      </div>
+    </section>
+    <!-- NOTES_END -->
+
+    <!-- PAGE_DOM_START -->
+    <div class="row">
+      <div>
+        <h2>transition · 需要触发</h2>
+        <p class="tip">悬停按钮，观察 transform / box-shadow / background 的平滑过渡。</p>
+        <button type="button" class="card transition-btn">hover 我</button>
+      </div>
+      <div>
+        <h2>animation · 自动播放</h2>
+        <p class="tip">loading 圆环与 pulse 都不依赖 hover，会自动循环。</p>
+        <div class="card" style="background:#2f80ed;">
+          <div class="spinner" aria-hidden="true"></div>
+          <p style="margin:12px 0 0;">旋转 loading</p>
+        </div>
+        <div class="card pulse" style="margin-top:12px;">pulse 强调</div>
+      </div>
+    </div>
+
+    <h2>选型对照</h2>
+    <table class="compare">
+      <thead>
+        <tr>
+          <th></th>
+          <th>transition</th>
+          <th>animation + @keyframes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>触发方式</th>
+          <td>需要属性值变化（hover、class、JS 改样式）</td>
+          <td>可自动播放，也可配合 class 控制</td>
+        </tr>
+        <tr>
+          <th>表达能力</th>
+          <td>两个状态之间过渡</td>
+          <td>多关键帧、循环、反向、延迟</td>
+        </tr>
+        <tr>
+          <th>典型场景</th>
+          <td>按钮 hover、菜单展开、颜色/位移反馈</td>
+          <td>loading、骨架屏、序列帧、强调动效</td>
+        </tr>
+        <tr>
+          <th>性能建议</th>
+          <td colspan="2">优先 transform / opacity；避免动画 width / height / top / left</td>
+        </tr>
+      </tbody>
+    </table>
+    <!-- PAGE_DOM_END -->
+
+    <!-- NAV_START -->
+    <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
+      <h2 class="demo-block__label">页面导航</h2>
+      <nav class="demo-nav" aria-label="相关链接">
+  <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="../nprogress/index.html">← index</a>
+        <a href="../../04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/%E6%8C%89%E9%92%AE/02-%E7%AB%8B%E4%BD%93%E6%8C%89%E9%92%AE.html">立体按钮 →</a>
+      </nav>
+  <script>
+    (function () {
+      var a = document.querySelector("[data-demo-catalog]");
+      if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
+        a.setAttribute("href", a.dataset.fileCatalog);
+      }
+    })();
+  </script>
+</footer>
+<!-- NAV_END -->
+</body>
+</html>
