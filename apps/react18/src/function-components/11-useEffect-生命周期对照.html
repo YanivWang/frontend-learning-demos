@@ -1,6 +1,7 @@
 <!--
-  分类: react18 / hooks
+  分类: react18 / function-components / hooks
   主题: useEffect 与 class 生命周期对照
+  相关: 10-React18-自动批处理对比, 13-Hooks-useEffect副作用, 26-Fragment-Portal-StrictMode
   要点:
     - componentDidMount ≈ useEffect(fn, [])
     - componentDidUpdate ≈ useEffect(fn, [deps]) 在 deps 变化时的行为（注意：带 deps 的 effect 在 mount 时也会执行，与 componentDidUpdate 不同）
@@ -31,7 +32,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>useEffect 与 class 生命周期对照</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看 mount/update/unmount 日志；下方 #root 为 React 挂载/交互演示区，可切换 userId 与挂载/卸载。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -55,7 +56,6 @@
           <li><a href="https://react.dev/learn/lifecycle-of-reactive-effects" target="_blank" rel="noreferrer">react.dev: Lifecycle of Reactive Effects</a></li>
           <li><a href="https://react.dev/learn/synchronizing-with-effects" target="_blank" rel="noreferrer">react.dev: Synchronizing with Effects</a></li>
           <li><a href="https://react.dev/reference/react/StrictMode" target="_blank" rel="noreferrer">react.dev: StrictMode</a></li>
-          <li><a href="https://legacy.reactjs.org/docs/react-component.html" target="_blank" rel="noreferrer">legacy.reactjs.org: React.Component lifecycle</a></li>
         </ul>
       </div>
     </section>
@@ -74,19 +74,19 @@
         const isFirstUserIdEffect = useRef(true);
 
         function pushLog(msg) {
-          setLogs(prev => [...prev, msg]);
+          setLogs((prev) => [...prev, msg]);
           console.log(msg);
         }
 
-        // 挂载 + 卸载
+        // ====== 1. 空依赖：mount 后运行一次，unmount 前 cleanup ======
         useEffect(() => {
           pushLog("mount: 类似 componentDidMount");
           return () => {
-            console.log("unmount: 类似 componentWillUnmount");
+            console.log("unmount cleanup: 类似 componentWillUnmount");
           };
         }, []);
 
-        // 仅 userId 变化时（跳过 mount），更接近 componentDidUpdate 语义
+        // ====== 2. 带 deps：mount 也会跑；用 ref 跳过首次以贴近 componentDidUpdate ======
         useEffect(() => {
           if (isFirstUserIdEffect.current) {
             isFirstUserIdEffect.current = false;
@@ -96,13 +96,15 @@
         }, [userId]);
 
         return (
-        <div style={{ border: "1px dashed #999", padding: 12, marginTop: 8 }}>
-          <p>当前 userId: {userId}</p>
-          <ul>
-            {logs.map((log, i) => <li key={i}>{log}</li>)}
-          </ul>
-        </div>
-      );
+          <div style={{ border: "1px dashed #999", padding: 12, marginTop: 8 }}>
+            <p>当前 userId: {userId}</p>
+            <ul>
+              {logs.map((log, i) => (
+                <li key={i}>{log}</li>
+              ))}
+            </ul>
+          </div>
+        );
       }
 
       function App() {
@@ -110,29 +112,46 @@
         const [visible, setVisible] = useState(true);
 
         return (
-        <section>
-          <h1>useEffect 与生命周期对照</h1>
-
-          <table border="1" cellPadding="6" style={{ borderCollapse: "collapse", marginBottom: 12 }}>
-            <thead>
-              <tr><th>class 生命周期</th><th>Hooks 近似写法</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>componentDidMount</td><td>useEffect(fn, [])</td></tr>
-              <tr><td>componentDidUpdate</td><td>useEffect(fn, [deps])（mount 也会跑；可用 ref 跳过首次以贴近 update）</td></tr>
-              <tr><td>componentWillUnmount</td><td>useEffect 返回 cleanup</td></tr>
-            </tbody>
-          </table>
-          <button onClick={() => setUserId(prev => prev + 1)}>切换 userId</button>
-          <button onClick={() => setVisible(!visible)}>挂载/卸载 Demo</button>
-          {visible && <LifecycleDemo userId={userId} />}
-          <p>面试回答: useEffect 按副作用语义组织，不是生命周期的机械替换；带 deps 的 effect 默认 mount 也会执行。</p>
-        </section>
-      );
+          <section>
+            <h1>useEffect 与生命周期对照</h1>
+            <table
+              border="1"
+              cellPadding="6"
+              style={{ borderCollapse: "collapse", marginBottom: 12 }}
+            >
+              <thead>
+                <tr>
+                  <th>class 生命周期</th>
+                  <th>Hooks 近似写法</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>componentDidMount</td>
+                  <td>useEffect(fn, [])</td>
+                </tr>
+                <tr>
+                  <td>componentDidUpdate</td>
+                  <td>
+                    useEffect(fn, [deps])（mount 也会跑；可用 ref 跳过首次）
+                  </td>
+                </tr>
+                <tr>
+                  <td>componentWillUnmount</td>
+                  <td>useEffect 返回 cleanup</td>
+                </tr>
+              </tbody>
+            </table>
+            <button onClick={() => setUserId((prev) => prev + 1)}>
+              切换 userId
+            </button>
+            <button onClick={() => setVisible(!visible)}>挂载/卸载 Demo</button>
+            {visible && <LifecycleDemo userId={userId} />}
+          </section>
+        );
       }
 
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 

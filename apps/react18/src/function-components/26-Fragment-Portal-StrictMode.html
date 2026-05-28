@@ -1,6 +1,7 @@
 <!--
   分类: react18 / 内置能力
   主题: Fragment、Portal 与 StrictMode
+  相关: 25-虚拟DOM-Fiber-批处理, 27-forwardRef与useImperativeHandle
   要点:
     - Fragment 让组件返回多个兄弟节点而不增加额外 DOM
     - Portal 改变 DOM 挂载位置，但事件仍按 React 组件树冒泡
@@ -33,7 +34,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Fragment、Portal 与 StrictMode</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看 Portal 挂载与 StrictMode 日志；下方 #root 为 React 挂载/交互演示区（弹窗 Portal 挂载在 #modal-root）。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -52,9 +53,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/Fragment" target="_blank" rel="noreferrer">React API Reference: Fragment</a></li>
-          <li><a href="https://react.dev/reference/react-dom/createPortal" target="_blank" rel="noreferrer">React DOM API Reference: createPortal</a></li>
-          <li><a href="https://react.dev/reference/react/StrictMode" target="_blank" rel="noreferrer">React API Reference: StrictMode</a></li>
+          <li><a href="https://react.dev/reference/react/Fragment" target="_blank" rel="noreferrer">react.dev: Fragment</a></li>
+          <li><a href="https://react.dev/reference/react-dom/createPortal" target="_blank" rel="noreferrer">react.dev: createPortal</a></li>
+          <li><a href="https://react.dev/reference/react/StrictMode" target="_blank" rel="noreferrer">react.dev: StrictMode</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/dialog_role" target="_blank" rel="noreferrer">MDN: ARIA dialog role</a></li>
         </ul>
       </div>
@@ -68,41 +69,54 @@
 
     <!-- SCRIPT_START -->
     <script type="text/babel">
-      const { Fragment, StrictMode, useState } = React;
+      const { Fragment, StrictMode, useEffect, useState } = React;
 
+      // ====== 1. Portal：DOM 挂到 #modal-root，React 树关系不变 ======
+      // 对应 react.dev createPortal；事件仍沿 React 组件树冒泡
       function Modal({ onClose }) {
+        useEffect(() => {
+          const modalRoot = document.getElementById("modal-root");
+          console.log("Portal 已挂载到 #modal-root:", modalRoot?.contains(document.querySelector(".modal")));
+          // 预期: true；弹窗 DOM 不在 #root 内
+        }, []);
+
         return ReactDOM.createPortal(
-        <div className="modal">
-          <strong>Portal 弹窗</strong>
-          <p>我渲染在 #modal-root 中，不在 #root 内。</p>
-          <button onClick={onClose}>关闭</button>
-        </div>,
-        document.getElementById("modal-root")
-      );
+          <div className="modal">
+            <strong>Portal 弹窗</strong>
+            <p>我渲染在 #modal-root 中，不在 #root 内。</p>
+            <button onClick={onClose}>关闭</button>
+          </div>,
+          document.getElementById("modal-root")
+        );
       }
 
+      // ====== 2. Fragment：无额外 DOM 包裹返回多个兄弟节点 ======
       function App() {
         const [open, setOpen] = useState(false);
 
-        return (
-        <Fragment>
-          <section>
-            <h1>Fragment、Portal、StrictMode</h1>
+        useEffect(() => {
+          console.log("App StrictMode 开发检查: open =", open);
+          // 预期: 开发模式下 StrictMode 可能重复 mount，日志会出现两次
+        }, [open]);
 
-            <button onClick={() => setOpen(true)}>打开 Portal 弹窗</button>
-            {open && <Modal onClose={() => setOpen(false)} />}
-            <p>面试回答: Fragment 减少无意义 DOM；Portal 解决浮层挂载位置；StrictMode 帮助开发阶段发现潜在问题。</p>
-          </section>
-        </Fragment>
-      );
+        return (
+          <Fragment>
+            <section>
+              <h1>Fragment、Portal、StrictMode</h1>
+
+              <button onClick={() => setOpen(true)}>打开 Portal 弹窗</button>
+              {open && <Modal onClose={() => setOpen(false)} />}
+            </section>
+          </Fragment>
+        );
       }
 
+      // ====== 3. StrictMode 包裹根组件（仅开发环境额外检查） ======
       ReactDOM.createRoot(document.getElementById("root")).render(
-      <StrictMode>
-        <App />
-      </StrictMode>
+        <StrictMode>
+          <App />
+        </StrictMode>
       );
-
     </script>
     <!-- SCRIPT_END -->
 

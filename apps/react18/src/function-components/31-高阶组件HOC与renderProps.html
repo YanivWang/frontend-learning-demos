@@ -1,6 +1,7 @@
 <!--
-  分类: react18 / 函数组件
+  分类: react18 / function-components
   主题: 高阶组件 HOC 与 render props
+  相关: 30-函数-defaultProps与displayName, 32-useLayoutEffect与useEffect对比
   要点:
     - HOC 是接收组件并返回增强组件的函数，不能修改原组件
     - render props 通过函数 prop 暴露状态或行为，由调用方决定渲染内容
@@ -29,7 +30,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>高阶组件 HOC 与 render props</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看 HOC 与 Hook 加载日志；下方 #root 为 React 挂载/交互演示区，移动鼠标可观察坐标更新。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -48,10 +49,10 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://legacy.reactjs.org/docs/higher-order-components.html" target="_blank" rel="noreferrer">Legacy React Docs: Higher-Order Components</a></li>
-          <li><a href="https://legacy.reactjs.org/docs/render-props.html" target="_blank" rel="noreferrer">Legacy React Docs: Render Props</a></li>
-          <li><a href="https://react.dev/learn/reusing-logic-with-custom-hooks" target="_blank" rel="noreferrer">React Docs: Reusing Logic with Custom Hooks</a></li>
-          <li><a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">React API Reference: useEffect</a></li>
+          <li><a href="https://legacy.reactjs.org/docs/higher-order-components.html" target="_blank" rel="noreferrer">Legacy React: Higher-Order Components</a></li>
+          <li><a href="https://legacy.reactjs.org/docs/render-props.html" target="_blank" rel="noreferrer">Legacy React: Render Props</a></li>
+          <li><a href="https://react.dev/learn/reusing-logic-with-custom-hooks" target="_blank" rel="noreferrer">react.dev: Reusing Logic with Custom Hooks</a></li>
+          <li><a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">react.dev: useEffect</a></li>
         </ul>
       </div>
     </section>
@@ -65,6 +66,7 @@
     <script type="text/babel">
       const { useEffect, useState } = React;
 
+      // ====== 1. HOC：接收组件、返回增强组件，不修改原组件 ======
       function withLoading(WrappedComponent) {
         function WithLoading({ loading, ...rest }) {
           if (loading) return <p>加载中...</p>;
@@ -74,6 +76,7 @@
         return WithLoading;
       }
 
+      // ====== 2. render props：通过函数 prop 暴露状态 ======
       function MouseTracker({ render }) {
         const [pos, setPos] = useState({ x: 0, y: 0 });
 
@@ -88,6 +91,7 @@
         return render(pos);
       }
 
+      // ====== 3. 自定义 Hook：同一鼠标逻辑的现代复用写法 ======
       function useMousePosition() {
         const [pos, setPos] = useState({ x: 0, y: 0 });
         useEffect(() => {
@@ -102,44 +106,50 @@
 
       function UserProfile({ user }) {
         return (
-        <div>
-          <strong>{user.name}</strong>
-          <span> — {user.email}</span>
-        </div>
-      );
+          <div>
+            <strong>{user.name}</strong>
+            <span> — {user.email}</span>
+          </div>
+        );
       }
 
       const EnhancedProfile = withLoading(UserProfile);
 
+      // ====== 4. App 组合：HOC loading + render props + Hook 对比 ======
       function App() {
         const [loading, setLoading] = useState(true);
         const [user, setUser] = useState(null);
         const hookPos = useMousePosition();
 
         useEffect(() => {
+          console.log("HOC withLoading displayName:", EnhancedProfile.displayName);
           const timer = setTimeout(() => {
             setLoading(false);
             setUser({ name: "Alice", email: "alice@example.com" });
+            console.log("用户数据加载完成:", { name: "Alice" }); // 预期: loading 结束后 EnhancedProfile 渲染 UserProfile
           }, 1200);
           return () => clearTimeout(timer);
         }, []);
 
         return (
-        <section>
-          <h1>HOC 与 render props</h1>
-
-          <EnhancedProfile loading={loading} user={user} />
-          <MouseTracker render={(pos) => (
-              <p>render props 鼠标: x={pos.x}, y={pos.y}</p>
-            )} />
-            <p>自定义 Hook 鼠标: x={hookPos.x}, y={hookPos.y}</p>
-            <p>面试回答: HOC/render props 是逻辑复用模式；新代码优先自定义 Hook，但需理解 HOC 原理。</p>
+          <section>
+            <h1>HOC 与 render props</h1>
+            <EnhancedProfile loading={loading} user={user} />
+            <MouseTracker
+              render={(pos) => (
+                <p>
+                  render props 鼠标: x={pos.x}, y={pos.y}
+                </p>
+              )}
+            />
+            <p>
+              自定义 Hook 鼠标: x={hookPos.x}, y={hookPos.y}
+            </p>
           </section>
         );
       }
 
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 

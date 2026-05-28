@@ -1,6 +1,7 @@
 <!--
   分类: react18 / 表单
   主题: 受控组件与非受控组件
+  相关: 19-列表key与diff, 21-组件通信与children组合
   要点:
     - 受控组件由 React state 管理表单值，value / checked 必须配合 onChange 更新
     - 非受控组件把当前值留在 DOM 中，提交或需要读取时通过 ref 获取
@@ -29,7 +30,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>受控组件与非受控组件</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看提交数据输出；下方 #root 为 React 挂载演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -48,9 +49,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react-dom/components/input" target="_blank" rel="noreferrer">React DOM Docs: input</a></li>
-          <li><a href="https://react.dev/reference/react-dom/components/select" target="_blank" rel="noreferrer">React DOM Docs: select</a></li>
-          <li><a href="https://react.dev/reference/react/useRef" target="_blank" rel="noreferrer">React Docs: useRef</a></li>
+          <li><a href="https://react.dev/reference/react-dom/components/input" target="_blank" rel="noreferrer">react.dev: input</a></li>
+          <li><a href="https://react.dev/reference/react-dom/components/select" target="_blank" rel="noreferrer">react.dev: select</a></li>
+          <li><a href="https://react.dev/reference/react/useRef" target="_blank" rel="noreferrer">react.dev: useRef</a></li>
         </ul>
       </div>
     </section>
@@ -64,65 +65,74 @@
     <script type="text/babel">
       const { useRef, useState } = React;
 
+      /*
+        反面教材（已注释）：
+        <input value={username} />                    // 无 onChange → 输入框被锁住
+        <input value={username} readOnly />           // 只读应显式 readOnly，否则像 bug
+      */
+
+      // ====== 1. 受控 + 非受控混合表单 ======
       function App() {
         const [username, setUsername] = useState("");
         const [role, setRole] = useState("user");
         const [error, setError] = useState("");
         const noteRef = useRef(null);
 
+        // ====== 2. 提交：受控值来自 state，非受控备注从 ref 读取 ======
         function submitForm(event) {
           event.preventDefault();
           const trimmedUsername = username.trim();
           if (!trimmedUsername) {
             setError("用户名不能为空，提交前请先填写。");
+            console.log("提交失败：用户名为空");
             return;
           }
 
           setError("");
-          alert(JSON.stringify({
+          const payload = {
             username: trimmedUsername,
             role,
             note: noteRef.current ? noteRef.current.value : ""
-          }, null, 2));
+          };
+          console.log("提交表单:", payload); // 受控 + 非受控字段汇总
+          alert(JSON.stringify(payload, null, 2));
         }
 
         return (
-        <section>
-          <h1>受控与非受控表单</h1>
-
-          <form onSubmit={submitForm}>
-            <div>
-              <label>
-                用户名（受控）:
-                <input value={username} onChange={e => setUsername(e.target.value)} aria-describedby="username-error" />
-              </label>
-            </div>
-            <div>
-              <label>
-                角色（受控）:
-                <select value={role} onChange={e => setRole(e.target.value)}>
-                  <option value="user">普通用户</option>
-                  <option value="admin">管理员</option>
-                </select>
-              </label>
-            </div>
-            <div>
-              <label>
-                备注（非受控）:
-                <input ref={noteRef} defaultValue="DOM 自己保存这个值" />
-              </label>
-            </div>
-            {error && <p id="username-error" role="alert">{error}</p>}
-            <button type="submit">提交</button>
-          </form>
-          <p>当前受控值: {username || "空"} / {role}</p>
-          <p>面试回答: 受控组件让 React state 成为唯一数据源，更利于校验和联动。</p>
-        </section>
-      );
+          <section>
+            <h1>受控与非受控表单</h1>
+            <form onSubmit={submitForm}>
+              <div>
+                <label>
+                  用户名（受控）:
+                  <input value={username} onChange={e => setUsername(e.target.value)} aria-describedby="username-error" />
+                </label>
+              </div>
+              <div>
+                <label>
+                  角色（受控）:
+                  <select value={role} onChange={e => setRole(e.target.value)}>
+                    <option value="user">普通用户</option>
+                    <option value="admin">管理员</option>
+                  </select>
+                </label>
+              </div>
+              <div>
+                <label>
+                  备注（非受控）:
+                  <input ref={noteRef} defaultValue="DOM 自己保存这个值" />
+                </label>
+              </div>
+              {error && <p id="username-error" role="alert">{error}</p>}
+              <button type="submit">提交</button>
+            </form>
+            <p>当前受控值: {username || "空"} / {role}</p>
+          </section>
+        );
       }
 
+      // ====== 3. createRoot 挂载 ======
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 

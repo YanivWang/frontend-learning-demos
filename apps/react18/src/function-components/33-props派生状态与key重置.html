@@ -1,6 +1,7 @@
 <!--
   分类: react18 / hooks
   主题: props 派生状态与 key 重置
+  相关: 32-useLayoutEffect与useEffect对比, 34-React19新特性概览
   要点:
     - 避免 props 变化时用 useEffect 同步到 state（多余且易出 bug）
     - 能直接算的值在 render 里派生；需要重置整块 UI 时用 key
@@ -8,9 +9,8 @@
     - 必须保留本地编辑态时，才在 props 变化时有选择地重置 state
   面试:
     - 为什么不要把 props 无条件同步到 state？
-    - 哪些数据应该在 render 阶段直接派生？
+    - 什么场景用 render 派生，什么场景用 key 重置？
     - key 变化为什么能重置组件内部状态？
-    - 编辑表单切换数据源时如何保留或丢弃草稿？
     - 函数组件如何替代 getDerivedStateFromProps 维护场景？
 -->
 
@@ -30,7 +30,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>props 派生状态与 key 重置</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看切换用户时的 key 重置日志；下方 #root 为 React 挂载/交互演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -43,15 +43,15 @@
         <h2>面试考点</h2>
         <ul>
           <li><strong>为什么不推荐 mirror props 到 state？</strong> 结论是不要无条件复制，因为会形成两个数据来源。原因是父组件重新渲染或 props 变化时，本地 state 可能覆盖用户正在编辑的草稿。项目里只有「初始值变成本地可编辑草稿」这类明确需求，才把 props 作为 state 初始值。</li>
-          <li><strong>什么场景用 render 派生，什么场景用 <code>key</code> 重置？</strong> 结论是可计算值直接派生，需要丢弃整块内部状态时用 <code>key</code>。原因是派生计算不会额外触发渲染，而 <code>key</code> 会让 React 创建新实例。表单详情页切换记录时，是否加 <code>key</code> 取决于是否要清空未保存输入。</li>
+          <li><strong>什么场景用 render 派生，什么场景用 <code>key</code> 重置？</strong> 结论是可计算值直接派生，需要丢弃整块内部状态时用 <code>key</code>。原因是派生计算不会额外触发渲染，而 <code>key</code> 会让 React 创建新实例。切换用户/记录时，要丢弃草稿就加 <code>key={id}</code>；要保留草稿则把草稿提升到父组件或按 id 存映射。</li>
           <li><strong><code>key</code> 为什么能重置组件状态？</strong> 结论是 <code>key</code> 参与 React 对组件身份的判断。原因是类型和位置相同但 <code>key</code> 不同，React 会卸载旧组件、挂载新组件，Hook state 也随之重建。边界是不要为了刷新数据滥用 <code>key</code>，否则会丢失焦点、动画和未保存状态。</li>
           <li><strong>函数组件如何替代 <code>getDerivedStateFromProps</code>？</strong> 结论是优先用直接派生、受控组件或 <code>key</code> 重置。原因是 <code>getDerivedStateFromProps</code> 本来就容易引入派生状态反模式。维护旧 class 组件时可以保留它，但新函数组件通常不需要写等价 Hook。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/learn/you-might-not-need-an-effect" target="_blank" rel="noreferrer">React Docs: You Might Not Need an Effect</a></li>
-          <li><a href="https://react.dev/learn/preserving-and-resetting-state" target="_blank" rel="noreferrer">React Docs: Preserving and Resetting State</a></li>
-          <li><a href="https://legacy.reactjs.org/docs/react-component.html#static-getderivedstatefromprops" target="_blank" rel="noreferrer">Legacy React: <code>getDerivedStateFromProps</code></a></li>
+          <li><a href="https://react.dev/learn/you-might-not-need-an-effect" target="_blank" rel="noreferrer">react.dev: You Might Not Need an Effect</a></li>
+          <li><a href="https://react.dev/learn/preserving-and-resetting-state" target="_blank" rel="noreferrer">react.dev: Preserving and Resetting State</a></li>
+          <li><a href="https://legacy.reactjs.org/docs/react-component.html#static-getderivedstatefromprops" target="_blank" rel="noreferrer">Legacy React: getDerivedStateFromProps</a></li>
         </ul>
       </div>
     </section>
@@ -65,19 +65,29 @@
     <script type="text/babel">
       const { useState } = React;
 
+      // ====== 1. render 阶段派生：displayLabel 由 props 直接计算 ======
+      // 不需要 useEffect 把 props 同步到 state
       function Editor({ userId, initialName }) {
         const [draft, setDraft] = useState(initialName);
         const displayLabel = "用户 " + userId + " 的草稿";
+        console.log("Editor 渲染:", { userId, initialName, draft }); // 预期: key 变化时 draft 重置为新的 initialName
 
         return (
-        <div style={{ border: "1px solid #ccc", padding: 12, marginTop: 8 }}>
-          <p>{displayLabel}</p>
-          <input value={draft} onChange={(e) => setDraft(e.target.value)} />
-          <p>当前草稿: {draft}</p>
-        </div>
-      );
+          <div style={{ border: "1px solid #ccc", padding: 12, marginTop: 8 }}>
+            <p>{displayLabel}</p>
+            <input value={draft} onChange={(e) => setDraft(e.target.value)} />
+            <p>当前草稿: {draft}</p>
+          </div>
+        );
       }
 
+      /*
+        反面教材（已注释）：
+        useEffect(() => { setDraft(initialName); }, [initialName]);
+        // 无条件 mirror props → state，容易覆盖用户正在编辑的草稿
+      */
+
+      // ====== 2. key 重置：切换 userId 时卸载旧 Editor、挂载新实例 ======
       function App() {
         const [userId, setUserId] = useState(1);
         const users = {
@@ -86,20 +96,22 @@
           3: "Carol"
         };
 
-        return (
-        <section>
-          <h1>props 派生状态与 key 重置</h1>
+        function switchUser() {
+          const nextId = (userId % 3) + 1;
+          console.log("切换用户 key 重置:", { from: userId, to: nextId }); // 预期: Editor 实例重建，draft 回到 users[nextId]
+          setUserId(nextId);
+        }
 
-          <button onClick={() => setUserId(prev => (prev % 3) + 1)}>切换用户 (id={userId})</button>
-          {/* key 变化会卸载旧 Editor、挂载新实例，draft 自动重置为新的 initialName */}
-          <Editor key={userId} userId={userId} initialName={users[userId]} />
-          <p>面试回答: 不要 mirror props 到 state；可派生就算，需重置整块状态用 key。</p>
-        </section>
-      );
+        return (
+          <section>
+            <h1>props 派生状态与 key 重置</h1>
+            <button onClick={switchUser}>切换用户 (id={userId})</button>
+            <Editor key={userId} userId={userId} initialName={users[userId]} />
+          </section>
+        );
       }
 
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 

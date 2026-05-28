@@ -1,6 +1,7 @@
 <!--
   分类: react18 / hooks
   主题: 闭包与依赖数组陷阱
+  相关: 17-自定义Hook, 19-列表key与diff
   要点:
     - 函数组件每次渲染都会创建新的 state 快照和事件/副作用闭包
     - effect、memo、callback 读取响应式值时，依赖数组要如实声明
@@ -29,7 +30,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>闭包与依赖数组陷阱</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看 effect 与闭包快照输出；下方 #root 为 React 挂载演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -48,9 +49,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/learn/state-as-a-snapshot" target="_blank" rel="noreferrer">React Docs: State as a Snapshot</a></li>
-          <li><a href="https://react.dev/learn/removing-effect-dependencies" target="_blank" rel="noreferrer">React Docs: Removing Effect Dependencies</a></li>
-          <li><a href="https://react.dev/reference/react/useEffect#specifying-reactive-dependencies" target="_blank" rel="noreferrer">React Docs: Specifying Reactive Dependencies</a></li>
+          <li><a href="https://react.dev/learn/state-as-a-snapshot" target="_blank" rel="noreferrer">react.dev: State as a Snapshot</a></li>
+          <li><a href="https://react.dev/learn/removing-effect-dependencies" target="_blank" rel="noreferrer">react.dev: Removing Effect Dependencies</a></li>
+          <li><a href="https://react.dev/reference/react/useEffect#specifying-reactive-dependencies" target="_blank" rel="noreferrer">react.dev: Specifying Reactive Dependencies</a></li>
         </ul>
       </div>
     </section>
@@ -64,39 +65,47 @@
     <script type="text/babel">
       const { useEffect, useState } = React;
 
+      // ====== 1. 正确依赖：effect 随 count 同步 message ======
       function App() {
         const [count, setCount] = useState(0);
         const [message, setMessage] = useState("");
 
         useEffect(() => {
-          // 这个 effect 依赖 count；count 改变时重新执行，message 才能同步。
+          // count 改变时重新执行，message 才能同步
           setMessage("当前 count 是 " + count);
+          console.log("effect 执行，count:", count); // count 变化时输出
         }, [count]);
 
+        /*
+          反面教材（已注释，漏依赖 stale closure）：
+          useEffect(() => {
+            setMessage("当前 count 是 " + count);
+            console.log("effect 只跑一次，永远读到初始 count:", count);
+          }, []); // 漏写 count → message 永远停在 0
+        */
+
+        // ====== 2. 事件闭包：回调捕获点击时的 count 快照 ======
         function alertLater() {
           const capturedCount = count;
+          console.log("alertLater 捕获 count:", capturedCount); // 点击那一刻的快照
           setTimeout(() => {
             alert("点击按钮那一刻的 count 是: " + capturedCount);
           }, 1000);
         }
 
         return (
-        <section>
-          <h1>闭包与依赖数组</h1>
-
-          <p>count: {count}</p>
-          <p>{message}</p>
-          <button onClick={() => setCount(prev => prev + 1)}>+1</button>
-          <button onClick={alertLater}>1 秒后弹出当前快照</button>
-          <p>
-            面试回答: 函数组件中的函数会捕获本次渲染的变量；依赖数组写错时，effect 可能一直使用旧闭包。
-          </p>
-        </section>
-      );
+          <section>
+            <h1>闭包与依赖数组</h1>
+            <p>count: {count}</p>
+            <p>{message}</p>
+            <button onClick={() => setCount(prev => prev + 1)}>+1</button>
+            <button onClick={alertLater}>1 秒后弹出当前快照</button>
+          </section>
+        );
       }
 
+      // ====== 3. createRoot 挂载 ======
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 

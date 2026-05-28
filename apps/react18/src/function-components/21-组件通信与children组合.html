@@ -1,6 +1,7 @@
 <!--
   分类: react18 / 组件通信
   主题: props 回调、状态提升与 children 组合
+  相关: 20-受控与非受控表单, 22-Context跨层传递
   要点:
     - React 数据默认自上而下流动，父组件通过 props 把数据和回调传给子组件
     - 子组件不能直接改父状态，只能调用父传入的回调请求更新
@@ -29,7 +30,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>props 回调、状态提升与 children 组合</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看子→父回调输出；下方 #root 为 React 挂载演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -48,9 +49,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/learn/sharing-state-between-components" target="_blank" rel="noreferrer">React Docs: Sharing State Between Components</a></li>
-          <li><a href="https://react.dev/learn/passing-props-to-a-component" target="_blank" rel="noreferrer">React Docs: Passing Props to a Component</a></li>
-          <li><a href="https://react.dev/learn/passing-props-to-a-component#passing-jsx-as-children" target="_blank" rel="noreferrer">React Docs: Passing JSX as children</a></li>
+          <li><a href="https://react.dev/learn/sharing-state-between-components" target="_blank" rel="noreferrer">react.dev: Sharing State Between Components</a></li>
+          <li><a href="https://react.dev/learn/passing-props-to-a-component" target="_blank" rel="noreferrer">react.dev: Passing Props to a Component</a></li>
+          <li><a href="https://react.dev/learn/passing-props-to-a-component#passing-jsx-as-children" target="_blank" rel="noreferrer">react.dev: Passing JSX as children</a></li>
         </ul>
       </div>
     </section>
@@ -64,44 +65,56 @@
     <script type="text/babel">
       const { useState } = React;
 
+      // ====== 1. children 组合：Panel 壳子 + 调用方传入内容 ======
       function Panel({ title, children, footer }) {
         return (
-        <section style={{ border: "1px solid #ccc", padding: 12, marginBottom: 12 }}>
-          <h2>{title}</h2>
-          <div>{children}</div>
-          <footer>{footer}</footer>
-        </section>
-      );
+          <section style={{ border: "1px solid #ccc", padding: 12, marginBottom: 12 }}>
+            <h2>{title}</h2>
+            <div>{children}</div>
+            <footer>{footer}</footer>
+          </section>
+        );
       }
 
+      // ====== 2. 子组件：通过回调通知父组件更新 state ======
       function NameInput({ value, onChangeName }) {
         return (
-        <input value={value} onChange={e => onChangeName(e.target.value)} />
-      );
+          <input
+            value={value}
+            onChange={e => {
+              console.log("NameInput onChange → 调用父回调:", e.target.value); // 子 → 父
+              onChangeName(e.target.value);
+            }}
+          />
+        );
       }
 
       function Preview({ name }) {
         return <p>预览: Hello, {name || "匿名用户"}</p>;
       }
 
+      // ====== 3. 状态提升：name 由 App 持有，兄弟组件共享 ======
       function App() {
         const [name, setName] = useState("React");
 
-        return (
-        <main>
-          <h1>组件通信与 children 组合</h1>
+        function handleNameChange(nextName) {
+          console.log("App setName:", nextName); // 父组件真正更新 state
+          setName(nextName);
+        }
 
-          <Panel title="资料卡片" footer={<button onClick={() => setName("")}>清空</button>}>
-            <NameInput value={name} onChangeName={setName} />
-            <Preview name={name} />
-          </Panel>
-          <p>面试回答: 数据从父到子单向流动；子组件通过调用父组件传入的回调来请求父组件更新状态。</p>
-        </main>
-      );
+        return (
+          <main>
+            <h1>组件通信与 children 组合</h1>
+            <Panel title="资料卡片" footer={<button onClick={() => setName("")}>清空</button>}>
+              <NameInput value={name} onChangeName={handleNameChange} />
+              <Preview name={name} />
+            </Panel>
+          </main>
+        );
       }
 
+      // ====== 4. createRoot 挂载 ======
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 

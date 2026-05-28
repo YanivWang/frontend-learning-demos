@@ -1,6 +1,7 @@
 <!--
   分类: react18 / 事件
   主题: React 合成事件机制
+  相关: 23-Reactmemo性能优化, 25-虚拟DOM-Fiber-批处理
   要点:
     - React 事件处理器使用小驼峰命名，并接收 SyntheticEvent
     - SyntheticEvent 提供跨浏览器一致接口，也可通过 nativeEvent 访问原生事件
@@ -29,7 +30,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>React 合成事件机制</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看 SyntheticEvent 与冒泡日志；下方 #root 为 React 挂载/交互演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -48,7 +49,7 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/learn/responding-to-events" target="_blank" rel="noreferrer">React Docs: Responding to Events</a></li>
+          <li><a href="https://react.dev/learn/responding-to-events" target="_blank" rel="noreferrer">react.dev: Responding to Events</a></li>
           <li><a href="https://legacy.reactjs.org/docs/events.html" target="_blank" rel="noreferrer">Legacy React Docs: SyntheticEvent</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault" target="_blank" rel="noreferrer">MDN: Event.preventDefault()</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation" target="_blank" rel="noreferrer">MDN: Event.stopPropagation()</a></li>
@@ -63,41 +64,47 @@
 
     <!-- SCRIPT_START -->
     <script type="text/babel">
+      // ====== 1. createRoot 挂载 React 18 根 ======
+      const container = document.getElementById("root");
+      const root = ReactDOM.createRoot(container);
+
+      // ====== 2. preventDefault：SyntheticEvent 与 nativeEvent ======
+      // 对应 react.dev Responding to Events；React 不会把 return false 当作阻止默认行为
       function App() {
         function handleSubmit(event) {
           event.preventDefault();
-          console.log("React SyntheticEvent:", event);
-          console.log("原生事件 nativeEvent:", event.nativeEvent);
+          console.log("SyntheticEvent:", event); // 预期: React 合成事件对象
+          console.log("nativeEvent:", event.nativeEvent); // 预期: 底层浏览器 SubmitEvent
           alert("已阻止表单默认提交，请看控制台");
         }
 
+        // ====== 3. stopPropagation：阻止 React 事件继续冒泡 ======
         function handleParentClick() {
-          console.log("父元素 onClick");
+          console.log("父元素 onClick"); // 预期: 点击父区域时出现；点击子按钮且 stopPropagation 时不出现
         }
 
         function handleChildClick(event) {
           event.stopPropagation();
-          console.log("子元素 onClick，已阻止冒泡");
+          console.log("子元素 onClick，已 stopPropagation"); // 预期: 只打印本条，不触发父级 onClick
         }
 
         return (
-        <section>
-          <h1>React 合成事件机制</h1>
+          <section>
+            <h1>React 合成事件机制</h1>
 
-          <form onSubmit={handleSubmit}>
-            <button type="submit">提交表单</button>
-          </form>
-          <div onClick={handleParentClick} style={{ border: "1px solid #ccc", padding: 16, marginTop: 12 }}>
-            父元素
-            <button onClick={handleChildClick}>子按钮</button>
-          </div>
-          <p>面试回答: React 合成事件统一了事件接口，并通过事件委托提高管理效率。</p>
-        </section>
-      );
+            <form onSubmit={handleSubmit}>
+              <button type="submit">提交表单</button>
+            </form>
+            <div onClick={handleParentClick} style={{ border: "1px solid #ccc", padding: 16, marginTop: 12 }}>
+              父元素
+              <button onClick={handleChildClick}>子按钮</button>
+            </div>
+          </section>
+        );
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
+      // ====== 4. 提交 element 树到 root ======
+      root.render(<App />);
     </script>
     <!-- SCRIPT_END -->
 

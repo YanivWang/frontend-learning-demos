@@ -1,6 +1,7 @@
 <!--
   分类: react18 / hooks / 性能
   主题: useMemo 与 useCallback
+  相关: 14-Hooks-useRef与DOM, 16-Hooks-useReducer
   要点:
     - useMemo 缓存计算结果，主要用于跳过昂贵计算或稳定传给 memo 子组件的值
     - useCallback 缓存函数引用，常用于配合 React.memo 减少子组件无意义渲染
@@ -29,7 +30,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>useMemo 与 useCallback</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看过滤/总价重算与 Toolbar 渲染日志；下方 #root 为 React 挂载/交互演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -41,16 +42,16 @@
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>useMemo</code> 和 <code>useCallback</code> 分别缓存什么？</strong> 结论是 <code>useMemo</code> 缓存值，<code>useCallback</code> 缓存函数引用。原因是 React 会在依赖不变时复用上一次结果。项目里前者常用于昂贵计算或稳定对象，后者常用于传给 <code>memo</code> 子组件的回调。</li>
-          <li><strong>为什么说它们不是越多越好？</strong> 结论是只在有明确性能收益时使用。原因是依赖比较、闭包维护和代码复杂度都有成本，轻量计算包一层反而降低可读性。边界是大型列表、昂贵过滤排序、子组件浅比较失败时才值得优先考虑。</li>
-          <li><strong><code>useCallback</code> 为什么常和 <code>React.memo</code> 一起出现？</strong> 结论是稳定函数引用只有在接收方比较 props 时才明显有用。原因是普通函数组件父组件渲染时子组件仍会渲染；<code>memo</code> 可以利用引用相等跳过渲染。项目里还要确认子组件渲染成本足够高。</li>
-          <li><strong>依赖数组漏写会造成什么问题？</strong> 结论是既可能显示旧数据，也可能让优化结果不可信。原因是缓存值或回调会闭包住旧变量。项目里不要为了“少渲染”故意删依赖，应先修正数据流，再考虑拆组件或 reducer。</li>
+          <li><strong><code>useMemo</code> 和 <code>useCallback</code> 分别缓存什么？</strong> 结论是 <code>useMemo</code> 缓存值，<code>useCallback</code> 缓存函数引用。原因是 React 会在依赖不变时复用上一次结果。</li>
+          <li><strong>为什么说它们不是越多越好？</strong> 结论是只在有明确性能收益时使用。原因是依赖比较、闭包维护和代码复杂度都有成本，轻量计算包一层反而降低可读性。</li>
+          <li><strong><code>useCallback</code> 为什么常和 <code>React.memo</code> 一起出现？</strong> 结论是稳定函数引用只有在接收方比较 props 时才明显有用。原因是 <code>memo</code> 可以利用引用相等跳过渲染。</li>
+          <li><strong>依赖数组漏写会造成什么问题？</strong> 结论是既可能显示旧数据，也可能让优化结果不可信。原因是缓存值或回调会闭包住旧变量。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/useMemo" target="_blank" rel="noreferrer">React Docs: useMemo</a></li>
-          <li><a href="https://react.dev/reference/react/useCallback" target="_blank" rel="noreferrer">React Docs: useCallback</a></li>
-          <li><a href="https://react.dev/reference/react/memo" target="_blank" rel="noreferrer">React Docs: memo</a></li>
+          <li><a href="https://react.dev/reference/react/useMemo" target="_blank" rel="noreferrer">react.dev: useMemo</a></li>
+          <li><a href="https://react.dev/reference/react/useCallback" target="_blank" rel="noreferrer">react.dev: useCallback</a></li>
+          <li><a href="https://react.dev/reference/react/memo" target="_blank" rel="noreferrer">react.dev: memo</a></li>
         </ul>
       </div>
     </section>
@@ -70,51 +71,54 @@
         { id: 3, name: "Bag", price: 120 }
       ];
 
+      // ====== 3. React.memo：props 浅比较，配合稳定回调才有收益 ======
       const Toolbar = memo(function Toolbar({ total, onReset }) {
-        console.log("Toolbar render");
+        console.log("Toolbar render: memo 子组件渲染");
         return (
-        <div>
-          <strong>总价: {total}</strong>
-          <button onClick={onReset}>清空数量</button>
-        </div>
-      );
+          <div>
+            <strong>总价: {total}</strong>
+            <button onClick={onReset}>清空数量</button>
+          </div>
+        );
       });
 
       function App() {
         const [count, setCount] = useState(1);
         const [keyword, setKeyword] = useState("");
 
+        // ====== 1. useMemo：缓存过滤结果与总价计算 ======
         const filteredProducts = useMemo(() => {
-          console.log("重新过滤商品");
+          console.log("useMemo: 重新过滤商品，keyword =", keyword);
           return PRODUCTS.filter(item => item.name.toLowerCase().includes(keyword.toLowerCase()));
         }, [keyword]);
 
         const total = useMemo(() => {
-          console.log("重新计算总价");
+          console.log("useMemo: 重新计算总价，count =", count);
           return filteredProducts.reduce((sum, item) => sum + item.price * count, 0);
         }, [filteredProducts, count]);
 
+        // ====== 2. useCallback：缓存函数引用，传给 memo 子组件 ======
         const resetCount = useCallback(() => {
+          console.log("useCallback: resetCount 引用稳定");
           setCount(0);
         }, []);
 
         return (
-        <section>
-          <h1>useMemo 与 useCallback</h1>
+          <section>
+            <h1>useMemo 与 useCallback</h1>
 
-          <input value={keyword} onChange={e => setKeyword(e.target.value)} placeholder="搜索商品" />
-          <button onClick={() => setCount(count + 1)}>数量 +1: {count}</button>
-          <Toolbar total={total} onReset={resetCount} />
-          <ul>
-            {filteredProducts.map(item => <li key={item.id}>{item.name}: {item.price}</li>)}
-          </ul>
-          <p>面试回答: useMemo 缓存值，useCallback 缓存函数；主要目的是减少不必要计算或稳定传给子组件的引用。</p>
-        </section>
-      );
+            <input value={keyword} onChange={e => setKeyword(e.target.value)} placeholder="搜索商品" />
+            <button onClick={() => setCount(count + 1)}>数量 +1: {count}</button>
+            <Toolbar total={total} onReset={resetCount} />
+            <ul>
+              {filteredProducts.map(item => <li key={item.id}>{item.name}: {item.price}</li>)}
+            </ul>
+          </section>
+        );
       }
 
+      // ====== 4. createRoot 挂载 ======
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 

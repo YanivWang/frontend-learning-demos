@@ -1,6 +1,7 @@
 <!--
   分类: react18 / hooks
   主题: useState 基础与函数式更新
+  相关: 11-useEffect-生命周期对照, 13-Hooks-useEffect副作用
   要点:
     - useState 为每次渲染提供一份状态快照，set 函数请求下一次渲染
     - 同一次事件里多次 setCount(count + 1) 读取的是同一个旧快照
@@ -29,7 +30,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>useState 基础与函数式更新</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看快照式/函数式更新与不可变更新对比；下方 #root 为 React 挂载/交互演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -42,15 +43,15 @@
         <h2>面试考点</h2>
         <ul>
           <li><strong>为什么连续三次 <code>setCount(count + 1)</code> 通常只加 1？</strong> 结论是三次读取的都是同一次渲染中的 <code>count</code> 快照。原因是 React 在事件处理结束后再处理状态队列，普通写法会把相同的下一值入队。边界是如果下一状态只和事件参数有关，这样写可以；如果依赖旧状态，就要改成函数式更新。</li>
-          <li><strong>什么时候必须使用函数式更新？</strong> 结论是“下一值依赖上一值”时优先使用 updater 函数。原因是 updater 会在 React 处理队列时拿到最新中间状态，能正确表达连续加减、切换、追加列表等逻辑。项目里常见于计数器、分页游标、队列式追加和定时器回调。</li>
-          <li><strong>setState 后为什么立刻读不到新状态？</strong> 结论是本次函数调用里的 state 不会被即时替换。原因是函数组件渲染产生的是快照，set 函数请求下一次渲染，新值会在下一次 render 中体现。需要基于新值做副作用时，通常放到事件里计算好，或用 <code>useEffect</code> 观察状态变化。</li>
-          <li><strong><code>useState</code> 和 <code>useReducer</code> 怎么选？</strong> 结论是简单独立状态用 <code>useState</code>，复杂状态转移用 <code>useReducer</code>。原因是 reducer 能把 action 和转移规则集中管理。边界是不要为了“看起来高级”过早引入 reducer，小组件里的布尔值和输入框状态直接用 <code>useState</code> 更清晰。</li>
+          <li><strong>什么时候必须使用函数式更新？</strong> 结论是“下一值依赖上一值”时优先使用 updater 函数。原因是 updater 会在 React 处理队列时拿到最新中间状态，能正确表达连续加减、切换、队列式追加和定时器回调。</li>
+          <li><strong>setState 后为什么立刻读不到新状态？</strong> 结论是本次函数调用里的 state 不会被即时替换。原因是函数组件渲染产生的是快照，set 函数请求下一次渲染，新值会在下一次 render 中体现。</li>
+          <li><strong><code>useState</code> 和 <code>useReducer</code> 怎么选？</strong> 结论是简单独立状态用 <code>useState</code>，复杂状态转移用 <code>useReducer</code>。原因是 reducer 能把 action 和转移规则集中管理。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/useState" target="_blank" rel="noreferrer">React Docs: useState</a></li>
-          <li><a href="https://react.dev/learn/state-as-a-snapshot" target="_blank" rel="noreferrer">React Docs: State as a Snapshot</a></li>
-          <li><a href="https://react.dev/learn/queueing-a-series-of-state-updates" target="_blank" rel="noreferrer">React Docs: Queueing a Series of State Updates</a></li>
+          <li><a href="https://react.dev/reference/react/useState" target="_blank" rel="noreferrer">react.dev: useState</a></li>
+          <li><a href="https://react.dev/learn/state-as-a-snapshot" target="_blank" rel="noreferrer">react.dev: State as a Snapshot</a></li>
+          <li><a href="https://react.dev/learn/queueing-a-series-of-state-updates" target="_blank" rel="noreferrer">react.dev: Queueing a Series of State Updates</a></li>
         </ul>
       </div>
     </section>
@@ -64,47 +65,65 @@
     <script type="text/babel">
       const { useState } = React;
 
+      // ====== 1. useState 快照：count / name 驱动 UI ======
       function Counter() {
-        // count 是当前渲染快照中的值；setCount 会请求 React 安排下一次渲染。
+        // count 是当前渲染快照中的值；setCount 会请求 React 安排下一次渲染
         const [count, setCount] = useState(0);
         const [name, setName] = useState("React");
+        const [user, setUser] = useState({ label: "React" });
 
+        // ====== 2. 同次事件：快照式 vs 函数式连续更新 ======
         function addWrongWay() {
-          // 三次都基于当前这一次 render 里的 count，因此最终通常只 +1。
+          // 三次都基于当前这一次 render 里的 count，因此最终通常只 +1
           setCount(count + 1);
           setCount(count + 1);
           setCount(count + 1);
-          console.log("这里读到的还是旧 count:", count);
+          console.log("快照式 +3: 事件内读到的仍是旧 count =", count);
         }
 
         function addRightWay() {
-          // 每次都基于 React 队列中的最新值，最终 +3。
+          // 每次都基于 React 队列中的最新值，最终 +3
           setCount(prevCount => prevCount + 1);
           setCount(prevCount => prevCount + 1);
           setCount(prevCount => prevCount + 1);
+          console.log("函数式 +3: 事件内读到的仍是旧 count =", count, "；渲染后才会 +3");
+        }
+
+        // ====== 3. 不可变更新：对象 state 不能原地修改 ======
+        function mutateWrongWay() {
+          // 反面教材：原地改属性再 set 同一引用，React 可能认为无变化
+          user.label = "Mutated";
+          setUser(user);
+          console.log("不可变 wrong way: 同一对象引用", user, "；UI 可能不更新");
+        }
+
+        function mutateRightWay() {
+          // 正确：创建新对象，把新引用交给 React
+          setUser(prev => ({ ...prev, label: prev.label === "React" ? "Hooks" : "React" }));
+          console.log("不可变 right way: 新对象引用，React 会重新渲染");
         }
 
         return (
-        <section>
-          <h1>useState 基础</h1>
+          <section>
+            <h1>useState 基础</h1>
 
-          <p>计数: {count}</p>
-          <p>名称: {name}</p>
-          <button onClick={() => setCount(count + 1)}>普通 +1</button>
-          <button onClick={addWrongWay}>连续快照式 +3（实际多为 +1）</button>
-          <button onClick={addRightWay}>连续函数式 +3</button>
-          <button onClick={() => setName(name === "React" ? "Hooks" : "React")}>
-            切换名称
-          </button>
-          <p>
-            面试回答: useState 不会直接改变量，而是通知 React 重新渲染；依赖旧状态时用函数式更新。
-          </p>
-        </section>
-      );
+            <p>计数: {count}</p>
+            <p>名称: {name}</p>
+            <p>对象 label: {user.label}</p>
+            <button onClick={() => setCount(count + 1)}>普通 +1</button>
+            <button onClick={addWrongWay}>连续快照式 +3（实际多为 +1）</button>
+            <button onClick={addRightWay}>连续函数式 +3</button>
+            <button onClick={() => setName(name === "React" ? "Hooks" : "React")}>
+              切换名称
+            </button>
+            <button onClick={mutateWrongWay}>对象原地修改（wrong）</button>
+            <button onClick={mutateRightWay}>对象不可变更新（right）</button>
+          </section>
+        );
       }
 
+      // ====== 4. createRoot 挂载 ======
       ReactDOM.createRoot(document.getElementById("root")).render(<Counter />);
-
     </script>
     <!-- SCRIPT_END -->
 

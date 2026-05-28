@@ -1,6 +1,7 @@
 <!--
-  分类: react18 / JSX
+  分类: react18 / function-components / JSX
   主题: 条件渲染中的「短路求值」陷阱
+  相关: 01-入门-元素与渲染, 03-元素与函数组件
   要点:
     - {falsyValue && <X/>} 只有当 falsyValue 为 false / null / undefined 时不渲染
     - 反面教材：{arr.length && <X/>} 当 arr.length === 0 时短路返回 0，会被渲染成「0」文本节点
@@ -30,7 +31,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>条件渲染中的「短路求值」陷阱</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看短路表达式返回值；下方 #root 为 React 挂载演示区，注意空数组时页面是否出现文本「0」。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -38,14 +39,15 @@
           <li>React 会把 <code>false</code>、<code>null</code>、<code>undefined</code> 当作空节点跳过，但数字 <code>0</code> 和非空字符串会作为文本子节点渲染。本 demo 的 <code>arr.length</code> 为 0，因此页面会出现一个文本 <code>0</code>。</li>
           <li>条件来自数量、字符串或可能为 <code>0</code> 的表达式时，先显式得到布尔值：<code>arr.length &gt; 0 &amp;&amp; &lt;List /&gt;</code> 或 <code>Boolean(arr.length) &amp;&amp; &lt;List /&gt;</code>。</li>
           <li>需要二选一展示时优先使用三元表达式，例如 <code>items.length &gt; 0 ? &lt;List /&gt; : &lt;Empty /&gt;</code>；只在“满足条件才展示一段 UI”时使用 <code>&amp;&amp;</code> 更清晰。</li>
-          <li>React 18 的客户端入口应使用 <code>ReactDOM.createRoot(container).render(element)</code>，这样才能进入 React 18 root 行为；旧 <code>ReactDOM.render</code> 只适合维护旧项目。</li>
+          <li>React 18 的客户端入口应使用 <code>ReactDOM.createRoot(container).render(element)</code>；旧 <code>ReactDOM.render</code> 已废弃，在 React 18 中会以 React 17 模式运行。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
           <li><strong>为什么 <code>arr.length &amp;&amp; &lt;List /&gt;</code> 会在空数组时渲染出 0？</strong> 结论是 <code>0 &amp;&amp; &lt;List /&gt;</code> 的结果就是数字 <code>0</code>，React 会渲染数字子节点。原因是 <code>&amp;&amp;</code> 返回操作数本身，而不是布尔值；项目里所有数量判断都应写成 <code>arr.length &gt; 0</code> 或显式 <code>Boolean(...)</code>。</li>
           <li><strong>React 会忽略哪些子节点值？</strong> 结论是 <code>false</code>、<code>null</code>、<code>undefined</code> 会被当作空节点，数字和字符串会渲染。原因是 React children 支持文本节点；边界是空字符串通常不可见但仍是字符串，不能把“不可见”等同于“被忽略”。</li>
           <li><strong>条件渲染中何时用 <code>&amp;&amp;</code>，何时用三元表达式？</strong> 结论是“有就展示、没有就什么都不展示”适合 <code>&amp;&amp;</code>，“A/B 二选一”适合三元表达式。原因是三元表达式能显式写出 fallback；空态、错误态、加载态这些产品状态不要隐藏在短路表达式里。</li>
-          <li><strong>React 18 页面入口为什么仍应使用 <code>createRoot</code>？</strong> 结论是 React 18 新代码使用 <code>createRoot</code>。原因是它创建 React 18 root 并启用新行为；维护旧页面时可能保留 <code>ReactDOM.render</code>，但不应和 React 18 推荐写法混用。</li>
+          <li><strong>列表为空、权限关闭、接口未返回时如何避免 0 泄漏到 UI？</strong> 结论是用比较运算符或三元表达式显式分支，不要直接写 <code>{count &amp;&amp; ...}</code>。原因是 <code>0</code>、<code>""</code> 等 falsy 值会被当作合法 child；项目里空列表用 <code>items.length ? ... : &lt;Empty /&gt;</code>，权限用 <code>canEdit ? ... : null</code>。</li>
+          <li><strong>React 18 页面入口为什么仍应使用 <code>createRoot</code>？</strong> 结论是 <code>createRoot</code> 是 React 18 新客户端根 API。原因是它启用 React 18 root 行为（如更广范围的自动批处理）；并发渲染需通过 <code>startTransition</code> 等 opt-in API 启用，不是调用 <code>createRoot</code> 就全面开启。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -65,28 +67,38 @@
     <!-- SCRIPT_START -->
     <script type="text/babel">
       const arr = [];
-      const element = (<div>
-      {
-        // 反面教材：arr.length 为 0 时，{0 && ...} 整体得 0，React 会把它当文本渲染出来
-        arr.length && (<div>我是京东物流</div>)
-      }
-      {
-        undefined && (<div>我是京东物流</div>)
-      }
-      {
-        null && (<div>我是京东物流</div>)
-      }
-      {
-        false && (<div>我是京东物流</div>)
-      }
 
-      {/* 推荐写法：用比较运算符把值显式转 boolean，避免 0 被渲染 */}
-      { arr.length > 0 && (<div>正确写法：长度大于 0 才渲染</div>) }
-      </div>)
+      // ====== 1. 反面教材：arr.length && JSX 会在 length 为 0 时渲染文本「0」 ======
+      // && 左侧为 0 时整个表达式结果就是 0，React 会把它当文本 child 渲染（react.dev: Conditional Rendering）
+      console.log("arr.length && JSX 的返回值:", arr.length && "不会执行"); // 预期: 0
 
-      // React 18 使用 createRoot 渲染
-      ReactDOM.createRoot(document.getElementById('root')).render(element);
+      // ====== 2. false / null / undefined 作为 && 左侧时 React 会跳过渲染 ======
+      // 这三种 falsy 值不会被当作可见文本节点
+      console.log("undefined && ...:", undefined && "x"); // undefined
+      console.log("null && ...:", null && "x");           // null
+      console.log("false && ...:", false && "x");         // false
 
+      const element = (
+        <div>
+          <p>下方依次演示：0 被渲染、三种安全 falsy 不渲染、推荐写法</p>
+          {
+            // 反面教材：页面会出现文本「0」
+            arr.length && (<div>我是京东物流</div>)
+          }
+          { undefined && (<div>我是京东物流</div>) }
+          { null && (<div>我是京东物流</div>) }
+          { false && (<div>我是京东物流</div>) }
+
+          {/* ====== 3. 推荐写法：比较运算符显式得到 boolean ====== */}
+          { arr.length > 0 && (<div>正确写法：长度大于 0 才渲染</div>) }
+
+          {/* 空态更适合三元：显式 fallback */}
+          { arr.length > 0 ? null : <p>空列表提示（三元 fallback）</p> }
+        </div>
+      );
+
+      // ====== 4. React 18 createRoot 挂载 ======
+      ReactDOM.createRoot(document.getElementById("root")).render(element);
     </script>
     <!-- SCRIPT_END -->
 

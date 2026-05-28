@@ -1,6 +1,7 @@
 <!--
   分类: react18 / 组件通信
   主题: Context 跨层传递
+  相关: 21-组件通信与children组合, 23-Reactmemo性能优化
   要点:
     - Context 适合主题、语言、当前用户这类跨层只读或低频变化数据
     - useContext 总是读取组件上方最近 Provider 的 value
@@ -29,7 +30,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Context 跨层传递</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看主题切换与消费输出；下方 #root 为 React 挂载演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -48,9 +49,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/learn/passing-data-deeply-with-context" target="_blank" rel="noreferrer">React Docs: Passing Data Deeply with Context</a></li>
-          <li><a href="https://react.dev/reference/react/useContext" target="_blank" rel="noreferrer">React API Reference: useContext</a></li>
-          <li><a href="https://react.dev/reference/react/createContext" target="_blank" rel="noreferrer">React API Reference: createContext</a></li>
+          <li><a href="https://react.dev/learn/passing-data-deeply-with-context" target="_blank" rel="noreferrer">react.dev: Passing Data Deeply with Context</a></li>
+          <li><a href="https://react.dev/reference/react/useContext" target="_blank" rel="noreferrer">react.dev: useContext</a></li>
+          <li><a href="https://react.dev/reference/react/createContext" target="_blank" rel="noreferrer">react.dev: createContext</a></li>
         </ul>
       </div>
     </section>
@@ -64,45 +65,53 @@
     <script type="text/babel">
       const { createContext, useContext, useMemo, useState } = React;
 
+      // ====== 1. 创建 Context：跨层传递主题 ======
       const ThemeContext = createContext(null);
 
       function Toolbar() {
         return <ThemeButton />;
       }
 
+      // ====== 2. 深层消费：无需中间层透传 props ======
       function ThemeButton() {
         const theme = useContext(ThemeContext);
+        console.log("ThemeButton 读取 theme:", theme.name); // 每次 Provider value 变化时输出
         return (
-        <button style={{ background: theme.background, color: theme.color }}>
-          当前主题: {theme.name}
-        </button>
-      );
+          <button style={{ background: theme.background, color: theme.color }}>
+            当前主题: {theme.name}
+          </button>
+        );
       }
 
+      // ====== 3. Provider + useMemo 稳定 value 引用 ======
       function App() {
         const [dark, setDark] = useState(false);
 
         const themeValue = useMemo(() => {
           return dark
-          ? { name: "dark", background: "#222", color: "#fff" }
-          : { name: "light", background: "#fff", color: "#222" };
+            ? { name: "dark", background: "#222", color: "#fff" }
+            : { name: "light", background: "#fff", color: "#222" };
         }, [dark]);
 
-        return (
-        <ThemeContext.Provider value={themeValue}>
-        <section>
-          <h1>Context 跨层传递</h1>
+        function toggleTheme() {
+          const next = !dark;
+          console.log("切换主题 →", next ? "dark" : "light"); // 观察消费组件重渲染
+          setDark(next);
+        }
 
-          <button onClick={() => setDark(!dark)}>切换主题</button>
-          <Toolbar />
-          <p>面试回答: Context 解决跨层传 props 的问题，但高频变化状态仍要注意拆分 Provider 或使用状态库。</p>
-        </section>
-      </ThemeContext.Provider>
-      );
+        return (
+          <ThemeContext.Provider value={themeValue}>
+            <section>
+              <h1>Context 跨层传递</h1>
+              <button onClick={toggleTheme}>切换主题</button>
+              <Toolbar />
+            </section>
+          </ThemeContext.Provider>
+        );
       }
 
+      // ====== 4. createRoot 挂载 ======
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 

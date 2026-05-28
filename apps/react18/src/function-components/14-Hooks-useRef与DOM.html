@@ -1,6 +1,7 @@
 <!--
   分类: react18 / hooks
   主题: useRef 保存 DOM 与可变值
+  相关: 13-Hooks-useEffect副作用, 15-Hooks-useMemo-useCallback
   要点:
     - useRef 返回跨渲染稳定的 { current } 容器，可保存 DOM 节点或普通可变值
     - 修改 ref.current 不会触发重新渲染，也不应该在渲染期间读写可变 ref
@@ -29,7 +30,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>useRef 保存 DOM 与可变值</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看 ref 可变值变化（不触发渲染）；下方 #root 为 React 挂载/交互演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -41,16 +42,16 @@
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>useRef</code> 和 <code>useState</code> 的本质区别是什么？</strong> 结论是 state 参与渲染，ref 不参与渲染。原因是 setState 会通知 React 重新计算 UI，而修改 <code>ref.current</code> 只是改一个普通对象属性。项目里输入值、列表和错误信息用 state，定时器 ID、DOM 节点和上一次值用 ref。</li>
-          <li><strong>什么时候应该通过 ref 操作 DOM？</strong> 结论是只在 React 声明式模型覆盖不了的命令式场景使用。原因是聚焦、滚动、测量尺寸、调用第三方组件实例方法都需要真实 DOM 或实例。边界是不要用 ref 手动改 React 正在管理的文本和样式，否则容易和下一次渲染冲突。</li>
-          <li><strong>为什么修改 <code>ref.current</code> 页面不会立刻更新？</strong> 结论是 ref 的变化不会触发 render。原因是 React 不追踪 ref 对象内部属性的变化。示例里点击“只改 ref”会更新控制台值，页面要等其他状态触发渲染后才读到新值。</li>
-          <li><strong>在渲染期间读写 ref 有什么风险？</strong> 结论是容易破坏组件纯渲染假设。原因是渲染可能被 React 重复调用或丢弃，写 ref 会产生不可预测的外部变化。项目中应把这类读写放到事件处理、effect 或 layout effect 中。</li>
+          <li><strong><code>useRef</code> 和 <code>useState</code> 的本质区别是什么？</strong> 结论是 state 参与渲染，ref 不参与渲染。原因是 setState 会通知 React 重新计算 UI，而修改 <code>ref.current</code> 只是改一个普通对象属性。</li>
+          <li><strong>什么时候应该通过 ref 操作 DOM？</strong> 结论是只在 React 声明式模型覆盖不了的命令式场景使用。原因是聚焦、滚动、测量尺寸、调用第三方组件实例方法都需要真实 DOM 或实例。</li>
+          <li><strong>为什么修改 <code>ref.current</code> 页面不会立刻更新？</strong> 结论是 ref 的变化不会触发 render。原因是 React 不追踪 ref 对象内部属性的变化。</li>
+          <li><strong>在渲染期间读写 ref 有什么风险？</strong> 结论是容易破坏组件纯渲染假设。原因是渲染可能被 React 重复调用或丢弃，写 ref 会产生不可预测的外部变化。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/useRef" target="_blank" rel="noreferrer">React Docs: useRef</a></li>
-          <li><a href="https://react.dev/learn/referencing-values-with-refs" target="_blank" rel="noreferrer">React Docs: Referencing Values with Refs</a></li>
-          <li><a href="https://react.dev/learn/manipulating-the-dom-with-refs" target="_blank" rel="noreferrer">React Docs: Manipulating the DOM with Refs</a></li>
+          <li><a href="https://react.dev/reference/react/useRef" target="_blank" rel="noreferrer">react.dev: useRef</a></li>
+          <li><a href="https://react.dev/learn/referencing-values-with-refs" target="_blank" rel="noreferrer">react.dev: Referencing Values with Refs</a></li>
+          <li><a href="https://react.dev/learn/manipulating-the-dom-with-refs" target="_blank" rel="noreferrer">react.dev: Manipulating the DOM with Refs</a></li>
         </ul>
       </div>
     </section>
@@ -65,39 +66,44 @@
       const { useRef, useState } = React;
 
       function FocusBox() {
+        // ====== 1. DOM ref：React 提交 DOM 后写入 inputRef.current ======
         const inputRef = useRef(null);
+
+        // ====== 2. 可变 ref：跨渲染保存不驱动 UI 的可变值 ======
         const clickCountRef = useRef(0);
+
+        // ====== 3. useState：驱动页面重新渲染 ======
         const [renderCount, setRenderCount] = useState(0);
 
         function focusInput() {
           if (inputRef.current) {
             inputRef.current.focus();
+            console.log("DOM ref focus: 命令式聚焦 input 元素");
           }
         }
 
         function addRefCount() {
           clickCountRef.current += 1;
-          console.log("ref 中的点击次数:", clickCountRef.current);
-          // 这里只改 ref，不会触发 render，所以页面上的 renderCount 不会变化。
+          // 只改 ref 不会触发 render，页面上的 renderCount 不会变化
+          console.log("mutable ref 点击次数:", clickCountRef.current, "（不触发渲染）");
         }
 
         return (
-        <section>
-          <h1>useRef 与 DOM</h1>
+          <section>
+            <h1>useRef 与 DOM</h1>
 
-          <input ref={inputRef} placeholder="点击按钮聚焦到这里" />
-          <button onClick={focusInput}>聚焦 input</button>
-          <button onClick={addRefCount}>只改 ref</button>
-          <button onClick={() => setRenderCount(renderCount + 1)}>触发渲染</button>
-          <p>renderCount: {renderCount}</p>
-          <p>ref 点击次数只在控制台实时变化，下一次渲染后页面才会读到: {clickCountRef.current}</p>
-          <p>面试回答: useRef 适合保存跨渲染但不需要驱动 UI 的数据。</p>
-        </section>
-      );
+            <input ref={inputRef} placeholder="点击按钮聚焦到这里" />
+            <button onClick={focusInput}>聚焦 input</button>
+            <button onClick={addRefCount}>只改 ref</button>
+            <button onClick={() => setRenderCount(renderCount + 1)}>触发渲染</button>
+            <p>renderCount: {renderCount}</p>
+            <p>ref 点击次数只在控制台实时变化，下一次渲染后页面才会读到: {clickCountRef.current}</p>
+          </section>
+        );
       }
 
+      // ====== 4. createRoot 挂载 ======
       ReactDOM.createRoot(document.getElementById("root")).render(<FocusBox />);
-
     </script>
     <!-- SCRIPT_END -->
 

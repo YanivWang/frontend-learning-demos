@@ -1,6 +1,7 @@
 <!--
   分类: react18 / hooks
   主题: useEffect 副作用、依赖数组与清理函数
+  相关: 12-Hooks-useState基础, 14-Hooks-useRef与DOM
   要点:
     - useEffect 用来把组件渲染结果同步到外部系统，而不是替代所有生命周期
     - 依赖数组描述 effect 读取的响应式值；依赖变化时先清理旧副作用再建立新副作用
@@ -29,7 +30,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>useEffect 副作用、依赖数组与清理函数</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看 effect 建立/cleanup 与 document.title 同步；下方 #root 为 React 挂载/交互演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -41,16 +42,16 @@
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>useEffect</code> 到底同步什么？</strong> 结论是同步 React 渲染结果与外部系统。原因是渲染本身应保持纯净，DOM 标题、定时器、订阅和网络连接这类副作用必须在提交到页面后处理。边界是派生数据、事件处理里的计算不应该滥用 effect。</li>
-          <li><strong>依赖数组应该怎么写？</strong> 结论是 effect 中读取的 props、state 和组件内声明的响应式值都应列入依赖。原因是 React 依赖这份清单决定何时重新同步外部系统。项目里漏依赖常见后果是请求参数旧、事件监听读旧状态、定时器步长不同步。</li>
-          <li><strong>为什么 cleanup 会在下一次 effect 前执行？</strong> 结论是 React 要先撤销上一轮渲染对应的外部副作用，再建立新副作用。原因是每次 effect 都属于某一次渲染快照。边界是没有外部资源的 effect 可以不返回 cleanup，但定时器、订阅、事件监听必须返回。</li>
-          <li><strong>React 18 Strict Mode 下 effect 执行两次是不是 bug？</strong> 结论是不是 bug，这是开发环境的检查。原因是 React 通过额外 setup + cleanup 暴露不可重复执行或清理不完整的副作用。项目里应修复 cleanup 和幂等性，而不是靠全局变量屏蔽这次检查。</li>
+          <li><strong><code>useEffect</code> 到底同步什么？</strong> 结论是同步 React 渲染结果与外部系统。原因是渲染本身应保持纯净，DOM 标题、定时器、订阅和网络连接这类副作用必须在提交到页面后处理。</li>
+          <li><strong>依赖数组应该怎么写？</strong> 结论是 effect 中读取的 props、state 和组件内声明的响应式值都应列入依赖。原因是 React 依赖这份清单决定何时重新同步外部系统。</li>
+          <li><strong>为什么 cleanup 会在下一次 effect 前执行？</strong> 结论是 React 要先撤销上一轮渲染对应的外部副作用，再建立新副作用。原因是每次 effect 都属于某一次渲染快照。</li>
+          <li><strong>React 18 Strict Mode 下 effect 执行两次是不是 bug？</strong> 结论是不是 bug，这是开发环境的检查。原因是 React 通过额外 setup + cleanup 暴露不可重复执行或清理不完整的副作用。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">React Docs: useEffect</a></li>
-          <li><a href="https://react.dev/learn/synchronizing-with-effects" target="_blank" rel="noreferrer">React Docs: Synchronizing with Effects</a></li>
-          <li><a href="https://react.dev/learn/lifecycle-of-reactive-effects" target="_blank" rel="noreferrer">React Docs: Lifecycle of Reactive Effects</a></li>
+          <li><a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">react.dev: useEffect</a></li>
+          <li><a href="https://react.dev/learn/synchronizing-with-effects" target="_blank" rel="noreferrer">react.dev: Synchronizing with Effects</a></li>
+          <li><a href="https://react.dev/learn/lifecycle-of-reactive-effects" target="_blank" rel="noreferrer">react.dev: Lifecycle of Reactive Effects</a></li>
         </ul>
       </div>
     </section>
@@ -64,19 +65,21 @@
     <script type="text/babel">
       const { useEffect, useState } = React;
 
+      // ====== 1. useEffect 同步外部系统：定时器依赖 step ======
       function Timer({ step }) {
         const [seconds, setSeconds] = useState(0);
 
         useEffect(() => {
-          console.log("effect 建立定时器，step =", step);
+          console.log("effect setup: 建立定时器，step =", step);
 
           const timer = setInterval(() => {
             setSeconds(prev => prev + step);
           }, 1000);
 
-          // 清理函数非常关键：清定时器、解绑事件、取消订阅都在这里做。
+          // ====== 2. cleanup：撤销上一轮外部副作用 ======
+          // 清理函数非常关键：清定时器、解绑事件、取消订阅都在这里做
           return () => {
-            console.log("cleanup 清理上一次定时器，step =", step);
+            console.log("effect cleanup: 清理定时器，step =", step);
             clearInterval(timer);
           };
         }, [step]);
@@ -88,26 +91,25 @@
         const [step, setStep] = useState(1);
         const [visible, setVisible] = useState(true);
 
+        // ====== 3. document.title：渲染结果同步到浏览器 DOM API ======
         useEffect(() => {
           document.title = "step: " + step;
+          console.log("document.title 同步:", document.title);
         }, [step]);
 
         return (
-        <section>
-          <h1>useEffect 副作用</h1>
+          <section>
+            <h1>useEffect 副作用</h1>
 
-          <button onClick={() => setStep(step === 1 ? 2 : 1)}>切换 step</button>
-          <button onClick={() => setVisible(!visible)}>挂载/卸载 Timer</button>
-          {visible && <Timer step={step} />}
-          <p>
-            面试回答: effect 不是生命周期的一比一替代，它表达的是“这个渲染结果需要同步哪些外部副作用”。
-          </p>
-        </section>
-      );
+            <button onClick={() => setStep(step === 1 ? 2 : 1)}>切换 step</button>
+            <button onClick={() => setVisible(!visible)}>挂载/卸载 Timer</button>
+            {visible && <Timer step={step} />}
+          </section>
+        );
       }
 
+      // ====== 4. createRoot 挂载 ======
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 

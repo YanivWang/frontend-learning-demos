@@ -2,17 +2,19 @@
   分类: react18 / 入门
   主题: React 元素与渲染（React 18 createRoot）
   要点:
-    - JSX 由 Babel 转译为 React.createElement(type, props, ...children)
+    - JSX 由 Babel 转译；classic runtime 为 React.createElement，automatic runtime 为 react/jsx-runtime
     - React element 是描述 UI 的不可变对象，真正 DOM 更新由 ReactDOM 完成
     - React 18 客户端入口使用 ReactDOM.createRoot(container).render(...)
-    - 组件名必须大写；小写 JSX 会被当作内置 DOM 标签
-    - JSX 中引用变量前须确保已定义，否则会在渲染时抛 ReferenceError
+    - 组件名必须大写；小写 JSX 会被当作字符串标签名（非组件引用）
+    - <ele1 /> 与 {ele1} 是两种机制：前者渲染未知 HTML 标签，后者未定义变量会 ReferenceError
+    - render 须传 React element（<App />），传函数引用 App 会报错
   面试:
     - JSX、React.createElement 和 React element 是什么关系？
     - React 18 为什么使用 createRoot 而不是 ReactDOM.render？
     - React element 和真实 DOM 节点有什么区别？
     - 自定义组件为什么必须以大写字母开头？
     - JSX 表达式里引用未定义变量会发生什么？
+    - root.render(<App />) 和 root.render(App) 有什么区别？
 -->
 
 <!doctype html>
@@ -32,28 +34,32 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>React 元素与渲染（React 18 createRoot）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看 props 与 element 结构输出；下方 #root 为 React 挂载演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>JSX</code> 是 JavaScript 的语法扩展，构建时通常会被 Babel 转成 <code>React.createElement(type, props, ...children)</code>。浏览器不能直接理解 JSX，本 demo 用 <code>babel.min.js</code> 做运行时转译只适合学习演示。</li>
-          <li><code>React.createElement</code> 返回的是 React element：一个描述 UI 的普通不可变对象，而不是真实 DOM 节点。ReactDOM 根据这些描述创建、更新和删除浏览器 DOM。</li>
-          <li>React 18 客户端入口使用 <code>ReactDOM.createRoot(container).render(element)</code>。旧的 <code>ReactDOM.render</code> 属于 React 17 兼容入口，不会启用 React 18 的新根特性。</li>
-          <li>自定义组件名必须大写，例如 <code>&lt;App /&gt;</code>。小写 JSX 会被当作内置 HTML 标签名；本 demo 注释中的 <code>&lt;ele1 /&gt;</code> 就是反例。</li>
-          <li>JSX 花括号中写的是 JavaScript 表达式，引用变量前必须确保它已经定义；未定义变量会抛 <code>ReferenceError</code>，导致当前渲染失败。</li>
+          <li><code>JSX</code> 是 JavaScript 的语法扩展。Babel 转译有两种 runtime：<strong>classic</strong> 生成 <code>React.createElement(type, props, ...children)</code>；现代工程默认的 <strong>automatic</strong> 生成 <code>react/jsx-runtime</code> 中的 <code>jsx()</code> 调用。浏览器不能直接理解 JSX；本 demo 用 <code>babel.min.js</code> 做运行时转译（classic），只适合学习演示。</li>
+          <li><code>React.createElement</code> 返回 React element：描述 UI 的不可变普通对象（含 <code>type</code>、<code>props</code>、<code>key</code>、<code>ref</code>），不是真实 DOM。ReactDOM 根据 element 树创建、对比并最小化更新浏览器 DOM。</li>
+          <li>React 18 客户端入口为 <code>ReactDOM.createRoot(container).render(element)</code>。旧版 <code>ReactDOM.render</code> 已废弃，在 React 18 中会以 React 17 模式运行，无法使用 React 18 新根 API 相关特性。</li>
+          <li>自定义组件名必须大写，例如 <code>&lt;App /&gt;</code>。小写 <code>&lt;ele1 /&gt;</code> 等价于 <code>createElement('ele1')</code>，会渲染为未知 HTML 标签，<strong>不会</strong> 抛 ReferenceError。花括号表达式 <code>{ele1}</code> 在变量未定义时才会 <code>ReferenceError</code>。</li>
+          <li>挂载时须传入 React element：<code>root.render(&lt;App /&gt;)</code> 正确；<code>root.render(App)</code> 传入函数引用会报 <em>Functions are not valid as a React child</em>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>JSX、React.createElement 和 React element 是什么关系？</strong> 结论是 JSX 通常被转译为 <code>React.createElement</code> 调用，调用结果是 React element。原因是 React 用 element 描述 UI，再由渲染器负责落到具体平台；浏览器 DOM 只是 ReactDOM 的目标之一。</li>
-          <li><strong>React 18 为什么使用 createRoot 而不是 ReactDOM.render？</strong> 结论是 <code>createRoot</code> 是 React 18 新客户端根入口。原因是它启用 React 18 的并发能力和自动批处理等新行为；维护旧代码时仍可能见到 <code>ReactDOM.render</code>，但新代码不应继续使用。</li>
-          <li><strong>React element 和真实 DOM 节点有什么区别？</strong> React element 是不可变描述对象，真实 DOM 是浏览器节点。原因是 React 需要先比较描述，再最小化更新 DOM；项目里不要把 element 当成 DOM 调用 <code>appendChild</code>。</li>
-          <li><strong>自定义组件为什么必须以大写字母开头？</strong> 结论是 React 用大小写区分自定义组件和内置标签。原因是小写 <code>&lt;div&gt;</code> 会被当作字符串标签名，大写 <code>&lt;App&gt;</code> 才会引用 JavaScript 变量。</li>
+          <li><strong>JSX、React.createElement 和 React element 是什么关系？</strong> 结论是 JSX 被 Babel 转译为 <code>createElement</code>（classic）或 <code>jsx()</code>（automatic），调用结果是 React element。原因是 React 用 element 描述 UI，渲染器（ReactDOM）负责落到具体平台；浏览器 DOM 只是目标之一。</li>
+          <li><strong>React 18 为什么使用 createRoot 而不是 ReactDOM.render？</strong> 结论是 <code>createRoot</code> 是 React 18 新客户端根 API，<code>ReactDOM.render</code> 已废弃。原因是 React 18 的新根特性（如更广范围的自动批处理）依赖 <code>createRoot</code>；并发渲染需通过 <code>startTransition</code> 等 API 按需启用，不是调用 <code>createRoot</code> 就全面开启。</li>
+          <li><strong>React element 和真实 DOM 节点有什么区别？</strong> React element 是不可变描述对象，真实 DOM 是浏览器节点。原因是 React 先 diff element 树，再最小化更新 DOM；不要把 element 当 DOM 节点去 <code>appendChild</code>。</li>
+          <li><strong>自定义组件为什么必须以大写字母开头？</strong> 结论是 React 用大小写区分组件与内置标签。小写 <code>&lt;div&gt;</code> 的 <code>type</code> 是字符串 <code>'div'</code>；大写 <code>&lt;App&gt;</code> 的 <code>type</code> 是组件函数本身。</li>
+          <li><strong>JSX 表达式里引用未定义变量会发生什么？</strong> 结论是渲染阶段求值 <code>{变量名}</code> 时若绑定不存在，会抛 <code>ReferenceError</code>，当前渲染失败。注意与 <code>&lt;ele1 /&gt;</code> 区分：后者是合法 JSX，只是不会调用你的组件。</li>
+          <li><strong>root.render(&lt;App /&gt;) 和 root.render(App) 有什么区别？</strong> 结论是前者传入 React element，后者传入函数引用。原因是 <code>render</code> 需要的是描述 UI 的 element/node，不是组件函数本身；传 <code>App</code> 会报函数不能作为 React 子节点。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://react.dev/reference/react/createElement" target="_blank" rel="noreferrer">react.dev: createElement</a></li>
           <li><a href="https://react.dev/reference/react-dom/client/createRoot" target="_blank" rel="noreferrer">react.dev: createRoot</a></li>
+          <li><a href="https://react.dev/reference/react-dom/render" target="_blank" rel="noreferrer">react.dev: render（已废弃）</a></li>
           <li><a href="https://react.dev/learn/writing-markup-with-jsx" target="_blank" rel="noreferrer">react.dev: Writing Markup with JSX</a></li>
+          <li><a href="https://react.dev/blog/2022/03/29/react-v18" target="_blank" rel="noreferrer">react.dev: React 18 发布公告</a></li>
           <li><a href="https://babeljs.io/docs/babel-plugin-transform-react-jsx" target="_blank" rel="noreferrer">Babel: Transform React JSX</a></li>
         </ul>
       </div>
@@ -66,53 +72,68 @@
 
     <!-- SCRIPT_START -->
     <script type="text/babel">
-      const elementOld = <h1 className="greeting">Hello, world!</h1>
-      ;
+      // ====== 1. JSX 与 React.createElement：同一 UI 的两种写法 ======
+      // JSX 写法；Babel（classic runtime）会转译为下方的 createElement 调用
+      const elementOld = <h1 className="greeting">Hello, world!</h1>;
 
-      //Babel 会把 JSX 转译成一个名为 React.createElement() 函数调用
-      //上述表达式经过转义后
-      const elementNew = React.createElement("h1", { className: "greeting" }, "Hello, world!");
-      //React.createElement方法调用后，会生成一个js对象,如下，这个对象就是被称作 "React元素"
-      // 注意：这是简化过的结构
-      const element = {
+      // 与 elementOld 等价的显式 createElement 写法（转译结果示意）
+      const elementNew = React.createElement(
+        "h1",
+        { className: "greeting" },
+        "Hello, world!"
+      );
+
+      // createElement 返回的 React element 结构（简化示意；真实对象还含 key、ref 等字段）
+      const elementShape = {
         type: "h1",
         props: {
           className: "greeting",
           children: "Hello, world!",
         },
+        key: null,
+        ref: null,
       };
 
-      //定义一个函数式组件
-      //React 调用函数组件时只传入 props 一个参数（父组件传入的 attribute 都会出现在 props 对象里）
+      // 对比：JSX 与 createElement 产出的 element.type / props 一致
+      console.log("elementOld.type:", elementOld.type); // "h1"
+      console.log("elementNew.props:", elementNew.props); // { className: "greeting", children: "Hello, world!" }
+      console.log("示意结构 elementShape:", elementShape);
+
+      // ====== 2. 函数式组件：接收 props，返回 React element ======
+      // React 调用函数组件时传入 props（父组件写的 attribute 都会出现在 props 里）
       const App = (props) => {
-        console.log("props>>>", props); // 例如 { id: "app01" }
+        console.log("App props:", props); // 例如 { id: "app01" }
 
-        //函数式组件，可以return jsx，也可以没有return语句
-        //返回一个react元素(一段jsx就是一个react元素)
-        // 演示使用已定义的 elementOld；若写 {ele1} 且未定义会 ReferenceError
+        // 组件必须 return 一段 JSX（即一个 React element 树）
         return (
-        <div>
-          <div>开始: 函数式组件</div>
-          {elementOld}
-          {1 + 3}
+          <div>
+            <div>开始: 函数式组件</div>
+            {/* 花括号嵌入已有 element 变量 */}
+            {elementOld}
+            {/* 花括号嵌入任意 JS 表达式，结果为 4 */}
+            {1 + 3}
 
-          {/* 反面教材：直接写 <ele1 /> 会被当作小写 DOM 标签，浏览器无法识别 */}
-          {/* <ele1 /> */}
-        </div>
-      );
+            {/*
+              反面教材（已注释，取消注释可观察差异）：
+              - <ele1 />  → createElement('ele1')，渲染未知 HTML 标签，不报错
+              - {ele1}    → 变量 ele1 未定义，渲染时 ReferenceError
+            */}
+            {/* <ele1 /> */}
+          </div>
+        );
       };
 
-      //1.先获取dom根节点
+      // ====== 3. React 18 挂载三步骤：容器 → 根 → render ======
+      // ① 获取 HTML 中的挂载容器（须先于 script 存在于 DOM 中）
       const domContainer = document.getElementById("root");
-      //2.根据dom根节点创建React应用的根节点
+
+      // ② 创建 React 18 客户端根（新代码勿用已废弃的 ReactDOM.render）
       const appRoot = ReactDOM.createRoot(domContainer);
 
-      //3.将组件渲染到页面：调用react根节点的render方法，将react元素渲染到页面上
-      //注意组件的使用方式: 类似于html标签的使用方式，使用一对 <> 包裹组件的名称
-
-      //<App id="app01" /> 这个也是react元素，react元素也可以由用户自定义组件
+      // ③ 将 React element 渲染进根容器
+      // <App id="app01" /> 本身也是 React element，type 为 App 函数，props 含 id
+      // 正确：传 element；错误：appRoot.render(App) 会报 Functions are not valid as a React child
       appRoot.render(<App id="app01" />);
-
     </script>
     <!-- SCRIPT_END -->
 

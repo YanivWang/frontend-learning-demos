@@ -1,6 +1,7 @@
 <!--
   分类: react18 / function-components
   主题: React 19 新特性概览
+  相关: 33-props派生状态与key重置, react19/01-基础语法
   要点:
     - React 19：Actions、useActionState、useOptimistic
     - use() 读取 Promise / Context，可在条件分支中调用（规则变化）
@@ -23,11 +24,6 @@
     <script src="../../libs/react.development.js"></script>
     <script src="../../libs/react-dom.development.js"></script>
     <script src="../../libs/babel.min.js"></script>
-    <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 780px; line-height: 1.65; }
-      pre { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 8px; font-size: 0.82rem; overflow: auto; }
-      .box { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin: 1rem 0; }
-    </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
   </head>
@@ -35,7 +31,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>React 19 新特性概览</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">本页运行在 React 18.3.1，仅概览 React 19 能力边界；请打开 DevTools Console 查看手写异步状态日志；下方 #root 为 React 18 模拟演示区，完整 React 19 API 见 <code>apps/react19/</code>。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -51,14 +47,15 @@
           <li><strong>Actions 与 <code>useActionState</code> 主要解决什么？</strong> 结论是把异步表单提交的状态管理标准化。原因是过去常用 <code>useState</code> 手写 pending、error、result，容易遗漏重复提交和失败路径。边界是复杂表单校验、缓存和路由刷新仍可能交给框架或表单库处理。</li>
           <li><strong><code>useOptimistic</code> 和手写乐观 UI 有什么区别？</strong> 结论是它把临时乐观层和真实 state 的对齐交给 React 模型。原因是发送消息、点赞等交互需要先反馈，再等待服务端确认。边界是失败回滚、冲突合并和重试文案仍要由业务明确设计。</li>
           <li><strong><code>use()</code> 是否替代 <code>useEffect</code> 请求数据？</strong> 结论是不是简单替代。原因是 <code>use()</code> 读取 Promise 会挂起并依赖 <code>Suspense</code>，更适合与框架数据层、缓存和 Server Components 配合；客户端事件后的请求仍常用事件处理或 effect。</li>
+          <li><strong>React 19 ref as prop 对 <code>forwardRef</code> 迁移有什么影响？</strong> 结论是函数组件可直接声明 <code>ref</code> prop，<code>forwardRef</code> 仍可用但进入逐步废弃语境。原因是 React 19 把 ref 当作普通 prop 传递，减少包装样板。边界是 React 18 项目仍需 <code>forwardRef</code>；混用库时要等依赖升级，并检查 TypeScript 类型与 ref 回调写法。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/blog/2024/12/05/react-19" target="_blank" rel="noreferrer">React Blog: React 19</a></li>
-          <li><a href="https://react.dev/reference/react/useActionState" target="_blank" rel="noreferrer">React Docs: <code>useActionState</code></a></li>
-          <li><a href="https://react.dev/reference/react/useOptimistic" target="_blank" rel="noreferrer">React Docs: <code>useOptimistic</code></a></li>
-          <li><a href="https://react.dev/reference/react/use" target="_blank" rel="noreferrer">React Docs: <code>use</code></a></li>
-          <li><a href="https://react.dev/reference/react/forwardRef" target="_blank" rel="noreferrer">React Docs: <code>forwardRef</code></a></li>
+          <li><a href="https://react.dev/blog/2024/12/05/react-19" target="_blank" rel="noreferrer">react.dev: React 19</a></li>
+          <li><a href="https://react.dev/reference/react/useActionState" target="_blank" rel="noreferrer">react.dev: useActionState</a></li>
+          <li><a href="https://react.dev/reference/react/useOptimistic" target="_blank" rel="noreferrer">react.dev: useOptimistic</a></li>
+          <li><a href="https://react.dev/reference/react/use" target="_blank" rel="noreferrer">react.dev: use</a></li>
+          <li><a href="https://react.dev/reference/react/forwardRef" target="_blank" rel="noreferrer">react.dev: forwardRef</a></li>
         </ul>
       </div>
     </section>
@@ -66,20 +63,25 @@
 
     <!-- PAGE_DOM_START -->
     <div id="root"></div>
-    <pre>// React 19 示例（需 React 19 运行时）
-      const [error, submitAction, isPending] = useActionState(async (prev, formData) => {
-      const res = await save(formData);
-      return res.ok ? null : '失败';
-      }, null);
-      // use() 读取 Promise
-      const data = use(fetchUser(id));</pre>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script type="text/babel">
       const { useState } = React;
-      const { createRoot } = ReactDOM;
 
+      // ====== 1. React 19 API 示意（需 React 19 运行时，此处仅注释） ======
+      /*
+        // React 19 中 useActionState 标准化 pending / error / result
+        const [error, submitAction, isPending] = useActionState(async (prev, formData) => {
+          const res = await save(formData);
+          return res.ok ? null : "失败";
+        }, null);
+
+        // use() 在渲染中读取 Promise，需 Suspense 处理挂起
+        const data = use(fetchUser(id));
+      */
+
+      // ====== 2. React 18 手写异步提交状态（升级前常见写法） ======
       function Demo() {
         const [isSubmitting, setIsSubmitting] = useState(false);
         const [result, setResult] = useState("idle");
@@ -87,25 +89,49 @@
         const runAction = async () => {
           setIsSubmitting(true);
           setResult("loading…");
+          console.log("手写 Action 开始: pending"); // 预期: React 19 useActionState 会统一管理此状态
           await new Promise((r) => setTimeout(r, 600));
-          setResult("done @ " + new Date().toLocaleTimeString());
+          const doneMsg = "done @ " + new Date().toLocaleTimeString();
+          setResult(doneMsg);
           setIsSubmitting(false);
+          console.log("手写 Action 完成:", doneMsg);
         };
 
         return (
-        <div className="box">
-          <h2>React 18 中手写异步提交状态</h2>
-          <p>React 19 的 <code>useActionState</code> 将此类 pending / result 模式标准化；此处用 React 18 state 展示升级前写法。完整可运行示例：<a href="../../../react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/03-Actions%E4%B8%8EuseActionState.html">react19 → useActionState</a>。</p>
-          <button type="button" onClick={runAction} disabled={isSubmitting}>
-            {isSubmitting ? "提交中…" : "模拟异步提交"}
-          </button>
-          <p>状态：{result}</p>
-        </div>
-      );
+          <div style={{ border: "1px solid #ddd", borderRadius: 10, padding: 16, margin: "1rem 0" }}>
+            <h2>React 18 中手写异步提交状态</h2>
+            <p>
+              React 19 的 <code>useActionState</code> 将此类 pending / result 模式标准化；此处用 React 18 state 展示升级前写法。完整可运行示例：
+              <a href="../../../react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/03-Actions%E4%B8%8EuseActionState.html">react19 → useActionState</a>。
+            </p>
+            <button type="button" onClick={runAction} disabled={isSubmitting}>
+              {isSubmitting ? "提交中…" : "模拟异步提交"}
+            </button>
+            <p>状态：{result}</p>
+          </div>
+        );
       }
 
-      createRoot(document.getElementById("root")).render(<Demo />);
+      // ====== 3. React 19 能力边界说明（概念页，非可运行 API） ======
+      function Overview() {
+        console.log("React 版本:", React.version); // 预期: 18.x — React 19 API 见 apps/react19/
+        return (
+          <section>
+            <h1>React 19 新特性概览</h1>
+            <Demo />
+            <pre style={{ background: "#1e1e1e", color: "#d4d4d4", padding: 12, borderRadius: 8, fontSize: "0.82rem", overflow: "auto" }}>
+{`// React 19 示例（需 React 19 运行时）
+const [error, submitAction, isPending] = useActionState(async (prev, formData) => {
+  const res = await save(formData);
+  return res.ok ? null : "失败";
+}, null);
+const data = use(fetchUser(id)); // 读取 Promise，需 Suspense`}
+            </pre>
+          </section>
+        );
+      }
 
+      ReactDOM.createRoot(document.getElementById("root")).render(<Overview />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -127,6 +153,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-  
 </body>
 </html>

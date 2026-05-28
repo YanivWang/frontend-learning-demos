@@ -1,10 +1,11 @@
 <!--
   分类: react18 / function-components
   主题: React 元素、JSX 嵌入表达式与 createRoot 渲染流程
+  相关: 02-JSX-条件渲染短路, 04-元素不可变-时钟, 05-函数组件-props
   要点:
     - 文件名保留历史命名「元素与函数组件」；函数组件系统讲解见 05-函数组件-props.html 起
     - JSX 中 {expression} 只能是表达式；函数引用 {fn} 不会执行，需写 {fn()} 才能得到返回值
-    - 元素是描述 UI 的轻量对象；createRoot(container).render(element) 触发虚拟 DOM → diff → 真实 DOM
+    - React element 是描述 UI 的不可变对象；createRoot(container).render(element) 触发协调与 DOM 提交
     - React 18 统一使用 createRoot，旧 ReactDOM.render 已废弃
   面试:
     - JSX 花括号里为什么只能放表达式，不能直接放语句？
@@ -20,15 +21,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>React · JSX 中嵌入表达式</title>
-    <!-- 引入依赖
-    1. react.development.js — React 核心库（createElement、组件等）
-    2. react-dom.development.js — 操作 DOM、提供 createRoot / render
-    -->
     <script src="../../libs/react.development.js"></script>
     <script src="../../libs/react-dom.development.js"></script>
-    <!-- 安装Babel:
-    1.用于将ES6+语法转换为es5语法，以便于能直接在浏览器中运行
-    2.用来转换 jsx 语法(babel内嵌了对jsx的支持) -->
     <script src="../../libs/babel.min.js"></script>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -37,27 +31,29 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>React 元素、JSX 嵌入表达式与 createRoot</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看 JSX 表达式输出；下方 #root 为 React 挂载演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
           <li>本文件名保留历史命名「元素与函数组件」，但当前示例真正演示的是 JSX 花括号表达式、React element 和 <code>createRoot</code> 渲染流程；函数组件系统讲解从 05 开始。</li>
-          <li><code>JSX</code> 花括号中写的是 JavaScript 表达式，例如变量、函数调用、算术表达式或 <code>console.log(...)</code> 的调用结果；<code>if</code>、<code>for</code> 这类语句不能直接放在花括号里。</li>
+          <li><code>JSX</code> 花括号中写的是 JavaScript 表达式，例如变量、函数调用、算术表达式；<code>if</code>、<code>for</code> 这类语句不能直接放在花括号里，应在外部计算后再嵌入。</li>
           <li><code>{fun}</code> 只是把函数对象作为 child 传给 React，不能作为可渲染文本；<code>{fun()}</code> 才会执行函数并把返回值作为 child。本 demo 通过 <code>{fun()}</code> 渲染字符串。</li>
-          <li>React element 是描述 UI 的不可变对象。<code>createRoot(container).render(element)</code> 会把这棵描述交给 ReactDOM，后续由 React 比较描述差异并提交真实 DOM 更新。</li>
-          <li>React 18 新代码使用 <code>createRoot</code>；旧 <code>ReactDOM.render</code> 属于 legacy 入口，不要作为 React 18 当前推荐写法。</li>
+          <li>React element 是描述 UI 的不可变对象（含 <code>type</code>、<code>props</code> 等）。<code>createRoot(container).render(element)</code> 会把描述交给 ReactDOM，经协调（reconciliation）后提交真实 DOM 更新。</li>
+          <li>React 18 新代码使用 <code>createRoot</code>；旧 <code>ReactDOM.render</code> 已废弃，在 React 18 中会以 React 17 模式运行。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>JSX 花括号里为什么只能放表达式？</strong> 结论是花括号位置需要产生一个值，React 才能把它作为 child 或 attribute。原因是 JSX 会被转译成函数调用参数；项目里复杂分支应先在外部计算变量，再放进 JSX。</li>
+          <li><strong>JSX 花括号里为什么只能放表达式？</strong> 结论是花括号位置需要产生一个值，React 才能把它作为 child 或 attribute。原因是 JSX 会被 Babel 转译为 <code>createElement</code> 的参数；项目里复杂分支应先在外部计算变量，再放进 JSX。</li>
           <li><strong><code>{fun}</code> 与 <code>{fun()}</code> 有什么区别？</strong> 结论是前者传入函数引用，后者执行函数并传入返回值。原因是 JSX 不会自动调用普通函数；边界是事件处理里恰好需要函数引用，例如 <code>onClick={handleClick}</code>，不要写成立即调用。</li>
-          <li><strong>React element 和真实 DOM 是什么关系？</strong> 结论是 element 是 UI 描述对象，真实 DOM 是 ReactDOM 提交后的浏览器节点。原因是 React 先构建和比较描述，再把必要变更落到 DOM；项目里不要尝试把 React element 当 DOM 节点操作。</li>
-          <li><strong>React 18 的 <code>createRoot</code> 有什么意义？</strong> 结论是它是 React 18 客户端根入口。原因是它启用 React 18 root 行为；旧 <code>ReactDOM.render</code> 只用于维护历史代码，新 demo 和新项目应使用 <code>createRoot</code>。</li>
+          <li><strong>React element 和真实 DOM 是什么关系？</strong> 结论是 element 是 UI 描述对象，真实 DOM 是 ReactDOM 提交后的浏览器节点。原因是 React 先比较前后 element 描述，再把必要变更落到 DOM；不要把 element 当 DOM 节点去操作。</li>
+          <li><strong>React 18 的 <code>createRoot</code> 有什么意义？</strong> 结论是它是 React 18 客户端根入口，替代已废弃的 <code>ReactDOM.render</code>。原因是它创建 React 18 root 并启用新行为；并发渲染需 opt-in，不是 <code>createRoot</code> 一调用就全面开启。</li>
+          <li><strong>为什么文件名是「函数组件」但示例重点是 JSX 表达式？</strong> 结论是历史命名保留，本页聚焦 element 与 JSX 嵌入；函数组件（props/state/事件）从 05 起系统讲解。原因是学习路径上需先理解 element 与渲染，再进入组件通信。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://react.dev/learn/javascript-in-jsx-with-curly-braces" target="_blank" rel="noreferrer">react.dev: JavaScript in JSX with Curly Braces</a></li>
           <li><a href="https://react.dev/reference/react/createElement" target="_blank" rel="noreferrer">react.dev: createElement</a></li>
+          <li><a href="https://react.dev/learn/render-and-commit" target="_blank" rel="noreferrer">react.dev: Render and Commit</a></li>
           <li><a href="https://react.dev/reference/react-dom/client/createRoot" target="_blank" rel="noreferrer">react.dev: createRoot</a></li>
           <li><a href="https://babeljs.io/docs/babel-plugin-transform-react-jsx" target="_blank" rel="noreferrer">Babel: Transform React JSX</a></li>
         </ul>
@@ -66,48 +62,56 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <div id="example"></div>
-    <!--
-    要在script脚本中使用jsx，要把<script>的type类型写成 text/babel， 这样浏览器不会直接执行
-    script中的内容，而是先由babel来编译这个script中的内容，然后再执行
-    -->
+    <div id="root"></div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script type="text/babel">
+      // ====== 1. JSX 花括号嵌入表达式：变量、算术、console.log ======
+      // 花括号内必须是表达式；语句（if/for）不能直接写在这里
       let abc = "12345";
+      console.log("JSX 中嵌入的变量 abc:", abc);
+
       function fun() {
         return "八八八";
       }
 
-      //1.元素: 一段jsx赋值给一个变量，这个变量就称作react的一个元素
-      //2. 元素是一种轻量级的js对象,描述了要渲染的UI结构
+      // ====== 2. 函数引用 {fun} vs 函数调用 {fun()} ======
+      // {fun} 是函数对象，React 无法渲染为文本；{fun()} 执行后得到字符串
+      console.log("fun 引用:", fun);           // 函数本身
+      console.log("fun() 返回值:", fun());     // "八八八"
+      /*
+        反面教材（已注释）：
+        JSX 中写 {fun} 不会执行函数，页面无可见文本
+        事件处理 onClick={handleClick} 才是正确的函数引用用法
+      */
+
+      // ====== 3. JSX 赋值给变量即 React element（不可变 UI 描述） ======
       const element = (
-      <h1 id="wx" className="jb">
-        <span>
-          <i>我是111元素</i>
-          <span>我是span111</span>
-          {console.log("在jsx中运行js表达式")}
-          {abc}
-          {/* {fun} 是函数引用，React 无法渲染；{fun()} 执行后才得到字符串 */}
-          {fun()}
-        </span>
-        <span>
-          <i>我是222元素</i>
-          <span>我是span222</span>
-        </span>
-      </h1>
+        <h1 id="wx" className="jb">
+          <span>
+            <i>我是111元素</i>
+            <span>我是span111</span>
+            {console.log("在 JSX 中运行表达式，输出到 Console")} {/* 预期: undefined，不影响渲染 */}
+            {abc}
+            {fun()}
+            {1 + 3}
+          </span>
+          <span>
+            <i>我是222元素</i>
+            <span>我是span222</span>
+          </span>
+        </h1>
       );
-      //3.createRoot(...).render() 会按照下列顺序执行
-      //3.1 虚拟dom构建: 会根据传入的React元素(js对象)递归构建虚拟dom树,虚拟dom是对真实dom的抽象表示
-      //它以 JavaScript 对象的形式存在，比真实 DOM 更轻量级，操作起来也更快。
 
-      //3.2 diff算法: diff算法会比对新旧虚拟dom,找出变更集合
-      //3.3 真实dom渲染,根据diff算法找出的变更集合,React会将变更集合转换为真实的dom
-      //3.4 事件绑定,创建真实dom时,react会为这些dom绑定事件
-      // React 18 使用 createRoot 渲染
-      ReactDOM.createRoot(document.getElementById("example")).render(element);
+      // element 是描述 UI 的普通对象，不是浏览器 DOM 节点
+      console.log("element.type:", element.type);   // "h1"
+      console.log("element.props.id:", element.props.id); // "wx"
 
+      // ====== 4. createRoot → render：React 18 挂载流程 ======
+      // render 触发 render 阶段（构建 element 树）与 commit 阶段（更新 DOM）
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(element);
     </script>
     <!-- SCRIPT_END -->
 

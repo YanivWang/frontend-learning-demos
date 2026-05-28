@@ -1,6 +1,7 @@
 <!--
   分类: react18 / 性能
   主题: React.memo 与不可变更新
+  相关: 22-Context跨层传递, 24-合成事件机制
   要点:
     - React.memo 通过 props 浅比较跳过相同输入下的函数组件渲染
     - 对象、数组、函数 props 的引用稳定性决定 memo 是否有效
@@ -10,7 +11,7 @@
     - React.memo 什么时候能减少渲染，什么时候没效果？
     - 为什么 memo 依赖不可变更新和稳定引用？
     - memo、useMemo、useCallback 分别优化什么？
-    - 为什么优化前要先用 Profiler 定位瓶颈？
+    - 自定义比较函数要注意什么？
 -->
 
 <!doctype html>
@@ -29,7 +30,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>React.memo 与不可变更新</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看 UserCard render 输出；下方 #root 为 React 挂载演示区，切换无关状态时 memo 应跳过子组件渲染。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -48,10 +49,10 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/memo" target="_blank" rel="noreferrer">React API Reference: memo</a></li>
-          <li><a href="https://react.dev/learn/updating-objects-in-state" target="_blank" rel="noreferrer">React Docs: Updating Objects in State</a></li>
-          <li><a href="https://react.dev/learn/updating-arrays-in-state" target="_blank" rel="noreferrer">React Docs: Updating Arrays in State</a></li>
-          <li><a href="https://react.dev/reference/react/useMemo" target="_blank" rel="noreferrer">React API Reference: useMemo</a></li>
+          <li><a href="https://react.dev/reference/react/memo" target="_blank" rel="noreferrer">react.dev: memo</a></li>
+          <li><a href="https://react.dev/learn/updating-objects-in-state" target="_blank" rel="noreferrer">react.dev: Updating Objects in State</a></li>
+          <li><a href="https://react.dev/learn/updating-arrays-in-state" target="_blank" rel="noreferrer">react.dev: Updating Arrays in State</a></li>
+          <li><a href="https://react.dev/reference/react/useMemo" target="_blank" rel="noreferrer">react.dev: useMemo</a></li>
         </ul>
       </div>
     </section>
@@ -65,11 +66,13 @@
     <script type="text/babel">
       const { memo, useState } = React;
 
+      // ====== 1. memo 包裹：props 浅比较不变时跳过渲染 ======
       const UserCard = memo(function UserCard({ user }) {
-        console.log("UserCard render:", user.name);
+        console.log("UserCard render:", user.name); // 切换 theme 时不应输出；Alice +1 时仅 Alice 输出
         return <li>{user.name} - {user.score}</li>;
       });
 
+      // ====== 2. 不可变更新：只替换变化项的对象引用 ======
       function App() {
         const [users, setUsers] = useState([
           { id: 1, name: "Alice", score: 80 },
@@ -80,29 +83,34 @@
         function addScore(id) {
           setUsers(users.map(user => {
             if (user.id !== id) return user;
-            // 返回新对象，保证 React 能看出这个用户变了。
+            // 返回新对象，保证 React 能看出这个用户变了
             return { ...user, score: user.score + 1 };
           }));
+          console.log("Alice +1 → 仅 Alice 的 user 引用变化");
+        }
+
+        function toggleTheme() {
+          const next = theme === "light" ? "dark" : "light";
+          setTheme(next);
+          console.log("切换无关状态 theme:", next, "→ UserCard 应跳过 render（memo）");
         }
 
         return (
-        <section>
-          <h1>React.memo 性能优化</h1>
-
-          <button onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
-            切换无关状态: {theme}
-          </button>
-          <button onClick={() => addScore(1)}>Alice +1</button>
-          <ul>
-            {users.map(user => <UserCard key={user.id} user={user} />)}
-          </ul>
-          <p>面试回答: memo 依赖 props 引用稳定；不可变更新是 React 状态管理和性能优化的基础。</p>
-        </section>
-      );
+          <section>
+            <h1>React.memo 性能优化</h1>
+            <button onClick={toggleTheme}>
+              切换无关状态: {theme}
+            </button>
+            <button onClick={() => addScore(1)}>Alice +1</button>
+            <ul>
+              {users.map(user => <UserCard key={user.id} user={user} />)}
+            </ul>
+          </section>
+        );
       }
 
+      // ====== 3. createRoot 挂载 ======
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 

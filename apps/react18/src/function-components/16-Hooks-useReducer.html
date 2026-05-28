@@ -1,6 +1,7 @@
 <!--
   分类: react18 / hooks
   主题: useReducer 管理复杂状态
+  相关: 15-Hooks-useMemo-useCallback, 17-自定义Hook
   要点:
     - useReducer 把状态更新逻辑集中到 reducer，适合字段关联和 action 语义清晰的场景
     - reducer 必须保持纯函数，不修改原 state，不读写外部可变值
@@ -29,7 +30,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>useReducer 管理复杂状态</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看 dispatch action 与 reducer 纯函数输出；下方 #root 为 React 挂载/交互演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -41,16 +42,16 @@
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>useReducer</code> 相比 <code>useState</code> 解决了什么问题？</strong> 结论是它让复杂状态转移更集中、更可读。原因是多个事件都修改同一组字段时，把规则散在事件处理里容易重复和出错。项目里表单向导、编辑器、购物车局部状态和带历史记录的交互更适合 reducer。</li>
-          <li><strong>reducer 为什么必须是纯函数？</strong> 结论是为了让状态更新可预测。原因是 React 可能重新调用 reducer 来确认结果，副作用或原地修改会让结果依赖调用次数和外部环境。边界是副作用应放在事件处理、effect 或请求层，reducer 只返回新状态。</li>
-          <li><strong>action 应该怎么设计？</strong> 结论是 action 描述业务事件，而不是暴露任意字段赋值。原因是 <code>{ type, payload }</code> 能让状态变化有语义，便于调试和复用。项目里 action 类型要覆盖真实用户行为，未知 action 可以抛错帮助尽早发现拼写问题。</li>
-          <li><strong><code>useReducer</code> 适不适合替代全局状态管理？</strong> 结论是不适合作为默认替代。原因是它只解决单个组件树内的状态转移，跨页面共享、缓存失效、服务端数据同步还需要其他方案。边界是配合 Context 可做小范围全局状态，但要注意 Provider 值变化导致的渲染范围。</li>
+          <li><strong><code>useReducer</code> 相比 <code>useState</code> 解决了什么问题？</strong> 结论是它让复杂状态转移更集中、更可读。原因是多个事件都修改同一组字段时，把规则散在事件处理里容易重复和出错。</li>
+          <li><strong>reducer 为什么必须是纯函数？</strong> 结论是为了让状态更新可预测。原因是 React 可能重新调用 reducer 来确认结果，副作用或原地修改会让结果依赖调用次数和外部环境。</li>
+          <li><strong>action 应该怎么设计？</strong> 结论是 action 描述业务事件，而不是暴露任意字段赋值。原因是 <code>{ type, payload }</code> 能让状态变化有语义，便于调试和复用。</li>
+          <li><strong><code>useReducer</code> 适不适合替代全局状态管理？</strong> 结论是不适合作为默认替代。原因是它只解决单个组件树内的状态转移，跨页面共享、缓存失效、服务端数据同步还需要其他方案。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/useReducer" target="_blank" rel="noreferrer">React Docs: useReducer</a></li>
-          <li><a href="https://react.dev/learn/extracting-state-logic-into-a-reducer" target="_blank" rel="noreferrer">React Docs: Extracting State Logic into a Reducer</a></li>
-          <li><a href="https://react.dev/learn/keeping-components-pure" target="_blank" rel="noreferrer">React Docs: Keeping Components Pure</a></li>
+          <li><a href="https://react.dev/reference/react/useReducer" target="_blank" rel="noreferrer">react.dev: useReducer</a></li>
+          <li><a href="https://react.dev/learn/extracting-state-logic-into-a-reducer" target="_blank" rel="noreferrer">react.dev: Extracting State Logic into a Reducer</a></li>
+          <li><a href="https://react.dev/learn/keeping-components-pure" target="_blank" rel="noreferrer">react.dev: Keeping Components Pure</a></li>
         </ul>
       </div>
     </section>
@@ -69,45 +70,54 @@
         history: []
       };
 
+      // ====== 1. reducer 纯函数：相同 state + action → 相同新 state ======
+      // 不修改原 state，不请求网络/操作 DOM；history 用 concat 不可变追加
       function counterReducer(state, action) {
+        console.log("reducer pure fn: action =", action.type, "，当前 count =", state.count);
+
         switch (action.type) {
           case "increment":
-          return {
-            count: state.count + action.payload,
-            history: state.history.concat("+" + action.payload)
-          };
+            return {
+              count: state.count + action.payload,
+              history: state.history.concat("+" + action.payload)
+            };
           case "decrement":
-          return {
-            count: state.count - 1,
-            history: state.history.concat("-1")
-          };
+            return {
+              count: state.count - 1,
+              history: state.history.concat("-1")
+            };
           case "reset":
-          return initialState;
+            return initialState;
           default:
-          throw new Error("未知 action: " + action.type);
+            throw new Error("未知 action: " + action.type);
         }
       }
 
+      // ====== 2. useReducer + dispatch：事件发出 action 意图 ======
       function Counter() {
         const [state, dispatch] = useReducer(counterReducer, initialState);
 
-        return (
-        <section>
-          <h1>useReducer</h1>
+        function handleDispatch(action) {
+          console.log("dispatch action:", action);
+          dispatch(action);
+        }
 
-          <p>count: {state.count}</p>
-          <button onClick={() => dispatch({ type: "increment", payload: 1 })}>+1</button>
-          <button onClick={() => dispatch({ type: "increment", payload: 5 })}>+5</button>
-          <button onClick={() => dispatch({ type: "decrement" })}>-1</button>
-          <button onClick={() => dispatch({ type: "reset" })}>reset</button>
-          <p>history: {state.history.join(" / ")}</p>
-          <p>面试回答: useState 适合简单状态，useReducer 适合复杂状态转移和 action 语义更清晰的场景。</p>
-        </section>
-      );
+        return (
+          <section>
+            <h1>useReducer</h1>
+
+            <p>count: {state.count}</p>
+            <button onClick={() => handleDispatch({ type: "increment", payload: 1 })}>+1</button>
+            <button onClick={() => handleDispatch({ type: "increment", payload: 5 })}>+5</button>
+            <button onClick={() => handleDispatch({ type: "decrement" })}>-1</button>
+            <button onClick={() => handleDispatch({ type: "reset" })}>reset</button>
+            <p>history: {state.history.join(" / ")}</p>
+          </section>
+        );
       }
 
+      // ====== 3. createRoot 挂载 ======
       ReactDOM.createRoot(document.getElementById("root")).render(<Counter />);
-
     </script>
     <!-- SCRIPT_END -->
 

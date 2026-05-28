@@ -1,6 +1,7 @@
 <!--
-  分类: react18 / 函数组件
+  分类: react18 / function-components
   主题: defaultProps、参数默认值与 displayName
+  相关: 29-Router与状态管理面试点, 31-高阶组件HOC与renderProps
   要点:
     - 函数组件默认值优先使用解构参数默认值
     - defaultProps 可见于旧代码，新函数组件不应依赖它作为首选写法
@@ -29,7 +30,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>defaultProps、参数默认值与 displayName</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看 null 与 undefined 的默认值对比；下方 #root 为 React 挂载演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -48,10 +49,10 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/learn/passing-props-to-a-component" target="_blank" rel="noreferrer">React Docs: Passing Props to a Component</a></li>
+          <li><a href="https://react.dev/learn/passing-props-to-a-component" target="_blank" rel="noreferrer">react.dev: Passing Props to a Component</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters" target="_blank" rel="noreferrer">MDN: Default parameters</a></li>
-          <li><a href="https://legacy.reactjs.org/docs/react-component.html#defaultprops" target="_blank" rel="noreferrer">Legacy React Docs: defaultProps</a></li>
-          <li><a href="https://legacy.reactjs.org/docs/higher-order-components.html#convention-wrap-the-display-name-for-easy-debugging" target="_blank" rel="noreferrer">Legacy React Docs: Wrap the Display Name for Easy Debugging</a></li>
+          <li><a href="https://legacy.reactjs.org/docs/react-component.html#defaultprops" target="_blank" rel="noreferrer">Legacy React: defaultProps</a></li>
+          <li><a href="https://legacy.reactjs.org/docs/higher-order-components.html#convention-wrap-the-display-name-for-easy-debugging" target="_blank" rel="noreferrer">Legacy React: Wrap the Display Name for Easy Debugging</a></li>
         </ul>
       </div>
     </section>
@@ -63,36 +64,70 @@
 
     <!-- SCRIPT_START -->
     <script type="text/babel">
+      // ====== 1. 参数解构默认值（现代函数组件首选） ======
+      // 与 JavaScript 默认参数一致；仅 prop 为 undefined 或未传入时生效
       function Greeting({ name = "访客", level = 1 }) {
-        return <p>Hello, {name}! 等级: {level}</p>;
+        console.log("Greeting 收到 props:", { name, level }); // 预期: null 不会被替换为 "访客"
+        return (
+          <p>
+            Hello, {name}! 等级: {level}
+          </p>
+        );
       }
       Greeting.displayName = "GreetingCard";
 
+      // ====== 2. defaultProps 兼容写法（旧代码常见） ======
       function LegacyGreeting(props) {
         const { name, level } = props;
-        return <p>Legacy: {name}, Lv.{level}</p>;
+        console.log("LegacyGreeting 收到 props:", { name, level });
+        return (
+          <p>
+            Legacy: {name}, Lv.{level}
+          </p>
+        );
       }
       LegacyGreeting.defaultProps = {
         name: "访客",
         level: 1
       };
 
+      // ====== 3. null vs undefined：默认值何时生效 ======
+      // undefined / 未传 → 使用默认值；null → 显式空值，默认值不生效
+      function NullVsUndefinedDemo() {
+        const undefinedName = undefined;
+        const nullName = null;
+        console.log("null vs undefined:", {
+          undefinedUsesDefault: undefinedName === undefined,
+          nullIsExplicit: nullName === null
+        });
+        return (
+          <>
+            <Greeting name={undefinedName} />
+            <Greeting name={nullName} level={2} />
+            <LegacyGreeting name={nullName} level={2} />
+          </>
+        );
+      }
+
+      // ====== 4. displayName 服务 DevTools 调试 ======
+      // 不影响渲染；HOC/memo/forwardRef 包装后尤其需要可读名称
+      console.log("Greeting.displayName:", Greeting.displayName); // 预期: "GreetingCard"
+
+      // ====== 5. createRoot 挂载 ======
       function App() {
         return (
-        <section>
-          <h1>defaultProps 与 displayName</h1>
-
-          <Greeting />
-          <Greeting name="Alice" level={5} />
-          <LegacyGreeting />
-          <LegacyGreeting name="Bob" level={3} />
-          <p>面试回答: 函数组件优先参数默认值；defaultProps 仍兼容但逐渐让位于解构默认值。</p>
-        </section>
-      );
+          <section>
+            <h1>defaultProps 与 displayName</h1>
+            <Greeting />
+            <Greeting name="Alice" level={5} />
+            <LegacyGreeting />
+            <LegacyGreeting name="Bob" level={3} />
+            <NullVsUndefinedDemo />
+          </section>
+        );
       }
 
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 

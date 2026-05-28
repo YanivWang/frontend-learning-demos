@@ -1,6 +1,7 @@
 <!--
   分类: react18 / ref
   主题: forwardRef 与 useImperativeHandle
+  相关: 26-Fragment-Portal-StrictMode, 28-lazy-Suspense代码分割
   要点:
     - React 18 函数组件要接收父级 ref，需通过 forwardRef 显式转发
     - useImperativeHandle 可把 DOM ref 封装成受控的命令式方法
@@ -29,7 +30,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>forwardRef 与 useImperativeHandle</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看命令式 ref 调用日志；下方 #root 为 React 挂载/交互演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -48,9 +49,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/forwardRef" target="_blank" rel="noreferrer">React API Reference: forwardRef</a></li>
-          <li><a href="https://react.dev/reference/react/useImperativeHandle" target="_blank" rel="noreferrer">React API Reference: useImperativeHandle</a></li>
-          <li><a href="https://react.dev/learn/manipulating-the-dom-with-refs" target="_blank" rel="noreferrer">React Docs: Manipulating the DOM with Refs</a></li>
+          <li><a href="https://react.dev/reference/react/forwardRef" target="_blank" rel="noreferrer">react.dev: forwardRef</a></li>
+          <li><a href="https://react.dev/reference/react/useImperativeHandle" target="_blank" rel="noreferrer">react.dev: useImperativeHandle</a></li>
+          <li><a href="https://react.dev/learn/manipulating-the-dom-with-refs" target="_blank" rel="noreferrer">react.dev: Manipulating the DOM with Refs</a></li>
         </ul>
       </div>
     </section>
@@ -64,47 +65,53 @@
     <script type="text/babel">
       const { forwardRef, useImperativeHandle, useRef, useState } = React;
 
+      // ====== 1. forwardRef：React 18 函数组件显式接收 ref ======
+      // 对应 react.dev forwardRef；ref 不是普通 props
       const SearchInput = forwardRef(function SearchInput(props, ref) {
         const inputRef = useRef(null);
         const [value, setValue] = useState("");
 
+        // ====== 2. useImperativeHandle：暴露受控命令式 API ======
+        // 父组件只拿到 focus/clear，而非原始 DOM 节点
         useImperativeHandle(ref, () => ({
           focus() {
             inputRef.current.focus();
+            console.log("SearchInput.focus() 已调用"); // 预期: 点击「聚焦」按钮时打印
           },
           clear() {
             setValue("");
             inputRef.current.focus();
+            console.log("SearchInput.clear() 已调用，value 已清空"); // 预期: 点击「清空」按钮时打印
           }
         }));
 
         return (
-        <input
-        ref={inputRef}
-        value={value}
-        onChange={e => setValue(e.target.value)}
-        placeholder="输入关键词"
-        />
-      );
+          <input
+            ref={inputRef}
+            value={value}
+            onChange={e => setValue(e.target.value)}
+            placeholder="输入关键词"
+          />
+        );
       });
 
+      // ====== 3. 父组件通过 ref 调用命令式方法 ======
       function App() {
         const searchRef = useRef(null);
 
         return (
-        <section>
-          <h1>forwardRef 与 useImperativeHandle</h1>
+          <section>
+            <h1>forwardRef 与 useImperativeHandle</h1>
 
-          <SearchInput ref={searchRef} />
-          <button onClick={() => searchRef.current?.focus()}>聚焦</button>
-          <button onClick={() => searchRef.current?.clear()}>清空</button>
-          <p>面试回答: forwardRef 负责转发 ref，useImperativeHandle 负责暴露受控的命令式 API。</p>
-        </section>
-      );
+            <SearchInput ref={searchRef} />
+            <button onClick={() => searchRef.current?.focus()}>聚焦</button>
+            <button onClick={() => searchRef.current?.clear()}>清空</button>
+          </section>
+        );
       }
 
+      // ====== 4. createRoot 挂载 App ======
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 

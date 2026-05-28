@@ -1,9 +1,10 @@
 <!--
-  分类: react18 / 入门
+  分类: react18 / function-components / 入门
   主题: React 元素的「不可变」特性
+  相关: 03-元素与函数组件, 05-函数组件-props
   要点:
     - React 元素是不可变 JS 对象：要更新视图，只能重新创建并重新 render
-    - React 内部用 diff 找出真实 DOM 的最小差异，只更新需要变化的节点
+    - React 内部用协调（reconciliation）找出真实 DOM 的最小差异，只更新需要变化的节点
     - createRoot 在外面创建一次，每次 tick 复用同一个 root 调用 render（勿每次 tick 重新 createRoot）
   面试:
     - React element 为什么说是不可变的 UI 描述？
@@ -29,7 +30,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>React 元素的「不可变」特性</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看每秒 tick 日志；下方 #root 为 React 挂载演示区，观察时间文本如何更新。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -45,13 +46,14 @@
           <li><strong>时钟示例为什么每秒创建新 element？</strong> 结论是因为当前时间变了，需要一份新的 UI 描述。原因是旧 element 不会被原地修改；边界是这个写法适合讲原理，实际组件里会用 <code>useState</code> 和 effect 管理定时器。</li>
           <li><strong>React 会不会每次 render 都重建整个 DOM？</strong> 结论是不会简单粗暴重建整棵 DOM。原因是 React 会比较前后描述并提交必要变更；但这不代表 render 没成本，频繁定时更新仍应控制范围和清理定时器。</li>
           <li><strong><code>createRoot</code> 为什么只创建一次？</strong> 结论是一个容器对应一个 React root，后续更新复用 <code>root.render</code>。原因是 root 保存调度与渲染上下文；在循环里创建 root 会制造错误用法和潜在资源问题。</li>
+          <li><strong>真实项目为什么用 state 而不是手动 root.render？</strong> 结论是 state 让更新声明式、可组合、可测试。原因是组件内部 <code>useState</code> + <code>useEffect</code> 能自动管理定时器清理；手动 <code>root.render</code> 只适合入门演示 element 不可变原理。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://react.dev/reference/react/createElement" target="_blank" rel="noreferrer">react.dev: createElement</a></li>
           <li><a href="https://react.dev/learn/render-and-commit" target="_blank" rel="noreferrer">react.dev: Render and Commit</a></li>
           <li><a href="https://react.dev/reference/react-dom/client/createRoot" target="_blank" rel="noreferrer">react.dev: createRoot</a></li>
-          <li><a href="https://legacy.reactjs.org/docs/rendering-elements.html#updating-the-rendered-element" target="_blank" rel="noreferrer">legacy.reactjs.org: Updating the Rendered Element</a></li>
+          <li><a href="https://react.dev/learn/state-a-components-memory" target="_blank" rel="noreferrer">react.dev: State: A Component's Memory</a></li>
         </ul>
       </div>
     </section>
@@ -63,38 +65,31 @@
 
     <!-- SCRIPT_START -->
     <script type="text/babel">
-      /*
-      1.下面的 element 叫做“元素”,元素是react应用的最小单位，它用于描述屏幕上输出的内容
-      2.这个“元素”不同于浏览器中的DOM元素，这个“元素”只是“普通的js对象”
-      (React DOM 确保浏览器DOM元素的数据内容 和 React元素的数据内容一致)
-      这个所谓的元素其实就是虚拟DOM(vnode)
-
-      3.要想把元素渲染到页面的DOM容器中，需要调用 root.render(element)
-      3.1 这个方法负责将元素解析为DOM节点
-      3.2 然后插入到DOM树中
-      */
-
-      // root 只创建一次，每次 tick 复用同一个 root 调用 render
-      const root = ReactDOM.createRoot(document.getElementById('root'));
+      // ====== 1. createRoot 只创建一次，后续 tick 复用同一个 root ======
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      let tickCount = 0;
 
       function tick() {
-        const element =
-        <div>
-          <h1>当前的时间:</h1>
+        tickCount += 1;
+        const now = new Date().toLocaleTimeString();
 
-          <h2>{new Date().toLocaleTimeString()}</h2>
-        </div>
-        ;
+        // ====== 2. 每次 tick 创建全新 element（不可变：不修改旧 element） ======
+        // 旧 element 创建后不能改 props/children；更新 UI 的唯一方式是创建新 element
+        const element = (
+          <div>
+            <h1>当前的时间:</h1>
+            <h2>{now}</h2>
+          </div>
+        );
 
+        // ====== 3. root.render 提交新描述；React 协调后只更新变化的 DOM 节点 ======
         root.render(element);
+        console.log("tick #" + tickCount + " 创建新 element，时间:", now); // 预期: 每秒一条
       }
 
-      /*
-      4. React元素都是不可变的，当元素被创建之后，你是无法改变其内容和属性的
-      更新界面的唯一方式，就是创建一个新的元素，然后把它传入 root.render()
-      */
-      setInterval(tick,1000)
-
+      // 首次立即渲染，之后每秒更新
+      tick();
+      setInterval(tick, 1000);
     </script>
     <!-- SCRIPT_END -->
 

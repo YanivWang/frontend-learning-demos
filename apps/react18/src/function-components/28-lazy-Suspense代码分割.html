@@ -1,6 +1,7 @@
 <!--
   分类: react18 / 工程化
   主题: React.lazy 与 Suspense
+  相关: 27-forwardRef与useImperativeHandle, 29-Router与状态管理面试点
   要点:
     - React.lazy 声明懒加载组件，真实项目通常包裹动态 import
     - Suspense 在懒加载 Promise 未完成时展示 fallback
@@ -29,7 +30,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>React.lazy 与 Suspense</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看 lazy 加载与错误边界日志；下方 #root 为 React 挂载/交互演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -48,10 +49,10 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/lazy" target="_blank" rel="noreferrer">React API Reference: lazy</a></li>
-          <li><a href="https://react.dev/reference/react/Suspense" target="_blank" rel="noreferrer">React API Reference: Suspense</a></li>
+          <li><a href="https://react.dev/reference/react/lazy" target="_blank" rel="noreferrer">react.dev: lazy</a></li>
+          <li><a href="https://react.dev/reference/react/Suspense" target="_blank" rel="noreferrer">react.dev: Suspense</a></li>
           <li><a href="https://legacy.reactjs.org/docs/code-splitting.html" target="_blank" rel="noreferrer">Legacy React Docs: Code-Splitting</a></li>
-          <li><a href="https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary" target="_blank" rel="noreferrer">React Docs: Catching rendering errors with an Error Boundary</a></li>
+          <li><a href="https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary" target="_blank" rel="noreferrer">react.dev: Catching rendering errors with an Error Boundary</a></li>
         </ul>
       </div>
     </section>
@@ -65,11 +66,15 @@
     <script type="text/babel">
       const { Suspense, lazy, useState } = React;
 
+      // ====== 1. React.lazy：Promise 模拟成功加载路径 ======
+      // 真实项目写成 lazy(() => import('./Report.jsx'))
       const LazyReport = lazy(() => {
+        console.log("LazyReport: 开始加载"); // 预期: 点击「加载报表」后打印
         return new Promise(resolve => {
           setTimeout(() => {
             resolve({
               default: function Report() {
+                console.log("LazyReport: 加载完成并渲染"); // 预期: 约 1s 后打印
                 return <p>报表组件加载完成。</p>;
               }
             });
@@ -77,7 +82,9 @@
         });
       });
 
+      // ====== 2. lazy reject：失败路径交给 Error Boundary ======
       const BrokenReport = lazy(() => {
+        console.log("BrokenReport: 开始加载（将失败）"); // 预期: 点击「模拟加载失败」后打印
         return new Promise((_, reject) => {
           setTimeout(() => {
             reject(new Error("模拟 chunk 下载失败"));
@@ -85,6 +92,7 @@
         });
       });
 
+      // ====== 3. Error Boundary：捕获 lazy reject，Suspense 只处理 pending ======
       class ErrorBoundary extends React.Component {
         constructor(props) {
           super(props);
@@ -96,7 +104,7 @@
         }
 
         componentDidCatch(error) {
-          console.warn("lazy 组件加载失败:", error.message);
+          console.warn("lazy 组件加载失败:", error.message); // 预期: 模拟失败时打印
         }
 
         render() {
@@ -107,28 +115,28 @@
         }
       }
 
+      // ====== 4. App：Suspense fallback + 切换加载模式 ======
       function App() {
         const [loadMode, setLoadMode] = useState(null);
 
         return (
-        <section>
-          <h1>lazy 与 Suspense</h1>
+          <section>
+            <h1>lazy 与 Suspense</h1>
 
-          <button onClick={() => setLoadMode("success")}>加载报表</button>
-          <button onClick={() => setLoadMode("fail")}>模拟加载失败</button>
-          <ErrorBoundary key={loadMode}>
-            <Suspense fallback={<p>加载中...</p>}>
-              {loadMode === "success" && <LazyReport />}
-              {loadMode === "fail" && <BrokenReport />}
-            </Suspense>
-          </ErrorBoundary>
-          <p>面试回答: lazy 负责按需加载组件，Suspense 负责等待 UI，加载失败要交给错误边界兜底。</p>
-        </section>
-      );
+            <button onClick={() => setLoadMode("success")}>加载报表</button>
+            <button onClick={() => setLoadMode("fail")}>模拟加载失败</button>
+            <ErrorBoundary key={loadMode}>
+              <Suspense fallback={<p>加载中...</p>}>
+                {loadMode === "success" && <LazyReport />}
+                {loadMode === "fail" && <BrokenReport />}
+              </Suspense>
+            </ErrorBoundary>
+          </section>
+        );
       }
 
+      // ====== 5. createRoot 挂载 App ======
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 

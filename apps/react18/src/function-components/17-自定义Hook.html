@@ -1,6 +1,7 @@
 <!--
   分类: react18 / hooks
   主题: 自定义 Hook 抽离复用逻辑
+  相关: 16-Hooks-useReducer, 18-闭包与依赖数组陷阱
   要点:
     - 自定义 Hook 是以 use 开头的函数，用来复用状态逻辑并遵守 Hooks 调用规则
     - 每次调用自定义 Hook 都有独立 state 和 effect，不会天然共享状态
@@ -29,7 +30,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>自定义 Hook 抽离复用逻辑</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 查看两个 useToggle 实例的独立 state；下方 #root 为 React 挂载/交互演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -41,16 +42,16 @@
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>自定义 Hook 复用的是逻辑还是状态本身？</strong> 结论是复用状态逻辑，不共享状态实例。原因是 Hook 每次调用都会走一套独立的 Hook 状态槽位。项目里如果多个组件要共享同一份数据，应把状态提升、放入 Context，或接入外部 store。</li>
-          <li><strong>为什么必须以 <code>use</code> 开头？</strong> 结论是为了让 React 和 lint 规则识别这是 Hook。原因是只有识别出来，工具才能检查“只能在顶层调用”和“依赖数组写全”等规则。边界是普通工具函数不调用 Hook，就不应该命名为 <code>useXxx</code>。</li>
-          <li><strong>抽离窗口 resize Hook 时要处理哪些边界？</strong> 结论是要处理初始值、事件监听清理和非浏览器环境。原因是 resize 是外部系统，绑定后不清理会泄漏，SSR 中直接读 <code>window</code> 会报错。静态浏览器 demo 可以简化，生产组件库要补环境判断。</li>
-          <li><strong>自定义 Hook、组件和普通函数怎么区分？</strong> 结论是复用 UI 用组件，复用有状态逻辑用 Hook，纯计算用普通函数。原因是组件返回元素，Hook 返回状态和操作，普通函数不参与 React Hook 规则。项目里不要为了抽象而把简单表达式强行变成 Hook。</li>
+          <li><strong>自定义 Hook 复用的是逻辑还是状态本身？</strong> 结论是复用状态逻辑，不共享状态实例。原因是 Hook 每次调用都会走一套独立的 Hook 状态槽位。</li>
+          <li><strong>为什么必须以 <code>use</code> 开头？</strong> 结论是为了让 React 和 lint 规则识别这是 Hook。原因是只有识别出来，工具才能检查“只能在顶层调用”和“依赖数组写全”等规则。</li>
+          <li><strong>抽离窗口 resize Hook 时要处理哪些边界？</strong> 结论是要处理初始值、事件监听清理和非浏览器环境。原因是 resize 是外部系统，绑定后不清理会泄漏。</li>
+          <li><strong>自定义 Hook、组件和普通函数怎么区分？</strong> 结论是复用 UI 用组件，复用有状态逻辑用 Hook，纯计算用普通函数。原因是组件返回元素，Hook 返回状态和操作。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/learn/reusing-logic-with-custom-hooks" target="_blank" rel="noreferrer">React Docs: Reusing Logic with Custom Hooks</a></li>
-          <li><a href="https://react.dev/reference/rules/rules-of-hooks" target="_blank" rel="noreferrer">React Docs: Rules of Hooks</a></li>
-          <li><a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">React Docs: useEffect</a></li>
+          <li><a href="https://react.dev/learn/reusing-logic-with-custom-hooks" target="_blank" rel="noreferrer">react.dev: Reusing Logic with Custom Hooks</a></li>
+          <li><a href="https://react.dev/reference/rules/rules-of-hooks" target="_blank" rel="noreferrer">react.dev: Rules of Hooks</a></li>
+          <li><a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">react.dev: useEffect</a></li>
         </ul>
       </div>
     </section>
@@ -64,6 +65,7 @@
     <script type="text/babel">
       const { useEffect, useState } = React;
 
+      // ====== 1. useWindowWidth：封装 resize 订阅与 cleanup ======
       function useWindowWidth() {
         const [width, setWidth] = useState(window.innerWidth);
 
@@ -73,36 +75,52 @@
           }
 
           window.addEventListener("resize", handleResize);
-          return () => window.removeEventListener("resize", handleResize);
+          console.log("useWindowWidth setup: 监听 resize，初始 width =", window.innerWidth);
+          return () => {
+            console.log("useWindowWidth cleanup: 移除 resize 监听");
+            window.removeEventListener("resize", handleResize);
+          };
         }, []);
 
         return width;
       }
 
+      // ====== 2. useToggle：封装布尔切换逻辑 ======
       function useToggle(initialValue) {
         const [value, setValue] = useState(initialValue);
         const toggle = () => setValue(prev => !prev);
         return [value, toggle];
       }
 
-      function App() {
-        const width = useWindowWidth();
-        const [visible, toggleVisible] = useToggle(true);
+      // ====== 3. 两个独立 Hook 实例：复用逻辑，不共享 state ======
+      function TogglePanel({ label, initialValue }) {
+        const [visible, toggleVisible] = useToggle(initialValue);
+        console.log("useToggle 实例 [" + label + "]: visible =", visible);
 
         return (
-        <section>
-          <h1>自定义 Hook</h1>
-
-          <p>窗口宽度: {width}px</p>
-          <button onClick={toggleVisible}>切换详情</button>
-          {visible && <p>这段内容由 useToggle 管理显示隐藏。</p>}
-          <p>面试回答: 自定义 Hook 让状态逻辑可复用，但不会共享状态；组件每调用一次 Hook 都是独立的一份。</p>
-        </section>
-      );
+          <div>
+            <button onClick={toggleVisible}>{label} 切换（当前: {visible ? "开" : "关"}）</button>
+            {visible && <p>{label} 详情内容</p>}
+          </div>
+        );
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      function App() {
+        const width = useWindowWidth();
 
+        return (
+          <section>
+            <h1>自定义 Hook</h1>
+
+            <p>窗口宽度: {width}px</p>
+            <TogglePanel label="面板 A" initialValue={true} />
+            <TogglePanel label="面板 B" initialValue={false} />
+          </section>
+        );
+      }
+
+      // ====== 4. createRoot 挂载 ======
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
     </script>
     <!-- SCRIPT_END -->
 
