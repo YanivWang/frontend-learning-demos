@@ -1,11 +1,13 @@
 <!--
   分类: react18 / class 组件
   主题: class 组件通信、状态提升与 children 组合
+  相关: 02-class-state与props, 10-class-Context上下文, 18-class-高阶组件HOC
   要点:
     - 父传子: props；子传父: 父传回调，子组件调用
     - 兄弟通信: 状态提升到共同父组件
     - children / 具名插槽式 props（如 footer）实现组合，避免 props 爆炸
     - class 与函数组件都遵循单向数据流；跨层共享再考虑 Context
+    - 新项目优先函数组件；class 维护时理解数据流原则不变
   面试:
     - React 单向数据流下父子和兄弟组件如何通信？
     - 状态提升什么时候比 Context 或全局状态更合适？
@@ -30,13 +32,13 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>class 组件通信、状态提升与 children 组合</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请在输入框修改名字，观察 Preview 实时回显；点击"清空"验证父组件通过回调控制 state；下方 #root 为 React 挂载/交互演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
           <li>React 组件通信遵循单向数据流：父组件通过 <code>props</code> 把数据传给子组件，子组件不能直接改 props，只能调用父组件传下来的回调来请求更新。</li>
           <li>兄弟组件需要共享状态时，优先把状态提升到最近的共同父组件。本 demo 中 <code>NameInput</code> 只发出新值，<code>App</code> 保存 <code>name</code>，<code>Preview</code> 读取同一份 state。</li>
-          <li><code>children</code> 适合表达“把一段 UI 放进容器”的组合关系；具名 props（如 <code>footer</code>）适合多个插槽式区域。它们能让容器组件更通用，减少大量布尔配置 props。</li>
+          <li><code>children</code> 适合表达"把一段 UI 放进容器"的组合关系；具名 props（如 <code>footer</code>）适合多个插槽式区域。它们能让容器组件更通用，减少大量布尔配置 props。</li>
           <li>当共享范围只是局部父子树，状态提升比 Context 或全局状态更简单；当跨层很多、多个远端组件都需要同一份数据时，再考虑 Context、外部 store 或路由状态。</li>
           <li>class 与函数组件在通信原则上没有差异，差别只在写法：class 用实例方法和 <code>this.setState</code>，函数组件用闭包、<code>useState</code> 和回调 props。</li>
         </ul>
@@ -46,6 +48,7 @@
           <li><strong>状态提升什么时候比 Context 或全局状态更合适？</strong> 结论是共享范围小、只服务当前页面局部交互时优先状态提升。原因是 Context 和全局 store 会扩大依赖范围；跨很多层或多个远端区域共享时才值得引入。</li>
           <li><strong>children 和具名 props 组合能解决什么问题？</strong> 结论是它们让容器组件接收 UI 片段，而不是通过大量配置项猜测所有布局。原因是 React 元素也是值；项目中卡片、弹窗、布局容器常用 children、header、footer 这类组合方式。</li>
           <li><strong>子组件为什么不应该直接修改 props？</strong> 结论是 props 只读。原因是直接修改会破坏单向数据流，父组件下一次渲染还会覆盖子组件修改；正确做法是调用回调让父组件更新状态。</li>
+          <li><strong>class 组件通信迁移到函数组件时哪些原则不变？</strong> 结论是单向数据流、状态提升、props 只读、回调通知父组件这些原则不变。变化只是写法：class 的 <code>this.setState</code> 换成 <code>useState</code>，实例方法换成普通函数和闭包。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -63,21 +66,24 @@
 
     <!-- SCRIPT_START -->
     <script type="text/babel">
+      // ====== 1. Panel：children + 具名 footer 实现组合 ======
       class Panel extends React.Component {
         render() {
           return (
-          <section style={{ border: "1px solid #ccc", padding: 12, marginBottom: 12 }}>
-            <h2>{this.props.title}</h2>
-            <div>{this.props.children}</div>
-            <footer>{this.props.footer}</footer>
-          </section>
-        );
-      }
+            <section style={{ border: "1px solid #ccc", padding: 12, marginBottom: 12 }}>
+              <h2>{this.props.title}</h2>
+              <div>{this.props.children}</div>
+              <footer>{this.props.footer}</footer>
+            </section>
+          );
+        }
       }
 
+      // ====== 2. 子组件通过回调通知父组件（子 → 父） ======
       class NameInput extends React.Component {
         handleChange = (e) => {
           this.props.onChangeName(e.target.value);
+          console.log("NameInput 回调父组件:", e.target.value);
         };
 
         render() {
@@ -91,11 +97,9 @@
         }
       }
 
+      // ====== 3. 父组件持有 state，兄弟组件共享（状态提升） ======
       class App extends React.Component {
-        constructor(props) {
-          super(props);
-          this.state = { name: "React Class" };
-        }
+        state = { name: "React Class" };
 
         handleNameChange = (name) => {
           this.setState({ name });
@@ -103,28 +107,25 @@
 
         clearName = () => {
           this.setState({ name: "" });
+          console.log("父组件清空 name");
         };
 
         render() {
           return (
-          <main>
-            <h1>class 组件通信与 children</h1>
-
-            <Panel
-              title="资料卡片"
-              footer={<button onClick={this.clearName}>清空</button>}
+            <main>
+              <Panel
+                title="资料卡片"
+                footer={<button type="button" onClick={this.clearName}>清空</button>}
               >
-              <NameInput value={this.state.name} onChangeName={this.handleNameChange} />
-              <Preview name={this.state.name} />
-            </Panel>
-            <p>面试回答: 单向数据流；子组件通过回调请求父组件更新；children 做组合扩展。</p>
-          </main>
-        );
-      }
+                <NameInput value={this.state.name} onChangeName={this.handleNameChange} />
+                <Preview name={this.state.name} />
+              </Panel>
+            </main>
+          );
+        }
       }
 
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -146,5 +147,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

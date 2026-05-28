@@ -1,11 +1,13 @@
 <!--
-  分类: react18 / 面试综合
+  分类: react18 / class 组件
   主题: Error Boundary 与常见优化清单
+  相关: 06-class-完整生命周期与API, 08-class-PureComponent性能优化, 18-class-高阶组件HOC
   要点:
     - Error Boundary 只能用 class 组件实现，捕获子组件渲染、生命周期、构造函数中的错误
     - 它不能捕获事件处理、异步回调、服务端渲染、错误边界自身的错误
     - 常见优化: 合理 key、memo、useMemo/useCallback、懒加载、虚拟列表、状态下沉或拆分 Context
     - 性能优化要先定位瓶颈，错误边界要按页面或功能区域分层放置
+    - getDerivedStateFromError 渲染降级 UI，componentDidCatch 记录错误信息
   面试:
     - Error Boundary 能捕获哪些错误，不能捕获哪些错误？
     - 为什么 React 18 仍然需要 class 组件实现错误边界？
@@ -30,7 +32,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Error Boundary 与常见优化清单</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console；点击"触发渲染错误"观察 Error Boundary 降级 UI，点击"触发事件错误"验证事件 handler 中的错误不会被捕获；下方 #root 为 React 挂载/交互演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -43,16 +45,17 @@
         <h2>面试考点</h2>
         <ul>
           <li><strong>Error Boundary 能捕获哪些错误，不能捕获哪些错误？</strong> 结论是能捕获子树渲染、生命周期和构造函数中的错误，不能捕获事件、异步、SSR 和自身错误。原因是它工作在 React 渲染提交流程里；事件和异步已经脱离这次渲染调用栈。</li>
-          <li><strong>为什么 React 18 仍然需要 class 组件实现错误边界？</strong> 结论是官方 API 仍要求错误边界使用 class 生命周期。原因是 <code>getDerivedStateFromError</code> 和 <code>componentDidCatch</code> 目前是 class API；函数组件通常通过第三方封装使用错误边界。</li>
+          <li><strong>为什么 React 18 仍然需要 class 组件实现错误边界？</strong> 结论是官方 API 仍要求错误边界使用 class 生命周期。原因是 <code>getDerivedStateFromError</code> 和 <code>componentDidCatch</code> 目前是 class API；函数组件通常通过第三方封装或外层 class 边界使用。</li>
           <li><strong>getDerivedStateFromError 和 componentDidCatch 分别做什么？</strong> 前者返回 state 以渲染降级 UI，后者接收错误和组件栈，适合日志上报。项目里不要在 <code>getDerivedStateFromError</code> 做副作用。</li>
           <li><strong>常见 React 性能优化为什么不能先上 memo？</strong> 结论是要先定位瓶颈。原因是 <code>memo</code> 也有比较成本，错误的缓存还会制造过期依赖问题；项目里先用 Profiler、日志和用户路径找出真正慢点。</li>
+          <li><strong>错误边界和性能优化在项目里如何分层落地？</strong> 结论是错误边界按路由页/业务卡片分层放置，性能优化按瓶颈分层：先拆 state 和组件，再稳定 key 和 Context，最后才加 memo/虚拟列表。原因是局部错误不应拖垮整站，性能手段也有维护成本，不应无证据地全局套用。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary" target="_blank" rel="noreferrer">react.dev: Catching rendering errors with an error boundary</a></li>
-          <li><a href="https://legacy.reactjs.org/docs/error-boundaries.html" target="_blank" rel="noreferrer">Legacy React: Error Boundaries</a></li>
+          <li><a href="https://react.dev/reference/react/Component#static-getderivedstatefromerror" target="_blank" rel="noreferrer">react.dev: static getDerivedStateFromError</a></li>
+          <li><a href="https://react.dev/reference/react/Component#componentdidcatch" target="_blank" rel="noreferrer">react.dev: componentDidCatch</a></li>
           <li><a href="https://react.dev/reference/react/memo" target="_blank" rel="noreferrer">react.dev: memo</a></li>
-          <li><a href="https://react.dev/reference/react/lazy" target="_blank" rel="noreferrer">react.dev: lazy</a></li>
         </ul>
       </div>
     </section>
@@ -64,67 +67,83 @@
 
     <!-- SCRIPT_START -->
     <script type="text/babel">
-      const { useState } = React;
-
+      // ====== 1. Error Boundary：只能用 class 实现 ======
       class ErrorBoundary extends React.Component {
-        constructor(props) {
-          super(props);
-          this.state = { hasError: false, message: "" };
-        }
+        state = { hasError: false, message: "" };
 
         static getDerivedStateFromError(error) {
+          console.log("getDerivedStateFromError:", error.message);
           return { hasError: true, message: error.message };
         }
 
         componentDidCatch(error, info) {
-          console.log("错误边界捕获:", error, info.componentStack);
+          console.log("componentDidCatch:", error.message, info.componentStack);
         }
 
         render() {
           if (this.state.hasError) {
             return (
-            <div>
-              <h2>组件出错了</h2>
-              <p>{this.state.message}</p>
-            </div>
+              <div style={{ padding: 12, border: "1px solid #c00", background: "#fee" }}>
+                <h2>组件出错了（Error Boundary 降级 UI）</h2>
+                <p>{this.state.message}</p>
+              </div>
+            );
+          }
+          return this.props.children;
+        }
+      }
+
+      // ====== 2. 渲染阶段抛错 → 会被 Error Boundary 捕获 ======
+      class BuggyCounter extends React.Component {
+        render() {
+          if (this.props.broken) {
+            throw new Error("BuggyCounter render error");
+          }
+          return <p>组件正常渲染。</p>;
+        }
+      }
+
+      class App extends React.Component {
+        state = { broken: false };
+
+        // ====== 3. 事件 handler 抛错 → Error Boundary 不能捕获 ======
+        triggerEventError = () => {
+          try {
+            throw new Error("事件 handler 中的错误");
+          } catch (err) {
+            console.log("事件错误需 try/catch 自行处理，Error Boundary 不会捕获:", err.message);
+            alert("事件错误不会被 Error Boundary 捕获，见 Console");
+          }
+        };
+
+        render() {
+          return (
+            <section>
+              <button type="button" onClick={() => this.setState({ broken: true })}>
+                触发渲染错误
+              </button>
+              <button type="button" onClick={this.triggerEventError} style={{ marginLeft: 8 }}>
+                触发事件错误（不被捕获）
+              </button>
+
+              <ErrorBoundary>
+                <BuggyCounter broken={this.state.broken} />
+              </ErrorBoundary>
+
+              <h2>常见优化清单</h2>
+              <ul>
+                <li>先用 DevTools Profiler 定位重复渲染原因</li>
+                <li>列表使用稳定 key，避免状态错位</li>
+                <li>昂贵计算用 useMemo，稳定函数引用用 useCallback</li>
+                <li>大列表考虑虚拟滚动，大页面考虑 lazy + Suspense</li>
+                <li>Context value 拆分或缓存，避免全局 Provider 频繁重渲染</li>
+              </ul>
+            </section>
           );
         }
-        return this.props.children;
-      }
-      }
-
-      function BuggyCounter({ broken }) {
-        if (broken) {
-          throw new Error("BuggyCounter render error");
-        }
-        return <p>组件正常渲染。</p>;
-      }
-
-      function App() {
-        const [broken, setBroken] = useState(false);
-
-        return (
-        <section>
-          <h1>Error Boundary 与常见优化清单</h1>
-
-          <button onClick={() => setBroken(true)}>触发渲染错误</button>
-          <ErrorBoundary>
-            <BuggyCounter broken={broken} />
-          </ErrorBoundary>
-          <ul>
-            <li>先用 DevTools / 日志定位重复渲染原因。</li>
-            <li>列表使用稳定 key，避免状态错位。</li>
-            <li>昂贵计算用 useMemo，稳定函数引用用 useCallback。</li>
-            <li>大列表考虑虚拟滚动，大页面考虑 lazy + Suspense。</li>
-            <li>Context value 拆分或缓存，避免全局 Provider 频繁重渲染。</li>
-          </ul>
-          <p>面试回答: Error Boundary 是 React 的渲染错误兜底机制；性能优化要基于实际瓶颈。</p>
-        </section>
-      );
       }
 
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -146,5 +165,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

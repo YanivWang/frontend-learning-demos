@@ -1,6 +1,7 @@
 <!--
   分类: react18 / class 组件
   主题: getDerivedStateFromProps 与 getSnapshotBeforeUpdate
+  相关: 06-class-完整生命周期与API, 08-class-PureComponent性能优化, 11-class-受控与非受控表单
   要点:
     - getDerivedStateFromProps 在 render 前运行，必须返回局部 state 补丁或 null，且不能访问 this
     - 派生 state 容易制造 props 与 state 双数据源，通常优先直接使用 props、受控组件或 key 重置
@@ -34,7 +35,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>getDerivedStateFromProps 与 getSnapshotBeforeUpdate</h1>
-      <p class="hint">下方示例分别演示 props 派生 state 和滚动快照：输入框展示派生 state 的维护成本，消息列表展示追加内容前后如何保持滚动位置。</p>
+      <p class="hint">请打开 DevTools Console 观察 getDerivedStateFromProps 与 getSnapshotBeforeUpdate 日志；在输入框编辑并点击"追加消息"验证滚动快照；下方 #root 为 React 挂载/交互演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -47,16 +48,16 @@
         <h2>面试考点</h2>
         <ul>
           <li><strong>getDerivedStateFromProps 为什么必须是静态纯函数？</strong> 结论是它只能根据 props/state 计算下一段 state。原因是它运行在 render 前，没有实例上下文，也不保证适合副作用；如果在这里做请求或依赖实例字段，会破坏渲染可预测性。维护旧代码时应把副作用移到 <code>componentDidMount</code>/<code>componentDidUpdate</code>。</li>
-          <li><strong>为什么 props 派生 state 是高风险写法？</strong> 结论是它经常制造两个状态来源。原因是父 props 更新和用户本地编辑都可能写同一份数据，稍不注意就覆盖用户输入或产生不同步。项目里能直接从 props 渲染就不要复制；需要“重置初始值”时常用 <code>key</code> 或受控组件模式。</li>
-          <li><strong>getSnapshotBeforeUpdate 和 componentDidUpdate 如何配合？</strong> 结论是前者读更新前快照，后者在 DOM 更新后应用快照。原因是某些值必须在 DOM 改变前读取，例如旧滚动高度和旧滚动位置；等 DOM 更新后再读就丢失了参照。示例中快照返回“底部距离”，更新后用新高度减去该距离恢复位置。</li>
+          <li><strong>为什么 props 派生 state 是高风险写法？</strong> 结论是它经常制造两个状态来源。原因是父 props 更新和用户本地编辑都可能写同一份数据，稍不注意就覆盖用户输入或产生不同步。项目里能直接从 props 渲染就不要复制；需要"重置初始值"时常用 <code>key</code> 或受控组件模式。</li>
+          <li><strong>getSnapshotBeforeUpdate 和 componentDidUpdate 如何配合？</strong> 结论是前者读更新前快照，后者在 DOM 更新后应用快照。原因是某些值必须在 DOM 改变前读取，例如旧滚动高度和旧滚动位置；等 DOM 更新后再读就丢失了参照。示例中快照返回"底部距离"，更新后用新高度减去该距离恢复位置。</li>
           <li><strong>聊天列表追加消息时如何避免打断用户阅读？</strong> 结论是只有用户原本接近底部才自动跟随到底部。原因是用户向上滚动查看历史消息时，新增消息不应强行抢走视口。项目里还要处理消息批量追加、图片加载导致高度二次变化、虚拟列表和异步数据失败的边界。</li>
+          <li><strong>React 18 新代码里如何替代这些 class 生命周期？</strong> 结论是 props 派生优先受控组件或 <code>key</code> 重置，DOM 快照用 <code>useLayoutEffect</code> + ref。原因是 Hooks 能在提交后安全读写 DOM；<code>getDerivedStateFromProps</code> 的大多数场景可用"直接从 props 渲染"替代，滚动恢复用 <code>useLayoutEffect</code> 在 DOM 变更后同步调整。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/Component#static-getderivedstatefromprops" target="_blank" rel="noopener">React Reference: <code>static getDerivedStateFromProps</code></a></li>
-          <li><a href="https://react.dev/reference/react/Component#getsnapshotbeforeupdate" target="_blank" rel="noopener">React Reference: <code>getSnapshotBeforeUpdate</code></a></li>
-          <li><a href="https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes" target="_blank" rel="noopener">React Learn: Adjusting Some State When a Prop Changes</a></li>
-          <li><a href="https://legacy.reactjs.org/blog/2018/06/07/you-probably-dont-need-derived-state.html" target="_blank" rel="noopener">React Blog: You Probably Don't Need Derived State</a></li>
+          <li><a href="https://react.dev/reference/react/Component#static-getderivedstatefromprops" target="_blank" rel="noreferrer">react.dev: static getDerivedStateFromProps</a></li>
+          <li><a href="https://react.dev/reference/react/Component#getsnapshotbeforeupdate" target="_blank" rel="noreferrer">react.dev: getSnapshotBeforeUpdate()</a></li>
+          <li><a href="https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes" target="_blank" rel="noreferrer">react.dev: Adjusting Some State When a Prop Changes</a></li>
         </ul>
       </div>
     </section>
@@ -68,6 +69,7 @@
 
     <!-- SCRIPT_START -->
     <script type="text/babel">
+      // ====== 1. getDerivedStateFromProps：render 前从 props 派生 state（高风险，仅演示） ======
       class ControlledInput extends React.Component {
         constructor(props) {
           super(props);
@@ -75,6 +77,7 @@
         }
 
         static getDerivedStateFromProps(nextProps, prevState) {
+          console.log("getDerivedStateFromProps:", { nextProps: nextProps.value, prevState: prevState.value });
           if (nextProps.value !== prevState.value) {
             return { value: nextProps.value };
           }
@@ -87,15 +90,16 @@
 
         render() {
           return (
-          <input
-          value={this.state.value}
-          onChange={this.handleChange}
-          placeholder="父 props 驱动，内部 state 同步"
-          />
-        );
-      }
+            <input
+              value={this.state.value}
+              onChange={this.handleChange}
+              placeholder="父 props 驱动，内部 state 同步"
+            />
+          );
+        }
       }
 
+      // ====== 2. getSnapshotBeforeUpdate + componentDidUpdate：DOM 提交前取快照 ======
       class MessageList extends React.Component {
         listRef = React.createRef();
 
@@ -104,7 +108,9 @@
           if (!list) return null;
           const wasAtBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 20;
           if (prevProps.messages.length < this.props.messages.length && wasAtBottom) {
-            return list.scrollHeight - list.scrollTop;
+            const snapshot = list.scrollHeight - list.scrollTop;
+            console.log("getSnapshotBeforeUpdate 快照:", snapshot);
+            return snapshot;
           }
           return null;
         }
@@ -113,57 +119,54 @@
           if (snapshot !== null) {
             const list = this.listRef.current;
             list.scrollTop = list.scrollHeight - snapshot;
+            console.log("componentDidUpdate 应用快照，scrollTop:", list.scrollTop);
           }
         }
 
         render() {
           return (
-          <div ref={this.listRef} className="log-box">
-            {this.props.messages.map((msg, i) => (
-              <div key={i}>{msg}</div>
-            ))}
-          </div>
-        );
-      }
+            <div ref={this.listRef} className="log-box">
+              {this.props.messages.map((msg, i) => (
+                <div key={i}>{msg}</div>
+              ))}
+            </div>
+          );
+        }
       }
 
       class App extends React.Component {
-        constructor(props) {
-          super(props);
-          this.state = {
-            text: "React",
-            messages: ["msg-1", "msg-2", "msg-3"]
-          };
-        }
+        state = {
+          text: "React",
+          messages: ["msg-1", "msg-2", "msg-3"],
+        };
 
         addMessage = () => {
           this.setState({
-            messages: [...this.state.messages, "msg-" + Date.now()]
+            messages: [...this.state.messages, "msg-" + Date.now()],
           });
         };
 
         render() {
           return (
-          <section>
-            <h1>getDerivedStateFromProps / getSnapshotBeforeUpdate</h1>
-
-            <h2>派生 state（受控输入）</h2>
-            <ControlledInput
-              value={this.state.text}
-              onChange={(text) => this.setState({ text })}
+            <section>
+              <h2>派生 state（受控输入）</h2>
+              <ControlledInput
+                value={this.state.text}
+                onChange={(text) => this.setState({ text })}
               />
               <p>父 state.text: {this.state.text}</p>
+
               <h2>快照（滚动位置恢复）</h2>
-              <button onClick={this.addMessage}>追加消息（在底部时保持滚动）</button>
+              <button type="button" onClick={this.addMessage}>
+                追加消息（在底部时保持滚动）
+              </button>
               <MessageList messages={this.state.messages} />
-              <p>面试回答: 前者派生 state 须纯函数；后者在 DOM 变更前取快照，在 didUpdate 里应用。</p>
             </section>
           );
         }
       }
 
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -185,5 +188,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

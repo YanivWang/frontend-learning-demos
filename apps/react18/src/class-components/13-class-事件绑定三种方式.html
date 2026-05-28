@@ -1,11 +1,13 @@
 <!--
   分类: react18 / class 组件
   主题: class 组件事件 this 绑定的三种方式
+  相关: 01-class-必须super, 02-class-state与props, 16-class-合成事件机制
   要点:
     - 方式一: constructor 中 this.handle = this.handle.bind(this)
     - 方式二: JSX 箭头函数 onClick={(e) => this.handle(e)}（每次 render 新建函数）
     - 方式三: 类字段箭头函数 handle = (e) => {}（推荐，this 自动绑定）
-    - 直接 onClick={this.handle} 会丢失 class 实例 this；传参和性能要分场景权衡
+    - 直接 onClick={this.handle} 会丢失 class 实例 this；onClick={this.handle()} 会在 render 时立即执行
+    - class 维护代码迁移到函数组件后，this 绑定问题由闭包自然解决
   面试:
     - class 事件处理函数为什么需要绑定 this？
     - constructor bind、JSX 箭头函数和类字段箭头函数怎么取舍？
@@ -30,7 +32,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>class 组件事件 this 绑定的三种方式</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 观察各按钮点击时的 this 输出；依次点击三种绑定方式与反例按钮；下方 #root 为 React 挂载/交互演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -46,11 +48,12 @@
           <li><strong>constructor bind、JSX 箭头函数和类字段箭头函数怎么取舍？</strong> 结论是老代码常见 bind，传参常用 JSX 箭头函数，现代 class 维护代码常用类字段箭头函数。原因是它们分别优化稳定引用、写法便利和样板代码；大量列表中要关注函数引用变化。</li>
           <li><strong>在 render 中创建箭头函数一定是性能问题吗？</strong> 结论是不一定。原因是创建函数本身通常很小，真正影响常来自把新引用传给 memo/PureComponent 子组件；项目里应先用 DevTools 定位，再决定是否提取稳定 handler。</li>
           <li><strong>事件传参时常见错误是什么？</strong> 最常见是写成 <code>onClick={this.handle(id)}</code> 导致渲染时立即执行。正确做法是传函数，例如 <code>onClick={() =&gt; this.handle(id)}</code>，或预先 bind 参数。</li>
+          <li><strong>class 维护代码迁移到函数组件后 this 问题如何消失？</strong> 结论是函数组件没有实例 <code>this</code>，事件 handler 直接闭包捕获 props/state。原因是箭头函数和普通函数在函数组件里都能访问当前 render 的变量；迁移时用 <code>useCallback</code> 稳定引用即可，不再需要 bind。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://legacy.reactjs.org/docs/handling-events.html" target="_blank" rel="noreferrer">Legacy React: Handling Events</a></li>
           <li><a href="https://react.dev/learn/responding-to-events" target="_blank" rel="noreferrer">react.dev: Responding to Events</a></li>
+          <li><a href="https://react.dev/reference/react/Component" target="_blank" rel="noreferrer">react.dev: Component（class 事件处理）</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions" target="_blank" rel="noreferrer">MDN: Arrow function expressions</a></li>
         </ul>
       </div>
@@ -67,28 +70,28 @@
         constructor(props) {
           super(props);
           this.state = { count: 0 };
+          // ====== 1. constructor bind：生成稳定函数引用 ======
           this.handleBind = this.handleBind.bind(this);
         }
 
         handleBind() {
-          this.setState({ count: this.state.count + 1 });
+          this.setState((s) => ({ count: s.count + 1 }));
           console.log("bind 方式 this:", this.constructor.name);
+          // 预期: Demo
         }
 
-        handleArrowInJsx = () => {
-          // 仅演示：实际在 render 里写箭头函数
-        };
-
+        // ====== 3. 类字段箭头函数：词法绑定 this（推荐） ======
         handleClassField = () => {
-          this.setState({ count: this.state.count + 1 });
+          this.setState((s) => ({ count: s.count + 1 }));
           console.log("类字段箭头 this:", this.constructor.name);
         };
 
+        // 反例：未 bind 的普通方法
         handleWrong() {
-          // 未绑定：React 调用时 this 不是组件实例
           console.log("未绑定 this:", this);
+          // 预期: undefined 或 window（非组件实例）
           try {
-            this.setState({ count: this.state.count + 1 });
+            this.setState((s) => ({ count: s.count + 1 }));
           } catch (err) {
             alert("未绑定: " + err.message);
           }
@@ -96,27 +99,43 @@
 
         render() {
           return (
-          <section>
-            <h1>事件 this 绑定三种方式</h1>
+            <section>
+              <p>count: <strong>{this.state.count}</strong></p>
 
-            <p>count: {this.state.count}</p>
-            <button onClick={this.handleBind}>1. constructor bind</button>
-            <button onClick={(e) => {
-                  this.setState({ count: this.state.count + 1 });
+              <button type="button" onClick={this.handleBind}>
+                1. constructor bind
+              </button>
+
+              {/* ====== 2. JSX 内箭头函数：每次 render 新建函数，适合传参 ====== */}
+              <button
+                type="button"
+                onClick={() => {
+                  this.setState((s) => ({ count: s.count + 1 }));
                   console.log("JSX 箭头 this:", this.constructor.name);
-                }}>
+                }}
+                style={{ marginLeft: 8 }}
+              >
                 2. JSX 内箭头函数
               </button>
-              <button onClick={this.handleClassField}>3. 类字段箭头（推荐）</button>
-              <button onClick={this.handleWrong}>反例: 未绑定（会报错）</button>
-              <p>面试回答: React 合成事件调用 handler 时不保证 this；bind / 类字段箭头最常用。</p>
+
+              <button type="button" onClick={this.handleClassField} style={{ marginLeft: 8 }}>
+                3. 类字段箭头（推荐）
+              </button>
+
+              <button type="button" onClick={this.handleWrong} style={{ marginLeft: 8 }}>
+                反例: 未绑定（会报错）
+              </button>
+
+              {/*
+                反例: onClick={this.handleWrong()} 会在 render 时立即执行
+                正确: onClick={this.handleWrong} 或 onClick={() => this.handleWrong()}
+              */}
             </section>
           );
         }
       }
 
       ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -138,5 +157,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

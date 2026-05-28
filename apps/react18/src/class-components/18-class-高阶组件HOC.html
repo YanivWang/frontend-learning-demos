@@ -1,11 +1,13 @@
 <!--
   分类: react18 / class 组件
   主题: 高阶组件 HOC（Higher-Order Component）
+  相关: 06-class-完整生命周期与API, 15-class-组件通信与children, 19-错误边界与常见优化清单
   要点:
     - HOC 是函数：接收组件，返回增强后的新组件（不修改原组件）
     - 常见用途: 注入 props、权限校验、日志、复用生命周期逻辑
     - 不要在 render 中临时创建 HOC；ref 和静态属性不会自动透传
     - Hooks 时代很多 HOC 场景可用自定义 Hook 替代，但面试仍常问 HOC 原理
+    - 设置 displayName 保持 DevTools 可读性
   面试:
     - HOC 为什么说是组件逻辑复用模式而不是组件本身？
     - HOC 和 render props、自定义 Hook 的区别是什么？
@@ -30,7 +32,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>高阶组件 HOC（Higher-Order Component）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console 观察 HOC 生命周期日志；页面加载 1.5s 后显示用户信息；下方 #root 为 React 挂载演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -38,7 +40,7 @@
           <li>class 维护项目中，HOC 常用于注入 props、权限校验、日志埋点、错误兜底、复用生命周期逻辑。本 demo 的 <code>withLoading</code> 注入加载态分支，<code>withLogger</code> 复用挂载和更新日志。</li>
           <li>不要在 <code>render</code> 里临时调用 HOC 创建新组件。每次 render 都返回新的组件类型会导致 React 卸载旧树、挂载新树，丢失内部 state，也破坏 diff 复用。</li>
           <li><code>ref</code> 不是普通 prop，HOC 不会自动透传 ref；静态属性也不会自动复制。需要时要用 <code>React.forwardRef</code> 或手动提升静态属性，并设置 <code>displayName</code> 保持调试可读性。</li>
-          <li>Hooks 时代，很多“复用状态逻辑”的 HOC 可改为自定义 Hook；但权限包裹、路由守卫、错误边界、兼容 class 组件的横切逻辑仍可能保留 HOC。</li>
+          <li>Hooks 时代，很多"复用状态逻辑"的 HOC 可改为自定义 Hook；但权限包裹、路由守卫、错误边界、兼容 class 组件的横切逻辑仍可能保留 HOC。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
@@ -46,11 +48,12 @@
           <li><strong>HOC 和 render props、自定义 Hook 的区别是什么？</strong> 结论是 HOC 通过包装组件复用逻辑，render props 通过函数子节点交出渲染控制，自定义 Hook 复用函数组件的状态逻辑。原因是三者组合层级不同；新函数组件通常优先 Hook，class 维护代码常见 HOC。</li>
           <li><strong>为什么不要在 render 中创建 HOC？</strong> 结论是会生成新的组件类型。原因是 React 会把前后两次渲染看成不同组件并卸载重建；边界是 HOC 应在模块作用域或 render 外创建。</li>
           <li><strong>HOC 包装后 ref、displayName 和静态属性有哪些坑？</strong> 结论是 ref 和静态属性不会自动传给被包裹组件，displayName 也可能丢失。项目里需要显式 forwardRef、提升静态属性并设置包装组件名称。</li>
+          <li><strong>class 维护项目中 HOC 适合放哪些横切逻辑？</strong> 结论是权限校验、加载态注入、日志埋点、路由守卫、错误兜底等跨组件复用逻辑。原因是这些逻辑与 UI 无关但需要在多个组件上复用；状态逻辑复用在新代码中更推荐自定义 Hook。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://legacy.reactjs.org/docs/higher-order-components.html" target="_blank" rel="noreferrer">Legacy React: Higher-Order Components</a></li>
-          <li><a href="https://react.dev/reference/react/forwardRef" target="_blank" rel="noreferrer">react.dev: forwardRef</a></li>
+          <li><a href="https://react.dev/reference/react/forwardRef" target="_blank" rel="noreferrer">react.dev: forwardRef（HOC ref 透传）</a></li>
           <li><a href="https://react.dev/reference/react/Component" target="_blank" rel="noreferrer">react.dev: Component</a></li>
         </ul>
       </div>
@@ -63,6 +66,7 @@
 
     <!-- SCRIPT_START -->
     <script type="text/babel">
+      // ====== 1. withLoading：注入 loading 分支 ======
       function withLoading(WrappedComponent) {
         class WithLoading extends React.Component {
           render() {
@@ -77,6 +81,7 @@
         return WithLoading;
       }
 
+      // ====== 2. withLogger：复用生命周期日志 ======
       function withLogger(WrappedComponent) {
         class WithLogger extends React.Component {
           componentDidMount() {
@@ -91,54 +96,55 @@
             return <WrappedComponent {...this.props} />;
           }
         }
+        WithLogger.displayName = `WithLogger(${WrappedComponent.displayName || WrappedComponent.name || "Component"})`;
         return WithLogger;
       }
 
       class UserProfile extends React.Component {
         render() {
+          if (!this.props.user) return null;
           return (
-          <div>
-            <strong>{this.props.user.name}</strong>
-            <span> — {this.props.user.email}</span>
-          </div>
-        );
-      }
+            <div>
+              <strong>{this.props.user.name}</strong>
+              <span> — {this.props.user.email}</span>
+            </div>
+          );
+        }
       }
 
+      // HOC 在模块作用域创建，不要在 render 里临时调用
       const EnhancedProfile = withLogger(withLoading(UserProfile));
 
-      class App extends React.Component {
-        constructor(props) {
-          super(props);
-          this.state = {
-            loading: true,
-            user: null
-          };
+      /*
+        反例：在 render 中创建 HOC
+        render() {
+          const BadProfile = withLoading(UserProfile); // 每次 render 新组件类型 → 卸载重建
+          return <BadProfile ... />;
         }
+      */
+
+      class App extends React.Component {
+        state = { loading: true, user: null };
 
         componentDidMount() {
           setTimeout(() => {
             this.setState({
               loading: false,
-              user: { name: "Alice", email: "alice@example.com" }
+              user: { name: "Alice", email: "alice@example.com" },
             });
           }, 1500);
         }
 
         render() {
           return (
-          <section>
-            <h1>高阶组件 HOC</h1>
-
-            <EnhancedProfile loading={this.state.loading} user={this.state.user} />
-            <p>面试回答: HOC 是组件逻辑复用模式，返回新组件；与 render props、Hook 是不同抽象层次。</p>
-          </section>
-        );
-      }
+            <section>
+              <EnhancedProfile loading={this.state.loading} user={this.state.user} />
+            </section>
+          );
+        }
       }
 
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -160,5 +166,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

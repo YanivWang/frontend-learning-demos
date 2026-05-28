@@ -1,6 +1,7 @@
 <!--
   分类: react18 / class 组件
   主题: class 组件消费 Context
+  相关: 02-class-state与props, 15-class-组件通信与children, 17-class-defaultProps与静态属性
   要点:
     - static contextType = MyContext 后，class 实例可通过 this.context 读取最近 Provider value
     - MyContext.Consumer 使用 render props，适合在 class 中读取多个 Context 或局部订阅
@@ -31,7 +32,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>class 组件消费 Context</h1>
-      <p class="hint">点击“切换主题”，观察 class 组件分别通过 contextType 和 Consumer 读取同一个 ThemeContext。</p>
+      <p class="hint">请打开 DevTools Console 观察 contextType 与 Consumer 读取结果；点击下方"切换主题"验证 Provider value 变化；下方 #root 为 React 挂载/交互演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -46,14 +47,15 @@
           <li><strong>class 组件如何读取 Context，contextType 和 Consumer 有什么区别？</strong> 结论是 <code>contextType</code> 让 class 通过 <code>this.context</code> 读取一个 Context，<code>Consumer</code> 用 render props 在局部读取 Context。原因是 <code>contextType</code> 更简洁但一次只能绑定一个，Consumer 更啰嗦但可组合多个 Context。项目里单一主题用 <code>contextType</code>，多数据源或局部读取用 Consumer。</li>
           <li><strong>Context 适合解决什么问题，不适合解决什么问题？</strong> 结论是它解决跨层传递共享值，不是所有状态管理的替代品。原因是 Context 会让消费者隐式依赖 Provider，且 value 更新会影响所有消费者。主题、语言、当前用户适合放 Context；表单输入、局部展开状态和高频动画状态不应默认上 Context。</li>
           <li><strong>Provider value 为什么可能导致大范围重新渲染？</strong> 结论是消费者会响应最近 Provider 的 value 变化。原因是 React 按引用判断对象 value 是否变化，对象字面量或新函数会在每次 render 产生新引用。真实项目里要把 value 稳定下来、拆分 Context，或让 Provider 范围尽量小。</li>
-          <li><strong>React 18 新代码如何从 class Context 迁移到函数组件？</strong> 结论是函数组件使用 <code>useContext</code> 读取同一个 Context。原因是 Hooks 是 React 18 新代码的主流组织方式，能和 <code>useMemo</code>、<code>useReducer</code> 等组合管理 Provider value。迁移时注意 React 18 中函数组件接收 ref 仍需 <code>forwardRef</code>，不要混入 React 19 的 ref-as-prop 规则。</li>
+          <li><strong>多个 Context 或动态主题在 class 组件里怎么组织？</strong> 结论是一个 class 只能绑定一个 <code>contextType</code>，多 Context 用 Consumer 嵌套或拆分组件。原因是 <code>static contextType</code> 只能声明一次；项目中主题 + 语言 + 用户可拆成多个 Provider 嵌套，需要读多个 Context 的子组件用 Consumer 或拆成更小的消费组件。</li>
+          <li><strong>React 18 新代码如何从 class Context 迁移到函数组件？</strong> 结论是函数组件使用 <code>useContext</code> 读取同一个 Context。原因是 Hooks 是 React 18 新代码的主流组织方式，能和 <code>useMemo</code>、<code>useReducer</code> 等组合管理 Provider value。迁移时注意函数组件接收 ref 仍需 <code>forwardRef</code>。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/createContext" target="_blank" rel="noopener">React Reference: <code>createContext</code></a></li>
-          <li><a href="https://react.dev/reference/react/useContext" target="_blank" rel="noopener">React Reference: <code>useContext</code></a></li>
-          <li><a href="https://react.dev/learn/passing-data-deeply-with-context" target="_blank" rel="noopener">React Learn: Passing Data Deeply with Context</a></li>
-          <li><a href="https://legacy.reactjs.org/docs/context.html" target="_blank" rel="noopener">Legacy React Docs: Context</a></li>
+          <li><a href="https://react.dev/reference/react/createContext" target="_blank" rel="noreferrer">react.dev: createContext</a></li>
+          <li><a href="https://react.dev/reference/react/Component#static-contexttype" target="_blank" rel="noreferrer">react.dev: static contextType</a></li>
+          <li><a href="https://react.dev/reference/react/useContext" target="_blank" rel="noreferrer">react.dev: useContext（函数组件替代）</a></li>
+          <li><a href="https://react.dev/learn/passing-data-deeply-with-context" target="_blank" rel="noreferrer">react.dev: Passing Data Deeply with Context</a></li>
         </ul>
       </div>
     </section>
@@ -69,70 +71,65 @@
       const darkTheme = { name: "dark", background: "#222", color: "#fff" };
       const ThemeContext = React.createContext(lightTheme);
 
-      class Toolbar extends React.Component {
-        render() {
-          return <ThemedButton />;
-        }
-      }
-
+      // ====== 1. contextType：一个 class 只能绑定一个 Context ======
       class ThemedButton extends React.Component {
         static contextType = ThemeContext;
 
         render() {
           const theme = this.context;
+          console.log("ThemedButton contextType 读取:", theme.name);
           return (
-          <button style={{ background: theme.background, color: theme.color }}>
-            contextType 读取: {theme.name}
-          </button>
-        );
-      }
+            <button type="button" style={{ background: theme.background, color: theme.color }}>
+              contextType 读取: {theme.name}
+            </button>
+          );
+        }
       }
 
+      // ====== 2. Consumer：render props 读取 Context，可组合多个 Context ======
       class ThemedLabel extends React.Component {
         render() {
           return (
-          <ThemeContext.Consumer>
-          {(theme) => <span style={{ color: theme.color }}>Consumer 读取: {theme.name}</span>}
-        </ThemeContext.Consumer>
-      );
-      }
+            <ThemeContext.Consumer>
+              {(theme) => {
+                console.log("ThemedLabel Consumer 读取:", theme.name);
+                return (
+                  <span style={{ color: theme.color, marginLeft: 8 }}>
+                    Consumer 读取: {theme.name}
+                  </span>
+                );
+              }}
+            </ThemeContext.Consumer>
+          );
+        }
       }
 
       class App extends React.Component {
-        constructor(props) {
-          super(props);
-          this.state = { dark: false };
-        }
+        state = { dark: false };
 
         toggle = () => {
           this.setState({ dark: !this.state.dark });
+          console.log("切换主题 →", !this.state.dark ? "dark" : "light");
         };
 
         render() {
-          const theme = this.state.dark
-          ? darkTheme
-          : lightTheme;
+          const theme = this.state.dark ? darkTheme : lightTheme;
 
           return (
-          <ThemeContext.Provider value={theme}>
-          <section>
-            <h1>class 组件 Context</h1>
-
-            <button onClick={this.toggle}>切换主题</button>
-            <div style={{ marginTop: 12 }}>
-              <Toolbar />
-              {" · "}
-              <ThemedLabel />
-            </div>
-            <p>面试回答: class 用 contextType 或 Consumer；函数组件用 useContext。</p>
-          </section>
-        </ThemeContext.Provider>
-      );
-      }
+            <ThemeContext.Provider value={theme}>
+              <section>
+                <button type="button" onClick={this.toggle}>切换主题</button>
+                <div style={{ marginTop: 12 }}>
+                  <ThemedButton />
+                  <ThemedLabel />
+                </div>
+              </section>
+            </ThemeContext.Provider>
+          );
+        }
       }
 
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -154,5 +151,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

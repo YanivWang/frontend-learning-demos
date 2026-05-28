@@ -1,6 +1,7 @@
 <!--
   分类: react18 / class 组件
-  主题: setState 函数式更新（解决合并陷阱）
+  主题: setState 函数式更新（解决对象式合并陷阱）
+  相关: 03-setState-异步合并, 05-Clock-setState-批处理对比, 12-class-setState第二参数回调
   要点:
     - 函数式 setState 会按更新队列顺序接收最新 prevState 和当前 props
     - 连续 10 次 prevState.count + 1 会从 0 累加到 10，而不是被对象合并成 1
@@ -30,90 +31,82 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>setState 函数式更新（解决合并陷阱）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <h1>setState 函数式更新（解决对象式合并陷阱）</h1>
+      <p class="hint">请打开 DevTools Console 查看 prevState 递增序列与 2s 后的最终值；下方 #root 展示页面最终 count（预期为 10，对比 03 号 demo 的 1）。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
           <li>函数式 <code>setState</code> 接收 updater：<code>(prevState, props) =&gt; partialState</code>。React 会按队列顺序执行 updater，因此每一次都能拿到上一条更新合并后的最新 state。</li>
-          <li>示例在 <code>componentDidMount</code> 中连续调用 10 次函数式更新，<code>prevState.count</code> 依次是 0 到 9，最终页面展示 10，和上一页对象式更新最终只加 1 形成对比。</li>
+          <li>示例在 <code>componentDidMount</code> 中连续调用 10 次函数式更新，<code>prevState.count</code> 依次是 0 到 9，最终页面展示 10，和 03 号 demo 对象式更新最终只加 1 形成对比。</li>
           <li>只要新值依赖旧值，就用函数式写法，例如计数器递增、购物车数量、分页游标、批量选择等；如果只是把 <code>loading</code> 设成 <code>true</code>，对象式更新更简洁。</li>
           <li>updater 应该保持纯函数风格：不要直接修改 <code>prevState</code>，不要在 updater 里发请求、读写 DOM 或触发额外状态更新；副作用应放在生命周期或事件流程中。</li>
-          <li>React 18 的自动批处理让“同一批次内多次更新”更常见，函数式更新是跨 class 和 Hooks 都适用的防旧快照写法。</li>
+          <li>React 18 的自动批处理让"同一批次内多次更新"更常见，函数式更新是跨 class 和 Hooks 都适用的防旧快照写法。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
           <li><strong>函数式 setState 为什么能把连续 10 次更新累加到 10？</strong> 结论是：因为每个 updater 都基于队列中前一次更新后的 <code>prevState</code> 计算。原因是 React 不会提前用同一个旧 <code>this.state</code> 算好所有对象；计数器这类累加逻辑必须依赖 updater，而不是对象式快照。</li>
           <li><strong>updater 函数的 prevState 和 props 分别是什么？</strong> 结论是：<code>prevState</code> 是当前队列执行到这一步时的最新 state，<code>props</code> 是本次更新对应的当前 props。原因是 state 和 props 都可能影响下一状态；例如根据父组件传入的步长递增时，应使用第二个参数而不是闭包旧值。</li>
-          <li><strong>什么时候必须用函数式 setState？</strong> 结论是：新 state 依赖旧 state 或 props 时必须用。原因是对象式更新可能被批处理并浅合并，无法表达“在前一次结果上继续计算”；项目中常见于连续点击、批量更新、异步回调和循环更新。</li>
+          <li><strong>什么时候必须用函数式 setState？</strong> 结论是：新 state 依赖旧 state 或 props 时必须用。原因是对象式更新可能被批处理并浅合并，无法表达"在前一次结果上继续计算"；项目中常见于连续点击、批量更新、异步回调和循环更新。</li>
           <li><strong>updater 函数里有哪些陷阱？</strong> 结论是：不要直接改 <code>prevState</code>，也不要在 updater 中做副作用。原因是 React 可能为了调试或并发能力重复调用渲染相关逻辑；保持 updater 纯净，才能让批处理和重渲染行为可预测。</li>
-          <li><strong>函数式 setState 与 Hooks 的函数式更新有什么共同点？</strong> 结论是：两者都是用“从上一个状态计算下一个状态”来避免旧快照。原因是 React 状态更新都有队列语义；差异是 class 的 <code>setState</code> 会浅合并对象，Hooks 的 <code>setState</code> 默认替换整个状态值。</li>
+          <li><strong>函数式 setState 与 Hooks 的函数式更新有什么共同点？</strong> 结论是：两者都是用"从上一个状态计算下一个状态"来避免旧快照。原因是 React 状态更新都有队列语义；差异是 class 的 <code>setState</code> 会浅合并对象，Hooks 的 <code>setState</code> 默认替换整个状态值。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://legacy.reactjs.org/docs/react-component.html#setstate" target="_blank" rel="noreferrer">React Legacy Docs：setState()</a></li>
-          <li><a href="https://react.dev/learn/queueing-a-series-of-state-updates" target="_blank" rel="noreferrer">React Docs：Queueing a Series of State Updates</a></li>
-          <li><a href="https://react.dev/learn/updating-objects-in-state" target="_blank" rel="noreferrer">React Docs：Updating Objects in State</a></li>
-          <li><a href="https://react.dev/reference/react/useState#setstate" target="_blank" rel="noreferrer">React Docs：useState set function</a></li>
+          <li><a href="https://react.dev/reference/react/Component#setstate" target="_blank" rel="noreferrer">react.dev: Component — setState()</a></li>
+          <li><a href="https://react.dev/learn/queueing-a-series-of-state-updates" target="_blank" rel="noreferrer">react.dev: Queueing a Series of State Updates</a></li>
+          <li><a href="https://react.dev/reference/react/useState#setstate" target="_blank" rel="noreferrer">react.dev: useState set function</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <div id="app"></div>
+    <div id="root"></div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script type="text/babel">
-      //react class方式的组件
-      class Person extends React.Component {
-        //组件的属性会在构造函数中被传递过来
+      // ====== 1. 函数式 setState：循环 10 次 +1，最终累加到 10 ======
+      class Counter extends React.Component {
         constructor(props) {
-          super(props);//调用super关键字来调用父类的构造函数，并将props传递到父类的构造器
-
-          //构造函数是唯一可以给 this.state 直接赋值的地方
-          //state的更新是异步的
-          //出于性能考虑，react会把 （短时间内） 多个setState()调用合并成一个调用
-          this.state = {
-            count: 0,
-          }
+          super(props);
+          this.state = { count: 0 };
         }
 
         componentDidMount() {
+          console.log("===== 函数式 setState：循环 10 次 count + 1 =====");
+
           for (let i = 0; i < 10; i++) {
-
-            //只能在这个回调函数中获取到先前的状态，并返回得到下一个状态
-            this.setState((prevState)=>{
-              //这里是异步的
-              console.log("prevState", prevState.count);//0 1 2 3 4 5 ... 9
-
-              return {
-                count: prevState.count + 1
-              }
+            // updater 按队列顺序接收最新 prevState，每次在前一次结果上 +1
+            this.setState((prevState) => {
+              console.log(`第 ${i + 1} 次 updater prevState.count:`, prevState.count);
+              // 预期: 0, 1, 2, … 9
+              return { count: prevState.count + 1 };
             });
 
-            //这个是同步的
-            console.log("state", this.state.count);//10个0
+            // setState 调用后立刻读 this.state 仍是旧快照
+            console.log(`第 ${i + 1} 次 setState 后 this.state.count:`, this.state.count);
+            // 预期: 10 次都打印 0
           }
 
-          setTimeout(()=>{
-            // 函数式 setState 每次基于最新值累加，最终是 10
-            console.log("2s后",this.state.count);//10
-          },2000)
+          setTimeout(() => {
+            console.log("2s 后 this.state.count:", this.state.count);
+            // 预期: 10
+          }, 2000);
         }
 
         render() {
-          // 函数式更新累加 10 次，页面上最终展示的是 10
           return (
-          <div>{this.state.count}</div>
-        )
-      }
+            <div>
+              <p>函数式连续 setState 10 次，页面 count：</p>
+              <p><strong>{this.state.count}</strong>（预期 10，对比 03 号 demo 的 1）</p>
+            </div>
+          );
+        }
       }
 
-      // React 18 使用 createRoot 渲染
-      ReactDOM.createRoot(document.getElementById("app")).render(<Person/>);
-
+      // ====== 2. React 18 挂载 ======
+      ReactDOM.createRoot(document.getElementById("root")).render(<Counter />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -135,5 +128,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

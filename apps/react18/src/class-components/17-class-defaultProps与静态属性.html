@@ -1,10 +1,12 @@
 <!--
   分类: react18 / class 组件
   主题: defaultProps、静态属性与 displayName
+  相关: 07-class-refs与DOM, 10-class-Context上下文, 18-class-高阶组件HOC
   要点:
     - class 组件可用 Component.defaultProps 为未传或值为 undefined 的 props 提供默认值
     - static 静态属性挂在类构造函数上，适合放组件级元信息
     - displayName 便于 DevTools 调试；HOC 包装时尤其有用
+    - null 不会触发 defaultProps，因为它表示调用方明确传入空值
     - 函数组件新代码更常用参数默认值，class 维护场景仍会遇到 defaultProps
   面试:
     - class 组件 defaultProps 在什么情况下生效？
@@ -30,15 +32,15 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>defaultProps、静态属性与 displayName</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Components 面板查看 displayName；对比三组 Greeting 的 name/level 输出（含 null 不触发 defaultProps）；下方 #root 为 React 挂载演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>Component.defaultProps</code> 会在 prop 未传或显式为 <code>undefined</code> 时提供默认值。本 demo 中 <code>&lt;Greeting /&gt;</code> 没传 <code>name</code> 和 <code>level</code>，因此显示“访客”和 <code>1</code>。</li>
+          <li><code>Component.defaultProps</code> 会在 prop 未传或显式为 <code>undefined</code> 时提供默认值。本 demo 中 <code>&lt;Greeting /&gt;</code> 没传 <code>name</code> 和 <code>level</code>，因此显示"访客"和 <code>1</code>。</li>
           <li><code>null</code> 不会触发 <code>defaultProps</code>，因为它表示调用方明确传入空值。业务上如果 <code>null</code> 也要兜底，应在渲染逻辑中显式处理。</li>
           <li><code>static</code> 属性属于类构造函数本身，例如 <code>Greeting.species</code>，不是每个组件实例自己的字段。它适合放组件级元信息、常量或 HOC 需要复制的静态成员。</li>
           <li><code>displayName</code> 影响 DevTools、错误栈和 HOC 包装后的调试名称。HOC 返回匿名 wrapper 时应设置类似 <code>WithLoading(GreetingCard)</code> 的名称。</li>
-          <li>React 18 中 class 组件仍可使用 <code>defaultProps</code>。函数组件新代码通常用 JavaScript 参数默认值或解构默认值；不要把 React 19 的函数组件默认写法混成 class 组件规则。</li>
+          <li>React 18 中 class 组件仍可使用 <code>defaultProps</code>。函数组件新代码通常用 JavaScript 参数默认值或解构默认值。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
@@ -46,10 +48,11 @@
           <li><strong>defaultProps 和参数默认值分别适合哪些代码？</strong> 结论是 class 维护代码常见 <code>defaultProps</code>，函数组件新代码更常见参数默认值。原因是 class 没有函数参数解构位置；项目迁移时不要为了统一写法大范围改动稳定旧组件。</li>
           <li><strong>static 静态属性和实例属性有什么区别？</strong> 结论是 static 挂在类上，实例属性挂在每个实例上。原因是它们的访问路径不同：<code>Greeting.species</code> 访问静态属性，<code>this.state</code> 访问实例状态。</li>
           <li><strong>displayName 为什么常和 HOC 一起使用？</strong> 结论是它能保留调试可读性。原因是 HOC 会返回新的包装组件，不设置名称时 DevTools 里可能只看到匿名 wrapper；项目排查错误栈时会更难定位原组件。</li>
+          <li><strong>props 传 null 时 defaultProps 会不会兜底？</strong> 结论是不会。原因是 <code>null</code> 表示调用方明确传了空值，React 认为这不是"未提供"；若业务需要 null 也显示默认值，应在 render 中写 <code>{name ?? "访客"}</code>。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://legacy.reactjs.org/docs/typechecking-with-proptypes.html#default-prop-values" target="_blank" rel="noreferrer">Legacy React: Default Prop Values</a></li>
+          <li><a href="https://react.dev/reference/react/Component#static-defaultprops" target="_blank" rel="noreferrer">react.dev: static defaultProps</a></li>
           <li><a href="https://react.dev/reference/react/Component" target="_blank" rel="noreferrer">react.dev: Component</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/static" target="_blank" rel="noreferrer">MDN: static</a></li>
         </ul>
@@ -63,43 +66,46 @@
 
     <!-- SCRIPT_START -->
     <script type="text/babel">
+      // ====== 1. defaultProps + static 静态属性 + displayName ======
       class Greeting extends React.Component {
         static species = "ReactComponent";
-        static version = "1.0";
 
         render() {
           const { name, level } = this.props;
+          console.log("Greeting props:", { name, level });
           return (
-          <p>
-            Hello, {name}! 等级: {level}
-            {" · 静态属性 species: " + Greeting.species}
-          </p>
-        );
-      }
+            <p>
+              Hello, {name}! 等级: {level}
+              {" · static species: " + Greeting.species}
+            </p>
+          );
+        }
       }
 
       Greeting.defaultProps = {
         name: "访客",
-        level: 1
+        level: 1,
       };
       Greeting.displayName = "GreetingCard";
 
       class App extends React.Component {
         render() {
           return (
-          <section>
-            <h1>defaultProps 与静态属性</h1>
+            <section>
+              <h2>未传 props → defaultProps 生效</h2>
+              <Greeting />
 
-            <Greeting />
-            <Greeting name="Alice" level={5} />
-            <p>面试回答: defaultProps 补全未传 props；static 属于类本身，不在实例上。</p>
-          </section>
-        );
-      }
+              <h2>显式传值</h2>
+              <Greeting name="Alice" level={5} />
+
+              <h2>传 null → defaultProps 不生效</h2>
+              <Greeting name={null} level={null} />
+            </section>
+          );
+        }
       }
 
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -121,5 +127,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

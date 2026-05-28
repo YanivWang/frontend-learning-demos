@@ -108,9 +108,9 @@
 | 文件 | 主题 |
 |---|---|
 | `class-components/01-class-必须super.html` | class 组件 constructor 必须调用 super() |
-| `class-components/02-class-state与props.html` | class 组件的 state 与 props 区别 + 事件 this 绑定 |
-| `class-components/03-setState-异步合并.html` | setState 异步合并（同步触发多次只会更新一次） |
-| `class-components/04-setState-函数式更新.html` | setState 函数式更新（解决合并陷阱） |
+| `class-components/02-class-state与props.html` | class 组件的 state 与 props |
+| `class-components/03-setState-异步合并.html` | setState 异步合并（对象式连续更新只加 1） |
+| `class-components/04-setState-函数式更新.html` | setState 函数式更新（解决对象式合并陷阱） |
 | `class-components/05-Clock-setState-批处理对比.html` | Clock 演示 setState 批处理（对象式 vs 函数式） |
 | `class-components/06-class-完整生命周期与API.html` | class 组件生命周期与常用实例 API |
 | `class-components/07-class-refs与DOM.html` | class 组件 refs 访问 DOM 与实例 |

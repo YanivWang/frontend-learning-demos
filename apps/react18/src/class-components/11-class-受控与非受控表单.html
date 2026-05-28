@@ -1,11 +1,13 @@
 <!--
   分类: react18 / class 组件
   主题: class 组件中的受控与非受控表单
+  相关: 07-class-refs与DOM, 09-class-getDerivedStateFromProps与getSnapshotBeforeUpdate, 12-class-setState第二参数回调
   要点:
     - 受控: value 绑定 state，onChange 更新 state，React 为唯一数据源
     - 非受控: defaultValue + ref 在提交时读取 DOM
     - 表单校验、联动和提交前禁用按钮优先受控，文件上传等 DOM 自有状态通常用非受控
     - 不要在同一个输入上混用 value 与 defaultValue，避免受控/非受控切换警告
+    - 新项目优先函数组件 + 受控表单；class 维护场景理解两种模式即可
   面试:
     - 受控组件为什么说 React state 是唯一数据源？
     - defaultValue 和 value 的行为差异是什么？
@@ -30,7 +32,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>class 组件中的受控与非受控表单</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请填写下方表单并点击提交，观察受控字段实时回显与非受控字段通过 ref 读取的差异；下方 #root 为 React 挂载/交互演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -45,13 +47,14 @@
           <li><strong>受控组件为什么说 React state 是唯一数据源？</strong> 结论是输入显示值由 state 决定。原因是 <code>value</code> 绑定 state 后，用户输入必须经过 <code>onChange</code> 和 <code>setState</code> 才能反映到界面；边界是高频大表单要注意渲染成本，可拆分字段组件或局部状态。</li>
           <li><strong>defaultValue 和 value 的行为差异是什么？</strong> <code>value</code> 是持续控制，<code>defaultValue</code> 只是初始值。原因是 React 后续渲染不会再用 <code>defaultValue</code> 覆盖 DOM 当前值；项目中如果要重置非受控输入，通常改 <code>key</code> 重新挂载或直接操作 ref。</li>
           <li><strong>表单校验、联动和一次性提交时如何选择？</strong> 结论是需要实时校验、联动、回显、禁用提交时优先受控，只在简单采集或接入旧 DOM 插件时考虑非受控。原因是受控值在 React 数据流里更容易组合；边界是文件输入不能被脚本设置文件路径，通常用非受控读取。</li>
-          <li><strong>class 表单里有哪些常见坑？</strong> 最常见是忘记 <code>onChange</code> 导致只读、把 <code>undefined</code> 传给 <code>value</code> 后又切为字符串、提交时忘记 <code>preventDefault</code>。项目里要给空值提供稳定默认值，例如字符串字段用空字符串。</li>
+          <li><strong>为什么文件输入和部分第三方控件更适合非受控？</strong> 结论是浏览器安全限制和 DOM 自有状态。原因是 <code>&lt;input type="file"&gt;</code> 的值只能由用户选择，React 不能通过 <code>value</code> 设置文件路径；集成 jQuery UI、富文本编辑器等命令式 DOM 库时，也常用 ref 读取而非受控 state。</li>
+          <li><strong>class 表单里如何避免受控/非受控切换警告？</strong> 结论是给 <code>value</code> 稳定默认值（如空字符串），不要在受控/非受控之间切换。原因是 React 检测到 <code>value</code> 从 <code>undefined</code> 变为字符串时会警告；项目中字符串字段初始化为 <code>""</code>，布尔字段用 <code>checked</code> + 明确布尔值。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react-dom/components/input" target="_blank" rel="noreferrer">react.dev: &lt;input&gt;</a></li>
+          <li><a href="https://react.dev/reference/react-dom/components/input#controlling-an-input-with-a-state-variable" target="_blank" rel="noreferrer">react.dev: Controlling an input with a state variable</a></li>
+          <li><a href="https://react.dev/reference/react-dom/components/input#providing-an-initial-value-for-an-input" target="_blank" rel="noreferrer">react.dev: Providing an initial value (defaultValue)</a></li>
           <li><a href="https://react.dev/reference/react-dom/components/select" target="_blank" rel="noreferrer">react.dev: &lt;select&gt;</a></li>
-          <li><a href="https://legacy.reactjs.org/docs/uncontrolled-components.html" target="_blank" rel="noreferrer">Legacy React: Uncontrolled Components</a></li>
         </ul>
       </div>
     </section>
@@ -66,71 +69,75 @@
       class App extends React.Component {
         constructor(props) {
           super(props);
+          // 非受控：ref 在提交时读取 DOM 值
           this.noteRef = React.createRef();
+          // 受控：state 为唯一数据源
           this.state = {
             username: "",
-            role: "user"
+            role: "user",
           };
         }
 
+        // ====== 1. 受控 input/select：value + onChange + setState ======
         handleUsernameChange = (e) => {
           this.setState({ username: e.target.value });
+          console.log("受控 username onChange:", e.target.value);
         };
 
         handleRoleChange = (e) => {
           this.setState({ role: e.target.value });
+          console.log("受控 role onChange:", e.target.value);
         };
 
+        // ====== 2. 提交：受控读 state，非受控读 ref.current.value ======
         submitForm = (e) => {
           e.preventDefault();
-          alert(JSON.stringify({
+          const payload = {
             username: this.state.username,
             role: this.state.role,
-            note: this.noteRef.current.value
-          }, null, 2));
+            note: this.noteRef.current.value,
+          };
+          console.log("提交数据:", payload);
+          alert(JSON.stringify(payload, null, 2));
         };
 
         render() {
           return (
-          <section>
-            <h1>class 受控与非受控表单</h1>
-
-            <form onSubmit={this.submitForm}>
-              <div>
-                <label>
-                  用户名（受控）:
-                  <input
-                  value={this.state.username}
-                  onChange={this.handleUsernameChange}
-                  />
-                </label>
-              </div>
-              <div>
-                <label>
-                  角色（受控）:
-                  <select value={this.state.role} onChange={this.handleRoleChange}>
-                    <option value="user">普通用户</option>
-                    <option value="admin">管理员</option>
-                  </select>
-                </label>
-              </div>
-              <div>
-                <label>
-                  备注（非受控）:
-                  <input ref={this.noteRef} defaultValue="DOM 自己保存这个值" />
-                </label>
-              </div>
-              <button type="submit">提交</button>
-            </form>
-            <p>当前受控值: {this.state.username || "空"} / {this.state.role}</p>
-            <p>面试回答: 受控让 state 成为表单唯一数据源；非受控用 ref 按需读取 DOM。</p>
-          </section>
-        );
-      }
+            <section>
+              <form onSubmit={this.submitForm}>
+                <div>
+                  <label>
+                    用户名（受控）:
+                    <input
+                      value={this.state.username}
+                      onChange={this.handleUsernameChange}
+                    />
+                  </label>
+                </div>
+                <div>
+                  <label>
+                    角色（受控）:
+                    <select value={this.state.role} onChange={this.handleRoleChange}>
+                      <option value="user">普通用户</option>
+                      <option value="admin">管理员</option>
+                    </select>
+                  </label>
+                </div>
+                <div>
+                  <label>
+                    备注（非受控）:
+                    <input ref={this.noteRef} defaultValue="DOM 自己保存这个值" />
+                  </label>
+                </div>
+                <button type="submit">提交</button>
+              </form>
+              <p>当前受控值: {this.state.username || "空"} / {this.state.role}</p>
+            </section>
+          );
+        }
       }
 
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -152,5 +159,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

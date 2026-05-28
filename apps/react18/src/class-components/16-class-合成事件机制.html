@@ -1,6 +1,7 @@
 <!--
   分类: react18 / class 组件
   主题: class 组件中的 React 合成事件
+  相关: 02-class-state与props, 13-class-事件绑定三种方式, 11-class-受控与非受控表单
   要点:
     - 事件对象是 SyntheticEvent，接口与原生事件类似
     - event.nativeEvent 可访问底层原生事件
@@ -31,7 +32,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>class 组件中的 React 合成事件</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">请打开 DevTools Console；提交表单验证 preventDefault，点击子按钮验证 stopPropagation；下方 #root 为 React 挂载/交互演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -46,14 +47,14 @@
           <li><strong>SyntheticEvent 和浏览器原生事件是什么关系？</strong> 结论是 SyntheticEvent 是 React 对原生事件的封装。原因是 React 需要统一事件接口并接入自己的更新调度；边界是确实要底层事件时读 <code>nativeEvent</code>，但不依赖内部映射细节。</li>
           <li><strong>React 中为什么不能 return false 来阻止默认行为？</strong> 结论是 React 事件不会把返回值当作阻止信号。原因是官方要求显式调用 <code>preventDefault()</code>；表单提交、链接跳转等场景都应这样写。</li>
           <li><strong>preventDefault 和 stopPropagation 分别解决什么问题？</strong> <code>preventDefault</code> 阻止浏览器默认动作，<code>stopPropagation</code> 阻止事件继续冒泡。项目里提交表单通常用前者，嵌套点击区域避免父级响应通常用后者。</li>
+          <li><strong>React 17 事件委托从 document 变到 root 有什么影响？</strong> 结论是事件监听绑定在各自 React root 上，而非全局 document。原因是多 root 共存或 React 与非 React 代码混用时，事件边界更清晰；React 18 createRoot 沿用此模型。</li>
           <li><strong>React 18 中还需要 event.persist() 吗？</strong> 结论是不需要。原因是 React 17 起事件不再池化；但旧 React 16 维护代码里曾需要 <code>persist()</code> 才能异步读取事件对象。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://legacy.reactjs.org/docs/events.html" target="_blank" rel="noreferrer">Legacy React: SyntheticEvent</a></li>
           <li><a href="https://react.dev/learn/responding-to-events" target="_blank" rel="noreferrer">react.dev: Responding to Events</a></li>
+          <li><a href="https://react.dev/reference/react-dom/components/common#common-props" target="_blank" rel="noreferrer">react.dev: Common props（事件处理器）</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault" target="_blank" rel="noreferrer">MDN: Event.preventDefault()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation" target="_blank" rel="noreferrer">MDN: Event.stopPropagation()</a></li>
         </ul>
       </div>
     </section>
@@ -66,45 +67,45 @@
     <!-- SCRIPT_START -->
     <script type="text/babel">
       class App extends React.Component {
+        // ====== 1. preventDefault：阻止表单默认提交 ======
         handleSubmit = (event) => {
           event.preventDefault();
           console.log("SyntheticEvent:", event);
           console.log("nativeEvent:", event.nativeEvent);
-          alert("已阻止表单默认提交，请看控制台");
+          alert("已阻止表单默认提交，请看 Console");
         };
 
         handleParentClick = () => {
           console.log("父元素 onClick");
         };
 
+        // ====== 2. stopPropagation：阻止事件冒泡到父元素 ======
         handleChildClick = (event) => {
           event.stopPropagation();
-          console.log("子元素 onClick，已阻止冒泡");
+          console.log("子元素 onClick，已 stopPropagation");
+          // 预期: 不会打印"父元素 onClick"
         };
 
         render() {
           return (
-          <section>
-            <h1>class 合成事件机制</h1>
+            <section>
+              <form onSubmit={this.handleSubmit}>
+                <button type="submit">提交表单（preventDefault）</button>
+              </form>
 
-            <form onSubmit={this.handleSubmit}>
-              <button type="submit">提交表单</button>
-            </form>
-            <div
-              onClick={this.handleParentClick}
-              style={{ border: "1px solid #ccc", padding: 16, marginTop: 12 }}
+              <div
+                onClick={this.handleParentClick}
+                style={{ border: "1px solid #ccc", padding: 16, marginTop: 12 }}
               >
-              父元素
-              <button onClick={this.handleChildClick}>子按钮</button>
-            </div>
-            <p>面试回答: 合成事件统一跨浏览器接口；class 与函数组件事件机制相同。</p>
-          </section>
-        );
-      }
+                父元素
+                <button type="button" onClick={this.handleChildClick}>子按钮（stopPropagation）</button>
+              </div>
+            </section>
+          );
+        }
       }
 
       ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -126,5 +127,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

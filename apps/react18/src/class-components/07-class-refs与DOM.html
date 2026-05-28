@@ -1,6 +1,7 @@
 <!--
   分类: react18 / class 组件
   主题: class 组件 refs 访问 DOM 与实例
+  相关: 06-class-完整生命周期与API, 11-class-受控与非受控表单, 17-class-defaultProps与静态属性
   要点:
     - React.createRef() 创建 ref 容器，提交挂载后 ref.current 才指向 DOM 或 class 实例
     - 回调 ref 会在挂载时收到节点、卸载时收到 null，适合需要自定义保存节点的场景
@@ -31,7 +32,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>class 组件 refs 访问 DOM 与实例</h1>
-      <p class="hint">点击下方按钮验证 createRef 聚焦 DOM、父组件调用子 class 实例方法，以及“只改实例字段不会触发 render”的差异。</p>
+      <p class="hint">请打开 DevTools Console 查看 componentDidMount 中 ref.current 与回调 ref 日志；点击下方按钮验证 createRef 聚焦 DOM、父调子实例方法，以及"只改实例字段不触发 render"；下方 #root 为 React 挂载/交互演示区。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -47,13 +48,13 @@
           <li><strong>ref.current 什么时候可用，为什么 render 里不能依赖它？</strong> 结论是提交挂载后才可靠可用。原因是 render 阶段只是描述 UI，真实 DOM 尚未提交，ref 写入发生在提交阶段；ref 变化也不会触发 render。需要读取尺寸或操作 DOM 时应放在事件、<code>componentDidMount</code> 或 <code>componentDidUpdate</code>。</li>
           <li><strong>什么时候应该用 ref，什么时候应该改用 props/state？</strong> 结论是命令式 DOM 操作用 ref，声明式业务数据用 props/state。因为 React 的渲染一致性依赖单向数据流，绕过数据流会让状态来源不清。项目里主题、表单值、是否展开这类 UI 状态不要放 ref；聚焦、滚动、媒体播放可以用 ref。</li>
           <li><strong>父组件通过 ref 调子 class 方法有什么风险？</strong> 结论是可以做，但会增强耦合。原因是父组件直接依赖子组件实例方法名和实现细节，子组件重构为函数组件或替换实现时容易破坏调用方。维护旧组件时可用于少量命令式能力，新设计更推荐通过 props 回调或受控状态表达交互。</li>
+          <li><strong>React 18 中函数组件为什么不能直接像 class 一样被 ref 拿到实例？</strong> 结论是函数组件没有 <code>this</code> 实例，ref 默认无法绑定。原因是函数组件只是普通函数调用，React 不会为它创建可命令式访问的实例对象；若父组件需要 ref，子组件须用 <code>forwardRef</code> 把 ref 转发到内部 DOM，或用 <code>useImperativeHandle</code> 暴露受控方法。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/createRef" target="_blank" rel="noopener">React Reference: <code>createRef</code></a></li>
-          <li><a href="https://react.dev/learn/manipulating-the-dom-with-refs" target="_blank" rel="noopener">React Learn: Manipulating the DOM with Refs</a></li>
-          <li><a href="https://legacy.reactjs.org/docs/refs-and-the-dom.html" target="_blank" rel="noopener">Legacy React Docs: Refs and the DOM</a></li>
-          <li><a href="https://react.dev/reference/react/forwardRef" target="_blank" rel="noopener">React Reference: <code>forwardRef</code>（React 18 函数组件 ref 边界）</a></li>
+          <li><a href="https://react.dev/reference/react/createRef" target="_blank" rel="noreferrer">react.dev: createRef</a></li>
+          <li><a href="https://react.dev/learn/manipulating-the-dom-with-refs" target="_blank" rel="noreferrer">react.dev: Manipulating the DOM with Refs</a></li>
+          <li><a href="https://react.dev/reference/react/forwardRef" target="_blank" rel="noreferrer">react.dev: forwardRef（函数组件 ref 边界）</a></li>
         </ul>
       </div>
     </section>
@@ -65,6 +66,7 @@
 
     <!-- SCRIPT_START -->
     <script type="text/babel">
+      // ====== 1. 子 class 组件：ref 指向 class 时拿到组件实例 ======
       class Child extends React.Component {
         sayHello() {
           alert("Child 实例方法被父组件通过 ref 调用");
@@ -78,15 +80,26 @@
       class FocusBox extends React.Component {
         constructor(props) {
           super(props);
+          // createRef：在 constructor 中创建 ref 容器
           this.inputRef = React.createRef();
           this.childRef = React.createRef();
+          // 实例字段：改它不会触发 render
           this.clickCount = 0;
           this.state = { renderCount: 0 };
+        }
+
+        // ====== 2. componentDidMount：ref.current 在提交挂载后才可用 ======
+        componentDidMount() {
+          console.log("componentDidMount inputRef.current:", this.inputRef.current);
+          // 预期: <input> DOM 节点
+          console.log("componentDidMount childRef.current:", this.childRef.current);
+          // 预期: Child 组件实例
         }
 
         focusInput = () => {
           if (this.inputRef.current) {
             this.inputRef.current.focus();
+            console.log("聚焦 inputRef.current:", this.inputRef.current);
           }
         };
 
@@ -102,6 +115,7 @@
           // 改实例字段不触发 render，页面上的 renderCount 不会变
         };
 
+        // ====== 3. 回调 ref：挂载时收到节点，卸载时收到 null ======
         handleCallbackRef = (node) => {
           if (node) {
             console.log("回调 ref 挂载:", node.tagName);
@@ -112,27 +126,29 @@
 
         render() {
           return (
-          <section>
-            <h1>class refs 与 DOM</h1>
+            <section>
+              <input ref={this.inputRef} placeholder="createRef 聚焦到这里" />
+              <button type="button" onClick={this.focusInput}>聚焦 input</button>
+              <button type="button" onClick={this.addCount} style={{ marginLeft: 8 }}>
+                只改实例字段（不触发 render）
+              </button>
+              <p>renderCount（state）：{this.state.renderCount}</p>
 
-            <input ref={this.inputRef} placeholder="createRef 聚焦到这里" />
-            <button onClick={this.focusInput}>聚焦 input</button>
-            <button onClick={this.addCount}>只改实例字段</button>
-            <p>renderCount（state）: {this.state.renderCount}</p>
-            <div ref={this.handleCallbackRef} style={{ marginTop: 12, padding: 8, border: "1px dashed #999" }}>
-              回调 ref 绑定的 div
-            </div>
-            <Child ref={this.childRef} />
-            <button onClick={this.callChild}>通过 ref 调用子组件方法</button>
-            <p>面试回答: class 组件用 createRef/回调 ref；ref 不参与渲染流程，适合命令式 DOM 操作。</p>
-          </section>
-        );
-      }
+              <div
+                ref={this.handleCallbackRef}
+                style={{ marginTop: 12, padding: 8, border: "1px dashed #999" }}
+              >
+                回调 ref 绑定的 div
+              </div>
 
+              <Child ref={this.childRef} />
+              <button type="button" onClick={this.callChild}>通过 ref 调用子组件方法</button>
+            </section>
+          );
+        }
       }
 
       ReactDOM.createRoot(document.getElementById("root")).render(<FocusBox />);
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -154,5 +170,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>
