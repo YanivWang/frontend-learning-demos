@@ -31,24 +31,102 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>static { ... }</code> 是类体内的静态初始化块，在类定义被求值时同步执行，不会等到 <code>new</code> 实例。</li>
-          <li>静态字段初始化器和多个 <code>static</code> 块按源码顺序交错执行；父类静态初始化会先于子类静态初始化。</li>
-          <li>块内的 <code>this</code> 指向当前类构造器本身，所以可以读写公共静态字段，也可以访问类中声明的私有静态字段。</li>
-          <li>静态块内部声明的 <code>var</code>、<code>let</code>、<code>const</code> 都不会泄漏到块外；这和普通块里 <code>var</code> 会提升到函数作用域不同。</li>
-          <li>静态块只能同步执行，不能使用 <code>await</code>、<code>yield</code>、<code>arguments</code>，也不能调用 <code>super()</code>；需要异步初始化时应暴露显式初始化方法或返回 Promise。</li>
-          <li>它适合把复杂静态配置、缓存预处理、私有静态字段初始化封装在类内部，避免暴露一个只为初始化服务的公共 <code>init()</code> 方法。</li>
+          <li>
+            <code>static { ... }</code>
+            是类体内的静态初始化块，在类定义被求值时同步执行，不会等到
+            <code>new</code>
+            实例。
+          </li>
+          <li>
+            静态字段初始化器和多个
+            <code>static</code>
+            块按源码顺序交错执行；父类静态初始化会先于子类静态初始化。
+          </li>
+          <li>
+            块内的
+            <code>this</code>
+            指向当前类构造器本身，所以可以读写公共静态字段，也可以访问类中声明的私有静态字段。
+          </li>
+          <li>
+            静态块内部声明的
+            <code>var</code>
+            、
+            <code>let</code>
+            、
+            <code>const</code>
+            都不会泄漏到块外；这和普通块里
+            <code>var</code>
+            会提升到函数作用域不同。
+          </li>
+          <li>
+            静态块只能同步执行，不能使用
+            <code>await</code>
+            、
+            <code>yield</code>
+            、
+            <code>arguments</code>
+            ，也不能调用
+            <code>super()</code>
+            ；需要异步初始化时应暴露显式初始化方法或返回 Promise。
+          </li>
+          <li>
+            它适合把复杂静态配置、缓存预处理、私有静态字段初始化封装在类内部，避免暴露一个只为初始化服务的公共
+            <code>init()</code>
+            方法。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>static 初始化块什么时候执行？</strong> 结论是类求值时执行，不是创建实例时执行。原因是它属于类的静态初始化流程，会和静态字段按声明顺序同步运行；项目里不能把它当成实例构造逻辑。</li>
-          <li><strong>static 块里的 <code>this</code> 指向谁？</strong> <code>this</code> 指向当前类构造器，因此可访问 <code>this.staticField</code> 和已声明的私有静态字段。边界是实例字段还没有实例可挂载，所以在静态块里读 <code>this.type</code> 读到的是类上的静态属性，而不是实例字段。</li>
-          <li><strong>static 块适合解决什么问题？</strong> 它适合封装复杂的同步静态初始化，例如从多个值推导缓存或初始化私有静态状态。原因是类外函数无法访问私有静态字段，而公开 <code>init()</code> 又会泄漏实现细节；异步初始化仍应放到显式 API 中处理失败路径。</li>
-          <li><strong>引用下方静态字段有什么坑？</strong> 公共静态字段在执行到声明位置前还没有被设置，读取通常得到 <code>undefined</code>；私有静态字段如果尚未初始化，访问会抛错。项目里应把被依赖的静态字段写在静态块之前，或者在块内完成统一赋值。</li>
+          <li>
+            <strong>static 初始化块什么时候执行？</strong>
+            结论是类求值时执行，不是创建实例时执行。原因是它属于类的静态初始化流程，会和静态字段按声明顺序同步运行；项目里不能把它当成实例构造逻辑。
+          </li>
+          <li>
+            <strong>
+              static 块里的
+              <code>this</code>
+              指向谁？
+            </strong>
+            <code>this</code>
+            指向当前类构造器，因此可访问
+            <code>this.staticField</code>
+            和已声明的私有静态字段。边界是实例字段还没有实例可挂载，所以在静态块里读
+            <code>this.type</code>
+            读到的是类上的静态属性，而不是实例字段。
+          </li>
+          <li>
+            <strong>static 块适合解决什么问题？</strong>
+            它适合封装复杂的同步静态初始化，例如从多个值推导缓存或初始化私有静态状态。原因是类外函数无法访问私有静态字段，而公开
+            <code>init()</code>
+            又会泄漏实现细节；异步初始化仍应放到显式 API 中处理失败路径。
+          </li>
+          <li>
+            <strong>引用下方静态字段有什么坑？</strong>
+            公共静态字段在执行到声明位置前还没有被设置，读取通常得到
+            <code>undefined</code>
+            ；私有静态字段如果尚未初始化，访问会抛错。项目里应把被依赖的静态字段写在静态块之前，或者在块内完成统一赋值。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Static_initialization_blocks">MDN: Static initialization blocks</a>：类求值时同步执行、<code>this</code> 指向类构造器。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Public_class_fields">MDN: Public class fields</a>：静态/实例字段初始化器与 static 块交错顺序。</li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Static_initialization_blocks"
+            >
+              MDN: Static initialization blocks
+            </a>
+            ：类求值时同步执行、
+            <code>this</code>
+            指向类构造器。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Public_class_fields"
+            >
+              MDN: Public class fields
+            </a>
+            ：静态/实例字段初始化器与 static 块交错顺序。
+          </li>
         </ul>
       </div>
     </section>
@@ -59,46 +137,46 @@
       // ============ 1. 静态字段与 static 块按声明顺序交错执行（类求值阶段） ============
       // MDN：static 块在类定义被求值时同步执行，不等到 new 实例
       class Pig {
-        static consoleP = console.log("静态字段初始化器 consoleP"); // 类求值时执行
-        static animalId = "10001";
+        static consoleP = console.log('静态字段初始化器 consoleP'); // 类求值时执行
+        static animalId = '10001';
 
         // 实例字段在 new 时初始化，类求值阶段不会执行
-        type = "animal";
+        type = 'animal';
 
         static {
           // this 指向类构造器 Pig，不是实例
-          console.log("static 块1: this.type =", this.type); // undefined（实例字段尚未存在）
+          console.log('static 块1: this.type =', this.type); // undefined（实例字段尚未存在）
           var blockLocal = 1; // 块作用域，不泄漏到类外
-          console.log("static 块1: blockLocal =", blockLocal); // 1
-          console.log("static 块1: this.animalId =", this.animalId); // "10001"（上方已声明）
+          console.log('static 块1: blockLocal =', blockLocal); // 1
+          console.log('static 块1: this.animalId =', this.animalId); // "10001"（上方已声明）
           // 下方尚未声明的静态字段，读取得到 undefined
-          console.log("static 块1: this.species =", this.species); // undefined
+          console.log('static 块1: this.species =', this.species); // undefined
         }
 
-        static species = "pig";
+        static species = 'pig';
 
         static {
-          console.log("static 块2: this.species =", this.species); // "pig"
-          console.log("static 块2: this === Pig:", this === Pig); // true
+          console.log('static 块2: this.species =', this.species); // "pig"
+          console.log('static 块2: this === Pig:', this === Pig); // true
         }
 
-        static #privateId = "privateId123";
+        static #privateId = 'privateId123';
         static {
           // 可访问同类的私有静态字段（MDN: static initialization blocks）
-          console.log("static 块3: #privateId =", this.#privateId); // "privateId123"
+          console.log('static 块3: #privateId =', this.#privateId); // "privateId123"
         }
 
         constructor(name) {
-          console.log("Pig 构造器（new 时才执行）>>", name);
+          console.log('Pig 构造器（new 时才执行）>>', name);
           this.name = name;
         }
       }
 
       // ============ 2. 类求值已完成；new 时才走实例构造 ============
-      console.log("--- 类定义求值完毕，开始 new 实例 ---");
-      const pig = new Pig("佩奇");
-      console.log("实例字段 pig.type:", pig.type); // "animal"
-      console.log("静态字段 Pig.species:", Pig.species); // "pig"
+      console.log('--- 类定义求值完毕，开始 new 实例 ---');
+      const pig = new Pig('佩奇');
+      console.log('实例字段 pig.type:', pig.type); // "animal"
+      console.log('静态字段 Pig.species:', Pig.species); // "pig"
     </script>
     <!-- SCRIPT_END -->
 
@@ -107,16 +185,22 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./class%E9%9D%99%E6%80%81%E5%88%9D%E5%A7%8B%E5%8C%96%E5%9D%97extends.html">相关 · class静态初始化块extends</a>
-        <a href="./%E7%A7%81%E6%9C%89%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0.html">相关 · 私有构造函数</a>
+        <a href="./class%E9%9D%99%E6%80%81%E5%88%9D%E5%A7%8B%E5%8C%96%E5%9D%97extends.html">
+          相关 · class静态初始化块extends
+        </a>
+        <a href="./%E7%A7%81%E6%9C%89%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0.html">
+          相关 · 私有构造函数
+        </a>
         <a href="./%E7%A7%81%E6%9C%89%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0.html">← 私有构造函数</a>
-        <a href="./class%E9%9D%99%E6%80%81%E5%88%9D%E5%A7%8B%E5%8C%96%E5%9D%97extends.html">class静态初始化块extends →</a>
+        <a href="./class%E9%9D%99%E6%80%81%E5%88%9D%E5%A7%8B%E5%8C%96%E5%9D%97extends.html">
+          class静态初始化块extends →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

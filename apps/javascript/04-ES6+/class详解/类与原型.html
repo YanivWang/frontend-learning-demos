@@ -31,25 +31,110 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>class</code> 是更严格、更清晰的原型语法：constructor 负责实例初始化，类体中的实例方法定义在 <code>ClassName.prototype</code> 上，由所有实例共享。</li>
-          <li>公有实例字段和私有实例字段会在每次 <code>new</code> 时初始化到当前实例；静态字段和静态方法定义在类构造器本身，实例默认访问不到。</li>
-          <li>在 constructor 里写 <code>this.sayHello = function () {}</code> 会给每个实例创建一个新的函数对象；除非需要闭包捕获构造参数，否则更推荐写成原型方法。</li>
-          <li>私有字段 <code>#field</code> 是语法级私有，只能在声明它的类体内部通过 <code>this.#field</code> 访问；<code>_field</code> 只是命名约定，外部仍能读写。</li>
-          <li>推荐用 <code>Object.getPrototypeOf(instance)</code> 验证原型关系；<code>__proto__</code> 是历史访问器，不适合作为现代示例的首选写法。</li>
-          <li>理解字段与原型的存放位置，有助于判断内存占用、方法共享、静态工具方法和实例状态的边界。</li>
+          <li>
+            <code>class</code>
+            是更严格、更清晰的原型语法：constructor 负责实例初始化，类体中的实例方法定义在
+            <code>ClassName.prototype</code>
+            上，由所有实例共享。
+          </li>
+          <li>
+            公有实例字段和私有实例字段会在每次
+            <code>new</code>
+            时初始化到当前实例；静态字段和静态方法定义在类构造器本身，实例默认访问不到。
+          </li>
+          <li>
+            在 constructor 里写
+            <code>this.sayHello = function () {}</code>
+            会给每个实例创建一个新的函数对象；除非需要闭包捕获构造参数，否则更推荐写成原型方法。
+          </li>
+          <li>
+            私有字段
+            <code>#field</code>
+            是语法级私有，只能在声明它的类体内部通过
+            <code>this.#field</code>
+            访问；
+            <code>_field</code>
+            只是命名约定，外部仍能读写。
+          </li>
+          <li>
+            推荐用
+            <code>Object.getPrototypeOf(instance)</code>
+            验证原型关系；
+            <code>__proto__</code>
+            是历史访问器，不适合作为现代示例的首选写法。
+          </li>
+          <li>
+            理解字段与原型的存放位置，有助于判断内存占用、方法共享、静态工具方法和实例状态的边界。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>class 方法、实例字段、静态字段分别存在哪里？</strong> 结论是实例方法在 <code>prototype</code> 上共享，实例字段在每个实例上，静态成员在类构造器本身上。原因是 class 仍建立在原型机制之上；项目里要根据“每实例状态”还是“类级能力”选择字段或方法位置。</li>
-          <li><strong>为什么不建议在 constructor 里重复创建方法？</strong> 因为每次 <code>new</code> 都会创建新的函数对象，实例之间无法共享，实例数量大时会浪费内存。边界是如果方法必须闭包捕获 constructor 的局部变量，才考虑放到实例上。</li>
-          <li><strong>私有字段和下划线属性有什么区别？</strong> <code>#field</code> 是语言语法级私有，类外访问会直接语法错误；<code>_field</code> 只是团队约定，运行时仍是普通属性。库代码需要隐藏内部状态时，优先使用真正的私有字段或模块闭包。</li>
-          <li><strong>如何验证实例和类原型的关系？</strong> 可以用 <code>Object.getPrototypeOf(p1) === Person.prototype</code> 验证实例原型，用 <code>Object.getPrototypeOf(Sub.prototype) === Base.prototype</code> 验证继承链。现代代码更推荐 <code>Object.getPrototypeOf</code>，不要依赖 <code>__proto__</code>。</li>
+          <li>
+            <strong>class 方法、实例字段、静态字段分别存在哪里？</strong>
+            结论是实例方法在
+            <code>prototype</code>
+            上共享，实例字段在每个实例上，静态成员在类构造器本身上。原因是 class
+            仍建立在原型机制之上；项目里要根据“每实例状态”还是“类级能力”选择字段或方法位置。
+          </li>
+          <li>
+            <strong>为什么不建议在 constructor 里重复创建方法？</strong>
+            因为每次
+            <code>new</code>
+            都会创建新的函数对象，实例之间无法共享，实例数量大时会浪费内存。边界是如果方法必须闭包捕获
+            constructor 的局部变量，才考虑放到实例上。
+          </li>
+          <li>
+            <strong>私有字段和下划线属性有什么区别？</strong>
+            <code>#field</code>
+            是语言语法级私有，类外访问会直接语法错误；
+            <code>_field</code>
+            只是团队约定，运行时仍是普通属性。库代码需要隐藏内部状态时，优先使用真正的私有字段或模块闭包。
+          </li>
+          <li>
+            <strong>如何验证实例和类原型的关系？</strong>
+            可以用
+            <code>Object.getPrototypeOf(p1) === Person.prototype</code>
+            验证实例原型，用
+            <code>Object.getPrototypeOf(Sub.prototype) === Base.prototype</code>
+            验证继承链。现代代码更推荐
+            <code>Object.getPrototypeOf</code>
+            ，不要依赖
+            <code>__proto__</code>
+            。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes" target="_blank" rel="noreferrer">MDN: Classes</a>：字段、方法与原型关系。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements" target="_blank" rel="noreferrer">MDN: Private elements</a>：#field 与 _field 区别。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf" target="_blank" rel="noreferrer">MDN: Object.getPrototypeOf()</a>：验证原型链。</li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Classes
+            </a>
+            ：字段、方法与原型关系。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Private elements
+            </a>
+            ：#field 与 _field 区别。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Object.getPrototypeOf()
+            </a>
+            ：验证原型链。
+          </li>
         </ul>
       </div>
     </section>
@@ -59,8 +144,8 @@
     <script>
       // ============ 1. 字段与方法存放位置 ============
       class Person {
-        static userType = "person"; // 类构造器上
-        static #typeCode = "P"; // 静态私有
+        static userType = 'person'; // 类构造器上
+        static #typeCode = 'P'; // 静态私有
 
         userAge = 18; // 每个实例各一份
         #userAgeName = 18; // 实例私有
@@ -70,7 +155,7 @@
 
           // 反面：每个实例独立函数对象
           this.sayHello = function () {
-            return "hi " + this.userName;
+            return 'hi ' + this.userName;
           };
         }
 
@@ -80,30 +165,30 @@
         }
       }
 
-      const p1 = new Person("Alice");
-      const p2 = new Person("Bob");
+      const p1 = new Person('Alice');
+      const p2 = new Person('Bob');
       p1.eat();
 
       // ============ 2. Object.getPrototypeOf 验证原型关系 ============
       console.log(
-        "Person.prototype === Object.getPrototypeOf(p1):",
-        Person.prototype === Object.getPrototypeOf(p1)
+        'Person.prototype === Object.getPrototypeOf(p1):',
+        Person.prototype === Object.getPrototypeOf(p1),
       ); // true
 
       // ============ 3. 实例方法共享 vs 实例自有方法 ============
-      console.log("eat 共享:", p1.eat === p2.eat); // true（prototype）
-      console.log("sayHello 独立:", p1.sayHello === p2.sayHello); // false（own property）
-      console.log("hasOwn eat:", Object.hasOwn(p1, "eat")); // false
-      console.log("hasOwn sayHello:", Object.hasOwn(p1, "sayHello")); // true
-      console.log("hasOwn userAge:", Object.hasOwn(p1, "userAge")); // true
+      console.log('eat 共享:', p1.eat === p2.eat); // true（prototype）
+      console.log('sayHello 独立:', p1.sayHello === p2.sayHello); // false（own property）
+      console.log('hasOwn eat:', Object.hasOwn(p1, 'eat')); // false
+      console.log('hasOwn sayHello:', Object.hasOwn(p1, 'sayHello')); // true
+      console.log('hasOwn userAge:', Object.hasOwn(p1, 'userAge')); // true
 
       // ============ 4. 静态成员 vs 实例访问 ============
-      console.log("Person.userType:", Person.userType); // "person"
-      console.log("p1.userType:", p1.userType); // undefined
+      console.log('Person.userType:', Person.userType); // "person"
+      console.log('p1.userType:', p1.userType); // undefined
 
       // ============ 5. 下划线约定 vs 私有字段 ============
-      p1._legacyPrivate = "still readable"; // 约定，非真正私有
-      console.log("外部读 _legacyPrivate:", p1._legacyPrivate);
+      p1._legacyPrivate = 'still readable'; // 约定，非真正私有
+      console.log('外部读 _legacyPrivate:', p1._legacyPrivate);
       // p1.#userAgeName // SyntaxError：类外不能访问 #field
     </script>
     <!-- SCRIPT_END -->
@@ -120,9 +205,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

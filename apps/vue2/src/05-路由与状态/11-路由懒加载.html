@@ -29,31 +29,102 @@
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>vue-router 路由懒加载</h1>
       <p class="hint">
-        点击 <code>About Lazy</code> 链接，首次进入会延迟约 0.5s 后显示「About 组件模拟异步加载完成」；再次切换可对比
-        Home 同步加载与 About 异步解析的差异。
+        点击
+        <code>About Lazy</code>
+        链接，首次进入会延迟约 0.5s 后显示「About 组件模拟异步加载完成」；再次切换可对比 Home
+        同步加载与 About 异步解析的差异。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>路由懒加载把不同页面组件拆成独立异步块，用户访问对应路由时才加载，常用于降低首屏 JavaScript 体积和解析成本。</li>
-          <li>Vue Router 3 的工程写法通常是 <code>component: () =&gt; import('./views/About.vue')</code>；构建工具会把动态 import 识别为代码分割点。</li>
-          <li>当前仓库是可直接打开的 HTML，没有构建步骤，所以示例用返回 <code>Promise</code> 的异步组件工厂和 <code>setTimeout</code> 模拟加载延迟。</li>
-          <li>懒加载不是“让页面一定更快”：首次进入懒加载路由会多一次 chunk 请求，弱网下应提供 loading、error、timeout 或重试提示，关键首屏路由不一定适合懒加载。</li>
-          <li><code>keep-alive</code> 缓存已加载组件，懒加载减少尚未访问页面的初始下载量；二者可以配合，但分别解决“重复渲染”和“首屏体积”两个问题。</li>
+          <li>
+            路由懒加载把不同页面组件拆成独立异步块，用户访问对应路由时才加载，常用于降低首屏
+            JavaScript 体积和解析成本。
+          </li>
+          <li>
+            Vue Router 3 的工程写法通常是
+            <code>component: () =&gt; import('./views/About.vue')</code>
+            ；构建工具会把动态 import 识别为代码分割点。
+          </li>
+          <li>
+            当前仓库是可直接打开的 HTML，没有构建步骤，所以示例用返回
+            <code>Promise</code>
+            的异步组件工厂和
+            <code>setTimeout</code>
+            模拟加载延迟。
+          </li>
+          <li>
+            懒加载不是“让页面一定更快”：首次进入懒加载路由会多一次 chunk 请求，弱网下应提供
+            loading、error、timeout 或重试提示，关键首屏路由不一定适合懒加载。
+          </li>
+          <li>
+            <code>keep-alive</code>
+            缓存已加载组件，懒加载减少尚未访问页面的初始下载量；二者可以配合，但分别解决“重复渲染”和“首屏体积”两个问题。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>路由懒加载解决什么问题？</strong> 结论是把非首屏页面延后加载，减少初始包体积。原因是大型 SPA 如果一次加载所有页面组件，会拖慢首屏下载、解析和执行。边界是用户首次进入懒加载页面会等待 chunk 下载，不能把所有性能问题都归结为懒加载。</li>
-          <li><strong>Vue Router 3 里怎么写懒加载？</strong> 结论是路由的 <code>component</code> 可以是返回 Promise 的异步组件工厂，工程中常写 <code>() =&gt; import(...)</code>。原因是 Vue Router 会在导航解析阶段等待异步组件 resolved。项目里还可用 webpack chunk name 把相关页面打进同一块。</li>
-          <li><strong>懒加载失败要怎么兜底？</strong> 结论是要给用户 loading、失败提示、超时和重试入口。原因是 chunk 请求可能 404、网络超时或版本发布后缓存不一致。项目里常配合全局错误监控、刷新提示和路由级错误页。</li>
-          <li><strong>懒加载、预加载、keep-alive 怎么区分？</strong> 结论是懒加载延后下载，预加载提前下载未来可能需要的资源，<code>keep-alive</code> 缓存已创建组件。原因是三者优化阶段不同。边界是移动端弱网下预加载可能浪费流量，应按路由热度和业务优先级取舍。</li>
+          <li>
+            <strong>路由懒加载解决什么问题？</strong>
+            结论是把非首屏页面延后加载，减少初始包体积。原因是大型 SPA
+            如果一次加载所有页面组件，会拖慢首屏下载、解析和执行。边界是用户首次进入懒加载页面会等待
+            chunk 下载，不能把所有性能问题都归结为懒加载。
+          </li>
+          <li>
+            <strong>Vue Router 3 里怎么写懒加载？</strong>
+            结论是路由的
+            <code>component</code>
+            可以是返回 Promise 的异步组件工厂，工程中常写
+            <code>() =&gt; import(...)</code>
+            。原因是 Vue Router 会在导航解析阶段等待异步组件 resolved。项目里还可用 webpack chunk
+            name 把相关页面打进同一块。
+          </li>
+          <li>
+            <strong>懒加载失败要怎么兜底？</strong>
+            结论是要给用户 loading、失败提示、超时和重试入口。原因是 chunk 请求可能
+            404、网络超时或版本发布后缓存不一致。项目里常配合全局错误监控、刷新提示和路由级错误页。
+          </li>
+          <li>
+            <strong>懒加载、预加载、keep-alive 怎么区分？</strong>
+            结论是懒加载延后下载，预加载提前下载未来可能需要的资源，
+            <code>keep-alive</code>
+            缓存已创建组件。原因是三者优化阶段不同。边界是移动端弱网下预加载可能浪费流量，应按路由热度和业务优先级取舍。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://v3.router.vuejs.org/guide/advanced/lazy-loading.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Lazy Loading Routes</a></li>
-          <li><a href="https://v2.vuejs.org/v2/guide/components-dynamic-async.html#Async-Components" target="_blank" rel="noopener">Vue 2 官方文档：Async Components</a></li>
-          <li><a href="https://webpack.js.org/guides/code-splitting/" target="_blank" rel="noopener">webpack 官方文档：Code Splitting</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import" target="_blank" rel="noopener">MDN：dynamic import()</a></li>
+          <li>
+            <a
+              href="https://v3.router.vuejs.org/guide/advanced/lazy-loading.html"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue Router 3 官方文档：Lazy Loading Routes
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://v2.vuejs.org/v2/guide/components-dynamic-async.html#Async-Components"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue 2 官方文档：Async Components
+            </a>
+          </li>
+          <li>
+            <a href="https://webpack.js.org/guides/code-splitting/" target="_blank" rel="noopener">
+              webpack 官方文档：Code Splitting
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN：dynamic import()
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -76,14 +147,14 @@
       // 本页用 setTimeout 模拟 chunk 加载延迟。
       // ---------------------------------------------------------------------------
       const Home = {
-        template: "<p>Home 组件同步加载</p>"
+        template: '<p>Home 组件同步加载</p>',
       };
 
       const AboutLazy = function () {
         return new Promise(function (resolve) {
           setTimeout(function () {
             resolve({
-              template: "<p>About 组件模拟异步加载完成</p>"
+              template: '<p>About 组件模拟异步加载完成</p>',
             });
           }, 500);
         });
@@ -91,14 +162,14 @@
 
       const router = new VueRouter({
         routes: [
-          { path: "/", component: Home },
-          { path: "/about", component: AboutLazy }
-        ]
+          { path: '/', component: Home },
+          { path: '/about', component: AboutLazy },
+        ],
       });
 
       new Vue({
-        el: "#app",
-        router
+        el: '#app',
+        router,
       });
     </script>
     <!-- SCRIPT_END -->
@@ -113,13 +184,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

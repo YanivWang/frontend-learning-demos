@@ -31,26 +31,99 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>这页真实主题不是现代 <code>escape()</code> 用法，而是反斜杠在 JS 字符串字面量、JSON 文本和二次嵌套中的表现。</li>
-          <li>JSON 字符串必须转义双引号、反斜杠以及 U+0000 到 U+001F 控制字符；<code>/</code> 允许转义但通常不是必须。</li>
-          <li><code>JSON.stringify</code> 会生成合法 JSON 文本，<code>JSON.parse</code> 会把转义序列还原为实际字符，业务代码不要手写拼接复杂 JSON。</li>
-          <li>把 JSON 文本再作为另一段 JS 字符串、HTML 属性或外层 JSON 的值时，反斜杠本身也会被转义，所以日志里可能看到 <code>\\\"</code>。</li>
-          <li><code>escape()</code> / <code>unescape()</code> 是已废弃的全局 API，和 JSON 转义不是一回事；URL 参数用 <code>encodeURIComponent</code>，结构化数据用 <code>JSON.stringify</code>。</li>
-          <li>不要扩展 <code>String.prototype</code> 实现项目转义工具，原因是会污染所有字符串对象，增加枚举、命名冲突和第三方代码兼容风险。</li>
+          <li>
+            这页真实主题不是现代
+            <code>escape()</code>
+            用法，而是反斜杠在 JS 字符串字面量、JSON 文本和二次嵌套中的表现。
+          </li>
+          <li>
+            JSON 字符串必须转义双引号、反斜杠以及 U+0000 到 U+001F 控制字符；
+            <code>/</code>
+            允许转义但通常不是必须。
+          </li>
+          <li>
+            <code>JSON.stringify</code>
+            会生成合法 JSON 文本，
+            <code>JSON.parse</code>
+            会把转义序列还原为实际字符，业务代码不要手写拼接复杂 JSON。
+          </li>
+          <li>
+            把 JSON 文本再作为另一段 JS 字符串、HTML 属性或外层 JSON
+            的值时，反斜杠本身也会被转义，所以日志里可能看到
+            <code>\\\"</code>
+            。
+          </li>
+          <li>
+            <code>escape()</code>
+            /
+            <code>unescape()</code>
+            是已废弃的全局 API，和 JSON 转义不是一回事；URL 参数用
+            <code>encodeURIComponent</code>
+            ，结构化数据用
+            <code>JSON.stringify</code>
+            。
+          </li>
+          <li>
+            不要扩展
+            <code>String.prototype</code>
+            实现项目转义工具，原因是会污染所有字符串对象，增加枚举、命名冲突和第三方代码兼容风险。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>JSON 哪些字符必须转义？</strong> 结论是双引号、反斜杠和控制字符必须转义。原因是它们会破坏 JSON 字符串边界或不可直接出现在 JSON 文本中；边界是 <code>\uXXXX</code> 只是表示字符的另一种写法，不等于 URL 百分号编码。</li>
-          <li><strong>为何会看到双重反斜杠？</strong> 结论是因为同一段内容经过了两层字符串语法。第一层为了 JSON 合法性转义引号，第二层为了把 JSON 文本放进另一个字符串而转义反斜杠；排查时要区分「源码/日志展示」和「解析后的实际值」。</li>
-          <li><strong>escape、JSON 转义和 encodeURIComponent 有什么区别？</strong> 结论是三者服务于不同语境。JSON 转义维护数据格式，<code>encodeURIComponent</code> 维护 URI 组件，<code>escape</code> 是历史 API 且已废弃；项目里不要混用。</li>
-          <li><strong>为什么不要改 String.prototype？</strong> 结论是除非 polyfill 且遵循规范，否则不应修改内建原型。原因是所有字符串都会继承该方法，可能与未来标准或库冲突；局部工具函数更可控。</li>
+          <li>
+            <strong>JSON 哪些字符必须转义？</strong>
+            结论是双引号、反斜杠和控制字符必须转义。原因是它们会破坏 JSON 字符串边界或不可直接出现在
+            JSON 文本中；边界是
+            <code>\uXXXX</code>
+            只是表示字符的另一种写法，不等于 URL 百分号编码。
+          </li>
+          <li>
+            <strong>为何会看到双重反斜杠？</strong>
+            结论是因为同一段内容经过了两层字符串语法。第一层为了 JSON 合法性转义引号，第二层为了把
+            JSON
+            文本放进另一个字符串而转义反斜杠；排查时要区分「源码/日志展示」和「解析后的实际值」。
+          </li>
+          <li>
+            <strong>escape、JSON 转义和 encodeURIComponent 有什么区别？</strong>
+            结论是三者服务于不同语境。JSON 转义维护数据格式，
+            <code>encodeURIComponent</code>
+            维护 URI 组件，
+            <code>escape</code>
+            是历史 API 且已废弃；项目里不要混用。
+          </li>
+          <li>
+            <strong>为什么不要改 String.prototype？</strong>
+            结论是除非 polyfill
+            且遵循规范，否则不应修改内建原型。原因是所有字符串都会继承该方法，可能与未来标准或库冲突；局部工具函数更可控。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify">MDN：JSON.stringify()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse">MDN：JSON.parse()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/escape">MDN：escape()（Deprecated）</a></li>
-          <li><a href="https://tc39.es/ecma262/#sec-json.stringify">ECMA-262：JSON.stringify</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify"
+            >
+              MDN：JSON.stringify()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse"
+            >
+              MDN：JSON.parse()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/escape"
+            >
+              MDN：escape()（Deprecated）
+            </a>
+          </li>
+          <li>
+            <a href="https://tc39.es/ecma262/#sec-json.stringify">ECMA-262：JSON.stringify</a>
+          </li>
         </ul>
       </div>
     </section>
@@ -62,13 +135,13 @@
       // content 字段内含 HTML 与 \"，源码里用 \\ 表示单个反斜杠
       const rawJson =
         '{"hotRankNum":3,"index":1,"cgIndex":1,"pId":"67ac6749-4e44-4bb4-a81d-3f473e847948","title":"I feel like I just saw something I shouldn\'t have","type":"linkType","content":"<div><span class=\\"iconfont icon-link\\"></span><a href=\\"https://www.reddit.com\\">www.reddit.com</a></div>","cgName":"jp","upNum":2,"commentNum":1,"timeStamp":1570600685329,"uId":"uid1001","uName":"wangcheng","downNum":0}';
-      console.log("原始 JSON 文本:", rawJson);
+      console.log('原始 JSON 文本:', rawJson);
       const parsed = JSON.parse(rawJson);
-      console.log("JSON.parse 后 content:", parsed.content);
+      console.log('JSON.parse 后 content:', parsed.content);
 
       // ============ 2. JSON.stringify：对象 → 合法 JSON 文本 ============
       const str2 = JSON.stringify(parsed);
-      console.log("stringify 后:", str2);
+      console.log('stringify 后:', str2);
 
       // ============ 3. 二次嵌套：JSON 文本再作为外层字符串值时需额外转义反斜杠 ============
       // 日志里看到 \\\" 是因为反斜杠本身也被转义了，不是解析后的实际值
@@ -77,16 +150,16 @@
       if (reg.test(str3)) {
         str3 = str3.replace(reg, '\\\\"');
       }
-      console.log("二次转义后:", str3);
+      console.log('二次转义后:', str3);
 
       // ============ 4. JSON 必须转义的字符演示 ============
-      const mustEscape = { quote: 'He said "hi"', backslash: "a\\b", newline: "a\nb" };
-      console.log("控制字符与引号 stringify:\n", JSON.stringify(mustEscape, null, 2));
-      console.log("parse 还原 newline:", JSON.parse(JSON.stringify(mustEscape)).newline);
+      const mustEscape = { quote: 'He said "hi"', backslash: 'a\\b', newline: 'a\nb' };
+      console.log('控制字符与引号 stringify:\n', JSON.stringify(mustEscape, null, 2));
+      console.log('parse 还原 newline:', JSON.parse(JSON.stringify(mustEscape)).newline);
 
       // ============ 5. escape 已废弃：与 JSON / URL 编码不是同一套规则 ============
-      console.log("escape 输出:", escape("中国 & JSON")); // 历史 %uXXXX 格式，勿用于新代码
-      console.log("对比 encodeURIComponent:", encodeURIComponent("中国 & JSON"));
+      console.log('escape 输出:', escape('中国 & JSON')); // 历史 %uXXXX 格式，勿用于新代码
+      console.log('对比 encodeURIComponent:', encodeURIComponent('中国 & JSON'));
     </script>
     <!-- SCRIPT_END -->
 
@@ -102,9 +175,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

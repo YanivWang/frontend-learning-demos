@@ -1,5 +1,5 @@
 <!--
-分类: css / 04-视觉效果 / drop-shadow
+  分类: css / 04-视觉效果 / drop-shadow
   主题: box-shadow vs filter: drop-shadow 对比
   要点:
     - box-shadow 按元素边框盒绘制阴影，不关心内容透明像素
@@ -20,9 +20,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>box-shadow vs drop-shadow</title>
     <style type="text/css">
-      body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
-      h2 { font-size: 1rem; margin-top: 2rem; }
-      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        color: #222;
+      }
+      h2 {
+        font-size: 1rem;
+        margin-top: 2rem;
+      }
+      .tip {
+        margin: 0.5rem 0 1rem;
+        color: #666;
+        font-size: 0.875rem;
+      }
       .dash1 {
         width: 50px;
         height: 50px;
@@ -56,28 +67,95 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>box-shadow vs filter: drop-shadow 对比</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会读取 box-shadow 与 filter 实测值。</p>
+      <p class="hint">
+        在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会读取 box-shadow
+        与 filter 实测值。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>box-shadow</code> 是盒模型阴影，默认围绕元素边框盒绘制；即使内容是透明 PNG 或虚线边框，它也主要表现为矩形盒子的投影。</li>
-          <li><code>filter: drop-shadow()</code> 是滤镜函数，基于元素渲染后的 alpha 轮廓生成阴影，所以本页虚线边框的阴影会跟随可见线段。</li>
-          <li><code>drop-shadow()</code> 参数类似 <code>box-shadow</code> 的水平偏移、垂直偏移、模糊半径和颜色，但没有 spread 扩张半径，也不支持 <code>inset</code> 内阴影。</li>
-          <li>选型上，普通卡片、按钮、面板用 <code>box-shadow</code> 更直观；透明图标、SVG、裁剪形状或非矩形图形需要沿可见轮廓投影时用 <code>drop-shadow()</code>。</li>
-          <li>性能边界是 <code>filter</code> 需要额外滤镜处理，频繁动画、大面积模糊或长列表批量使用时要实测，必要时降低模糊半径或改为静态资源。</li>
+          <li>
+            <code>box-shadow</code>
+            是盒模型阴影，默认围绕元素边框盒绘制；即使内容是透明 PNG
+            或虚线边框，它也主要表现为矩形盒子的投影。
+          </li>
+          <li>
+            <code>filter: drop-shadow()</code>
+            是滤镜函数，基于元素渲染后的 alpha 轮廓生成阴影，所以本页虚线边框的阴影会跟随可见线段。
+          </li>
+          <li>
+            <code>drop-shadow()</code>
+            参数类似
+            <code>box-shadow</code>
+            的水平偏移、垂直偏移、模糊半径和颜色，但没有 spread 扩张半径，也不支持
+            <code>inset</code>
+            内阴影。
+          </li>
+          <li>
+            选型上，普通卡片、按钮、面板用
+            <code>box-shadow</code>
+            更直观；透明图标、SVG、裁剪形状或非矩形图形需要沿可见轮廓投影时用
+            <code>drop-shadow()</code>
+            。
+          </li>
+          <li>
+            性能边界是
+            <code>filter</code>
+            需要额外滤镜处理，频繁动画、大面积模糊或长列表批量使用时要实测，必要时降低模糊半径或改为静态资源。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>box-shadow 和 drop-shadow() 为什么画出的阴影不同？</strong> 结论是 <code>box-shadow</code> 看盒模型，<code>drop-shadow()</code> 看渲染结果的 alpha 轮廓。原因是前者是盒阴影属性，后者是滤镜函数，会对输入图像做投影。本页虚线边框能明显看出差异：矩形盒子阴影和线段轮廓阴影不是同一种模型。</li>
-          <li><strong>透明 PNG 或 SVG 图标应该用哪种阴影？</strong> 结论是通常优先用 <code>filter: drop-shadow()</code>。原因是图标透明区域不会参与 alpha 轮廓，阴影更贴合可见图形。边界是如果只是卡片容器、按钮背景或需要 spread / inset，仍然应该用 <code>box-shadow</code>。</li>
-          <li><strong>drop-shadow() 有哪些能力限制？</strong> 结论是它适合轮廓投影，但不是 <code>box-shadow</code> 的完整替代。原因是 CSS 滤镜的 <code>drop-shadow()</code> 不提供扩张半径和内阴影语义，多个阴影也要通过多个 filter 函数组合。项目里需要复杂层次阴影时，盒阴影或设计切图可能更稳定。</li>
-          <li><strong>阴影动画为什么要谨慎？</strong> 结论是大量模糊阴影和滤镜动画都可能增加渲染成本。原因是浏览器需要重新计算阴影或滤镜输出，面积越大、模糊半径越高越昂贵。真实列表、瀑布流或低端设备上应减少同时动画的阴影数量，并用性能面板验证。</li>
+          <li>
+            <strong>box-shadow 和 drop-shadow() 为什么画出的阴影不同？</strong>
+            结论是
+            <code>box-shadow</code>
+            看盒模型，
+            <code>drop-shadow()</code>
+            看渲染结果的 alpha
+            轮廓。原因是前者是盒阴影属性，后者是滤镜函数，会对输入图像做投影。本页虚线边框能明显看出差异：矩形盒子阴影和线段轮廓阴影不是同一种模型。
+          </li>
+          <li>
+            <strong>透明 PNG 或 SVG 图标应该用哪种阴影？</strong>
+            结论是通常优先用
+            <code>filter: drop-shadow()</code>
+            。原因是图标透明区域不会参与 alpha
+            轮廓，阴影更贴合可见图形。边界是如果只是卡片容器、按钮背景或需要 spread /
+            inset，仍然应该用
+            <code>box-shadow</code>
+            。
+          </li>
+          <li>
+            <strong>drop-shadow() 有哪些能力限制？</strong>
+            结论是它适合轮廓投影，但不是
+            <code>box-shadow</code>
+            的完整替代。原因是 CSS 滤镜的
+            <code>drop-shadow()</code>
+            不提供扩张半径和内阴影语义，多个阴影也要通过多个 filter
+            函数组合。项目里需要复杂层次阴影时，盒阴影或设计切图可能更稳定。
+          </li>
+          <li>
+            <strong>阴影动画为什么要谨慎？</strong>
+            结论是大量模糊阴影和滤镜动画都可能增加渲染成本。原因是浏览器需要重新计算阴影或滤镜输出，面积越大、模糊半径越高越昂贵。真实列表、瀑布流或低端设备上应减少同时动画的阴影数量，并用性能面板验证。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/box-shadow">MDN: box-shadow</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/filter-function/drop-shadow">MDN: drop-shadow()</a></li>
-          <li><a href="https://drafts.fxtf.org/filter-effects/#funcdef-filter-drop-shadow">Filter Effects Module Level 1: drop-shadow()</a></li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/box-shadow">
+              MDN: box-shadow
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/filter-function/drop-shadow">
+              MDN: drop-shadow()
+            </a>
+          </li>
+          <li>
+            <a href="https://drafts.fxtf.org/filter-effects/#funcdef-filter-drop-shadow">
+              Filter Effects Module Level 1: drop-shadow()
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -85,13 +163,19 @@
 
     <!-- PAGE_DOM_START -->
     <h2>box-shadow：矩形边框盒投影</h2>
-    <p class="tip">虚线边框仍按<strong>边框盒</strong>投影，阴影轮廓是矩形（MDN box-shadow）。</p>
+    <p class="tip">
+      虚线边框仍按
+      <strong>边框盒</strong>
+      投影，阴影轮廓是矩形（MDN box-shadow）。
+    </p>
     <div class="dash1" id="demo-box-shadow"></div>
-
     <h2>filter: drop-shadow()：alpha 轮廓投影</h2>
-    <p class="tip">投影跟随<strong>可见像素</strong>轮廓，虚线只在线段处出现阴影（MDN drop-shadow）。</p>
+    <p class="tip">
+      投影跟随
+      <strong>可见像素</strong>
+      轮廓，虚线只在线段处出现阴影（MDN drop-shadow）。
+    </p>
     <div class="dash2" id="demo-drop-shadow"></div>
-
     <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
 
@@ -110,16 +194,16 @@
 
         /** 对比两种阴影属性的实测输出 */
         function renderShadowMetrics() {
-          var boxEl = document.getElementById("demo-box-shadow");
-          var dropEl = document.getElementById("demo-drop-shadow");
-          document.getElementById("runtime-output").textContent = [
-            "── 阴影属性实测 ──",
-            "#demo-box-shadow: box-shadow=" + getBoxShadow(boxEl),
-            "#demo-drop-shadow: filter=" + getFilter(dropEl),
-            "",
-            "观察：box-shadow 围绕 50×50 边框盒；drop-shadow 只沿虚线 border 的可见线段投影",
-            "能力边界：drop-shadow() 无 spread/inset，复杂多层阴影仍常用 box-shadow",
-          ].join("\n");
+          var boxEl = document.getElementById('demo-box-shadow');
+          var dropEl = document.getElementById('demo-drop-shadow');
+          document.getElementById('runtime-output').textContent = [
+            '── 阴影属性实测 ──',
+            '#demo-box-shadow: box-shadow=' + getBoxShadow(boxEl),
+            '#demo-drop-shadow: filter=' + getFilter(dropEl),
+            '',
+            '观察：box-shadow 围绕 50×50 边框盒；drop-shadow 只沿虚线 border 的可见线段投影',
+            '能力边界：drop-shadow() 无 spread/inset，复杂多层阴影仍常用 box-shadow',
+          ].join('\n');
         }
 
         renderShadowMetrics();
@@ -137,13 +221,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

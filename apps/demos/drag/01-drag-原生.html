@@ -1,5 +1,5 @@
 <!--
-分类: demos / drag
+  分类: demos / drag
   主题: 原生 HTML5 拖拽 API（drag & drop）
   难度: 入门
   要点:
@@ -23,9 +23,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HTML5 原生拖拽</title>
     <style>
-      * { box-sizing: border-box; }
-      body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; background: #f5f5f5; }
-      .container { max-width: 720px; margin: 0 auto; }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 0;
+        padding: 24px;
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 720px;
+        margin: 0 auto;
+      }
       .panel {
         background: #fff;
         border: 1px solid #ddd;
@@ -33,7 +43,11 @@
         padding: 16px;
         margin-bottom: 16px;
       }
-      .panel h2 { margin: 0 0 12px; font-size: 1rem; color: #444; }
+      .panel h2 {
+        margin: 0 0 12px;
+        font-size: 1rem;
+        color: #444;
+      }
       .drag-source {
         border: 1px dashed #bbb;
         border-radius: 6px;
@@ -49,19 +63,28 @@
         border-radius: 6px;
         cursor: grab;
       }
-      .draggable-item.dragging { opacity: 0.5; cursor: grabbing; }
+      .draggable-item.dragging {
+        opacity: 0.5;
+        cursor: grabbing;
+      }
       .drop-zone {
         border: 2px dashed #bbb;
         border-radius: 6px;
         min-height: 120px;
         padding: 12px;
-        transition: border-color 0.15s, background 0.15s;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
       }
       .drop-zone.highlight {
         border-color: #4f46e5;
         background: #eef2ff;
       }
-      .drop-zone p { margin: 4px 0; color: #666; font-size: 0.9rem; }
+      .drop-zone p {
+        margin: 4px 0;
+        color: #666;
+        font-size: 0.9rem;
+      }
       .cloned-item {
         display: inline-block;
         padding: 8px 14px;
@@ -70,7 +93,11 @@
         color: #fff;
         border-radius: 6px;
       }
-      .hint-text { color: #666; font-size: 0.875rem; margin: 0 0 8px; }
+      .hint-text {
+        color: #666;
+        font-size: 0.875rem;
+        margin: 0 0 8px;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -79,30 +106,142 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>原生 HTML5 拖拽 API（drag & drop）</h1>
-      <p class="hint">本页聚焦 Drag and Drop 事件全景（dragstart → dragover → drop），与下一页「带 UI 反馈的复制拖放」形成递进。侧栏自由拖拽见 <code>javascript/06-浏览器API/拖曳手柄/</code>（Pointer Events）。</p>
+      <p class="hint">
+        本页聚焦 Drag and Drop 事件全景（dragstart → dragover → drop），与下一页「带 UI
+        反馈的复制拖放」形成递进。侧栏自由拖拽见
+        <code>javascript/06-浏览器API/拖曳手柄/</code>
+        （Pointer Events）。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><strong>三个角色：</strong>HTML 拖放围绕拖动源、拖拽数据和放置目标工作。普通元素默认不可拖，必须设置 <code>draggable="true"</code> 并在 <code>dragstart</code> 中准备数据。</li>
-          <li><strong>允许放置：</strong>大多数元素默认不是 drop target，必须在 <code>dragover</code> 中调用 <code>preventDefault()</code>，浏览器才会继续派发 <code>drop</code>。</li>
-          <li><strong>数据边界：</strong><code>dataTransfer</code> 适合传字符串或文件；本页用 <code>text/plain</code> 传源节点 id。对象数据要先序列化，且不要信任跨页面拖入的数据。</li>
-          <li><strong>事件目标陷阱：</strong><code>ev.target</code> 可能是放置区里的子节点，追加副本时用 <code>ev.currentTarget</code> 才能稳定落到绑定监听的容器；高亮状态同样应操作 <code>currentTarget</code>。</li>
-          <li><strong>复制而非移动：</strong>本页克隆源节点，并移除 <code>id</code>、<code>draggable</code> 属性，避免重复 id 或让副本继续参与拖拽。</li>
+          <li>
+            <strong>三个角色：</strong>
+            HTML 拖放围绕拖动源、拖拽数据和放置目标工作。普通元素默认不可拖，必须设置
+            <code>draggable="true"</code>
+            并在
+            <code>dragstart</code>
+            中准备数据。
+          </li>
+          <li>
+            <strong>允许放置：</strong>
+            大多数元素默认不是 drop target，必须在
+            <code>dragover</code>
+            中调用
+            <code>preventDefault()</code>
+            ，浏览器才会继续派发
+            <code>drop</code>
+            。
+          </li>
+          <li>
+            <strong>数据边界：</strong>
+            <code>dataTransfer</code>
+            适合传字符串或文件；本页用
+            <code>text/plain</code>
+            传源节点 id。对象数据要先序列化，且不要信任跨页面拖入的数据。
+          </li>
+          <li>
+            <strong>事件目标陷阱：</strong>
+            <code>ev.target</code>
+            可能是放置区里的子节点，追加副本时用
+            <code>ev.currentTarget</code>
+            才能稳定落到绑定监听的容器；高亮状态同样应操作
+            <code>currentTarget</code>
+            。
+          </li>
+          <li>
+            <strong>复制而非移动：</strong>
+            本页克隆源节点，并移除
+            <code>id</code>
+            、
+            <code>draggable</code>
+            属性，避免重复 id 或让副本继续参与拖拽。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>HTML5 拖放的拖动源、传输数据和放置目标分别是什么？</strong> 结论是拖动源负责发起拖拽，<code>dataTransfer</code> 保存本次拖拽携带的数据，放置目标决定是否接收。原因是浏览器需要一个统一模型支持页面内拖拽、拖出页面和从系统拖入页面。项目里要区分“移动 DOM”“复制数据”和“接收文件”三种需求。</li>
-          <li><strong>为什么 dragover 里必须 preventDefault 才能 drop？</strong> 因为浏览器默认不允许任意元素成为放置目标。取消 <code>dragover</code> 默认行为等于声明当前元素可接收拖放；否则释放鼠标时会失败，也不会进入 <code>drop</code> 逻辑。</li>
-          <li><strong>dataTransfer 什么时候能写入和读取？</strong> 结论是通常在 <code>dragstart</code> 写入，在 <code>drop</code> 读取。MDN 明确说明拖拽数据存储在其他 drag 事件中不可随意修改或读取；项目里要提前约定 MIME type，例如 <code>text/plain</code> 或 <code>text/uri-list</code>。</li>
-          <li><strong>drop 处理里为什么要优先使用 currentTarget？</strong> 因为 <code>target</code> 是事件实际命中的内部节点，<code>currentTarget</code> 才是绑定处理函数的放置区。边界是如果用事件委托做多个放置区，还要结合 <code>closest()</code> 找到真实业务容器。</li>
-          <li><strong>原生拖放和 Pointer Events 手写拖拽如何取舍？</strong> 原生拖放适合需要浏览器拖放语义、文件拖入或跨上下文数据传递的场景；Pointer Events 更适合移动端手势、自由拖动和自定义动画。HTML Drag and Drop 在触屏体验上常需要额外适配。</li>
+          <li>
+            <strong>HTML5 拖放的拖动源、传输数据和放置目标分别是什么？</strong>
+            结论是拖动源负责发起拖拽，
+            <code>dataTransfer</code>
+            保存本次拖拽携带的数据，放置目标决定是否接收。原因是浏览器需要一个统一模型支持页面内拖拽、拖出页面和从系统拖入页面。项目里要区分“移动
+            DOM”“复制数据”和“接收文件”三种需求。
+          </li>
+          <li>
+            <strong>为什么 dragover 里必须 preventDefault 才能 drop？</strong>
+            因为浏览器默认不允许任意元素成为放置目标。取消
+            <code>dragover</code>
+            默认行为等于声明当前元素可接收拖放；否则释放鼠标时会失败，也不会进入
+            <code>drop</code>
+            逻辑。
+          </li>
+          <li>
+            <strong>dataTransfer 什么时候能写入和读取？</strong>
+            结论是通常在
+            <code>dragstart</code>
+            写入，在
+            <code>drop</code>
+            读取。MDN 明确说明拖拽数据存储在其他 drag 事件中不可随意修改或读取；项目里要提前约定
+            MIME type，例如
+            <code>text/plain</code>
+            或
+            <code>text/uri-list</code>
+            。
+          </li>
+          <li>
+            <strong>drop 处理里为什么要优先使用 currentTarget？</strong>
+            因为
+            <code>target</code>
+            是事件实际命中的内部节点，
+            <code>currentTarget</code>
+            才是绑定处理函数的放置区。边界是如果用事件委托做多个放置区，还要结合
+            <code>closest()</code>
+            找到真实业务容器。
+          </li>
+          <li>
+            <strong>原生拖放和 Pointer Events 手写拖拽如何取舍？</strong>
+            原生拖放适合需要浏览器拖放语义、文件拖入或跨上下文数据传递的场景；Pointer Events
+            更适合移动端手势、自由拖动和自定义动画。HTML Drag and Drop 在触屏体验上常需要额外适配。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API" target="_blank" rel="noopener">MDN Web Docs：HTML Drag and Drop API</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer" target="_blank" rel="noopener">MDN Web Docs：DataTransfer</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dragover_event" target="_blank" rel="noopener">MDN Web Docs：HTMLElement dragover event</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Event/currentTarget" target="_blank" rel="noopener">MDN Web Docs：Event.currentTarget</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN Web Docs：HTML Drag and Drop API
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN Web Docs：DataTransfer
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dragover_event"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN Web Docs：HTMLElement dragover event
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Event/currentTarget"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN Web Docs：Event.currentTarget
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -135,56 +274,55 @@
 
     <!-- SCRIPT_START -->
     <script>
-      const dropTarget = document.getElementById("drop-target");
+      const dropTarget = document.getElementById('drop-target');
       let dragDepth = 0;
 
-      document.querySelectorAll(".draggable-item").forEach((item) => {
-        item.addEventListener("dragstart", (ev) => {
-          ev.dataTransfer.setData("text/plain", ev.target.id);
-          ev.dataTransfer.effectAllowed = "copy";
-          ev.target.classList.add("dragging");
+      document.querySelectorAll('.draggable-item').forEach((item) => {
+        item.addEventListener('dragstart', (ev) => {
+          ev.dataTransfer.setData('text/plain', ev.target.id);
+          ev.dataTransfer.effectAllowed = 'copy';
+          ev.target.classList.add('dragging');
         });
-        item.addEventListener("dragend", (ev) => {
-          ev.target.classList.remove("dragging");
+        item.addEventListener('dragend', (ev) => {
+          ev.target.classList.remove('dragging');
         });
       });
 
-      dropTarget.addEventListener("dragenter", (ev) => {
+      dropTarget.addEventListener('dragenter', (ev) => {
         ev.preventDefault();
         dragDepth++;
-        ev.currentTarget.classList.add("highlight");
+        ev.currentTarget.classList.add('highlight');
       });
 
-      dropTarget.addEventListener("dragleave", (ev) => {
+      dropTarget.addEventListener('dragleave', (ev) => {
         dragDepth--;
         if (dragDepth <= 0) {
           dragDepth = 0;
-          ev.currentTarget.classList.remove("highlight");
+          ev.currentTarget.classList.remove('highlight');
         }
       });
 
-      dropTarget.addEventListener("dragover", (ev) => {
+      dropTarget.addEventListener('dragover', (ev) => {
         ev.preventDefault();
-        ev.dataTransfer.dropEffect = "copy";
+        ev.dataTransfer.dropEffect = 'copy';
       });
 
-      dropTarget.addEventListener("drop", (ev) => {
+      dropTarget.addEventListener('drop', (ev) => {
         ev.preventDefault();
         dragDepth = 0;
-        ev.currentTarget.classList.remove("highlight");
+        ev.currentTarget.classList.remove('highlight');
 
-        const sourceId = ev.dataTransfer.getData("text/plain");
+        const sourceId = ev.dataTransfer.getData('text/plain');
         const original = document.getElementById(sourceId);
         if (!original) return;
 
         const clone = original.cloneNode(true);
-        clone.classList.remove("draggable-item", "dragging");
-        clone.classList.add("cloned-item");
-        clone.removeAttribute("id");
-        clone.removeAttribute("draggable");
+        clone.classList.remove('draggable-item', 'dragging');
+        clone.classList.add('cloned-item');
+        clone.removeAttribute('id');
+        clone.removeAttribute('draggable');
         ev.currentTarget.appendChild(clone);
       });
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -193,18 +331,22 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="../../react19/src/02-%E9%9D%A2%E8%AF%95%E9%A2%98/05-RSC%E4%B8%8EServer-Components%E8%BE%B9%E7%95%8C.html">← RSC与Server-Components边界</a>
+        <a
+          href="../../react19/src/02-%E9%9D%A2%E8%AF%95%E9%A2%98/05-RSC%E4%B8%8EServer-Components%E8%BE%B9%E7%95%8C.html"
+        >
+          ← RSC与Server-Components边界
+        </a>
         <a href="./02-drag-HTML5%E6%8B%96%E6%94%BE%E5%A4%8D%E5%88%B6.html">drag-HTML5拖放复制 →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

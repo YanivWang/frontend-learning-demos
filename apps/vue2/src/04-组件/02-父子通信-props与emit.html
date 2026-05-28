@@ -28,31 +28,115 @@
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>父子组件通讯（props 下传 + $emit 上抛）</h1>
       <p class="hint">
-        在 <code>#my-comp1-demo</code> 内点「放大/缩小/计数」观察字号与 count 变化；对比挂载点外无效的
-        <code>&lt;my-comp1&gt;</code>；打开 Console 查看 <code>$emit</code> 事件与 count 日志。
+        在
+        <code>#my-comp1-demo</code>
+        内点「放大/缩小/计数」观察字号与 count 变化；对比挂载点外无效的
+        <code>&lt;my-comp1&gt;</code>
+        ；打开 Console 查看
+        <code>$emit</code>
+        事件与 count 日志。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>父子通信的主线是单向数据流：父组件用 <code>v-bind:article</code> 把文章对象传给子组件，子组件只读取 prop，不直接改父组件状态。</li>
-          <li>子组件需要影响父组件时，通过 <code>this.$emit('extend')</code> 或 <code>this.$emit('small', payload)</code> 发出自定义事件；父组件用 <code>v-on</code> 监听并决定如何修改 <code>fontSize</code>。</li>
-          <li>组件的 <code>data</code> 必须是函数。每次创建组件实例都会调用该函数返回新对象，否则多个 <code>my-comp1</code> 会共享同一个 <code>count</code>，点击一个会影响全部。</li>
-          <li>事件负载应保持清晰且可预测：本页 <code>small</code> 传出对象负载，父组件拿到后先处理边界，再更新字号，避免让子组件直接控制父组件内部数据。</li>
-          <li>Vue 只编译挂载点内部的模板；挂在 <code>body</code> 里的 <code>&lt;my-comp1&gt;</code> 不属于 <code>#my-comp1-demo</code>，因此不会获得 props、指令或事件能力。</li>
+          <li>
+            父子通信的主线是单向数据流：父组件用
+            <code>v-bind:article</code>
+            把文章对象传给子组件，子组件只读取 prop，不直接改父组件状态。
+          </li>
+          <li>
+            子组件需要影响父组件时，通过
+            <code>this.$emit('extend')</code>
+            或
+            <code>this.$emit('small', payload)</code>
+            发出自定义事件；父组件用
+            <code>v-on</code>
+            监听并决定如何修改
+            <code>fontSize</code>
+            。
+          </li>
+          <li>
+            组件的
+            <code>data</code>
+            必须是函数。每次创建组件实例都会调用该函数返回新对象，否则多个
+            <code>my-comp1</code>
+            会共享同一个
+            <code>count</code>
+            ，点击一个会影响全部。
+          </li>
+          <li>
+            事件负载应保持清晰且可预测：本页
+            <code>small</code>
+            传出对象负载，父组件拿到后先处理边界，再更新字号，避免让子组件直接控制父组件内部数据。
+          </li>
+          <li>
+            Vue 只编译挂载点内部的模板；挂在
+            <code>body</code>
+            里的
+            <code>&lt;my-comp1&gt;</code>
+            不属于
+            <code>#my-comp1-demo</code>
+            ，因此不会获得 props、指令或事件能力。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue 2 父子组件通信为什么强调单向数据流？</strong> 结论：父传子用 props，子通知父用 <code>$emit</code>，状态拥有者负责更新。原因是 Vue 2 组件提倡单向数据流，子组件不应直接改父级状态。边界是兄弟、跨层或全局状态不适合层层转发，应考虑 EventBus、provide/inject 或 Vuex。</li>
-          <li><strong>组件 data 为什么必须写成函数？</strong> 结论：让每个组件实例拿到独立状态。原因是组件会被复用多次，data 若为同一对象引用则状态会串在一起。项目里可复用组件都要把内部状态写成返回对象的函数。</li>
-          <li><strong>$emit 适合传什么，什么时候该改用状态管理或 provide/inject？</strong> 结论：payload 应表达「发生了什么」和必要数据，父组件决定如何更新状态。原因是 <code>$emit</code> 适合父子直接通信。边界是跨多层、兄弟或全局共享状态应改用 provide/inject、EventBus 或 Vuex，避免 prop 钻取和事件链过长。</li>
-          <li><strong>为什么根实例外的组件标签不会被 Vue 接管？</strong> 结论：Vue 只编译 <code>el</code> 对应 DOM 树内部的模板。原因是编译和响应式绑定都从根实例挂载点开始。项目里不要把需要 Vue 管理的组件散落在根节点外。</li>
+          <li>
+            <strong>Vue 2 父子组件通信为什么强调单向数据流？</strong>
+            结论：父传子用 props，子通知父用
+            <code>$emit</code>
+            ，状态拥有者负责更新。原因是 Vue 2
+            组件提倡单向数据流，子组件不应直接改父级状态。边界是兄弟、跨层或全局状态不适合层层转发，应考虑
+            EventBus、provide/inject 或 Vuex。
+          </li>
+          <li>
+            <strong>组件 data 为什么必须写成函数？</strong>
+            结论：让每个组件实例拿到独立状态。原因是组件会被复用多次，data
+            若为同一对象引用则状态会串在一起。项目里可复用组件都要把内部状态写成返回对象的函数。
+          </li>
+          <li>
+            <strong>$emit 适合传什么，什么时候该改用状态管理或 provide/inject？</strong>
+            结论：payload 应表达「发生了什么」和必要数据，父组件决定如何更新状态。原因是
+            <code>$emit</code>
+            适合父子直接通信。边界是跨多层、兄弟或全局共享状态应改用 provide/inject、EventBus 或
+            Vuex，避免 prop 钻取和事件链过长。
+          </li>
+          <li>
+            <strong>为什么根实例外的组件标签不会被 Vue 接管？</strong>
+            结论：Vue 只编译
+            <code>el</code>
+            对应 DOM 树内部的模板。原因是编译和响应式绑定都从根实例挂载点开始。项目里不要把需要 Vue
+            管理的组件散落在根节点外。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://v2.vuejs.org/v2/guide/components.html" target="_blank" rel="noopener">Vue 2 Guide: Components Basics</a></li>
-          <li><a href="https://v2.vuejs.org/v2/guide/components-props.html" target="_blank" rel="noopener">Vue 2 Guide: Props</a></li>
-          <li><a href="https://v2.vuejs.org/v2/guide/components-custom-events.html" target="_blank" rel="noopener">Vue 2 Guide: Custom Events</a></li>
-          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 2 EOL Notice</a></li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/guide/components.html" target="_blank" rel="noopener">
+              Vue 2 Guide: Components Basics
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://v2.vuejs.org/v2/guide/components-props.html"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue 2 Guide: Props
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://v2.vuejs.org/v2/guide/components-custom-events.html"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue 2 Guide: Custom Events
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 2 EOL Notice</a>
+          </li>
         </ul>
       </div>
     </section>
@@ -67,7 +151,12 @@
           <!--在组件上使用：v-bind:propName 将为组件的对应属性传递值 -->
           <!--组件占位符最终被：组件内部的template替代-->
           <!--Vue实例内部：使用v-on监听组件的内部事件-->
-          <my-comp1 v-bind:article="article" v-bind:key="article.id" v-on:extend="extend" v-on:small="small($event)"></my-comp1>
+          <my-comp1
+            v-bind:article="article"
+            v-bind:key="article.id"
+            v-on:extend="extend"
+            v-on:small="small($event)"
+          ></my-comp1>
         </template>
       </div>
     </div>
@@ -79,65 +168,63 @@
       // my-comp1：全局组件 + props 下传 + $emit 上抛
       // 官方：组件 data 必须是函数；props 为父到子输入，子组件通过 $emit 通知父组件。
       // ---------------------------------------------------------------------------
-      Vue.component("my-comp1", {
+      Vue.component('my-comp1', {
         data: function () {
           return {
-            count: 0
-          }
+            count: 0,
+          };
         },
         created: function () {
-          console.log("被创建");
+          console.log('被创建');
         },
         watch: {
           count: function (newValue, oldValue) {
-            console.log(newValue + ":" + oldValue);
-          }
+            console.log(newValue + ':' + oldValue);
+          },
         },
         methods: {
           small: function () {
-            console.log("缩小：组件内部");
+            console.log('缩小：组件内部');
 
-            this.$emit("small",{"a": 1,"b": 2});
-          }
+            this.$emit('small', { a: 1, b: 2 });
+          },
         },
         props: ['article'],
         template: `<div><h3>{{article.title}}</h3><div>{{article.content}}</div><div>{{article.author}}</div>
         <button type="button" v-on:click="$emit('extend')">放大</button>
         <button type="button" v-on:click="small">缩小</button>
-        <button type="button" v-on:click="count += 1">计数：{{count}}</button></div>`
-        });
+        <button type="button" v-on:click="count += 1">计数：{{count}}</button></div>`,
+      });
 
       // ---------------------------------------------------------------------------
       // #my-comp1-demo：根实例挂载 + 父组件监听子组件事件
       // 官方：Vue 组件只在 el 对应 DOM 树内生效；挂载点外的标签退化为普通自定义元素。
       // ---------------------------------------------------------------------------
       var vm = new Vue({
-          el: "#my-comp1-demo",
-          data: {
-            fontSize: 30,
-            articleList: [
-              {"id": 1, "title": "标题一", "content": "我是标题一的内容部分", "author": "作者一"},
-              {"id": 2, "title": "标题二", "content": "我是标题二的内容部分", "author": "作者二"},
-              {"id": 3, "title": "标题三", "content": "我是标题三的内容部分", "author": "作者三"},
-              {"id": 4, "title": "标题四", "content": "我是标题四的内容部分", "author": "作者四"},
-            ]
+        el: '#my-comp1-demo',
+        data: {
+          fontSize: 30,
+          articleList: [
+            { id: 1, title: '标题一', content: '我是标题一的内容部分', author: '作者一' },
+            { id: 2, title: '标题二', content: '我是标题二的内容部分', author: '作者二' },
+            { id: 3, title: '标题三', content: '我是标题三的内容部分', author: '作者三' },
+            { id: 4, title: '标题四', content: '我是标题四的内容部分', author: '作者四' },
+          ],
+        },
+        methods: {
+          extend: function () {
+            console.log('放大字号');
+            this.fontSize += 5;
           },
-          methods: {
-            extend: function () {
-              console.log("放大字号");
-              this.fontSize += 5;
-            },
-            small: function (e) {
-              console.log(e);
-              console.log("缩小字号");
-              if (this.fontSize >= 5) {
-
-                this.fontSize -= 5;
-              }
+          small: function (e) {
+            console.log(e);
+            console.log('缩小字号');
+            if (this.fontSize >= 5) {
+              this.fontSize -= 5;
             }
-          }
-        });
-
+          },
+        },
+      });
     </script>
     <!-- SCRIPT_END -->
 
@@ -146,18 +233,24 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./01-%E5%85%A8%E5%B1%80%E4%B8%8E%E5%B1%80%E9%83%A8%E7%BB%84%E4%BB%B6.html">← 全局与局部组件</a>
-        <a href="./03-%E7%BB%84%E4%BB%B6%E5%B5%8C%E5%A5%97%E4%B8%8E%E5%B1%80%E9%83%A8%E6%B3%A8%E5%86%8C.html">组件嵌套与局部注册 →</a>
+        <a href="./01-%E5%85%A8%E5%B1%80%E4%B8%8E%E5%B1%80%E9%83%A8%E7%BB%84%E4%BB%B6.html">
+          ← 全局与局部组件
+        </a>
+        <a
+          href="./03-%E7%BB%84%E4%BB%B6%E5%B5%8C%E5%A5%97%E4%B8%8E%E5%B1%80%E9%83%A8%E6%B3%A8%E5%86%8C.html"
+        >
+          组件嵌套与局部注册 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

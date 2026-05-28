@@ -1,5 +1,5 @@
 <!--
-分类: demos / virtual-list
+  分类: demos / virtual-list
   主题: 固定高度虚拟列表
   难度: 进阶
   要点:
@@ -22,14 +22,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>虚拟列表 · 固定行高</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; }
-      .stats { font-size: 0.875rem; color: #555; margin-bottom: 0.75rem; font-variant-numeric: tabular-nums; }
-      .stats strong { color: #111; }
-      .viewport { height: 320px; overflow: auto; border: 1px solid #ddd; border-radius: 8px; position: relative; }
-      .phantom { position: relative; }
-      .rows { position: absolute; left: 0; right: 0; top: 0; }
-      .row { height: 40px; line-height: 40px; padding: 0 12px; border-bottom: 1px solid #f0f0f0; }
-      .row:nth-child(even) { background: #fafafa; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+      }
+      .stats {
+        font-size: 0.875rem;
+        color: #555;
+        margin-bottom: 0.75rem;
+        font-variant-numeric: tabular-nums;
+      }
+      .stats strong {
+        color: #111;
+      }
+      .viewport {
+        height: 320px;
+        overflow: auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        position: relative;
+      }
+      .phantom {
+        position: relative;
+      }
+      .rows {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+      }
+      .row {
+        height: 40px;
+        line-height: 40px;
+        padding: 0 12px;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      .row:nth-child(even) {
+        background: #fafafa;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -38,30 +68,115 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>虚拟列表（固定行高 40px）</h1>
-      <p class="hint">这个 demo 渲染 10000 条固定高度数据，但 DOM 中只保留视口附近的行，重点观察滚动高度、可见范围和 translateY 偏移。</p>
+      <p class="hint">
+        这个 demo 渲染 10000 条固定高度数据，但 DOM
+        中只保留视口附近的行，重点观察滚动高度、可见范围和 translateY 偏移。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><strong>核心思想：</strong>虚拟列表不是真的渲染 10000 个 DOM 节点，而是用 <code>.phantom</code> 撑开总高度，只渲染视口可见行和少量 buffer。</li>
-          <li><strong>固定行高公式：</strong><code>start = floor(scrollTop / ROW_H) - BUFFER</code>，<code>end = ceil((scrollTop + viewportHeight) / ROW_H) + BUFFER</code>，再夹到 <code>0..TOTAL</code> 范围内。</li>
-          <li><strong>位置还原：</strong>真实行容器用 <code>transform: translateY(start * ROW_H)</code> 移动到它在完整列表中的位置，视觉上仍像完整列表在滚动。</li>
-          <li><strong>性能边界：</strong><code>scroll</code> 事件可能高频触发，示例用 <code>requestAnimationFrame</code> 合并同一帧内的多次滚动回调；行数少时普通列表更简单；行内容复杂时还要考虑 DOM 复用和避免同步布局读取。</li>
-          <li><strong>动态高度差异：</strong>固定高度可以直接用除法定位，动态高度需要缓存每行高度、前缀和或二分查找，否则滚动位置和占位高度会不准。</li>
+          <li>
+            <strong>核心思想：</strong>
+            虚拟列表不是真的渲染 10000 个 DOM 节点，而是用
+            <code>.phantom</code>
+            撑开总高度，只渲染视口可见行和少量 buffer。
+          </li>
+          <li>
+            <strong>固定行高公式：</strong>
+            <code>start = floor(scrollTop / ROW_H) - BUFFER</code>
+            ，
+            <code>end = ceil((scrollTop + viewportHeight) / ROW_H) + BUFFER</code>
+            ，再夹到
+            <code>0..TOTAL</code>
+            范围内。
+          </li>
+          <li>
+            <strong>位置还原：</strong>
+            真实行容器用
+            <code>transform: translateY(start * ROW_H)</code>
+            移动到它在完整列表中的位置，视觉上仍像完整列表在滚动。
+          </li>
+          <li>
+            <strong>性能边界：</strong>
+            <code>scroll</code>
+            事件可能高频触发，示例用
+            <code>requestAnimationFrame</code>
+            合并同一帧内的多次滚动回调；行数少时普通列表更简单；行内容复杂时还要考虑 DOM
+            复用和避免同步布局读取。
+          </li>
+          <li>
+            <strong>动态高度差异：</strong>
+            固定高度可以直接用除法定位，动态高度需要缓存每行高度、前缀和或二分查找，否则滚动位置和占位高度会不准。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>虚拟列表为什么能提升大列表性能？</strong> 结论是它把 DOM 数量从总数据量降低到视口附近数量。原因是浏览器布局、绘制和事件处理都和 DOM 规模有关；项目里适合几千到几万行、每行结构相近的大列表。</li>
-          <li><strong>固定行高虚拟列表如何根据 scrollTop 计算渲染范围？</strong> 先用 <code>scrollTop / ROW_H</code> 算出第一个可见索引，再根据视口高度算结束索引，并补上下 buffer。边界是结果必须 clamp，避免负索引或超过总数。</li>
-          <li><strong>buffer 的作用是什么，设置过大或过小有什么问题？</strong> buffer 用来提前渲染视口外少量行，减少快速滚动时的空白。过小容易闪烁，过大会增加 DOM 数量；项目里通常根据行高、滚动速度和设备性能调参。</li>
-          <li><strong>固定高度和动态高度虚拟列表的难点有什么不同？</strong> 固定高度可用公式直接定位，动态高度必须测量和缓存每项高度。动态高度还要处理图片加载、内容展开导致高度变化的回算问题。</li>
-          <li><strong>高频滚动场景如何避免渲染抖动？</strong> 结论是减少每次滚动做的工作。可以用轻量计算、复用 DOM、必要时用 <code>requestAnimationFrame</code> 合并更新，并避免在滚动处理中反复触发布局测量。</li>
+          <li>
+            <strong>虚拟列表为什么能提升大列表性能？</strong>
+            结论是它把 DOM 数量从总数据量降低到视口附近数量。原因是浏览器布局、绘制和事件处理都和
+            DOM 规模有关；项目里适合几千到几万行、每行结构相近的大列表。
+          </li>
+          <li>
+            <strong>固定行高虚拟列表如何根据 scrollTop 计算渲染范围？</strong>
+            先用
+            <code>scrollTop / ROW_H</code>
+            算出第一个可见索引，再根据视口高度算结束索引，并补上下 buffer。边界是结果必须
+            clamp，避免负索引或超过总数。
+          </li>
+          <li>
+            <strong>buffer 的作用是什么，设置过大或过小有什么问题？</strong>
+            buffer 用来提前渲染视口外少量行，减少快速滚动时的空白。过小容易闪烁，过大会增加 DOM
+            数量；项目里通常根据行高、滚动速度和设备性能调参。
+          </li>
+          <li>
+            <strong>固定高度和动态高度虚拟列表的难点有什么不同？</strong>
+            固定高度可用公式直接定位，动态高度必须测量和缓存每项高度。动态高度还要处理图片加载、内容展开导致高度变化的回算问题。
+          </li>
+          <li>
+            <strong>高频滚动场景如何避免渲染抖动？</strong>
+            结论是减少每次滚动做的工作。可以用轻量计算、复用 DOM、必要时用
+            <code>requestAnimationFrame</code>
+            合并更新，并避免在滚动处理中反复触发布局测量。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scroll_event" target="_blank" rel="noopener">MDN Web Docs：Element scroll event</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop" target="_blank" rel="noopener">MDN Web Docs：Element.scrollTop</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transform" target="_blank" rel="noopener">MDN Web Docs：CSS transform</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame" target="_blank" rel="noopener">MDN Web Docs：requestAnimationFrame()</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scroll_event"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN Web Docs：Element scroll event
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN Web Docs：Element.scrollTop
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/CSS/transform"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN Web Docs：CSS transform
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN Web Docs：requestAnimationFrame()
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -81,11 +196,11 @@
       const ROW_H = 40;
       const BUFFER = 5;
       const data = Array.from({ length: TOTAL }, (_, i) => `Item #${i + 1}`);
-      const viewport = document.getElementById("viewport");
-      const phantom = document.getElementById("phantom");
-      const rowsEl = document.getElementById("rows");
-      const statsEl = document.getElementById("stats");
-      phantom.style.height = TOTAL * ROW_H + "px";
+      const viewport = document.getElementById('viewport');
+      const phantom = document.getElementById('phantom');
+      const rowsEl = document.getElementById('rows');
+      const statsEl = document.getElementById('stats');
+      phantom.style.height = TOTAL * ROW_H + 'px';
 
       let rafId = 0;
 
@@ -98,18 +213,18 @@
         end = Math.min(TOTAL, end);
         rowsEl.style.transform = `translateY(${start * ROW_H}px)`;
         const rowNodes = data.slice(start, end).map((text) => {
-          const row = document.createElement("div");
-          row.className = "row";
+          const row = document.createElement('div');
+          row.className = 'row';
           row.textContent = text;
           return row;
         });
         rowsEl.replaceChildren(...rowNodes);
 
-        statsEl.textContent = "";
+        statsEl.textContent = '';
         statsEl.append(
           `渲染范围：${start} ~ ${end - 1}（共 ${end - start} 行） · `,
           `DOM 节点：${rowNodes.length} · `,
-          `scrollTop：${Math.round(scrollTop)}px`
+          `scrollTop：${Math.round(scrollTop)}px`,
         );
       }
 
@@ -121,9 +236,8 @@
         });
       }
 
-      viewport.addEventListener("scroll", scheduleRender, { passive: true });
+      viewport.addEventListener('scroll', scheduleRender, { passive: true });
       render();
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -133,17 +247,21 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
         <a href="../todo/01-todo-%E6%9C%AC%E5%9C%B0%E7%8A%B6%E6%80%81.html">← todo-本地状态</a>
-        <a href="../../typescript/01-%E5%9F%BA%E7%A1%80/01-%E7%B1%BB%E5%9E%8B%E6%B3%A8%E8%A7%A3%E4%B8%8E%E6%8E%A8%E6%96%AD.html">类型注解与推断 →</a>
+        <a
+          href="../../typescript/01-%E5%9F%BA%E7%A1%80/01-%E7%B1%BB%E5%9E%8B%E6%B3%A8%E8%A7%A3%E4%B8%8E%E6%8E%A8%E6%96%AD.html"
+        >
+          类型注解与推断 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

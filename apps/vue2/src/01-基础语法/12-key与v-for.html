@@ -30,32 +30,110 @@
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>key 复用控制 + v-for 遍历数组/对象</h1>
       <p class="hint">
-        先在无 key 区输入内容再切换 loginType 观察输入保留；再在有 key 区重复对比；
-        点「切换 v-if」观察 template 分组渲染。
+        先在无 key 区输入内容再切换 loginType 观察输入保留；再在有 key 区重复对比； 点「切换
+        v-if」观察 template 分组渲染。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>v-for</code> 遍历数组时常写 <code>(item, index) in items</code>，遍历对象时常写 <code>(value, key, index) in object</code>。本页同时演示数组和对象两种来源。</li>
-          <li>Vue 2 更新列表时默认采用就地复用策略：如果数据顺序变化，它会尽量 patch 当前位置的元素，而不是无条件销毁重建。这对性能有利，但表单输入、组件内部状态等临时状态可能被保留。</li>
-          <li><code>:key</code> 是节点身份提示。给不同登录输入框设置不同 key 后，Vue 会把它们视为不同元素，切换时销毁旧 input 并创建新 input，因此旧输入不会保留。</li>
-          <li>列表 key 应使用稳定的字符串或数字，例如数据库 id。不要用对象或数组做 key；当列表会插入、删除、排序时，也不推荐用 index，因为 index 会随位置变化，可能导致状态错位。</li>
-          <li>Vue 2 中同一元素上 <code>v-for</code> 优先级高于 <code>v-if</code>，复杂过滤应先用 computed 得到列表，再渲染 <code>v-for</code>。Vue 2 已 EOL，新项目应优先 Vue 3。</li>
+          <li>
+            <code>v-for</code>
+            遍历数组时常写
+            <code>(item, index) in items</code>
+            ，遍历对象时常写
+            <code>(value, key, index) in object</code>
+            。本页同时演示数组和对象两种来源。
+          </li>
+          <li>
+            Vue 2 更新列表时默认采用就地复用策略：如果数据顺序变化，它会尽量 patch
+            当前位置的元素，而不是无条件销毁重建。这对性能有利，但表单输入、组件内部状态等临时状态可能被保留。
+          </li>
+          <li>
+            <code>:key</code>
+            是节点身份提示。给不同登录输入框设置不同 key 后，Vue 会把它们视为不同元素，切换时销毁旧
+            input 并创建新 input，因此旧输入不会保留。
+          </li>
+          <li>
+            列表 key 应使用稳定的字符串或数字，例如数据库 id。不要用对象或数组做
+            key；当列表会插入、删除、排序时，也不推荐用 index，因为 index
+            会随位置变化，可能导致状态错位。
+          </li>
+          <li>
+            Vue 2 中同一元素上
+            <code>v-for</code>
+            优先级高于
+            <code>v-if</code>
+            ，复杂过滤应先用 computed 得到列表，再渲染
+            <code>v-for</code>
+            。Vue 2 已 EOL，新项目应优先 Vue 3。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>v-for 中 key 的作用是什么？</strong> 结论是 key 帮助 Vue 识别每个节点的稳定身份。原因是列表更新时 Vue 需要判断哪些节点可以复用、移动或需要重建。项目里渲染用户列表、商品列表、表单行时应使用稳定 id 作为 key。</li>
-          <li><strong>为什么切换两个 input 时加 key 会清空旧输入？</strong> 结论是不同 key 会让 Vue 把它们视为不同元素。原因是无 key 时 Vue 可能复用同一个 input 节点，浏览器保留的输入值也会跟着留下；加 key 后旧节点被销毁，新节点重新创建。项目里登录方式切换、动态表单切换经常需要这个行为。</li>
-          <li><strong>v-for 遍历数组和对象的参数顺序是什么？</strong> 结论是数组通常是 <code>(item, index)</code>，对象通常是 <code>(value, key, index)</code>。原因是对象遍历多了属性名这一层。边界是对象属性枚举顺序遵循 JavaScript 的对象枚举规则，不要把普通对象遍历当成严格排序列表。</li>
-          <li><strong>为什么列表重排时不推荐用 index 当 key？</strong> 结论是 index 代表位置，不代表数据身份。原因是插入或删除后，同一个 index 可能对应不同数据，导致组件状态或输入值错位。边界是完全静态、不会重排也没有内部状态的简单列表，用 index 风险较低，但仍优先稳定 id。</li>
-          <li><strong>v-if 和 v-for 放在一起时为什么要谨慎？</strong> 结论是同元素混用时 <code>v-for</code> 优先级更高，条件与列表渲染耦合。原因是 Vue 2 会先进入循环再判断条件，既影响可读性也可能带来不必要遍历。项目里通常用 computed 先过滤数组，再 <code>v-for</code> 渲染结果。</li>
+          <li>
+            <strong>v-for 中 key 的作用是什么？</strong>
+            结论是 key 帮助 Vue 识别每个节点的稳定身份。原因是列表更新时 Vue
+            需要判断哪些节点可以复用、移动或需要重建。项目里渲染用户列表、商品列表、表单行时应使用稳定
+            id 作为 key。
+          </li>
+          <li>
+            <strong>为什么切换两个 input 时加 key 会清空旧输入？</strong>
+            结论是不同 key 会让 Vue 把它们视为不同元素。原因是无 key 时 Vue 可能复用同一个 input
+            节点，浏览器保留的输入值也会跟着留下；加 key
+            后旧节点被销毁，新节点重新创建。项目里登录方式切换、动态表单切换经常需要这个行为。
+          </li>
+          <li>
+            <strong>v-for 遍历数组和对象的参数顺序是什么？</strong>
+            结论是数组通常是
+            <code>(item, index)</code>
+            ，对象通常是
+            <code>(value, key, index)</code>
+            。原因是对象遍历多了属性名这一层。边界是对象属性枚举顺序遵循 JavaScript
+            的对象枚举规则，不要把普通对象遍历当成严格排序列表。
+          </li>
+          <li>
+            <strong>为什么列表重排时不推荐用 index 当 key？</strong>
+            结论是 index 代表位置，不代表数据身份。原因是插入或删除后，同一个 index
+            可能对应不同数据，导致组件状态或输入值错位。边界是完全静态、不会重排也没有内部状态的简单列表，用
+            index 风险较低，但仍优先稳定 id。
+          </li>
+          <li>
+            <strong>v-if 和 v-for 放在一起时为什么要谨慎？</strong>
+            结论是同元素混用时
+            <code>v-for</code>
+            优先级更高，条件与列表渲染耦合。原因是 Vue 2
+            会先进入循环再判断条件，既影响可读性也可能带来不必要遍历。项目里通常用 computed
+            先过滤数组，再
+            <code>v-for</code>
+            渲染结果。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://v2.vuejs.org/v2/guide/list.html" target="_blank" rel="noopener">Vue 2 官方文档：List Rendering</a></li>
-          <li><a href="https://v2.vuejs.org/v2/api/#key" target="_blank" rel="noopener">Vue 2 API：key</a></li>
-          <li><a href="https://v2.vuejs.org/v2/guide/conditional.html#v-if-with-v-for" target="_blank" rel="noopener">Vue 2 官方文档：v-if with v-for</a></li>
-          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 官方说明：Vue 2 Has Reached End of Life</a></li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/guide/list.html" target="_blank" rel="noopener">
+              Vue 2 官方文档：List Rendering
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/api/#key" target="_blank" rel="noopener">
+              Vue 2 API：key
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://v2.vuejs.org/v2/guide/conditional.html#v-if-with-v-for"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue 2 官方文档：v-if with v-for
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">
+              Vue 官方说明：Vue 2 Has Reached End of Life
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -73,41 +151,42 @@
         </template>
         <button type="button" @click="triggleShowHandle">切换 v-if</button>
       </div>
-      <hr>
+      <hr />
       <h3>无 :key — 切换 loginType 时 input 会被复用，输入内容会保留</h3>
       <template v-if="loginType === 'username'">
         <div>
           <label>username</label>
-          <input placeholder="input your username...">
+          <input placeholder="input your username..." />
         </div>
       </template>
       <template v-else>
         <div>
           <label>email</label>
-          <input placeholder="input your email...">
+          <input placeholder="input your email..." />
         </div>
       </template>
       <button type="button" @click="triggleLoginTypeHandle">切换 loginType（无 key）</button>
-      <hr>
+      <hr />
       <h3>有 :key="loginTypeWithKey" — 切换时强制销毁旧 input，输入不会保留</h3>
       <template v-if="loginTypeWithKey === 'username'">
         <div>
           <label>username</label>
-          <input :key="loginTypeWithKey" placeholder="input your username...">
+          <input :key="loginTypeWithKey" placeholder="input your username..." />
         </div>
       </template>
       <template v-else>
         <div>
           <label>email</label>
-          <input :key="loginTypeWithKey" placeholder="input your email...">
+          <input :key="loginTypeWithKey" placeholder="input your email..." />
         </div>
       </template>
       <button type="button" @click="triggleLoginTypeWithKeyHandle">切换 loginType（有 key）</button>
-      <hr>
+      <hr />
       <h3>v-for 遍历数组</h3>
       <template v-for="(people, index) of peoples">
         <div :key="people.id">
-          <div>{{ index + 1 }}
+          <div>
+            {{ index + 1 }}
             <span>{{ people.name }}</span>
             <span>{{ people.age }}</span>
           </div>
@@ -133,21 +212,21 @@
       // 官方：建议稳定 string/number key；无 key 时 Vue 就地复用 DOM 可能保留输入状态。
       // ---------------------------------------------------------------------------
       var vm = new Vue({
-        el: "#main",
+        el: '#main',
         data: {
           loginType: 'username',
           loginTypeWithKey: 'username',
           showFlag: true,
           peoples: [
-            {id: 1, name: "张三", age: 20},
-            {id: 2, name: "join", age: 20},
-            {id: 3, name: "kaka", age: 20}
+            { id: 1, name: '张三', age: 20 },
+            { id: 2, name: 'join', age: 20 },
+            { id: 3, name: 'kaka', age: 20 },
           ],
           unitList: {
-            0: "基础一",
-            8: "基础二",
-            9: "基础三"
-          }
+            0: '基础一',
+            8: '基础二',
+            9: '基础三',
+          },
         },
         methods: {
           triggleShowHandle: function () {
@@ -158,10 +237,9 @@
           },
           triggleLoginTypeWithKeyHandle: function () {
             this.loginTypeWithKey = this.loginTypeWithKey === 'username' ? 'email' : 'username';
-          }
-        }
+          },
+        },
       });
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -175,13 +253,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

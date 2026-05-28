@@ -30,28 +30,127 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>props 派生状态与 key 重置</h1>
-      <p class="hint">请打开 DevTools Console 查看切换用户时的 key 重置日志；下方 #root 为 React 挂载/交互演示区。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看切换用户时的 key 重置日志；下方 #root 为 React 挂载/交互演示区。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>props 是父组件传入的数据源，state 是组件自己的记忆；把 props 无条件复制到 state 会制造两个来源，容易出现旧值覆盖用户输入。</li>
-          <li>能由当前 props 或 state 直接计算出的值，应在渲染阶段派生，例如本页的 <code>displayLabel</code>，不需要再用 <code>useEffect</code> 同步。</li>
-          <li><code>key</code> 不只是列表 diff 标识，也决定 React 是否复用同一个组件实例；<code>key</code> 变化会卸载旧实例并重新创建 state。</li>
-          <li>本页切换 <code>userId</code> 时给 <code>Editor</code> 设置 <code>key</code>，表示草稿属于某个用户，换用户就应该丢弃旧草稿并回到新的 <code>initialName</code>。</li>
-          <li>如果业务要求跨用户保留未提交草稿，就不应使用 <code>key</code> 重置，而应把草稿提升到父组件或按 <code>userId</code> 存成映射。</li>
+          <li>
+            props 是父组件传入的数据源，state 是组件自己的记忆；把 props 无条件复制到 state
+            会制造两个来源，容易出现旧值覆盖用户输入。
+          </li>
+          <li>
+            能由当前 props 或 state 直接计算出的值，应在渲染阶段派生，例如本页的
+            <code>displayLabel</code>
+            ，不需要再用
+            <code>useEffect</code>
+            同步。
+          </li>
+          <li>
+            <code>key</code>
+            不只是列表 diff 标识，也决定 React 是否复用同一个组件实例；
+            <code>key</code>
+            变化会卸载旧实例并重新创建 state。
+          </li>
+          <li>
+            本页切换
+            <code>userId</code>
+            时给
+            <code>Editor</code>
+            设置
+            <code>key</code>
+            ，表示草稿属于某个用户，换用户就应该丢弃旧草稿并回到新的
+            <code>initialName</code>
+            。
+          </li>
+          <li>
+            如果业务要求跨用户保留未提交草稿，就不应使用
+            <code>key</code>
+            重置，而应把草稿提升到父组件或按
+            <code>userId</code>
+            存成映射。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>为什么不推荐 mirror props 到 state？</strong> 结论是不要无条件复制，因为会形成两个数据来源。原因是父组件重新渲染或 props 变化时，本地 state 可能覆盖用户正在编辑的草稿。项目里只有「初始值变成本地可编辑草稿」这类明确需求，才把 props 作为 state 初始值。</li>
-          <li><strong>什么场景用 render 派生，什么场景用 <code>key</code> 重置？</strong> 结论是可计算值直接派生，需要丢弃整块内部状态时用 <code>key</code>。原因是派生计算不会额外触发渲染，而 <code>key</code> 会让 React 创建新实例。切换用户/记录时，要丢弃草稿就加 <code>key={id}</code>；要保留草稿则把草稿提升到父组件或按 id 存映射。</li>
-          <li><strong><code>key</code> 为什么能重置组件状态？</strong> 结论是 <code>key</code> 参与 React 对组件身份的判断。原因是类型和位置相同但 <code>key</code> 不同，React 会卸载旧组件、挂载新组件，Hook state 也随之重建。边界是不要为了刷新数据滥用 <code>key</code>，否则会丢失焦点、动画和未保存状态。</li>
-          <li><strong>函数组件如何替代 <code>getDerivedStateFromProps</code>？</strong> 结论是优先用直接派生、受控组件或 <code>key</code> 重置。原因是 <code>getDerivedStateFromProps</code> 本来就容易引入派生状态反模式。维护旧 class 组件时可以保留它，但新函数组件通常不需要写等价 Hook。</li>
+          <li>
+            <strong>为什么不推荐 mirror props 到 state？</strong>
+            结论是不要无条件复制，因为会形成两个数据来源。原因是父组件重新渲染或 props 变化时，本地
+            state
+            可能覆盖用户正在编辑的草稿。项目里只有「初始值变成本地可编辑草稿」这类明确需求，才把
+            props 作为 state 初始值。
+          </li>
+          <li>
+            <strong>
+              什么场景用 render 派生，什么场景用
+              <code>key</code>
+              重置？
+            </strong>
+            结论是可计算值直接派生，需要丢弃整块内部状态时用
+            <code>key</code>
+            。原因是派生计算不会额外触发渲染，而
+            <code>key</code>
+            会让 React 创建新实例。切换用户/记录时，要丢弃草稿就加
+            <code>key={id}</code>
+            ；要保留草稿则把草稿提升到父组件或按 id 存映射。
+          </li>
+          <li>
+            <strong>
+              <code>key</code>
+              为什么能重置组件状态？
+            </strong>
+            结论是
+            <code>key</code>
+            参与 React 对组件身份的判断。原因是类型和位置相同但
+            <code>key</code>
+            不同，React 会卸载旧组件、挂载新组件，Hook state 也随之重建。边界是不要为了刷新数据滥用
+            <code>key</code>
+            ，否则会丢失焦点、动画和未保存状态。
+          </li>
+          <li>
+            <strong>
+              函数组件如何替代
+              <code>getDerivedStateFromProps</code>
+              ？
+            </strong>
+            结论是优先用直接派生、受控组件或
+            <code>key</code>
+            重置。原因是
+            <code>getDerivedStateFromProps</code>
+            本来就容易引入派生状态反模式。维护旧 class
+            组件时可以保留它，但新函数组件通常不需要写等价 Hook。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/learn/you-might-not-need-an-effect" target="_blank" rel="noreferrer">react.dev: You Might Not Need an Effect</a></li>
-          <li><a href="https://react.dev/learn/preserving-and-resetting-state" target="_blank" rel="noreferrer">react.dev: Preserving and Resetting State</a></li>
-          <li><a href="https://legacy.reactjs.org/docs/react-component.html#static-getderivedstatefromprops" target="_blank" rel="noreferrer">Legacy React: getDerivedStateFromProps</a></li>
+          <li>
+            <a
+              href="https://react.dev/learn/you-might-not-need-an-effect"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: You Might Not Need an Effect
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/preserving-and-resetting-state"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Preserving and Resetting State
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://legacy.reactjs.org/docs/react-component.html#static-getderivedstatefromprops"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Legacy React: getDerivedStateFromProps
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -69,11 +168,11 @@
       // 不需要 useEffect 把 props 同步到 state
       function Editor({ userId, initialName }) {
         const [draft, setDraft] = useState(initialName);
-        const displayLabel = "用户 " + userId + " 的草稿";
-        console.log("Editor 渲染:", { userId, initialName, draft }); // 预期: key 变化时 draft 重置为新的 initialName
+        const displayLabel = '用户 ' + userId + ' 的草稿';
+        console.log('Editor 渲染:', { userId, initialName, draft }); // 预期: key 变化时 draft 重置为新的 initialName
 
         return (
-          <div style={{ border: "1px solid #ccc", padding: 12, marginTop: 8 }}>
+          <div style={{ border: '1px solid #ccc', padding: 12, marginTop: 8 }}>
             <p>{displayLabel}</p>
             <input value={draft} onChange={(e) => setDraft(e.target.value)} />
             <p>当前草稿: {draft}</p>
@@ -82,23 +181,23 @@
       }
 
       /*
-        反面教材（已注释）：
-        useEffect(() => { setDraft(initialName); }, [initialName]);
-        // 无条件 mirror props → state，容易覆盖用户正在编辑的草稿
+      反面教材（已注释）：
+      useEffect(() => { setDraft(initialName); }, [initialName]);
+      // 无条件 mirror props → state，容易覆盖用户正在编辑的草稿
       */
 
       // ====== 2. key 重置：切换 userId 时卸载旧 Editor、挂载新实例 ======
       function App() {
         const [userId, setUserId] = useState(1);
         const users = {
-          1: "Alice",
-          2: "Bob",
-          3: "Carol"
+          1: 'Alice',
+          2: 'Bob',
+          3: 'Carol',
         };
 
         function switchUser() {
           const nextId = (userId % 3) + 1;
-          console.log("切换用户 key 重置:", { from: userId, to: nextId }); // 预期: Editor 实例重建，draft 回到 users[nextId]
+          console.log('切换用户 key 重置:', { from: userId, to: nextId }); // 预期: Editor 实例重建，draft 回到 users[nextId]
           setUserId(nextId);
         }
 
@@ -111,7 +210,7 @@
         );
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -120,20 +219,28 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./32-useLayoutEffect%E4%B8%8EuseEffect%E5%AF%B9%E6%AF%94.html">相关 · 32-useLayoutEffect与useEffect对比</a>
-        <a href="./34-React19%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%A7%88.html">相关 · 34-React19新特性概览</a>
-        <a href="./32-useLayoutEffect%E4%B8%8EuseEffect%E5%AF%B9%E6%AF%94.html">← useLayoutEffect与useEffect对比</a>
-        <a href="./34-React19%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%A7%88.html">React19新特性概览 →</a>
+        <a href="./32-useLayoutEffect%E4%B8%8EuseEffect%E5%AF%B9%E6%AF%94.html">
+          相关 · 32-useLayoutEffect与useEffect对比
+        </a>
+        <a href="./34-React19%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%A7%88.html">
+          相关 · 34-React19新特性概览
+        </a>
+        <a href="./32-useLayoutEffect%E4%B8%8EuseEffect%E5%AF%B9%E6%AF%94.html">
+          ← useLayoutEffect与useEffect对比
+        </a>
+        <a href="./34-React19%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%A7%88.html">
+          React19新特性概览 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

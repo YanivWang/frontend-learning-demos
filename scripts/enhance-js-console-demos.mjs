@@ -8,16 +8,16 @@
  * 运行：node scripts/enhance-js-console-demos.mjs
  */
 
-import { readdir, readFile, writeFile, stat } from "node:fs/promises";
-import { join, relative, sep } from "node:path";
-import { fileURLToPath } from "node:url";
+import { readdir, readFile, writeFile, stat } from 'node:fs/promises';
+import { join, relative, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
-const TARGET_DIRS = [join("apps", "javascript")];
+const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
+const TARGET_DIRS = [join('apps', 'javascript')];
 
 function parseTheme(content) {
   const m = content.match(/<!--\s*([\s\S]*?)\s*-->/);
-  return (m?.[1].match(/主题:\s*(.+)/) || [])[1]?.trim() || "Demo";
+  return (m?.[1].match(/主题:\s*(.+)/) || [])[1]?.trim() || 'Demo';
 }
 
 function hasH1(content) {
@@ -30,14 +30,12 @@ function injectShell(content, theme) {
 
   if (!hasH1(next)) {
     insertBlock.push(`  <h1>${theme}</h1>`);
-    insertBlock.push(
-      `  <p class="hint">请打开 DevTools Console 查看输出。</p>`
-    );
+    insertBlock.push(`  <p class="hint">请打开 DevTools Console 查看输出。</p>`);
   }
 
   if (insertBlock.length) {
     next = next.replace(/<body([^>]*)>/i, (m, attrs) => {
-      return `<body${attrs}>\n${insertBlock.join("\n")}`;
+      return `<body${attrs}>\n${insertBlock.join('\n')}`;
     });
   }
 
@@ -49,7 +47,7 @@ async function walk(dirAbs, files) {
   for (const ent of entries) {
     const abs = join(dirAbs, ent.name);
     if (ent.isDirectory()) await walk(abs, files);
-    else if (ent.isFile() && ent.name.toLowerCase().endsWith(".html")) files.push(abs);
+    else if (ent.isFile() && ent.name.toLowerCase().endsWith('.html')) files.push(abs);
   }
 }
 
@@ -67,21 +65,21 @@ async function main() {
 
   let updated = 0;
   for (const abs of files) {
-    const before = await readFile(abs, "utf8");
+    const before = await readFile(abs, 'utf8');
     const theme = parseTheme(before);
     const needs = !hasH1(before);
     if (!needs) continue;
     const after = injectShell(before, theme);
     if (after !== before) {
-      await writeFile(abs, after, "utf8");
+      await writeFile(abs, after, 'utf8');
       updated++;
-      console.log("[enhance-js-console-demos]", relative(ROOT, abs));
+      console.log('[enhance-js-console-demos]', relative(ROOT, abs));
     }
   }
   console.log(`[enhance-js-console-demos] 完成，更新 ${updated} 个文件`);
 }
 
 main().catch((err) => {
-  console.error("[enhance-js-console-demos] 失败：", err);
+  console.error('[enhance-js-console-demos] 失败：', err);
   process.exitCode = 1;
 });

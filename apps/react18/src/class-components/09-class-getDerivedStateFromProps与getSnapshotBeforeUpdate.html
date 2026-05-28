@@ -26,7 +26,12 @@
     <script src="../../libs/react-dom.development.js"></script>
     <script src="../../libs/babel.min.js"></script>
     <style>
-      .log-box { height: 120px; overflow: auto; border: 1px solid #ccc; padding: 8px; }
+      .log-box {
+        height: 120px;
+        overflow: auto;
+        border: 1px solid #ccc;
+        padding: 8px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -35,29 +40,129 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>getDerivedStateFromProps 与 getSnapshotBeforeUpdate</h1>
-      <p class="hint">请打开 DevTools Console 观察 getDerivedStateFromProps 与 getSnapshotBeforeUpdate 日志；在输入框编辑并点击"追加消息"验证滚动快照；下方 #root 为 React 挂载/交互演示区。</p>
+      <p class="hint">
+        请打开 DevTools Console 观察 getDerivedStateFromProps 与 getSnapshotBeforeUpdate
+        日志；在输入框编辑并点击"追加消息"验证滚动快照；下方 #root 为 React 挂载/交互演示区。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><strong><code>getDerivedStateFromProps</code>：</strong>在初次挂载和后续更新的 render 前调用，接收最新 props 和当前 state，必须返回 state 补丁或 <code>null</code>；它是静态方法，不能访问 <code>this</code>、不能做请求、订阅或 DOM 操作。</li>
-          <li><strong>派生 state 风险：</strong>把 props 复制到 state 容易形成双数据源，出现用户输入被覆盖、父子状态不同步、边界条件难维护等问题。多数场景更推荐直接从 props 渲染、把组件做成受控组件，或通过改变 <code>key</code> 重置局部 state。</li>
-          <li><strong><code>getSnapshotBeforeUpdate</code>：</strong>在 React 把更新提交到 DOM 之前调用，适合读取更新前的滚动高度、选择区等 DOM 快照；返回值会作为 <code>componentDidUpdate</code> 的第三个参数，真正的 DOM 写操作应放到 <code>componentDidUpdate</code>。</li>
-          <li><strong>滚动边界：</strong>聊天/日志追加消息时，只应在用户原本接近底部时自动保持底部；如果用户已经向上阅读，强行滚动会破坏体验。还要处理 ref 为空、列表高度不足、连续追加等情况。</li>
-          <li><strong>现代写法：</strong>React 18 新代码通常用函数组件、受控状态、<code>useEffect</code>/<code>useLayoutEffect</code> 和 ref 处理类似需求；class 生命周期更多用于维护旧组件或面试理解渲染提交时机。</li>
+          <li>
+            <strong>
+              <code>getDerivedStateFromProps</code>
+              ：
+            </strong>
+            在初次挂载和后续更新的 render 前调用，接收最新 props 和当前 state，必须返回 state 补丁或
+            <code>null</code>
+            ；它是静态方法，不能访问
+            <code>this</code>
+            、不能做请求、订阅或 DOM 操作。
+          </li>
+          <li>
+            <strong>派生 state 风险：</strong>
+            把 props 复制到 state
+            容易形成双数据源，出现用户输入被覆盖、父子状态不同步、边界条件难维护等问题。多数场景更推荐直接从
+            props 渲染、把组件做成受控组件，或通过改变
+            <code>key</code>
+            重置局部 state。
+          </li>
+          <li>
+            <strong>
+              <code>getSnapshotBeforeUpdate</code>
+              ：
+            </strong>
+            在 React 把更新提交到 DOM 之前调用，适合读取更新前的滚动高度、选择区等 DOM
+            快照；返回值会作为
+            <code>componentDidUpdate</code>
+            的第三个参数，真正的 DOM 写操作应放到
+            <code>componentDidUpdate</code>
+            。
+          </li>
+          <li>
+            <strong>滚动边界：</strong>
+            聊天/日志追加消息时，只应在用户原本接近底部时自动保持底部；如果用户已经向上阅读，强行滚动会破坏体验。还要处理
+            ref 为空、列表高度不足、连续追加等情况。
+          </li>
+          <li>
+            <strong>现代写法：</strong>
+            React 18 新代码通常用函数组件、受控状态、
+            <code>useEffect</code>
+            /
+            <code>useLayoutEffect</code>
+            和 ref 处理类似需求；class 生命周期更多用于维护旧组件或面试理解渲染提交时机。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>getDerivedStateFromProps 为什么必须是静态纯函数？</strong> 结论是它只能根据 props/state 计算下一段 state。原因是它运行在 render 前，没有实例上下文，也不保证适合副作用；如果在这里做请求或依赖实例字段，会破坏渲染可预测性。维护旧代码时应把副作用移到 <code>componentDidMount</code>/<code>componentDidUpdate</code>。</li>
-          <li><strong>为什么 props 派生 state 是高风险写法？</strong> 结论是它经常制造两个状态来源。原因是父 props 更新和用户本地编辑都可能写同一份数据，稍不注意就覆盖用户输入或产生不同步。项目里能直接从 props 渲染就不要复制；需要"重置初始值"时常用 <code>key</code> 或受控组件模式。</li>
-          <li><strong>getSnapshotBeforeUpdate 和 componentDidUpdate 如何配合？</strong> 结论是前者读更新前快照，后者在 DOM 更新后应用快照。原因是某些值必须在 DOM 改变前读取，例如旧滚动高度和旧滚动位置；等 DOM 更新后再读就丢失了参照。示例中快照返回"底部距离"，更新后用新高度减去该距离恢复位置。</li>
-          <li><strong>聊天列表追加消息时如何避免打断用户阅读？</strong> 结论是只有用户原本接近底部才自动跟随到底部。原因是用户向上滚动查看历史消息时，新增消息不应强行抢走视口。项目里还要处理消息批量追加、图片加载导致高度二次变化、虚拟列表和异步数据失败的边界。</li>
-          <li><strong>React 18 新代码里如何替代这些 class 生命周期？</strong> 结论是 props 派生优先受控组件或 <code>key</code> 重置，DOM 快照用 <code>useLayoutEffect</code> + ref。原因是 Hooks 能在提交后安全读写 DOM；<code>getDerivedStateFromProps</code> 的大多数场景可用"直接从 props 渲染"替代，滚动恢复用 <code>useLayoutEffect</code> 在 DOM 变更后同步调整。</li>
+          <li>
+            <strong>getDerivedStateFromProps 为什么必须是静态纯函数？</strong>
+            结论是它只能根据 props/state 计算下一段 state。原因是它运行在 render
+            前，没有实例上下文，也不保证适合副作用；如果在这里做请求或依赖实例字段，会破坏渲染可预测性。维护旧代码时应把副作用移到
+            <code>componentDidMount</code>
+            /
+            <code>componentDidUpdate</code>
+            。
+          </li>
+          <li>
+            <strong>为什么 props 派生 state 是高风险写法？</strong>
+            结论是它经常制造两个状态来源。原因是父 props
+            更新和用户本地编辑都可能写同一份数据，稍不注意就覆盖用户输入或产生不同步。项目里能直接从
+            props 渲染就不要复制；需要"重置初始值"时常用
+            <code>key</code>
+            或受控组件模式。
+          </li>
+          <li>
+            <strong>getSnapshotBeforeUpdate 和 componentDidUpdate 如何配合？</strong>
+            结论是前者读更新前快照，后者在 DOM 更新后应用快照。原因是某些值必须在 DOM
+            改变前读取，例如旧滚动高度和旧滚动位置；等 DOM
+            更新后再读就丢失了参照。示例中快照返回"底部距离"，更新后用新高度减去该距离恢复位置。
+          </li>
+          <li>
+            <strong>聊天列表追加消息时如何避免打断用户阅读？</strong>
+            结论是只有用户原本接近底部才自动跟随到底部。原因是用户向上滚动查看历史消息时，新增消息不应强行抢走视口。项目里还要处理消息批量追加、图片加载导致高度二次变化、虚拟列表和异步数据失败的边界。
+          </li>
+          <li>
+            <strong>React 18 新代码里如何替代这些 class 生命周期？</strong>
+            结论是 props 派生优先受控组件或
+            <code>key</code>
+            重置，DOM 快照用
+            <code>useLayoutEffect</code>
+            + ref。原因是 Hooks 能在提交后安全读写 DOM；
+            <code>getDerivedStateFromProps</code>
+            的大多数场景可用"直接从 props 渲染"替代，滚动恢复用
+            <code>useLayoutEffect</code>
+            在 DOM 变更后同步调整。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/Component#static-getderivedstatefromprops" target="_blank" rel="noreferrer">react.dev: static getDerivedStateFromProps</a></li>
-          <li><a href="https://react.dev/reference/react/Component#getsnapshotbeforeupdate" target="_blank" rel="noreferrer">react.dev: getSnapshotBeforeUpdate()</a></li>
-          <li><a href="https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes" target="_blank" rel="noreferrer">react.dev: Adjusting Some State When a Prop Changes</a></li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#static-getderivedstatefromprops"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: static getDerivedStateFromProps
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#getsnapshotbeforeupdate"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: getSnapshotBeforeUpdate()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Adjusting Some State When a Prop Changes
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -73,11 +178,14 @@
       class ControlledInput extends React.Component {
         constructor(props) {
           super(props);
-          this.state = { value: props.value || "" };
+          this.state = { value: props.value || '' };
         }
 
         static getDerivedStateFromProps(nextProps, prevState) {
-          console.log("getDerivedStateFromProps:", { nextProps: nextProps.value, prevState: prevState.value });
+          console.log('getDerivedStateFromProps:', {
+            nextProps: nextProps.value,
+            prevState: prevState.value,
+          });
           if (nextProps.value !== prevState.value) {
             return { value: nextProps.value };
           }
@@ -109,7 +217,7 @@
           const wasAtBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 20;
           if (prevProps.messages.length < this.props.messages.length && wasAtBottom) {
             const snapshot = list.scrollHeight - list.scrollTop;
-            console.log("getSnapshotBeforeUpdate 快照:", snapshot);
+            console.log('getSnapshotBeforeUpdate 快照:', snapshot);
             return snapshot;
           }
           return null;
@@ -119,7 +227,7 @@
           if (snapshot !== null) {
             const list = this.listRef.current;
             list.scrollTop = list.scrollHeight - snapshot;
-            console.log("componentDidUpdate 应用快照，scrollTop:", list.scrollTop);
+            console.log('componentDidUpdate 应用快照，scrollTop:', list.scrollTop);
           }
         }
 
@@ -136,13 +244,13 @@
 
       class App extends React.Component {
         state = {
-          text: "React",
-          messages: ["msg-1", "msg-2", "msg-3"],
+          text: 'React',
+          messages: ['msg-1', 'msg-2', 'msg-3'],
         };
 
         addMessage = () => {
           this.setState({
-            messages: [...this.state.messages, "msg-" + Date.now()],
+            messages: [...this.state.messages, 'msg-' + Date.now()],
           });
         };
 
@@ -166,7 +274,7 @@
         }
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -175,17 +283,29 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html">相关 · 06-class-完整生命周期与API</a>
-        <a href="./08-class-PureComponent%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">相关 · 08-class-PureComponent性能优化</a>
-        <a href="./11-class-%E5%8F%97%E6%8E%A7%E4%B8%8E%E9%9D%9E%E5%8F%97%E6%8E%A7%E8%A1%A8%E5%8D%95.html">相关 · 11-class-受控与非受控表单</a>
-        <a href="./08-class-PureComponent%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">← class-PureComponent性能优化</a>
+        <a
+          href="./06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html"
+        >
+          相关 · 06-class-完整生命周期与API
+        </a>
+        <a href="./08-class-PureComponent%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">
+          相关 · 08-class-PureComponent性能优化
+        </a>
+        <a
+          href="./11-class-%E5%8F%97%E6%8E%A7%E4%B8%8E%E9%9D%9E%E5%8F%97%E6%8E%A7%E8%A1%A8%E5%8D%95.html"
+        >
+          相关 · 11-class-受控与非受控表单
+        </a>
+        <a href="./08-class-PureComponent%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">
+          ← class-PureComponent性能优化
+        </a>
         <a href="./10-class-Context%E4%B8%8A%E4%B8%8B%E6%96%87.html">class-Context上下文 →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

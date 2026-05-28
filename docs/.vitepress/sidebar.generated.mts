@@ -1586,6 +1586,10 @@ const sidebar: DefaultTheme.SidebarItem[] = [
           {
             "text": "动态组件与异步组件",
             "link": "/apps/vue3/src/05-%E6%8F%92%E6%A7%BD%E4%B8%8E%E7%BB%84%E4%BB%B6%E5%BD%A2%E6%80%81/02-%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6%E4%B8%8E%E5%BC%82%E6%AD%A5%E7%BB%84%E4%BB%B6.html"
+          },
+          {
+            "text": "动态组件与异步组件.html.tmpfmt",
+            "link": "/apps/vue3/src/05-%E6%8F%92%E6%A7%BD%E4%B8%8E%E7%BB%84%E4%BB%B6%E5%BD%A2%E6%80%81/02-%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6%E4%B8%8E%E5%BC%82%E6%AD%A5%E7%BB%84%E4%BB%B6.html.tmpfmt.html"
           }
         ]
       },

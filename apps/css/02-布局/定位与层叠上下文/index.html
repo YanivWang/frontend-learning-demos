@@ -1,5 +1,5 @@
 <!--
-分类: css / 02-布局 / 定位与层叠上下文
+  分类: css / 02-布局 / 定位与层叠上下文
   主题: position、包含块、z-index、层叠上下文
   要点:
     - absolute 的偏移参考包含块，常见情况是最近的非 static 定位祖先
@@ -20,9 +20,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>定位与层叠上下文</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
-      h1 { font-size: 1.3rem; }
-      h2 { font-size: 1rem; margin-top: 2rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        color: #222;
+      }
+      h1 {
+        font-size: 1.3rem;
+      }
+      h2 {
+        font-size: 1rem;
+        margin-top: 2rem;
+      }
       .relative {
         position: relative;
         width: 360px;
@@ -77,9 +86,24 @@
         display: grid;
         place-items: center;
       }
-      .a { left: 20px; top: 20px; z-index: 2; background: #2f80ed; }
-      .b { left: 80px; top: 50px; z-index: 1; background: #eb5757; transform: translateZ(0); }
-      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      .a {
+        left: 20px;
+        top: 20px;
+        z-index: 2;
+        background: #2f80ed;
+      }
+      .b {
+        left: 80px;
+        top: 50px;
+        z-index: 1;
+        background: #eb5757;
+        transform: translateZ(0);
+      }
+      .tip {
+        margin: 0.5rem 0 1rem;
+        color: #666;
+        font-size: 0.875rem;
+      }
       #runtime-output {
         margin: 0.75rem 0 0;
         padding: 0.75rem 1rem;
@@ -99,29 +123,119 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>定位与层叠上下文</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出定位与层叠上下文实测信息。</p>
+      <p class="hint">
+        在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出定位与层叠上下文实测信息。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>position: absolute</code> 会脱离普通流，偏移量参考它的包含块；常见包含块是最近的非 <code>static</code> 定位祖先，所以父级常写 <code>position: relative</code>。</li>
-          <li><code>position: fixed</code> 通常相对视口固定，适合悬浮按钮；但包含 <code>transform</code>、<code>filter</code> 等属性的祖先可能改变固定定位的包含块，真实项目要特别检查。</li>
-          <li><code>position: sticky</code> 先按普通流占位，滚动到阈值后吸附；它依赖最近滚动祖先，缺少 <code>top</code> 等阈值或祖先滚动/裁剪设置不当时会看似失效。</li>
-          <li><code>z-index</code> 不是全局数字排行榜，只在同一个层叠上下文中比较；<code>transform</code>、<code>opacity &lt; 1</code>、<code>position</code> 配合 <code>z-index</code> 等都可能创建新的层叠上下文。</li>
-          <li>弹窗、下拉菜单、吸顶栏和 fixed 按钮要统一规划层级，并检查滚动容器、裁剪和新层叠上下文，否则会出现“z-index 写到 9999 仍被盖住”的问题。</li>
+          <li>
+            <code>position: absolute</code>
+            会脱离普通流，偏移量参考它的包含块；常见包含块是最近的非
+            <code>static</code>
+            定位祖先，所以父级常写
+            <code>position: relative</code>
+            。
+          </li>
+          <li>
+            <code>position: fixed</code>
+            通常相对视口固定，适合悬浮按钮；但包含
+            <code>transform</code>
+            、
+            <code>filter</code>
+            等属性的祖先可能改变固定定位的包含块，真实项目要特别检查。
+          </li>
+          <li>
+            <code>position: sticky</code>
+            先按普通流占位，滚动到阈值后吸附；它依赖最近滚动祖先，缺少
+            <code>top</code>
+            等阈值或祖先滚动/裁剪设置不当时会看似失效。
+          </li>
+          <li>
+            <code>z-index</code>
+            不是全局数字排行榜，只在同一个层叠上下文中比较；
+            <code>transform</code>
+            、
+            <code>opacity &lt; 1</code>
+            、
+            <code>position</code>
+            配合
+            <code>z-index</code>
+            等都可能创建新的层叠上下文。
+          </li>
+          <li>
+            弹窗、下拉菜单、吸顶栏和 fixed
+            按钮要统一规划层级，并检查滚动容器、裁剪和新层叠上下文，否则会出现“z-index 写到 9999
+            仍被盖住”的问题。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>absolute 的包含块如何确定？</strong> 结论是常见情况下相对最近的非 <code>static</code> 定位祖先。原因是绝对定位需要一个包含块来解析 <code>top/right/bottom/left</code>。项目里父级写 <code>position: relative</code> 通常不是为了移动父级，而是为了给子级建立定位参考。</li>
-          <li><strong>fixed 和 sticky 有什么区别？</strong> 结论是 fixed 脱离文档流并固定在视口附近，sticky 仍保留原位置并在滚动到阈值后吸附。原因是 sticky 是普通流与相对定位的混合模型。边界是 transformed ancestor、滚动祖先和 overflow 裁剪都会影响实际表现。</li>
-          <li><strong>为什么 <code>z-index: 9999</code> 仍可能被盖住？</strong> 结论是元素可能处在较低的层叠上下文里。原因是 z-index 先比较层叠上下文，再比较上下文内部的层级。项目里要沿祖先查 <code>transform</code>、<code>opacity</code>、<code>position + z-index</code>、<code>isolation</code> 等创建上下文的属性。</li>
-          <li><strong><code>transform</code> 创建层叠上下文有什么风险？</strong> 结论是它能隔离内部层级，也可能让子弹层无法覆盖外部元素。原因是内部 z-index 不会跳出父上下文。动画优化、3D 变换和弹层同时出现时，通常应把弹层挂到更高层容器或统一 portal/root。</li>
+          <li>
+            <strong>absolute 的包含块如何确定？</strong>
+            结论是常见情况下相对最近的非
+            <code>static</code>
+            定位祖先。原因是绝对定位需要一个包含块来解析
+            <code>top/right/bottom/left</code>
+            。项目里父级写
+            <code>position: relative</code>
+            通常不是为了移动父级，而是为了给子级建立定位参考。
+          </li>
+          <li>
+            <strong>fixed 和 sticky 有什么区别？</strong>
+            结论是 fixed 脱离文档流并固定在视口附近，sticky 仍保留原位置并在滚动到阈值后吸附。原因是
+            sticky 是普通流与相对定位的混合模型。边界是 transformed ancestor、滚动祖先和 overflow
+            裁剪都会影响实际表现。
+          </li>
+          <li>
+            <strong>
+              为什么
+              <code>z-index: 9999</code>
+              仍可能被盖住？
+            </strong>
+            结论是元素可能处在较低的层叠上下文里。原因是 z-index
+            先比较层叠上下文，再比较上下文内部的层级。项目里要沿祖先查
+            <code>transform</code>
+            、
+            <code>opacity</code>
+            、
+            <code>position + z-index</code>
+            、
+            <code>isolation</code>
+            等创建上下文的属性。
+          </li>
+          <li>
+            <strong>
+              <code>transform</code>
+              创建层叠上下文有什么风险？
+            </strong>
+            结论是它能隔离内部层级，也可能让子弹层无法覆盖外部元素。原因是内部 z-index
+            不会跳出父上下文。动画优化、3D 变换和弹层同时出现时，通常应把弹层挂到更高层容器或统一
+            portal/root。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/position">MDN: position</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Containing_block">MDN: Layout and the containing block</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_positioned_layout/Understanding_z-index/Stacking_context">MDN: Stacking context</a></li>
-          <li><a href="https://www.w3.org/TR/css-position-3/">W3C: CSS Positioned Layout Module Level 3</a></li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/position">MDN: position</a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Containing_block">
+              MDN: Layout and the containing block
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_positioned_layout/Understanding_z-index/Stacking_context"
+            >
+              MDN: Stacking context
+            </a>
+          </li>
+          <li>
+            <a href="https://www.w3.org/TR/css-position-3/">
+              W3C: CSS Positioned Layout Module Level 3
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -129,22 +243,42 @@
 
     <!-- PAGE_DOM_START -->
     <h2>absolute 的包含块</h2>
-    <p class="tip">子元素 <code>position:absolute</code> 相对最近的非 static 祖先定位；父级 <code>position:relative</code> 建立包含块。</p>
+    <p class="tip">
+      子元素
+      <code>position:absolute</code>
+      相对最近的非 static 祖先定位；父级
+      <code>position:relative</code>
+      建立包含块。
+    </p>
     <div class="relative" id="demo-absolute">
       父级 position: relative
       <div class="absolute" id="abs-child">absolute 相对父级</div>
     </div>
     <h2>fixed 相对视口</h2>
-    <p class="tip">右下角红色徽章使用 <code>position: fixed</code>，滚动页面时始终贴在视口右下角。</p>
+    <p class="tip">
+      右下角红色徽章使用
+      <code>position: fixed</code>
+      ，滚动页面时始终贴在视口右下角。
+    </p>
     <h2>sticky 依赖滚动祖先</h2>
-    <p class="tip">向下滚动下方容器，标题会吸附在滚动容器顶部；sticky 需要 <code>top</code> 阈值和正确的滚动祖先。</p>
+    <p class="tip">
+      向下滚动下方容器，标题会吸附在滚动容器顶部；sticky 需要
+      <code>top</code>
+      阈值和正确的滚动祖先。
+    </p>
     <div class="scroll" id="demo-sticky">
       <div class="sticky" id="sticky-header">sticky top: 0</div>
       <p>向下滚动，标题会吸附在滚动容器顶部。</p>
-      <p style="height:180px;">占位内容</p>
+      <p style="height: 180px">占位内容</p>
     </div>
     <h2>z-index 与层叠</h2>
-    <p class="tip">红色卡片的 <code>transform</code> 会创建独立层叠上下文，但它整体仍按 <code>z-index: 1</code> 与蓝色卡片比较。</p>
+    <p class="tip">
+      红色卡片的
+      <code>transform</code>
+      会创建独立层叠上下文，但它整体仍按
+      <code>z-index: 1</code>
+      与蓝色卡片比较。
+    </p>
     <div class="stack" id="demo-stack">
       <div class="card a" id="card-a">z-index: 2</div>
       <div class="card b" id="card-b">z-index: 1 + transform</div>
@@ -162,7 +296,7 @@
           return {
             position: s.position,
             zIndex: s.zIndex,
-            transform: s.transform !== "none" ? "有 transform" : "无",
+            transform: s.transform !== 'none' ? '有 transform' : '无',
           };
         }
 
@@ -177,27 +311,37 @@
         }
 
         function renderPositionMetrics() {
-          var absParent = document.getElementById("demo-absolute");
-          var absChild = document.getElementById("abs-child");
-          var stickyHeader = document.getElementById("sticky-header");
-          var cardA = document.getElementById("card-a");
-          var cardB = document.getElementById("card-b");
-          var fixedBadge = document.getElementById("fixed-badge");
+          var absParent = document.getElementById('demo-absolute');
+          var absChild = document.getElementById('abs-child');
+          var stickyHeader = document.getElementById('sticky-header');
+          var cardA = document.getElementById('card-a');
+          var cardB = document.getElementById('card-b');
+          var fixedBadge = document.getElementById('fixed-badge');
 
           var aInfo = getPositionInfo(cardA);
           var bInfo = getPositionInfo(cardB);
 
-          document.getElementById("runtime-output").textContent = [
-            "── 定位实测 ──",
-            "absolute 子元素在父级内: " + (isPositionedWithin(absChild, absParent) ? "是" : "否"),
-            "sticky position: " + getComputedStyle(stickyHeader).position,
-            "fixed position: " + getComputedStyle(fixedBadge).position,
-            "",
-            "── 层叠上下文 ──",
-            "#card-a: position=" + aInfo.position + ", z-index=" + aInfo.zIndex + ", " + aInfo.transform,
-            "#card-b: position=" + bInfo.position + ", z-index=" + bInfo.zIndex + ", " + bInfo.transform,
-            "视觉结果: 蓝色(z-index:2)应覆盖红色(z-index:1)，尽管红色内部也创建了层叠上下文。",
-          ].join("\n");
+          document.getElementById('runtime-output').textContent = [
+            '── 定位实测 ──',
+            'absolute 子元素在父级内: ' + (isPositionedWithin(absChild, absParent) ? '是' : '否'),
+            'sticky position: ' + getComputedStyle(stickyHeader).position,
+            'fixed position: ' + getComputedStyle(fixedBadge).position,
+            '',
+            '── 层叠上下文 ──',
+            '#card-a: position=' +
+              aInfo.position +
+              ', z-index=' +
+              aInfo.zIndex +
+              ', ' +
+              aInfo.transform,
+            '#card-b: position=' +
+              bInfo.position +
+              ', z-index=' +
+              bInfo.zIndex +
+              ', ' +
+              bInfo.transform,
+            '视觉结果: 蓝色(z-index:2)应覆盖红色(z-index:1)，尽管红色内部也创建了层叠上下文。',
+          ].join('\n');
         }
 
         renderPositionMetrics();
@@ -215,13 +359,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

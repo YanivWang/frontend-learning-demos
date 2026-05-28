@@ -32,29 +32,96 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>高阶组件 HOC（Higher-Order Component）</h1>
-      <p class="hint">请打开 DevTools Console 观察 HOC 生命周期日志；页面加载 1.5s 后显示用户信息；下方 #root 为 React 挂载演示区。</p>
+      <p class="hint">
+        请打开 DevTools Console 观察 HOC 生命周期日志；页面加载 1.5s 后显示用户信息；下方 #root 为
+        React 挂载演示区。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>HOC 是一个函数：接收组件，返回增强后的新组件。它是 React 组合模型上的模式，不会修改原组件本身，典型签名是 <code>const Enhanced = withSomething(Wrapped)</code>。</li>
-          <li>class 维护项目中，HOC 常用于注入 props、权限校验、日志埋点、错误兜底、复用生命周期逻辑。本 demo 的 <code>withLoading</code> 注入加载态分支，<code>withLogger</code> 复用挂载和更新日志。</li>
-          <li>不要在 <code>render</code> 里临时调用 HOC 创建新组件。每次 render 都返回新的组件类型会导致 React 卸载旧树、挂载新树，丢失内部 state，也破坏 diff 复用。</li>
-          <li><code>ref</code> 不是普通 prop，HOC 不会自动透传 ref；静态属性也不会自动复制。需要时要用 <code>React.forwardRef</code> 或手动提升静态属性，并设置 <code>displayName</code> 保持调试可读性。</li>
-          <li>Hooks 时代，很多"复用状态逻辑"的 HOC 可改为自定义 Hook；但权限包裹、路由守卫、错误边界、兼容 class 组件的横切逻辑仍可能保留 HOC。</li>
+          <li>
+            HOC 是一个函数：接收组件，返回增强后的新组件。它是 React
+            组合模型上的模式，不会修改原组件本身，典型签名是
+            <code>const Enhanced = withSomething(Wrapped)</code>
+            。
+          </li>
+          <li>
+            class 维护项目中，HOC 常用于注入
+            props、权限校验、日志埋点、错误兜底、复用生命周期逻辑。本 demo 的
+            <code>withLoading</code>
+            注入加载态分支，
+            <code>withLogger</code>
+            复用挂载和更新日志。
+          </li>
+          <li>
+            不要在
+            <code>render</code>
+            里临时调用 HOC 创建新组件。每次 render 都返回新的组件类型会导致 React
+            卸载旧树、挂载新树，丢失内部 state，也破坏 diff 复用。
+          </li>
+          <li>
+            <code>ref</code>
+            不是普通 prop，HOC 不会自动透传 ref；静态属性也不会自动复制。需要时要用
+            <code>React.forwardRef</code>
+            或手动提升静态属性，并设置
+            <code>displayName</code>
+            保持调试可读性。
+          </li>
+          <li>
+            Hooks 时代，很多"复用状态逻辑"的 HOC 可改为自定义
+            Hook；但权限包裹、路由守卫、错误边界、兼容 class 组件的横切逻辑仍可能保留 HOC。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>HOC 为什么说是组件逻辑复用模式而不是组件本身？</strong> 结论是 HOC 是接收组件并返回组件的函数。原因是它复用的是包装逻辑和 props 注入方式，而不是一段固定 UI；项目中常把鉴权、埋点、加载态写成 HOC。</li>
-          <li><strong>HOC 和 render props、自定义 Hook 的区别是什么？</strong> 结论是 HOC 通过包装组件复用逻辑，render props 通过函数子节点交出渲染控制，自定义 Hook 复用函数组件的状态逻辑。原因是三者组合层级不同；新函数组件通常优先 Hook，class 维护代码常见 HOC。</li>
-          <li><strong>为什么不要在 render 中创建 HOC？</strong> 结论是会生成新的组件类型。原因是 React 会把前后两次渲染看成不同组件并卸载重建；边界是 HOC 应在模块作用域或 render 外创建。</li>
-          <li><strong>HOC 包装后 ref、displayName 和静态属性有哪些坑？</strong> 结论是 ref 和静态属性不会自动传给被包裹组件，displayName 也可能丢失。项目里需要显式 forwardRef、提升静态属性并设置包装组件名称。</li>
-          <li><strong>class 维护项目中 HOC 适合放哪些横切逻辑？</strong> 结论是权限校验、加载态注入、日志埋点、路由守卫、错误兜底等跨组件复用逻辑。原因是这些逻辑与 UI 无关但需要在多个组件上复用；状态逻辑复用在新代码中更推荐自定义 Hook。</li>
+          <li>
+            <strong>HOC 为什么说是组件逻辑复用模式而不是组件本身？</strong>
+            结论是 HOC 是接收组件并返回组件的函数。原因是它复用的是包装逻辑和 props
+            注入方式，而不是一段固定 UI；项目中常把鉴权、埋点、加载态写成 HOC。
+          </li>
+          <li>
+            <strong>HOC 和 render props、自定义 Hook 的区别是什么？</strong>
+            结论是 HOC 通过包装组件复用逻辑，render props 通过函数子节点交出渲染控制，自定义 Hook
+            复用函数组件的状态逻辑。原因是三者组合层级不同；新函数组件通常优先 Hook，class
+            维护代码常见 HOC。
+          </li>
+          <li>
+            <strong>为什么不要在 render 中创建 HOC？</strong>
+            结论是会生成新的组件类型。原因是 React 会把前后两次渲染看成不同组件并卸载重建；边界是
+            HOC 应在模块作用域或 render 外创建。
+          </li>
+          <li>
+            <strong>HOC 包装后 ref、displayName 和静态属性有哪些坑？</strong>
+            结论是 ref 和静态属性不会自动传给被包裹组件，displayName 也可能丢失。项目里需要显式
+            forwardRef、提升静态属性并设置包装组件名称。
+          </li>
+          <li>
+            <strong>class 维护项目中 HOC 适合放哪些横切逻辑？</strong>
+            结论是权限校验、加载态注入、日志埋点、路由守卫、错误兜底等跨组件复用逻辑。原因是这些逻辑与
+            UI 无关但需要在多个组件上复用；状态逻辑复用在新代码中更推荐自定义 Hook。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://legacy.reactjs.org/docs/higher-order-components.html" target="_blank" rel="noreferrer">Legacy React: Higher-Order Components</a></li>
-          <li><a href="https://react.dev/reference/react/forwardRef" target="_blank" rel="noreferrer">react.dev: forwardRef（HOC ref 透传）</a></li>
-          <li><a href="https://react.dev/reference/react/Component" target="_blank" rel="noreferrer">react.dev: Component</a></li>
+          <li>
+            <a
+              href="https://legacy.reactjs.org/docs/higher-order-components.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Legacy React: Higher-Order Components
+            </a>
+          </li>
+          <li>
+            <a href="https://react.dev/reference/react/forwardRef" target="_blank" rel="noreferrer">
+              react.dev: forwardRef（HOC ref 透传）
+            </a>
+          </li>
+          <li>
+            <a href="https://react.dev/reference/react/Component" target="_blank" rel="noreferrer">
+              react.dev: Component
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -77,7 +144,7 @@
             return <WrappedComponent {...rest} />;
           }
         }
-        WithLoading.displayName = `WithLoading(${WrappedComponent.displayName || WrappedComponent.name || "Component"})`;
+        WithLoading.displayName = `WithLoading(${WrappedComponent.displayName || WrappedComponent.name || 'Component'})`;
         return WithLoading;
       }
 
@@ -85,18 +152,18 @@
       function withLogger(WrappedComponent) {
         class WithLogger extends React.Component {
           componentDidMount() {
-            console.log("[HOC] mounted:", WrappedComponent.name);
+            console.log('[HOC] mounted:', WrappedComponent.name);
           }
 
           componentDidUpdate(prevProps) {
-            console.log("[HOC] updated:", WrappedComponent.name, prevProps, "->", this.props);
+            console.log('[HOC] updated:', WrappedComponent.name, prevProps, '->', this.props);
           }
 
           render() {
             return <WrappedComponent {...this.props} />;
           }
         }
-        WithLogger.displayName = `WithLogger(${WrappedComponent.displayName || WrappedComponent.name || "Component"})`;
+        WithLogger.displayName = `WithLogger(${WrappedComponent.displayName || WrappedComponent.name || 'Component'})`;
         return WithLogger;
       }
 
@@ -116,11 +183,11 @@
       const EnhancedProfile = withLogger(withLoading(UserProfile));
 
       /*
-        反例：在 render 中创建 HOC
-        render() {
-          const BadProfile = withLoading(UserProfile); // 每次 render 新组件类型 → 卸载重建
-          return <BadProfile ... />;
-        }
+      反例：在 render 中创建 HOC
+      render() {
+        const BadProfile = withLoading(UserProfile); // 每次 render 新组件类型 → 卸载重建
+        return <BadProfile ... />;
+      }
       */
 
       class App extends React.Component {
@@ -130,7 +197,7 @@
           setTimeout(() => {
             this.setState({
               loading: false,
-              user: { name: "Alice", email: "alice@example.com" },
+              user: { name: 'Alice', email: 'alice@example.com' },
             });
           }, 1500);
         }
@@ -144,7 +211,7 @@
         }
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -153,17 +220,33 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html">相关 · 06-class-完整生命周期与API</a>
-        <a href="./15-class-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1%E4%B8%8Echildren.html">相关 · 15-class-组件通信与children</a>
-        <a href="./19-%E9%94%99%E8%AF%AF%E8%BE%B9%E7%95%8C%E4%B8%8E%E5%B8%B8%E8%A7%81%E4%BC%98%E5%8C%96%E6%B8%85%E5%8D%95.html">相关 · 19-错误边界与常见优化清单</a>
-        <a href="./17-class-defaultProps%E4%B8%8E%E9%9D%99%E6%80%81%E5%B1%9E%E6%80%A7.html">← class-defaultProps与静态属性</a>
-        <a href="./19-%E9%94%99%E8%AF%AF%E8%BE%B9%E7%95%8C%E4%B8%8E%E5%B8%B8%E8%A7%81%E4%BC%98%E5%8C%96%E6%B8%85%E5%8D%95.html">错误边界与常见优化清单 →</a>
+        <a
+          href="./06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html"
+        >
+          相关 · 06-class-完整生命周期与API
+        </a>
+        <a href="./15-class-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1%E4%B8%8Echildren.html">
+          相关 · 15-class-组件通信与children
+        </a>
+        <a
+          href="./19-%E9%94%99%E8%AF%AF%E8%BE%B9%E7%95%8C%E4%B8%8E%E5%B8%B8%E8%A7%81%E4%BC%98%E5%8C%96%E6%B8%85%E5%8D%95.html"
+        >
+          相关 · 19-错误边界与常见优化清单
+        </a>
+        <a href="./17-class-defaultProps%E4%B8%8E%E9%9D%99%E6%80%81%E5%B1%9E%E6%80%A7.html">
+          ← class-defaultProps与静态属性
+        </a>
+        <a
+          href="./19-%E9%94%99%E8%AF%AF%E8%BE%B9%E7%95%8C%E4%B8%8E%E5%B8%B8%E8%A7%81%E4%BC%98%E5%8C%96%E6%B8%85%E5%8D%95.html"
+        >
+          错误边界与常见优化清单 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

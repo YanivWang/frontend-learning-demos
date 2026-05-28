@@ -1,5 +1,5 @@
 <!--
-分类: css / 05-响应式 / media-queries
+  分类: css / 05-响应式 / media-queries
   主题: 固定宽度三栏布局的响应式基线
   要点:
     - 仅加载 style.css，页面主体固定为 980px，内容栏和侧栏依赖 Grid 排列
@@ -24,8 +24,15 @@
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
     <style>
-      .demo-page > h2 { font-size: 1rem; margin: 1.5rem 0 0; }
-      .demo-page > p.tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      .demo-page > h2 {
+        font-size: 1rem;
+        margin: 1.5rem 0 0;
+      }
+      .demo-page > p.tip {
+        margin: 0.5rem 0 1rem;
+        color: #666;
+        font-size: 0.875rem;
+      }
       #runtime-output {
         margin: 0.75rem auto;
         max-width: 980px;
@@ -44,29 +51,100 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>固定宽度三栏布局的响应式基线</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出视口与容器实测值。缩窄窗口并与下一页对比。</p>
+      <p class="hint">
+        在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出视口与容器实测值。缩窄窗口并与下一页对比。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>style.css</code> 把 <code>#pagewrap</code> 写死为 <code>980px</code>，内容区 <code>#content</code> 与侧栏 <code>#sidebar</code> 通过 Grid 两列（600px + 280px）组成桌面布局；这能稳定复现桌面排版，但不会随视口主动重排。</li>
-          <li><code>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</code> 只是在移动浏览器里把布局视口对齐设备宽度，不会自动把固定宽度 CSS 变成弹性布局；如果 CSS 仍是 <code>980px</code>，窄屏会横向滚动。</li>
-          <li>这页是响应式改造的“基线页”：先保留桌面样式，下一页再通过 <code>@media (max-width: ...)</code> 覆盖 Grid 列宽和间距，才能清楚看出每个断点解决了什么问题。</li>
-          <li>固定宽度 Grid 布局的常见坑是列宽溢出、内容撑破网格和嵌入媒体宽度超出容器；窄屏下应配合断点改成单列或流式列宽。</li>
-          <li>侧栏相册与嵌入媒体在本 demo 中使用本地 CSS 占位块，避免依赖已失效的 HTTP 第三方脚本；生产环境仍应使用 HTTPS、固定比例容器和加载失败兜底。</li>
+          <li>
+            <code>style.css</code>
+            把
+            <code>#pagewrap</code>
+            写死为
+            <code>980px</code>
+            ，内容区
+            <code>#content</code>
+            与侧栏
+            <code>#sidebar</code>
+            通过 Grid 两列（600px +
+            280px）组成桌面布局；这能稳定复现桌面排版，但不会随视口主动重排。
+          </li>
+          <li>
+            <code>
+              &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+            </code>
+            只是在移动浏览器里把布局视口对齐设备宽度，不会自动把固定宽度 CSS 变成弹性布局；如果 CSS
+            仍是
+            <code>980px</code>
+            ，窄屏会横向滚动。
+          </li>
+          <li>
+            这页是响应式改造的“基线页”：先保留桌面样式，下一页再通过
+            <code>@media (max-width: ...)</code>
+            覆盖 Grid 列宽和间距，才能清楚看出每个断点解决了什么问题。
+          </li>
+          <li>
+            固定宽度 Grid
+            布局的常见坑是列宽溢出、内容撑破网格和嵌入媒体宽度超出容器；窄屏下应配合断点改成单列或流式列宽。
+          </li>
+          <li>
+            侧栏相册与嵌入媒体在本 demo 中使用本地 CSS 占位块，避免依赖已失效的 HTTP
+            第三方脚本；生产环境仍应使用 HTTPS、固定比例容器和加载失败兜底。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>只有 viewport meta 没有媒体查询时，页面为什么仍然不算响应式？</strong> 结论是 viewport meta 只是设定移动端布局视口和缩放初始值，不会重写 CSS 布局。原因是响应式的核心变化仍来自 CSS：容器宽度、列布局、图片和嵌入内容必须能按视口调整。边界是简单单列流式页面可能只靠百分比宽度就够，但固定 <code>980px</code> 页面必须补断点或改布局模型。</li>
-          <li><strong>固定宽度 Grid 布局在移动端最常见的问题是什么？</strong> 结论是横向滚动和列挤压最常见。原因是固定列宽不会自动按视口改成单列。项目里做旧站改造时，通常先用断点把 Grid 改为 <code>1fr</code> 单列，再逐步调整间距和字号。</li>
-          <li><strong>为什么响应式改造通常要先保留桌面基线，再逐步添加断点？</strong> 结论是这样更容易控制回归范围。原因是桌面样式作为默认层，断点只覆盖窄屏真正需要改变的属性，便于定位是哪条规则影响了布局。边界是新项目可以采用移动优先，从小屏基础样式开始，再用 <code>min-width</code> 增强大屏。</li>
-          <li><strong>HTTP 第三方脚本在响应式 demo 里要注意什么？</strong> 结论是不应依赖不受控的远程脚本。原因是 HTTP 资源会带来混合内容风险、加载失败和隐私问题。项目里如果必须嵌入第三方内容，要准备失败占位、HTTPS 链接、懒加载和尺寸兜底。</li>
+          <li>
+            <strong>只有 viewport meta 没有媒体查询时，页面为什么仍然不算响应式？</strong>
+            结论是 viewport meta 只是设定移动端布局视口和缩放初始值，不会重写 CSS
+            布局。原因是响应式的核心变化仍来自
+            CSS：容器宽度、列布局、图片和嵌入内容必须能按视口调整。边界是简单单列流式页面可能只靠百分比宽度就够，但固定
+            <code>980px</code>
+            页面必须补断点或改布局模型。
+          </li>
+          <li>
+            <strong>固定宽度 Grid 布局在移动端最常见的问题是什么？</strong>
+            结论是横向滚动和列挤压最常见。原因是固定列宽不会自动按视口改成单列。项目里做旧站改造时，通常先用断点把
+            Grid 改为
+            <code>1fr</code>
+            单列，再逐步调整间距和字号。
+          </li>
+          <li>
+            <strong>为什么响应式改造通常要先保留桌面基线，再逐步添加断点？</strong>
+            结论是这样更容易控制回归范围。原因是桌面样式作为默认层，断点只覆盖窄屏真正需要改变的属性，便于定位是哪条规则影响了布局。边界是新项目可以采用移动优先，从小屏基础样式开始，再用
+            <code>min-width</code>
+            增强大屏。
+          </li>
+          <li>
+            <strong>HTTP 第三方脚本在响应式 demo 里要注意什么？</strong>
+            结论是不应依赖不受控的远程脚本。原因是 HTTP
+            资源会带来混合内容风险、加载失败和隐私问题。项目里如果必须嵌入第三方内容，要准备失败占位、HTTPS
+            链接、懒加载和尺寸兜底。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Viewport_meta_tag">MDN: Viewport meta tag</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_media_queries/Using_media_queries">MDN: Using media queries</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout">MDN: CSS Grid Layout</a></li>
-          <li><a href="https://drafts.csswg.org/mediaqueries-5/">CSSWG: Media Queries Level 5</a></li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Viewport_meta_tag">
+              MDN: Viewport meta tag
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_media_queries/Using_media_queries"
+            >
+              MDN: Using media queries
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout">
+              MDN: CSS Grid Layout
+            </a>
+          </li>
+          <li>
+            <a href="https://drafts.csswg.org/mediaqueries-5/">CSSWG: Media Queries Level 5</a>
+          </li>
         </ul>
       </div>
     </section>
@@ -74,7 +152,11 @@
 
     <!-- PAGE_DOM_START -->
     <h2>固定宽度桌面基线（无 @media）</h2>
-    <p class="tip">缩窄窗口观察 <code>#pagewrap</code> 保持 980px 时是否出现横向滚动；下方脚本读取 layout viewport 与容器宽度。</p>
+    <p class="tip">
+      缩窄窗口观察
+      <code>#pagewrap</code>
+      保持 980px 时是否出现横向滚动；下方脚本读取 layout viewport 与容器宽度。
+    </p>
     <div id="pagewrap">
       <header id="header">
         <hgroup>
@@ -91,7 +173,7 @@
           <!-- /#main-nav -->
         </nav>
         <form id="searchform">
-          <input type="search" id="s" placeholder="Search">
+          <input type="search" id="s" placeholder="Search" />
         </form>
       </header>
       <!-- /#header -->
@@ -101,58 +183,80 @@
             <h1 class="post-title"><a href="#">Just a Post Title</a></h1>
             <p class="post-meta">
               <time class="post-date" datetime="2011-05-08" pubdate>May 8, 2011</time>
-              <em>in</em> <a href="#">Category</a></p>
-              </header>
-              <figure class="post-image">
-                <div style="width:100%;height:200px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:4px;"></div>
-              </figure>
-              <p>Fusce ut sem est. In eu sagittis felis. In gravida arcu ut neque ornare vitae rutrum turpis vehicula.
-                Nunc ultrices sem mollis metus rutrum non malesuada metus fermentum. Vestibulum ante ipsum primis in
-                faucibus orci luctus et ultrices posuere cubilia Curae; Pellentesque interdum rutrum quam, a pharetra
-                est pulvinar ac. Vestibulum congue nisl magna. Ut vulputate odio id dui convallis in adipiscing libero
-                condimentum. Nunc et pharetra enim. Praesent pharetra, neque et luctus tempor, leo sapien faucibus leo,
-                a dignissim turpis ipsum sed libero. Sed sed luctus purus. Aliquam faucibus turpis at libero consectetur
-                euismod. Nam nunc lectus, congue non egestas quis, condimentum ut arcu. Nulla placerat, tortor non
-                egestas rutrum, mi turpis adipiscing dui, et mollis turpis tortor vel orci. Cras a fringilla nunc.
-                Suspendisse volutpat, eros congue scelerisque iaculis, magna odio sodales dui, vitae vulputate elit
-                metus ac arcu. Mauris consequat rhoncus dolor id sagittis. Cras tortor elit, aliquet quis tincidunt
-                eget, dignissim non tortor.</p>
-              </article>
-              <!-- /.post -->
-            </div>
-            <!-- /#content -->
-            <aside id="sidebar">
-              <section class="widget">
-                <h4 class="widgettitle">Sidebar</h4>
-                <ul>
-                  <li><a href="#">WordPress</a> (3)</li>
-                  <li><a href="#">Design</a> (23)</li>
-                  <li><a href="#">Design </a>(18)</li>
-                </ul>
-              </section>
-              <!-- /.widget -->
-              <section class="widget widget--gallery">
-                <h4 class="widgettitle">Gallery</h4>
-                <ul class="gallery-grid" aria-label="相册占位">
-                  <li class="gallery-item" style="background:#667eea"></li>
-                  <li class="gallery-item" style="background:#764ba2"></li>
-                  <li class="gallery-item" style="background:#f093fb"></li>
-                  <li class="gallery-item" style="background:#4facfe"></li>
-                  <li class="gallery-item" style="background:#43e97b"></li>
-                  <li class="gallery-item" style="background:#fa709a"></li>
-                  <li class="gallery-item" style="background:#fee140"></li>
-                  <li class="gallery-item" style="background:#30cfd0"></li>
-                </ul>
-                </section>
-                <!-- /.widget -->
-              </aside>
-              <!-- /#sidebar -->
-              <footer id="footer">
-                <p>Responsive layout demo · 固定宽度基线页</p>
-              </footer>
-              <!-- /#footer -->
-            </div>
-            <!-- /#pagewrap -->
+              <em>in</em>
+              <a href="#">Category</a>
+            </p>
+          </header>
+          <figure class="post-image">
+            <div
+              style="
+                width: 100%;
+                height: 200px;
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                border-radius: 4px;
+              "
+            ></div>
+          </figure>
+          <p>
+            Fusce ut sem est. In eu sagittis felis. In gravida arcu ut neque ornare vitae rutrum
+            turpis vehicula. Nunc ultrices sem mollis metus rutrum non malesuada metus fermentum.
+            Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae;
+            Pellentesque interdum rutrum quam, a pharetra est pulvinar ac. Vestibulum congue nisl
+            magna. Ut vulputate odio id dui convallis in adipiscing libero condimentum. Nunc et
+            pharetra enim. Praesent pharetra, neque et luctus tempor, leo sapien faucibus leo, a
+            dignissim turpis ipsum sed libero. Sed sed luctus purus. Aliquam faucibus turpis at
+            libero consectetur euismod. Nam nunc lectus, congue non egestas quis, condimentum ut
+            arcu. Nulla placerat, tortor non egestas rutrum, mi turpis adipiscing dui, et mollis
+            turpis tortor vel orci. Cras a fringilla nunc. Suspendisse volutpat, eros congue
+            scelerisque iaculis, magna odio sodales dui, vitae vulputate elit metus ac arcu. Mauris
+            consequat rhoncus dolor id sagittis. Cras tortor elit, aliquet quis tincidunt eget,
+            dignissim non tortor.
+          </p>
+        </article>
+        <!-- /.post -->
+      </div>
+      <!-- /#content -->
+      <aside id="sidebar">
+        <section class="widget">
+          <h4 class="widgettitle">Sidebar</h4>
+          <ul>
+            <li>
+              <a href="#">WordPress</a>
+              (3)
+            </li>
+            <li>
+              <a href="#">Design</a>
+              (23)
+            </li>
+            <li>
+              <a href="#">Design</a>
+              (18)
+            </li>
+          </ul>
+        </section>
+        <!-- /.widget -->
+        <section class="widget widget--gallery">
+          <h4 class="widgettitle">Gallery</h4>
+          <ul class="gallery-grid" aria-label="相册占位">
+            <li class="gallery-item" style="background: #667eea"></li>
+            <li class="gallery-item" style="background: #764ba2"></li>
+            <li class="gallery-item" style="background: #f093fb"></li>
+            <li class="gallery-item" style="background: #4facfe"></li>
+            <li class="gallery-item" style="background: #43e97b"></li>
+            <li class="gallery-item" style="background: #fa709a"></li>
+            <li class="gallery-item" style="background: #fee140"></li>
+            <li class="gallery-item" style="background: #30cfd0"></li>
+          </ul>
+        </section>
+        <!-- /.widget -->
+      </aside>
+      <!-- /#sidebar -->
+      <footer id="footer">
+        <p>Responsive layout demo · 固定宽度基线页</p>
+      </footer>
+      <!-- /#footer -->
+    </div>
+    <!-- /#pagewrap -->
     <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
 
@@ -166,13 +270,13 @@
 
         /** 检测视口是否匹配 max-width 媒体查询（MDN Using media queries） */
         function matchesMaxWidth(px) {
-          return window.matchMedia("(max-width: " + px + "px)").matches;
+          return window.matchMedia('(max-width: ' + px + 'px)').matches;
         }
 
         /** 输出视口、#pagewrap 宽度与横向滚动状态 */
         function renderBaselineMetrics() {
-          var pagewrap = document.getElementById("pagewrap");
-          var output = document.getElementById("runtime-output");
+          var pagewrap = document.getElementById('pagewrap');
+          var output = document.getElementById('runtime-output');
           if (!pagewrap || !output) return;
 
           var computed = getComputedStyle(pagewrap);
@@ -180,23 +284,25 @@
           var scrollW = document.documentElement.scrollWidth;
 
           output.textContent = [
-            "── 固定宽度基线实测 ──",
-            "layout viewport (innerWidth): " + window.innerWidth + "px",
-            "#pagewrap offsetWidth: " + getBorderBoxWidth(pagewrap) + "px（style.css 写死 980px）",
-            "#pagewrap computed width: " + computed.width,
-            "grid-template-columns: " + computed.gridTemplateColumns,
-            "document scrollWidth: " + scrollW + "px → " +
-              (scrollW > clientW ? "出现横向滚动" : "无横向滚动"),
-            "",
-            "本页 CSS 无断点覆盖；下列 matchMedia 仅反映视口宽度，样式不会随之改变：",
-            "matchMedia(max-width:980px): " + matchesMaxWidth(980),
-            "matchMedia(max-width:650px): " + matchesMaxWidth(650),
-            "matchMedia(max-width:480px): " + matchesMaxWidth(480),
-          ].join("\n");
+            '── 固定宽度基线实测 ──',
+            'layout viewport (innerWidth): ' + window.innerWidth + 'px',
+            '#pagewrap offsetWidth: ' + getBorderBoxWidth(pagewrap) + 'px（style.css 写死 980px）',
+            '#pagewrap computed width: ' + computed.width,
+            'grid-template-columns: ' + computed.gridTemplateColumns,
+            'document scrollWidth: ' +
+              scrollW +
+              'px → ' +
+              (scrollW > clientW ? '出现横向滚动' : '无横向滚动'),
+            '',
+            '本页 CSS 无断点覆盖；下列 matchMedia 仅反映视口宽度，样式不会随之改变：',
+            'matchMedia(max-width:980px): ' + matchesMaxWidth(980),
+            'matchMedia(max-width:650px): ' + matchesMaxWidth(650),
+            'matchMedia(max-width:480px): ' + matchesMaxWidth(480),
+          ].join('\n');
         }
 
         renderBaselineMetrics();
-        window.addEventListener("resize", renderBaselineMetrics);
+        window.addEventListener('resize', renderBaselineMetrics);
       })();
     </script>
     <!-- SCRIPT_END -->
@@ -207,17 +313,19 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="../../04-%E8%A7%86%E8%A7%89%E6%95%88%E6%9E%9C/tooltip/index.html">← index</a>
-        <a href="./02-%E5%93%8D%E5%BA%94%E5%BC%8F%E6%9C%80%E7%BB%88%E9%A1%B5.html">响应式最终页 →</a>
+        <a href="./02-%E5%93%8D%E5%BA%94%E5%BC%8F%E6%9C%80%E7%BB%88%E9%A1%B5.html">
+          响应式最终页 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

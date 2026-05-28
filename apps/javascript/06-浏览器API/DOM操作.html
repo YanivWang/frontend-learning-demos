@@ -21,10 +21,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DOM 基础操作</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
-      #box { padding: 8px 12px; background: #fafafa; border: 1px solid #ddd; border-radius: 4px; margin: 8px 0; }
-      .info { color: #888; font-size: 13px; }
-      #runtime-output { margin-top: 12px; padding: 10px; background: #f6f8fa; border-radius: 6px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; min-height: 3rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 1.5rem;
+        line-height: 1.6;
+      }
+      #box {
+        padding: 8px 12px;
+        background: #fafafa;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin: 8px 0;
+      }
+      .info {
+        color: #888;
+        font-size: 13px;
+      }
+      #runtime-output {
+        margin-top: 12px;
+        padding: 10px;
+        background: #f6f8fa;
+        border-radius: 6px;
+        font-family: ui-monospace, monospace;
+        font-size: 0.8125rem;
+        white-space: pre-wrap;
+        min-height: 3rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -33,30 +55,122 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>DOM 基础：选择 / 属性 / 数据集 / 内容</h1>
-      <p class="hint">请阅读本复习区，并在下方演示区点击按钮观察 DOM 变化；同时打开 DevTools Console 查看选择器对比输出。</p>
+      <p class="hint">
+        请阅读本复习区，并在下方演示区点击按钮观察 DOM 变化；同时打开 DevTools Console
+        查看选择器对比输出。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>getElementById</code> 返回单个元素或 <code>null</code>；<code>getElementsByClassName</code> 返回实时 <code>HTMLCollection</code>，DOM 变化会反映到集合里。</li>
-          <li><code>querySelectorAll</code> 返回静态 <code>NodeList</code>，它是当次查询快照；如果后续插入新匹配元素，需要重新查询。</li>
-          <li><code>dataset</code> 是读写 <code>data-*</code> 属性的现代接口，适合把少量声明式配置挂在 HTML 上；<code>getAttribute/setAttribute</code> 更通用，能处理任意属性。</li>
-          <li><code>classList.add/remove/toggle</code> 以 token 方式操作类名，比拼接 <code>className</code> 字符串更不容易重复、误删或覆盖已有类。</li>
-          <li><code>innerHTML</code> 会解析 HTML，只有在内容可信或经过严格净化时才应使用；渲染用户输入、日志和错误信息时优先用 <code>textContent</code>。</li>
+          <li>
+            <code>getElementById</code>
+            返回单个元素或
+            <code>null</code>
+            ；
+            <code>getElementsByClassName</code>
+            返回实时
+            <code>HTMLCollection</code>
+            ，DOM 变化会反映到集合里。
+          </li>
+          <li>
+            <code>querySelectorAll</code>
+            返回静态
+            <code>NodeList</code>
+            ，它是当次查询快照；如果后续插入新匹配元素，需要重新查询。
+          </li>
+          <li>
+            <code>dataset</code>
+            是读写
+            <code>data-*</code>
+            属性的现代接口，适合把少量声明式配置挂在 HTML 上；
+            <code>getAttribute/setAttribute</code>
+            更通用，能处理任意属性。
+          </li>
+          <li>
+            <code>classList.add/remove/toggle</code>
+            以 token 方式操作类名，比拼接
+            <code>className</code>
+            字符串更不容易重复、误删或覆盖已有类。
+          </li>
+          <li>
+            <code>innerHTML</code>
+            会解析
+            HTML，只有在内容可信或经过严格净化时才应使用；渲染用户输入、日志和错误信息时优先用
+            <code>textContent</code>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>HTMLCollection 和 querySelectorAll 返回的 NodeList 有什么差异？</strong> 结论是前者通常是实时集合，后者是静态快照。原因是传统 DOM 集合会随文档变化自动更新，而选择器查询返回的是当次匹配结果。项目里遍历实时集合时要小心边遍历边修改 DOM 导致索引变化。</li>
-          <li><strong>dataset、getAttribute 和直接挂 JS 属性分别适合什么场景？</strong> 结论是 <code>dataset</code> 适合 <code>data-*</code> 配置，<code>getAttribute</code> 适合读取真实 HTML 属性，直接挂 JS 属性只存在于当前 DOM 对象实例上。原因是属性 attribute 和 JS property 是两套相关但不完全相同的模型。需要被 CSS、选择器、序列化或服务端模板感知时应写 attribute。</li>
-          <li><strong>classList 为什么比拼接 className 更可靠？</strong> 结论是 <code>classList</code> 按类名 token 操作，不需要手动处理空格、重复和覆盖。原因是浏览器提供了专门的 <code>DOMTokenList</code> API。项目里做状态类切换、校验高亮或组件开关时优先用 <code>classList.toggle(name, force)</code>。</li>
-          <li><strong>innerHTML 和 textContent 在安全边界上如何选择？</strong> 结论是可信 HTML 模板才用 <code>innerHTML</code>，用户输入和接口文本优先用 <code>textContent</code>。原因是 <code>innerHTML</code> 会把字符串作为 HTML 解析，可能引入 XSS。项目里如果必须渲染富文本，要经过可信的 HTML sanitizer，并避免直接拼接未过滤数据。</li>
+          <li>
+            <strong>HTMLCollection 和 querySelectorAll 返回的 NodeList 有什么差异？</strong>
+            结论是前者通常是实时集合，后者是静态快照。原因是传统 DOM
+            集合会随文档变化自动更新，而选择器查询返回的是当次匹配结果。项目里遍历实时集合时要小心边遍历边修改
+            DOM 导致索引变化。
+          </li>
+          <li>
+            <strong>dataset、getAttribute 和直接挂 JS 属性分别适合什么场景？</strong>
+            结论是
+            <code>dataset</code>
+            适合
+            <code>data-*</code>
+            配置，
+            <code>getAttribute</code>
+            适合读取真实 HTML 属性，直接挂 JS 属性只存在于当前 DOM 对象实例上。原因是属性 attribute
+            和 JS property 是两套相关但不完全相同的模型。需要被
+            CSS、选择器、序列化或服务端模板感知时应写 attribute。
+          </li>
+          <li>
+            <strong>classList 为什么比拼接 className 更可靠？</strong>
+            结论是
+            <code>classList</code>
+            按类名 token 操作，不需要手动处理空格、重复和覆盖。原因是浏览器提供了专门的
+            <code>DOMTokenList</code>
+            API。项目里做状态类切换、校验高亮或组件开关时优先用
+            <code>classList.toggle(name, force)</code>
+            。
+          </li>
+          <li>
+            <strong>innerHTML 和 textContent 在安全边界上如何选择？</strong>
+            结论是可信 HTML 模板才用
+            <code>innerHTML</code>
+            ，用户输入和接口文本优先用
+            <code>textContent</code>
+            。原因是
+            <code>innerHTML</code>
+            会把字符串作为 HTML 解析，可能引入 XSS。项目里如果必须渲染富文本，要经过可信的 HTML
+            sanitizer，并避免直接拼接未过滤数据。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementsByClassName">MDN: Document.getElementsByClassName()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll">MDN: Document.querySelectorAll()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset">MDN: HTMLElement.dataset</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/classList">MDN: Element.classList</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML">MDN: Element.innerHTML</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementsByClassName"
+            >
+              MDN: Document.getElementsByClassName()
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll">
+              MDN: Document.querySelectorAll()
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset">
+              MDN: HTMLElement.dataset
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/classList">
+              MDN: Element.classList
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML">
+              MDN: Element.innerHTML
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -65,96 +179,110 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block">
       <h2>DOM 选择与属性操作</h2>
-      <p class="tip">点击按钮修改下方 box；「对比集合」演示 HTMLCollection 实时更新 vs NodeList 静态快照。</p>
+      <p class="tip">
+        点击按钮修改下方 box；「对比集合」演示 HTMLCollection 实时更新 vs NodeList 静态快照。
+      </p>
       <button type="button" id="btn">运行 DOM 操作</button>
       <button type="button" id="compareBtn">对比 HTMLCollection / NodeList</button>
-      <div id="testA" class="testContent"
+      <div
+        id="testA"
+        class="testContent"
         data-name="王成"
         title="我是 tooltip"
         align="center"
-        style="width:160px">
+        style="width: 160px"
+      >
         我是一个 box
       </div>
       <textarea accesskey="f" placeholder="按 Alt+F (Mac: Ctrl+Alt+F) 聚焦"></textarea>
-      <p class="info">accesskey 可用键盘快捷键聚焦元素；contenteditable 让 div 可编辑；dir 控制文字方向。</p>
-      <div contenteditable="true" dir="rtl" id="editableBox" style="margin-top:8px;padding:6px;border:1px dashed #aaa;">我可以编辑（dir=rtl，从右往左）</div>
+      <p class="info">
+        accesskey 可用键盘快捷键聚焦元素；contenteditable 让 div 可编辑；dir 控制文字方向。
+      </p>
+      <div
+        contenteditable="true"
+        dir="rtl"
+        id="editableBox"
+        style="margin-top: 8px; padding: 6px; border: 1px dashed #aaa"
+      >
+        我可以编辑（dir=rtl，从右往左）
+      </div>
       <pre id="runtime-output" aria-live="polite">等待操作…</pre>
     </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      const output = document.getElementById("runtime-output");
+      const output = document.getElementById('runtime-output');
 
       function show(lines) {
-        output.textContent = Array.isArray(lines) ? lines.join("\n") : lines;
+        output.textContent = Array.isArray(lines) ? lines.join('\n') : lines;
       }
 
       // ============ 1. 选择器：单个 vs 集合 ============
-      document.getElementById("btn").addEventListener("click", function () {
-        const single = document.getElementById("testA");
-        const liveList = document.getElementsByClassName("testContent"); // 实时 HTMLCollection
-        const staticList = document.querySelectorAll(".testContent"); // 静态 NodeList
-        console.log("单个:", single);
-        console.log("HTMLCollection:", liveList);
-        console.log("NodeList:", staticList);
+      document.getElementById('btn').addEventListener('click', function () {
+        const single = document.getElementById('testA');
+        const liveList = document.getElementsByClassName('testContent'); // 实时 HTMLCollection
+        const staticList = document.querySelectorAll('.testContent'); // 静态 NodeList
+        console.log('单个:', single);
+        console.log('HTMLCollection:', liveList);
+        console.log('NodeList:', staticList);
 
         // ============ 2. 内容修改：用户输入优先 textContent ============
         // innerHTML 会解析 HTML 标签，不可信输入有 XSS 风险；textContent 只写入纯文本
         const unsafe = '<img src=x onerror="console.log(\'XSS 若用 innerHTML\')">';
-        console.log("textContent 写入标签:", unsafe); // 显示为纯文本，不执行
-        liveList[0].textContent = "已被修改（textContent）";
+        console.log('textContent 写入标签:', unsafe); // 显示为纯文本，不执行
+        liveList[0].textContent = '已被修改（textContent）';
 
         // ============ 3. 内联样式 .style.xxx ============
-        single.style.backgroundColor = "#ffe5b4";
+        single.style.backgroundColor = '#ffe5b4';
 
         // ============ 4. 属性 getAttribute / setAttribute ============
-        const dataName = single.getAttribute("data-name");
-        console.log("data-name =", dataName);
-        single.setAttribute("age", "20");
+        const dataName = single.getAttribute('data-name');
+        console.log('data-name =', dataName);
+        single.setAttribute('age', '20');
 
         // ============ 5. dataset —— 读写 data-* ============
-        console.log("dataset:", single.dataset);
-        single.dataset.role = "demo";
-        console.log("dataset.role:", single.dataset.role);
+        console.log('dataset:', single.dataset);
+        single.dataset.role = 'demo';
+        console.log('dataset.role:', single.dataset.role);
 
         // ============ 6. classList 增删切换 ============
-        single.classList.add("active");
-        single.classList.toggle("active");
+        single.classList.add('active');
+        single.classList.toggle('active');
 
         // ============ 7. 直接挂 JS 属性（不会反映到 HTML） ============
-        single.foo = "bar";
-        console.log("自定义 JS 属性:", single.foo);
+        single.foo = 'bar';
+        console.log('自定义 JS 属性:', single.foo);
 
         show([
-          "textContent: " + single.textContent,
-          "data-name: " + dataName,
-          "dataset.role: " + single.dataset.role,
-          "age attribute: " + single.getAttribute("age"),
-          "JS 属性 foo: " + single.foo + "（outerHTML 中不可见）",
+          'textContent: ' + single.textContent,
+          'data-name: ' + dataName,
+          'dataset.role: ' + single.dataset.role,
+          'age attribute: ' + single.getAttribute('age'),
+          'JS 属性 foo: ' + single.foo + '（outerHTML 中不可见）',
         ]);
       });
 
       // ============ 8. HTMLCollection 实时 vs NodeList 静态 ============
-      document.getElementById("compareBtn").addEventListener("click", () => {
-        const container = document.querySelector(".demo-block");
-        const live = document.getElementsByClassName("testContent");
-        const snapshot = document.querySelectorAll(".testContent");
+      document.getElementById('compareBtn').addEventListener('click', () => {
+        const container = document.querySelector('.demo-block');
+        const live = document.getElementsByClassName('testContent');
+        const snapshot = document.querySelectorAll('.testContent');
         const before = { live: live.length, snapshot: snapshot.length };
 
-        const extra = document.createElement("div");
-        extra.className = "testContent";
-        extra.textContent = "动态插入的 testContent";
+        const extra = document.createElement('div');
+        extra.className = 'testContent';
+        extra.textContent = '动态插入的 testContent';
         container.insertBefore(extra, output);
 
         show([
-          "插入前 — HTMLCollection: " + before.live + "，NodeList: " + before.snapshot,
-          "插入后 — HTMLCollection: " + live.length + "（实时 +1）",
-          "插入后 — NodeList: " + snapshot.length + "（静态不变，需重新 querySelectorAll）",
-          "重新 querySelectorAll: " + document.querySelectorAll(".testContent").length,
+          '插入前 — HTMLCollection: ' + before.live + '，NodeList: ' + before.snapshot,
+          '插入后 — HTMLCollection: ' + live.length + '（实时 +1）',
+          '插入后 — NodeList: ' + snapshot.length + '（静态不变，需重新 querySelectorAll）',
+          '重新 querySelectorAll: ' + document.querySelectorAll('.testContent').length,
         ]);
-        console.log("HTMLCollection 实时长度:", live.length);
-        console.log("旧 NodeList 快照长度:", snapshot.length);
+        console.log('HTMLCollection 实时长度:', live.length);
+        console.log('旧 NodeList 快照长度:', snapshot.length);
       });
     </script>
     <!-- SCRIPT_END -->
@@ -164,16 +292,20 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="./%E6%B5%8F%E8%A7%88%E5%99%A8%E6%B8%B2%E6%9F%93%E4%B8%8E%E6%80%A7%E8%83%BD.html">相关 · 浏览器渲染与性能</a>
+        <a href="./%E6%B5%8F%E8%A7%88%E5%99%A8%E6%B8%B2%E6%9F%93%E4%B8%8E%E6%80%A7%E8%83%BD.html">
+          相关 · 浏览器渲染与性能
+        </a>
         <a href="./fetch%E4%B8%8E%E8%B7%A8%E5%9F%9F.html">相关 · fetch与跨域</a>
-        <a href="./%E6%B5%8F%E8%A7%88%E5%99%A8%E6%B8%B2%E6%9F%93%E4%B8%8E%E6%80%A7%E8%83%BD.html">← 浏览器渲染与性能</a>
+        <a href="./%E6%B5%8F%E8%A7%88%E5%99%A8%E6%B8%B2%E6%9F%93%E4%B8%8E%E6%80%A7%E8%83%BD.html">
+          ← 浏览器渲染与性能
+        </a>
         <a href="./fetch%E4%B8%8E%E8%B7%A8%E5%9F%9F.html">fetch与跨域 →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

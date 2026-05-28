@@ -1,5 +1,5 @@
 <!--
-分类: css / 07-现代特性 / 07-content-visibility
+  分类: css / 07-现代特性 / 07-content-visibility
   主题: content-visibility 与屏幕外内容跳过渲染
   难度: 进阶
   前置: 06-性能 / 01-重排重绘
@@ -23,16 +23,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>content-visibility 懒渲染</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 0; color: #222; }
-      header { position: sticky; top: 0; background: #fff; border-bottom: 1px solid #eee; padding: 1rem; z-index: 1; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 0;
+        color: #222;
+      }
+      header {
+        position: sticky;
+        top: 0;
+        background: #fff;
+        border-bottom: 1px solid #eee;
+        padding: 1rem;
+        z-index: 1;
+      }
       .block {
-        margin: 1rem; padding: 1.25rem; border-radius: 8px; background: #f6f8fa; border: 1px solid #e3e3e3;
+        margin: 1rem;
+        padding: 1.25rem;
+        border-radius: 8px;
+        background: #f6f8fa;
+        border: 1px solid #e3e3e3;
         content-visibility: auto;
         contain-intrinsic-size: 0 120px;
       }
-      .block h2 { margin: 0 0 0.5rem; font-size: 1rem; }
-      .block p { margin: 0; color: #555; line-height: 1.6; }
-      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      .block h2 {
+        margin: 0 0 0.5rem;
+        font-size: 1rem;
+      }
+      .block p {
+        margin: 0;
+        color: #555;
+        line-height: 1.6;
+      }
+      .tip {
+        margin: 0.5rem 0 1rem;
+        color: #666;
+        font-size: 0.875rem;
+      }
       #runtime-output {
         margin: 0.75rem 1rem;
         padding: 0.75rem 1rem;
@@ -52,36 +78,96 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>content-visibility: auto</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会生成区块并输出 content-visibility 实测信息。向下滚动观察首屏外渲染跳过。</p>
+      <p class="hint">
+        在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会生成区块并输出
+        content-visibility 实测信息。向下滚动观察首屏外渲染跳过。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>content-visibility: auto</code> 允许浏览器对屏幕外内容跳过部分渲染工作，常见收益是减少首屏外大块 DOM 的布局和绘制成本；元素接近视口时浏览器再补做需要的工作。</li>
-          <li><code>contain-intrinsic-size</code> 给尚未完整渲染的内容提供一个估算占位尺寸，避免滚动条长度和页面位置在区块进入视口时大幅跳动。示例中每个区块用 <code>0 120px</code> 作为占位。</li>
-          <li>它适合长文章、卡片流、说明文档等“DOM 仍在页面中，但首屏外暂时不用渲染”的场景；它不删除 DOM，也不减少节点数量，因此不能替代真正的虚拟列表。</li>
-          <li>常见坑是对未渲染内容做尺寸测量、滚动定位、查找高亮或依赖内部布局时，结果可能和完全渲染状态不同。项目中要重点测试锚点跳转、浏览器查找、懒加载图片、可访问性树和打印等边界。</li>
-          <li>本页脚本只生成固定文本区块，因此使用 DOM API 的 <code>textContent</code> 写入内容；如果区块内容来自用户或网络，不能直接拼接到 <code>innerHTML</code>，否则会把性能 demo 变成 XSS 风险示例。</li>
+          <li>
+            <code>content-visibility: auto</code>
+            允许浏览器对屏幕外内容跳过部分渲染工作，常见收益是减少首屏外大块 DOM
+            的布局和绘制成本；元素接近视口时浏览器再补做需要的工作。
+          </li>
+          <li>
+            <code>contain-intrinsic-size</code>
+            给尚未完整渲染的内容提供一个估算占位尺寸，避免滚动条长度和页面位置在区块进入视口时大幅跳动。示例中每个区块用
+            <code>0 120px</code>
+            作为占位。
+          </li>
+          <li>
+            它适合长文章、卡片流、说明文档等“DOM 仍在页面中，但首屏外暂时不用渲染”的场景；它不删除
+            DOM，也不减少节点数量，因此不能替代真正的虚拟列表。
+          </li>
+          <li>
+            常见坑是对未渲染内容做尺寸测量、滚动定位、查找高亮或依赖内部布局时，结果可能和完全渲染状态不同。项目中要重点测试锚点跳转、浏览器查找、懒加载图片、可访问性树和打印等边界。
+          </li>
+          <li>
+            本页脚本只生成固定文本区块，因此使用 DOM API 的
+            <code>textContent</code>
+            写入内容；如果区块内容来自用户或网络，不能直接拼接到
+            <code>innerHTML</code>
+            ，否则会把性能 demo 变成 XSS 风险示例。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>content-visibility: auto 到底优化了什么？</strong> 结论是它让浏览器可以跳过屏幕外内容的部分布局和绘制，从而降低首屏渲染成本。原因是浏览器在确认内容暂不可见时，不必立即完成内部子树的渲染工作。边界是 DOM 仍然存在，脚本创建和内存占用不会消失，所以超大列表仍可能需要分页或虚拟列表。</li>
-          <li><strong>为什么 content-visibility 通常要配合 contain-intrinsic-size？</strong> 结论是为了给被跳过渲染的内容预留合理空间。原因是如果浏览器不知道屏幕外内容的大致尺寸，滚动条和页面位置可能在内容渲染后变化。项目里应根据卡片均高、骨架屏高度或历史测量值设置接近真实的占位尺寸。</li>
-          <li><strong>content-visibility 和虚拟列表有什么区别？</strong> 结论是 <code>content-visibility</code> 是 CSS 渲染跳过，虚拟列表是应用层只渲染可见范围 DOM。原因是前者保留完整 DOM，开发成本低但节点仍存在；后者减少 DOM 数量，适合十万级数据但要处理滚动高度、焦点和键盘导航。项目里长文档可优先试 <code>content-visibility</code>，海量数据列表通常选虚拟列表。</li>
-          <li><strong>使用 content-visibility 时有哪些测量、可访问性和兼容性边界？</strong> 结论是要验证尺寸测量、锚点跳转、浏览器查找、辅助技术读取和不支持浏览器的表现。原因是跳过渲染会改变浏览器何时计算内部布局，不同浏览器支持程度也有差异。项目里应把它当渐进增强：没有支持时页面仍可正常阅读，只是少一层性能优化。</li>
+          <li>
+            <strong>content-visibility: auto 到底优化了什么？</strong>
+            结论是它让浏览器可以跳过屏幕外内容的部分布局和绘制，从而降低首屏渲染成本。原因是浏览器在确认内容暂不可见时，不必立即完成内部子树的渲染工作。边界是
+            DOM 仍然存在，脚本创建和内存占用不会消失，所以超大列表仍可能需要分页或虚拟列表。
+          </li>
+          <li>
+            <strong>为什么 content-visibility 通常要配合 contain-intrinsic-size？</strong>
+            结论是为了给被跳过渲染的内容预留合理空间。原因是如果浏览器不知道屏幕外内容的大致尺寸，滚动条和页面位置可能在内容渲染后变化。项目里应根据卡片均高、骨架屏高度或历史测量值设置接近真实的占位尺寸。
+          </li>
+          <li>
+            <strong>content-visibility 和虚拟列表有什么区别？</strong>
+            结论是
+            <code>content-visibility</code>
+            是 CSS 渲染跳过，虚拟列表是应用层只渲染可见范围 DOM。原因是前者保留完整
+            DOM，开发成本低但节点仍存在；后者减少 DOM
+            数量，适合十万级数据但要处理滚动高度、焦点和键盘导航。项目里长文档可优先试
+            <code>content-visibility</code>
+            ，海量数据列表通常选虚拟列表。
+          </li>
+          <li>
+            <strong>使用 content-visibility 时有哪些测量、可访问性和兼容性边界？</strong>
+            结论是要验证尺寸测量、锚点跳转、浏览器查找、辅助技术读取和不支持浏览器的表现。原因是跳过渲染会改变浏览器何时计算内部布局，不同浏览器支持程度也有差异。项目里应把它当渐进增强：没有支持时页面仍可正常阅读，只是少一层性能优化。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/content-visibility">MDN: content-visibility</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/contain-intrinsic-size">MDN: contain-intrinsic-size</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment">MDN: CSS containment</a></li>
-          <li><a href="https://drafts.csswg.org/css-contain-2/">CSS Containment Module Level 2</a></li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/content-visibility">
+              MDN: content-visibility
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/contain-intrinsic-size">
+              MDN: contain-intrinsic-size
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment">
+              MDN: CSS containment
+            </a>
+          </li>
+          <li>
+            <a href="https://drafts.csswg.org/css-contain-2/">CSS Containment Module Level 2</a>
+          </li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <header><p class="tip" style="margin:0">向下滚动，屏幕外区块可跳过渲染以提升首屏性能（MDN content-visibility）。</p></header>
+    <header>
+      <p class="tip" style="margin: 0">
+        向下滚动，屏幕外区块可跳过渲染以提升首屏性能（MDN content-visibility）。
+      </p>
+    </header>
     <div id="list"></div>
     <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
@@ -89,22 +175,22 @@
     <!-- SCRIPT_START -->
     <script>
       (function () {
-        var list = document.getElementById("list");
+        var list = document.getElementById('list');
         var blockCount = 40;
 
         /** 用 DOM API 生成长文档区块，配合 content-visibility: auto（MDN content-visibility） */
         function buildBlocks() {
           if (!list) return;
           for (var i = 1; i <= blockCount; i++) {
-            var el = document.createElement("section");
-            var title = document.createElement("h2");
-            var text = document.createElement("p");
+            var el = document.createElement('section');
+            var title = document.createElement('h2');
+            var text = document.createElement('p');
 
-            el.className = "block";
-            el.id = "block-" + i;
-            title.textContent = "区块 #" + i;
+            el.className = 'block';
+            el.id = 'block-' + i;
+            title.textContent = '区块 #' + i;
             text.textContent =
-              "模拟长文档中的一段内容。content-visibility 让浏览器延迟绘制视口外的节点。";
+              '模拟长文档中的一段内容。content-visibility 让浏览器延迟绘制视口外的节点。';
             el.append(title, text);
             list.appendChild(el);
           }
@@ -112,21 +198,26 @@
 
         /** 读取首个区块的 computed content-visibility 与 contain-intrinsic-size */
         function renderContentVisibilityMetrics() {
-          var first = document.getElementById("block-1");
-          var output = document.getElementById("runtime-output");
+          var first = document.getElementById('block-1');
+          var output = document.getElementById('runtime-output');
           if (!output) return;
 
           var style = first ? getComputedStyle(first) : null;
           output.textContent = [
-            "── content-visibility 实测 ──",
-            "CSS.supports('content-visibility: auto'): " + CSS.supports("content-visibility: auto"),
-            "生成区块数: " + blockCount + "（DOM 全部存在，非虚拟列表）",
-            style ? "#block-1 content-visibility: " + style.contentVisibility : "",
-            style ? "#block-1 contain-intrinsic-size: " + style.getPropertyValue("contain-intrinsic-size") : "",
-            "document height: " + document.documentElement.scrollHeight + "px",
-            "",
-            "提示: 首屏外区块浏览器可跳过部分 layout/paint，接近视口时再补渲染",
-          ].filter(Boolean).join("\n");
+            '── content-visibility 实测 ──',
+            "CSS.supports('content-visibility: auto'): " + CSS.supports('content-visibility: auto'),
+            '生成区块数: ' + blockCount + '（DOM 全部存在，非虚拟列表）',
+            style ? '#block-1 content-visibility: ' + style.contentVisibility : '',
+            style
+              ? '#block-1 contain-intrinsic-size: ' +
+                style.getPropertyValue('contain-intrinsic-size')
+              : '',
+            'document height: ' + document.documentElement.scrollHeight + 'px',
+            '',
+            '提示: 首屏外区块浏览器可跳过部分 layout/paint，接近视口时再补渲染',
+          ]
+            .filter(Boolean)
+            .join('\n');
         }
 
         buildBlocks();
@@ -141,17 +232,21 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="../06-subgrid/index.html">← index</a>
-        <a href="../../../vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/01-%E6%A8%A1%E6%9D%BF%E8%AF%AD%E6%B3%95-base.html">模板语法-base →</a>
+        <a
+          href="../../../vue2/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/01-%E6%A8%A1%E6%9D%BF%E8%AF%AD%E6%B3%95-base.html"
+        >
+          模板语法-base →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

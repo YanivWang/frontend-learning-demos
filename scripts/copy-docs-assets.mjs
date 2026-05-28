@@ -3,26 +3,26 @@
  * VitePress build 完成后，将 apps/ 复制到 dist，确保部署后 demo 链接可访问。
  */
 
-import { cp } from "node:fs/promises";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { cp } from 'node:fs/promises';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
-const DIST = join(ROOT, "docs/.vitepress/dist");
+const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
+const DIST = join(ROOT, 'docs/.vitepress/dist');
 
 async function main() {
-  await cp(join(ROOT, "apps"), join(DIST, "apps"), {
+  await cp(join(ROOT, 'apps'), join(DIST, 'apps'), {
     recursive: true,
     force: true,
   });
-  await cp(join(ROOT, "packages/shared"), join(DIST, "packages/shared"), {
+  await cp(join(ROOT, 'packages/shared'), join(DIST, 'packages/shared'), {
     recursive: true,
     force: true,
   });
-  console.log("[copy-docs-assets] 已将 apps/ 与 packages/shared/ 复制到 dist");
+  console.log('[copy-docs-assets] 已将 apps/ 与 packages/shared/ 复制到 dist');
 }
 
 main().catch((err) => {
-  console.error("[copy-docs-assets] 失败：", err);
+  console.error('[copy-docs-assets] 失败：', err);
   process.exitCode = 1;
 });

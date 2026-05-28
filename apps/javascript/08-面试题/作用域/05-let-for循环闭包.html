@@ -27,29 +27,159 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>let + for 循环的块作用域闭包</h1>
-      <p class="hint">先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。</p>
+      <p class="hint">
+        先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>for (let i = 0; ...)</code> 在每次迭代都会创建新的词法环境，闭包保存的是该轮迭代自己的 <code>i</code> 绑定。</li>
-          <li>本例把 5 个函数存入数组，循环结束后再执行；由于每个函数捕获不同的 <code>i</code>，所以依次输出 <code>0</code> 到 <code>4</code>。</li>
-          <li>如果把循环头改成 <code>var i</code>，<code>var</code> 只有函数作用域，5 个函数共享同一个 <code>i</code>，循环结束时 <code>i === 5</code>，常见输出就是 5 个 <code>5</code>。</li>
-          <li>老环境或老代码中不用 <code>let</code> 时，可以用 IIFE、函数参数或数组方法回调参数为每轮迭代创建快照，但现代代码优先用 <code>let</code>。</li>
-          <li><code>let</code> / <code>const</code> 还有暂时性死区和禁止重复声明等语义，能让循环回调、事件绑定、异步任务中的变量边界更清晰。</li>
-          <li>项目里如果不需要手动控制索引，<code>forEach</code>、<code>map</code> 等数组方法的回调参数也能天然提供每次调用的局部参数，但需要注意异步并发和提前退出能力不同。</li>
+          <li>
+            <code>for (let i = 0; ...)</code>
+            在每次迭代都会创建新的词法环境，闭包保存的是该轮迭代自己的
+            <code>i</code>
+            绑定。
+          </li>
+          <li>
+            本例把 5 个函数存入数组，循环结束后再执行；由于每个函数捕获不同的
+            <code>i</code>
+            ，所以依次输出
+            <code>0</code>
+            到
+            <code>4</code>
+            。
+          </li>
+          <li>
+            如果把循环头改成
+            <code>var i</code>
+            ，
+            <code>var</code>
+            只有函数作用域，5 个函数共享同一个
+            <code>i</code>
+            ，循环结束时
+            <code>i === 5</code>
+            ，常见输出就是 5 个
+            <code>5</code>
+            。
+          </li>
+          <li>
+            老环境或老代码中不用
+            <code>let</code>
+            时，可以用 IIFE、函数参数或数组方法回调参数为每轮迭代创建快照，但现代代码优先用
+            <code>let</code>
+            。
+          </li>
+          <li>
+            <code>let</code>
+            /
+            <code>const</code>
+            还有暂时性死区和禁止重复声明等语义，能让循环回调、事件绑定、异步任务中的变量边界更清晰。
+          </li>
+          <li>
+            项目里如果不需要手动控制索引，
+            <code>forEach</code>
+            、
+            <code>map</code>
+            等数组方法的回调参数也能天然提供每次调用的局部参数，但需要注意异步并发和提前退出能力不同。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>for (let i...)</code> 中的闭包为什么能分别输出 <code>0</code> 到 <code>4</code>？</strong> 结论：因为每次迭代都有独立的 <code>i</code> 绑定。原因是规范为 <code>for</code> 循环头中的 <code>let</code> 创建 per-iteration 词法环境，闭包捕获的是对应迭代的绑定。项目里这能直接修复循环中绑定事件、创建异步回调时的索引错乱问题。</li>
-          <li><strong>把 <code>let</code> 换成 <code>var</code> 为什么常见结果会变成 5 个 <code>5</code>？</strong> 结论：所有闭包共享同一个函数作用域变量 <code>i</code>。原因是 <code>var</code> 没有块级作用域，也不会为每次迭代创建新绑定；等回调执行时循环已经结束，<code>i</code> 变成 <code>5</code>。边界是如果回调在每轮同步立即执行，看到的值可能仍是当轮值。</li>
-          <li><strong>老代码中不用 <code>let</code> 如何修复循环闭包问题？</strong> 结论：用 IIFE 或函数参数把当前索引作为新作用域里的参数保存。原因是参数绑定属于一次函数调用的局部环境，闭包会捕获这份局部参数。现代项目通常不再这样写，除非维护旧浏览器代码或解释历史面试题。</li>
-          <li><strong><code>let</code> 循环和数组方法回调怎么选？</strong> 结论：需要传统循环控制时用 <code>for + let</code>，数据转换遍历时优先用语义化数组方法。原因是 <code>for</code> 支持 <code>break</code>、<code>continue</code> 和更直接的性能控制，<code>map</code>/<code>forEach</code> 则让每次回调参数天然局部化。边界是异步回调仍要额外考虑并发顺序和错误处理。</li>
+          <li>
+            <strong>
+              <code>for (let i...)</code>
+              中的闭包为什么能分别输出
+              <code>0</code>
+              到
+              <code>4</code>
+              ？
+            </strong>
+            结论：因为每次迭代都有独立的
+            <code>i</code>
+            绑定。原因是规范为
+            <code>for</code>
+            循环头中的
+            <code>let</code>
+            创建 per-iteration
+            词法环境，闭包捕获的是对应迭代的绑定。项目里这能直接修复循环中绑定事件、创建异步回调时的索引错乱问题。
+          </li>
+          <li>
+            <strong>
+              把
+              <code>let</code>
+              换成
+              <code>var</code>
+              为什么常见结果会变成 5 个
+              <code>5</code>
+              ？
+            </strong>
+            结论：所有闭包共享同一个函数作用域变量
+            <code>i</code>
+            。原因是
+            <code>var</code>
+            没有块级作用域，也不会为每次迭代创建新绑定；等回调执行时循环已经结束，
+            <code>i</code>
+            变成
+            <code>5</code>
+            。边界是如果回调在每轮同步立即执行，看到的值可能仍是当轮值。
+          </li>
+          <li>
+            <strong>
+              老代码中不用
+              <code>let</code>
+              如何修复循环闭包问题？
+            </strong>
+            结论：用 IIFE
+            或函数参数把当前索引作为新作用域里的参数保存。原因是参数绑定属于一次函数调用的局部环境，闭包会捕获这份局部参数。现代项目通常不再这样写，除非维护旧浏览器代码或解释历史面试题。
+          </li>
+          <li>
+            <strong>
+              <code>let</code>
+              循环和数组方法回调怎么选？
+            </strong>
+            结论：需要传统循环控制时用
+            <code>for + let</code>
+            ，数据转换遍历时优先用语义化数组方法。原因是
+            <code>for</code>
+            支持
+            <code>break</code>
+            、
+            <code>continue</code>
+            和更直接的性能控制，
+            <code>map</code>
+            /
+            <code>forEach</code>
+            则让每次回调参数天然局部化。边界是异步回调仍要额外考虑并发顺序和错误处理。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let" target="_blank" rel="noreferrer">MDN: let</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures#creating_closures_in_loops_a_common_mistake" target="_blank" rel="noreferrer">MDN: Creating closures in loops</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for" target="_blank" rel="noreferrer">MDN: for statement</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: let
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures#creating_closures_in_loops_a_common_mistake"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Creating closures in loops
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: for statement
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -58,7 +188,17 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block">
       <h2>运行结果</h2>
-      <p class="tip">标准答法：<code>for (let i...)</code> 依次输出 <code>0, 1, 2, 3, 4</code>；若换成 <code>var</code> 则常见为 5 个 <code>5</code>；IIFE 可修复 var 版。</p>
+      <p class="tip">
+        标准答法：
+        <code>for (let i...)</code>
+        依次输出
+        <code>0, 1, 2, 3, 4</code>
+        ；若换成
+        <code>var</code>
+        则常见为 5 个
+        <code>5</code>
+        ；IIFE 可修复 var 版。
+      </p>
       <pre id="runtime-output" aria-live="polite"></pre>
     </section>
     <!-- PAGE_DOM_END -->
@@ -66,14 +206,14 @@
     <!-- SCRIPT_START -->
     <script>
       (function () {
-        var out = document.getElementById("runtime-output");
+        var out = document.getElementById('runtime-output');
         var lines = [];
 
         function emit(label, values) {
-          var line = label + ": " + values.join(", ");
+          var line = label + ': ' + values.join(', ');
           console.log(line);
           lines.push(line);
-          if (out) out.textContent = lines.join("\n");
+          if (out) out.textContent = lines.join('\n');
         }
 
         // ============ 1. for (let i...)：每次迭代独立绑定，闭包分别捕获 0~4 ============
@@ -86,7 +226,7 @@
         var letResults = retArray.map(function (fn) {
           return fn();
         });
-        emit("for (let i...)", letResults); // 预期: 0, 1, 2, 3, 4
+        emit('for (let i...)', letResults); // 预期: 0, 1, 2, 3, 4
 
         // ============ 2. 对比 for (var i...)：共享同一 i，循环结束后 i === 5 ============
         var varArray = [];
@@ -98,7 +238,7 @@
         var varResults = varArray.map(function (fn) {
           return fn();
         });
-        emit("for (var i...) 对比", varResults); // 预期: 5, 5, 5, 5, 5
+        emit('for (var i...) 对比', varResults); // 预期: 5, 5, 5, 5, 5
 
         // ============ 3. IIFE 修复 var 循环闭包（老代码写法）============
         var iifeArray = [];
@@ -112,7 +252,7 @@
         var iifeResults = iifeArray.map(function (fn) {
           return fn();
         });
-        emit("IIFE 修复 var 循环", iifeResults); // 预期: 0, 1, 2, 3, 4
+        emit('IIFE 修复 var 循环', iifeResults); // 预期: 0, 1, 2, 3, 4
       })();
     </script>
     <!-- SCRIPT_END -->
@@ -123,15 +263,21 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./04-var%E9%87%8D%E5%A4%8D%E5%A3%B0%E6%98%8E.html">相关 · var重复声明</a>
-        <a href="../../02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/%E9%97%AD%E5%8C%85/01-%E9%97%AD%E5%8C%85-%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE%E4%B8%8E%E5%8F%98%E9%87%8F%E6%8F%90%E5%8D%87.html">相关 · 闭包-作用域链与变量提升</a>
+        <a
+          href="../../02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/%E9%97%AD%E5%8C%85/01-%E9%97%AD%E5%8C%85-%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE%E4%B8%8E%E5%8F%98%E9%87%8F%E6%8F%90%E5%8D%87.html"
+        >
+          相关 · 闭包-作用域链与变量提升
+        </a>
         <a href="./04-var%E9%87%8D%E5%A4%8D%E5%A3%B0%E6%98%8E.html">← var重复声明</a>
-        <a href="./06-var%E4%B8%8Efunction%E5%90%8C%E5%90%8D%E6%8F%90%E5%8D%87.html">var与function同名提升 →</a>
+        <a href="./06-var%E4%B8%8Efunction%E5%90%8C%E5%90%8D%E6%8F%90%E5%8D%87.html">
+          var与function同名提升 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

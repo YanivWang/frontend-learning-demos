@@ -30,24 +30,99 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>new Promise(executor)</code> 会立刻同步执行 executor，所以示例里的 <code>console.log("1")</code>、<code>console.log("2")</code> 会早于 <code>then</code> 回调。</li>
-          <li><code>then</code>、<code>catch</code>、<code>finally</code> 这类 Promise 反应回调会进入微任务队列，等当前同步调用栈清空后执行。</li>
-          <li><code>await</code> 会计算右侧表达式并暂停 async 函数，后续代码作为恢复执行的微任务排队；即使 await 的是已 fulfilled Promise 或普通值，也会发生这次让出。</li>
-          <li>浏览器事件循环在一个任务结束后会先处理微任务，再取下一个任务；因此 Promise/await 回调通常早于 <code>setTimeout(..., 0)</code>。</li>
-          <li>过度拆分 <code>await</code> 会制造更多微任务切换，可能让两个流程交错执行并引入竞态；只有后续代码确实依赖结果时才需要 await。</li>
+          <li>
+            <code>new Promise(executor)</code>
+            会立刻同步执行 executor，所以示例里的
+            <code>console.log("1")</code>
+            、
+            <code>console.log("2")</code>
+            会早于
+            <code>then</code>
+            回调。
+          </li>
+          <li>
+            <code>then</code>
+            、
+            <code>catch</code>
+            、
+            <code>finally</code>
+            这类 Promise 反应回调会进入微任务队列，等当前同步调用栈清空后执行。
+          </li>
+          <li>
+            <code>await</code>
+            会计算右侧表达式并暂停 async 函数，后续代码作为恢复执行的微任务排队；即使 await 的是已
+            fulfilled Promise 或普通值，也会发生这次让出。
+          </li>
+          <li>
+            浏览器事件循环在一个任务结束后会先处理微任务，再取下一个任务；因此 Promise/await
+            回调通常早于
+            <code>setTimeout(..., 0)</code>
+            。
+          </li>
+          <li>
+            过度拆分
+            <code>await</code>
+            会制造更多微任务切换，可能让两个流程交错执行并引入竞态；只有后续代码确实依赖结果时才需要
+            await。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Promise executor、then、setTimeout 的执行顺序如何判断？</strong> 先跑当前同步代码，包括 Promise executor；再清空 Promise/await 产生的微任务；最后才进入 <code>setTimeout</code> 这类后续任务。项目排查“为什么日志顺序不对”时，先把同步、微任务、任务三类分开标记。</li>
-          <li><strong><code>await</code> 后面的代码为什么会晚于同步代码执行？</strong> 因为 <code>await</code> 会让 async 函数暂停，恢复执行被排成微任务。即使等待的是普通值，也不会继续留在当前同步调用栈里执行；这就是 async 函数能让出控制权的原因。</li>
-          <li><strong>微任务和宏任务在浏览器事件循环中如何调度？</strong> 每轮事件循环取一个任务执行，任务结束后执行微任务检查点，清空当前可执行微任务，再进入渲染机会和下一任务。边界是微任务如果持续追加微任务，可能推迟计时器和渲染。</li>
-          <li><strong>为什么不建议滥用不必要的 await？</strong> 多余的 <code>await</code> 会把代码拆成更多微任务，增加调度成本，也可能让并发流程交错产生竞态。只需要返回 Promise 给调用方时，可以直接 return；需要在当前函数捕获错误或改善栈信息时再 <code>return await</code>。</li>
+          <li>
+            <strong>Promise executor、then、setTimeout 的执行顺序如何判断？</strong>
+            先跑当前同步代码，包括 Promise executor；再清空 Promise/await 产生的微任务；最后才进入
+            <code>setTimeout</code>
+            这类后续任务。项目排查“为什么日志顺序不对”时，先把同步、微任务、任务三类分开标记。
+          </li>
+          <li>
+            <strong>
+              <code>await</code>
+              后面的代码为什么会晚于同步代码执行？
+            </strong>
+            因为
+            <code>await</code>
+            会让 async
+            函数暂停，恢复执行被排成微任务。即使等待的是普通值，也不会继续留在当前同步调用栈里执行；这就是
+            async 函数能让出控制权的原因。
+          </li>
+          <li>
+            <strong>微任务和宏任务在浏览器事件循环中如何调度？</strong>
+            每轮事件循环取一个任务执行，任务结束后执行微任务检查点，清空当前可执行微任务，再进入渲染机会和下一任务。边界是微任务如果持续追加微任务，可能推迟计时器和渲染。
+          </li>
+          <li>
+            <strong>为什么不建议滥用不必要的 await？</strong>
+            多余的
+            <code>await</code>
+            会把代码拆成更多微任务，增加调度成本，也可能让并发流程交错产生竞态。只需要返回 Promise
+            给调用方时，可以直接 return；需要在当前函数捕获错误或改善栈信息时再
+            <code>return await</code>
+            。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">MDN: Promise</a>：executor 同步执行，then/catch 为微任务。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await">MDN: await</a>：暂停 async 函数，恢复代码排入微任务。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop">MDN: Event loop</a>：每轮任务结束后清空微任务，再取下一宏任务。</li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise"
+            >
+              MDN: Promise
+            </a>
+            ：executor 同步执行，then/catch 为微任务。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await"
+            >
+              MDN: await
+            </a>
+            ：暂停 async 函数，恢复代码排入微任务。
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop">
+              MDN: Event loop
+            </a>
+            ：每轮任务结束后清空微任务，再取下一宏任务。
+          </li>
         </ul>
       </div>
     </section>
@@ -62,15 +137,15 @@
 
       // ============ 2. async/await：await 让出执行权，恢复代码进入微任务 ============
       async function async1() {
-        console.log("a"); // 同步
+        console.log('a'); // 同步
 
         await async2(); // async2 同步跑完；async1 剩余部分排入微任务
 
-        console.log("b"); // 微任务（在同步代码和 Promise.then 之后）
+        console.log('b'); // 微任务（在同步代码和 Promise.then 之后）
       }
 
       async function async2() {
-        console.log("c"); // 同步（await 右侧表达式先求值）
+        console.log('c'); // 同步（await 右侧表达式先求值）
       }
 
       async1();
@@ -78,9 +153,9 @@
       // ============ 3. Promise executor 同步，then 回调异步（微任务） ============
       // MDN：new Promise(executor) 立刻同步调用 executor
       new Promise(function (resolve) {
-        console.log("1"); // 同步
-        resolve("ok");
-        console.log("2"); // 同步（resolve 后 executor 仍继续执行）
+        console.log('1'); // 同步
+        resolve('ok');
+        console.log('2'); // 同步（resolve 后 executor 仍继续执行）
       })
         .then(function () {
           console.log(4); // 微任务
@@ -101,14 +176,18 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../../index.html">目录</a>
-        <a href="./01-Promise-all%E5%B9%B6%E5%8F%91%E4%B8%8Ethen%E4%B8%B2%E8%A1%8C.html">← Promise-all并发与then串行</a>
-        <a href="./03-Promise-%E5%8C%85%E8%A3%85%E5%9B%BE%E7%89%87%E9%A2%84%E5%8A%A0%E8%BD%BD.html">Promise-包装图片预加载 →</a>
+        <a href="./01-Promise-all%E5%B9%B6%E5%8F%91%E4%B8%8Ethen%E4%B8%B2%E8%A1%8C.html">
+          ← Promise-all并发与then串行
+        </a>
+        <a href="./03-Promise-%E5%8C%85%E8%A3%85%E5%9B%BE%E7%89%87%E9%A2%84%E5%8A%A0%E8%BD%BD.html">
+          Promise-包装图片预加载 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

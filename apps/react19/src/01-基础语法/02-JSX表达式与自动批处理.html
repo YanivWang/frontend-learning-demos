@@ -25,9 +25,22 @@
     <script src="../../libs/react-dom.development.js"></script>
     <script src="../../libs/babel.min.js"></script>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 760px; line-height: 1.6; }
-      .warn { color: #9a6700; background: #fff8c5; padding: 0.5rem 0.75rem; border-radius: 6px; }
-      button { margin-right: 0.5rem; margin-top: 0.5rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 760px;
+        line-height: 1.6;
+      }
+      .warn {
+        color: #9a6700;
+        background: #fff8c5;
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+      }
+      button {
+        margin-right: 0.5rem;
+        margin-top: 0.5rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -36,30 +49,162 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>JSX 表达式与 React 19 自动批处理</h1>
-      <p class="hint">请打开 DevTools Console 查看 render 次数与批处理日志；下方 #root 中可点击按钮对比 setTimeout 批处理、flushSync 与函数式 setState，并观察 <code>&amp;&amp;</code> 短路渲染数字 0 的陷阱。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看 render 次数与批处理日志；下方 #root 中可点击按钮对比 setTimeout
+        批处理、flushSync 与函数式 setState，并观察
+        <code>&amp;&amp;</code>
+        短路渲染数字 0 的陷阱。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>JSX</code> 花括号内放的是 JavaScript <strong>表达式</strong>，例如变量、三元表达式、数组 <code>map</code> 或函数调用；<code>if</code>、<code>for</code> 这类<strong>语句</strong>要提前写在 JSX 外，因为 JSX 会被编译为函数调用的参数列表。</li>
-          <li><code>&amp;&amp;</code> 条件渲染要小心数字 <code>0</code>：React 会渲染数字和字符串，只有 <code>false</code>、<code>null</code>、<code>undefined</code> 等不会生成节点；安全写法是 <code>items.length &gt; 0 &amp;&amp; ...</code> 或三元表达式。</li>
-          <li>自动批处理从 React 18 的 <code>createRoot</code> 开始成为默认行为，React 19 继续沿用；事件处理器、<code>setTimeout</code>、Promise 回调里的多次 state 更新通常合并成<strong>一次</strong>渲染。</li>
-          <li>批处理会放大闭包旧值问题：同一事件或异步回调里连续写 <code>setCount(count + 1)</code> 可能只加 1；应使用函数式更新 <code>setCount(c =&gt; c + 1)</code>，让 React 基于最新 pending state 排队。</li>
-          <li><code>flushSync</code> 可以强制 React 立即提交更新，适合少量需要同步读取 DOM 的集成场景；滥用会破坏批处理收益并影响性能。</li>
+          <li>
+            <code>JSX</code>
+            花括号内放的是 JavaScript
+            <strong>表达式</strong>
+            ，例如变量、三元表达式、数组
+            <code>map</code>
+            或函数调用；
+            <code>if</code>
+            、
+            <code>for</code>
+            这类
+            <strong>语句</strong>
+            要提前写在 JSX 外，因为 JSX 会被编译为函数调用的参数列表。
+          </li>
+          <li>
+            <code>&amp;&amp;</code>
+            条件渲染要小心数字
+            <code>0</code>
+            ：React 会渲染数字和字符串，只有
+            <code>false</code>
+            、
+            <code>null</code>
+            、
+            <code>undefined</code>
+            等不会生成节点；安全写法是
+            <code>items.length &gt; 0 &amp;&amp; ...</code>
+            或三元表达式。
+          </li>
+          <li>
+            自动批处理从 React 18 的
+            <code>createRoot</code>
+            开始成为默认行为，React 19 继续沿用；事件处理器、
+            <code>setTimeout</code>
+            、Promise 回调里的多次 state 更新通常合并成
+            <strong>一次</strong>
+            渲染。
+          </li>
+          <li>
+            批处理会放大闭包旧值问题：同一事件或异步回调里连续写
+            <code>setCount(count + 1)</code>
+            可能只加 1；应使用函数式更新
+            <code>setCount(c =&gt; c + 1)</code>
+            ，让 React 基于最新 pending state 排队。
+          </li>
+          <li>
+            <code>flushSync</code>
+            可以强制 React 立即提交更新，适合少量需要同步读取 DOM
+            的集成场景；滥用会破坏批处理收益并影响性能。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>JSX 花括号里为什么只能放表达式不能放语句？</strong> 结论是 JSX 花括号需要表达式，<code>if</code>、<code>for</code> 是语句。原因是 JSX 最终会被 Babel 编译为函数调用参数，参数位置只能放表达式。项目里复杂条件应先在组件体内算出变量，再嵌入 JSX。</li>
-          <li><strong><code>&amp;&amp;</code> 条件渲染为什么可能把 0 渲染出来？</strong> 结论是左侧为 <code>0</code> 时会把 <code>0</code> 渲染出来。原因是 <code>0 &amp;&amp; expr</code> 的求值结果就是数字 <code>0</code>，React 会渲染数字。边界是布尔判断应写成 <code>items.length &gt; 0 &amp;&amp; ...</code> 或使用三元表达式。</li>
-          <li><strong>React 18+ 自动批处理覆盖哪些异步边界？</strong> 结论是在 <code>createRoot</code> 下，事件处理器、<code>setTimeout</code>、Promise 回调、原生事件等中的多次 setState 默认合并为一次渲染。原因是 React 18 扩展了批处理范围，React 19 延续。本页点击「setTimeout 内两次 setState」可在 Console 看到 render 只增 1。</li>
-          <li><strong><code>flushSync</code> 适合解决什么同步 DOM 读取问题？</strong> 结论是只在必须立即读到更新后 DOM 时使用。原因是它会打断自动批处理并强制同步提交。典型场景是与第三方 DOM 库集成、马上测量尺寸或滚动位置；普通业务状态更新不需要它。</li>
-          <li><strong>自动批处理与函数式 setState 有什么关系？</strong> 结论是批处理把多次更新合并后，基于旧闭包值的 <code>setCount(count + 1)</code> 可能只生效一次；函数式 <code>setCount(c =&gt; c + 1)</code> 让每次更新基于最新 pending 值排队。本页「闭包旧值 vs 函数式 +3」按钮可对比 Console 输出。</li>
+          <li>
+            <strong>JSX 花括号里为什么只能放表达式不能放语句？</strong>
+            结论是 JSX 花括号需要表达式，
+            <code>if</code>
+            、
+            <code>for</code>
+            是语句。原因是 JSX 最终会被 Babel
+            编译为函数调用参数，参数位置只能放表达式。项目里复杂条件应先在组件体内算出变量，再嵌入
+            JSX。
+          </li>
+          <li>
+            <strong>
+              <code>&amp;&amp;</code>
+              条件渲染为什么可能把 0 渲染出来？
+            </strong>
+            结论是左侧为
+            <code>0</code>
+            时会把
+            <code>0</code>
+            渲染出来。原因是
+            <code>0 &amp;&amp; expr</code>
+            的求值结果就是数字
+            <code>0</code>
+            ，React 会渲染数字。边界是布尔判断应写成
+            <code>items.length &gt; 0 &amp;&amp; ...</code>
+            或使用三元表达式。
+          </li>
+          <li>
+            <strong>React 18+ 自动批处理覆盖哪些异步边界？</strong>
+            结论是在
+            <code>createRoot</code>
+            下，事件处理器、
+            <code>setTimeout</code>
+            、Promise 回调、原生事件等中的多次 setState 默认合并为一次渲染。原因是 React 18
+            扩展了批处理范围，React 19 延续。本页点击「setTimeout 内两次 setState」可在 Console 看到
+            render 只增 1。
+          </li>
+          <li>
+            <strong>
+              <code>flushSync</code>
+              适合解决什么同步 DOM 读取问题？
+            </strong>
+            结论是只在必须立即读到更新后 DOM
+            时使用。原因是它会打断自动批处理并强制同步提交。典型场景是与第三方 DOM
+            库集成、马上测量尺寸或滚动位置；普通业务状态更新不需要它。
+          </li>
+          <li>
+            <strong>自动批处理与函数式 setState 有什么关系？</strong>
+            结论是批处理把多次更新合并后，基于旧闭包值的
+            <code>setCount(count + 1)</code>
+            可能只生效一次；函数式
+            <code>setCount(c =&gt; c + 1)</code>
+            让每次更新基于最新 pending 值排队。本页「闭包旧值 vs 函数式 +3」按钮可对比 Console
+            输出。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/learn/javascript-in-jsx-with-curly-braces" target="_blank" rel="noreferrer">React Docs: JavaScript in JSX with Curly Braces</a></li>
-          <li><a href="https://react.dev/learn/conditional-rendering" target="_blank" rel="noreferrer">React Docs: Conditional Rendering</a></li>
-          <li><a href="https://react.dev/learn/queueing-a-series-of-state-updates" target="_blank" rel="noreferrer">React Docs: Queueing a Series of State Updates</a></li>
-          <li><a href="https://react.dev/reference/react-dom/flushSync" target="_blank" rel="noreferrer">React DOM Docs: <code>flushSync</code></a></li>
+          <li>
+            <a
+              href="https://react.dev/learn/javascript-in-jsx-with-curly-braces"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React Docs: JavaScript in JSX with Curly Braces
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/conditional-rendering"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React Docs: Conditional Rendering
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/queueing-a-series-of-state-updates"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React Docs: Queueing a Series of State Updates
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react-dom/flushSync"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React DOM Docs:
+              <code>flushSync</code>
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -82,33 +227,33 @@
 
         // 每次 render 后输出次数，便于在 Console 观察批处理是否合并渲染
         useEffect(() => {
-          console.log("[批处理] App render 次数:", renders.current, "count=", count, "flag=", flag);
+          console.log('[批处理] App render 次数:', renders.current, 'count=', count, 'flag=', flag);
         });
 
         // ====== 1. JSX 表达式：变量、三元、函数调用 ======
-        const items = ["A", "B"];
+        const items = ['A', 'B'];
         const hiddenCount = 0;
-        const label = items.length ? items.join("、") : "暂无";
+        const label = items.length ? items.join('、') : '暂无';
 
         // ====== 2. && 短路陷阱：0 会被渲染，false/null/undefined 不会 ======
         // hiddenCount && <span> 当 hiddenCount 为 0 时，表达式结果是 0，React 会渲染数字 0
 
         // ====== 3. 自动批处理：setTimeout 内两次 setState 合并为一次 render ======
         const batchInTimeout = () => {
-          console.log("[批处理] setTimeout 前 render 次数:", renders.current);
+          console.log('[批处理] setTimeout 前 render 次数:', renders.current);
           setTimeout(() => {
             setCount((c) => c + 1);
             setFlag((f) => !f);
-            console.log("[批处理] setTimeout 内已排队两次 setState，预期只触发 1 次 render");
+            console.log('[批处理] setTimeout 内已排队两次 setState，预期只触发 1 次 render');
           }, 0);
         };
 
         // ====== 4. flushSync：强制同步提交，两次 flushSync 通常触发两次 render ======
         const noBatch = () => {
-          console.log("[flushSync] 开始前 render 次数:", renders.current);
+          console.log('[flushSync] 开始前 render 次数:', renders.current);
           flushSync(() => setCount((c) => c + 1));
           flushSync(() => setFlag((f) => !f));
-          console.log("[flushSync] 两次 flushSync 后 render 次数:", renders.current, "（预期 +2）");
+          console.log('[flushSync] 两次 flushSync 后 render 次数:', renders.current, '（预期 +2）');
         };
 
         // ====== 5. 函数式 setState vs 闭包旧值：批处理下同 tick 连续 +1 ======
@@ -116,14 +261,14 @@
           setCount(count + 1);
           setCount(count + 1);
           setCount(count + 1);
-          console.log("[闭包旧值] 连续 setCount(count+1) x3，闭包 count=", count, "，预期只 +1");
+          console.log('[闭包旧值] 连续 setCount(count+1) x3，闭包 count=', count, '，预期只 +1');
         };
 
         const functionalPlus3 = () => {
           setCount((c) => c + 1);
           setCount((c) => c + 1);
           setCount((c) => c + 1);
-          console.log("[函数式] 连续 setCount(c=>c+1) x3，预期 +3");
+          console.log('[函数式] 连续 setCount(c=>c+1) x3，预期 +3');
         };
 
         return (
@@ -132,22 +277,32 @@
 
             <p>列表长度展示：{items.length} 项</p>
             <p className="warn">
-              陷阱演示：{hiddenCount && <span>不会显示</span>}
-              ← 左侧为 0 时，&amp;&amp; 表达式本身会渲染数字 0
+              陷阱演示：{hiddenCount && <span>不会显示</span>}← 左侧为 0 时，&amp;&amp;
+              表达式本身会渲染数字 0
             </p>
             <p>三元安全写法：{label}</p>
 
             <h2>自动批处理（React 19 · createRoot）</h2>
-            <p>count={count}，flag={String(flag)}，本组件 render 次数={renders.current}</p>
-            <button type="button" onClick={batchInTimeout}>setTimeout 内两次 setState</button>
-            <button type="button" onClick={noBatch}>flushSync 两次提交</button>
-            <button type="button" onClick={staleClosurePlus3}>闭包旧值 +3（预期只 +1）</button>
-            <button type="button" onClick={functionalPlus3}>函数式 +3（预期 +3）</button>
+            <p>
+              count={count}，flag={String(flag)}，本组件 render 次数={renders.current}
+            </p>
+            <button type="button" onClick={batchInTimeout}>
+              setTimeout 内两次 setState
+            </button>
+            <button type="button" onClick={noBatch}>
+              flushSync 两次提交
+            </button>
+            <button type="button" onClick={staleClosurePlus3}>
+              闭包旧值 +3（预期只 +1）
+            </button>
+            <button type="button" onClick={functionalPlus3}>
+              函数式 +3（预期 +3）
+            </button>
           </section>
         );
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -156,19 +311,20 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./01-%E5%85%A5%E9%97%A8-createRoot%E4%B8%8E%E5%85%83%E7%B4%A0.html">← 入门-createRoot与元素</a>
+        <a href="./01-%E5%85%A5%E9%97%A8-createRoot%E4%B8%8E%E5%85%83%E7%B4%A0.html">
+          ← 入门-createRoot与元素
+        </a>
         <a href="./03-Actions%E4%B8%8EuseActionState.html">Actions与useActionState →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-  
-</body>
+  </body>
 </html>

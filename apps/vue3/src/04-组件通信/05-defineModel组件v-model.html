@@ -23,15 +23,60 @@
     <title>Vue3 · defineModel 组件 v-model</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      input { padding: 6px 10px; display: block; margin: 8px 0; width: 100%; max-width: 360px; box-sizing: border-box; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; max-height: 240px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 820px; }
-      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
-      .grid { display: grid; gap: 12px; }
-      .tag { display: inline-block; background: #e8f0fe; color: #1a73e8; padding: 2px 8px; border-radius: 4px; font-size: 13px; }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          'PingFang SC',
+          sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+      }
+      input {
+        padding: 6px 10px;
+        display: block;
+        margin: 8px 0;
+        width: 100%;
+        max-width: 360px;
+        box-sizing: border-box;
+      }
+      code,
+      pre {
+        background: #f6f8fa;
+        border-radius: 6px;
+      }
+      code {
+        padding: 2px 5px;
+      }
+      pre {
+        padding: 12px;
+        overflow: auto;
+        max-height: 240px;
+      }
+      .box {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 820px;
+      }
+      .box .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
+      .grid {
+        display: grid;
+        gap: 12px;
+      }
+      .tag {
+        display: inline-block;
+        background: #e8f0fe;
+        color: #1a73e8;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 13px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -44,25 +89,134 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>defineModel</code> 是 Vue 3.4+ 的 SFC <code>&lt;script setup&gt;</code> <strong>编译宏</strong>，声明一个 prop 和对应的 <code>update:xxx</code> 事件，并返回可读写的模型 <code>ref</code>。本页标题旁 <span class="tag">Vue 3.4+</span> 标记 API 版本要求。</li>
-          <li>默认 <code>defineModel()</code> 对应 <code>modelValue</code> / <code>update:modelValue</code>，<code>defineModel('title')</code> 对应 <code>title</code> / <code>update:title</code>；本页用 <code>computed</code> getter / setter（<code>useVModel</code> 辅助函数）演示等价运行时行为，手写 v-model 见 <a href="./04-%E7%BB%84%E4%BB%B6v-model.html">04-组件v-model</a>。</li>
-          <li>宏只能在 SFC 编译阶段被识别，浏览器全局构建没有 SFC 编译器，所以 HTML demo 不能直接调用 <code>defineModel</code>，只能展示等价实现和代码片段。下方 pre 区为真实 SFC 写法。</li>
-          <li>带 trim 修饰符的输入组件用 <code>defineModel({ get, set })</code> 或 setter 内 <code>value.trim()</code> 演示格式化；改输入时控制台打印 <code>[defineModel equiv] set → emit</code>，证明赋值仍走 emit 路径。</li>
-          <li>注意官方文档提示：子组件模型设置 <code>default</code> 而父组件绑定值是 <code>undefined</code> 时，可能出现父子初始值不同步；组件库中要明确默认值策略。点「父组件清空 title」可观察父 ref 变为空字符串后子输入同步。</li>
-          <li>Vue 3.5+ 的响应式 props 解构是另一编译宏能力，见 <a href="./06-props%E8%A7%A3%E6%9E%84%E4%BF%9D%E6%8C%81%E5%93%8D%E5%BA%94%E5%BC%8F.html">06-props解构（3.5+）</a>。</li>
+          <li>
+            <code>defineModel</code>
+            是 Vue 3.4+ 的 SFC
+            <code>&lt;script setup&gt;</code>
+            <strong>编译宏</strong>
+            ，声明一个 prop 和对应的
+            <code>update:xxx</code>
+            事件，并返回可读写的模型
+            <code>ref</code>
+            。本页标题旁
+            <span class="tag">Vue 3.4+</span>
+            标记 API 版本要求。
+          </li>
+          <li>
+            默认
+            <code>defineModel()</code>
+            对应
+            <code>modelValue</code>
+            /
+            <code>update:modelValue</code>
+            ，
+            <code>defineModel('title')</code>
+            对应
+            <code>title</code>
+            /
+            <code>update:title</code>
+            ；本页用
+            <code>computed</code>
+            getter / setter（
+            <code>useVModel</code>
+            辅助函数）演示等价运行时行为，手写 v-model 见
+            <a href="./04-%E7%BB%84%E4%BB%B6v-model.html">04-组件v-model</a>
+            。
+          </li>
+          <li>
+            宏只能在 SFC 编译阶段被识别，浏览器全局构建没有 SFC 编译器，所以 HTML demo 不能直接调用
+            <code>defineModel</code>
+            ，只能展示等价实现和代码片段。下方 pre 区为真实 SFC 写法。
+          </li>
+          <li>
+            带 trim 修饰符的输入组件用
+            <code>defineModel({ get, set })</code>
+            或 setter 内
+            <code>value.trim()</code>
+            演示格式化；改输入时控制台打印
+            <code>[defineModel equiv] set → emit</code>
+            ，证明赋值仍走 emit 路径。
+          </li>
+          <li>
+            注意官方文档提示：子组件模型设置
+            <code>default</code>
+            而父组件绑定值是
+            <code>undefined</code>
+            时，可能出现父子初始值不同步；组件库中要明确默认值策略。点「父组件清空 title」可观察父
+            ref 变为空字符串后子输入同步。
+          </li>
+          <li>
+            Vue 3.5+ 的响应式 props 解构是另一编译宏能力，见
+            <a
+              href="./06-props%E8%A7%A3%E6%9E%84%E4%BF%9D%E6%8C%81%E5%93%8D%E5%BA%94%E5%BC%8F.html"
+            >
+              06-props解构（3.5+）
+            </a>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>defineModel 和手写 modelValue / emits 是什么关系？</strong> 结论是语义等价，<code>defineModel</code> 是编译期语法糖。它减少重复声明 prop、emit 和 computed setter 的样板代码，但运行时仍是父组件传值、子组件发出 <code>update</code> 事件。边界是 Vue 3.4+ 才能使用。</li>
-          <li><strong>为什么说 defineModel 返回的是可写 ref？</strong> 因为模板或脚本给这个 ref 赋值时，编译结果会 emit 对应的 <code>update:xxx</code> 事件。本页 TrimInput 的 setter 日志即证明。不要把它误解成子组件私有状态。</li>
-          <li><strong>defineModel 的 default 有什么坑？</strong> 结论是可能造成父子值短暂不一致。原因是子组件 default 会让本地模型有初始值，而父组件绑定的 ref 仍可能是 <code>undefined</code>。表单组件应让父组件初始化值，或在文档中明确 default 的同步边界。</li>
-          <li><strong>什么时候继续手写 props / emits？</strong> 当项目还在 Vue 3.3 或更早版本、组件不是 SFC <code>&lt;script setup&gt;</code>、或需要非常显式的运行时声明时继续手写。组件库若面向多个 Vue 版本，也要确认构建链是否支持该宏。</li>
-          <li><strong>修饰符如何在 defineModel 中处理？</strong> 结论是读取 <code>defineModel().modelModifiers</code> 或在 <code>set</code> 选项中统一处理。例如 <code>v-model.trim</code> 可在 setter 内 trim。本页 TrimInput 模拟 trim 行为，与原生 input 修饰符语义对照。</li>
+          <li>
+            <strong>defineModel 和手写 modelValue / emits 是什么关系？</strong>
+            结论是语义等价，
+            <code>defineModel</code>
+            是编译期语法糖。它减少重复声明 prop、emit 和 computed setter
+            的样板代码，但运行时仍是父组件传值、子组件发出
+            <code>update</code>
+            事件。边界是 Vue 3.4+ 才能使用。
+          </li>
+          <li>
+            <strong>为什么说 defineModel 返回的是可写 ref？</strong>
+            因为模板或脚本给这个 ref 赋值时，编译结果会 emit 对应的
+            <code>update:xxx</code>
+            事件。本页 TrimInput 的 setter 日志即证明。不要把它误解成子组件私有状态。
+          </li>
+          <li>
+            <strong>defineModel 的 default 有什么坑？</strong>
+            结论是可能造成父子值短暂不一致。原因是子组件 default
+            会让本地模型有初始值，而父组件绑定的 ref 仍可能是
+            <code>undefined</code>
+            。表单组件应让父组件初始化值，或在文档中明确 default 的同步边界。
+          </li>
+          <li>
+            <strong>什么时候继续手写 props / emits？</strong>
+            当项目还在 Vue 3.3 或更早版本、组件不是 SFC
+            <code>&lt;script setup&gt;</code>
+            、或需要非常显式的运行时声明时继续手写。组件库若面向多个 Vue
+            版本，也要确认构建链是否支持该宏。
+          </li>
+          <li>
+            <strong>修饰符如何在 defineModel 中处理？</strong>
+            结论是读取
+            <code>defineModel().modelModifiers</code>
+            或在
+            <code>set</code>
+            选项中统一处理。例如
+            <code>v-model.trim</code>
+            可在 setter 内 trim。本页 TrimInput 模拟 trim 行为，与原生 input 修饰符语义对照。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/guide/components/v-model.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Component v-model</a></li>
-          <li><a href="https://vuejs.org/api/sfc-script-setup.html#definemodel" target="_blank" rel="noreferrer">Vue 3 官方 API：defineModel()（3.4+）</a></li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/components/v-model.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方文档：Component v-model
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/api/sfc-script-setup.html#definemodel"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方 API：defineModel()（3.4+）
+            </a>
+          </li>
           <li><a href="./04-%E7%BB%84%E4%BB%B6v-model.html">本系列：组件 v-model</a></li>
         </ul>
       </div>
@@ -71,9 +225,16 @@
 
     <!-- PAGE_DOM_START -->
     <div id="app">
-      <h1>defineModel <span class="tag">Vue 3.4+</span></h1>
+      <h1>
+        defineModel
+        <span class="tag">Vue 3.4+</span>
+      </h1>
       <div class="box grid">
-        <p class="hint-inline">全局构建无法运行编译宏；下方为 <code>useVModel</code> 等价实现。打开控制台可见 setter emit 日志。</p>
+        <p class="hint-inline">
+          全局构建无法运行编译宏；下方为
+          <code>useVModel</code>
+          等价实现。打开控制台可见 setter emit 日志。
+        </p>
         <model-input v-model="title"></model-input>
         <named-model-input v-model:title="subtitle"></named-model-input>
         <trim-input v-model="keyword"></trim-input>
@@ -95,8 +256,8 @@
        * defineModel() 编译后的等价运行时写法
        * getter 读 props，setter emit update:xxx
        */
-      function useVModel(props, emit, key = "modelValue", transform) {
-        const event = key === "modelValue" ? "update:modelValue" : `update:${key}`;
+      function useVModel(props, emit, key = 'modelValue', transform) {
+        const event = key === 'modelValue' ? 'update:modelValue' : `update:${key}`;
         return computed({
           get: () => props[key],
           set: (value) => {
@@ -109,7 +270,7 @@
 
       const ModelInput = {
         props: { modelValue: String },
-        emits: ["update:modelValue"],
+        emits: ['update:modelValue'],
         setup(props, { emit }) {
           const model = useVModel(props, emit);
           return { model };
@@ -124,9 +285,9 @@
 
       const NamedModelInput = {
         props: { title: String },
-        emits: ["update:title"],
+        emits: ['update:title'],
         setup(props, { emit }) {
-          const model = useVModel(props, emit, "title");
+          const model = useVModel(props, emit, 'title');
           return { model };
         },
         template: `
@@ -140,47 +301,46 @@
       // 模拟 defineModel({ set }) 或 modifiers.trim
       const TrimInput = {
         props: { modelValue: String },
-        emits: ["update:modelValue"],
+        emits: ['update:modelValue'],
         setup(props, { emit }) {
-          const model = useVModel(props, emit, "modelValue", (v) =>
-            typeof v === "string" ? v.trim() : v,
+          const model = useVModel(props, emit, 'modelValue', (v) =>
+            typeof v === 'string' ? v.trim() : v,
           );
           return { model };
         },
         template: `
-        <label>
-          带 trim 的 defineModel set 等价（首尾空格会被去掉）：
-          <input v-model="model" placeholder="  试试首尾空格  " />
-        </label>
-        `,
+      <label>
+        带 trim 的 defineModel set 等价（首尾空格会被去掉）：
+        <input v-model="model" placeholder="  试试首尾空格  " />
+      </label>
+      `,
       };
       const app = createApp({
         components: { ModelInput, NamedModelInput, TrimInput },
         setup() {
           // --- 演示状态 ---
-          const title = ref("Vue 3.4 defineModel");
-          const subtitle = ref("命名 v-model:title");
-          const keyword = ref("keyword");
+          const title = ref('Vue 3.4 defineModel');
+          const subtitle = ref('命名 v-model:title');
+          const keyword = ref('keyword');
 
           const sfcSnippet = [
-            "<!-- Vue 3.4+ 默认模型 -->",
-            "<script setup>",
-            "const model = defineModel()",
-            "<\\/script>",
-            "",
-            "<!-- 命名模型 -->",
+            '<!-- Vue 3.4+ 默认模型 -->',
+            '<script setup>',
+            'const model = defineModel()',
+            '<\\/script>',
+            '',
+            '<!-- 命名模型 -->',
             "const title = defineModel('title')",
-            "",
-            "<!-- 带 set 转换 -->",
-            "const kw = defineModel({",
-            "  set(v) { return v.trim() }",
-            "})",
-          ].join("\n");
+            '',
+            '<!-- 带 set 转换 -->',
+            'const kw = defineModel({',
+            '  set(v) { return v.trim() }',
+            '})',
+          ].join('\n');
 
-          
           // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
           onMounted(() => {
-            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+            console.log('[mounted] createApp 已接管 #app，DOM 已渲染');
           });
 
           return { title, subtitle, keyword, sfcSnippet };
@@ -188,9 +348,8 @@
       });
       // mount 须在 app.use / app.component / app.config 等配置之后调用
       // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
-      const rootInstance = app.mount("#app");
-      console.log("[mount] 根组件实例", rootInstance);
-
+      const rootInstance = app.mount('#app');
+      console.log('[mount] 根组件实例', rootInstance);
     </script>
     <!-- SCRIPT_END -->
 
@@ -200,17 +359,19 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./04-%E7%BB%84%E4%BB%B6v-model.html">← 组件v-model</a>
-        <a href="./06-props%E8%A7%A3%E6%9E%84%E4%BF%9D%E6%8C%81%E5%93%8D%E5%BA%94%E5%BC%8F.html">props解构保持响应式 →</a>
+        <a href="./06-props%E8%A7%A3%E6%9E%84%E4%BF%9D%E6%8C%81%E5%93%8D%E5%BA%94%E5%BC%8F.html">
+          props解构保持响应式 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

@@ -22,15 +22,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DOM 事件冒泡捕获委托</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
-      .panel { display: grid; grid-template-columns: minmax(260px, 420px) 1fr; gap: 16px; align-items: start; }
-      .outer, .middle, .inner { padding: 20px; border: 2px solid #777; border-radius: 4px; }
-      .outer { background: #f5f8ff; }
-      .middle { background: #fff7e8; }
-      .inner { background: #effaf1; cursor: pointer; text-align: center; }
-      button { margin: 4px 6px 4px 0; padding: 6px 10px; }
-      li { cursor: pointer; margin: 4px 0; }
-      #log { min-height: 180px; padding: 10px; border: 1px solid #ddd; background: #fafafa; white-space: pre-line; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 1.5rem;
+        line-height: 1.6;
+      }
+      .panel {
+        display: grid;
+        grid-template-columns: minmax(260px, 420px) 1fr;
+        gap: 16px;
+        align-items: start;
+      }
+      .outer,
+      .middle,
+      .inner {
+        padding: 20px;
+        border: 2px solid #777;
+        border-radius: 4px;
+      }
+      .outer {
+        background: #f5f8ff;
+      }
+      .middle {
+        background: #fff7e8;
+      }
+      .inner {
+        background: #effaf1;
+        cursor: pointer;
+        text-align: center;
+      }
+      button {
+        margin: 4px 6px 4px 0;
+        padding: 6px 10px;
+      }
+      li {
+        cursor: pointer;
+        margin: 4px 0;
+      }
+      #log {
+        min-height: 180px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        background: #fafafa;
+        white-space: pre-line;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -39,31 +74,149 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>DOM 事件流：捕获、冒泡、委托</h1>
-      <p class="hint">阅读本复习区后，在下方点击嵌套方块、切换模式并点击列表项；<code>once</code> 选项见 DevTools Console。</p>
+      <p class="hint">
+        阅读本复习区后，在下方点击嵌套方块、切换模式并点击列表项；
+        <code>once</code>
+        选项见 DevTools Console。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>DOM 事件从根节点向目标元素传播是捕获阶段，到达目标后再沿祖先链向外冒泡；默认 <code>addEventListener(type, listener)</code> 监听冒泡阶段，传 <code>{ capture: true }</code> 或旧写法 <code>true</code> 才监听捕获阶段。</li>
-          <li><code>event.target</code> 是实际触发事件的节点，<code>event.currentTarget</code> 是当前正在执行监听器的节点；做委托时通常从 <code>target.closest(selector)</code> 找业务元素，再确认它仍在委托容器内。</li>
-          <li><code>stopPropagation()</code> 阻止事件继续进入后续祖先节点，但不会阻止当前元素上已经注册的其他监听器；<code>stopImmediatePropagation()</code> 还会阻止当前元素后续监听器执行。</li>
-          <li>事件委托适合动态列表和大量子元素，能减少绑定和销毁成本；不适合所有事件，例如不冒泡的事件或需要独立生命周期的复杂交互通常应单独绑定。</li>
-          <li><code>addEventListener</code> 现代推荐使用 options 对象：<code>capture</code> 控制阶段，<code>once</code> 自动解绑，<code>passive</code> 声明不会调用 <code>preventDefault()</code>，滚动场景可减少浏览器等待。</li>
-          <li><strong>运行环境：</strong> DOM 事件在 <code>file://</code> 与 <code>http(s)://</code> 下均可演示；本页不依赖 HTTPS 或用户手势权限。</li>
+          <li>
+            DOM 事件从根节点向目标元素传播是捕获阶段，到达目标后再沿祖先链向外冒泡；默认
+            <code>addEventListener(type, listener)</code>
+            监听冒泡阶段，传
+            <code>{ capture: true }</code>
+            或旧写法
+            <code>true</code>
+            才监听捕获阶段。
+          </li>
+          <li>
+            <code>event.target</code>
+            是实际触发事件的节点，
+            <code>event.currentTarget</code>
+            是当前正在执行监听器的节点；做委托时通常从
+            <code>target.closest(selector)</code>
+            找业务元素，再确认它仍在委托容器内。
+          </li>
+          <li>
+            <code>stopPropagation()</code>
+            阻止事件继续进入后续祖先节点，但不会阻止当前元素上已经注册的其他监听器；
+            <code>stopImmediatePropagation()</code>
+            还会阻止当前元素后续监听器执行。
+          </li>
+          <li>
+            事件委托适合动态列表和大量子元素，能减少绑定和销毁成本；不适合所有事件，例如不冒泡的事件或需要独立生命周期的复杂交互通常应单独绑定。
+          </li>
+          <li>
+            <code>addEventListener</code>
+            现代推荐使用 options 对象：
+            <code>capture</code>
+            控制阶段，
+            <code>once</code>
+            自动解绑，
+            <code>passive</code>
+            声明不会调用
+            <code>preventDefault()</code>
+            ，滚动场景可减少浏览器等待。
+          </li>
+          <li>
+            <strong>运行环境：</strong>
+            DOM 事件在
+            <code>file://</code>
+            与
+            <code>http(s)://</code>
+            下均可演示；本页不依赖 HTTPS 或用户手势权限。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>DOM 事件捕获和冒泡的执行顺序是什么？</strong> 结论是先捕获、到目标、再冒泡。原因是浏览器沿祖先链分阶段派发事件，本例点击 inner 时会先看到 outer/middle/inner 的 capture，再看到 inner/middle/outer 的 bubble；边界是并非所有事件都冒泡，委托前要查事件类型。</li>
-          <li><strong><code>stopPropagation</code> 和 <code>stopImmediatePropagation</code> 有什么区别？</strong> 结论是前者只阻止继续传播，后者还阻止同一元素上的后续监听器。原因是同一节点可以注册多个监听器；本例 middle 调用 <code>stopPropagation</code> 后仍会执行 middle 的第二个冒泡监听，而 inner 调用 <code>stopImmediatePropagation</code> 会截断后续监听器。</li>
-          <li><strong>事件委托为什么适合动态列表？</strong> 结论是把监听器放在稳定父节点上，让冒泡事件统一处理。原因是新增或删除子项时不需要逐个绑定/解绑；项目里要用 <code>closest</code> 找目标项，并用 <code>currentTarget.contains()</code> 防止误命中容器外节点。</li>
-          <li><strong><code>addEventListener</code> 第三个参数如何选？</strong> 结论是新代码优先用 options 对象而不是布尔值。原因是 <code>{ capture, once, passive }</code> 可读性更强，能同时表达阶段、自动解绑和默认行为约束；边界是老代码里的 <code>true</code> 等价于捕获阶段。</li>
-          <li><strong>事件委托处理用户生成内容时要注意什么？</strong> 结论是事件命中不等于数据可信。原因是 DOM 节点和 <code>data-*</code> 属性都可能来自动态内容；实际项目里应校验 id、权限和容器范围，渲染用户文本使用 <code>textContent</code>，避免把事件委托和 HTML 拼接组合成 XSS 风险。</li>
+          <li>
+            <strong>DOM 事件捕获和冒泡的执行顺序是什么？</strong>
+            结论是先捕获、到目标、再冒泡。原因是浏览器沿祖先链分阶段派发事件，本例点击 inner
+            时会先看到 outer/middle/inner 的 capture，再看到 inner/middle/outer 的
+            bubble；边界是并非所有事件都冒泡，委托前要查事件类型。
+          </li>
+          <li>
+            <strong>
+              <code>stopPropagation</code>
+              和
+              <code>stopImmediatePropagation</code>
+              有什么区别？
+            </strong>
+            结论是前者只阻止继续传播，后者还阻止同一元素上的后续监听器。原因是同一节点可以注册多个监听器；本例
+            middle 调用
+            <code>stopPropagation</code>
+            后仍会执行 middle 的第二个冒泡监听，而 inner 调用
+            <code>stopImmediatePropagation</code>
+            会截断后续监听器。
+          </li>
+          <li>
+            <strong>事件委托为什么适合动态列表？</strong>
+            结论是把监听器放在稳定父节点上，让冒泡事件统一处理。原因是新增或删除子项时不需要逐个绑定/解绑；项目里要用
+            <code>closest</code>
+            找目标项，并用
+            <code>currentTarget.contains()</code>
+            防止误命中容器外节点。
+          </li>
+          <li>
+            <strong>
+              <code>addEventListener</code>
+              第三个参数如何选？
+            </strong>
+            结论是新代码优先用 options 对象而不是布尔值。原因是
+            <code>{ capture, once, passive }</code>
+            可读性更强，能同时表达阶段、自动解绑和默认行为约束；边界是老代码里的
+            <code>true</code>
+            等价于捕获阶段。
+          </li>
+          <li>
+            <strong>事件委托处理用户生成内容时要注意什么？</strong>
+            结论是事件命中不等于数据可信。原因是 DOM 节点和
+            <code>data-*</code>
+            属性都可能来自动态内容；实际项目里应校验 id、权限和容器范围，渲染用户文本使用
+            <code>textContent</code>
+            ，避免把事件委托和 HTML 拼接组合成 XSS 风险。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener" target="_blank" rel="noreferrer">MDN: EventTarget addEventListener()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Event_bubbling" target="_blank" rel="noreferrer">MDN: Event bubbling</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation" target="_blank" rel="noreferrer">MDN: Event stopPropagation()</a></li>
-          <li><a href="https://javascript.info/bubbling-and-capturing" target="_blank" rel="noreferrer">JavaScript.info: Bubbling and capturing</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: EventTarget addEventListener()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Event_bubbling"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Event bubbling
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Event stopPropagation()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://javascript.info/bubbling-and-capturing"
+              target="_blank"
+              rel="noreferrer"
+            >
+              JavaScript.info: Bubbling and capturing
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -72,42 +225,42 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block" aria-label="DOM 事件演示">
       <h2 class="demo-block__label">运行示例</h2>
-    <div class="panel">
-      <section>
-        <div class="outer" data-name="outer">
-          outer
-          <div class="middle" data-name="middle">
-            middle
-            <div class="inner" data-name="inner">点击 inner</div>
+      <div class="panel">
+        <section>
+          <div class="outer" data-name="outer">
+            outer
+            <div class="middle" data-name="middle">
+              middle
+              <div class="inner" data-name="inner">点击 inner</div>
+            </div>
           </div>
-        </div>
-        <button id="normalBtn">正常传播</button>
-        <button id="stopBtn">middle 阻止传播</button>
-        <button id="immediateBtn">inner 阻止同元素后续监听</button>
-        <h2>事件委托</h2>
-        <ul id="todoList">
-          <li data-id="1">学习 capture</li>
-          <li data-id="2">学习 bubble</li>
-          <li data-id="3">学习 delegation</li>
-        </ul>
-      </section>
-      <section>
-        <h2>输出顺序</h2>
-        <div id="log">点击 inner 查看事件触发顺序。</div>
-      </section>
-    </div>
+          <button id="normalBtn">正常传播</button>
+          <button id="stopBtn">middle 阻止传播</button>
+          <button id="immediateBtn">inner 阻止同元素后续监听</button>
+          <h2>事件委托</h2>
+          <ul id="todoList">
+            <li data-id="1">学习 capture</li>
+            <li data-id="2">学习 bubble</li>
+            <li data-id="3">学习 delegation</li>
+          </ul>
+        </section>
+        <section>
+          <h2>输出顺序</h2>
+          <div id="log">点击 inner 查看事件触发顺序。</div>
+        </section>
+      </div>
     </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
       // ============ 1. 捕获 / 冒泡与 stopPropagation 演示 ============
-      const logBox = document.getElementById("log");
-      const nodes = document.querySelectorAll(".outer, .middle, .inner");
-      let mode = "normal";
+      const logBox = document.getElementById('log');
+      const nodes = document.querySelectorAll('.outer, .middle, .inner');
+      let mode = 'normal';
 
       function log(text) {
-        logBox.textContent += "\n" + text;
+        logBox.textContent += '\n' + text;
       }
 
       function resetLog(title) {
@@ -115,29 +268,33 @@
       }
 
       function bindEventFlow() {
-        nodes.forEach(node => {
+        nodes.forEach((node) => {
           const name = node.dataset.name;
 
-          node.addEventListener("click", function () {
-            log("capture: " + name);
-          }, true);
+          node.addEventListener(
+            'click',
+            function () {
+              log('capture: ' + name);
+            },
+            true,
+          );
 
-          node.addEventListener("click", function (event) {
-            log("bubble-1: " + name);
+          node.addEventListener('click', function (event) {
+            log('bubble-1: ' + name);
 
-            if (mode === "stop" && name === "middle") {
-              log("middle 执行 stopPropagation");
+            if (mode === 'stop' && name === 'middle') {
+              log('middle 执行 stopPropagation');
               event.stopPropagation();
             }
 
-            if (mode === "immediate" && name === "inner") {
-              log("inner 执行 stopImmediatePropagation");
+            if (mode === 'immediate' && name === 'inner') {
+              log('inner 执行 stopImmediatePropagation');
               event.stopImmediatePropagation();
             }
           });
 
-          node.addEventListener("click", function () {
-            log("bubble-2: " + name);
+          node.addEventListener('click', function () {
+            log('bubble-2: ' + name);
           });
         });
       }
@@ -145,36 +302,41 @@
       bindEventFlow();
 
       // ============ 2. 模式切换按钮 ============
-      document.getElementById("normalBtn").addEventListener("click", () => {
-        mode = "normal";
-        resetLog("已切换：正常传播。点击 inner。");
+      document.getElementById('normalBtn').addEventListener('click', () => {
+        mode = 'normal';
+        resetLog('已切换：正常传播。点击 inner。');
       });
 
-      document.getElementById("stopBtn").addEventListener("click", () => {
-        mode = "stop";
-        resetLog("已切换：middle 冒泡阶段 stopPropagation。点击 inner。");
+      document.getElementById('stopBtn').addEventListener('click', () => {
+        mode = 'stop';
+        resetLog('已切换：middle 冒泡阶段 stopPropagation。点击 inner。');
       });
 
-      document.getElementById("immediateBtn").addEventListener("click", () => {
-        mode = "immediate";
-        resetLog("已切换：inner 冒泡阶段 stopImmediatePropagation。点击 inner。");
+      document.getElementById('immediateBtn').addEventListener('click', () => {
+        mode = 'immediate';
+        resetLog('已切换：inner 冒泡阶段 stopImmediatePropagation。点击 inner。');
       });
 
       // ============ 3. 事件委托：父级 ul 统一处理 li 点击 ============
-      document.getElementById("todoList").addEventListener("click", event => {
-        const item = event.target.closest("li");
+      document.getElementById('todoList').addEventListener('click', (event) => {
+        const item = event.target.closest('li');
         if (!item || !event.currentTarget.contains(item)) return;
-        resetLog("事件委托：父级 ul 捕获到 li 点击，id=" + item.dataset.id + "，文本=" + item.textContent);
+        resetLog(
+          '事件委托：父级 ul 捕获到 li 点击，id=' + item.dataset.id + '，文本=' + item.textContent,
+        );
       });
 
       // ============ 4. addEventListener options：once / capture（Console）============
       // capture 已在 §1 的 addEventListener(..., true) 演示；passive 主要用于 scroll/touch，见复习区
       let onceDemoCount = 0;
-      document.getElementById("normalBtn").addEventListener("click", function () {
-        onceDemoCount += 1;
-        console.log("once 监听触发次数:", onceDemoCount, "（仅第一次有效）");
-      }, { once: true });
-
+      document.getElementById('normalBtn').addEventListener(
+        'click',
+        function () {
+          onceDemoCount += 1;
+          console.log('once 监听触发次数:', onceDemoCount, '（仅第一次有效）');
+        },
+        { once: true },
+      );
     </script>
     <!-- SCRIPT_END -->
 
@@ -184,15 +346,23 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./01-%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF.html">相关 · 事件循环</a>
-        <a href="./03-Node%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E5%AF%B9%E6%AF%94.html">相关 · Node与浏览器事件循环对比</a>
+        <a
+          href="./03-Node%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E5%AF%B9%E6%AF%94.html"
+        >
+          相关 · Node与浏览器事件循环对比
+        </a>
         <a href="./01-%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF.html">← 事件循环</a>
-        <a href="./03-Node%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E5%AF%B9%E6%AF%94.html">Node与浏览器事件循环对比 →</a>
+        <a
+          href="./03-Node%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E5%AF%B9%E6%AF%94.html"
+        >
+          Node与浏览器事件循环对比 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

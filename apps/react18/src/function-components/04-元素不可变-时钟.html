@@ -17,7 +17,7 @@
 <!doctype html>
 <html lang="zh-CN">
   <head>
-    <meta charset="UTF-8"/>
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>React · 元素不可变（时钟）</title>
     <script src="../../libs/react.development.js"></script>
@@ -30,30 +30,116 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>React 元素的「不可变」特性</h1>
-      <p class="hint">请打开 DevTools Console 查看每秒 tick 日志；下方 #root 为 React 挂载演示区，观察时间文本如何更新。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看每秒 tick 日志；下方 #root 为 React
+        挂载演示区，观察时间文本如何更新。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>React element 是描述某一刻 UI 的不可变对象。创建后不要修改它的属性或子节点；要表达新界面，就创建新的 element 并交给 React 渲染。</li>
-          <li>本 demo 的时钟每秒重新创建包含当前时间的 element，再调用同一个 <code>root.render(element)</code>。这演示的是“用新描述替换旧描述”，不是直接改 DOM 文本。</li>
-          <li>ReactDOM 会比较前后两次 element 描述，只把必要变化提交到真实 DOM。时钟示例里主要变化是时间文本，而不是整页 DOM 都被粗暴重建。</li>
-          <li><code>createRoot</code> 应在容器上创建一次并复用；在 <code>setInterval</code> 里反复 <code>createRoot</code> 会重复创建根，违背 React 18 root 的使用方式。</li>
-          <li>真实项目中通常不会手动反复调用 <code>root.render</code> 来更新局部 UI，而是用组件 <code>state</code> 或外部状态触发渲染；本页是为了单独说明 element 不可变。</li>
+          <li>
+            React element 是描述某一刻 UI
+            的不可变对象。创建后不要修改它的属性或子节点；要表达新界面，就创建新的 element 并交给
+            React 渲染。
+          </li>
+          <li>
+            本 demo 的时钟每秒重新创建包含当前时间的 element，再调用同一个
+            <code>root.render(element)</code>
+            。这演示的是“用新描述替换旧描述”，不是直接改 DOM 文本。
+          </li>
+          <li>
+            ReactDOM 会比较前后两次 element 描述，只把必要变化提交到真实
+            DOM。时钟示例里主要变化是时间文本，而不是整页 DOM 都被粗暴重建。
+          </li>
+          <li>
+            <code>createRoot</code>
+            应在容器上创建一次并复用；在
+            <code>setInterval</code>
+            里反复
+            <code>createRoot</code>
+            会重复创建根，违背 React 18 root 的使用方式。
+          </li>
+          <li>
+            真实项目中通常不会手动反复调用
+            <code>root.render</code>
+            来更新局部 UI，而是用组件
+            <code>state</code>
+            或外部状态触发渲染；本页是为了单独说明 element 不可变。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>React element 为什么说是不可变的？</strong> 结论是 element 表示某一时刻 UI 的快照，创建后不应修改。原因是 React 依赖新旧描述比较来决定 DOM 更新；项目里要改变 UI，应改变 state/props 或创建新 element。</li>
-          <li><strong>时钟示例为什么每秒创建新 element？</strong> 结论是因为当前时间变了，需要一份新的 UI 描述。原因是旧 element 不会被原地修改；边界是这个写法适合讲原理，实际组件里会用 <code>useState</code> 和 effect 管理定时器。</li>
-          <li><strong>React 会不会每次 render 都重建整个 DOM？</strong> 结论是不会简单粗暴重建整棵 DOM。原因是 React 会比较前后描述并提交必要变更；但这不代表 render 没成本，频繁定时更新仍应控制范围和清理定时器。</li>
-          <li><strong><code>createRoot</code> 为什么只创建一次？</strong> 结论是一个容器对应一个 React root，后续更新复用 <code>root.render</code>。原因是 root 保存调度与渲染上下文；在循环里创建 root 会制造错误用法和潜在资源问题。</li>
-          <li><strong>真实项目为什么用 state 而不是手动 root.render？</strong> 结论是 state 让更新声明式、可组合、可测试。原因是组件内部 <code>useState</code> + <code>useEffect</code> 能自动管理定时器清理；手动 <code>root.render</code> 只适合入门演示 element 不可变原理。</li>
+          <li>
+            <strong>React element 为什么说是不可变的？</strong>
+            结论是 element 表示某一时刻 UI 的快照，创建后不应修改。原因是 React
+            依赖新旧描述比较来决定 DOM 更新；项目里要改变 UI，应改变 state/props 或创建新 element。
+          </li>
+          <li>
+            <strong>时钟示例为什么每秒创建新 element？</strong>
+            结论是因为当前时间变了，需要一份新的 UI 描述。原因是旧 element
+            不会被原地修改；边界是这个写法适合讲原理，实际组件里会用
+            <code>useState</code>
+            和 effect 管理定时器。
+          </li>
+          <li>
+            <strong>React 会不会每次 render 都重建整个 DOM？</strong>
+            结论是不会简单粗暴重建整棵 DOM。原因是 React 会比较前后描述并提交必要变更；但这不代表
+            render 没成本，频繁定时更新仍应控制范围和清理定时器。
+          </li>
+          <li>
+            <strong>
+              <code>createRoot</code>
+              为什么只创建一次？
+            </strong>
+            结论是一个容器对应一个 React root，后续更新复用
+            <code>root.render</code>
+            。原因是 root 保存调度与渲染上下文；在循环里创建 root 会制造错误用法和潜在资源问题。
+          </li>
+          <li>
+            <strong>真实项目为什么用 state 而不是手动 root.render？</strong>
+            结论是 state 让更新声明式、可组合、可测试。原因是组件内部
+            <code>useState</code>
+            +
+            <code>useEffect</code>
+            能自动管理定时器清理；手动
+            <code>root.render</code>
+            只适合入门演示 element 不可变原理。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/createElement" target="_blank" rel="noreferrer">react.dev: createElement</a></li>
-          <li><a href="https://react.dev/learn/render-and-commit" target="_blank" rel="noreferrer">react.dev: Render and Commit</a></li>
-          <li><a href="https://react.dev/reference/react-dom/client/createRoot" target="_blank" rel="noreferrer">react.dev: createRoot</a></li>
-          <li><a href="https://react.dev/learn/state-a-components-memory" target="_blank" rel="noreferrer">react.dev: State: A Component's Memory</a></li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/createElement"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: createElement
+            </a>
+          </li>
+          <li>
+            <a href="https://react.dev/learn/render-and-commit" target="_blank" rel="noreferrer">
+              react.dev: Render and Commit
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react-dom/client/createRoot"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: createRoot
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/state-a-components-memory"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: State: A Component's Memory
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -66,7 +152,7 @@
     <!-- SCRIPT_START -->
     <script type="text/babel">
       // ====== 1. createRoot 只创建一次，后续 tick 复用同一个 root ======
-      const root = ReactDOM.createRoot(document.getElementById("root"));
+      const root = ReactDOM.createRoot(document.getElementById('root'));
       let tickCount = 0;
 
       function tick() {
@@ -84,7 +170,7 @@
 
         // ====== 3. root.render 提交新描述；React 协调后只更新变化的 DOM 节点 ======
         root.render(element);
-        console.log("tick #" + tickCount + " 创建新 element，时间:", now); // 预期: 每秒一条
+        console.log('tick #' + tickCount + ' 创建新 element，时间:', now); // 预期: 每秒一条
       }
 
       // 首次立即渲染，之后每秒更新
@@ -98,20 +184,24 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./03-%E5%85%83%E7%B4%A0%E4%B8%8E%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6.html">相关 · 03-元素与函数组件</a>
+        <a href="./03-%E5%85%83%E7%B4%A0%E4%B8%8E%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6.html">
+          相关 · 03-元素与函数组件
+        </a>
         <a href="./05-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-props.html">相关 · 05-函数组件-props</a>
-        <a href="./03-%E5%85%83%E7%B4%A0%E4%B8%8E%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6.html">← 元素与函数组件</a>
+        <a href="./03-%E5%85%83%E7%B4%A0%E4%B8%8E%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6.html">
+          ← 元素与函数组件
+        </a>
         <a href="./05-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-props.html">函数组件-props →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

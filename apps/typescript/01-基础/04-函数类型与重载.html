@@ -24,9 +24,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TypeScript · 函数类型与重载</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 820px; line-height: 1.6; color: #222; }
-      pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
-      #log { background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; white-space: pre-wrap; font-size: 0.85rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 820px;
+        line-height: 1.6;
+        color: #222;
+      }
+      pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 14px;
+        border-radius: 8px;
+        overflow: auto;
+        font-size: 0.86rem;
+      }
+      #log {
+        background: #f6f8fa;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 12px;
+        white-space: pre-wrap;
+        font-size: 0.85rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -39,26 +59,123 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>函数类型是 API 契约：参数决定调用者能传什么，返回值决定调用者能拿到什么；本页展示了 <code>type</code> 别名、<code>interface</code> 调用签名和内联函数类型三种常用写法。</li>
-          <li><code>this</code> 参数是 TypeScript 里的“假参数”，用于约束函数被调用时的 <code>this</code> 类型，编译后不会生成真实参数；适合对象方法、事件回调和需要禁止错误绑定的函数。</li>
-          <li>可选参数 <code>unit?: string</code> 在类型上等价于可能为 <code>undefined</code>，函数体必须处理缺省；默认参数 <code>unit = "CNY"</code> 是运行时兜底，通常放在参数列表末尾，调用者才容易省略。</li>
-          <li>剩余参数用数组类型表达，如 <code>...nums: number[]</code>；如果每个位置含义不同，可以用元组 rest，例如 <code>...args: [level: "info" | "warn", message: string]</code> 保留位置语义。</li>
-          <li>函数重载用于一个函数名对应多组外部调用方式，调用者只能按重载签名调用；实现签名必须覆盖所有分支，并在函数体内通过 <code>typeof</code>、<code>Array.isArray</code> 等方式运行时收窄。</li>
-          <li>常见坑是重载过度：如果返回类型不随参数形态明显变化，联合类型或泛型往往更简单；如果参数形态会决定返回类型，例如 <code>string</code> 返回 <code>string[]</code>、<code>number</code> 返回 <code>number[]</code>，重载可读性更好。</li>
+          <li>
+            函数类型是 API 契约：参数决定调用者能传什么，返回值决定调用者能拿到什么；本页展示了
+            <code>type</code>
+            别名、
+            <code>interface</code>
+            调用签名和内联函数类型三种常用写法。
+          </li>
+          <li>
+            <code>this</code>
+            参数是 TypeScript 里的“假参数”，用于约束函数被调用时的
+            <code>this</code>
+            类型，编译后不会生成真实参数；适合对象方法、事件回调和需要禁止错误绑定的函数。
+          </li>
+          <li>
+            可选参数
+            <code>unit?: string</code>
+            在类型上等价于可能为
+            <code>undefined</code>
+            ，函数体必须处理缺省；默认参数
+            <code>unit = "CNY"</code>
+            是运行时兜底，通常放在参数列表末尾，调用者才容易省略。
+          </li>
+          <li>
+            剩余参数用数组类型表达，如
+            <code>...nums: number[]</code>
+            ；如果每个位置含义不同，可以用元组 rest，例如
+            <code>...args: [level: "info" | "warn", message: string]</code>
+            保留位置语义。
+          </li>
+          <li>
+            函数重载用于一个函数名对应多组外部调用方式，调用者只能按重载签名调用；实现签名必须覆盖所有分支，并在函数体内通过
+            <code>typeof</code>
+            、
+            <code>Array.isArray</code>
+            等方式运行时收窄。
+          </li>
+          <li>
+            常见坑是重载过度：如果返回类型不随参数形态明显变化，联合类型或泛型往往更简单；如果参数形态会决定返回类型，例如
+            <code>string</code>
+            返回
+            <code>string[]</code>
+            、
+            <code>number</code>
+            返回
+            <code>number[]</code>
+            ，重载可读性更好。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>函数类型为什么既要看参数也要看返回值？</strong> 结论是函数类型描述的是完整调用契约。原因是参数约束调用者输入，返回值约束调用者后续使用；只写一边都会让类型信息断裂。项目中工具函数、回调 props、事件处理器都依赖这个契约。</li>
-          <li><strong><code>type</code>、<code>interface</code> 调用签名和内联函数类型有什么区别？</strong> 结论是三者都能描述函数，区别主要在复用方式和扩展能力。<code>type</code> 简洁，适合函数别名和联合类型组合；<code>interface</code> 适合可扩展的对象/函数形态；内联注解适合只用一次的短回调。项目里公共 API 优先抽成名字清楚的类型，局部回调再内联。</li>
-          <li><strong>可选参数和默认参数有什么区别？</strong> 结论是可选参数是类型层面的“可能缺失”，默认参数是运行时给缺失值兜底。原因是 <code>unit?: string</code> 需要处理 <code>undefined</code>，<code>unit = "CNY"</code> 会在未传时赋默认值。实际项目中经常二者配合使用，但不能把默认参数当作外部校验。</li>
-          <li><strong>剩余参数为什么通常写成数组或元组类型？</strong> 结论是 rest 参数在运行时就是数组，类型上也应表达每个元素或每个位置的约束。原因是 <code>number[]</code> 适合任意数量同类参数，元组 rest 适合固定前缀或位置含义。日志、事件总线和命令式 API 常用这类签名。</li>
-          <li><strong>什么时候用函数重载，什么时候用联合类型？</strong> 结论是参数形态决定返回类型时用重载更清楚，简单分支用联合类型即可。原因是重载能给调用者暴露多组精确签名，但实现更复杂。项目中解析函数、DOM 包装函数可用重载；普通入参兼容通常用联合加收窄。</li>
-          <li><strong>重载实现签名能不能被外部直接调用？</strong> 结论是不能，外部调用只匹配重载签名。原因是实现签名只是函数体内部为了覆盖所有分支而写的兼容类型，不是公开 API。面试里常用这个点考察“重载签名”和“实现签名”的边界。</li>
+          <li>
+            <strong>函数类型为什么既要看参数也要看返回值？</strong>
+            结论是函数类型描述的是完整调用契约。原因是参数约束调用者输入，返回值约束调用者后续使用；只写一边都会让类型信息断裂。项目中工具函数、回调
+            props、事件处理器都依赖这个契约。
+          </li>
+          <li>
+            <strong>
+              <code>type</code>
+              、
+              <code>interface</code>
+              调用签名和内联函数类型有什么区别？
+            </strong>
+            结论是三者都能描述函数，区别主要在复用方式和扩展能力。
+            <code>type</code>
+            简洁，适合函数别名和联合类型组合；
+            <code>interface</code>
+            适合可扩展的对象/函数形态；内联注解适合只用一次的短回调。项目里公共 API
+            优先抽成名字清楚的类型，局部回调再内联。
+          </li>
+          <li>
+            <strong>可选参数和默认参数有什么区别？</strong>
+            结论是可选参数是类型层面的“可能缺失”，默认参数是运行时给缺失值兜底。原因是
+            <code>unit?: string</code>
+            需要处理
+            <code>undefined</code>
+            ，
+            <code>unit = "CNY"</code>
+            会在未传时赋默认值。实际项目中经常二者配合使用，但不能把默认参数当作外部校验。
+          </li>
+          <li>
+            <strong>剩余参数为什么通常写成数组或元组类型？</strong>
+            结论是 rest 参数在运行时就是数组，类型上也应表达每个元素或每个位置的约束。原因是
+            <code>number[]</code>
+            适合任意数量同类参数，元组 rest 适合固定前缀或位置含义。日志、事件总线和命令式 API
+            常用这类签名。
+          </li>
+          <li>
+            <strong>什么时候用函数重载，什么时候用联合类型？</strong>
+            结论是参数形态决定返回类型时用重载更清楚，简单分支用联合类型即可。原因是重载能给调用者暴露多组精确签名，但实现更复杂。项目中解析函数、DOM
+            包装函数可用重载；普通入参兼容通常用联合加收窄。
+          </li>
+          <li>
+            <strong>重载实现签名能不能被外部直接调用？</strong>
+            结论是不能，外部调用只匹配重载签名。原因是实现签名只是函数体内部为了覆盖所有分支而写的兼容类型，不是公开
+            API。面试里常用这个点考察“重载签名”和“实现签名”的边界。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/functions.html" target="_blank" rel="noopener">TypeScript Handbook: More on Functions</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#functions" target="_blank" rel="noopener">TypeScript Handbook: Function Types</a></li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/functions.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: More on Functions
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#functions"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Function Types
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -67,23 +184,22 @@
     <!-- PAGE_DOM_START -->
     <p>上方为 TypeScript 源码（在 .ts / IDE 中检查），下方为等价的可运行 JavaScript + 断言输出。</p>
     <p class="ts"><strong>TypeScript</strong></p>
-    <pre>// —— type / interface 函数类型 ——
-type Formatter = (value: number, unit?: string) =&gt; string;
-interface Parser { (source: string): string[]; }
-
-// —— 可选参数、默认参数、this 参数 ——
-function formatPrice(value: number, unit = "CNY"): string { /* ... */ }
-function describeUser(this: { name: string }, prefix: string): string { /* ... */ }
-
-// —— 剩余参数与元组 rest ——
-function sum(...nums: number[]): number { /* ... */ }
-function logEvent(...args: [level: "info" | "warn", message: string]): string { /* ... */ }
-
-// —— 函数重载 ——
-function toArray(value: string): string[];
-function toArray(value: number): number[];
-function toArray(value: string | number): string[] | number[] { /* ... */ }
-// toArray(true);                  // ❌ 编译错误：无匹配的重载签名</pre>
+    <pre>
+// —— type / interface 函数类型 ——
+      type Formatter = (value: number, unit?: string) =&gt; string;
+      interface Parser { (source: string): string[]; }
+      // —— 可选参数、默认参数、this 参数 ——
+      function formatPrice(value: number, unit = "CNY"): string { /* ... */ }
+      function describeUser(this: { name: string }, prefix: string): string { /* ... */ }
+      // —— 剩余参数与元组 rest ——
+      function sum(...nums: number[]): number { /* ... */ }
+      function logEvent(...args: [level: "info" | "warn", message: string]): string { /* ... */ }
+      // —— 函数重载 ——
+      function toArray(value: string): string[];
+      function toArray(value: number): number[];
+      function toArray(value: string | number): string[] | number[] { /* ... */ }
+      // toArray(true);                  // ❌ 编译错误：无匹配的重载签名</pre
+    >
     <p><strong>运行时 JavaScript（本页执行）</strong></p>
     <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
@@ -92,7 +208,7 @@ function toArray(value: string | number): string[] | number[] { /* ... */ }
     <script>
       // ============ 1. type 函数别名 Formatter ============
       /** @param {number} value @param {string=} unit */
-      function formatPrice(value, unit = "CNY") {
+      function formatPrice(value, unit = 'CNY') {
         return `${unit} ${value.toFixed(2)}`;
       }
 
@@ -128,27 +244,36 @@ function toArray(value: string | number): string[] | number[] { /* ... */ }
       }
       /** @param {string|number} value */
       function toArray(value) {
-        return typeof value === "string" ? value.split("") : [value];
+        return typeof value === 'string' ? value.split('') : [value];
       }
 
       const lines = [];
-      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+      const assert = (cond, msg) => lines.push((cond ? '✓ ' : '✗ ') + msg);
 
-      assert(formatPrice(12) === "CNY 12.00", "Formatter 默认参数 unit = 'CNY'");
-      assert(JSON.stringify(parseWords("hello ts")) === '["hello","ts"]', "interface Parser 调用签名");
-      assert(JSON.stringify(keepPositive) === "[1,3]", "内联回调 filter((n: number): boolean => n > 0)");
-      assert(describeUser.call({ name: "Ada" }, "用户") === "用户: Ada", "this 参数约束 call 时的 this 形状");
-      assert(sum(1, 2, 3) === 6, "剩余参数 ...nums: number[]");
-      assert(logEvent("warn", "余额不足") === "[warn] 余额不足", "元组 rest [level, message]");
-      assert(normalizeId(7) === "7", "联合类型适合返回类型不随入参形态变化");
-      assert(JSON.stringify(toArray("ts")) === '["t","s"]', "重载 string 分支 → string[]");
-      assert(JSON.stringify(toArray(9)) === "[9]", "重载 number 分支 → number[]");
+      assert(formatPrice(12) === 'CNY 12.00', "Formatter 默认参数 unit = 'CNY'");
       assert(
-        JSON.stringify(toArray(true)) === "[true]",
-        "JS 运行时 toArray(true) 仍会执行 — TS 重载无 boolean 分支应报错"
+        JSON.stringify(parseWords('hello ts')) === '["hello","ts"]',
+        'interface Parser 调用签名',
+      );
+      assert(
+        JSON.stringify(keepPositive) === '[1,3]',
+        '内联回调 filter((n: number): boolean => n > 0)',
+      );
+      assert(
+        describeUser.call({ name: 'Ada' }, '用户') === '用户: Ada',
+        'this 参数约束 call 时的 this 形状',
+      );
+      assert(sum(1, 2, 3) === 6, '剩余参数 ...nums: number[]');
+      assert(logEvent('warn', '余额不足') === '[warn] 余额不足', '元组 rest [level, message]');
+      assert(normalizeId(7) === '7', '联合类型适合返回类型不随入参形态变化');
+      assert(JSON.stringify(toArray('ts')) === '["t","s"]', '重载 string 分支 → string[]');
+      assert(JSON.stringify(toArray(9)) === '[9]', '重载 number 分支 → number[]');
+      assert(
+        JSON.stringify(toArray(true)) === '[true]',
+        'JS 运行时 toArray(true) 仍会执行 — TS 重载无 boolean 分支应报错',
       );
 
-      document.getElementById("log").textContent = lines.join("\n");
+      document.getElementById('log').textContent = lines.join('\n');
     </script>
     <!-- SCRIPT_END -->
 
@@ -158,19 +283,27 @@ function toArray(value: string | number): string[] | number[] { /* ... */ }
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
         <a href="./03-%E6%B3%9B%E5%9E%8B%E5%9F%BA%E7%A1%80.html">相关 · 泛型基础</a>
-        <a href="./05-%E6%95%B0%E7%BB%84%E5%85%83%E7%BB%84%E4%B8%8E%E5%AD%97%E9%9D%A2%E9%87%8F.html">相关 · 数组元组与字面量</a>
+        <a
+          href="./05-%E6%95%B0%E7%BB%84%E5%85%83%E7%BB%84%E4%B8%8E%E5%AD%97%E9%9D%A2%E9%87%8F.html"
+        >
+          相关 · 数组元组与字面量
+        </a>
         <a href="./03-%E6%B3%9B%E5%9E%8B%E5%9F%BA%E7%A1%80.html">← 泛型基础</a>
-        <a href="./05-%E6%95%B0%E7%BB%84%E5%85%83%E7%BB%84%E4%B8%8E%E5%AD%97%E9%9D%A2%E9%87%8F.html">数组元组与字面量 →</a>
+        <a
+          href="./05-%E6%95%B0%E7%BB%84%E5%85%83%E7%BB%84%E4%B8%8E%E5%AD%97%E9%9D%A2%E9%87%8F.html"
+        >
+          数组元组与字面量 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

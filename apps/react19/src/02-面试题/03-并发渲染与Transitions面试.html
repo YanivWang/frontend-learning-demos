@@ -24,12 +24,35 @@
     <script src="../../libs/react-dom.development.js"></script>
     <script src="../../libs/babel.min.js"></script>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 720px; line-height: 1.6; }
-      input { padding: 0.4rem; width: 100%; max-width: 320px; }
-      .slow-list { margin-top: 1rem; max-height: 200px; overflow: auto; font-size: 0.9rem; }
-      .pending { color: #0969da; }
-      .demo-split { border-top: 1px solid #ddd; margin-top: 2rem; padding-top: 1.5rem; }
-      h2 { font-size: 1.1rem; margin-top: 0; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 720px;
+        line-height: 1.6;
+      }
+      input {
+        padding: 0.4rem;
+        width: 100%;
+        max-width: 320px;
+      }
+      .slow-list {
+        margin-top: 1rem;
+        max-height: 200px;
+        overflow: auto;
+        font-size: 0.9rem;
+      }
+      .pending {
+        color: #0969da;
+      }
+      .demo-split {
+        border-top: 1px solid #ddd;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+      }
+      h2 {
+        font-size: 1.1rem;
+        margin-top: 0;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -38,30 +61,135 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>并发渲染与 Transitions 面试</h1>
-      <p class="hint">下方 #root 有两组演示：先试「useTransition」输入框，再试「useDeferredValue」输入框；快速输入数字（如 12）观察输入即时回显、列表滞后与 isPending；请打开 DevTools Console 查看日志。</p>
+      <p class="hint">
+        下方 #root
+        有两组演示：先试「useTransition」输入框，再试「useDeferredValue」输入框；快速输入数字（如
+        12）观察输入即时回显、列表滞后与 isPending；请打开 DevTools Console 查看日志。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>并发渲染不是把 React 变成多线程，而是让渲染工作可被中断、恢复或丢弃；用户输入这类紧急更新可以先提交，列表筛选、路由切换这类过渡更新可延后。</li>
-          <li><code>startTransition</code> 标记低优先级更新，<code>useTransition</code> 在此基础上返回 <code>isPending</code>；本页第一组演示把 <code>query</code> 紧急更新、<code>deferredQuery</code> 放进 transition。</li>
-          <li><code>useDeferredValue(value)</code> 返回值的延迟版本，适合「已有 state，派生 UI 想延后」的场景；本页第二组只需一个 <code>query</code>，列表消费 <code>useDeferredValue(query)</code>，无需手写第二个 state。</li>
-          <li>版本边界：React 18 已提供并发根和 <code>useTransition</code>；React 19 的 Actions、表单 Action、<code>useOptimistic</code> 等常和 transition 一起解释异步交互状态；<code>createRoot</code> 是并发前提，但并发更新需 opt-in（transition / deferredValue）。</li>
-          <li>Transition 不会减少慢计算本身的耗时，也不会替代防抖、虚拟列表、缓存或 Web Worker；如果渲染或计算太重，仍要降低工作量。</li>
-          <li>受控输入的 value 更新必须保持紧急，不能只放进 transition；否则输入会滞后，甚至出现用户输入和 UI 回显不一致的体验问题。</li>
+          <li>
+            并发渲染不是把 React
+            变成多线程，而是让渲染工作可被中断、恢复或丢弃；用户输入这类紧急更新可以先提交，列表筛选、路由切换这类过渡更新可延后。
+          </li>
+          <li>
+            <code>startTransition</code>
+            标记低优先级更新，
+            <code>useTransition</code>
+            在此基础上返回
+            <code>isPending</code>
+            ；本页第一组演示把
+            <code>query</code>
+            紧急更新、
+            <code>deferredQuery</code>
+            放进 transition。
+          </li>
+          <li>
+            <code>useDeferredValue(value)</code>
+            返回值的延迟版本，适合「已有 state，派生 UI 想延后」的场景；本页第二组只需一个
+            <code>query</code>
+            ，列表消费
+            <code>useDeferredValue(query)</code>
+            ，无需手写第二个 state。
+          </li>
+          <li>
+            版本边界：React 18 已提供并发根和
+            <code>useTransition</code>
+            ；React 19 的 Actions、表单 Action、
+            <code>useOptimistic</code>
+            等常和 transition 一起解释异步交互状态；
+            <code>createRoot</code>
+            是并发前提，但并发更新需 opt-in（transition / deferredValue）。
+          </li>
+          <li>
+            Transition 不会减少慢计算本身的耗时，也不会替代防抖、虚拟列表、缓存或 Web
+            Worker；如果渲染或计算太重，仍要降低工作量。
+          </li>
+          <li>
+            受控输入的 value 更新必须保持紧急，不能只放进
+            transition；否则输入会滞后，甚至出现用户输入和 UI 回显不一致的体验问题。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>并发渲染是不是多线程？它真正改变了什么？</strong> 结论是不是多线程，主要改变的是 React 调度渲染工作的方式。原因是 React 可以把非紧急渲染拆开、暂停并让更高优先级输入先更新。边界是业务代码仍运行在 JS 主线程，重计算仍会阻塞，需要单独优化。</li>
-          <li><strong><code>startTransition</code> 与普通 <code>setState</code> 的优先级差异是什么？</strong> 结论是普通更新默认紧急，transition 更新可被打断。原因是 React 认为输入回显、点击反馈应优先，列表筛选或路由内容可以稍后显示。项目中常把搜索关键字立刻更新，把结果列表、图表或路由内容放进 transition。</li>
-          <li><strong><code>useTransition</code>、<code>useDeferredValue</code> 和防抖分别适合什么场景？</strong> 结论是 <code>useTransition</code> 用在你能控制更新发起点时，<code>useDeferredValue</code> 用在延后消费某个值时，防抖用于减少事件或请求次数。原因是前两者是 React 调度语义，防抖是业务频率控制。输入联想通常会结合防抖请求和 transition 渲染结果。</li>
-          <li><strong>为什么 transition 不能包住受控输入本身？</strong> 结论是输入框的 <code>value</code> 更新必须保持同步响应。原因是用户输入属于紧急交互，延迟回显会破坏受控组件体验。正确做法是立刻更新输入值，再把昂贵的派生列表或页面内容放进 transition。</li>
+          <li>
+            <strong>并发渲染是不是多线程？它真正改变了什么？</strong>
+            结论是不是多线程，主要改变的是 React 调度渲染工作的方式。原因是 React
+            可以把非紧急渲染拆开、暂停并让更高优先级输入先更新。边界是业务代码仍运行在 JS
+            主线程，重计算仍会阻塞，需要单独优化。
+          </li>
+          <li>
+            <strong>
+              <code>startTransition</code>
+              与普通
+              <code>setState</code>
+              的优先级差异是什么？
+            </strong>
+            结论是普通更新默认紧急，transition 更新可被打断。原因是 React
+            认为输入回显、点击反馈应优先，列表筛选或路由内容可以稍后显示。项目中常把搜索关键字立刻更新，把结果列表、图表或路由内容放进
+            transition。
+          </li>
+          <li>
+            <strong>
+              <code>useTransition</code>
+              、
+              <code>useDeferredValue</code>
+              和防抖分别适合什么场景？
+            </strong>
+            结论是
+            <code>useTransition</code>
+            用在你能控制更新发起点时，
+            <code>useDeferredValue</code>
+            用在延后消费某个值时，防抖用于减少事件或请求次数。原因是前两者是 React
+            调度语义，防抖是业务频率控制。输入联想通常会结合防抖请求和 transition 渲染结果。
+          </li>
+          <li>
+            <strong>为什么 transition 不能包住受控输入本身？</strong>
+            结论是输入框的
+            <code>value</code>
+            更新必须保持同步响应。原因是用户输入属于紧急交互，延迟回显会破坏受控组件体验。正确做法是立刻更新输入值，再把昂贵的派生列表或页面内容放进
+            transition。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/useTransition" target="_blank" rel="noreferrer">React Reference: useTransition</a></li>
-          <li><a href="https://react.dev/reference/react/startTransition" target="_blank" rel="noreferrer">React Reference: startTransition</a></li>
-          <li><a href="https://react.dev/reference/react/useDeferredValue" target="_blank" rel="noreferrer">React Reference: useDeferredValue</a></li>
-          <li><a href="https://react.dev/blog/2022/03/29/react-v18#what-is-concurrent-react" target="_blank" rel="noreferrer">React 18 Blog: What is Concurrent React?</a></li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/useTransition"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React Reference: useTransition
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/startTransition"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React Reference: startTransition
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/useDeferredValue"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React Reference: useDeferredValue
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/blog/2022/03/29/react-v18#what-is-concurrent-react"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React 18 Blog: What is Concurrent React?
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -79,7 +207,7 @@
       function slowFilter(text) {
         const items = [];
         for (let i = 0; i < 8000; i++) {
-          if (String(i).includes(text)) items.push("item-" + i);
+          if (String(i).includes(text)) items.push('item-' + i);
         }
         return items.slice(0, 40);
       }
@@ -96,8 +224,8 @@
 
       // ====== 2. useTransition：query 紧急更新，deferredQuery 过渡更新 ======
       function TransitionDemo() {
-        const [query, setQuery] = useState("");
-        const [deferredQuery, setDeferredQuery] = useState("");
+        const [query, setQuery] = useState('');
+        const [deferredQuery, setDeferredQuery] = useState('');
         const [isPending, startTransition] = useTransition();
 
         const list = useMemo(() => slowFilter(deferredQuery), [deferredQuery]);
@@ -105,10 +233,10 @@
         const onChange = (e) => {
           const value = e.target.value;
           setQuery(value);
-          console.log("[useTransition] 紧急 query:", value);
+          console.log('[useTransition] 紧急 query:', value);
           startTransition(() => {
             setDeferredQuery(value);
-            console.log("[useTransition] 过渡 deferredQuery:", value);
+            console.log('[useTransition] 过渡 deferredQuery:', value);
           });
         };
 
@@ -125,7 +253,7 @@
 
       // ====== 3. useDeferredValue：单 state，派生 UI 消费延迟值 ======
       function DeferredValueDemo() {
-        const [query, setQuery] = useState("");
+        const [query, setQuery] = useState('');
         const deferredQuery = useDeferredValue(query);
         const isStale = query !== deferredQuery;
 
@@ -134,13 +262,15 @@
         const onChange = (e) => {
           const value = e.target.value;
           setQuery(value);
-          console.log("[useDeferredValue] query:", value, "→ 列表将跟随 deferred 值");
+          console.log('[useDeferredValue] query:', value, '→ 列表将跟随 deferred 值');
         };
 
         return (
           <section className="demo-split">
             <h2>方式 B：useDeferredValue</h2>
-            <p>只维护 query；<code>useDeferredValue(query)</code> 供慢列表使用，无需第二个 setState。</p>
+            <p>
+              只维护 query；<code>useDeferredValue(query)</code> 供慢列表使用，无需第二个 setState。
+            </p>
             <input value={query} onChange={onChange} placeholder="过滤数字，如 12" />
             {isStale && <p className="pending">列表滞后于输入（query !== deferredQuery）…</p>}
             <SlowList items={list} />
@@ -155,13 +285,15 @@
             <TransitionDemo />
             <DeferredValueDemo />
             <p className="demo-split">
-              <strong>面试答法：</strong>两者都让 React 优先提交输入；<code>useTransition</code> 适合你能控制「哪次 setState 进 transition」，<code>useDeferredValue</code> 适合延后消费某个已有值。都不会减少慢计算耗时。
+              <strong>面试答法：</strong>两者都让 React 优先提交输入；<code>useTransition</code>{' '}
+              适合你能控制「哪次 setState 进 transition」，<code>useDeferredValue</code>{' '}
+              适合延后消费某个已有值。都不会减少慢计算耗时。
             </p>
           </section>
         );
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -170,19 +302,24 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./02-%E8%A1%A8%E5%8D%95Action%E4%B8%8EuseFormStatus.html">← 表单Action与useFormStatus</a>
-        <a href="./04-%E9%94%99%E8%AF%AF%E8%BE%B9%E7%95%8C%E4%B8%8E%E7%8A%B6%E6%80%81%E8%BE%B9%E7%95%8C.html">错误边界与状态边界 →</a>
+        <a href="./02-%E8%A1%A8%E5%8D%95Action%E4%B8%8EuseFormStatus.html">
+          ← 表单Action与useFormStatus
+        </a>
+        <a
+          href="./04-%E9%94%99%E8%AF%AF%E8%BE%B9%E7%95%8C%E4%B8%8E%E7%8A%B6%E6%80%81%E8%BE%B9%E7%95%8C.html"
+        >
+          错误边界与状态边界 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-  
-</body>
+  </body>
 </html>

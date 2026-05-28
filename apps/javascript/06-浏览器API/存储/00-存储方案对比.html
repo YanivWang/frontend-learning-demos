@@ -22,12 +22,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>浏览器存储方案对比</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
-      table { border-collapse: collapse; max-width: 1000px; }
-      th, td { border: 1px solid #ddd; padding: 8px 10px; vertical-align: top; }
-      th { background: #f5f5f5; }
-      button { margin: 4px 6px 4px 0; padding: 6px 10px; }
-      #output { padding: 10px; border: 1px solid #ddd; background: #fafafa; white-space: pre-line; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 1.5rem;
+        line-height: 1.6;
+      }
+      table {
+        border-collapse: collapse;
+        max-width: 1000px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px 10px;
+        vertical-align: top;
+      }
+      th {
+        background: #f5f5f5;
+      }
+      button {
+        margin: 4px 6px 4px 0;
+        padding: 6px 10px;
+      }
+      #output {
+        padding: 10px;
+        border: 1px solid #ddd;
+        background: #fafafa;
+        white-space: pre-line;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -36,31 +58,167 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>浏览器存储方案对比</h1>
-      <p class="hint">阅读本复习区后，在下方表格对照四种方案，并用按钮写入/读取/清理观察实际行为。</p>
+      <p class="hint">
+        阅读本复习区后，在下方表格对照四种方案，并用按钮写入/读取/清理观察实际行为。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Cookie 的核心特点是会随匹配 Domain/Path 的请求自动发送，适合服务端需要读取的少量状态；登录态应由服务端通过 <code>Set-Cookie</code> 配置 <code>HttpOnly</code>、<code>Secure</code>、<code>SameSite</code>，前端脚本不能设置 <code>HttpOnly</code>。</li>
-          <li><code>sessionStorage</code> 以标签页为生命周期，关闭页面后释放；<code>localStorage</code> 持久到手动清理或浏览器策略清理，二者都是同步字符串 key-value API。</li>
-          <li><code>localStorage</code> / <code>sessionStorage</code> 适合少量偏好、草稿和非敏感状态，不适合大对象、高频写入或敏感 token；大量同步读写会阻塞主线程，隐私模式还可能直接抛错。</li>
-          <li>IndexedDB 是异步、事务型、同源隔离的浏览器数据库，可存结构化对象和 Blob，更适合离线数据、大文件缓存、复杂索引；localforage 这类库通常是在它之上提供 Promise 封装和降级。</li>
-          <li>浏览器存储没有“永久安全”的承诺：配额、驱逐策略、第三方上下文限制、用户清理和私密浏览都会影响可用性，业务写入必须捕获 <code>QuotaExceededError</code>、<code>SecurityError</code> 等失败路径。</li>
-          <li><strong>运行环境：</strong> <code>localStorage</code> / <code>sessionStorage</code> / Cookie 在 <code>file://</code> 与 <code>http(s)://</code> 一般可用；隐私模式或禁用存储时可能抛 <code>SecurityError</code>。本页不涉及需 HTTPS 的持久化 API（如 <code>navigator.storage.persist()</code>）。</li>
+          <li>
+            Cookie 的核心特点是会随匹配 Domain/Path
+            的请求自动发送，适合服务端需要读取的少量状态；登录态应由服务端通过
+            <code>Set-Cookie</code>
+            配置
+            <code>HttpOnly</code>
+            、
+            <code>Secure</code>
+            、
+            <code>SameSite</code>
+            ，前端脚本不能设置
+            <code>HttpOnly</code>
+            。
+          </li>
+          <li>
+            <code>sessionStorage</code>
+            以标签页为生命周期，关闭页面后释放；
+            <code>localStorage</code>
+            持久到手动清理或浏览器策略清理，二者都是同步字符串 key-value API。
+          </li>
+          <li>
+            <code>localStorage</code>
+            /
+            <code>sessionStorage</code>
+            适合少量偏好、草稿和非敏感状态，不适合大对象、高频写入或敏感
+            token；大量同步读写会阻塞主线程，隐私模式还可能直接抛错。
+          </li>
+          <li>
+            IndexedDB 是异步、事务型、同源隔离的浏览器数据库，可存结构化对象和
+            Blob，更适合离线数据、大文件缓存、复杂索引；localforage 这类库通常是在它之上提供 Promise
+            封装和降级。
+          </li>
+          <li>
+            浏览器存储没有“永久安全”的承诺：配额、驱逐策略、第三方上下文限制、用户清理和私密浏览都会影响可用性，业务写入必须捕获
+            <code>QuotaExceededError</code>
+            、
+            <code>SecurityError</code>
+            等失败路径。
+          </li>
+          <li>
+            <strong>运行环境：</strong>
+            <code>localStorage</code>
+            /
+            <code>sessionStorage</code>
+            / Cookie 在
+            <code>file://</code>
+            与
+            <code>http(s)://</code>
+            一般可用；隐私模式或禁用存储时可能抛
+            <code>SecurityError</code>
+            。本页不涉及需 HTTPS 的持久化 API（如
+            <code>navigator.storage.persist()</code>
+            ）。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>登录态、偏好设置和离线缓存分别选哪种存储？</strong> 结论是登录态通常用服务端设置的安全 Cookie，偏好设置可用 <code>localStorage</code>，离线结构化数据优先 IndexedDB。原因是它们分别对应自动随请求发送、前端同步读取、异步大容量存储三类需求；边界是敏感 token 不应放进可被 XSS 读取的 Web Storage。</li>
-          <li><strong><code>localStorage</code> 和 <code>sessionStorage</code> 生命周期有什么区别？</strong> 结论是前者跨会话持久，后者限定在当前页面会话。原因是 <code>sessionStorage</code> 与标签页绑定，关闭标签页后释放；项目里多标签同步状态要用 <code>localStorage</code> 的 <code>storage</code> 事件或服务端状态，而不是指望 <code>sessionStorage</code> 共享。</li>
-          <li><strong>为什么不建议把大量数据写进 <code>localStorage</code>？</strong> 结论是它是同步 API，容量和性能都不适合大数据。原因是序列化和读写会占用主线程，还只能存字符串；项目里的离线列表、图片、文件和复杂对象应改用 IndexedDB 或 Cache Storage。</li>
-          <li><strong>Cookie 的 <code>Secure</code>、<code>HttpOnly</code>、<code>SameSite</code> 分别解决什么问题？</strong> 结论是 <code>Secure</code> 限制 HTTPS 发送，<code>HttpOnly</code> 阻止脚本读取，<code>SameSite</code> 降低跨站请求携带 Cookie 的风险。原因是 Cookie 会自动随请求发送；认证场景必须按威胁模型配置这些属性。</li>
-          <li><strong>浏览器存储写入失败或被清理时如何兜底？</strong> 结论是把存储视为可失败缓存。原因是配额、隐私模式、用户清理和浏览器驱逐都可能发生；项目里写入要 try/catch，读取要能从服务端恢复或重新初始化。</li>
+          <li>
+            <strong>登录态、偏好设置和离线缓存分别选哪种存储？</strong>
+            结论是登录态通常用服务端设置的安全 Cookie，偏好设置可用
+            <code>localStorage</code>
+            ，离线结构化数据优先
+            IndexedDB。原因是它们分别对应自动随请求发送、前端同步读取、异步大容量存储三类需求；边界是敏感
+            token 不应放进可被 XSS 读取的 Web Storage。
+          </li>
+          <li>
+            <strong>
+              <code>localStorage</code>
+              和
+              <code>sessionStorage</code>
+              生命周期有什么区别？
+            </strong>
+            结论是前者跨会话持久，后者限定在当前页面会话。原因是
+            <code>sessionStorage</code>
+            与标签页绑定，关闭标签页后释放；项目里多标签同步状态要用
+            <code>localStorage</code>
+            的
+            <code>storage</code>
+            事件或服务端状态，而不是指望
+            <code>sessionStorage</code>
+            共享。
+          </li>
+          <li>
+            <strong>
+              为什么不建议把大量数据写进
+              <code>localStorage</code>
+              ？
+            </strong>
+            结论是它是同步
+            API，容量和性能都不适合大数据。原因是序列化和读写会占用主线程，还只能存字符串；项目里的离线列表、图片、文件和复杂对象应改用
+            IndexedDB 或 Cache Storage。
+          </li>
+          <li>
+            <strong>
+              Cookie 的
+              <code>Secure</code>
+              、
+              <code>HttpOnly</code>
+              、
+              <code>SameSite</code>
+              分别解决什么问题？
+            </strong>
+            结论是
+            <code>Secure</code>
+            限制 HTTPS 发送，
+            <code>HttpOnly</code>
+            阻止脚本读取，
+            <code>SameSite</code>
+            降低跨站请求携带 Cookie 的风险。原因是 Cookie
+            会自动随请求发送；认证场景必须按威胁模型配置这些属性。
+          </li>
+          <li>
+            <strong>浏览器存储写入失败或被清理时如何兜底？</strong>
+            结论是把存储视为可失败缓存。原因是配额、隐私模式、用户清理和浏览器驱逐都可能发生；项目里写入要
+            try/catch，读取要能从服务端恢复或重新初始化。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage" target="_blank" rel="noreferrer">MDN: Web Storage API - Storage</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API" target="_blank" rel="noreferrer">MDN: IndexedDB API</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies" target="_blank" rel="noreferrer">MDN: HTTP cookies</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria" target="_blank" rel="noreferrer">MDN: Storage quotas and eviction criteria</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Storage"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Web Storage API - Storage
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: IndexedDB API
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: HTTP cookies
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Storage quotas and eviction criteria
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -69,100 +227,101 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block" aria-label="存储方案演示">
       <h2 class="demo-block__label">运行示例</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>方案</th>
-          <th>容量</th>
-          <th>生命周期</th>
-          <th>是否随请求发送</th>
-          <th>API 特点</th>
-          <th>常见用途</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Cookie</td>
-          <td>约 4KB</td>
-          <td>由 Expires / Max-Age 控制；默认会话级</td>
-          <td>会，同源请求自动带上</td>
-          <td>字符串 API；可配置 Domain / Path / SameSite / Secure / HttpOnly</td>
-          <td>登录态、少量服务端需要读取的信息</td>
-        </tr>
-        <tr>
-          <td>sessionStorage</td>
-          <td>通常约 5MB</td>
-          <td>当前标签页关闭即清除</td>
-          <td>不会</td>
-          <td>同步 key-value API</td>
-          <td>页面临时状态、表单草稿</td>
-        </tr>
-        <tr>
-          <td>localStorage</td>
-          <td>通常约 5MB</td>
-          <td>手动清除前一直存在</td>
-          <td>不会</td>
-          <td>同步 key-value API，大量读写可能阻塞主线程</td>
-          <td>主题、偏好设置、小型缓存</td>
-        </tr>
-        <tr>
-          <td>IndexedDB</td>
-          <td>远大于 localStorage，浏览器按磁盘和策略限制</td>
-          <td>手动删除或浏览器清理前存在</td>
-          <td>不会</td>
-          <td>异步事务型数据库 API，可存对象和 Blob</td>
-          <td>离线数据、大文件、复杂结构缓存</td>
-        </tr>
-      </tbody>
-    </table>
-    <h2>可运行演示</h2>
-    <button id="writeBtn">写入三种小数据</button>
-    <button id="readBtn">读取</button>
-    <button id="clearBtn">清理</button>
-    <div id="output">等待操作...</div>
+      <table>
+        <thead>
+          <tr>
+            <th>方案</th>
+            <th>容量</th>
+            <th>生命周期</th>
+            <th>是否随请求发送</th>
+            <th>API 特点</th>
+            <th>常见用途</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Cookie</td>
+            <td>约 4KB</td>
+            <td>由 Expires / Max-Age 控制；默认会话级</td>
+            <td>会，同源请求自动带上</td>
+            <td>字符串 API；可配置 Domain / Path / SameSite / Secure / HttpOnly</td>
+            <td>登录态、少量服务端需要读取的信息</td>
+          </tr>
+          <tr>
+            <td>sessionStorage</td>
+            <td>通常约 5MB</td>
+            <td>当前标签页关闭即清除</td>
+            <td>不会</td>
+            <td>同步 key-value API</td>
+            <td>页面临时状态、表单草稿</td>
+          </tr>
+          <tr>
+            <td>localStorage</td>
+            <td>通常约 5MB</td>
+            <td>手动清除前一直存在</td>
+            <td>不会</td>
+            <td>同步 key-value API，大量读写可能阻塞主线程</td>
+            <td>主题、偏好设置、小型缓存</td>
+          </tr>
+          <tr>
+            <td>IndexedDB</td>
+            <td>远大于 localStorage，浏览器按磁盘和策略限制</td>
+            <td>手动删除或浏览器清理前存在</td>
+            <td>不会</td>
+            <td>异步事务型数据库 API，可存对象和 Blob</td>
+            <td>离线数据、大文件、复杂结构缓存</td>
+          </tr>
+        </tbody>
+      </table>
+      <h2>可运行演示</h2>
+      <button id="writeBtn">写入三种小数据</button>
+      <button id="readBtn">读取</button>
+      <button id="clearBtn">清理</button>
+      <div id="output">等待操作...</div>
     </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
       // ============ 1. 写入 localStorage / sessionStorage / Cookie ============
-      const output = document.getElementById("output");
+      const output = document.getElementById('output');
 
       function show(text) {
         output.textContent = text;
       }
 
-      document.getElementById("writeBtn").addEventListener("click", () => {
+      document.getElementById('writeBtn').addEventListener('click', () => {
         try {
-          localStorage.setItem("storage-demo-local", "localStorage value");
-          sessionStorage.setItem("storage-demo-session", "sessionStorage value");
+          localStorage.setItem('storage-demo-local', 'localStorage value');
+          sessionStorage.setItem('storage-demo-session', 'sessionStorage value');
 
           // JS 能设置普通 Cookie，但不能设置 HttpOnly；HttpOnly 只能由服务端 Set-Cookie 设置。
-          document.cookie = "storage_demo_cookie=cookie value; max-age=3600; path=/; SameSite=Lax";
-          show("已写入 localStorage、sessionStorage、Cookie。");
+          document.cookie = 'storage_demo_cookie=cookie value; max-age=3600; path=/; SameSite=Lax';
+          show('已写入 localStorage、sessionStorage、Cookie。');
         } catch (error) {
-          show("写入失败：" + error.name + " - " + error.message);
+          show('写入失败：' + error.name + ' - ' + error.message);
         }
       });
 
       // ============ 2. 读取并展示 ============
-      document.getElementById("readBtn").addEventListener("click", () => {
-        show([
-          "localStorage: " + localStorage.getItem("storage-demo-local"),
-          "sessionStorage: " + sessionStorage.getItem("storage-demo-session"),
-          "document.cookie: " + document.cookie,
-          "IndexedDB: 本目录已有 localforage 系列 demo，可看 01-localforage-基础API.html"
-        ].join("\n"));
+      document.getElementById('readBtn').addEventListener('click', () => {
+        show(
+          [
+            'localStorage: ' + localStorage.getItem('storage-demo-local'),
+            'sessionStorage: ' + sessionStorage.getItem('storage-demo-session'),
+            'document.cookie: ' + document.cookie,
+            'IndexedDB: 本目录已有 localforage 系列 demo，可看 01-localforage-基础API.html',
+          ].join('\n'),
+        );
       });
 
       // ============ 3. 清理 demo 数据 ============
-      document.getElementById("clearBtn").addEventListener("click", () => {
-        localStorage.removeItem("storage-demo-local");
-        sessionStorage.removeItem("storage-demo-session");
-        document.cookie = "storage_demo_cookie=; max-age=0; path=/; SameSite=Lax";
-        show("已清理 demo 数据。");
+      document.getElementById('clearBtn').addEventListener('click', () => {
+        localStorage.removeItem('storage-demo-local');
+        sessionStorage.removeItem('storage-demo-session');
+        document.cookie = 'storage_demo_cookie=; max-age=0; path=/; SameSite=Lax';
+        show('已清理 demo 数据。');
       });
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -172,15 +331,17 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./01-localforage-%E5%9F%BA%E7%A1%80API.html">相关 · localforage-基础API</a>
-        <a href="./06-%E5%AD%98%E5%82%A8%E6%96%87%E4%BB%B6-FileReader.html">相关 · 存储文件-FileReader</a>
+        <a href="./06-%E5%AD%98%E5%82%A8%E6%96%87%E4%BB%B6-FileReader.html">
+          相关 · 存储文件-FileReader
+        </a>
         <a href="../WebSocket.html">← WebSocket</a>
         <a href="./01-localforage-%E5%9F%BA%E7%A1%80API.html">localforage-基础API →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

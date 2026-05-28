@@ -1,5 +1,5 @@
 <!--
-分类: css / 03-动画 / 光标闪烁
+  分类: css / 03-动画 / 光标闪烁
   主题: CSS 实现终端式闪烁光标
   要点:
     - steps(1, start) 把动画拆成离散跳变，比线性渐变更像终端光标
@@ -20,10 +20,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>光标闪烁 · @keyframes</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; }
-      h2 { font-size: 1rem; margin-top: 0; }
-      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
-      .row { display: flex; align-items: center; font-size: 28px; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+      }
+      h2 {
+        font-size: 1rem;
+        margin-top: 0;
+      }
+      .tip {
+        margin: 0.5rem 0 1rem;
+        color: #666;
+        font-size: 0.875rem;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        font-size: 28px;
+      }
       /* steps(1, start) —— 阶梯函数：跳变而非渐变，模拟终端光标 */
       .cursor {
         width: 2px;
@@ -33,8 +47,13 @@
         margin-left: 2px;
       }
       @keyframes blink {
-        0%, 100% { background-color: #000; }
-        50%      { background-color: transparent; }
+        0%,
+        100% {
+          background-color: #000;
+        }
+        50% {
+          background-color: transparent;
+        }
       }
       @media (prefers-reduced-motion: reduce) {
         .cursor {
@@ -60,28 +79,119 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>命令行式闪烁光标</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出 animation-timing-function 与 prefers-reduced-motion 状态。</p>
+      <p class="hint">
+        在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出
+        animation-timing-function 与 prefers-reduced-motion 状态。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>steps(1, start)</code> 会把一段动画拆成 1 个离散区间，并在区间开始处跳变；这比 <code>linear</code> 渐变更接近终端光标“亮/灭”切换。</li>
-          <li>本页用 <code>@keyframes</code> 在 <code>#000</code> 与 <code>transparent</code> 之间切换 <code>background-color</code>，所以光标宽度和布局位置保持稳定。</li>
-          <li>这只是一个视觉伪光标，不是输入框或 <code>contenteditable</code> 中的真实 insertion caret；真实文本插入光标的颜色应使用 <code>caret-color</code>。</li>
-          <li><code>opacity</code> 也能做闪烁，但会影响整个光标元素；<code>visibility</code> 是离散切换；<code>background-color</code> 适合只改变竖线填充色。</li>
-          <li>持续闪烁可能干扰阅读或触发不适，真实产品应在 <code>prefers-reduced-motion</code> 下停用或降低频率。</li>
+          <li>
+            <code>steps(1, start)</code>
+            会把一段动画拆成 1 个离散区间，并在区间开始处跳变；这比
+            <code>linear</code>
+            渐变更接近终端光标“亮/灭”切换。
+          </li>
+          <li>
+            本页用
+            <code>@keyframes</code>
+            在
+            <code>#000</code>
+            与
+            <code>transparent</code>
+            之间切换
+            <code>background-color</code>
+            ，所以光标宽度和布局位置保持稳定。
+          </li>
+          <li>
+            这只是一个视觉伪光标，不是输入框或
+            <code>contenteditable</code>
+            中的真实 insertion caret；真实文本插入光标的颜色应使用
+            <code>caret-color</code>
+            。
+          </li>
+          <li>
+            <code>opacity</code>
+            也能做闪烁，但会影响整个光标元素；
+            <code>visibility</code>
+            是离散切换；
+            <code>background-color</code>
+            适合只改变竖线填充色。
+          </li>
+          <li>
+            持续闪烁可能干扰阅读或触发不适，真实产品应在
+            <code>prefers-reduced-motion</code>
+            下停用或降低频率。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>steps()</code> 为什么适合做闪烁光标？</strong> 结论是它能让动画按离散步骤跳变，而不是连续插值。原因是终端光标通常只有可见和不可见两个状态。项目里做打字机、精灵图或帧动画时也常用 <code>steps()</code>，但要确认步数和状态数量匹配。</li>
-          <li><strong>伪光标和 <code>caret-color</code> 有什么区别？</strong> 结论是伪光标是普通元素或伪元素，<code>caret-color</code> 控制的是可编辑文本中的插入光标。原因是 insertion caret 只出现在可输入、可编辑并获得焦点的元素里。项目里展示命令行视觉可用伪元素，真实输入框只改 caret 颜色时用 <code>caret-color</code>。</li>
-          <li><strong>闪烁动画有哪些可访问性风险？</strong> 结论是要降低频率或提供关闭方式。原因是持续闪烁可能干扰注意力，对部分用户造成不适。项目里可用 <code>@media (prefers-reduced-motion: reduce)</code> 停止动画，并避免大面积高频闪烁。</li>
-          <li><strong><code>background-color</code>、<code>opacity</code>、<code>visibility</code> 怎么选？</strong> 结论是只想让竖线颜色消失可用 <code>background-color</code>，整块元素淡入淡出用 <code>opacity</code>，完全离散显示隐藏可用 <code>visibility</code>。原因是它们影响的绘制范围和插值方式不同。边界是不要让闪烁影响文本本身的可读性。</li>
+          <li>
+            <strong>
+              <code>steps()</code>
+              为什么适合做闪烁光标？
+            </strong>
+            结论是它能让动画按离散步骤跳变，而不是连续插值。原因是终端光标通常只有可见和不可见两个状态。项目里做打字机、精灵图或帧动画时也常用
+            <code>steps()</code>
+            ，但要确认步数和状态数量匹配。
+          </li>
+          <li>
+            <strong>
+              伪光标和
+              <code>caret-color</code>
+              有什么区别？
+            </strong>
+            结论是伪光标是普通元素或伪元素，
+            <code>caret-color</code>
+            控制的是可编辑文本中的插入光标。原因是 insertion caret
+            只出现在可输入、可编辑并获得焦点的元素里。项目里展示命令行视觉可用伪元素，真实输入框只改
+            caret 颜色时用
+            <code>caret-color</code>
+            。
+          </li>
+          <li>
+            <strong>闪烁动画有哪些可访问性风险？</strong>
+            结论是要降低频率或提供关闭方式。原因是持续闪烁可能干扰注意力，对部分用户造成不适。项目里可用
+            <code>@media (prefers-reduced-motion: reduce)</code>
+            停止动画，并避免大面积高频闪烁。
+          </li>
+          <li>
+            <strong>
+              <code>background-color</code>
+              、
+              <code>opacity</code>
+              、
+              <code>visibility</code>
+              怎么选？
+            </strong>
+            结论是只想让竖线颜色消失可用
+            <code>background-color</code>
+            ，整块元素淡入淡出用
+            <code>opacity</code>
+            ，完全离散显示隐藏可用
+            <code>visibility</code>
+            。原因是它们影响的绘制范围和插值方式不同。边界是不要让闪烁影响文本本身的可读性。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/easing-function/steps">MDN: steps()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/caret-color">MDN: caret-color</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion">MDN: prefers-reduced-motion</a></li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/easing-function/steps">
+              MDN: steps()
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/caret-color">
+              MDN: caret-color
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion"
+            >
+              MDN: prefers-reduced-motion
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -89,8 +199,19 @@
 
     <!-- PAGE_DOM_START -->
     <h2>终端式闪烁光标</h2>
-    <p class="tip">观察竖线背景色在 <code>#000</code> 与 <code>transparent</code> 之间跳变（<code>steps(1, start)</code>），而非渐变。</p>
-    <div class="row">$ npm run dev<span class="cursor" id="blink-cursor"></span></div>
+    <p class="tip">
+      观察竖线背景色在
+      <code>#000</code>
+      与
+      <code>transparent</code>
+      之间跳变（
+      <code>steps(1, start)</code>
+      ），而非渐变。
+    </p>
+    <div class="row">
+      $ npm run dev
+      <span class="cursor" id="blink-cursor"></span>
+    </div>
     <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
 
@@ -99,7 +220,7 @@
       (function () {
         /** 读取光标 animation 计算值，对应 MDN animation-timing-function / steps() */
         function getBlinkMetrics() {
-          var el = document.getElementById("blink-cursor");
+          var el = document.getElementById('blink-cursor');
           var s = getComputedStyle(el);
           return {
             name: s.animationName,
@@ -114,23 +235,27 @@
         /** 输出闪烁光标实测报告 */
         function renderMetrics() {
           var m = getBlinkMetrics();
-          document.getElementById("runtime-output").textContent = [
-            "── 闪烁光标实测（#blink-cursor）──",
-            "animation-name: " + m.name,
-            "animation-duration: " + m.duration,
-            "animation-timing-function: " + m.timing + "（steps(1,start) 离散跳变）",
-            "animation-iteration-count: " + m.iteration,
-            "animation-play-state: " + m.playState,
-            "background-color（当前帧）: " + m.bgColor,
-            "",
-            "── prefers-reduced-motion ──",
+          document.getElementById('runtime-output').textContent = [
+            '── 闪烁光标实测（#blink-cursor）──',
+            'animation-name: ' + m.name,
+            'animation-duration: ' + m.duration,
+            'animation-timing-function: ' + m.timing + '（steps(1,start) 离散跳变）',
+            'animation-iteration-count: ' + m.iteration,
+            'animation-play-state: ' + m.playState,
+            'background-color（当前帧）: ' + m.bgColor,
+            '',
+            '── prefers-reduced-motion ──',
             "matchMedia('(prefers-reduced-motion: reduce)'): " +
-              (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "匹配（动画已关闭）" : "未匹配"),
-          ].join("\n");
+              (window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                ? '匹配（动画已关闭）'
+                : '未匹配'),
+          ].join('\n');
         }
 
         renderMetrics();
-        window.matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", renderMetrics);
+        window
+          .matchMedia('(prefers-reduced-motion: reduce)')
+          .addEventListener('change', renderMetrics);
       })();
     </script>
     <!-- SCRIPT_END -->
@@ -145,13 +270,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

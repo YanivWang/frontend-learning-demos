@@ -32,29 +32,116 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>setState 函数式更新（解决对象式合并陷阱）</h1>
-      <p class="hint">请打开 DevTools Console 查看 prevState 递增序列与 2s 后的最终值；下方 #root 展示页面最终 count（预期为 10，对比 03 号 demo 的 1）。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看 prevState 递增序列与 2s 后的最终值；下方 #root 展示页面最终
+        count（预期为 10，对比 03 号 demo 的 1）。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>函数式 <code>setState</code> 接收 updater：<code>(prevState, props) =&gt; partialState</code>。React 会按队列顺序执行 updater，因此每一次都能拿到上一条更新合并后的最新 state。</li>
-          <li>示例在 <code>componentDidMount</code> 中连续调用 10 次函数式更新，<code>prevState.count</code> 依次是 0 到 9，最终页面展示 10，和 03 号 demo 对象式更新最终只加 1 形成对比。</li>
-          <li>只要新值依赖旧值，就用函数式写法，例如计数器递增、购物车数量、分页游标、批量选择等；如果只是把 <code>loading</code> 设成 <code>true</code>，对象式更新更简洁。</li>
-          <li>updater 应该保持纯函数风格：不要直接修改 <code>prevState</code>，不要在 updater 里发请求、读写 DOM 或触发额外状态更新；副作用应放在生命周期或事件流程中。</li>
-          <li>React 18 的自动批处理让"同一批次内多次更新"更常见，函数式更新是跨 class 和 Hooks 都适用的防旧快照写法。</li>
+          <li>
+            函数式
+            <code>setState</code>
+            接收 updater：
+            <code>(prevState, props) =&gt; partialState</code>
+            。React 会按队列顺序执行 updater，因此每一次都能拿到上一条更新合并后的最新 state。
+          </li>
+          <li>
+            示例在
+            <code>componentDidMount</code>
+            中连续调用 10 次函数式更新，
+            <code>prevState.count</code>
+            依次是 0 到 9，最终页面展示 10，和 03 号 demo 对象式更新最终只加 1 形成对比。
+          </li>
+          <li>
+            只要新值依赖旧值，就用函数式写法，例如计数器递增、购物车数量、分页游标、批量选择等；如果只是把
+            <code>loading</code>
+            设成
+            <code>true</code>
+            ，对象式更新更简洁。
+          </li>
+          <li>
+            updater 应该保持纯函数风格：不要直接修改
+            <code>prevState</code>
+            ，不要在 updater 里发请求、读写 DOM
+            或触发额外状态更新；副作用应放在生命周期或事件流程中。
+          </li>
+          <li>
+            React 18 的自动批处理让"同一批次内多次更新"更常见，函数式更新是跨 class 和 Hooks
+            都适用的防旧快照写法。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>函数式 setState 为什么能把连续 10 次更新累加到 10？</strong> 结论是：因为每个 updater 都基于队列中前一次更新后的 <code>prevState</code> 计算。原因是 React 不会提前用同一个旧 <code>this.state</code> 算好所有对象；计数器这类累加逻辑必须依赖 updater，而不是对象式快照。</li>
-          <li><strong>updater 函数的 prevState 和 props 分别是什么？</strong> 结论是：<code>prevState</code> 是当前队列执行到这一步时的最新 state，<code>props</code> 是本次更新对应的当前 props。原因是 state 和 props 都可能影响下一状态；例如根据父组件传入的步长递增时，应使用第二个参数而不是闭包旧值。</li>
-          <li><strong>什么时候必须用函数式 setState？</strong> 结论是：新 state 依赖旧 state 或 props 时必须用。原因是对象式更新可能被批处理并浅合并，无法表达"在前一次结果上继续计算"；项目中常见于连续点击、批量更新、异步回调和循环更新。</li>
-          <li><strong>updater 函数里有哪些陷阱？</strong> 结论是：不要直接改 <code>prevState</code>，也不要在 updater 中做副作用。原因是 React 可能为了调试或并发能力重复调用渲染相关逻辑；保持 updater 纯净，才能让批处理和重渲染行为可预测。</li>
-          <li><strong>函数式 setState 与 Hooks 的函数式更新有什么共同点？</strong> 结论是：两者都是用"从上一个状态计算下一个状态"来避免旧快照。原因是 React 状态更新都有队列语义；差异是 class 的 <code>setState</code> 会浅合并对象，Hooks 的 <code>setState</code> 默认替换整个状态值。</li>
+          <li>
+            <strong>函数式 setState 为什么能把连续 10 次更新累加到 10？</strong>
+            结论是：因为每个 updater 都基于队列中前一次更新后的
+            <code>prevState</code>
+            计算。原因是 React 不会提前用同一个旧
+            <code>this.state</code>
+            算好所有对象；计数器这类累加逻辑必须依赖 updater，而不是对象式快照。
+          </li>
+          <li>
+            <strong>updater 函数的 prevState 和 props 分别是什么？</strong>
+            结论是：
+            <code>prevState</code>
+            是当前队列执行到这一步时的最新 state，
+            <code>props</code>
+            是本次更新对应的当前 props。原因是 state 和 props
+            都可能影响下一状态；例如根据父组件传入的步长递增时，应使用第二个参数而不是闭包旧值。
+          </li>
+          <li>
+            <strong>什么时候必须用函数式 setState？</strong>
+            结论是：新 state 依赖旧 state 或 props
+            时必须用。原因是对象式更新可能被批处理并浅合并，无法表达"在前一次结果上继续计算"；项目中常见于连续点击、批量更新、异步回调和循环更新。
+          </li>
+          <li>
+            <strong>updater 函数里有哪些陷阱？</strong>
+            结论是：不要直接改
+            <code>prevState</code>
+            ，也不要在 updater 中做副作用。原因是 React
+            可能为了调试或并发能力重复调用渲染相关逻辑；保持 updater
+            纯净，才能让批处理和重渲染行为可预测。
+          </li>
+          <li>
+            <strong>函数式 setState 与 Hooks 的函数式更新有什么共同点？</strong>
+            结论是：两者都是用"从上一个状态计算下一个状态"来避免旧快照。原因是 React
+            状态更新都有队列语义；差异是 class 的
+            <code>setState</code>
+            会浅合并对象，Hooks 的
+            <code>setState</code>
+            默认替换整个状态值。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/Component#setstate" target="_blank" rel="noreferrer">react.dev: Component — setState()</a></li>
-          <li><a href="https://react.dev/learn/queueing-a-series-of-state-updates" target="_blank" rel="noreferrer">react.dev: Queueing a Series of State Updates</a></li>
-          <li><a href="https://react.dev/reference/react/useState#setstate" target="_blank" rel="noreferrer">react.dev: useState set function</a></li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#setstate"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Component — setState()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/queueing-a-series-of-state-updates"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Queueing a Series of State Updates
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/useState#setstate"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: useState set function
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -74,7 +161,7 @@
         }
 
         componentDidMount() {
-          console.log("===== 函数式 setState：循环 10 次 count + 1 =====");
+          console.log('===== 函数式 setState：循环 10 次 count + 1 =====');
 
           for (let i = 0; i < 10; i++) {
             // updater 按队列顺序接收最新 prevState，每次在前一次结果上 +1
@@ -90,7 +177,7 @@
           }
 
           setTimeout(() => {
-            console.log("2s 后 this.state.count:", this.state.count);
+            console.log('2s 后 this.state.count:', this.state.count);
             // 预期: 10
           }, 2000);
         }
@@ -99,14 +186,16 @@
           return (
             <div>
               <p>函数式连续 setState 10 次，页面 count：</p>
-              <p><strong>{this.state.count}</strong>（预期 10，对比 03 号 demo 的 1）</p>
+              <p>
+                <strong>{this.state.count}</strong>（预期 10，对比 03 号 demo 的 1）
+              </p>
             </div>
           );
         }
       }
 
       // ====== 2. React 18 挂载 ======
-      ReactDOM.createRoot(document.getElementById("root")).render(<Counter />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<Counter />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -115,17 +204,25 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./03-setState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6.html">相关 · 03-setState-异步合并</a>
-        <a href="./05-Clock-setState-%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html">相关 · 05-Clock-setState-批处理对比</a>
-        <a href="./12-class-setState%E7%AC%AC%E4%BA%8C%E5%8F%82%E6%95%B0%E5%9B%9E%E8%B0%83.html">相关 · 12-class-setState第二参数回调</a>
+        <a href="./03-setState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6.html">
+          相关 · 03-setState-异步合并
+        </a>
+        <a href="./05-Clock-setState-%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html">
+          相关 · 05-Clock-setState-批处理对比
+        </a>
+        <a href="./12-class-setState%E7%AC%AC%E4%BA%8C%E5%8F%82%E6%95%B0%E5%9B%9E%E8%B0%83.html">
+          相关 · 12-class-setState第二参数回调
+        </a>
         <a href="./03-setState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6.html">← setState-异步合并</a>
-        <a href="./05-Clock-setState-%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html">Clock-setState-批处理对比 →</a>
+        <a href="./05-Clock-setState-%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html">
+          Clock-setState-批处理对比 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

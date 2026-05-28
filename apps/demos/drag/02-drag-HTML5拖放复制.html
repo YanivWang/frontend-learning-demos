@@ -1,5 +1,5 @@
 <!--
-分类: demos / drag
+  分类: demos / drag
   主题: HTML5 拖放复制（带 UI 反馈）
   难度: 入门
   要点:
@@ -23,7 +23,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HTML5 拖放复制示例</title>
     <style>
-      * { box-sizing: border-box; }
+      * {
+        box-sizing: border-box;
+      }
       body {
         margin: 0;
         padding: 24px;
@@ -31,17 +33,32 @@
         background: #f5f5f5;
         color: #333;
       }
-      .container { max-width: 960px; margin: 0 auto; }
-      header { text-align: center; margin-bottom: 32px; }
-      header h1 { margin: 0 0 8px; font-size: 1.5rem; }
-      header p { margin: 0; color: #666; font-size: 0.95rem; }
+      .container {
+        max-width: 960px;
+        margin: 0 auto;
+      }
+      header {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+      header h1 {
+        margin: 0 0 8px;
+        font-size: 1.5rem;
+      }
+      header p {
+        margin: 0;
+        color: #666;
+        font-size: 0.95rem;
+      }
       .grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 24px;
       }
       @media (max-width: 640px) {
-        .grid { grid-template-columns: 1fr; }
+        .grid {
+          grid-template-columns: 1fr;
+        }
       }
       .panel {
         background: #fff;
@@ -62,10 +79,22 @@
         cursor: move;
         margin-bottom: 12px;
       }
-      .draggable-item:last-child { margin-bottom: 0; }
-      .draggable-item h3 { margin: 0; font-size: 1rem; font-weight: 600; }
-      .draggable-item p { margin: 4px 0 0; font-size: 0.85rem; opacity: 0.9; }
-      .dragging { opacity: 0.6; }
+      .draggable-item:last-child {
+        margin-bottom: 0;
+      }
+      .draggable-item h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+      .draggable-item p {
+        margin: 4px 0 0;
+        font-size: 0.85rem;
+        opacity: 0.9;
+      }
+      .dragging {
+        opacity: 0.6;
+      }
       .drop-area {
         border: 2px dashed #bbb;
         border-radius: 8px;
@@ -87,10 +116,20 @@
         padding: 12px 16px;
         border-radius: 6px;
         margin-bottom: 12px;
-        transition: opacity 0.2s, transform 0.2s;
+        transition:
+          opacity 0.2s,
+          transform 0.2s;
       }
-      .cloned-item h3 { margin: 0; font-size: 1rem; font-weight: 600; }
-      .cloned-item p { margin: 4px 0 0; font-size: 0.85rem; opacity: 0.9; }
+      .cloned-item h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+      .cloned-item p {
+        margin: 4px 0 0;
+        font-size: 0.85rem;
+        opacity: 0.9;
+      }
       .delete-btn {
         margin-top: 8px;
         padding: 4px 8px;
@@ -101,8 +140,12 @@
         color: #10b981;
         cursor: pointer;
       }
-      .delete-btn:hover { background: #f0f0f0; }
-      .hidden { display: none; }
+      .delete-btn:hover {
+        background: #f0f0f0;
+      }
+      .hidden {
+        display: none;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -111,30 +154,133 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>HTML5 拖放复制（带 UI 反馈）</h1>
-      <p class="hint">这个 demo 在放置区创建源元素副本，重点观察 dataTransfer、复制语义、拖拽高亮和副本删除这些项目里常见的拖放细节。</p>
+      <p class="hint">
+        这个 demo 在放置区创建源元素副本，重点观察
+        dataTransfer、复制语义、拖拽高亮和副本删除这些项目里常见的拖放细节。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><strong>复制闭环：</strong><code>dragstart</code> 写入源元素的 <code>data-item-id</code>，<code>dragover</code> 调用 <code>preventDefault()</code> 允许放置，<code>drop</code> 再读取 id 找回源节点并克隆。</li>
-          <li><strong>操作语义：</strong><code>effectAllowed = "copy"</code> 表示拖动源允许复制，<code>dropEffect = "copy"</code> 表示当前放置目标按复制处理；两者配合能让光标反馈和真实行为一致。</li>
-          <li><strong>克隆边界：</strong><code>cloneNode(true)</code> 会复制元素和后代，但不会复制通过 <code>addEventListener()</code> 绑定的监听器。示例给副本重新创建删除按钮监听器，而不是依赖源节点事件。</li>
-          <li><strong>副本清理：</strong>副本不再保留 <code>draggable</code>，并用 <code>data-cloned</code> 标记，避免被继续拖拽、误当成源数据或产生重复 id。</li>
-          <li><strong>交互边界：</strong>放置区高亮用 <code>dragenter</code> / <code>dragleave</code> 计数器稳定状态，避免拖过内部子元素时高亮闪烁；复杂嵌套放置区还可结合 <code>relatedTarget</code> 判断。</li>
+          <li>
+            <strong>复制闭环：</strong>
+            <code>dragstart</code>
+            写入源元素的
+            <code>data-item-id</code>
+            ，
+            <code>dragover</code>
+            调用
+            <code>preventDefault()</code>
+            允许放置，
+            <code>drop</code>
+            再读取 id 找回源节点并克隆。
+          </li>
+          <li>
+            <strong>操作语义：</strong>
+            <code>effectAllowed = "copy"</code>
+            表示拖动源允许复制，
+            <code>dropEffect = "copy"</code>
+            表示当前放置目标按复制处理；两者配合能让光标反馈和真实行为一致。
+          </li>
+          <li>
+            <strong>克隆边界：</strong>
+            <code>cloneNode(true)</code>
+            会复制元素和后代，但不会复制通过
+            <code>addEventListener()</code>
+            绑定的监听器。示例给副本重新创建删除按钮监听器，而不是依赖源节点事件。
+          </li>
+          <li>
+            <strong>副本清理：</strong>
+            副本不再保留
+            <code>draggable</code>
+            ，并用
+            <code>data-cloned</code>
+            标记，避免被继续拖拽、误当成源数据或产生重复 id。
+          </li>
+          <li>
+            <strong>交互边界：</strong>
+            放置区高亮用
+            <code>dragenter</code>
+            /
+            <code>dragleave</code>
+            计数器稳定状态，避免拖过内部子元素时高亮闪烁；复杂嵌套放置区还可结合
+            <code>relatedTarget</code>
+            判断。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>如何用 HTML Drag and Drop 实现复制而不是移动？</strong> 结论是在 <code>drop</code> 中根据拖拽数据找到源节点并创建副本，而不是把源节点 append 到新容器。原因是 append 原节点会移动 DOM；项目里还要清理副本的 id、拖拽属性和业务状态。</li>
-          <li><strong>effectAllowed 和 dropEffect 分别解决什么问题？</strong> <code>effectAllowed</code> 是拖动源声明允许哪些操作，<code>dropEffect</code> 是放置目标选择当前操作。两者不匹配时浏览器反馈可能和代码意图不同；复制、移动、链接场景要明确设置。</li>
-          <li><strong>cloneNode(true) 复制节点时有哪些边界？</strong> 它会深拷贝子节点和属性，但不会复制 <code>addEventListener()</code> 绑定的监听器，也可能复制重复 id。项目里通常会重新绑定交互、生成新 id，并只复制必要数据而不是整段 DOM。</li>
-          <li><strong>拖放 UI 反馈为什么容易在 dragleave 时闪烁？</strong> 因为拖拽经过放置区子元素时，事件目标会变化，浏览器可能触发 <code>dragleave</code>。复杂放置区需要判断是否真正离开放置区，否则高亮会反复闪烁。</li>
-          <li><strong>原生拖放做可视化编辑器时还缺哪些能力？</strong> 原生 API 提供数据传递和基础事件，但触屏手势、自定义预览、吸附、排序动画和复杂命中检测通常还要额外实现。此时可结合 Pointer Events 或专门的拖拽库。</li>
+          <li>
+            <strong>如何用 HTML Drag and Drop 实现复制而不是移动？</strong>
+            结论是在
+            <code>drop</code>
+            中根据拖拽数据找到源节点并创建副本，而不是把源节点 append 到新容器。原因是 append
+            原节点会移动 DOM；项目里还要清理副本的 id、拖拽属性和业务状态。
+          </li>
+          <li>
+            <strong>effectAllowed 和 dropEffect 分别解决什么问题？</strong>
+            <code>effectAllowed</code>
+            是拖动源声明允许哪些操作，
+            <code>dropEffect</code>
+            是放置目标选择当前操作。两者不匹配时浏览器反馈可能和代码意图不同；复制、移动、链接场景要明确设置。
+          </li>
+          <li>
+            <strong>cloneNode(true) 复制节点时有哪些边界？</strong>
+            它会深拷贝子节点和属性，但不会复制
+            <code>addEventListener()</code>
+            绑定的监听器，也可能复制重复 id。项目里通常会重新绑定交互、生成新
+            id，并只复制必要数据而不是整段 DOM。
+          </li>
+          <li>
+            <strong>拖放 UI 反馈为什么容易在 dragleave 时闪烁？</strong>
+            因为拖拽经过放置区子元素时，事件目标会变化，浏览器可能触发
+            <code>dragleave</code>
+            。复杂放置区需要判断是否真正离开放置区，否则高亮会反复闪烁。
+          </li>
+          <li>
+            <strong>原生拖放做可视化编辑器时还缺哪些能力？</strong>
+            原生 API
+            提供数据传递和基础事件，但触屏手势、自定义预览、吸附、排序动画和复杂命中检测通常还要额外实现。此时可结合
+            Pointer Events 或专门的拖拽库。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API" target="_blank" rel="noopener">MDN Web Docs：HTML Drag and Drop API</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/dropEffect" target="_blank" rel="noopener">MDN Web Docs：DataTransfer.dropEffect</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/effectAllowed" target="_blank" rel="noopener">MDN Web Docs：DataTransfer.effectAllowed</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Node/cloneNode" target="_blank" rel="noopener">MDN Web Docs：Node.cloneNode()</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN Web Docs：HTML Drag and Drop API
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/dropEffect"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN Web Docs：DataTransfer.dropEffect
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/effectAllowed"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN Web Docs：DataTransfer.effectAllowed
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Node/cloneNode"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN Web Docs：Node.cloneNode()
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -182,7 +328,7 @@
       const dropHint = document.querySelector('.drop-hint');
       let dragDepth = 0;
 
-      draggableItems.forEach(item => {
+      draggableItems.forEach((item) => {
         item.addEventListener('dragstart', (e) => {
           e.dataTransfer.setData('text/plain', item.getAttribute('data-item-id'));
           e.dataTransfer.effectAllowed = 'copy';
@@ -253,7 +399,6 @@
           }, 50);
         }
       });
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -263,17 +408,19 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
         <a href="./01-drag-%E5%8E%9F%E7%94%9F.html">← drag-原生</a>
-        <a href="../form-wizard/01-form-wizard-%E5%88%86%E6%AD%A5%E8%A1%A8%E5%8D%95.html">form-wizard-分步表单 →</a>
+        <a href="../form-wizard/01-form-wizard-%E5%88%86%E6%AD%A5%E8%A1%A8%E5%8D%95.html">
+          form-wizard-分步表单 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

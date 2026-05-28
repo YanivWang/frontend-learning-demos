@@ -32,24 +32,114 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>历史上可以用 generator 暂停在 <code>yield Promise</code> 处，再由执行器在 Promise fulfilled 后调用 <code>next(result)</code>，从而模拟顺序异步流程。</li>
-          <li><code>async</code>/<code>await</code> 可以理解为语言内置的 Promise 执行器：自动等待、自动恢复、自动把 return 包装为 fulfilled，把未捕获异常包装为 rejected。</li>
-          <li><code>await</code> 和 <code>yield Promise</code> 相似但不是完全等价；<code>await</code> 会按 <code>Promise.resolve</code> 规则处理普通值、Promise 和 thenable。</li>
-          <li>示例中的 <code>runGenerator</code> 只处理 fulfilled 路径，真实执行器还要把 Promise reject 通过 <code>gen.throw(error)</code> 送回 generator，才能在 generator 内部 <code>try...catch</code>。</li>
-          <li>多个 <code>await</code> 写在函数体内默认串行；如果任务互不依赖，应先启动多个 Promise，再用 <code>Promise.all</code> 并发等待。</li>
+          <li>
+            历史上可以用 generator 暂停在
+            <code>yield Promise</code>
+            处，再由执行器在 Promise fulfilled 后调用
+            <code>next(result)</code>
+            ，从而模拟顺序异步流程。
+          </li>
+          <li>
+            <code>async</code>
+            /
+            <code>await</code>
+            可以理解为语言内置的 Promise 执行器：自动等待、自动恢复、自动把 return 包装为
+            fulfilled，把未捕获异常包装为 rejected。
+          </li>
+          <li>
+            <code>await</code>
+            和
+            <code>yield Promise</code>
+            相似但不是完全等价；
+            <code>await</code>
+            会按
+            <code>Promise.resolve</code>
+            规则处理普通值、Promise 和 thenable。
+          </li>
+          <li>
+            示例中的
+            <code>runGenerator</code>
+            只处理 fulfilled 路径，真实执行器还要把 Promise reject 通过
+            <code>gen.throw(error)</code>
+            送回 generator，才能在 generator 内部
+            <code>try...catch</code>
+            。
+          </li>
+          <li>
+            多个
+            <code>await</code>
+            写在函数体内默认串行；如果任务互不依赖，应先启动多个 Promise，再用
+            <code>Promise.all</code>
+            并发等待。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>为什么说 async/await 类似 generator + Promise 执行器？</strong> 因为 generator 可以在 <code>yield</code> 暂停，执行器等 Promise 决议后再 <code>next</code> 推进；async 函数把这套驱动流程做进语言里。边界是 async 还规定了返回 Promise、异常转 rejection、await thenable 等完整语义。</li>
-          <li><strong>手写执行器和 async 函数在错误处理上有什么差异？</strong> async 函数会把 <code>await</code> 的 rejection 当作异常抛进函数体，可用 <code>try...catch</code> 捕获。手写执行器如果只写 fulfilled 路径，rejection 会丢到外层 Promise，不能被 generator 内部捕获。</li>
-          <li><strong>多个 await 为什么默认串行，如何改成并发？</strong> 写成 <code>await a(); await b();</code> 时，<code>b</code> 会在 <code>a</code> 完成后才启动。互不依赖时应先执行 <code>const pa = a(); const pb = b();</code>，再 <code>await Promise.all([pa, pb])</code>。</li>
-          <li><strong>现代项目为什么很少手写 generator 异步执行器？</strong> 因为 async/await 已经覆盖常见异步控制流，并且错误传播、返回值包装和调试体验更标准。generator 仍适合迭代器、惰性序列和需要显式暂停/恢复的高级场景。</li>
+          <li>
+            <strong>为什么说 async/await 类似 generator + Promise 执行器？</strong>
+            因为 generator 可以在
+            <code>yield</code>
+            暂停，执行器等 Promise 决议后再
+            <code>next</code>
+            推进；async 函数把这套驱动流程做进语言里。边界是 async 还规定了返回 Promise、异常转
+            rejection、await thenable 等完整语义。
+          </li>
+          <li>
+            <strong>手写执行器和 async 函数在错误处理上有什么差异？</strong>
+            async 函数会把
+            <code>await</code>
+            的 rejection 当作异常抛进函数体，可用
+            <code>try...catch</code>
+            捕获。手写执行器如果只写 fulfilled 路径，rejection 会丢到外层 Promise，不能被 generator
+            内部捕获。
+          </li>
+          <li>
+            <strong>多个 await 为什么默认串行，如何改成并发？</strong>
+            写成
+            <code>await a(); await b();</code>
+            时，
+            <code>b</code>
+            会在
+            <code>a</code>
+            完成后才启动。互不依赖时应先执行
+            <code>const pa = a(); const pb = b();</code>
+            ，再
+            <code>await Promise.all([pa, pb])</code>
+            。
+          </li>
+          <li>
+            <strong>现代项目为什么很少手写 generator 异步执行器？</strong>
+            因为 async/await
+            已经覆盖常见异步控制流，并且错误传播、返回值包装和调试体验更标准。generator
+            仍适合迭代器、惰性序列和需要显式暂停/恢复的高级场景。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">MDN: function*</a>：yield 暂停，执行器在 Promise fulfilled 后 next。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function">MDN: async function</a>：语言内置 Promise 执行器。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await">MDN: await</a>：按 Promise.resolve 规则吸收 thenable。</li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*"
+            >
+              MDN: function*
+            </a>
+            ：yield 暂停，执行器在 Promise fulfilled 后 next。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function"
+            >
+              MDN: async function
+            </a>
+            ：语言内置 Promise 执行器。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await"
+            >
+              MDN: await
+            </a>
+            ：按 Promise.resolve 规则吸收 thenable。
+          </li>
         </ul>
       </div>
     </section>
@@ -79,19 +169,19 @@
 
       function* flowGen() {
         yield timeOut(200);
-        console.log("[generator] step1");
+        console.log('[generator] step1');
         yield timeOut(200);
-        console.log("[generator] step2");
-        return "done-gen";
+        console.log('[generator] step2');
+        return 'done-gen';
       }
 
       // ============ 3. async/await：内置执行器，return 包装为 fulfilled ============
       async function flowAsync() {
         await timeOut(200);
-        console.log("[async] step1");
+        console.log('[async] step1');
         await timeOut(200);
-        console.log("[async] step2");
-        return "done-async";
+        console.log('[async] step2');
+        return 'done-async';
       }
 
       // ============ 4. rejection：执行器 gen.throw vs async try/catch ============
@@ -125,34 +215,34 @@
 
       function* flowGenReject() {
         try {
-          yield Promise.reject(new Error("gen-reject"));
-          console.log("[generator] 不会执行");
+          yield Promise.reject(new Error('gen-reject'));
+          console.log('[generator] 不会执行');
         } catch (e) {
-          console.log("[generator] gen.throw 捕获:", e.message);
+          console.log('[generator] gen.throw 捕获:', e.message);
         }
-        return "gen-recovered";
+        return 'gen-recovered';
       }
 
       async function flowAsyncReject() {
         try {
-          await Promise.reject(new Error("async-reject"));
-          console.log("[async] 不会执行");
+          await Promise.reject(new Error('async-reject'));
+          console.log('[async] 不会执行');
         } catch (e) {
-          console.log("[async] try/catch 捕获:", e.message);
+          console.log('[async] try/catch 捕获:', e.message);
         }
-        return "async-recovered";
+        return 'async-recovered';
       }
 
       // ============ 5. await 按 Promise.resolve 吸收 thenable / 普通值 ============
       async function awaitThenableAndValue() {
         const thenable = {
           then(resolve) {
-            resolve("thenable-ok");
+            resolve('thenable-ok');
           },
         };
-        console.log("await thenable:", await thenable);
-        console.log("await 普通值:", await 42);
-        console.log("await 后对象同一性:", (await {}) === {}); // false，每次 {} 是新对象
+        console.log('await thenable:', await thenable);
+        console.log('await 普通值:', await 42);
+        console.log('await 后对象同一性:', (await {}) === {}); // false，每次 {} 是新对象
       }
 
       // ============ 6. 多个 await 串行 vs Promise.all 并发 ============
@@ -164,38 +254,35 @@
 
       async function serialVsParallel() {
         const t0 = performance.now();
-        await task(150, "a");
-        await task(150, "b");
-        console.log("串行两 await 约 ms:", Math.round(performance.now() - t0)); // ~300
+        await task(150, 'a');
+        await task(150, 'b');
+        console.log('串行两 await 约 ms:', Math.round(performance.now() - t0)); // ~300
 
         const t1 = performance.now();
-        const results = await Promise.all([task(150, "c"), task(150, "d")]);
-        console.log("Promise.all 并发:", results, "约 ms:", Math.round(performance.now() - t1)); // ~150
+        const results = await Promise.all([task(150, 'c'), task(150, 'd')]);
+        console.log('Promise.all 并发:', results, '约 ms:', Math.round(performance.now() - t1)); // ~150
       }
 
       (async function main() {
-        console.log("--- §2 generator + 执行器 ---");
+        console.log('--- §2 generator + 执行器 ---');
         const genResult = await runGenerator(flowGen);
-        console.log("[generator] return:", genResult);
+        console.log('[generator] return:', genResult);
 
-        console.log("--- §3 async/await ---");
+        console.log('--- §3 async/await ---');
         const asyncResult = await flowAsync();
-        console.log("[async] return:", asyncResult);
+        console.log('[async] return:', asyncResult);
 
-        console.log("--- §4 rejection 对比 ---");
-        console.log(
-          "gen.throw 路径:",
-          await runGeneratorWithThrow(flowGenReject),
-        );
-        console.log("async try/catch:", await flowAsyncReject());
+        console.log('--- §4 rejection 对比 ---');
+        console.log('gen.throw 路径:', await runGeneratorWithThrow(flowGenReject));
+        console.log('async try/catch:', await flowAsyncReject());
 
-        console.log("--- §5 await thenable / 普通值 ---");
+        console.log('--- §5 await thenable / 普通值 ---');
         await awaitThenableAndValue();
 
-        console.log("--- §6 串行 vs 并发 ---");
+        console.log('--- §6 串行 vs 并发 ---');
         await serialVsParallel();
       })().catch(function (err) {
-        console.error("demo 未捕获错误:", err.name, err.message);
+        console.error('demo 未捕获错误:', err.name, err.message);
       });
     </script>
     <!-- SCRIPT_END -->
@@ -205,15 +292,21 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../../index.html">目录</a>
-        <a href="./04-async-%E9%94%99%E8%AF%AF%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6.html">相关 · async-错误重试机制</a>
-        <a href="./02-async-await-%E4%B8%B2%E8%A1%8C%E6%B5%81%E7%A8%8B.html">← async-await-串行流程</a>
-        <a href="./04-async-%E9%94%99%E8%AF%AF%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6.html">async-错误重试机制 →</a>
+        <a href="./04-async-%E9%94%99%E8%AF%AF%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6.html">
+          相关 · async-错误重试机制
+        </a>
+        <a href="./02-async-await-%E4%B8%B2%E8%A1%8C%E6%B5%81%E7%A8%8B.html">
+          ← async-await-串行流程
+        </a>
+        <a href="./04-async-%E9%94%99%E8%AF%AF%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6.html">
+          async-错误重试机制 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

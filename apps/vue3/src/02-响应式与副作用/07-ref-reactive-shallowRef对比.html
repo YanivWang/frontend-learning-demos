@@ -23,12 +23,41 @@
     <title>Vue3 · ref / reactive / shallowRef</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin: 4px 8px 4px 0; padding: 6px 12px; }
-      code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
-      .panel { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 16px; max-width: 760px; }
-      .panel h2 { margin-top: 0; font-size: 1.1rem; }
-      .panel .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          'PingFang SC',
+          sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+      }
+      button {
+        margin: 4px 8px 4px 0;
+        padding: 6px 12px;
+      }
+      code {
+        background: #f6f8fa;
+        padding: 2px 5px;
+        border-radius: 6px;
+      }
+      .panel {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+        max-width: 760px;
+      }
+      .panel h2 {
+        margin-top: 0;
+        font-size: 1.1rem;
+      }
+      .panel .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -41,28 +70,158 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>ref()</code> 在 JS 中读写必须用 <code>.value</code>，模板顶层自动解包，本页 <code>{{ message }}</code> 即示例。点“修改 message”会整体替换 <code>.value</code>，控制台打印 <code>[ref]</code>。</li>
-          <li><code>ref</code> 包裹对象时默认<strong>深层</strong>响应：改 <code>objRef.value.form.name</code> 会更新视图，本页“切换 objRef name”按钮即验证。</li>
-          <li><code>reactive()</code> 返回深层 Proxy，访问字段无需 <code>.value</code>；直接解构会丢响应性，见 <a href="./01-ref-reactive%E4%B8%8E%E8%A7%A3%E6%9E%84.html">01-ref-reactive与解构</a> 与 <a href="./03-toRef-toRefs.html">03-toRef-toRefs</a>。</li>
-          <li><code>shallowRef()</code> 只追踪 <code>.value</code> 引用替换：改嵌套 <code>form.name</code> 通常不更新模板，整体替换 <code>.value</code> 才会触发；与 <code>shallowReactive</code> 的“浅”对比见 <a href="./04-readonly-shallow-markRaw.html">04-readonly-shallow-markRaw</a>。</li>
-          <li>已知内部字段变更但仍用 <code>shallowRef</code> 时，可调用 <code>triggerRef(shallowObjRef)</code> 手动通知依赖更新；本页“triggerRef 刷新”按钮演示该逃生舱，生产仍应优先整体替换或改建模方式。</li>
-          <li>选型口诀：可替换整块数据用 <code>ref</code>，稳定对象模型用 <code>reactive</code>，大对象/外部实例/手动刷新用 <code>shallowRef</code>。深层 watch/computed 见 <a href="./02-computed-watch-watchEffect.html">02-computed-watch-watchEffect</a>。</li>
+          <li>
+            <code>ref()</code>
+            在 JS 中读写必须用
+            <code>.value</code>
+            ，模板顶层自动解包，本页
+            <code>{{ message }}</code>
+            即示例。点“修改 message”会整体替换
+            <code>.value</code>
+            ，控制台打印
+            <code>[ref]</code>
+            。
+          </li>
+          <li>
+            <code>ref</code>
+            包裹对象时默认
+            <strong>深层</strong>
+            响应：改
+            <code>objRef.value.form.name</code>
+            会更新视图，本页“切换 objRef name”按钮即验证。
+          </li>
+          <li>
+            <code>reactive()</code>
+            返回深层 Proxy，访问字段无需
+            <code>.value</code>
+            ；直接解构会丢响应性，见
+            <a href="./01-ref-reactive%E4%B8%8E%E8%A7%A3%E6%9E%84.html">01-ref-reactive与解构</a>
+            与
+            <a href="./03-toRef-toRefs.html">03-toRef-toRefs</a>
+            。
+          </li>
+          <li>
+            <code>shallowRef()</code>
+            只追踪
+            <code>.value</code>
+            引用替换：改嵌套
+            <code>form.name</code>
+            通常不更新模板，整体替换
+            <code>.value</code>
+            才会触发；与
+            <code>shallowReactive</code>
+            的“浅”对比见
+            <a href="./04-readonly-shallow-markRaw.html">04-readonly-shallow-markRaw</a>
+            。
+          </li>
+          <li>
+            已知内部字段变更但仍用
+            <code>shallowRef</code>
+            时，可调用
+            <code>triggerRef(shallowObjRef)</code>
+            手动通知依赖更新；本页“triggerRef
+            刷新”按钮演示该逃生舱，生产仍应优先整体替换或改建模方式。
+          </li>
+          <li>
+            选型口诀：可替换整块数据用
+            <code>ref</code>
+            ，稳定对象模型用
+            <code>reactive</code>
+            ，大对象/外部实例/手动刷新用
+            <code>shallowRef</code>
+            。深层 watch/computed 见
+            <a href="./02-computed-watch-watchEffect.html">02-computed-watch-watchEffect</a>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>ref 和 reactive 最大差异是什么？</strong> 结论是 <code>ref</code> 是值容器，<code>reactive</code> 是对象代理。项目里基本类型、需整体替换用 <code>ref</code>，稳定对象模型用 <code>reactive</code>。</li>
-          <li><strong>shallowRef 为什么改内部字段不更新？</strong> 结论是只追踪 <code>.value</code> 引用变化，内部对象不递归代理。应整体替换、<code>triggerRef</code> 或额外版本号。本页三个按钮分别演示三种结果。</li>
-          <li><strong>reactive 解构后如何保留响应式？</strong> 结论是使用 <code>toRef</code> / <code>toRefs</code>。直接解构得到的是快照，不再经过代理 get/set。</li>
-          <li><strong>业务状态如何选型？</strong> 结论先看状态形态和更新方式：替换用 ref，聚合对象用 reactive，避免深层代理用 shallowRef。边界是 shallow API 牺牲自动深层更新。</li>
-          <li><strong>triggerRef 何时需要？</strong> 结论是 shallowRef 内部已变更但需强制刷新视图时。原因是 shallow 不追踪深层。应优先设计为整体替换，triggerRef 作例外手段。</li>
+          <li>
+            <strong>ref 和 reactive 最大差异是什么？</strong>
+            结论是
+            <code>ref</code>
+            是值容器，
+            <code>reactive</code>
+            是对象代理。项目里基本类型、需整体替换用
+            <code>ref</code>
+            ，稳定对象模型用
+            <code>reactive</code>
+            。
+          </li>
+          <li>
+            <strong>shallowRef 为什么改内部字段不更新？</strong>
+            结论是只追踪
+            <code>.value</code>
+            引用变化，内部对象不递归代理。应整体替换、
+            <code>triggerRef</code>
+            或额外版本号。本页三个按钮分别演示三种结果。
+          </li>
+          <li>
+            <strong>reactive 解构后如何保留响应式？</strong>
+            结论是使用
+            <code>toRef</code>
+            /
+            <code>toRefs</code>
+            。直接解构得到的是快照，不再经过代理 get/set。
+          </li>
+          <li>
+            <strong>业务状态如何选型？</strong>
+            结论先看状态形态和更新方式：替换用 ref，聚合对象用 reactive，避免深层代理用
+            shallowRef。边界是 shallow API 牺牲自动深层更新。
+          </li>
+          <li>
+            <strong>triggerRef 何时需要？</strong>
+            结论是 shallowRef 内部已变更但需强制刷新视图时。原因是 shallow
+            不追踪深层。应优先设计为整体替换，triggerRef 作例外手段。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/api/reactivity-core.html#ref" target="_blank" rel="noreferrer">Vue 3 官方 API：ref()</a></li>
-          <li><a href="https://vuejs.org/api/reactivity-core.html#reactive" target="_blank" rel="noreferrer">Vue 3 官方 API：reactive()</a></li>
-          <li><a href="https://vuejs.org/api/reactivity-advanced.html#shallowref" target="_blank" rel="noreferrer">Vue 3 官方 API：shallowRef()</a></li>
-          <li><a href="https://vuejs.org/api/reactivity-advanced.html#triggerref" target="_blank" rel="noreferrer">Vue 3 官方 API：triggerRef()</a></li>
-          <li><a href="https://vuejs.org/guide/essentials/reactivity-fundamentals.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Reactivity Fundamentals</a></li>
+          <li>
+            <a
+              href="https://vuejs.org/api/reactivity-core.html#ref"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方 API：ref()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/api/reactivity-core.html#reactive"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方 API：reactive()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/api/reactivity-advanced.html#shallowref"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方 API：shallowRef()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/api/reactivity-advanced.html#triggerref"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方 API：triggerRef()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/essentials/reactivity-fundamentals.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方文档：Reactivity Fundamentals
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -107,23 +266,23 @@
       const app = createApp({
         setup() {
           // --- ref：基本类型与深层对象 ---
-          const message = ref("Hello vue!");
+          const message = ref('Hello vue!');
           const objRef = ref({
-            form: { name: "", age: 0 },
+            form: { name: '', age: 0 },
             array: [1, 2, 3],
           });
 
           // --- shallowRef：只追踪 .value 替换 ---
           const shallowObjRef = shallowRef({
-            form: { name: "", age: 0 },
+            form: { name: '', age: 0 },
             array: [1, 2, 3],
           });
-          const shallowNote = ref("改嵌套字段通常不触发视图；整体替换 .value 或 triggerRef 才会。");
+          const shallowNote = ref('改嵌套字段通常不触发视图；整体替换 .value 或 triggerRef 才会。');
           const shallowViewUpdates = ref(0);
 
           // --- reactive：深层 Proxy ---
           const reactiveObj = reactive({
-            form: { name: "", age: 0 },
+            form: { name: '', age: 0 },
             array: [1, 2, 3],
           });
 
@@ -132,50 +291,49 @@
           }
 
           function changeMsgFn() {
-            message.value = "I am change to HI vue!";
-            console.log("[ref] message =", message.value);
+            message.value = 'I am change to HI vue!';
+            console.log('[ref] message =', message.value);
           }
 
           function toggleObjRefName() {
             const n = objRef.value.form.name;
-            objRef.value.form.name = n ? "" : "Alice";
-            console.log("[ref深层] objRef.form.name =", objRef.value.form.name);
+            objRef.value.form.name = n ? '' : 'Alice';
+            console.log('[ref深层] objRef.form.name =', objRef.value.form.name);
           }
 
           function mutateShallowNested() {
             const n = shallowObjRef.value.form.name;
-            shallowObjRef.value.form.name = n ? "" : "Charlie";
-            shallowNote.value = "已改嵌套字段；若 name 未变，说明 shallowRef 未追踪内部。";
-            console.log("[shallowRef] 嵌套 name =", shallowObjRef.value.form.name);
+            shallowObjRef.value.form.name = n ? '' : 'Charlie';
+            shallowNote.value = '已改嵌套字段；若 name 未变，说明 shallowRef 未追踪内部。';
+            console.log('[shallowRef] 嵌套 name =', shallowObjRef.value.form.name);
           }
 
           function replaceShallowObjRef() {
             shallowObjRef.value = {
-              form: { name: "整体替换", age: 0 },
+              form: { name: '整体替换', age: 0 },
               array: [1, 2, 3],
             };
             bumpShallowView();
-            shallowNote.value = "已整体替换 .value，视图应同步更新。";
-            console.log("[shallowRef] 已替换 .value");
+            shallowNote.value = '已整体替换 .value，视图应同步更新。';
+            console.log('[shallowRef] 已替换 .value');
           }
 
           function triggerShallowRefresh() {
             triggerRef(shallowObjRef);
             bumpShallowView();
-            shallowNote.value = "已调用 triggerRef，若嵌套已改，视图应强制刷新。";
-            console.log("[shallowRef] triggerRef 已调用");
+            shallowNote.value = '已调用 triggerRef，若嵌套已改，视图应强制刷新。';
+            console.log('[shallowRef] triggerRef 已调用');
           }
 
           function toggleReactiveName() {
             const n = reactiveObj.form.name;
-            reactiveObj.form.name = n ? "" : "Bob";
-            console.log("[reactive] form.name =", reactiveObj.form.name);
+            reactiveObj.form.name = n ? '' : 'Bob';
+            console.log('[reactive] form.name =', reactiveObj.form.name);
           }
 
-          
           // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
           onMounted(() => {
-            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+            console.log('[mounted] createApp 已接管 #app，DOM 已渲染');
           });
 
           return {
@@ -196,9 +354,8 @@
       });
       // mount 须在 app.use / app.component / app.config 等配置之后调用
       // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
-      const rootInstance = app.mount("#app");
-      console.log("[mount] 根组件实例", rootInstance);
-
+      const rootInstance = app.mount('#app');
+      console.log('[mount] 根组件实例', rootInstance);
     </script>
     <!-- SCRIPT_END -->
 
@@ -207,14 +364,20 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html">← onWatcherCleanup与watch清理</a>
-        <a href="../03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E7%BB%84%E5%90%88%E5%BC%8F/01-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E9%92%A9%E5%AD%90.html">生命周期钩子 →</a>
+        <a href="./06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html">
+          ← onWatcherCleanup与watch清理
+        </a>
+        <a
+          href="../03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E7%BB%84%E5%90%88%E5%BC%8F/01-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E9%92%A9%E5%AD%90.html"
+        >
+          生命周期钩子 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

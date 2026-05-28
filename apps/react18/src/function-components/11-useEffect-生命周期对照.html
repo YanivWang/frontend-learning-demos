@@ -32,30 +32,116 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>useEffect 与 class 生命周期对照</h1>
-      <p class="hint">请打开 DevTools Console 查看 mount/update/unmount 日志；下方 #root 为 React 挂载/交互演示区，可切换 userId 与挂载/卸载。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看 mount/update/unmount 日志；下方 #root 为 React
+        挂载/交互演示区，可切换 userId 与挂载/卸载。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>useEffect(fn, [])</code> 常被类比为 <code>componentDidMount</code>，因为它在组件提交到 DOM 后运行一次；但它表达的是“这个副作用不依赖响应式值”，不是生命周期方法的逐字替代。</li>
-          <li><code>useEffect(fn, [deps])</code> 会在首次 mount 后运行，也会在依赖变化后的提交中运行。若要模拟“只在更新时执行”，本 demo 用 <code>useRef</code> 跳过首次 effect。</li>
-          <li><code>useEffect</code> 返回的 cleanup 会在组件卸载前，以及下一次执行同一个 effect 之前运行；它适合清理订阅、定时器、事件监听和过期异步任务。</li>
-          <li>Hooks 推荐按副作用语义拆分 effect，而不是把所有逻辑塞进一个“生命周期对照表”。例如订阅、日志、请求、DOM 集成可以放在不同 effect 中，各自声明依赖。</li>
-          <li>React 18 <code>StrictMode</code> 在开发环境会额外执行一次 setup + cleanup，用来暴露副作用清理不完整的问题；生产环境不会因为 StrictMode 做这次额外检查。</li>
+          <li>
+            <code>useEffect(fn, [])</code>
+            常被类比为
+            <code>componentDidMount</code>
+            ，因为它在组件提交到 DOM
+            后运行一次；但它表达的是“这个副作用不依赖响应式值”，不是生命周期方法的逐字替代。
+          </li>
+          <li>
+            <code>useEffect(fn, [deps])</code>
+            会在首次 mount 后运行，也会在依赖变化后的提交中运行。若要模拟“只在更新时执行”，本 demo
+            用
+            <code>useRef</code>
+            跳过首次 effect。
+          </li>
+          <li>
+            <code>useEffect</code>
+            返回的 cleanup 会在组件卸载前，以及下一次执行同一个 effect
+            之前运行；它适合清理订阅、定时器、事件监听和过期异步任务。
+          </li>
+          <li>
+            Hooks 推荐按副作用语义拆分
+            effect，而不是把所有逻辑塞进一个“生命周期对照表”。例如订阅、日志、请求、DOM
+            集成可以放在不同 effect 中，各自声明依赖。
+          </li>
+          <li>
+            React 18
+            <code>StrictMode</code>
+            在开发环境会额外执行一次 setup +
+            cleanup，用来暴露副作用清理不完整的问题；生产环境不会因为 StrictMode 做这次额外检查。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>useEffect</code> 能否和 class 生命周期一一对应？</strong> 结论是不能一一对应，只能做近似类比。原因是 effect 描述“同步到外部系统”的副作用，而 class 生命周期按组件阶段组织；项目迁移时应按副作用拆分，而不是机械翻译。</li>
-          <li><strong><code>useEffect(fn, [])</code> 和 <code>componentDidMount</code> 有何差异？</strong> 结论是二者都在首次提交后运行，但 effect 仍有 cleanup 语义和 StrictMode 开发检查。原因是 Hooks 关注依赖和清理；边界是如果 effect 读取了 props/state，就不能为了“只跑一次”省略依赖。</li>
-          <li><strong><code>useEffect(fn, [deps])</code> 为什么不是纯粹的 <code>componentDidUpdate</code>？</strong> 结论是带依赖的 effect 首次 mount 后也会执行。原因是 React 需要先运行 setup；如果只想处理更新，可以像本 demo 一样用 ref 跳过首次，或重新设计副作用语义。</li>
-          <li><strong>cleanup 和卸载生命周期如何对应？</strong> 结论是 cleanup 可以覆盖卸载清理，也会在依赖变化导致 effect 重跑前执行。原因是 React 要先清理旧订阅再建立新订阅；网络请求、定时器、事件监听都要在 cleanup 中处理边界。</li>
-          <li><strong>StrictMode 下 effect 为什么会重复执行？</strong> 结论是 React 18 开发环境会额外执行一次 setup + cleanup 来检查副作用是否可恢复。原因是这能提前暴露遗漏清理的问题；生产环境不会做这次额外执行，不能把它当线上行为。</li>
+          <li>
+            <strong>
+              <code>useEffect</code>
+              能否和 class 生命周期一一对应？
+            </strong>
+            结论是不能一一对应，只能做近似类比。原因是 effect 描述“同步到外部系统”的副作用，而 class
+            生命周期按组件阶段组织；项目迁移时应按副作用拆分，而不是机械翻译。
+          </li>
+          <li>
+            <strong>
+              <code>useEffect(fn, [])</code>
+              和
+              <code>componentDidMount</code>
+              有何差异？
+            </strong>
+            结论是二者都在首次提交后运行，但 effect 仍有 cleanup 语义和 StrictMode 开发检查。原因是
+            Hooks 关注依赖和清理；边界是如果 effect 读取了
+            props/state，就不能为了“只跑一次”省略依赖。
+          </li>
+          <li>
+            <strong>
+              <code>useEffect(fn, [deps])</code>
+              为什么不是纯粹的
+              <code>componentDidUpdate</code>
+              ？
+            </strong>
+            结论是带依赖的 effect 首次 mount 后也会执行。原因是 React 需要先运行
+            setup；如果只想处理更新，可以像本 demo 一样用 ref 跳过首次，或重新设计副作用语义。
+          </li>
+          <li>
+            <strong>cleanup 和卸载生命周期如何对应？</strong>
+            结论是 cleanup 可以覆盖卸载清理，也会在依赖变化导致 effect 重跑前执行。原因是 React
+            要先清理旧订阅再建立新订阅；网络请求、定时器、事件监听都要在 cleanup 中处理边界。
+          </li>
+          <li>
+            <strong>StrictMode 下 effect 为什么会重复执行？</strong>
+            结论是 React 18 开发环境会额外执行一次 setup + cleanup
+            来检查副作用是否可恢复。原因是这能提前暴露遗漏清理的问题；生产环境不会做这次额外执行，不能把它当线上行为。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">react.dev: useEffect</a></li>
-          <li><a href="https://react.dev/learn/lifecycle-of-reactive-effects" target="_blank" rel="noreferrer">react.dev: Lifecycle of Reactive Effects</a></li>
-          <li><a href="https://react.dev/learn/synchronizing-with-effects" target="_blank" rel="noreferrer">react.dev: Synchronizing with Effects</a></li>
-          <li><a href="https://react.dev/reference/react/StrictMode" target="_blank" rel="noreferrer">react.dev: StrictMode</a></li>
+          <li>
+            <a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">
+              react.dev: useEffect
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/lifecycle-of-reactive-effects"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Lifecycle of Reactive Effects
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/synchronizing-with-effects"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Synchronizing with Effects
+            </a>
+          </li>
+          <li>
+            <a href="https://react.dev/reference/react/StrictMode" target="_blank" rel="noreferrer">
+              react.dev: StrictMode
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -80,9 +166,9 @@
 
         // ====== 1. 空依赖：mount 后运行一次，unmount 前 cleanup ======
         useEffect(() => {
-          pushLog("mount: 类似 componentDidMount");
+          pushLog('mount: 类似 componentDidMount');
           return () => {
-            console.log("unmount cleanup: 类似 componentWillUnmount");
+            console.log('unmount cleanup: 类似 componentWillUnmount');
           };
         }, []);
 
@@ -92,11 +178,11 @@
             isFirstUserIdEffect.current = false;
             return;
           }
-          pushLog("update: userId 变为 " + userId + "，类似 componentDidUpdate");
+          pushLog('update: userId 变为 ' + userId + '，类似 componentDidUpdate');
         }, [userId]);
 
         return (
-          <div style={{ border: "1px dashed #999", padding: 12, marginTop: 8 }}>
+          <div style={{ border: '1px dashed #999', padding: 12, marginTop: 8 }}>
             <p>当前 userId: {userId}</p>
             <ul>
               {logs.map((log, i) => (
@@ -117,7 +203,7 @@
             <table
               border="1"
               cellPadding="6"
-              style={{ borderCollapse: "collapse", marginBottom: 12 }}
+              style={{ borderCollapse: 'collapse', marginBottom: 12 }}
             >
               <thead>
                 <tr>
@@ -132,9 +218,7 @@
                 </tr>
                 <tr>
                   <td>componentDidUpdate</td>
-                  <td>
-                    useEffect(fn, [deps])（mount 也会跑；可用 ref 跳过首次）
-                  </td>
+                  <td>useEffect(fn, [deps])（mount 也会跑；可用 ref 跳过首次）</td>
                 </tr>
                 <tr>
                   <td>componentWillUnmount</td>
@@ -142,16 +226,14 @@
                 </tr>
               </tbody>
             </table>
-            <button onClick={() => setUserId((prev) => prev + 1)}>
-              切换 userId
-            </button>
+            <button onClick={() => setUserId((prev) => prev + 1)}>切换 userId</button>
             <button onClick={() => setVisible(!visible)}>挂载/卸载 Demo</button>
             {visible && <LifecycleDemo userId={userId} />}
           </section>
         );
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -160,21 +242,27 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./10-React18-%E8%87%AA%E5%8A%A8%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html">相关 · 10-React18-自动批处理对比</a>
-        <a href="./13-Hooks-useEffect%E5%89%AF%E4%BD%9C%E7%94%A8.html">相关 · 13-Hooks-useEffect副作用</a>
+        <a href="./10-React18-%E8%87%AA%E5%8A%A8%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html">
+          相关 · 10-React18-自动批处理对比
+        </a>
+        <a href="./13-Hooks-useEffect%E5%89%AF%E4%BD%9C%E7%94%A8.html">
+          相关 · 13-Hooks-useEffect副作用
+        </a>
         <a href="./26-Fragment-Portal-StrictMode.html">相关 · 26-Fragment-Portal-StrictMode</a>
-        <a href="./10-React18-%E8%87%AA%E5%8A%A8%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html">← React18-自动批处理对比</a>
+        <a href="./10-React18-%E8%87%AA%E5%8A%A8%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html">
+          ← React18-自动批处理对比
+        </a>
         <a href="./12-Hooks-useState%E5%9F%BA%E7%A1%80.html">Hooks-useState基础 →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

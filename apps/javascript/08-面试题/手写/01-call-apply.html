@@ -27,29 +27,159 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>手写 call / apply</h1>
-      <p class="hint">先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。</p>
+      <p class="hint">
+        先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>Function.prototype.call()</code> 和 <code>apply()</code> 都会立即调用目标函数，并把第一个参数作为函数执行时的 <code>this</code>。</li>
-          <li>两者主要区别是参数形态：<code>call(thisArg, a, b)</code> 逐个传参，<code>apply(thisArg, [a, b])</code> 接收数组或类数组参数列表。</li>
-          <li>手写实现常用“临时属性调用”模拟隐式绑定：把函数挂到 <code>thisArg</code> 包装对象上，再执行 <code>context[key](...args)</code>，这样函数内部 <code>this</code> 就指向 <code>context</code>。</li>
-          <li>临时属性名要用 <code>Symbol</code> 避免覆盖业务属性，并在 <code>finally</code> 中删除；否则被调函数抛异常时，目标对象会残留临时方法。</li>
-          <li>非严格普通函数语义下，<code>null</code> / <code>undefined</code> 会替换为 <code>globalThis</code>，数字、字符串、布尔值等原始值会通过 <code>Object()</code> 装箱。</li>
-          <li>生产代码一般不污染 <code>Function.prototype</code>；这里挂原型只是为了演示面试题，真实项目优先使用原生 <code>call</code> / <code>apply</code>。</li>
+          <li>
+            <code>Function.prototype.call()</code>
+            和
+            <code>apply()</code>
+            都会立即调用目标函数，并把第一个参数作为函数执行时的
+            <code>this</code>
+            。
+          </li>
+          <li>
+            两者主要区别是参数形态：
+            <code>call(thisArg, a, b)</code>
+            逐个传参，
+            <code>apply(thisArg, [a, b])</code>
+            接收数组或类数组参数列表。
+          </li>
+          <li>
+            手写实现常用“临时属性调用”模拟隐式绑定：把函数挂到
+            <code>thisArg</code>
+            包装对象上，再执行
+            <code>context[key](...args)</code>
+            ，这样函数内部
+            <code>this</code>
+            就指向
+            <code>context</code>
+            。
+          </li>
+          <li>
+            临时属性名要用
+            <code>Symbol</code>
+            避免覆盖业务属性，并在
+            <code>finally</code>
+            中删除；否则被调函数抛异常时，目标对象会残留临时方法。
+          </li>
+          <li>
+            非严格普通函数语义下，
+            <code>null</code>
+            /
+            <code>undefined</code>
+            会替换为
+            <code>globalThis</code>
+            ，数字、字符串、布尔值等原始值会通过
+            <code>Object()</code>
+            装箱。
+          </li>
+          <li>
+            生产代码一般不污染
+            <code>Function.prototype</code>
+            ；这里挂原型只是为了演示面试题，真实项目优先使用原生
+            <code>call</code>
+            /
+            <code>apply</code>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>call</code> 和 <code>apply</code> 的共同点与区别是什么？</strong> 结论：它们都会立即执行函数并指定 <code>this</code>，区别只在传参形式。原因是两者都调用同一个函数，只是 <code>call</code> 接收参数列表，<code>apply</code> 接收数组或类数组。项目里动态参数数组通常用 <code>apply</code> 或展开语法，固定参数用 <code>call</code> 更直观。</li>
-          <li><strong>手写 <code>call/apply</code> 为什么要临时挂载函数？</strong> 结论：为了把显式绑定转成对象方法调用。原因是 <code>obj.fn()</code> 调用时，普通函数内部的 <code>this</code> 会指向 <code>obj</code>；临时挂载后调用即可模拟这个规则。边界是必须用唯一键并及时删除，避免覆盖业务属性或留下副作用。</li>
-          <li><strong><code>thisArg</code> 为 <code>null</code>、<code>undefined</code> 或原始值时怎么处理？</strong> 结论：按非严格普通函数语义，空值转为 <code>globalThis</code>，原始值装箱为对象。原因是原生 <code>call/apply</code> 在非严格函数调用中也会做类似替换。边界是严格模式函数内部的 <code>this</code> 不会被强制替换，这种简化版手写实现不能完全复刻规范所有细节。</li>
-          <li><strong>手写 <code>apply</code> 为什么要校验第二个参数并清理临时属性？</strong> 结论：第二个参数应能转成参数列表，临时属性无论调用成功或失败都要清理。原因是错误参数会导致展开或转换异常，被调函数本身也可能抛错。项目里写 polyfill 或工具函数时，清理逻辑要放在 <code>finally</code> 中，保证失败路径也不污染对象。</li>
+          <li>
+            <strong>
+              <code>call</code>
+              和
+              <code>apply</code>
+              的共同点与区别是什么？
+            </strong>
+            结论：它们都会立即执行函数并指定
+            <code>this</code>
+            ，区别只在传参形式。原因是两者都调用同一个函数，只是
+            <code>call</code>
+            接收参数列表，
+            <code>apply</code>
+            接收数组或类数组。项目里动态参数数组通常用
+            <code>apply</code>
+            或展开语法，固定参数用
+            <code>call</code>
+            更直观。
+          </li>
+          <li>
+            <strong>
+              手写
+              <code>call/apply</code>
+              为什么要临时挂载函数？
+            </strong>
+            结论：为了把显式绑定转成对象方法调用。原因是
+            <code>obj.fn()</code>
+            调用时，普通函数内部的
+            <code>this</code>
+            会指向
+            <code>obj</code>
+            ；临时挂载后调用即可模拟这个规则。边界是必须用唯一键并及时删除，避免覆盖业务属性或留下副作用。
+          </li>
+          <li>
+            <strong>
+              <code>thisArg</code>
+              为
+              <code>null</code>
+              、
+              <code>undefined</code>
+              或原始值时怎么处理？
+            </strong>
+            结论：按非严格普通函数语义，空值转为
+            <code>globalThis</code>
+            ，原始值装箱为对象。原因是原生
+            <code>call/apply</code>
+            在非严格函数调用中也会做类似替换。边界是严格模式函数内部的
+            <code>this</code>
+            不会被强制替换，这种简化版手写实现不能完全复刻规范所有细节。
+          </li>
+          <li>
+            <strong>
+              手写
+              <code>apply</code>
+              为什么要校验第二个参数并清理临时属性？
+            </strong>
+            结论：第二个参数应能转成参数列表，临时属性无论调用成功或失败都要清理。原因是错误参数会导致展开或转换异常，被调函数本身也可能抛错。项目里写
+            polyfill 或工具函数时，清理逻辑要放在
+            <code>finally</code>
+            中，保证失败路径也不污染对象。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call" target="_blank" rel="noreferrer">MDN: Function.prototype.call()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply" target="_blank" rel="noreferrer">MDN: Function.prototype.apply()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this" target="_blank" rel="noreferrer">MDN: this</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Function.prototype.call()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Function.prototype.apply()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: this
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -66,24 +196,24 @@
     <!-- SCRIPT_START -->
     <script>
       (function () {
-        var out = document.getElementById("runtime-output");
+        var out = document.getElementById('runtime-output');
         var lines = [];
         function emit(line) {
           console.log(line);
           lines.push(line);
-          if (out) out.textContent = lines.join("\n");
+          if (out) out.textContent = lines.join('\n');
         }
         function assertOk(ok, msg) {
-          emit((ok ? "✓ " : "✗ ") + msg);
+          emit((ok ? '✓ ' : '✗ ') + msg);
         }
 
         // ============ 1. 手写 myCall：临时挂载 + Symbol 键 + finally 清理 ============
         Function.prototype.myCall = function (thisArg, ...args) {
-          if (typeof this !== "function") {
-            throw new TypeError("myCall must be called on a function");
+          if (typeof this !== 'function') {
+            throw new TypeError('myCall must be called on a function');
           }
           const context = thisArg == null ? globalThis : Object(thisArg);
-          const key = Symbol("fn");
+          const key = Symbol('fn');
           context[key] = this;
           try {
             return context[key](...args);
@@ -94,16 +224,16 @@
 
         // ============ 2. 手写 myApply：校验类数组参数 ============
         Function.prototype.myApply = function (thisArg, args) {
-          if (typeof this !== "function") {
-            throw new TypeError("myApply must be called on a function");
+          if (typeof this !== 'function') {
+            throw new TypeError('myApply must be called on a function');
           }
           const isObjectLike =
-            args == null || typeof args === "object" || typeof args === "function";
+            args == null || typeof args === 'object' || typeof args === 'function';
           if (!isObjectLike) {
-            throw new TypeError("args must be array-like or iterable");
+            throw new TypeError('args must be array-like or iterable');
           }
           const context = thisArg == null ? globalThis : Object(thisArg);
-          const key = Symbol("fn");
+          const key = Symbol('fn');
           context[key] = this;
           try {
             const argList = args == null ? [] : Array.from(args);
@@ -117,24 +247,21 @@
         function introduce(prefix, suffix) {
           return prefix + this.name + suffix;
         }
-        const user = { name: "Ada" };
+        const user = { name: 'Ada' };
 
-        const callResult = introduce.myCall(user, "Hi, ", "!");
-        const applyResult = introduce.myApply(user, ["Hello, ", "."]);
+        const callResult = introduce.myCall(user, 'Hi, ', '!');
+        const applyResult = introduce.myApply(user, ['Hello, ', '.']);
         const maxResult = Math.max.myApply(null, [1, 8, 3]);
 
-        assertOk(callResult === "Hi, Ada!", "myCall: " + callResult);
-        assertOk(applyResult === "Hello, Ada.", "myApply: " + applyResult);
-        assertOk(maxResult === 8, "myApply(null, [1,8,3]) → Math.max = " + maxResult);
+        assertOk(callResult === 'Hi, Ada!', 'myCall: ' + callResult);
+        assertOk(applyResult === 'Hello, Ada.', 'myApply: ' + applyResult);
+        assertOk(maxResult === 8, 'myApply(null, [1,8,3]) → Math.max = ' + maxResult);
 
         // ============ 4. 验证：原始值 thisArg 装箱 ============
         function readThis() {
           return typeof this;
         }
-        assertOk(
-          readThis.myCall(42) === "object",
-          'myCall(42) this 装箱为 object',
-        );
+        assertOk(readThis.myCall(42) === 'object', 'myCall(42) this 装箱为 object');
       })();
     </script>
     <!-- SCRIPT_END -->
@@ -150,9 +277,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

@@ -29,32 +29,135 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>FileReader 读取文件并存入 localforage</h1>
-      <p class="hint">阅读本复习区后，选择一个小文件观察 Blob 缓存与 data URL 预览；大文件会跳过 base64 预览。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>FileReader.readAsDataURL()</code> 会把 <code>File</code>/<code>Blob</code> 读成 <code>data:&lt;mime&gt;;base64,...</code> 字符串，适合小图片预览，但不是最省空间的持久化格式。</li>
-          <li>base64 会带来额外体积和 JS 字符串内存开销；如果只是离线缓存文件，优先把原始 <code>Blob</code> 存进 localforage，或用 <code>readAsArrayBuffer()</code> 处理二进制数据。</li>
-          <li>localforage 常用 IndexedDB 后端时可以保存 Blob、ArrayBuffer 等值；如果浏览器只能回退到 localStorage，容量和二进制支持都会变差，生产代码要确认 driver 或做降级。</li>
-          <li>读取文件要处理用户未选择文件、读取失败、用户重复选择同一文件、文件过大等情况；写入存储还要捕获配额不足和 IndexedDB 不可用。</li>
-          <li>缓存用户文件涉及隐私和安全边界：不要默认长期保存敏感文件，提供删除入口，不要把 data URL 注入 <code>innerHTML</code>，展示时应使用受控的 <code>src</code> 或对象 URL。</li>
-          <li><strong>运行环境：</strong> 文件选择需用户手势，<code>file://</code> 与 <code>http(s)://</code> 均可；IndexedDB 在隐私模式可能不可用。不涉及需 HTTPS 的 File System Access API。</li>
+          <li>
+            <code>FileReader.readAsDataURL()</code>
+            会把
+            <code>File</code>
+            /
+            <code>Blob</code>
+            读成
+            <code>data:&lt;mime&gt;;base64,...</code>
+            字符串，适合小图片预览，但不是最省空间的持久化格式。
+          </li>
+          <li>
+            base64 会带来额外体积和 JS 字符串内存开销；如果只是离线缓存文件，优先把原始
+            <code>Blob</code>
+            存进 localforage，或用
+            <code>readAsArrayBuffer()</code>
+            处理二进制数据。
+          </li>
+          <li>
+            localforage 常用 IndexedDB 后端时可以保存 Blob、ArrayBuffer 等值；如果浏览器只能回退到
+            localStorage，容量和二进制支持都会变差，生产代码要确认 driver 或做降级。
+          </li>
+          <li>
+            读取文件要处理用户未选择文件、读取失败、用户重复选择同一文件、文件过大等情况；写入存储还要捕获配额不足和
+            IndexedDB 不可用。
+          </li>
+          <li>
+            缓存用户文件涉及隐私和安全边界：不要默认长期保存敏感文件，提供删除入口，不要把 data URL
+            注入
+            <code>innerHTML</code>
+            ，展示时应使用受控的
+            <code>src</code>
+            或对象 URL。
+          </li>
+          <li>
+            <strong>运行环境：</strong>
+            文件选择需用户手势，
+            <code>file://</code>
+            与
+            <code>http(s)://</code>
+            均可；IndexedDB 在隐私模式可能不可用。不涉及需 HTTPS 的 File System Access API。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>readAsDataURL</code> 和 <code>readAsArrayBuffer</code> 存文件有什么区别？</strong> 结论是 data URL 适合小文件预览，ArrayBuffer/Blob 更适合二进制处理和离线缓存。原因是 data URL 是 base64 字符串并带 MIME 前缀，体积和内存开销更高；项目里头像预览可用 data URL，大文件缓存应保留 Blob。</li>
-          <li><strong>为什么大文件不建议先转 base64 再缓存？</strong> 结论是会增加体积、占用 JS 堆内存并拖慢序列化。原因是 FileReader 会一次性把结果放到内存中，localforage 再持久化；图片编辑器、离线附件等场景应限制大小、分片或直接存 Blob。</li>
-          <li><strong>localforage 存 Blob 时要注意哪些浏览器后端差异？</strong> 结论是 IndexedDB 后端最适合，localStorage 回退不适合大二进制。原因是 IndexedDB 支持结构化克隆存储 Blob，而 localStorage 只有字符串且容量很小；生产里应确认 driver，并为老浏览器提供提示或上传替代方案。</li>
-          <li><strong>文件读取和写入 IndexedDB 分别有哪些失败路径？</strong> 结论是读取可能因为未选文件、权限或 I/O 错误失败，写入可能因为配额、浏览器策略或数据库异常失败。原因是这两步是独立异步流程；代码应分别捕获并给出不同提示，不能只在最后打印一个笼统错误。</li>
-          <li><strong>前端离线缓存用户文件时有哪些安全和隐私边界？</strong> 结论是必须让用户知道文件会保存在本机，并提供清理能力。原因是浏览器存储通常按同源长期保留，敏感文件可能被同源后续代码读取；项目里要最小化保存、避免 HTML 注入，并在退出登录或清理缓存时删除。</li>
+          <li>
+            <strong>
+              <code>readAsDataURL</code>
+              和
+              <code>readAsArrayBuffer</code>
+              存文件有什么区别？
+            </strong>
+            结论是 data URL 适合小文件预览，ArrayBuffer/Blob 更适合二进制处理和离线缓存。原因是 data
+            URL 是 base64 字符串并带 MIME 前缀，体积和内存开销更高；项目里头像预览可用 data
+            URL，大文件缓存应保留 Blob。
+          </li>
+          <li>
+            <strong>为什么大文件不建议先转 base64 再缓存？</strong>
+            结论是会增加体积、占用 JS 堆内存并拖慢序列化。原因是 FileReader
+            会一次性把结果放到内存中，localforage
+            再持久化；图片编辑器、离线附件等场景应限制大小、分片或直接存 Blob。
+          </li>
+          <li>
+            <strong>localforage 存 Blob 时要注意哪些浏览器后端差异？</strong>
+            结论是 IndexedDB 后端最适合，localStorage 回退不适合大二进制。原因是 IndexedDB
+            支持结构化克隆存储 Blob，而 localStorage 只有字符串且容量很小；生产里应确认
+            driver，并为老浏览器提供提示或上传替代方案。
+          </li>
+          <li>
+            <strong>文件读取和写入 IndexedDB 分别有哪些失败路径？</strong>
+            结论是读取可能因为未选文件、权限或 I/O
+            错误失败，写入可能因为配额、浏览器策略或数据库异常失败。原因是这两步是独立异步流程；代码应分别捕获并给出不同提示，不能只在最后打印一个笼统错误。
+          </li>
+          <li>
+            <strong>前端离线缓存用户文件时有哪些安全和隐私边界？</strong>
+            结论是必须让用户知道文件会保存在本机，并提供清理能力。原因是浏览器存储通常按同源长期保留，敏感文件可能被同源后续代码读取；项目里要最小化保存、避免
+            HTML 注入，并在退出登录或清理缓存时删除。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/FileReader" target="_blank" rel="noreferrer">MDN: FileReader</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL" target="_blank" rel="noreferrer">MDN: FileReader readAsDataURL()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsArrayBuffer" target="_blank" rel="noreferrer">MDN: FileReader readAsArrayBuffer()</a></li>
-          <li><a href="https://localforage.github.io/localForage/#data-api-setitem" target="_blank" rel="noreferrer">localForage API: setItem()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob" target="_blank" rel="noreferrer">MDN: Blob</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/FileReader"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: FileReader
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: FileReader readAsDataURL()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsArrayBuffer"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: FileReader readAsArrayBuffer()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://localforage.github.io/localForage/#data-api-setitem"
+              target="_blank"
+              rel="noreferrer"
+            >
+              localForage API: setItem()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Blob"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Blob
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -63,8 +166,10 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block" aria-label="文件存储操作">
       <h2 class="demo-block__label">运行示例</h2>
-      <p class="hint">选择一个小文件，示例会把原始 Blob 存入 localforage，并额外演示小文件 data URL 预览读取。</p>
-      <input id="file-input" type="file">
+      <p class="hint">
+        选择一个小文件，示例会把原始 Blob 存入 localforage，并额外演示小文件 data URL 预览读取。
+      </p>
+      <input id="file-input" type="file" />
       <button id="clear-file" type="button">清理缓存文件</button>
       <p id="status" aria-live="polite">尚未选择文件。</p>
     </section>
@@ -74,12 +179,12 @@
     <script>
       // ============ 1. localforage 实例与 UI ============
       const store = localforage.createInstance({
-        name: "frontend-learning-demos",
-        storeName: "localforage_file_reader",
+        name: 'frontend-learning-demos',
+        storeName: 'localforage_file_reader',
       });
-      const fileInput = document.querySelector("#file-input");
-      const clearButton = document.querySelector("#clear-file");
-      const statusEl = document.querySelector("#status");
+      const fileInput = document.querySelector('#file-input');
+      const clearButton = document.querySelector('#clear-file');
+      const statusEl = document.querySelector('#status');
       const PREVIEW_LIMIT_BYTES = 512 * 1024;
 
       function setStatus(message) {
@@ -95,7 +200,7 @@
             resolve(reader.result);
           };
           reader.onerror = function () {
-            reject(reader.error || new Error("FileReader 读取失败"));
+            reject(reader.error || new Error('FileReader 读取失败'));
           };
           reader.readAsDataURL(file);
         });
@@ -108,7 +213,7 @@
             resolve(reader.result);
           };
           reader.onerror = function () {
-            reject(reader.error || new Error("FileReader 读取失败"));
+            reject(reader.error || new Error('FileReader 读取失败'));
           };
           reader.readAsArrayBuffer(file);
         });
@@ -117,12 +222,12 @@
       // ============ 3. 存 Blob 到 IndexedDB（优先于 base64）============
       async function storeFile(file) {
         if (!file) {
-          setStatus("未选择文件。");
+          setStatus('未选择文件。');
           return;
         }
 
         try {
-          await store.setItem("last-file", {
+          await store.setItem('last-file', {
             name: file.name,
             type: file.type,
             size: file.size,
@@ -130,33 +235,36 @@
             blob: file,
           });
 
-          setStatus("已缓存 Blob：" + file.name + "，大小 " + (file.size / 1024).toFixed(2) + " KB。");
+          setStatus(
+            '已缓存 Blob：' + file.name + '，大小 ' + (file.size / 1024).toFixed(2) + ' KB。',
+          );
 
           if (file.size <= PREVIEW_LIMIT_BYTES) {
             const dataURL = await readAsDataURL(file);
-            console.log("dataURL 字符数：", dataURL.length);
-            console.log("dataURL 预览前 80 字符：", dataURL.slice(0, 80));
+            console.log('dataURL 字符数：', dataURL.length);
+            console.log('dataURL 预览前 80 字符：', dataURL.slice(0, 80));
             const buffer = await readAsArrayBuffer(file);
-            console.log("readAsArrayBuffer byteLength：", buffer.byteLength);
+            console.log('readAsArrayBuffer byteLength：', buffer.byteLength);
           } else {
-            console.warn("文件超过 512KB，跳过 readAsDataURL 预览，避免额外内存开销。");
+            console.warn('文件超过 512KB，跳过 readAsDataURL 预览，避免额外内存开销。');
           }
         } catch (error) {
-          setStatus("文件缓存失败：" + (error?.name || "Error") + " - " + (error?.message || String(error)));
-          console.error("文件读取或存储失败：", error);
+          setStatus(
+            '文件缓存失败：' + (error?.name || 'Error') + ' - ' + (error?.message || String(error)),
+          );
+          console.error('文件读取或存储失败：', error);
         }
       }
 
-      fileInput.addEventListener("change", function (event) {
+      fileInput.addEventListener('change', function (event) {
         storeFile(event.target.files[0]);
       });
 
-      clearButton.addEventListener("click", async function () {
+      clearButton.addEventListener('click', async function () {
         await store.clear();
-        fileInput.value = "";
-        setStatus("缓存文件已清理。");
+        fileInput.value = '';
+        setStatus('缓存文件已清理。');
       });
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -165,16 +273,24 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./05-%E6%B5%8B%E8%AF%95%E6%9C%80%E5%A4%A7%E5%AE%B9%E9%87%8F.html">相关 · 测试最大容量</a>
+        <a href="./05-%E6%B5%8B%E8%AF%95%E6%9C%80%E5%A4%A7%E5%AE%B9%E9%87%8F.html">
+          相关 · 测试最大容量
+        </a>
         <a href="./01-localforage-%E5%9F%BA%E7%A1%80API.html">相关 · localforage-基础API</a>
-        <a href="./05-%E6%B5%8B%E8%AF%95%E6%9C%80%E5%A4%A7%E5%AE%B9%E9%87%8F.html">← 测试最大容量</a>
-        <a href="../%E4%BA%8B%E4%BB%B6%E6%A8%A1%E5%9E%8B/01-%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF.html">事件循环 →</a>
+        <a href="./05-%E6%B5%8B%E8%AF%95%E6%9C%80%E5%A4%A7%E5%AE%B9%E9%87%8F.html">
+          ← 测试最大容量
+        </a>
+        <a
+          href="../%E4%BA%8B%E4%BB%B6%E6%A8%A1%E5%9E%8B/01-%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF.html"
+        >
+          事件循环 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

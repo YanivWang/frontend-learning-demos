@@ -29,33 +29,128 @@
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vue2 组件通信方式汇总</h1>
       <p class="hint">
-        点 child-card「props + $emit」改名、点透传按钮看 logs；点兄弟 A 发事件观察兄弟 B 收到消息；查看
-        <code>inject theme.color</code> 与 <code>$attrs</code> 透传效果。
+        点 child-card「props + $emit」改名、点透传按钮看 logs；点兄弟 A 发事件观察兄弟 B
+        收到消息；查看
+        <code>inject theme.color</code>
+        与
+        <code>$attrs</code>
+        透传效果。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue 2 组件通信的主线是单向数据流：父组件通过 <code>props</code> 把数据传给子组件，子组件通过 <code>$emit</code> 发出事件请求父组件修改数据，避免子组件直接改父级状态。</li>
-          <li><code>provide</code> / <code>inject</code> 适合传主题、表单上下文、祖先组件能力等稳定依赖。Vue 2 官方也提醒它不是响应式状态管理方案；如果要跨页面共享并追踪变更，应优先用 Vuex。</li>
-          <li>EventBus 本质是一个 Vue 实例上的事件发布订阅。它适合小范围临时通信，但监听方销毁前必须 <code>$off</code>，否则旧回调可能继续存在，带来重复响应和内存泄漏风险。</li>
-          <li><code>$attrs</code> 收集未被 props 接收的 attribute，<code>$listeners</code> 收集父组件监听器，常用于二次封装按钮、输入框、弹窗等基础组件时把能力透传到底层元素。</li>
-          <li>Vue 2 已处于维护/历史版本语境；新项目通常应选择 Vue 3。维护 Vue 2 项目时，先按父子、跨层、全局状态、组件封装四类场景选通信方式，再考虑迁移成本。</li>
+          <li>
+            Vue 2 组件通信的主线是单向数据流：父组件通过
+            <code>props</code>
+            把数据传给子组件，子组件通过
+            <code>$emit</code>
+            发出事件请求父组件修改数据，避免子组件直接改父级状态。
+          </li>
+          <li>
+            <code>provide</code>
+            /
+            <code>inject</code>
+            适合传主题、表单上下文、祖先组件能力等稳定依赖。Vue 2
+            官方也提醒它不是响应式状态管理方案；如果要跨页面共享并追踪变更，应优先用 Vuex。
+          </li>
+          <li>
+            EventBus 本质是一个 Vue 实例上的事件发布订阅。它适合小范围临时通信，但监听方销毁前必须
+            <code>$off</code>
+            ，否则旧回调可能继续存在，带来重复响应和内存泄漏风险。
+          </li>
+          <li>
+            <code>$attrs</code>
+            收集未被 props 接收的 attribute，
+            <code>$listeners</code>
+            收集父组件监听器，常用于二次封装按钮、输入框、弹窗等基础组件时把能力透传到底层元素。
+          </li>
+          <li>
+            Vue 2 已处于维护/历史版本语境；新项目通常应选择 Vue 3。维护 Vue 2
+            项目时，先按父子、跨层、全局状态、组件封装四类场景选通信方式，再考虑迁移成本。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue2 父子组件为什么优先用 props 和 $emit？</strong> 结论是它最符合 Vue 的单向数据流。原因是父组件拥有状态，子组件只声明输入和事件，数据来源清楚、调试也容易。边界是兄弟或跨多层组件通信会变得绕，这时要考虑 EventBus、provide/inject 或 Vuex。</li>
-          <li><strong>provide / inject 和 Vuex 的边界怎么划分？</strong> 结论是 provide/inject 用来传稳定上下文，Vuex 用来管理可追踪的共享状态。原因是 Vue 2 的 provide/inject 默认不是为了响应式状态流设计的，调试链路也不如 Vuex 明确。项目里常把主题、表单校验上下文放 provide/inject，把登录用户、购物车、权限放 Vuex。</li>
-          <li><strong>EventBus 为什么容易内存泄漏，如何清理？</strong> 结论是 EventBus 注册的回调如果不在组件销毁前移除，就可能在组件销毁后继续触发。原因是事件总线持有回调引用，页面切换或组件反复创建会累积监听。Vue 2 中通常在 <code>created</code> 里 <code>$on</code>，在 <code>beforeDestroy</code> 里用同一个函数引用 <code>$off</code>。</li>
-          <li><strong>$attrs / $listeners 适合解决什么组件封装问题？</strong> 结论是它们适合透明封装基础组件。原因是包装组件不必显式声明每个原生属性和事件，也能把父层传入的能力转交给内部按钮或输入框。边界是关键业务 props 仍建议显式声明，避免组件接口过于隐式。</li>
-          <li><strong>Vue2 维护期项目迁移到 Vue3 时通信 API 有哪些变化？</strong> 结论是 props/$emit 语义保留，但 <code>$listeners</code> 合并进 <code>$attrs</code>、<code>.sync</code> 改为 <code>v-model:prop</code>、EventBus 需改用 mitt 等替代。原因是 Vue 3 简化了 attrs 透传并移除了部分 Vue 2 专用 API。维护项目迁移时应逐页替换这些写法。</li>
+          <li>
+            <strong>Vue2 父子组件为什么优先用 props 和 $emit？</strong>
+            结论是它最符合 Vue
+            的单向数据流。原因是父组件拥有状态，子组件只声明输入和事件，数据来源清楚、调试也容易。边界是兄弟或跨多层组件通信会变得绕，这时要考虑
+            EventBus、provide/inject 或 Vuex。
+          </li>
+          <li>
+            <strong>provide / inject 和 Vuex 的边界怎么划分？</strong>
+            结论是 provide/inject 用来传稳定上下文，Vuex 用来管理可追踪的共享状态。原因是 Vue 2 的
+            provide/inject 默认不是为了响应式状态流设计的，调试链路也不如 Vuex
+            明确。项目里常把主题、表单校验上下文放 provide/inject，把登录用户、购物车、权限放 Vuex。
+          </li>
+          <li>
+            <strong>EventBus 为什么容易内存泄漏，如何清理？</strong>
+            结论是 EventBus
+            注册的回调如果不在组件销毁前移除，就可能在组件销毁后继续触发。原因是事件总线持有回调引用，页面切换或组件反复创建会累积监听。Vue
+            2 中通常在
+            <code>created</code>
+            里
+            <code>$on</code>
+            ，在
+            <code>beforeDestroy</code>
+            里用同一个函数引用
+            <code>$off</code>
+            。
+          </li>
+          <li>
+            <strong>$attrs / $listeners 适合解决什么组件封装问题？</strong>
+            结论是它们适合透明封装基础组件。原因是包装组件不必显式声明每个原生属性和事件，也能把父层传入的能力转交给内部按钮或输入框。边界是关键业务
+            props 仍建议显式声明，避免组件接口过于隐式。
+          </li>
+          <li>
+            <strong>Vue2 维护期项目迁移到 Vue3 时通信 API 有哪些变化？</strong>
+            结论是 props/$emit 语义保留，但
+            <code>$listeners</code>
+            合并进
+            <code>$attrs</code>
+            、
+            <code>.sync</code>
+            改为
+            <code>v-model:prop</code>
+            、EventBus 需改用 mitt 等替代。原因是 Vue 3 简化了 attrs 透传并移除了部分 Vue 2 专用
+            API。维护项目迁移时应逐页替换这些写法。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://v2.vuejs.org/v2/guide/components-props.html" target="_blank" rel="noopener">Vue 2 官方文档：Props</a></li>
-          <li><a href="https://v2.vuejs.org/v2/guide/components-custom-events.html" target="_blank" rel="noopener">Vue 2 官方文档：Custom Events</a></li>
-          <li><a href="https://v2.vuejs.org/v2/api/#provide-inject" target="_blank" rel="noopener">Vue 2 API：provide / inject</a></li>
-          <li><a href="https://v2.vuejs.org/v2/api/#vm-attrs" target="_blank" rel="noopener">Vue 2 API：$attrs / $listeners</a></li>
-          <li><a href="https://vuex.vuejs.org/" target="_blank" rel="noopener">Vuex 官方文档：集中式状态管理</a></li>
+          <li>
+            <a
+              href="https://v2.vuejs.org/v2/guide/components-props.html"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue 2 官方文档：Props
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://v2.vuejs.org/v2/guide/components-custom-events.html"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue 2 官方文档：Custom Events
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/api/#provide-inject" target="_blank" rel="noopener">
+              Vue 2 API：provide / inject
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/api/#vm-attrs" target="_blank" rel="noopener">
+              Vue 2 API：$attrs / $listeners
+            </a>
+          </li>
+          <li>
+            <a href="https://vuex.vuejs.org/" target="_blank" rel="noopener">
+              Vuex 官方文档：集中式状态管理
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -68,11 +163,11 @@
         button-text="透传按钮文案"
         @rename="title = $event"
         @native-click="logs.push('来自孙组件透传的事件')"
-        ></child-card>
-        <sibling-a></sibling-a>
-        <sibling-b></sibling-b>
-        <pre>{{ logs.join('\n') }}</pre>
-      </div>
+      ></child-card>
+      <sibling-a></sibling-a>
+      <sibling-b></sibling-b>
+      <pre>{{ logs.join('\n') }}</pre>
+    </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
@@ -86,21 +181,21 @@
       // base-button：$attrs / $listeners 透传封装
       // 官方：inheritAttrs: false 时，未声明为 props 的 attribute 进入 $attrs。
       // ---------------------------------------------------------------------------
-      Vue.component("base-button", {
+      Vue.component('base-button', {
         inheritAttrs: false,
         template: `
         <button type="button" v-bind="$attrs" v-on="$listeners">
           {{ $attrs['button-text'] || '按钮' }}
         </button>
-        `
+        `,
       });
 
       // ---------------------------------------------------------------------------
       // child-card：props + $emit + provide/inject + $attrs 透传
       // ---------------------------------------------------------------------------
-      Vue.component("child-card", {
-        inject: ["theme"],
-        props: ["title"],
+      Vue.component('child-card', {
+        inject: ['theme'],
+        props: ['title'],
         template: `
         <section style="border:1px solid #ddd;padding:8px;margin-bottom:8px;">
           <p>props title: {{ title }}</p>
@@ -108,58 +203,57 @@
           <button type="button" @click="$emit('rename', '子组件改名请求')">props + $emit</button>
           <base-button v-bind="$attrs" @click="$emit('native-click')"></base-button>
         </section>
-        `
+        `,
       });
 
       // ---------------------------------------------------------------------------
       // sibling-a / sibling-b：EventBus 发布订阅
       // ---------------------------------------------------------------------------
-      Vue.component("sibling-a", {
+      Vue.component('sibling-a', {
         template: `<button type="button" @click="send">兄弟 A 发送事件</button>`,
         methods: {
           send() {
-            EventBus.$emit("sibling-message", "来自兄弟 A");
-          }
-        }
+            EventBus.$emit('sibling-message', '来自兄弟 A');
+          },
+        },
       });
 
-      Vue.component("sibling-b", {
+      Vue.component('sibling-b', {
         template: `<p>兄弟 B 收到: {{ message }}</p>`,
         data() {
-          return { message: "" };
+          return { message: '' };
         },
         created() {
-          EventBus.$on("sibling-message", this.onMessage);
+          EventBus.$on('sibling-message', this.onMessage);
         },
         beforeDestroy() {
-          EventBus.$off("sibling-message", this.onMessage);
+          EventBus.$off('sibling-message', this.onMessage);
         },
         methods: {
           onMessage(message) {
             this.message = message;
-          }
-        }
+          },
+        },
       });
 
       // ---------------------------------------------------------------------------
       // #app：汇总 props/$emit、provide/inject、EventBus、$attrs 四种通信
       // ---------------------------------------------------------------------------
       new Vue({
-        el: "#app",
+        el: '#app',
         provide() {
           return {
-            theme: this.theme
+            theme: this.theme,
           };
         },
         data() {
           return {
-            title: "父组件标题",
-            theme: { color: "blue" },
-            logs: []
+            title: '父组件标题',
+            theme: { color: 'blue' },
+            logs: [],
           };
-        }
+        },
       });
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -173,13 +267,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

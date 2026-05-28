@@ -27,28 +27,138 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>手写 EventEmitter</h1>
-      <p class="hint">先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。</p>
+      <p class="hint">
+        先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>EventEmitter</code> 的基本结构是“事件名 → 监听函数列表”，<code>on</code> 负责追加监听，<code>emit</code> 按注册顺序同步调用监听。</li>
-          <li><code>off</code> 要能移除同一个函数引用；<code>once</code> 通常通过包装函数实现一次性监听，因此需要保存原始 <code>listener</code>，让 <code>off(type, listener)</code> 也能删掉包装函数。</li>
-          <li><code>emit</code> 时复制监听数组可以冻结本轮派发快照，避免某个监听在执行中新增或删除监听导致本轮遍历顺序不稳定。</li>
-          <li>本 demo 的 <code>emit</code> 是同步派发：监听里的异常会沿调用栈抛出，耗时监听会阻塞后续监听；真实项目要按场景决定是否捕获异常或切到异步队列。</li>
-          <li>Node.js <code>EventEmitter</code> 对 <code>error</code> 事件、最大监听数、<code>this</code> 绑定等有更多约定；浏览器 DOM 事件则使用 <code>EventTarget</code>、捕获/冒泡和事件对象模型。</li>
-          <li>常见风险是忘记解绑导致内存泄漏，尤其是组件卸载、路由切换、长连接消息订阅等场景；注册和清理应成对出现。</li>
+          <li>
+            <code>EventEmitter</code>
+            的基本结构是“事件名 → 监听函数列表”，
+            <code>on</code>
+            负责追加监听，
+            <code>emit</code>
+            按注册顺序同步调用监听。
+          </li>
+          <li>
+            <code>off</code>
+            要能移除同一个函数引用；
+            <code>once</code>
+            通常通过包装函数实现一次性监听，因此需要保存原始
+            <code>listener</code>
+            ，让
+            <code>off(type, listener)</code>
+            也能删掉包装函数。
+          </li>
+          <li>
+            <code>emit</code>
+            时复制监听数组可以冻结本轮派发快照，避免某个监听在执行中新增或删除监听导致本轮遍历顺序不稳定。
+          </li>
+          <li>
+            本 demo 的
+            <code>emit</code>
+            是同步派发：监听里的异常会沿调用栈抛出，耗时监听会阻塞后续监听；真实项目要按场景决定是否捕获异常或切到异步队列。
+          </li>
+          <li>
+            Node.js
+            <code>EventEmitter</code>
+            对
+            <code>error</code>
+            事件、最大监听数、
+            <code>this</code>
+            绑定等有更多约定；浏览器 DOM 事件则使用
+            <code>EventTarget</code>
+            、捕获/冒泡和事件对象模型。
+          </li>
+          <li>
+            常见风险是忘记解绑导致内存泄漏，尤其是组件卸载、路由切换、长连接消息订阅等场景；注册和清理应成对出现。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>EventEmitter</code> 的 <code>on</code>、<code>emit</code>、<code>off</code>、<code>once</code> 分别要保证什么行为？</strong> 结论：<code>on</code> 注册，<code>emit</code> 触发，<code>off</code> 删除，<code>once</code> 只触发一次。原因是发布订阅模型需要把事件生产者和消费者解耦，同时保留可清理能力。项目里消息总线、插件钩子、Node.js stream 都会用到类似模式。</li>
-          <li><strong><code>once</code> 为什么通常要保存原始 <code>listener</code> 引用？</strong> 结论：因为 <code>once</code> 实际注册的是包装函数，但用户解绑时传入的是原始函数。原因是如果不保存映射关系，<code>off(type, listener)</code> 无法删除已包装的监听。边界是包装函数还要在执行前或执行后解绑，通常执行前解绑可避免监听内部再次触发同一事件造成重复调用。</li>
-          <li><strong><code>emit</code> 派发时为什么要复制监听列表？</strong> 结论：复制后按快照派发，本轮执行顺序更稳定。原因是监听函数可能在执行中调用 <code>on</code> 或 <code>off</code> 修改同一个事件列表，直接遍历原数组容易漏调或重复调用。边界是复制有少量额外开销，但对面试实现和大多数业务事件总线更容易保证语义。</li>
-          <li><strong><code>EventEmitter</code> 和 DOM <code>EventTarget</code> 有什么区别？</strong> 结论：<code>EventEmitter</code> 更偏 Node.js 风格的同步发布订阅，DOM <code>EventTarget</code> 面向浏览器事件流。原因是 DOM 事件有事件对象、捕获、目标、冒泡、取消默认行为等机制，而普通 EventEmitter 只按事件名派发参数。项目中 DOM 交互用 <code>addEventListener</code>，内部消息总线才考虑 EventEmitter 模式。</li>
+          <li>
+            <strong>
+              <code>EventEmitter</code>
+              的
+              <code>on</code>
+              、
+              <code>emit</code>
+              、
+              <code>off</code>
+              、
+              <code>once</code>
+              分别要保证什么行为？
+            </strong>
+            结论：
+            <code>on</code>
+            注册，
+            <code>emit</code>
+            触发，
+            <code>off</code>
+            删除，
+            <code>once</code>
+            只触发一次。原因是发布订阅模型需要把事件生产者和消费者解耦，同时保留可清理能力。项目里消息总线、插件钩子、Node.js
+            stream 都会用到类似模式。
+          </li>
+          <li>
+            <strong>
+              <code>once</code>
+              为什么通常要保存原始
+              <code>listener</code>
+              引用？
+            </strong>
+            结论：因为
+            <code>once</code>
+            实际注册的是包装函数，但用户解绑时传入的是原始函数。原因是如果不保存映射关系，
+            <code>off(type, listener)</code>
+            无法删除已包装的监听。边界是包装函数还要在执行前或执行后解绑，通常执行前解绑可避免监听内部再次触发同一事件造成重复调用。
+          </li>
+          <li>
+            <strong>
+              <code>emit</code>
+              派发时为什么要复制监听列表？
+            </strong>
+            结论：复制后按快照派发，本轮执行顺序更稳定。原因是监听函数可能在执行中调用
+            <code>on</code>
+            或
+            <code>off</code>
+            修改同一个事件列表，直接遍历原数组容易漏调或重复调用。边界是复制有少量额外开销，但对面试实现和大多数业务事件总线更容易保证语义。
+          </li>
+          <li>
+            <strong>
+              <code>EventEmitter</code>
+              和 DOM
+              <code>EventTarget</code>
+              有什么区别？
+            </strong>
+            结论：
+            <code>EventEmitter</code>
+            更偏 Node.js 风格的同步发布订阅，DOM
+            <code>EventTarget</code>
+            面向浏览器事件流。原因是 DOM
+            事件有事件对象、捕获、目标、冒泡、取消默认行为等机制，而普通 EventEmitter
+            只按事件名派发参数。项目中 DOM 交互用
+            <code>addEventListener</code>
+            ，内部消息总线才考虑 EventEmitter 模式。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://nodejs.org/api/events.html" target="_blank" rel="noreferrer">Node.js: Events</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget" target="_blank" rel="noreferrer">MDN: EventTarget</a></li>
+          <li>
+            <a href="https://nodejs.org/api/events.html" target="_blank" rel="noreferrer">
+              Node.js: Events
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: EventTarget
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -57,7 +167,9 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block">
       <h2>手写实现验证</h2>
-      <p class="tip">标准答法：第一次 emit 触发 on + once；第二次 emit 只触发 on；off 后 emit 返回 false。</p>
+      <p class="tip">
+        标准答法：第一次 emit 触发 on + once；第二次 emit 只触发 on；off 后 emit 返回 false。
+      </p>
       <pre id="runtime-output" aria-live="polite"></pre>
     </section>
     <!-- PAGE_DOM_END -->
@@ -65,12 +177,12 @@
     <!-- SCRIPT_START -->
     <script>
       (function () {
-        var out = document.getElementById("runtime-output");
+        var out = document.getElementById('runtime-output');
         var lines = [];
         function emitLine(line) {
           console.log(line);
           lines.push(line);
-          if (out) out.textContent = lines.join("\n");
+          if (out) out.textContent = lines.join('\n');
         }
 
         // ============ 1. EventEmitter：on / off / once / emit ============
@@ -89,7 +201,7 @@
             const listeners = this.events[type];
             if (!listeners) return this;
             this.events[type] = listeners.filter(
-              (fn) => fn !== listener && fn._origin !== listener
+              (fn) => fn !== listener && fn._origin !== listener,
             );
             return this;
           }
@@ -115,32 +227,32 @@
         const bus = new EventEmitter();
         const result = [];
         function onMessage(value) {
-          result.push("on:" + value);
+          result.push('on:' + value);
         }
 
-        bus.on("message", onMessage);
-        bus.once("message", (value) => result.push("once:" + value));
+        bus.on('message', onMessage);
+        bus.once('message', (value) => result.push('once:' + value));
 
-        emitLine("第 1 次 emit(1): " + bus.emit("message", 1));
-        emitLine("第 2 次 emit(2): " + bus.emit("message", 2));
-        bus.off("message", onMessage);
-        emitLine("off 后 emit(3): " + bus.emit("message", 3));
-        emitLine("result: " + result.join("|")); // 预期: on:1|once:1|on:2
+        emitLine('第 1 次 emit(1): ' + bus.emit('message', 1));
+        emitLine('第 2 次 emit(2): ' + bus.emit('message', 2));
+        bus.off('message', onMessage);
+        emitLine('off 后 emit(3): ' + bus.emit('message', 3));
+        emitLine('result: ' + result.join('|')); // 预期: on:1|once:1|on:2
 
         // ============ 3. 验证：emit 复制监听列表，派发中 off 不影响本轮 ============
         const snapBus = new EventEmitter();
         const snapLog = [];
-        snapBus.on("snap", () => snapLog.push("a"));
-        snapBus.on("snap", () => {
-          snapLog.push("b");
-          snapBus.off("snap", snapLogFn);
+        snapBus.on('snap', () => snapLog.push('a'));
+        snapBus.on('snap', () => {
+          snapLog.push('b');
+          snapBus.off('snap', snapLogFn);
         });
         function snapLogFn() {
-          snapLog.push("c");
+          snapLog.push('c');
         }
-        snapBus.on("snap", snapLogFn);
-        snapBus.emit("snap");
-        emitLine("emit 快照派发: " + snapLog.join("|")); // 预期: a|b|c
+        snapBus.on('snap', snapLogFn);
+        snapBus.emit('snap');
+        emitLine('emit 快照派发: ' + snapLog.join('|')); // 预期: a|b|c
       })();
     </script>
     <!-- SCRIPT_END -->
@@ -156,9 +268,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

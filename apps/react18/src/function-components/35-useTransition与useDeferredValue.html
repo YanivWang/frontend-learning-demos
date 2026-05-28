@@ -31,31 +31,135 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>useTransition 与 useDeferredValue</h1>
-      <p class="hint">请打开 DevTools Console 查看 tab 切换与 deferred 过滤日志；下方 #root 为 React 挂载/交互演示区。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看 tab 切换与 deferred 过滤日志；下方 #root 为 React
+        挂载/交互演示区。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>createRoot</code> 启用 React 18 新根行为（如更广范围的自动批处理），但<strong>不会</strong>因此全面开启并发渲染；需要并发调度时，应通过 <code>startTransition</code> 等 API 按需标记非紧急更新。</li>
-          <li><code>useTransition</code> 返回 <code>[isPending, startTransition]</code>。把 state 更新包进 <code>startTransition(() =&gt; ...)</code> 后，React 可以中断或延后这次更新，让更紧急的交互（如当前输入、点击反馈）先完成。</li>
-          <li><code>useDeferredValue(value)</code> 会返回一个“滞后版”的值：当 <code>value</code> 快速变化时，UI 可以先继续显示旧值，再在后台追上最新值。搜索框 + 大列表过滤是典型场景。</li>
-          <li>当 <code>query !== deferredQuery</code> 时，说明列表仍基于旧 deferred 值渲染，可配合 opacity 提示“结果尚未跟上输入”。这与 <code>isPending</code> 类似，但语义上一个是“Transition 进行中”，一个是“展示值仍落后”。</li>
-          <li>Transition 解决的是<strong>更新优先级</strong>，不能替代函数式 <code>setState</code>、依赖数组或数据请求边界；昂贵计算仍应配合 <code>useMemo</code>、虚拟列表等手段。</li>
+          <li>
+            <code>createRoot</code>
+            启用 React 18 新根行为（如更广范围的自动批处理），但
+            <strong>不会</strong>
+            因此全面开启并发渲染；需要并发调度时，应通过
+            <code>startTransition</code>
+            等 API 按需标记非紧急更新。
+          </li>
+          <li>
+            <code>useTransition</code>
+            返回
+            <code>[isPending, startTransition]</code>
+            。把 state 更新包进
+            <code>startTransition(() =&gt; ...)</code>
+            后，React 可以中断或延后这次更新，让更紧急的交互（如当前输入、点击反馈）先完成。
+          </li>
+          <li>
+            <code>useDeferredValue(value)</code>
+            会返回一个“滞后版”的值：当
+            <code>value</code>
+            快速变化时，UI 可以先继续显示旧值，再在后台追上最新值。搜索框 + 大列表过滤是典型场景。
+          </li>
+          <li>
+            当
+            <code>query !== deferredQuery</code>
+            时，说明列表仍基于旧 deferred 值渲染，可配合 opacity 提示“结果尚未跟上输入”。这与
+            <code>isPending</code>
+            类似，但语义上一个是“Transition 进行中”，一个是“展示值仍落后”。
+          </li>
+          <li>
+            Transition 解决的是
+            <strong>更新优先级</strong>
+            ，不能替代函数式
+            <code>setState</code>
+            、依赖数组或数据请求边界；昂贵计算仍应配合
+            <code>useMemo</code>
+            、虚拟列表等手段。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>createRoot 与 startTransition 分别解决什么问题？</strong> 结论是 <code>createRoot</code> 提供 React 18 新客户端根与更广批处理前提；<code>startTransition</code> 把某次更新标记为非紧急。原因是并发调度需要新根能力，但只有你显式标记 Transition 时，React 才会按较低优先级处理该更新。</li>
-          <li><strong>useTransition 和 useDeferredValue 分别适合什么场景？</strong> 结论是 <code>useTransition</code> 适合你在事件处理里主动发起 state 更新（如切 tab、打开面板）；<code>useDeferredValue</code> 适合“已有快速变化的值，希望下游渲染慢半拍”（如搜索词驱动列表）。原因是前者控制更新入口，后者延迟消费某个值。</li>
-          <li><strong>isPending 与 query !== deferredQuery 各表示什么？</strong> 结论是 <code>isPending</code> 表示 Transition 更新尚未完成；<code>query !== deferredQuery</code> 表示 deferred 值还没追上最新 query。原因是一个跟踪 Transition 生命周期，一个跟踪值滞后；项目里都可用来展示 loading 或 stale 样式。</li>
-          <li><strong>Transition 更新被中断时会怎样？</strong> 结论是 React 可以丢弃未完成的 Transition 工作并重新开始。原因是更高优先级更新到来时，React 优先保证紧急 UI；边界是 Transition 内更新不应依赖“一定完整执行一次”的副作用顺序。</li>
-          <li><strong>Transition 能否替代函数式 setState？</strong> 结论是不能。原因是 Transition 只改变调度优先级，不改变 state 快照语义；连续计数、闭包、依赖数组等规则仍然成立，项目里仍要写 updater 和正确依赖。</li>
+          <li>
+            <strong>createRoot 与 startTransition 分别解决什么问题？</strong>
+            结论是
+            <code>createRoot</code>
+            提供 React 18 新客户端根与更广批处理前提；
+            <code>startTransition</code>
+            把某次更新标记为非紧急。原因是并发调度需要新根能力，但只有你显式标记 Transition
+            时，React 才会按较低优先级处理该更新。
+          </li>
+          <li>
+            <strong>useTransition 和 useDeferredValue 分别适合什么场景？</strong>
+            结论是
+            <code>useTransition</code>
+            适合你在事件处理里主动发起 state 更新（如切 tab、打开面板）；
+            <code>useDeferredValue</code>
+            适合“已有快速变化的值，希望下游渲染慢半拍”（如搜索词驱动列表）。原因是前者控制更新入口，后者延迟消费某个值。
+          </li>
+          <li>
+            <strong>isPending 与 query !== deferredQuery 各表示什么？</strong>
+            结论是
+            <code>isPending</code>
+            表示 Transition 更新尚未完成；
+            <code>query !== deferredQuery</code>
+            表示 deferred 值还没追上最新 query。原因是一个跟踪 Transition
+            生命周期，一个跟踪值滞后；项目里都可用来展示 loading 或 stale 样式。
+          </li>
+          <li>
+            <strong>Transition 更新被中断时会怎样？</strong>
+            结论是 React 可以丢弃未完成的 Transition
+            工作并重新开始。原因是更高优先级更新到来时，React 优先保证紧急 UI；边界是 Transition
+            内更新不应依赖“一定完整执行一次”的副作用顺序。
+          </li>
+          <li>
+            <strong>Transition 能否替代函数式 setState？</strong>
+            结论是不能。原因是 Transition 只改变调度优先级，不改变 state
+            快照语义；连续计数、闭包、依赖数组等规则仍然成立，项目里仍要写 updater 和正确依赖。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/useTransition" target="_blank" rel="noreferrer">react.dev: useTransition</a></li>
-          <li><a href="https://react.dev/reference/react/useDeferredValue" target="_blank" rel="noreferrer">react.dev: useDeferredValue</a></li>
-          <li><a href="https://react.dev/reference/react/startTransition" target="_blank" rel="noreferrer">react.dev: startTransition</a></li>
-          <li><a href="https://react.dev/reference/react-dom/client/createRoot" target="_blank" rel="noreferrer">react.dev: createRoot</a></li>
-          <li><a href="https://react.dev/blog/2022/03/29/react-v18" target="_blank" rel="noreferrer">react.dev: React 18 发布公告</a></li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/useTransition"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: useTransition
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/useDeferredValue"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: useDeferredValue
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/startTransition"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: startTransition
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react-dom/client/createRoot"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: createRoot
+            </a>
+          </li>
+          <li>
+            <a href="https://react.dev/blog/2022/03/29/react-v18" target="_blank" rel="noreferrer">
+              react.dev: React 18 发布公告
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -78,37 +182,39 @@
         return label;
       }
 
-      const ITEMS = Array.from({ length: 200 }, (_, index) => "条目 " + (index + 1));
+      const ITEMS = Array.from({ length: 200 }, (_, index) => '条目 ' + (index + 1));
 
       // ====== 1. useTransition：切 tab 时标记非紧急更新 ======
       function TabPanel({ tab }) {
-        const content = slowRender(tab === "home" ? "首页内容（慢渲染）" : "设置内容（慢渲染）");
-        console.log("TabPanel render:", tab); // 预期: 切换 tab 时在 Transition 中渲染
+        const content = slowRender(tab === 'home' ? '首页内容（慢渲染）' : '设置内容（慢渲染）');
+        console.log('TabPanel render:', tab); // 预期: 切换 tab 时在 Transition 中渲染
         return <p>{content}</p>;
       }
 
       function TransitionDemo() {
         const [isPending, startTransition] = useTransition();
-        const [tab, setTab] = useState("home");
+        const [tab, setTab] = useState('home');
 
         function selectTab(nextTab) {
           startTransition(() => {
             setTab(nextTab);
-            console.log("startTransition 切换 tab:", nextTab); // 预期: isPending 可能短暂为 true
+            console.log('startTransition 切换 tab:', nextTab); // 预期: isPending 可能短暂为 true
           });
         }
 
         return (
-          <div style={{ border: "1px solid #ddd", borderRadius: 10, padding: 16, marginBottom: 16 }}>
+          <div
+            style={{ border: '1px solid #ddd', borderRadius: 10, padding: 16, marginBottom: 16 }}
+          >
             <h2>useTransition：切 tab</h2>
             <p>
               当前 tab: {tab}
-              {isPending ? "（Transition 进行中…）" : ""}
+              {isPending ? '（Transition 进行中…）' : ''}
             </p>
-            <button type="button" onClick={() => selectTab("home")} disabled={isPending}>
+            <button type="button" onClick={() => selectTab('home')} disabled={isPending}>
               首页
             </button>
-            <button type="button" onClick={() => selectTab("settings")} disabled={isPending}>
+            <button type="button" onClick={() => selectTab('settings')} disabled={isPending}>
               设置
             </button>
             <div style={{ opacity: isPending ? 0.55 : 1 }}>
@@ -125,17 +231,17 @@
       }
 
       function DeferredSearchDemo() {
-        const [query, setQuery] = useState("");
+        const [query, setQuery] = useState('');
         const deferredQuery = useDeferredValue(query);
         const isStale = query !== deferredQuery;
 
         const visibleItems = useMemo(() => {
-          console.log("filter with deferredQuery:", deferredQuery); // 预期: 输入快于 deferred 时日志滞后
+          console.log('filter with deferredQuery:', deferredQuery); // 预期: 输入快于 deferred 时日志滞后
           return filterItems(ITEMS, deferredQuery);
         }, [deferredQuery]);
 
         return (
-          <div style={{ border: "1px solid #ddd", borderRadius: 10, padding: 16 }}>
+          <div style={{ border: '1px solid #ddd', borderRadius: 10, padding: 16 }}>
             <h2>useDeferredValue：搜索过滤</h2>
             <label>
               搜索：
@@ -146,8 +252,8 @@
               />
             </label>
             <p>
-              query: {query || "（空）"} · deferredQuery: {deferredQuery || "（空）"}
-              {isStale ? " · 列表仍基于旧 deferred 值" : ""}
+              query: {query || '（空）'} · deferredQuery: {deferredQuery || '（空）'}
+              {isStale ? ' · 列表仍基于旧 deferred 值' : ''}
             </p>
             <ul style={{ opacity: isStale ? 0.55 : 1 }}>
               {visibleItems.map((item) => (
@@ -169,7 +275,7 @@
         );
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -178,17 +284,29 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./10-React18-%E8%87%AA%E5%8A%A8%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html">相关 · 10-React18-自动批处理对比</a>
-        <a href="./25-%E8%99%9A%E6%8B%9FDOM-Fiber-%E6%89%B9%E5%A4%84%E7%90%86.html">相关 · 25-虚拟DOM-Fiber-批处理</a>
-        <a href="./34-React19%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%A7%88.html">相关 · 34-React19新特性概览</a>
-        <a href="./34-React19%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%A7%88.html">← React19新特性概览</a>
-        <a href="../../../react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/01-%E5%85%A5%E9%97%A8-createRoot%E4%B8%8E%E5%85%83%E7%B4%A0.html">入门-createRoot与元素 →</a>
+        <a href="./10-React18-%E8%87%AA%E5%8A%A8%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html">
+          相关 · 10-React18-自动批处理对比
+        </a>
+        <a href="./25-%E8%99%9A%E6%8B%9FDOM-Fiber-%E6%89%B9%E5%A4%84%E7%90%86.html">
+          相关 · 25-虚拟DOM-Fiber-批处理
+        </a>
+        <a href="./34-React19%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%A7%88.html">
+          相关 · 34-React19新特性概览
+        </a>
+        <a href="./34-React19%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%A7%88.html">
+          ← React19新特性概览
+        </a>
+        <a
+          href="../../../react19/src/01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/01-%E5%85%A5%E9%97%A8-createRoot%E4%B8%8E%E5%85%83%E7%B4%A0.html"
+        >
+          入门-createRoot与元素 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

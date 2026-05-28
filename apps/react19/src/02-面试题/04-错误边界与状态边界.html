@@ -23,9 +23,22 @@
     <script src="../../libs/react-dom.development.js"></script>
     <script src="../../libs/babel.min.js"></script>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 720px; line-height: 1.6; }
-      .err-ui { background: #ffebe9; border: 1px solid #ff8182; padding: 1rem; border-radius: 8px; }
-      button { margin-right: 0.5rem; margin-top: 0.5rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 720px;
+        line-height: 1.6;
+      }
+      .err-ui {
+        background: #ffebe9;
+        border: 1px solid #ff8182;
+        padding: 1rem;
+        border-radius: 8px;
+      }
+      button {
+        margin-right: 0.5rem;
+        margin-top: 0.5rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -34,29 +47,107 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>错误边界与 Action 状态边界</h1>
-      <p class="hint">下方 #root 为三类错误处理演示区：点击「触发渲染错误」观察 Error Boundary 兜底；点击「业务失败」观察 Action 返回 state 而非进入边界。请打开 DevTools Console 查看边界捕获日志。</p>
+      <p class="hint">
+        下方 #root 为三类错误处理演示区：点击「触发渲染错误」观察 Error Boundary
+        兜底；点击「业务失败」观察 Action 返回 state 而非进入边界。请打开 DevTools Console
+        查看边界捕获日志。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Error Boundary 捕获子组件渲染、生命周期方法和构造函数中的错误；React 19 仍使用 class 组件的 <code>static getDerivedStateFromError</code> 与 <code>componentDidCatch</code> 实现边界。</li>
-          <li>边界不会自动捕获事件处理器、定时器、Promise 回调、服务端渲染阶段或边界自身抛出的错误；这些位置需要 <code>try/catch</code>、状态建模或框架级错误处理。</li>
-          <li><code>useActionState</code> 适合把表单 Action 的可预期业务失败返回为状态，例如本页的「库存不足」；它不会代替错误边界，也不应该把用户可修正错误都变成兜底异常页。</li>
-          <li>状态边界处理「还能继续交互」的失败，错误边界隔离「子树无法继续渲染」的未知错误；项目里常按路由、卡片或高风险组件设置边界，避免整页白屏。</li>
-          <li>重置错误边界时要同步修复触发错误的状态；本页按钮同时清掉边界内部错误和外层 <code>throwRender</code>，真实项目也可通过重置 key 重新挂载子树。</li>
+          <li>
+            Error Boundary 捕获子组件渲染、生命周期方法和构造函数中的错误；React 19 仍使用 class
+            组件的
+            <code>static getDerivedStateFromError</code>
+            与
+            <code>componentDidCatch</code>
+            实现边界。
+          </li>
+          <li>
+            边界不会自动捕获事件处理器、定时器、Promise
+            回调、服务端渲染阶段或边界自身抛出的错误；这些位置需要
+            <code>try/catch</code>
+            、状态建模或框架级错误处理。
+          </li>
+          <li>
+            <code>useActionState</code>
+            适合把表单 Action
+            的可预期业务失败返回为状态，例如本页的「库存不足」；它不会代替错误边界，也不应该把用户可修正错误都变成兜底异常页。
+          </li>
+          <li>
+            状态边界处理「还能继续交互」的失败，错误边界隔离「子树无法继续渲染」的未知错误；项目里常按路由、卡片或高风险组件设置边界，避免整页白屏。
+          </li>
+          <li>
+            重置错误边界时要同步修复触发错误的状态；本页按钮同时清掉边界内部错误和外层
+            <code>throwRender</code>
+            ，真实项目也可通过重置 key 重新挂载子树。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Error Boundary 能捕获哪些错误，不能捕获哪些错误？</strong> 结论是它捕获子树渲染、生命周期和构造阶段错误，不捕获事件处理器、异步回调、服务端渲染和自身错误。原因是边界参与的是 React 渲染提交链路，事件和异步任务已经离开该链路。项目里事件错误要本地处理，渲染风险点才用边界隔离。</li>
-          <li><strong>React 19 中函数组件能不能直接写错误边界？</strong> 结论是不能，官方错误边界仍要求 class 组件生命周期。原因是 <code>getDerivedStateFromError</code> 和 <code>componentDidCatch</code> 目前没有等价的内置函数组件 Hook。实际项目可封装 class 边界供函数组件树使用，或使用框架提供的路由错误边界。</li>
-          <li><strong>表单 Action 的业务失败为什么应该返回 state？</strong> 结论是可预期失败应返回页面可展示状态。原因是用户需要看到错误并继续修正输入，进入错误边界会丢失上下文且体验过重。比如库存不足、校验失败、权限不足通常显示在表单旁；未知异常才交给边界或监控。</li>
-          <li><strong>错误边界和状态边界在项目里如何分层？</strong> 结论是业务状态靠组件局部或 Action state，渲染崩溃靠 Error Boundary。原因是二者恢复方式不同：业务失败可重试，渲染错误需要隔离和重置子树。大型页面可按路由、微前端、数据面板设置边界，避免单点崩溃拖垮整页。</li>
+          <li>
+            <strong>Error Boundary 能捕获哪些错误，不能捕获哪些错误？</strong>
+            结论是它捕获子树渲染、生命周期和构造阶段错误，不捕获事件处理器、异步回调、服务端渲染和自身错误。原因是边界参与的是
+            React
+            渲染提交链路，事件和异步任务已经离开该链路。项目里事件错误要本地处理，渲染风险点才用边界隔离。
+          </li>
+          <li>
+            <strong>React 19 中函数组件能不能直接写错误边界？</strong>
+            结论是不能，官方错误边界仍要求 class 组件生命周期。原因是
+            <code>getDerivedStateFromError</code>
+            和
+            <code>componentDidCatch</code>
+            目前没有等价的内置函数组件 Hook。实际项目可封装 class
+            边界供函数组件树使用，或使用框架提供的路由错误边界。
+          </li>
+          <li>
+            <strong>表单 Action 的业务失败为什么应该返回 state？</strong>
+            结论是可预期失败应返回页面可展示状态。原因是用户需要看到错误并继续修正输入，进入错误边界会丢失上下文且体验过重。比如库存不足、校验失败、权限不足通常显示在表单旁；未知异常才交给边界或监控。
+          </li>
+          <li>
+            <strong>错误边界和状态边界在项目里如何分层？</strong>
+            结论是业务状态靠组件局部或 Action state，渲染崩溃靠 Error
+            Boundary。原因是二者恢复方式不同：业务失败可重试，渲染错误需要隔离和重置子树。大型页面可按路由、微前端、数据面板设置边界，避免单点崩溃拖垮整页。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary" target="_blank" rel="noreferrer">React Reference: Catching rendering errors with an Error Boundary</a></li>
-          <li><a href="https://react.dev/reference/react/Component#static-getderivedstatefromerror" target="_blank" rel="noreferrer">React Reference: static getDerivedStateFromError</a></li>
-          <li><a href="https://react.dev/reference/react/Component#componentdidcatch" target="_blank" rel="noreferrer">React Reference: componentDidCatch</a></li>
-          <li><a href="https://react.dev/reference/react/useActionState" target="_blank" rel="noreferrer">React Reference: useActionState</a></li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React Reference: Catching rendering errors with an Error Boundary
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#static-getderivedstatefromerror"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React Reference: static getDerivedStateFromError
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#componentdidcatch"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React Reference: componentDidCatch
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/useActionState"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React Reference: useActionState
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -77,7 +168,7 @@
           return { error };
         }
         componentDidCatch(error, info) {
-          console.log("[ErrorBoundary] 边界捕获渲染错误:", error.message, info.componentStack);
+          console.log('[ErrorBoundary] 边界捕获渲染错误:', error.message, info.componentStack);
         }
         render() {
           if (this.state.error) {
@@ -90,7 +181,7 @@
                   onClick={() => {
                     this.props.onReset?.();
                     this.setState({ error: null });
-                    console.log("[ErrorBoundary] 重置边界");
+                    console.log('[ErrorBoundary] 重置边界');
                   }}
                 >
                   重置
@@ -104,23 +195,23 @@
 
       // ====== 2. 渲染期故意抛错：由 Error Boundary 捕获 ======
       function Buggy({ shouldThrow }) {
-        if (shouldThrow) throw new Error("渲染期故意抛错");
+        if (shouldThrow) throw new Error('渲染期故意抛错');
         return <p>子树正常</p>;
       }
 
       // ====== 3. Action 业务失败：返回 state，不走 Error Boundary ======
       async function riskyAction(prev, formData) {
-        const mode = formData.get("mode");
-        console.log("[Action] riskyAction mode=", mode);
+        const mode = formData.get('mode');
+        console.log('[Action] riskyAction mode=', mode);
         await new Promise((r) => setTimeout(r, 400));
-        if (mode === "fail") return "模拟业务失败：库存不足";
+        if (mode === 'fail') return '模拟业务失败：库存不足';
         return null;
       }
 
       function ActionDemo() {
         const [msg, action, pending] = useActionState(riskyAction, null);
         return (
-          <form action={action} style={{ marginTop: "1.5rem" }}>
+          <form action={action} style={{ marginTop: '1.5rem' }}>
             <h3>Action 错误走 state，不走边界</h3>
             <button name="mode" value="ok" type="submit" disabled={pending}>
               成功提交
@@ -150,12 +241,12 @@
         );
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 
       /*
-        事件处理器错误不由 Error Boundary 捕获示例（取消注释可验证）：
-        <button onClick={() => { throw new Error("事件错误"); }}>事件抛错</button>
-        → 不会进入 Error Boundary，需在 onClick 内 try/catch
+      事件处理器错误不由 Error Boundary 捕获示例（取消注释可验证）：
+      <button onClick={() => { throw new Error("事件错误"); }}>事件抛错</button>
+      → 不会进入 Error Boundary，需在 onClick 内 try/catch
       */
     </script>
     <!-- SCRIPT_END -->
@@ -165,19 +256,24 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./03-%E5%B9%B6%E5%8F%91%E6%B8%B2%E6%9F%93%E4%B8%8ETransitions%E9%9D%A2%E8%AF%95.html">← 并发渲染与Transitions面试</a>
-        <a href="./05-RSC%E4%B8%8EServer-Components%E8%BE%B9%E7%95%8C.html">RSC与Server-Components边界 →</a>
+        <a
+          href="./03-%E5%B9%B6%E5%8F%91%E6%B8%B2%E6%9F%93%E4%B8%8ETransitions%E9%9D%A2%E8%AF%95.html"
+        >
+          ← 并发渲染与Transitions面试
+        </a>
+        <a href="./05-RSC%E4%B8%8EServer-Components%E8%BE%B9%E7%95%8C.html">
+          RSC与Server-Components边界 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-  
-</body>
+  </body>
 </html>

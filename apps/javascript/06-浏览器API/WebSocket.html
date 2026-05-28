@@ -21,9 +21,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WebSocket 基础</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 640px; }
-      button { margin: 4px 4px 4px 0; padding: 8px 12px; cursor: pointer; }
-      #log { margin-top: 1rem; padding: 12px; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; min-height: 4rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 640px;
+      }
+      button {
+        margin: 4px 4px 4px 0;
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      #log {
+        margin-top: 1rem;
+        padding: 12px;
+        background: #f6f8fa;
+        border-radius: 8px;
+        font-family: ui-monospace, monospace;
+        font-size: 0.8125rem;
+        white-space: pre-wrap;
+        min-height: 4rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -32,29 +49,110 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>WebSocket 连接与消息</h1>
-      <p class="hint">请阅读本复习区，并在下方演示区连接公共 echo 服务；需人工验证：WebSocket 依赖外网，部分网络环境可能拦截 wss://。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>new WebSocket(url)</code> 会发起握手，服务端同意 Upgrade 后形成持久的全双工连接，客户端和服务端都可以主动发送消息。</li>
-          <li><code>readyState</code> 包含 <code>CONNECTING</code>、<code>OPEN</code>、<code>CLOSING</code>、<code>CLOSED</code>；发送前必须确认是 <code>OPEN</code>，否则会失败或抛错。</li>
-          <li>本 demo 使用公共 echo 服务演示连接、发送、接收与关闭，依赖外网和服务可用性；失败时会显示错误或关闭信息。</li>
-          <li>WebSocket 只提供传输通道，不自动保证业务消息不丢、不重、不乱序处理；项目里需要设计心跳、重连、消息 id、幂等、补偿拉取和退避策略。</li>
-          <li>安全上应优先使用 <code>wss://</code>，鉴权通常通过握手时的 Cookie、短期 token 或子协议约定完成；不要把长期敏感 token 明文拼在可泄漏的 URL 中。</li>
+          <li>
+            <code>new WebSocket(url)</code>
+            会发起握手，服务端同意 Upgrade
+            后形成持久的全双工连接，客户端和服务端都可以主动发送消息。
+          </li>
+          <li>
+            <code>readyState</code>
+            包含
+            <code>CONNECTING</code>
+            、
+            <code>OPEN</code>
+            、
+            <code>CLOSING</code>
+            、
+            <code>CLOSED</code>
+            ；发送前必须确认是
+            <code>OPEN</code>
+            ，否则会失败或抛错。
+          </li>
+          <li>
+            本 demo 使用公共 echo
+            服务演示连接、发送、接收与关闭，依赖外网和服务可用性；失败时会显示错误或关闭信息。
+          </li>
+          <li>
+            WebSocket
+            只提供传输通道，不自动保证业务消息不丢、不重、不乱序处理；项目里需要设计心跳、重连、消息
+            id、幂等、补偿拉取和退避策略。
+          </li>
+          <li>
+            安全上应优先使用
+            <code>wss://</code>
+            ，鉴权通常通过握手时的 Cookie、短期 token 或子协议约定完成；不要把长期敏感 token
+            明文拼在可泄漏的 URL 中。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>WebSocket 与 HTTP 轮询、SSE 的核心区别是什么？</strong> 结论是 WebSocket 是持久全双工连接，轮询是客户端反复请求，SSE 是服务端到客户端的单向事件流。原因是 WebSocket 握手后双方都能主动发消息，适合聊天、协同、行情等高实时双向场景。只需要服务端推送文本事件时，SSE 往往更简单。</li>
-          <li><strong>为什么 WebSocket 发送前要检查 readyState？</strong> 结论是只有 <code>OPEN</code> 状态才能可靠发送。原因是连接建立、关闭中或已关闭时底层通道不可用，直接 <code>send()</code> 可能抛错或丢失业务意图。项目里通常维护发送队列，在 open 后 flush，关闭后进入重连或降级。</li>
-          <li><strong>WebSocket 断线重连和心跳应该怎么设计？</strong> 结论是用应用层 ping/pong 或业务心跳检测活性，断开后按指数退避重连。原因是浏览器的连接关闭不一定及时暴露，移动网络和代理也可能静默断开。重连后要补拉关键状态，避免只依赖未送达的实时消息。</li>
-          <li><strong>wss、鉴权和消息可靠性有哪些安全边界？</strong> 结论是生产环境应使用 <code>wss://</code>，并设计短期鉴权、权限校验和消息确认。原因是 WebSocket 连接建立后仍可能被滥用，服务端必须对每条业务消息做授权和限流。敏感 token 不宜长期放在 URL 中，消息处理要考虑重复、乱序和重放。</li>
+          <li>
+            <strong>WebSocket 与 HTTP 轮询、SSE 的核心区别是什么？</strong>
+            结论是 WebSocket 是持久全双工连接，轮询是客户端反复请求，SSE
+            是服务端到客户端的单向事件流。原因是 WebSocket
+            握手后双方都能主动发消息，适合聊天、协同、行情等高实时双向场景。只需要服务端推送文本事件时，SSE
+            往往更简单。
+          </li>
+          <li>
+            <strong>为什么 WebSocket 发送前要检查 readyState？</strong>
+            结论是只有
+            <code>OPEN</code>
+            状态才能可靠发送。原因是连接建立、关闭中或已关闭时底层通道不可用，直接
+            <code>send()</code>
+            可能抛错或丢失业务意图。项目里通常维护发送队列，在 open 后 flush，关闭后进入重连或降级。
+          </li>
+          <li>
+            <strong>WebSocket 断线重连和心跳应该怎么设计？</strong>
+            结论是用应用层 ping/pong
+            或业务心跳检测活性，断开后按指数退避重连。原因是浏览器的连接关闭不一定及时暴露，移动网络和代理也可能静默断开。重连后要补拉关键状态，避免只依赖未送达的实时消息。
+          </li>
+          <li>
+            <strong>wss、鉴权和消息可靠性有哪些安全边界？</strong>
+            结论是生产环境应使用
+            <code>wss://</code>
+            ，并设计短期鉴权、权限校验和消息确认。原因是 WebSocket
+            连接建立后仍可能被滥用，服务端必须对每条业务消息做授权和限流。敏感 token 不宜长期放在
+            URL 中，消息处理要考虑重复、乱序和重放。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSocket" target="_blank" rel="noreferrer">MDN: WebSocket</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/readyState" target="_blank" rel="noreferrer">MDN: WebSocket.readyState</a></li>
-          <li><a href="https://websockets.spec.whatwg.org/" target="_blank" rel="noreferrer">WHATWG: WebSockets Standard</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events" target="_blank" rel="noreferrer">MDN: Server-sent events</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/WebSocket"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: WebSocket
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/readyState"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: WebSocket.readyState
+            </a>
+          </li>
+          <li>
+            <a href="https://websockets.spec.whatwg.org/" target="_blank" rel="noreferrer">
+              WHATWG: WebSockets Standard
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Server-sent events
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -66,29 +164,31 @@
       <p class="tip">使用 wss://echo.websocket.events；发送前须确认 readyState 为 OPEN。</p>
       <p id="env-banner" class="tip"></p>
       <button type="button" id="connect">连接</button>
-    <button type="button" id="send" disabled>发送 ping</button>
-    <button type="button" id="close" disabled>关闭</button>
-    <div id="log" aria-live="polite"></div>
+      <button type="button" id="send" disabled>发送 ping</button>
+      <button type="button" id="close" disabled>关闭</button>
+      <div id="log" aria-live="polite"></div>
     </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      const logEl = document.getElementById("log");
-      const append = (line) => { logEl.textContent += (logEl.textContent ? "\n" : "") + line; };
+      const logEl = document.getElementById('log');
+      const append = (line) => {
+        logEl.textContent += (logEl.textContent ? '\n' : '') + line;
+      };
       let ws = null;
       let heartbeat = null;
       let connectTimer = null;
-      const URL = "wss://echo.websocket.events";
-      const sendButton = document.getElementById("send");
-      const closeButton = document.getElementById("close");
+      const URL = 'wss://echo.websocket.events';
+      const sendButton = document.getElementById('send');
+      const closeButton = document.getElementById('close');
 
       // ============ 0. 环境提示 ============
-      document.getElementById("env-banner").textContent =
-        "protocol=" + location.protocol + " | WebSocket 需外网可达 echo 服务";
+      document.getElementById('env-banner').textContent =
+        'protocol=' + location.protocol + ' | WebSocket 需外网可达 echo 服务';
 
       // readyState：CONNECTING=0 OPEN=1 CLOSING=2 CLOSED=3；仅 OPEN 时可可靠 send()
-      console.log("WebSocket.readyState 常量:", {
+      console.log('WebSocket.readyState 常量:', {
         CONNECTING: WebSocket.CONNECTING,
         OPEN: WebSocket.OPEN,
         CLOSING: WebSocket.CLOSING,
@@ -105,31 +205,31 @@
       }
 
       // ============ 1. 建立连接 ============
-      document.getElementById("connect").onclick = () => {
-        if (ws && ws.readyState <= 1) return append("已有连接");
+      document.getElementById('connect').onclick = () => {
+        if (ws && ws.readyState <= 1) return append('已有连接');
         ws = new WebSocket(URL);
-        append("CONNECTING…");
+        append('CONNECTING…');
         connectTimer = setTimeout(() => {
           if (ws?.readyState === WebSocket.CONNECTING) {
-            append("连接超时，主动关闭");
+            append('连接超时，主动关闭');
             ws.close();
           }
         }, 8000);
         ws.onopen = () => {
           clearTimeout(connectTimer);
-          append("OPEN — readyState=" + ws.readyState);
+          append('OPEN — readyState=' + ws.readyState);
           sendButton.disabled = false;
           closeButton.disabled = false;
           heartbeat = setInterval(() => {
             if (ws?.readyState === WebSocket.OPEN) {
-              ws.send("heartbeat-" + Date.now());
+              ws.send('heartbeat-' + Date.now());
             }
           }, 15000);
         };
-        ws.onmessage = (e) => append("← " + e.data);
-        ws.onerror = () => append("ERROR（可能无网络或被拦截）");
+        ws.onmessage = (e) => append('← ' + e.data);
+        ws.onerror = () => append('ERROR（可能无网络或被拦截）');
         ws.onclose = (event) => {
-          append("CLOSED code=" + event.code + (event.reason ? " reason=" + event.reason : ""));
+          append('CLOSED code=' + event.code + (event.reason ? ' reason=' + event.reason : ''));
           resetConnectionState();
         };
       };
@@ -137,20 +237,20 @@
       // ============ 2. 发送前检查 readyState ============
       sendButton.onclick = () => {
         if (ws?.readyState === WebSocket.OPEN) {
-          ws.send("ping-" + Date.now());
-          append("→ ping");
+          ws.send('ping-' + Date.now());
+          append('→ ping');
           return;
         }
-        append("连接未打开（readyState=" + (ws?.readyState ?? "null") + "），不能发送");
+        append('连接未打开（readyState=' + (ws?.readyState ?? 'null') + '），不能发送');
       };
 
       // ============ 3. 主动关闭 ============
-      closeButton.onclick = () => ws?.close(1000, "demo closed");
+      closeButton.onclick = () => ws?.close(1000, 'demo closed');
 
       // ============ 4. 页面卸载清理 ============
-      window.addEventListener("beforeunload", () => {
+      window.addEventListener('beforeunload', () => {
         if (ws?.readyState === WebSocket.OPEN) {
-          ws.close(1000, "page unloading");
+          ws.close(1000, 'page unloading');
         }
       });
     </script>
@@ -162,13 +262,17 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
         <a href="./WebComponents.html">← WebComponents</a>
-        <a href="./%E5%AD%98%E5%82%A8/00-%E5%AD%98%E5%82%A8%E6%96%B9%E6%A1%88%E5%AF%B9%E6%AF%94.html">存储方案对比 →</a>
+        <a
+          href="./%E5%AD%98%E5%82%A8/00-%E5%AD%98%E5%82%A8%E6%96%B9%E6%A1%88%E5%AF%B9%E6%AF%94.html"
+        >
+          存储方案对比 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

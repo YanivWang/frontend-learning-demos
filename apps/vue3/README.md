@@ -1,29 +1,29 @@
 # Vue 3
 
-Vue 3.5.x 时代的 demo（`libs/vue.global.js` 为 **3.5.34**，全局构建）。`apps/vue3/src/` 下共 **43** 个 `.html` 文件，目标是覆盖 Vue3 面试常用基础、进阶原理和项目实战常问点。每个文件都可以直接在浏览器打开，无需构建。
+Vue 3.5.x 时代的 demo（`libs/vue.global.js` 为 **3.5.34**，全局构建）。`apps/vue3/src/` 下共 **44** 个 `.html` 文件，目标是覆盖 Vue3 面试常用基础、进阶原理和项目实战常问点。每个文件都可以直接在浏览器打开，无需构建。
 
 ## 推荐顺序
 
-| 顺序 | 目录 | 知识点 |
-|---|---|---|
-| 01 | `src/01-基础语法/` | `createApp`、模板语法、`v-if` / `v-show`、`v-for` / `key`、事件、表单 `v-model`、`class` / `style`、模板 `ref`、`nextTick`、**`useTemplateRef`（3.5+）** |
-| 02 | `src/02-响应式与副作用/` | `ref`、`reactive`、解构丢响应、`computed`、`watch`、`watchEffect`、`toRef`、`toRefs`、`readonly`、浅层响应式、`markRaw`、`effectScope`、**ref/reactive/shallowRef 对比**、**`onWatcherCleanup`（3.5+）** |
-| 03 | `src/03-生命周期与组合式/` | Composition API 生命周期、`composable`、`setup` 与 `<script setup>`、**全量钩子与 KeepAlive** |
-| 04 | `src/04-组件通信/` | `props`、`emit`、`attrs` 透传、`provide/inject`、组件 `v-model`、**`defineModel`（3.4+）**、**props 解构保持响应式（3.5+）** |
-| 05 | `src/05-插槽与组件形态/` | 默认插槽、具名插槽、作用域插槽、动态组件、异步组件 |
-| 06 | `src/06-内置组件/` | `KeepAlive`、`Teleport`、`Suspense`、`Transition` |
-| 07 | `src/07-路由状态工程化/` | Vue Router 4、Pinia、工程目录组织、**Vite 面试点**、**script setup 编译宏**、**Router+Pinia / 路由懒加载可运行示例** |
-| 08 | `src/08-原理与性能面试/` | Proxy 响应式原理、虚拟 DOM、diff、`key`、调度器、Vue2/Vue3 差异、性能优化、**综合复习** |
+| 顺序 | 目录                       | 知识点                                                                                                                                                                                                   |
+| ---- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 01   | `src/01-基础语法/`         | `createApp`、模板语法、`v-if` / `v-show`、`v-for` / `key`、事件、表单 `v-model`、`class` / `style`、模板 `ref`、`nextTick`、**`useTemplateRef`（3.5+）**                                                 |
+| 02   | `src/02-响应式与副作用/`   | `ref`、`reactive`、解构丢响应、`computed`、`watch`、`watchEffect`、`toRef`、`toRefs`、`readonly`、浅层响应式、`markRaw`、`effectScope`、**ref/reactive/shallowRef 对比**、**`onWatcherCleanup`（3.5+）** |
+| 03   | `src/03-生命周期与组合式/` | Composition API 生命周期、`composable`、`setup` 与 `<script setup>`、**全量钩子与 KeepAlive**                                                                                                            |
+| 04   | `src/04-组件通信/`         | `props`、`emit`、`attrs` 透传、`provide/inject`、组件 `v-model`、**`defineModel`（3.4+）**、**props 解构保持响应式（3.5+）**                                                                             |
+| 05   | `src/05-插槽与组件形态/`   | 默认插槽、具名插槽、作用域插槽、动态组件、异步组件                                                                                                                                                       |
+| 06   | `src/06-内置组件/`         | `KeepAlive`、`Teleport`、`Suspense`、`Transition`                                                                                                                                                        |
+| 07   | `src/07-路由状态工程化/`   | Vue Router 4、Pinia、工程目录组织、**Vite 面试点**、**script setup 编译宏**、**Router+Pinia / 路由懒加载可运行示例**                                                                                     |
+| 08   | `src/08-原理与性能面试/`   | Proxy 响应式原理、虚拟 DOM、diff、`key`、调度器、Vue2/Vue3 差异、性能优化、**综合复习**                                                                                                                  |
 
 ## 依赖
 
 `libs/` 目录保留 Vue 3 核心运行时和常见生态预置库，版本见 [`libs/README.md`](libs/README.md)。
 
-| 文件 | 版本 |
-|---|---|
-| `vue.global.js` | 3.5.34 |
-| `vue-router.global.js` | 4.6.4 |
-| `pinia.iife.js` | 3.0.4 |
+| 文件                   | 版本   |
+| ---------------------- | ------ |
+| `vue.global.js`        | 3.5.34 |
+| `vue-router.global.js` | 4.6.4  |
+| `pinia.iife.js`        | 3.0.4  |
 
 通用库 `axios` / `lodash` / `js-cookie` 见 [`../../packages/shared/libs/README.md`](../../packages/shared/libs/README.md)。
 
@@ -33,7 +33,7 @@ Vue 3.5.x 时代的 demo（`libs/vue.global.js` 为 **3.5.34**，全局构建）
 
 <!-- DEMO_TABLE_START -->
 
-共 **43** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
+共 **44** 个 demo（由 `node scripts/sync-readmes.mjs` 根据头注释自动生成，请勿手改表格正文）。
 
 | 文件 | 主题 |
 |---|---|
@@ -62,6 +62,7 @@ Vue 3.5.x 时代的 demo（`libs/vue.global.js` 为 **3.5.34**，全局构建）
 | `04-组件通信/06-props解构保持响应式.html` | props 解构保持响应式（Vue 3.5+） |
 | `05-插槽与组件形态/01-默认具名作用域插槽.html` | 默认插槽 / 具名插槽 / 作用域插槽 |
 | `05-插槽与组件形态/02-动态组件与异步组件.html` | 动态组件 / 异步组件 |
+| `05-插槽与组件形态/02-动态组件与异步组件.html.tmpfmt.html` | 动态组件 / 异步组件 |
 | `06-内置组件/01-KeepAlive.html` | KeepAlive |
 | `06-内置组件/02-Teleport.html` | Teleport |
 | `06-内置组件/03-Suspense.html` | Suspense |

@@ -1,5 +1,5 @@
 <!--
-分类: demos / hash-router
+  分类: demos / hash-router
   主题: Hash 路由简易 SPA 与 fallback
   难度: 进阶
   要点:
@@ -22,10 +22,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hash 路由简易 SPA</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; }
-      nav a { margin-right: 12px; color: #0969da; text-decoration: none; }
-      nav a.active { font-weight: 700; text-decoration: underline; }
-      #view { margin-top: 1.5rem; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; min-height: 120px; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+      }
+      nav a {
+        margin-right: 12px;
+        color: #0969da;
+        text-decoration: none;
+      }
+      nav a.active {
+        font-weight: 700;
+        text-decoration: underline;
+      }
+      #view {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        min-height: 120px;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -34,30 +50,130 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Hash 路由简易 SPA 与 fallback</h1>
-      <p class="hint">这个 demo 用 <code>location.hash</code> 和 <code>hashchange</code> 实现一个零依赖路由，重点观察首屏渲染、动态段匹配和未知路径 fallback。</p>
+      <p class="hint">
+        这个 demo 用
+        <code>location.hash</code>
+        和
+        <code>hashchange</code>
+        实现一个零依赖路由，重点观察首屏渲染、动态段匹配和未知路径 fallback。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><strong>核心机制：</strong><code>#</code> 后面的 fragment 改变会触发 <code>hashchange</code>，但页面首次加载不会自动触发一次，所以初始化时必须主动调用 <code>render()</code>。</li>
-          <li><strong>静态托管优势：</strong>fragment 不会作为请求路径发送给服务器，刷新 <code>#/user/42</code> 仍然请求当前 HTML，因此 hash 路由通常不需要额外后端 fallback。</li>
-          <li><strong>动态段处理：</strong>示例用正则匹配 <code>/user/:id</code>，并只接受数字 ID；路径经 <code>decodeURIComponent</code> 解码后再匹配，真实项目还需要校验和权限判断。</li>
-          <li><strong>安全渲染：</strong>路由参数来自地址栏，属于用户可控输入；示例用 DOM API 和 <code>textContent</code> 写入页面，不把参数拼进 <code>innerHTML</code>。</li>
-          <li><strong>模式取舍：</strong>hash 模式部署简单但 URL 带 <code>#</code>；History API URL 更自然，但刷新深层路径需要服务器把请求回退到入口 HTML。</li>
+          <li>
+            <strong>核心机制：</strong>
+            <code>#</code>
+            后面的 fragment 改变会触发
+            <code>hashchange</code>
+            ，但页面首次加载不会自动触发一次，所以初始化时必须主动调用
+            <code>render()</code>
+            。
+          </li>
+          <li>
+            <strong>静态托管优势：</strong>
+            fragment 不会作为请求路径发送给服务器，刷新
+            <code>#/user/42</code>
+            仍然请求当前 HTML，因此 hash 路由通常不需要额外后端 fallback。
+          </li>
+          <li>
+            <strong>动态段处理：</strong>
+            示例用正则匹配
+            <code>/user/:id</code>
+            ，并只接受数字 ID；路径经
+            <code>decodeURIComponent</code>
+            解码后再匹配，真实项目还需要校验和权限判断。
+          </li>
+          <li>
+            <strong>安全渲染：</strong>
+            路由参数来自地址栏，属于用户可控输入；示例用 DOM API 和
+            <code>textContent</code>
+            写入页面，不把参数拼进
+            <code>innerHTML</code>
+            。
+          </li>
+          <li>
+            <strong>模式取舍：</strong>
+            hash 模式部署简单但 URL 带
+            <code>#</code>
+            ；History API URL 更自然，但刷新深层路径需要服务器把请求回退到入口 HTML。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Hash 路由为什么刷新时通常不需要后端 fallback？</strong> 结论是浏览器请求服务器时不会把 <code>#</code> 后面的 fragment 当成路径发送。原因是 hash 主要在客户端解析，所以静态站点刷新深层 hash 路由仍拿到同一个 HTML。边界是 SEO、分享链接美观度和服务端渲染场景通常更偏向 History 模式。</li>
-          <li><strong>首屏渲染为什么不能只依赖 hashchange？</strong> 因为 <code>hashchange</code> 只在 fragment 发生变化时触发，首次加载当前 URL 不一定有变化。实践中会在绑定监听后主动执行一次渲染，保证直接打开 <code>#/about</code> 也能显示正确页面。</li>
-          <li><strong>Hash 路由和 History API 路由怎么选？</strong> 部署约束强、静态托管为主时 hash 更省事；希望 URL 无 <code>#</code>、配合服务端路由或 SSR 时用 History API。History 模式需要服务器把未知前端路由 fallback 到入口页，否则刷新会 404。</li>
-          <li><strong>动态路由参数为什么要匹配、解码和安全渲染？</strong> 地址栏是用户可控输入，参数必须先确认形状再进入业务逻辑。展示时用 <code>textContent</code>，避免把恶意字符串拼成 HTML；项目里还要做权限校验和不存在资源的提示。</li>
-          <li><strong>未知路由应该如何处理？</strong> 结论是显式提供 404 fallback，而不是静默显示空白。原因是用户可能手输、收藏过期链接或从旧版本跳转；项目里还可以记录埋点并提供返回首页入口。</li>
+          <li>
+            <strong>Hash 路由为什么刷新时通常不需要后端 fallback？</strong>
+            结论是浏览器请求服务器时不会把
+            <code>#</code>
+            后面的 fragment 当成路径发送。原因是 hash 主要在客户端解析，所以静态站点刷新深层 hash
+            路由仍拿到同一个 HTML。边界是 SEO、分享链接美观度和服务端渲染场景通常更偏向 History
+            模式。
+          </li>
+          <li>
+            <strong>首屏渲染为什么不能只依赖 hashchange？</strong>
+            因为
+            <code>hashchange</code>
+            只在 fragment 发生变化时触发，首次加载当前 URL
+            不一定有变化。实践中会在绑定监听后主动执行一次渲染，保证直接打开
+            <code>#/about</code>
+            也能显示正确页面。
+          </li>
+          <li>
+            <strong>Hash 路由和 History API 路由怎么选？</strong>
+            部署约束强、静态托管为主时 hash 更省事；希望 URL 无
+            <code>#</code>
+            、配合服务端路由或 SSR 时用 History API。History 模式需要服务器把未知前端路由 fallback
+            到入口页，否则刷新会 404。
+          </li>
+          <li>
+            <strong>动态路由参数为什么要匹配、解码和安全渲染？</strong>
+            地址栏是用户可控输入，参数必须先确认形状再进入业务逻辑。展示时用
+            <code>textContent</code>
+            ，避免把恶意字符串拼成 HTML；项目里还要做权限校验和不存在资源的提示。
+          </li>
+          <li>
+            <strong>未知路由应该如何处理？</strong>
+            结论是显式提供 404
+            fallback，而不是静默显示空白。原因是用户可能手输、收藏过期链接或从旧版本跳转；项目里还可以记录埋点并提供返回首页入口。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/hashchange_event" target="_blank" rel="noopener">MDN Web Docs：Window hashchange event</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Location/hash" target="_blank" rel="noopener">MDN Web Docs：Location.hash</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/History_API" target="_blank" rel="noopener">MDN Web Docs：History API</a></li>
-          <li><a href="https://developer.mozilla.org/docs/Web/API/Node/textContent" target="_blank" rel="noopener">MDN Web Docs：Node.textContent</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Window/hashchange_event"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN Web Docs：Window hashchange event
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Location/hash"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN Web Docs：Location.hash
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/History_API"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN Web Docs：History API
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/docs/Web/API/Node/textContent"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN Web Docs：Node.textContent
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -75,15 +191,15 @@
     <!-- SCRIPT_START -->
     <script>
       const routes = {
-        "/": () => createView("首页", `当前 hash：${location.hash || "#/"}`),
-        "/about": () => createView("关于", "这是一个零依赖 hash 路由 demo。"),
-        "/user/:id": (params) => createView(`用户 ${params.id}`, `动态段 :id = ${params.id}`),
+        '/': () => createView('首页', `当前 hash：${location.hash || '#/'}`),
+        '/about': () => createView('关于', '这是一个零依赖 hash 路由 demo。'),
+        '/user/:id': (params) => createView(`用户 ${params.id}`, `动态段 :id = ${params.id}`),
       };
       function createView(title, message) {
         const fragment = document.createDocumentFragment();
-        const heading = document.createElement("h2");
+        const heading = document.createElement('h2');
         heading.textContent = title;
-        const paragraph = document.createElement("p");
+        const paragraph = document.createElement('p');
         paragraph.textContent = message;
         fragment.append(heading, paragraph);
         return fragment;
@@ -91,27 +207,29 @@
       function match(path) {
         if (routes[path]) return { handler: routes[path], params: {} };
         const m = path.match(/^\/user\/(\d+)$/);
-        if (m) return { handler: routes["/user/:id"], params: { id: m[1] } };
-        return { handler: () => createView("404 Not Found", `没有匹配到路由：${path}`), params: {} };
+        if (m) return { handler: routes['/user/:id'], params: { id: m[1] } };
+        return {
+          handler: () => createView('404 Not Found', `没有匹配到路由：${path}`),
+          params: {},
+        };
       }
       function decodeHashPath(raw) {
         try {
-          return decodeURIComponent(raw || "/");
+          return decodeURIComponent(raw || '/');
         } catch {
-          return raw || "/";
+          return raw || '/';
         }
       }
       function render() {
-        const path = decodeHashPath(location.hash.slice(1) || "/");
+        const path = decodeHashPath(location.hash.slice(1) || '/');
         const { handler, params } = match(path);
-        document.getElementById("view").replaceChildren(handler(params));
-        document.querySelectorAll("nav a").forEach((a) => {
-          a.classList.toggle("active", a.getAttribute("href") === "#" + path);
+        document.getElementById('view').replaceChildren(handler(params));
+        document.querySelectorAll('nav a').forEach((a) => {
+          a.classList.toggle('active', a.getAttribute('href') === '#' + path);
         });
       }
-      window.addEventListener("hashchange", render);
+      window.addEventListener('hashchange', render);
       render();
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -120,18 +238,20 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="../form-wizard/01-form-wizard-%E5%88%86%E6%AD%A5%E8%A1%A8%E5%8D%95.html">← form-wizard-分步表单</a>
+        <a href="../form-wizard/01-form-wizard-%E5%88%86%E6%AD%A5%E8%A1%A8%E5%8D%95.html">
+          ← form-wizard-分步表单
+        </a>
         <a href="../todo/01-todo-%E6%9C%AC%E5%9C%B0%E7%8A%B6%E6%80%81.html">todo-本地状态 →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

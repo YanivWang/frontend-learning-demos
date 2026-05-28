@@ -58,14 +58,14 @@
 
 检查并补齐：
 
-| 字段 | 要求 |
-|------|------|
+| 字段   | 要求                                                                |
+| ------ | ------------------------------------------------------------------- |
 | `分类` | `react18 / class 组件` 或更细子主题（如 lifecycle、setState、性能） |
-| `主题` | 一句话，与 `<h1>` 一致 |
-| `要点` | 3～6 条，**必须对应当前 SCRIPT 能演示的内容** |
-| `面试` | 3～6 条，具体问句，禁止泛化模板（如「有什么应用场景？」） |
-| `相关` | 同目录上下游 demo，与页脚 NAV 一致 |
-| 可选 | `难度`、`前置` |
+| `主题` | 一句话，与 `<h1>` 一致                                              |
+| `要点` | 3～6 条，**必须对应当前 SCRIPT 能演示的内容**                       |
+| `面试` | 3～6 条，具体问句，禁止泛化模板（如「有什么应用场景？」）           |
+| `相关` | 同目录上下游 demo，与页脚 NAV 一致                                  |
+| 可选   | `难度`、`前置`                                                      |
 
 **质量检查**：随机抽一条 `要点`，在 SCRIPT / PAGE_DOM 里能找到对应代码；找不到则删改要点或补代码/注释。
 
@@ -85,33 +85,33 @@
 
 **class 组件常见需修正的表述**（以 react.dev 为准）：
 
-| 易错说法 | 正确说法 |
-|---------|---------|
-| 初始化 state 才需要 constructor | **不初始化 state 且不绑定方法**时可省略；类字段 `state = {}` 和箭头函数可替代 |
-| super() 与 super(props) 无差别 | constructor 内须先 `super(props)`，否则 `this.props` 可能为 `undefined` |
-| setState 是同步赋值 | `setState` 进入更新队列；当前 render 中读 `this.state` 仍是快照 |
-| 连续对象式 setState 会累加 | 同批次多次对象式更新基于同一旧快照，计数器应函数式更新 |
-| setState 可以 await | class 的 `setState` 不是 Promise；用第二参数 callback 或 lifecycle |
-| componentDidMount = useEffect 完全等价 | 时机与依赖模型不同；class 三件套 mount/update/unmount 需成对维护 |
-| UNSAFE_ 生命周期仍推荐新项目使用 | 仅维护旧代码；新代码用 componentDidMount/Update 或 Hooks |
-| render 里可以放副作用 | render 必须是 props/state/context 的纯函数 |
-| onClick={this.fn()} 与 onClick={this.fn} 一样 | 前者 render 时立即执行，后者点击时执行 |
-| PureComponent 一定更快 | 浅比较有成本；只在 props/state 浅变且重渲染昂贵时使用 |
-| getDerivedStateFromProps 用来同步所有 props | 只用于 props 变化时需要从 props 派生 state 的少数场景 |
-| forceUpdate 是常规更新手段 | 优先 setState/props；forceUpdate 跳过 shouldComponentUpdate，少用于业务 |
-| ReactDOM.render 仍推荐 | React 18 客户端入口用 `createRoot` + `root.render` |
-| class 组件是新项目首选 | react.dev 推荐新代码用函数组件 + Hooks；class 用于维护旧代码与理解生命周期 |
+| 易错说法                                      | 正确说法                                                                      |
+| --------------------------------------------- | ----------------------------------------------------------------------------- |
+| 初始化 state 才需要 constructor               | **不初始化 state 且不绑定方法**时可省略；类字段 `state = {}` 和箭头函数可替代 |
+| super() 与 super(props) 无差别                | constructor 内须先 `super(props)`，否则 `this.props` 可能为 `undefined`       |
+| setState 是同步赋值                           | `setState` 进入更新队列；当前 render 中读 `this.state` 仍是快照               |
+| 连续对象式 setState 会累加                    | 同批次多次对象式更新基于同一旧快照，计数器应函数式更新                        |
+| setState 可以 await                           | class 的 `setState` 不是 Promise；用第二参数 callback 或 lifecycle            |
+| componentDidMount = useEffect 完全等价        | 时机与依赖模型不同；class 三件套 mount/update/unmount 需成对维护              |
+| UNSAFE\_ 生命周期仍推荐新项目使用             | 仅维护旧代码；新代码用 componentDidMount/Update 或 Hooks                      |
+| render 里可以放副作用                         | render 必须是 props/state/context 的纯函数                                    |
+| onClick={this.fn()} 与 onClick={this.fn} 一样 | 前者 render 时立即执行，后者点击时执行                                        |
+| PureComponent 一定更快                        | 浅比较有成本；只在 props/state 浅变且重渲染昂贵时使用                         |
+| getDerivedStateFromProps 用来同步所有 props   | 只用于 props 变化时需要从 props 派生 state 的少数场景                         |
+| forceUpdate 是常规更新手段                    | 优先 setState/props；forceUpdate 跳过 shouldComponentUpdate，少用于业务       |
+| ReactDOM.render 仍推荐                        | React 18 客户端入口用 `createRoot` + `root.render`                            |
+| class 组件是新项目首选                        | react.dev 推荐新代码用函数组件 + Hooks；class 用于维护旧代码与理解生命周期    |
 
 ### 3. PAGE_DOM / 示例代码区
 
 按 demo **类型**处理：
 
-| 类型 | 判断 | PAGE_DOM 要求 |
-|------|------|---------------|
-| **A. 纯挂载** | 仅 `#root`，交互在 React 内 | 保留 `<div id="root"></div>` |
-| **B. React 内交互** | 按钮、表单在组件内 | `#root` 即可；hint 引导看页面 + Console |
-| **C. 对比演示** | setState 批处理、PureComponent 对比等 | 保留原有 UI 结构；必要时补 label / 分区标题 |
-| **D. 概念/面试向** | HOC、错误边界、优化清单等 | 保留现有结构；无法 runnable 的部分在 NOTES 标注 |
+| 类型                | 判断                                  | PAGE_DOM 要求                                   |
+| ------------------- | ------------------------------------- | ----------------------------------------------- |
+| **A. 纯挂载**       | 仅 `#root`，交互在 React 内           | 保留 `<div id="root"></div>`                    |
+| **B. React 内交互** | 按钮、表单在组件内                    | `#root` 即可；hint 引导看页面 + Console         |
+| **C. 对比演示**     | setState 批处理、PureComponent 对比等 | 保留原有 UI 结构；必要时补 label / 分区标题     |
+| **D. 概念/面试向**  | HOC、错误边界、优化清单等             | 保留现有结构；无法 runnable 的部分在 NOTES 标注 |
 
 补全规则：
 
@@ -137,16 +137,16 @@
 
 NOTES / 面试里提到但脚本缺失的常见项，**按主题补**：
 
-| 主题 | 必须能在 SCRIPT 验证 |
-|------|---------------------|
-| super / constructor | `super(props)`、`console.log(this.props)`、state 初始化、bind；注释反例缺 super/缺 render |
-| state / props | 只读 props、setState 触发渲染、子调父回调 |
-| setState 合并 | 对象式连续 +1 只加 1；函数式累加；Console 打印快照 |
-| 生命周期 | 各阶段 `console.log` 调用顺序；mount 建副作用、unmount 清理 |
-| 事件绑定 | bind / 箭头函数 / JSX 内联对比；`fn()` vs `fn` 反例注释 |
-| refs | `createRef` + `componentDidMount` 读 DOM |
-| PureComponent / shouldComponentUpdate | 渲染次数对比 Console 或 UI 计数 |
-| Context / 错误边界 / HOC | 保留可运行最小示例；复杂处注释说明 |
+| 主题                                  | 必须能在 SCRIPT 验证                                                                      |
+| ------------------------------------- | ----------------------------------------------------------------------------------------- |
+| super / constructor                   | `super(props)`、`console.log(this.props)`、state 初始化、bind；注释反例缺 super/缺 render |
+| state / props                         | 只读 props、setState 触发渲染、子调父回调                                                 |
+| setState 合并                         | 对象式连续 +1 只加 1；函数式累加；Console 打印快照                                        |
+| 生命周期                              | 各阶段 `console.log` 调用顺序；mount 建副作用、unmount 清理                               |
+| 事件绑定                              | bind / 箭头函数 / JSX 内联对比；`fn()` vs `fn` 反例注释                                   |
+| refs                                  | `createRef` + `componentDidMount` 读 DOM                                                  |
+| PureComponent / shouldComponentUpdate | 渲染次数对比 Console 或 UI 计数                                                           |
+| Context / 错误边界 / HOC              | 保留可运行最小示例；复杂处注释说明                                                        |
 
 - 会抛错的演示 → 保留为注释并注明错误类型
 - 反面教材 → 注释块说明「取消注释可观察…」，区分不同错误机制
@@ -194,7 +194,7 @@ NOTES / 面试里提到但脚本缺失的常见项，**按主题补**：
 ### 交付汇总表（Markdown）
 
 | 文件路径 | 主要修复 | 新增/增强演示 | 参考 react.dev |
-|---------|---------|--------------|----------------|
+| -------- | -------- | ------------- | -------------- |
 
 另附：
 
@@ -206,27 +206,27 @@ NOTES / 面试里提到但脚本缺失的常见项，**按主题补**：
 
 ## 五、各文件侧重点（按编号）
 
-| 编号 | 文件 | 侧重点 |
-|------|------|--------|
-| 01 | 必须super | **已完成标杆**：super(props)、constructor 职责、render 纯函数、反面教材 |
-| 02 | state与props | props 只读、state/setState、子调父回调、constructor 初始化 |
-| 03 | setState-异步合并 | 对象式连续 setState 快照、批处理、Console 证明只 +1 |
-| 04 | setState-函数式更新 | 函数式 updater 累加、与 03 对比 |
-| 05 | Clock-setState-批处理对比 | 批处理行为对比、createRoot |
-| 06 | 完整生命周期与API | 挂载/更新/卸载顺序、副作用放置、forceUpdate 边界 |
-| 07 | refs与DOM | createRef、componentDidMount 读 DOM |
-| 08 | PureComponent性能优化 | 浅比较、减少不必要 render |
-| 09 | getDerivedStateFromProps与getSnapshotBeforeUpdate | 静态方法、派生 state、DOM 快照 |
-| 10 | Context上下文 | Provider/Consumer 或 legacy contextType |
-| 11 | 受控与非受控表单 | 受控 input、ref 读非受控值 |
-| 12 | setState第二参数回调 | callback 在 commit 后执行 |
-| 13 | 事件绑定三种方式 | bind / 箭头函数 / JSX 内联；fn() vs fn |
-| 14 | 列表key与diff | key 稳定、重排行为 |
-| 15 | 组件通信与children | props 回调、children、组合 |
-| 16 | 合成事件机制 | 事件委托、nativeEvent、persist（Legacy 语境说明） |
-| 17 | defaultProps与静态属性 | defaultProps、displayName、static 方法 |
-| 18 | 高阶组件HOC | 包装组件、props 代理 |
-| 19 | 错误边界与常见优化清单 | componentDidCatch、getDerivedStateFromError |
+| 编号 | 文件                                              | 侧重点                                                                  |
+| ---- | ------------------------------------------------- | ----------------------------------------------------------------------- |
+| 01   | 必须super                                         | **已完成标杆**：super(props)、constructor 职责、render 纯函数、反面教材 |
+| 02   | state与props                                      | props 只读、state/setState、子调父回调、constructor 初始化              |
+| 03   | setState-异步合并                                 | 对象式连续 setState 快照、批处理、Console 证明只 +1                     |
+| 04   | setState-函数式更新                               | 函数式 updater 累加、与 03 对比                                         |
+| 05   | Clock-setState-批处理对比                         | 批处理行为对比、createRoot                                              |
+| 06   | 完整生命周期与API                                 | 挂载/更新/卸载顺序、副作用放置、forceUpdate 边界                        |
+| 07   | refs与DOM                                         | createRef、componentDidMount 读 DOM                                     |
+| 08   | PureComponent性能优化                             | 浅比较、减少不必要 render                                               |
+| 09   | getDerivedStateFromProps与getSnapshotBeforeUpdate | 静态方法、派生 state、DOM 快照                                          |
+| 10   | Context上下文                                     | Provider/Consumer 或 legacy contextType                                 |
+| 11   | 受控与非受控表单                                  | 受控 input、ref 读非受控值                                              |
+| 12   | setState第二参数回调                              | callback 在 commit 后执行                                               |
+| 13   | 事件绑定三种方式                                  | bind / 箭头函数 / JSX 内联；fn() vs fn                                  |
+| 14   | 列表key与diff                                     | key 稳定、重排行为                                                      |
+| 15   | 组件通信与children                                | props 回调、children、组合                                              |
+| 16   | 合成事件机制                                      | 事件委托、nativeEvent、persist（Legacy 语境说明）                       |
+| 17   | defaultProps与静态属性                            | defaultProps、displayName、static 方法                                  |
+| 18   | 高阶组件HOC                                       | 包装组件、props 代理                                                    |
+| 19   | 错误边界与常见优化清单                            | componentDidCatch、getDerivedStateFromError                             |
 
 ---
 
@@ -239,7 +239,7 @@ NOTES / 面试里提到但脚本缺失的常见项，**按主题补**：
 - 不要一次性大重构整个目录结构
 - 不要在 NOTES 写「详见上方」或虚假的「交互演示」引导
 - 不要把 function-components 目录混进本次任务
-- 不要把已废弃 API 写成推荐写法（UNSAFE_ lifecycle、ReactDOM.render 等）
+- 不要把已废弃 API 写成推荐写法（UNSAFE\_ lifecycle、ReactDOM.render 等）
 
 ---
 

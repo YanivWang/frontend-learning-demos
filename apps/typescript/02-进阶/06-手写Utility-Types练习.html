@@ -21,9 +21,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>手写 Partial / Pick / Omit</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 760px; line-height: 1.6; }
-      pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; font-size: 0.85rem; overflow: auto; }
-      #log { margin-top: 1rem; background: #f6f8fa; padding: 12px; border-radius: 8px; font-family: ui-monospace, monospace; white-space: pre-wrap; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 760px;
+        line-height: 1.6;
+      }
+      pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 14px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        overflow: auto;
+      }
+      #log {
+        margin-top: 1rem;
+        background: #f6f8fa;
+        padding: 12px;
+        border-radius: 8px;
+        font-family: ui-monospace, monospace;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -36,36 +55,141 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>MyPartial&lt;T&gt;</code> 的核心是 <code>{ [K in keyof T]?: T[K] }</code>：遍历所有键，保留原值类型，并给属性加上可选修饰符。</li>
-          <li><code>MyPick&lt;T, K extends keyof T&gt;</code> 的核心是限制 <code>K</code> 必须来自 <code>T</code> 的键集合，再用 <code>[P in K]: T[P]</code> 只保留这些字段。</li>
-          <li><code>MyOmit&lt;T, K&gt;</code> 常组合 <code>Pick&lt;T, Exclude&lt;keyof T, K&gt;&gt;</code> 实现：先从键集合里排除 K，再挑剩余键。</li>
-          <li>本页按钮演示的是运行时 <code>myPartial</code> / <code>myPick</code> / <code>myOmit</code> 对对象做拷贝过滤；类型层工具只负责静态约束，两者需要同时理解。</li>
-          <li>常见坑是忘记 <code>K extends keyof T</code> 导致可以挑不存在的键，或误以为 <code>Partial</code> 会递归处理嵌套对象；面试答题要说清“浅层”和“编译期”。</li>
+          <li>
+            <code>MyPartial&lt;T&gt;</code>
+            的核心是
+            <code>{ [K in keyof T]?: T[K] }</code>
+            ：遍历所有键，保留原值类型，并给属性加上可选修饰符。
+          </li>
+          <li>
+            <code>MyPick&lt;T, K extends keyof T&gt;</code>
+            的核心是限制
+            <code>K</code>
+            必须来自
+            <code>T</code>
+            的键集合，再用
+            <code>[P in K]: T[P]</code>
+            只保留这些字段。
+          </li>
+          <li>
+            <code>MyOmit&lt;T, K&gt;</code>
+            常组合
+            <code>Pick&lt;T, Exclude&lt;keyof T, K&gt;&gt;</code>
+            实现：先从键集合里排除 K，再挑剩余键。
+          </li>
+          <li>
+            本页按钮演示的是运行时
+            <code>myPartial</code>
+            /
+            <code>myPick</code>
+            /
+            <code>myOmit</code>
+            对对象做拷贝过滤；类型层工具只负责静态约束，两者需要同时理解。
+          </li>
+          <li>
+            常见坑是忘记
+            <code>K extends keyof T</code>
+            导致可以挑不存在的键，或误以为
+            <code>Partial</code>
+            会递归处理嵌套对象；面试答题要说清“浅层”和“编译期”。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>如何手写 MyPartial？</strong> 结论是用映射类型遍历 <code>keyof T</code>，并给每个属性加 <code>?</code>。原因是 <code>T[K]</code> 能保留原字段值类型，<code>?</code> 改变属性是否必填。边界是这是浅层变换，嵌套对象不会自动变成可选字段。</li>
-          <li><strong>MyPick 里为什么要写 K extends keyof T？</strong> 结论是为了限制只能挑选真实存在的字段。原因是没有这个约束时，<code>T[P]</code> 无法保证 P 是 T 的键，也失去了字段名拼错时报错的价值。项目里这能保护 DTO 和表单字段白名单。</li>
-          <li><strong>Omit 为什么能由 Pick 和 Exclude 组合出来？</strong> 结论是 <code>Omit</code> 本质是“先排除键，再挑剩余键”。原因是 <code>Exclude&lt;keyof T, K&gt;</code> 先在联合键里移除 K，<code>Pick</code> 再按剩余键重建对象类型。这个思路比死背源码更重要。</li>
-          <li><strong>运行时 pick/omit 和类型层 Pick/Omit 有什么区别？</strong> 结论是运行时函数真的创建新对象，类型工具只改变编译期视角。原因是 TypeScript 类型会被擦除，不能自动删除对象属性。涉及脱敏、接口返回和安全边界时，必须写运行时代码真正移除敏感字段。</li>
+          <li>
+            <strong>如何手写 MyPartial？</strong>
+            结论是用映射类型遍历
+            <code>keyof T</code>
+            ，并给每个属性加
+            <code>?</code>
+            。原因是
+            <code>T[K]</code>
+            能保留原字段值类型，
+            <code>?</code>
+            改变属性是否必填。边界是这是浅层变换，嵌套对象不会自动变成可选字段。
+          </li>
+          <li>
+            <strong>MyPick 里为什么要写 K extends keyof T？</strong>
+            结论是为了限制只能挑选真实存在的字段。原因是没有这个约束时，
+            <code>T[P]</code>
+            无法保证 P 是 T 的键，也失去了字段名拼错时报错的价值。项目里这能保护 DTO
+            和表单字段白名单。
+          </li>
+          <li>
+            <strong>Omit 为什么能由 Pick 和 Exclude 组合出来？</strong>
+            结论是
+            <code>Omit</code>
+            本质是“先排除键，再挑剩余键”。原因是
+            <code>Exclude&lt;keyof T, K&gt;</code>
+            先在联合键里移除 K，
+            <code>Pick</code>
+            再按剩余键重建对象类型。这个思路比死背源码更重要。
+          </li>
+          <li>
+            <strong>运行时 pick/omit 和类型层 Pick/Omit 有什么区别？</strong>
+            结论是运行时函数真的创建新对象，类型工具只改变编译期视角。原因是 TypeScript
+            类型会被擦除，不能自动删除对象属性。涉及脱敏、接口返回和安全边界时，必须写运行时代码真正移除敏感字段。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#partialtype" target="_blank" rel="noopener">TypeScript Handbook: Partial</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#picktype-keys" target="_blank" rel="noopener">TypeScript Handbook: Pick</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#omittype-keys" target="_blank" rel="noopener">TypeScript Handbook: Omit</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#excludeuniontype-excludedmembers" target="_blank" rel="noopener">TypeScript Handbook: Exclude</a></li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/utility-types.html#partialtype"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Partial
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/utility-types.html#picktype-keys"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Pick
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/utility-types.html#omittype-keys"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Omit
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/utility-types.html#excludeuniontype-excludedmembers"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Exclude
+            </a>
+          </li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>上方为 TypeScript 手写 Utility Types；点击下方按钮，观察运行时 <code>myPartial</code> / <code>myPick</code> / <code>myOmit</code> 等价逻辑。</p>
+    <p>
+      上方为 TypeScript 手写 Utility Types；点击下方按钮，观察运行时
+      <code>myPartial</code>
+      /
+      <code>myPick</code>
+      /
+      <code>myOmit</code>
+      等价逻辑。
+    </p>
     <p class="ts"><strong>TypeScript</strong></p>
-    <pre>type MyPartial&lt;T&gt; = { [K in keyof T]?: T[K] };
-type MyPick&lt;T, K extends keyof T&gt; = { [P in K]: T[P] };
-type MyOmit&lt;T, K extends keyof T&gt; = Pick&lt;T, Exclude&lt;keyof T, K&gt;&gt;;</pre>
+    <pre>
+type MyPartial&lt;T&gt; = { [K in keyof T]?: T[K] };
+      type MyPick&lt;T, K extends keyof T&gt; = { [P in K]: T[P] };
+      type MyOmit&lt;T, K extends keyof T&gt; = Pick&lt;T, Exclude&lt;keyof T, K&gt;&gt;;</pre
+    >
     <button type="button" id="run">运行 Partial / Pick / Omit 演示</button>
     <div id="log">点击按钮开始演示…</div>
     <!-- PAGE_DOM_END -->
@@ -91,31 +215,40 @@ type MyOmit&lt;T, K extends keyof T&gt; = Pick&lt;T, Exclude&lt;keyof T, K&gt;&g
         return Object.fromEntries(Object.entries(obj).filter(([k]) => !omit.has(k)));
       }
 
-      document.getElementById("run").onclick = () => {
-        const user = { id: 1, name: "Ada", email: "a@ex.com", role: "admin" };
-        const patch = { name: "Ada Lovelace" };
+      document.getElementById('run').onclick = () => {
+        const user = { id: 1, name: 'Ada', email: 'a@ex.com', role: 'admin' };
+        const patch = { name: 'Ada Lovelace' };
         const patched = applyPartialPatch(user, patch);
-        const picked = myPick(user, ["id", "name"]);
-        const omitted = myOmit(user, ["email", "role"]);
+        const picked = myPick(user, ['id', 'name']);
+        const omitted = myOmit(user, ['email', 'role']);
 
         const lines = [];
-        const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+        const assert = (cond, msg) => lines.push((cond ? '✓ ' : '✗ ') + msg);
 
         assert(
-          patched.name === "Ada Lovelace" && patched.id === 1,
-          "MyPartial 运行时 patch 只更新 name，其余字段保留"
+          patched.name === 'Ada Lovelace' && patched.id === 1,
+          'MyPartial 运行时 patch 只更新 name，其余字段保留',
         );
-        assert(!("email" in patch), "Partial 入参可只含部分字段（类型层所有键可选）");
-        assert(Object.keys(picked).length === 2, "MyPick 运行时 myPick 只保留 id/name");
-        assert(!("email" in omitted) && !("role" in omitted), "MyOmit 运行时 myOmit 移除 email/role");
-        assert(picked.name === "Ada", "Pick 后 name 值不变");
-        assert(omitted.id === 1, "Omit 后保留 id");
+        assert(!('email' in patch), 'Partial 入参可只含部分字段（类型层所有键可选）');
+        assert(Object.keys(picked).length === 2, 'MyPick 运行时 myPick 只保留 id/name');
+        assert(
+          !('email' in omitted) && !('role' in omitted),
+          'MyOmit 运行时 myOmit 移除 email/role',
+        );
+        assert(picked.name === 'Ada', 'Pick 后 name 值不变');
+        assert(omitted.id === 1, 'Omit 后保留 id');
 
-        document.getElementById("log").textContent =
-          lines.join("\n") + "\n\n" +
-          "原对象: " + JSON.stringify(user, null, 2) + "\n\n" +
-          "Pick id,name: " + JSON.stringify(picked, null, 2) + "\n\n" +
-          "Omit email,role: " + JSON.stringify(omitted, null, 2);
+        document.getElementById('log').textContent =
+          lines.join('\n') +
+          '\n\n' +
+          '原对象: ' +
+          JSON.stringify(user, null, 2) +
+          '\n\n' +
+          'Pick id,name: ' +
+          JSON.stringify(picked, null, 2) +
+          '\n\n' +
+          'Omit email,role: ' +
+          JSON.stringify(omitted, null, 2);
       };
     </script>
     <!-- SCRIPT_END -->
@@ -125,20 +258,30 @@ type MyOmit&lt;T, K extends keyof T&gt; = Pick&lt;T, Exclude&lt;keyof T, K&gt;&g
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="./05-never%E4%B8%8E%E7%A9%B7%E5%B0%BD%E6%A3%80%E6%9F%A5.html">相关 · never与穷尽检查</a>
-        <a href="../03-%E5%B7%A5%E7%A8%8B%E4%B8%8E%E6%A1%86%E6%9E%B6/01-tsconfig-strict%E9%85%8D%E7%BD%AE.html">相关 · tsconfig-strict配置</a>
+        <a href="./05-never%E4%B8%8E%E7%A9%B7%E5%B0%BD%E6%A3%80%E6%9F%A5.html">
+          相关 · never与穷尽检查
+        </a>
+        <a
+          href="../03-%E5%B7%A5%E7%A8%8B%E4%B8%8E%E6%A1%86%E6%9E%B6/01-tsconfig-strict%E9%85%8D%E7%BD%AE.html"
+        >
+          相关 · tsconfig-strict配置
+        </a>
         <a href="./05-never%E4%B8%8E%E7%A9%B7%E5%B0%BD%E6%A3%80%E6%9F%A5.html">← never与穷尽检查</a>
-        <a href="../03-%E5%B7%A5%E7%A8%8B%E4%B8%8E%E6%A1%86%E6%9E%B6/01-tsconfig-strict%E9%85%8D%E7%BD%AE.html">tsconfig-strict配置 →</a>
+        <a
+          href="../03-%E5%B7%A5%E7%A8%8B%E4%B8%8E%E6%A1%86%E6%9E%B6/01-tsconfig-strict%E9%85%8D%E7%BD%AE.html"
+        >
+          tsconfig-strict配置 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

@@ -1,5 +1,5 @@
 <!--
-分类: css / 03-动画 / loading
+  分类: css / 03-动画 / loading
   主题: lds-ring 圆环旋转 loading
   要点:
     - 四个绝对定位圆环叠放，用不同 animation-delay 做追逐式旋转
@@ -20,9 +20,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>loading - lds-ring 圆环</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
-      h2 { font-size: 1rem; margin-top: 0; }
-      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        color: #222;
+      }
+      h2 {
+        font-size: 1rem;
+        margin-top: 0;
+      }
+      .tip {
+        margin: 0.5rem 0 1rem;
+        color: #666;
+        font-size: 0.875rem;
+      }
       .lds-ring {
         display: inline-block;
         position: relative;
@@ -36,10 +47,10 @@
         width: 51px;
         height: 51px;
         margin: 6px;
-        border: 2px solid #FF6A00;
+        border: 2px solid #ff6a00;
         border-radius: 50%;
         animation: 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite lds-ring;
-        border-color: #FF6A00 transparent transparent transparent;
+        border-color: #ff6a00 transparent transparent transparent;
       }
       .lds-ring div:nth-child(1) {
         animation-delay: -0.45s;
@@ -82,30 +93,101 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>lds-ring 圆环旋转 loading</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出负 animation-delay 与 cubic-bezier 实测值。</p>
+      <p class="hint">
+        在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出负
+        animation-delay 与 cubic-bezier 实测值。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>这个圆环 loading 由 4 个同尺寸、绝对定位的圆形边框叠放而成，每个圆环播放同一个 <code>lds-ring</code> 旋转关键帧。</li>
-          <li><code>border-color: #FF6A00 transparent transparent transparent</code> 按上、右、下、左设置颜色，只保留上边框可见；圆角边框旋转后就形成一段弧线。</li>
-          <li>第 1 到第 3 个圆环使用负 <code>animation-delay</code>，含义是动画立即开始，但从周期中间的进度切入，因此首屏就能看到追逐状态。</li>
-          <li><code>cubic-bezier(0.5, 0, 0.5, 1)</code> 是缓动函数，两个控制点的 x 坐标必须在 0 到 1 之间；y 坐标可超出 0 到 1，用来制造回弹等效果。</li>
-          <li>旋转动效通常用 <code>transform: rotate()</code>，但 transform 会创建新的 stacking context；loading 放在复杂遮罩或弹层里时要检查层叠顺序。</li>
+          <li>
+            这个圆环 loading 由 4 个同尺寸、绝对定位的圆形边框叠放而成，每个圆环播放同一个
+            <code>lds-ring</code>
+            旋转关键帧。
+          </li>
+          <li>
+            <code>border-color: #FF6A00 transparent transparent transparent</code>
+            按上、右、下、左设置颜色，只保留上边框可见；圆角边框旋转后就形成一段弧线。
+          </li>
+          <li>
+            第 1 到第 3 个圆环使用负
+            <code>animation-delay</code>
+            ，含义是动画立即开始，但从周期中间的进度切入，因此首屏就能看到追逐状态。
+          </li>
+          <li>
+            <code>cubic-bezier(0.5, 0, 0.5, 1)</code>
+            是缓动函数，两个控制点的 x 坐标必须在 0 到 1 之间；y 坐标可超出 0 到
+            1，用来制造回弹等效果。
+          </li>
+          <li>
+            旋转动效通常用
+            <code>transform: rotate()</code>
+            ，但 transform 会创建新的 stacking context；loading
+            放在复杂遮罩或弹层里时要检查层叠顺序。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>圆环 loading 为什么能用边框做出来？</strong> 结论是圆形元素只显示一侧边框，再整体旋转，就会看起来像弧线在转。原因是四值 <code>border-color</code> 可以分别控制上、右、下、左边框颜色。项目里这种写法适合轻量 loading，但多色进度环、真实百分比进度更适合 SVG 或 conic-gradient。</li>
-          <li><strong>负 <code>animation-delay</code> 有什么用？</strong> 结论是它让动画立即播放，但从指定偏移后的进度开始。原因是负延迟相当于动画已经运行了一段时间。项目里多个 spinner 层叠时用负 delay，可以避免首次渲染时所有圆环都从同一角度起步。</li>
-          <li><strong><code>cubic-bezier()</code> 参数怎么判断合法？</strong> 结论是四个参数代表两个控制点，两个 x 坐标必须落在 <code>[0, 1]</code>。原因是 CSS 缓动函数需要保证输入进度到输出进度可计算。边界是 y 坐标可以小于 0 或大于 1，用来制造超调或回弹，但 loading 场景通常选择平滑曲线。</li>
-          <li><strong>无限旋转 loading 的风险是什么？</strong> 结论是要控制动效强度并提供 reduced-motion 降级。原因是持续旋转可能造成眩晕或注意力干扰。项目里还要给异步任务设置超时、失败提示和重试入口，不能让 spinner 无限挂起。</li>
+          <li>
+            <strong>圆环 loading 为什么能用边框做出来？</strong>
+            结论是圆形元素只显示一侧边框，再整体旋转，就会看起来像弧线在转。原因是四值
+            <code>border-color</code>
+            可以分别控制上、右、下、左边框颜色。项目里这种写法适合轻量
+            loading，但多色进度环、真实百分比进度更适合 SVG 或 conic-gradient。
+          </li>
+          <li>
+            <strong>
+              负
+              <code>animation-delay</code>
+              有什么用？
+            </strong>
+            结论是它让动画立即播放，但从指定偏移后的进度开始。原因是负延迟相当于动画已经运行了一段时间。项目里多个
+            spinner 层叠时用负 delay，可以避免首次渲染时所有圆环都从同一角度起步。
+          </li>
+          <li>
+            <strong>
+              <code>cubic-bezier()</code>
+              参数怎么判断合法？
+            </strong>
+            结论是四个参数代表两个控制点，两个 x 坐标必须落在
+            <code>[0, 1]</code>
+            。原因是 CSS 缓动函数需要保证输入进度到输出进度可计算。边界是 y 坐标可以小于 0 或大于
+            1，用来制造超调或回弹，但 loading 场景通常选择平滑曲线。
+          </li>
+          <li>
+            <strong>无限旋转 loading 的风险是什么？</strong>
+            结论是要控制动效强度并提供 reduced-motion
+            降级。原因是持续旋转可能造成眩晕或注意力干扰。项目里还要给异步任务设置超时、失败提示和重试入口，不能让
+            spinner 无限挂起。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/border-color">MDN: border-color</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/animation-delay">MDN: animation-delay</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/easing-function/cubic-bezier">MDN: cubic-bezier()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transform">MDN: transform</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion">MDN: prefers-reduced-motion</a></li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/border-color">
+              MDN: border-color
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/animation-delay">
+              MDN: animation-delay
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/easing-function/cubic-bezier">
+              MDN: cubic-bezier()
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transform">MDN: transform</a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion"
+            >
+              MDN: prefers-reduced-motion
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -113,7 +195,13 @@
 
     <!-- PAGE_DOM_START -->
     <h2>lds-ring 圆环旋转 loading</h2>
-    <p class="tip">观察 4 个圆环叠放旋转，负 <code>animation-delay</code> 让首屏即呈现追逐状态；<code>border-color</code> 透明三边形成弧线。</p>
+    <p class="tip">
+      观察 4 个圆环叠放旋转，负
+      <code>animation-delay</code>
+      让首屏即呈现追逐状态；
+      <code>border-color</code>
+      透明三边形成弧线。
+    </p>
     <div class="lds-ring" id="lds-ring">
       <div id="ring-1"></div>
       <div id="ring-2"></div>
@@ -126,7 +214,7 @@
     <!-- SCRIPT_START -->
     <script>
       (function () {
-        var ringIds = ["ring-1", "ring-2", "ring-3", "ring-4"];
+        var ringIds = ['ring-1', 'ring-2', 'ring-3', 'ring-4'];
 
         /** 读取圆环 animation 计算值，对应 MDN animation-delay / cubic-bezier / border-color */
         function getRingMetrics(id) {
@@ -136,30 +224,39 @@
             delay: s.animationDelay,
             duration: s.animationDuration,
             timing: s.animationTimingFunction,
-            borderColor: s.borderTopColor + " / " + s.borderRightColor,
+            borderColor: s.borderTopColor + ' / ' + s.borderRightColor,
             transform: s.transform,
           };
         }
 
         /** 输出圆环 animation 实测报告 */
         function renderMetrics() {
-          var lines = ["── lds-ring 实测 ──"];
+          var lines = ['── lds-ring 实测 ──'];
           ringIds.forEach(function (id, i) {
             var m = getRingMetrics(id);
             lines.push(
-              "#" + m.id + " (nth-child " + (i + 1) + "): delay=" + m.delay +
-                ", duration=" + m.duration +
-                ", timing=" + m.timing
+              '#' +
+                m.id +
+                ' (nth-child ' +
+                (i + 1) +
+                '): delay=' +
+                m.delay +
+                ', duration=' +
+                m.duration +
+                ', timing=' +
+                m.timing,
             );
-            lines.push("  border-top/right: " + m.borderColor);
+            lines.push('  border-top/right: ' + m.borderColor);
           });
-          lines.push("");
-          lines.push("── prefers-reduced-motion ──");
+          lines.push('');
+          lines.push('── prefers-reduced-motion ──');
           lines.push(
             "matchMedia('(prefers-reduced-motion: reduce)'): " +
-              (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "匹配（动画已关闭）" : "未匹配")
+              (window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                ? '匹配（动画已关闭）'
+                : '未匹配'),
           );
-          document.getElementById("runtime-output").textContent = lines.join("\n");
+          document.getElementById('runtime-output').textContent = lines.join('\n');
         }
 
         renderMetrics();
@@ -177,13 +274,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

@@ -28,31 +28,161 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>事件循环综合（同步 + Promise + async/await + setTimeout）</h1>
-      <p class="hint">阅读本复习区后，在下方点击按钮观察输出顺序；也可打开 DevTools Console 对照。</p>
+      <p class="hint">
+        阅读本复习区后，在下方点击按钮观察输出顺序；也可打开 DevTools Console 对照。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>浏览器事件循环以“任务”为入口执行 JavaScript：当前脚本本身就是一个任务，调用栈里的同步代码会先从上到下执行完。</li>
-          <li>当前任务结束后，浏览器会清空微任务队列，再进入渲染机会或下一个任务；<code>Promise.then</code>、<code>queueMicrotask</code> 和 <code>await</code> 后续代码都属于微任务。</li>
-          <li><code>async</code> 函数在遇到 <code>await</code> 前仍是同步执行；<code>await</code> 会把后面的 continuation 包装成 Promise 反应，因此本例的 <code>async1 end</code> 会进入微任务队列。</li>
-          <li><code>setTimeout(fn, 0)</code> 不是“立刻执行”，而是把回调排入后续任务；它必须等当前脚本任务和由它产生的所有微任务执行完，才有机会运行。</li>
-          <li>微任务适合在当前任务末尾补齐状态一致性，但不能无限递归追加；过长的微任务链会推迟渲染和输入响应，实际项目中应避免把耗时工作塞进微任务。</li>
-          <li><strong>运行环境：</strong> 本页仅依赖同步脚本、Promise 与 <code>setTimeout</code>，<code>file://</code> 与 <code>http(s)://</code> 均可运行；输出顺序以当前浏览器 HTML 事件循环为准，不能套用 Node 的 <code>process.nextTick</code> 规则（见 <a href="./03-Node%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E5%AF%B9%E6%AF%94.html">Node 对比 demo</a>）。</li>
+          <li>
+            浏览器事件循环以“任务”为入口执行
+            JavaScript：当前脚本本身就是一个任务，调用栈里的同步代码会先从上到下执行完。
+          </li>
+          <li>
+            当前任务结束后，浏览器会清空微任务队列，再进入渲染机会或下一个任务；
+            <code>Promise.then</code>
+            、
+            <code>queueMicrotask</code>
+            和
+            <code>await</code>
+            后续代码都属于微任务。
+          </li>
+          <li>
+            <code>async</code>
+            函数在遇到
+            <code>await</code>
+            前仍是同步执行；
+            <code>await</code>
+            会把后面的 continuation 包装成 Promise 反应，因此本例的
+            <code>async1 end</code>
+            会进入微任务队列。
+          </li>
+          <li>
+            <code>setTimeout(fn, 0)</code>
+            不是“立刻执行”，而是把回调排入后续任务；它必须等当前脚本任务和由它产生的所有微任务执行完，才有机会运行。
+          </li>
+          <li>
+            微任务适合在当前任务末尾补齐状态一致性，但不能无限递归追加；过长的微任务链会推迟渲染和输入响应，实际项目中应避免把耗时工作塞进微任务。
+          </li>
+          <li>
+            <strong>运行环境：</strong>
+            本页仅依赖同步脚本、Promise 与
+            <code>setTimeout</code>
+            ，
+            <code>file://</code>
+            与
+            <code>http(s)://</code>
+            均可运行；输出顺序以当前浏览器 HTML 事件循环为准，不能套用 Node 的
+            <code>process.nextTick</code>
+            规则（见
+            <a
+              href="./03-Node%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E5%AF%B9%E6%AF%94.html"
+            >
+              Node 对比 demo
+            </a>
+            ）。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>这段同步、Promise、async/await、setTimeout 混合代码输出顺序是什么？</strong> 结论是先同步输出 <code>script start</code>、<code>async1 start</code>、<code>async2</code>、<code>promise1</code>、<code>script end</code>，再执行微任务 <code>async1 end</code>、<code>promise2</code>、<code>queueMicrotask</code>，最后执行 <code>setTimeout</code>。原因是脚本任务先跑完，Promise 与 await 后续进入微任务，同轮微任务按入队顺序清空，定时器属于后续任务。</li>
-          <li><strong><code>await</code> 后面的代码为什么晚于当前同步代码？</strong> 结论是 <code>await</code> 后续会异步恢复。原因是 async 函数会把 <code>await</code> 之后的代码转换成 Promise 反应任务；边界是 <code>await</code> 前的表达式仍会立即求值，不能把整个 async 函数都理解成异步。</li>
-          <li><strong><code>Promise.then</code> 为什么通常先于 <code>setTimeout(0)</code>？</strong> 结论是同一轮脚本里 Promise 微任务先执行。原因是 HTML 事件循环在一个任务结束后执行微任务检查点，然后才进入下一个任务；但定时器还有最小延迟、后台节流等浏览器策略，不能用它做精确计时。</li>
-          <li><strong><code>queueMicrotask</code> 与 <code>Promise.then</code> 如何选？</strong> 结论是只想显式排微任务时优先 <code>queueMicrotask</code>。原因是它语义更直接，也不会把异常包装成 rejected Promise；项目里常用于让同步/异步分支都在同一微任务时机派发状态变更。</li>
-          <li><strong>微任务过多有什么风险？</strong> 结论是会阻塞后续任务、渲染和用户输入。原因是浏览器会持续清空微任务队列，微任务不断追加微任务可能造成饥饿；耗时计算应拆分到任务、Worker 或可中断调度中。</li>
+          <li>
+            <strong>这段同步、Promise、async/await、setTimeout 混合代码输出顺序是什么？</strong>
+            结论是先同步输出
+            <code>script start</code>
+            、
+            <code>async1 start</code>
+            、
+            <code>async2</code>
+            、
+            <code>promise1</code>
+            、
+            <code>script end</code>
+            ，再执行微任务
+            <code>async1 end</code>
+            、
+            <code>promise2</code>
+            、
+            <code>queueMicrotask</code>
+            ，最后执行
+            <code>setTimeout</code>
+            。原因是脚本任务先跑完，Promise 与 await
+            后续进入微任务，同轮微任务按入队顺序清空，定时器属于后续任务。
+          </li>
+          <li>
+            <strong>
+              <code>await</code>
+              后面的代码为什么晚于当前同步代码？
+            </strong>
+            结论是
+            <code>await</code>
+            后续会异步恢复。原因是 async 函数会把
+            <code>await</code>
+            之后的代码转换成 Promise 反应任务；边界是
+            <code>await</code>
+            前的表达式仍会立即求值，不能把整个 async 函数都理解成异步。
+          </li>
+          <li>
+            <strong>
+              <code>Promise.then</code>
+              为什么通常先于
+              <code>setTimeout(0)</code>
+              ？
+            </strong>
+            结论是同一轮脚本里 Promise 微任务先执行。原因是 HTML
+            事件循环在一个任务结束后执行微任务检查点，然后才进入下一个任务；但定时器还有最小延迟、后台节流等浏览器策略，不能用它做精确计时。
+          </li>
+          <li>
+            <strong>
+              <code>queueMicrotask</code>
+              与
+              <code>Promise.then</code>
+              如何选？
+            </strong>
+            结论是只想显式排微任务时优先
+            <code>queueMicrotask</code>
+            。原因是它语义更直接，也不会把异常包装成 rejected
+            Promise；项目里常用于让同步/异步分支都在同一微任务时机派发状态变更。
+          </li>
+          <li>
+            <strong>微任务过多有什么风险？</strong>
+            结论是会阻塞后续任务、渲染和用户输入。原因是浏览器会持续清空微任务队列，微任务不断追加微任务可能造成饥饿；耗时计算应拆分到任务、Worker
+            或可中断调度中。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide" target="_blank" rel="noreferrer">MDN: Using microtasks in JavaScript with queueMicrotask()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function" target="_blank" rel="noreferrer">MDN: async function</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout" target="_blank" rel="noreferrer">MDN: Window setTimeout()</a></li>
-          <li><a href="https://javascript.info/event-loop" target="_blank" rel="noreferrer">JavaScript.info: Event loop: microtasks and macrotasks</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Using microtasks in JavaScript with queueMicrotask()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: async function
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Window setTimeout()
+            </a>
+          </li>
+          <li>
+            <a href="https://javascript.info/event-loop" target="_blank" rel="noreferrer">
+              JavaScript.info: Event loop: microtasks and macrotasks
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -61,7 +191,9 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block" aria-label="事件循环演示">
       <h2 class="demo-block__label">运行示例</h2>
-      <p class="tip">点击按钮运行经典混合题，观察同步 → 微任务 → 宏任务的输出顺序（与 Console 同步）。</p>
+      <p class="tip">
+        点击按钮运行经典混合题，观察同步 → 微任务 → 宏任务的输出顺序（与 Console 同步）。
+      </p>
       <button id="run-loop" type="button">运行顺序演示</button>
       <pre id="runtime-output" aria-live="polite">尚未运行。</pre>
     </section>
@@ -70,37 +202,37 @@
     <!-- SCRIPT_START -->
     <script>
       (function () {
-        var outputEl = document.getElementById("runtime-output");
+        var outputEl = document.getElementById('runtime-output');
         var lines = [];
 
         function logLine(text) {
           lines.push(text);
           console.log(text);
           if (outputEl) {
-            outputEl.textContent = lines.join("\n");
+            outputEl.textContent = lines.join('\n');
           }
         }
 
         async function async1() {
-          logLine("async1 start");
+          logLine('async1 start');
           await async2();
-          logLine("async1 end");
+          logLine('async1 end');
         }
 
         async function async2() {
-          logLine("async2");
+          logLine('async2');
         }
 
         function runEventLoopDemo() {
           lines = [];
-          logLine("—— 开始运行 ——");
+          logLine('—— 开始运行 ——');
 
           // ============ 1. 同步代码先执行 ============
-          logLine("script start");
+          logLine('script start');
 
           // ============ 2. setTimeout 排入后续任务（宏任务）============
           setTimeout(function () {
-            logLine("setTimeout");
+            logLine('setTimeout');
           }, 0);
 
           // ============ 3. async/await：await 前同步，后续进微任务 ============
@@ -108,21 +240,21 @@
 
           // ============ 4. Promise：executor 同步，then 进微任务 ============
           new Promise(function (resolve) {
-            logLine("promise1");
+            logLine('promise1');
             resolve();
           }).then(function () {
-            logLine("promise2");
+            logLine('promise2');
           });
 
           // ============ 5. queueMicrotask 显式微任务 ============
           queueMicrotask(function () {
-            logLine("queueMicrotask");
+            logLine('queueMicrotask');
           });
 
-          logLine("script end");
+          logLine('script end');
         }
 
-        document.getElementById("run-loop").addEventListener("click", runEventLoopDemo);
+        document.getElementById('run-loop').addEventListener('click', runEventLoopDemo);
       })();
     </script>
     <!-- SCRIPT_END -->
@@ -132,16 +264,30 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./02-dom%E4%BA%8B%E4%BB%B6-%E5%86%92%E6%B3%A1%E6%8D%95%E8%8E%B7%E5%A7%94%E6%89%98.html">相关 · dom事件-冒泡捕获委托</a>
-        <a href="./03-Node%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E5%AF%B9%E6%AF%94.html">相关 · Node与浏览器事件循环对比</a>
-        <a href="../%E5%AD%98%E5%82%A8/06-%E5%AD%98%E5%82%A8%E6%96%87%E4%BB%B6-FileReader.html">← 存储文件-FileReader</a>
-        <a href="./02-dom%E4%BA%8B%E4%BB%B6-%E5%86%92%E6%B3%A1%E6%8D%95%E8%8E%B7%E5%A7%94%E6%89%98.html">dom事件-冒泡捕获委托 →</a>
+        <a
+          href="./02-dom%E4%BA%8B%E4%BB%B6-%E5%86%92%E6%B3%A1%E6%8D%95%E8%8E%B7%E5%A7%94%E6%89%98.html"
+        >
+          相关 · dom事件-冒泡捕获委托
+        </a>
+        <a
+          href="./03-Node%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E5%AF%B9%E6%AF%94.html"
+        >
+          相关 · Node与浏览器事件循环对比
+        </a>
+        <a href="../%E5%AD%98%E5%82%A8/06-%E5%AD%98%E5%82%A8%E6%96%87%E4%BB%B6-FileReader.html">
+          ← 存储文件-FileReader
+        </a>
+        <a
+          href="./02-dom%E4%BA%8B%E4%BB%B6-%E5%86%92%E6%B3%A1%E6%8D%95%E8%8E%B7%E5%A7%94%E6%89%98.html"
+        >
+          dom事件-冒泡捕获委托 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

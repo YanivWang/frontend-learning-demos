@@ -32,24 +32,143 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>普通函数的 <code>this</code> 绑定在调用时确定。示例中 <code>window.a()</code> 是属性引用调用，所以 <code>a</code> 内部的 <code>this</code> 是 <code>window</code>。</li>
-          <li><code>window.a()()</code> 分两步：先执行 <code>window.a()</code> 得到一个匿名函数，再把这个匿名函数作为普通函数独立调用；第二次调用没有接收者，非严格模式下 <code>this</code> 会被替换为 <code>window</code>。</li>
-          <li>「this 指向最后调用它的对象」只是记忆口诀，不是完整规则。更准确的说法是：根据调用表达式判断引用基值，或由 <code>call</code>/<code>apply</code>/<code>bind</code>、<code>new</code>、箭头函数词法捕获等规则决定。</li>
-          <li>严格模式下，独立调用普通函数的 <code>this</code> 保持为 <code>undefined</code>；非严格模式下 <code>null</code>/<code>undefined</code> 会被替换为全局对象，原始值会装箱。</li>
-          <li>箭头函数没有自己的 <code>this</code>，会捕获外层词法环境的 <code>this</code>，适合回调保留上下文，但不能作为构造函数使用。</li>
+          <li>
+            普通函数的
+            <code>this</code>
+            绑定在调用时确定。示例中
+            <code>window.a()</code>
+            是属性引用调用，所以
+            <code>a</code>
+            内部的
+            <code>this</code>
+            是
+            <code>window</code>
+            。
+          </li>
+          <li>
+            <code>window.a()()</code>
+            分两步：先执行
+            <code>window.a()</code>
+            得到一个匿名函数，再把这个匿名函数作为普通函数独立调用；第二次调用没有接收者，非严格模式下
+            <code>this</code>
+            会被替换为
+            <code>window</code>
+            。
+          </li>
+          <li>
+            「this
+            指向最后调用它的对象」只是记忆口诀，不是完整规则。更准确的说法是：根据调用表达式判断引用基值，或由
+            <code>call</code>
+            /
+            <code>apply</code>
+            /
+            <code>bind</code>
+            、
+            <code>new</code>
+            、箭头函数词法捕获等规则决定。
+          </li>
+          <li>
+            严格模式下，独立调用普通函数的
+            <code>this</code>
+            保持为
+            <code>undefined</code>
+            ；非严格模式下
+            <code>null</code>
+            /
+            <code>undefined</code>
+            会被替换为全局对象，原始值会装箱。
+          </li>
+          <li>
+            箭头函数没有自己的
+            <code>this</code>
+            ，会捕获外层词法环境的
+            <code>this</code>
+            ，适合回调保留上下文，但不能作为构造函数使用。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>普通函数的 <code>this</code> 到底由什么决定？</strong> 先结论：由调用形式决定。原因是函数调用会根据引用的基值或显式传入的 thisArg 设置 <code>this</code>。项目中判断 <code>obj.fn()</code>、<code>const fn = obj.fn; fn()</code>、事件回调和 <code>bind</code> 时，都要先还原实际调用表达式。</li>
-          <li><strong><code>window.a()()</code> 为什么第二次调用拿不到第一次的 <code>this</code>？</strong> 先结论：第一次调用返回的是一个新函数，第二次是独立调用。原因是普通函数不会自动继承外层调用的 <code>this</code>。如果要保留上下文，可返回箭头函数、使用 <code>bind</code>，或在外层保存 <code>const self = this</code>。</li>
-          <li><strong>严格模式、非严格模式下独立函数调用的 <code>this</code> 有什么不同？</strong> 先结论：严格模式是 <code>undefined</code>，非严格模式会替换为全局对象。原因是非严格调用会执行 this 替换规则。边界是 ES modules 和 class 方法默认严格，所以很多现代代码里不会退化到 <code>window</code>。</li>
-          <li><strong>箭头函数和普通函数的 <code>this</code> 机制有什么区别？</strong> 先结论：箭头函数没有自己的 <code>this</code>，普通函数有调用时绑定。原因是箭头函数从外层词法环境读取 <code>this</code>。项目中箭头函数适合作为回调保留外层上下文，但不适合定义需要动态接收者的对象原型方法。</li>
+          <li>
+            <strong>
+              普通函数的
+              <code>this</code>
+              到底由什么决定？
+            </strong>
+            先结论：由调用形式决定。原因是函数调用会根据引用的基值或显式传入的 thisArg 设置
+            <code>this</code>
+            。项目中判断
+            <code>obj.fn()</code>
+            、
+            <code>const fn = obj.fn; fn()</code>
+            、事件回调和
+            <code>bind</code>
+            时，都要先还原实际调用表达式。
+          </li>
+          <li>
+            <strong>
+              <code>window.a()()</code>
+              为什么第二次调用拿不到第一次的
+              <code>this</code>
+              ？
+            </strong>
+            先结论：第一次调用返回的是一个新函数，第二次是独立调用。原因是普通函数不会自动继承外层调用的
+            <code>this</code>
+            。如果要保留上下文，可返回箭头函数、使用
+            <code>bind</code>
+            ，或在外层保存
+            <code>const self = this</code>
+            。
+          </li>
+          <li>
+            <strong>
+              严格模式、非严格模式下独立函数调用的
+              <code>this</code>
+              有什么不同？
+            </strong>
+            先结论：严格模式是
+            <code>undefined</code>
+            ，非严格模式会替换为全局对象。原因是非严格调用会执行 this 替换规则。边界是 ES modules 和
+            class 方法默认严格，所以很多现代代码里不会退化到
+            <code>window</code>
+            。
+          </li>
+          <li>
+            <strong>
+              箭头函数和普通函数的
+              <code>this</code>
+              机制有什么区别？
+            </strong>
+            先结论：箭头函数没有自己的
+            <code>this</code>
+            ，普通函数有调用时绑定。原因是箭头函数从外层词法环境读取
+            <code>this</code>
+            。项目中箭头函数适合作为回调保留外层上下文，但不适合定义需要动态接收者的对象原型方法。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this">MDN: this</a>：调用形式与 this 绑定规则。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions">MDN: Arrow function expressions</a>：词法 this 与不可构造。</li>
-          <li><a href="https://tc39.es/ecma262/#sec-ordinarycallbindthis">ECMA-262: OrdinaryCallBindThis</a>：普通函数调用时的 this 绑定。</li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this"
+            >
+              MDN: this
+            </a>
+            ：调用形式与 this 绑定规则。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions"
+            >
+              MDN: Arrow function expressions
+            </a>
+            ：词法 this 与不可构造。
+          </li>
+          <li>
+            <a href="https://tc39.es/ecma262/#sec-ordinarycallbindthis">
+              ECMA-262: OrdinaryCallBindThis
+            </a>
+            ：普通函数调用时的 this 绑定。
+          </li>
         </ul>
       </div>
     </section>
@@ -61,12 +180,12 @@
       // 普通函数的 this 在运行时由调用形式决定，不是定义时固定
       window.a = function () {
         this.age = 14;
-        console.log("window.a this === window:", this === window); // true
+        console.log('window.a this === window:', this === window); // true
 
         // 返回普通函数：再次独立调用时会丢失外层 this
         return function () {
-          console.log("inner this === window:", this === window); // true
-          console.log("inner age:", this.age); // 14（读 window.age）
+          console.log('inner this === window:', this === window); // true
+          console.log('inner age:', this.age); // 14（读 window.age）
         };
       };
       window.a(); // 第一次：this 是 window，window.age = 14
@@ -74,31 +193,31 @@
 
       // ============ 2. 对象方法调用：this 是接收者 ============
       const user = {
-        name: "wc",
+        name: 'wc',
         greet() {
-          console.log("obj.greet this.name:", this.name); // "wc"
+          console.log('obj.greet this.name:', this.name); // "wc"
         },
       };
       user.greet();
 
       const detached = user.greet;
       detached(); // 独立调用：Console 输出 this.name 为 undefined
-      console.log("call 显式绑定可恢复 context:", typeof detached.call(user)); // "undefined"（greet 无返回值但正常执行）
+      console.log('call 显式绑定可恢复 context:', typeof detached.call(user)); // "undefined"（greet 无返回值但正常执行）
 
       // ============ 3. 严格模式：独立调用 this 为 undefined ============
       function strictThis() {
-        "use strict";
-        console.log("严格模式独立调用 this:", this); // undefined
+        'use strict';
+        console.log('严格模式独立调用 this:', this); // undefined
       }
       strictThis();
 
       // ============ 4. 箭头函数：捕获外层词法 this ============
       const arrowHost = {
-        label: "host",
+        label: 'host',
         run() {
           const arrowFn = () => {
             // 箭头函数没有自己的 this，读取 run 调用时的 this（即 arrowHost）
-            console.log("箭头函数 this.label:", this.label); // "host"
+            console.log('箭头函数 this.label:', this.label); // "host"
           };
           arrowFn();
         },
@@ -117,15 +236,21 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./02-this-call-apply-bind.html">相关 · this-call-apply-bind</a>
-        <a href="./04-this-%E5%AF%B9%E8%B1%A1%E6%96%B9%E6%B3%95%E4%B8%8E%E8%84%B1%E7%A6%BB.html">相关 · this-对象方法与脱离</a>
-        <a href="../%E9%97%AD%E5%8C%85/02-%E9%97%AD%E5%8C%85-%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E4%B8%8E%E4%BF%AE%E5%A4%8D.html">← 闭包-内存泄漏与修复</a>
+        <a href="./04-this-%E5%AF%B9%E8%B1%A1%E6%96%B9%E6%B3%95%E4%B8%8E%E8%84%B1%E7%A6%BB.html">
+          相关 · this-对象方法与脱离
+        </a>
+        <a
+          href="../%E9%97%AD%E5%8C%85/02-%E9%97%AD%E5%8C%85-%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E4%B8%8E%E4%BF%AE%E5%A4%8D.html"
+        >
+          ← 闭包-内存泄漏与修复
+        </a>
         <a href="./02-this-call-apply-bind.html">this-call-apply-bind →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

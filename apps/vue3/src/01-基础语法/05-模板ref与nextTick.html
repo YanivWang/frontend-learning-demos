@@ -23,7 +23,11 @@
     <script src="../../libs/vue.global.js"></script>
     <style>
       body {
-        font-family: system-ui, -apple-system, "PingFang SC", sans-serif;
+        font-family:
+          system-ui,
+          -apple-system,
+          'PingFang SC',
+          sans-serif;
         line-height: 1.7;
         padding: 24px;
         color: #202124;
@@ -69,25 +73,119 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>模板 <code>ref="textEl"</code> 与 setup 中同名 <code>ref(null)</code> 配对，挂载后 <code>textEl.value</code> 指向 DOM。本页 <code>onMounted</code> 日志区首行会显示 <code>textEl= P</code>；挂载前为 <code>null</code>。</li>
-          <li>本页的 <code>ref</code> 指 DOM 引用，与响应式 <code>ref()</code> 包装值不同；响应式基础见 <a href="../02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/01-ref-reactive%E4%B8%8E%E8%A7%A3%E6%9E%84.html">02-ref-reactive与解构</a>。Vue 3.5+ 写法见 <a href="./06-useTemplateRef%E6%A8%A1%E6%9D%BFref.html">06-useTemplateRef</a>。</li>
-          <li>Vue 异步批量更新 DOM：点「修改后读取 DOM」时，下方日志第一行同步读取仍是<strong>旧文本</strong>，<code>await nextTick()</code> 后第二行才是新文本。调度机制深讲见 <a href="../08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/03-%E8%B0%83%E5%BA%A6%E5%99%A8%E4%B8%8EnextTick.html">08-调度器与nextTick</a>。</li>
-          <li>勾选「隐藏段落」时 <code>v-if="showBlock"</code> 为 false，<code>textEl</code> 变为 <code>null</code>；再次显示后 ref 重新绑定。访问 ref 前须判断空值。</li>
-          <li><code>nextTick</code> 只保证 Vue 本轮 patch 完成，不等待图片 <code>load</code>、CSS 动画结束或接口返回；这些场景须用对应事件或 Promise。</li>
-          <li>能由数据描述的 UI 优先用响应式状态；模板 ref 适合聚焦、测量、滚动、接入第三方 DOM 库等命令式需求。</li>
+          <li>
+            模板
+            <code>ref="textEl"</code>
+            与 setup 中同名
+            <code>ref(null)</code>
+            配对，挂载后
+            <code>textEl.value</code>
+            指向 DOM。本页
+            <code>onMounted</code>
+            日志区首行会显示
+            <code>textEl= P</code>
+            ；挂载前为
+            <code>null</code>
+            。
+          </li>
+          <li>
+            本页的
+            <code>ref</code>
+            指 DOM 引用，与响应式
+            <code>ref()</code>
+            包装值不同；响应式基础见
+            <a
+              href="../02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/01-ref-reactive%E4%B8%8E%E8%A7%A3%E6%9E%84.html"
+            >
+              02-ref-reactive与解构
+            </a>
+            。Vue 3.5+ 写法见
+            <a href="./06-useTemplateRef%E6%A8%A1%E6%9D%BFref.html">06-useTemplateRef</a>
+            。
+          </li>
+          <li>
+            Vue 异步批量更新 DOM：点「修改后读取 DOM」时，下方日志第一行同步读取仍是
+            <strong>旧文本</strong>
+            ，
+            <code>await nextTick()</code>
+            后第二行才是新文本。调度机制深讲见
+            <a
+              href="../08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/03-%E8%B0%83%E5%BA%A6%E5%99%A8%E4%B8%8EnextTick.html"
+            >
+              08-调度器与nextTick
+            </a>
+            。
+          </li>
+          <li>
+            勾选「隐藏段落」时
+            <code>v-if="showBlock"</code>
+            为 false，
+            <code>textEl</code>
+            变为
+            <code>null</code>
+            ；再次显示后 ref 重新绑定。访问 ref 前须判断空值。
+          </li>
+          <li>
+            <code>nextTick</code>
+            只保证 Vue 本轮 patch 完成，不等待图片
+            <code>load</code>
+            、CSS 动画结束或接口返回；这些场景须用对应事件或 Promise。
+          </li>
+          <li>
+            能由数据描述的 UI 优先用响应式状态；模板 ref 适合聚焦、测量、滚动、接入第三方 DOM
+            库等命令式需求。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>数据变了为什么同步读取 DOM 还是旧值？</strong> 结论是 DOM 更新异步批量执行。本页「修改后读取 DOM」按钮第一行日志即证据；测量/滚动应 <code>await nextTick()</code>。</li>
-          <li><strong>nextTick 适合解决什么问题，不适合解决什么问题？</strong> 适合等 Vue patch；不适合等图片、接口、动画。原因是它只关联 Vue 更新队列。</li>
-          <li><strong>模板 ref 什么时候可能是 null？</strong> 挂载前、<code>v-if</code> 未渲染、节点卸载后。本页勾选隐藏段落可观察 <code>textEl=null</code> 日志。</li>
-          <li><strong>什么时候应该用响应式状态而不是直接操作 DOM？</strong> 结论是 UI 由数据驱动；直接改 DOM 可能被下一次 patch 覆盖。ref 用于聚焦、测量等逃逸场景。</li>
+          <li>
+            <strong>数据变了为什么同步读取 DOM 还是旧值？</strong>
+            结论是 DOM 更新异步批量执行。本页「修改后读取 DOM」按钮第一行日志即证据；测量/滚动应
+            <code>await nextTick()</code>
+            。
+          </li>
+          <li>
+            <strong>nextTick 适合解决什么问题，不适合解决什么问题？</strong>
+            适合等 Vue patch；不适合等图片、接口、动画。原因是它只关联 Vue 更新队列。
+          </li>
+          <li>
+            <strong>模板 ref 什么时候可能是 null？</strong>
+            挂载前、
+            <code>v-if</code>
+            未渲染、节点卸载后。本页勾选隐藏段落可观察
+            <code>textEl=null</code>
+            日志。
+          </li>
+          <li>
+            <strong>什么时候应该用响应式状态而不是直接操作 DOM？</strong>
+            结论是 UI 由数据驱动；直接改 DOM 可能被下一次 patch 覆盖。ref 用于聚焦、测量等逃逸场景。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/guide/essentials/template-refs.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Template Refs</a></li>
-          <li><a href="https://vuejs.org/api/general.html#nexttick" target="_blank" rel="noreferrer">Vue 3 官方 API：nextTick()</a></li>
-          <li><a href="https://vuejs.org/guide/essentials/reactivity-fundamentals.html#dom-update-timing" target="_blank" rel="noreferrer">Vue 3 官方文档：DOM Update Timing</a></li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/essentials/template-refs.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方文档：Template Refs
+            </a>
+          </li>
+          <li>
+            <a href="https://vuejs.org/api/general.html#nexttick" target="_blank" rel="noreferrer">
+              Vue 3 官方 API：nextTick()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/essentials/reactivity-fundamentals.html#dom-update-timing"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方文档：DOM Update Timing
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -105,9 +203,7 @@
         <p v-else class="hint-inline">（段落已 v-if 卸载，textEl 当前不可用）</p>
         <button type="button" @click="changeAndRead">修改后读取 DOM</button>
         <button type="button" @click="checkRefNow">立即检查 textEl</button>
-        <p class="hint-inline">
-          「修改后读取 DOM」：第一行同步读旧文本，nextTick 后读新文本。
-        </p>
+        <p class="hint-inline">「修改后读取 DOM」：第一行同步读旧文本，nextTick 后读新文本。</p>
         <pre>{{ log.join("\n") || "（操作后显示日志）" }}</pre>
       </div>
     </div>
@@ -121,7 +217,7 @@
       const app = createApp({
         setup() {
           // --- 响应式文本（驱动视图） ---
-          const text = ref("旧文本");
+          const text = ref('旧文本');
           const showBlock = ref(true);
 
           // --- 模板 ref：与 ref="textEl" 配对 ---
@@ -129,33 +225,26 @@
           const log = ref([]);
 
           onMounted(() => {
-            log.value.push(
-              `[mounted] textEl=${textEl.value?.tagName ?? "null"}，可安全访问 DOM`,
-            );
+            log.value.push(`[mounted] textEl=${textEl.value?.tagName ?? 'null'}，可安全访问 DOM`);
           });
 
           // 修改状态后立即读 DOM → 旧值；nextTick 后 → 新值
           async function changeAndRead() {
             text.value = `新文本 ${Date.now()}`;
-            log.value.push(`同步读取 DOM：${textEl.value?.textContent ?? "null"}`);
+            log.value.push(`同步读取 DOM：${textEl.value?.textContent ?? 'null'}`);
             await nextTick();
-            log.value.push(
-              `nextTick 后读取 DOM：${textEl.value?.textContent ?? "null"}`,
-            );
-            console.log("[nextTick] patch 完成");
+            log.value.push(`nextTick 后读取 DOM：${textEl.value?.textContent ?? 'null'}`);
+            console.log('[nextTick] patch 完成');
           }
 
           // 演示 v-if 卸载后 ref 为 null
           function checkRefNow() {
-            log.value.push(
-              `立即检查 textEl：${textEl.value ? textEl.value.tagName : "null"}`,
-            );
+            log.value.push(`立即检查 textEl：${textEl.value ? textEl.value.tagName : 'null'}`);
           }
 
-          
           // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
           onMounted(() => {
-            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+            console.log('[mounted] createApp 已接管 #app，DOM 已渲染');
           });
 
           return { text, showBlock, textEl, log, changeAndRead, checkRefNow };
@@ -163,8 +252,8 @@
       });
       // mount 须在 app.use / app.component / app.config 等配置之后调用
       // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
-      const rootInstance = app.mount("#app");
-      console.log("[mount] 根组件实例", rootInstance);
+      const rootInstance = app.mount('#app');
+      console.log('[mount] 根组件实例', rootInstance);
     </script>
     <!-- SCRIPT_END -->
 
@@ -178,9 +267,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

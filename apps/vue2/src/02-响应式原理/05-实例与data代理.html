@@ -28,32 +28,127 @@
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>实例 vm 与 _data 的关系</h1>
       <p class="hint">
-        打开 DevTools → Console，刷新后在 <code>mounted</code> 日志中对比
-        <code>this.message</code>、<code>this.$data</code> 与 <code>this._data</code>（以及
-        <code>this.data</code> 为何不存在）；复习要点与面试答法见本区块。
+        打开 DevTools → Console，刷新后在
+        <code>mounted</code>
+        日志中对比
+        <code>this.message</code>
+        、
+        <code>this.$data</code>
+        与
+        <code>this._data</code>
+        （以及
+        <code>this.data</code>
+        为何不存在）；复习要点与面试答法见本区块。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue2 创建实例时会处理 <code>data</code>：先把返回对象转成响应式，再把每个 key 代理到实例上，所以 <code>vm.message</code> 实际读写的是 <code>vm._data.message</code>。</li>
-          <li><code>vm.$data</code> 是公开实例属性，指向 Vue 观察过的数据对象；<code>vm._data</code> 是内部实现字段，调试时能看到，但业务代码不应依赖下划线内部属性。</li>
-          <li><code>vm.data</code> 默认不存在，因为 <code>data</code> 是实例创建选项，不是自动暴露的实例属性。要看原始数据对象，用 <code>this.$data</code>。</li>
-          <li>data 字段不要和 <code>methods</code>、<code>computed</code>、<code>props</code> 等重名。重名会让实例代理含义冲突，轻则出现警告，重则覆盖预期访问路径。</li>
-          <li><code>mounted</code> 表示当前实例已经挂载到 DOM，但状态变化后的 DOM 更新是异步批量执行的；修改数据后想读取最新 DOM，应放到 <code>this.$nextTick</code>。</li>
+          <li>
+            Vue2 创建实例时会处理
+            <code>data</code>
+            ：先把返回对象转成响应式，再把每个 key 代理到实例上，所以
+            <code>vm.message</code>
+            实际读写的是
+            <code>vm._data.message</code>
+            。
+          </li>
+          <li>
+            <code>vm.$data</code>
+            是公开实例属性，指向 Vue 观察过的数据对象；
+            <code>vm._data</code>
+            是内部实现字段，调试时能看到，但业务代码不应依赖下划线内部属性。
+          </li>
+          <li>
+            <code>vm.data</code>
+            默认不存在，因为
+            <code>data</code>
+            是实例创建选项，不是自动暴露的实例属性。要看原始数据对象，用
+            <code>this.$data</code>
+            。
+          </li>
+          <li>
+            data 字段不要和
+            <code>methods</code>
+            、
+            <code>computed</code>
+            、
+            <code>props</code>
+            等重名。重名会让实例代理含义冲突，轻则出现警告，重则覆盖预期访问路径。
+          </li>
+          <li>
+            <code>mounted</code>
+            表示当前实例已经挂载到 DOM，但状态变化后的 DOM
+            更新是异步批量执行的；修改数据后想读取最新 DOM，应放到
+            <code>this.$nextTick</code>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue2 为什么能用 this.message 访问 data 字段？</strong> 结论是 Vue2 把 <code>data</code> key 代理到了组件实例上。原因是实例初始化时会为每个 data 字段定义代理 getter/setter，内部转发到 <code>_data</code>。项目里这让模板和 methods 写法简洁，但也要求 key 命名不能和其他选项冲突。</li>
-          <li><strong>vm.$data 和 vm._data 有什么区别？</strong> 结论是 <code>$data</code> 是公开 API，<code>_data</code> 是内部字段。二者通常指向同一个响应式数据对象，但业务代码应依赖公开 API。边界是调试源码或教学时可以观察 <code>_data</code>，生产逻辑不要依赖内部命名。</li>
-          <li><strong>data 字段重名会带来什么问题？</strong> 结论是 data key 若与 <code>methods</code>、<code>computed</code>、<code>props</code> 等同名，会冲突实例代理路径，轻则 Vue 警告，重则覆盖预期访问。项目里 data 字段命名应避开已有选项名。</li>
-          <li><strong>mounted 中访问 DOM 和数据有什么边界？</strong> 结论是首次挂载后的 DOM 可以读，但数据变化后的最新 DOM 要等 <code>$nextTick</code>。原因是 Vue 会异步批量刷新 DOM。项目里集成第三方 DOM 插件可在 <code>mounted</code> 初始化，后续依赖更新后的尺寸或节点时放进 <code>$nextTick</code>。</li>
+          <li>
+            <strong>Vue2 为什么能用 this.message 访问 data 字段？</strong>
+            结论是 Vue2 把
+            <code>data</code>
+            key 代理到了组件实例上。原因是实例初始化时会为每个 data 字段定义代理
+            getter/setter，内部转发到
+            <code>_data</code>
+            。项目里这让模板和 methods 写法简洁，但也要求 key 命名不能和其他选项冲突。
+          </li>
+          <li>
+            <strong>vm.$data 和 vm._data 有什么区别？</strong>
+            结论是
+            <code>$data</code>
+            是公开 API，
+            <code>_data</code>
+            是内部字段。二者通常指向同一个响应式数据对象，但业务代码应依赖公开
+            API。边界是调试源码或教学时可以观察
+            <code>_data</code>
+            ，生产逻辑不要依赖内部命名。
+          </li>
+          <li>
+            <strong>data 字段重名会带来什么问题？</strong>
+            结论是 data key 若与
+            <code>methods</code>
+            、
+            <code>computed</code>
+            、
+            <code>props</code>
+            等同名，会冲突实例代理路径，轻则 Vue 警告，重则覆盖预期访问。项目里 data
+            字段命名应避开已有选项名。
+          </li>
+          <li>
+            <strong>mounted 中访问 DOM 和数据有什么边界？</strong>
+            结论是首次挂载后的 DOM 可以读，但数据变化后的最新 DOM 要等
+            <code>$nextTick</code>
+            。原因是 Vue 会异步批量刷新 DOM。项目里集成第三方 DOM 插件可在
+            <code>mounted</code>
+            初始化，后续依赖更新后的尺寸或节点时放进
+            <code>$nextTick</code>
+            。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://v2.vuejs.org/v2/guide/instance.html" target="_blank" rel="noreferrer">Vue 2 官方文档：The Vue Instance</a></li>
-          <li><a href="https://v2.vuejs.org/v2/api/#data" target="_blank" rel="noreferrer">Vue 2 API：data</a></li>
-          <li><a href="https://v2.vuejs.org/v2/api/#vm-data" target="_blank" rel="noreferrer">Vue 2 API：vm.$data</a></li>
-          <li><a href="https://v2.vuejs.org/v2/api/#vm-nextTick" target="_blank" rel="noreferrer">Vue 2 API：vm.$nextTick</a></li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/guide/instance.html" target="_blank" rel="noreferrer">
+              Vue 2 官方文档：The Vue Instance
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/api/#data" target="_blank" rel="noreferrer">
+              Vue 2 API：data
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/api/#vm-data" target="_blank" rel="noreferrer">
+              Vue 2 API：vm.$data
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/api/#vm-nextTick" target="_blank" rel="noreferrer">
+              Vue 2 API：vm.$nextTick
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -71,20 +166,19 @@
       new Vue({
         data() {
           return {
-            message: "你好vue!",
+            message: '你好vue!',
           };
         },
-        el: "#app",
-        mounted(){
-          console.log("组件挂载...");
+        el: '#app',
+        mounted() {
+          console.log('组件挂载...');
 
           console.log(this);
           console.log(this.data);
           console.log(this.$data);
           console.log(this._data);
-        }
+        },
       });
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -93,18 +187,22 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./04-%E6%95%B0%E7%BB%84%E5%93%8D%E5%BA%94%E5%BC%8F%E9%99%90%E5%88%B6.html">← 数组响应式限制</a>
-        <a href="./06-%E5%93%8D%E5%BA%94%E5%BC%8F%E6%80%A7%E8%83%BDtimeline.html">响应式性能timeline →</a>
+        <a href="./04-%E6%95%B0%E7%BB%84%E5%93%8D%E5%BA%94%E5%BC%8F%E9%99%90%E5%88%B6.html">
+          ← 数组响应式限制
+        </a>
+        <a href="./06-%E5%93%8D%E5%BA%94%E5%BC%8F%E6%80%A7%E8%83%BDtimeline.html">
+          响应式性能timeline →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

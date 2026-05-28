@@ -70,14 +70,14 @@
 
 检查并补齐：
 
-| 字段 | 要求 |
-|------|------|
-| `分类` | `react19 / 子目录名`（如 `01-基础语法`、`02-面试题`） |
-| `主题` | 一句话，与 NOTES 的 `<h1>` 一致 |
-| `要点` | 3～6 条，**必须对应当前 SCRIPT / PAGE_DOM 能演示或注释说明的内容** |
+| 字段   | 要求                                                                          |
+| ------ | ----------------------------------------------------------------------------- |
+| `分类` | `react19 / 子目录名`（如 `01-基础语法`、`02-面试题`）                         |
+| `主题` | 一句话，与 NOTES 的 `<h1>` 一致                                               |
+| `要点` | 3～6 条，**必须对应当前 SCRIPT / PAGE_DOM 能演示或注释说明的内容**            |
 | `面试` | 3～6 条，**具体问句**；禁止模板化（如「核心概念是什么」「实际项目里怎么用」） |
-| `相关` | 可选；同子目录上下游 demo，与页脚 NAV 链接一致 |
-| 可选 | `难度`、`前置` |
+| `相关` | 可选；同子目录上下游 demo，与页脚 NAV 链接一致                                |
+| 可选   | `难度`、`前置`                                                                |
 
 **质量检查**：随机抽一条 `要点`，在 SCRIPT / PAGE_DOM 里能找到对应代码或交互；找不到则删改要点或补演示。
 
@@ -99,33 +99,33 @@
 
 **React 19 常见需修正的表述**（以 react.dev 为准）：
 
-| 易错说法 | 正确说法 |
-|---------|---------|
-| JSX 一定转译为 `React.createElement` | classic runtime → `createElement`；React 19 真实项目要求 automatic → `react/jsx-runtime` 的 `jsx()`；本仓库 demo 用浏览器 Babel 走 classic |
-| state 变化后要从根再 `root.render` | 启动时 `createRoot` + `root.render` 一次；后续靠 `setState` / `useState` 触发组件 **re-render** 返回新 JSX |
-| `ReactDOM.render` 仍可用 | React 18 已废弃；**React 19 已移除**，必须 `createRoot` |
-| `ReactDOM.hydrate` 仍可用 | **React 19 已移除**，SSR 用 `hydrateRoot` |
-| React 19 仍提供官方 UMD | 官方已移除 UMD；真实项目用构建工具或 ESM CDN（如 esm.sh）；本仓库用本地运行时文件教学 |
-| `createRoot` 一调用就全面开启并发 | `createRoot` 是新根 API 前提；并发/低优先级更新需 `startTransition`、`useDeferredValue` 等 **opt-in** |
-| `use()` 可以替代所有数据请求 | 读取 Promise 需 `Suspense` + Error Boundary；事件触发请求、订阅、副作用仍常用事件处理或 `useEffect` |
-| ref as prop 后 `forwardRef` 立刻废弃 | React 19 允许 ref 作为 prop；**React 18 消费者仍依赖 `forwardRef`**，组件库需看最低支持版本 |
-| Actions = 任意 async 函数 | Actions 是表单 `action` / transition 内标准化异步更新流程；配合 `useActionState`、`useFormStatus` |
-| `useOptimistic` 会持久化乐观结果 | 提交完成前临时 UI；失败或完成后需与真实 state 对齐 |
-| 小写 `<ele1 />` 会 ReferenceError | 等价 `createElement('ele1')`，渲染未知 HTML 标签，**不报错** |
-| `{ele1}` 未定义与小写标签是一回事 | 花括号表达式求值时才 `ReferenceError` |
-| `root.render(App)` 与 `root.render(<App />)` 一样 | 前者传函数引用会报 *Functions are not valid as a React child* |
-| RSC 在纯 script 标签 demo 里可直接演示 | RSC 通常通过 Next.js 等框架落地；本仓库 UMD demo 只讲**概念边界**，不假装 runnable |
+| 易错说法                                          | 正确说法                                                                                                                                   |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| JSX 一定转译为 `React.createElement`              | classic runtime → `createElement`；React 19 真实项目要求 automatic → `react/jsx-runtime` 的 `jsx()`；本仓库 demo 用浏览器 Babel 走 classic |
+| state 变化后要从根再 `root.render`                | 启动时 `createRoot` + `root.render` 一次；后续靠 `setState` / `useState` 触发组件 **re-render** 返回新 JSX                                 |
+| `ReactDOM.render` 仍可用                          | React 18 已废弃；**React 19 已移除**，必须 `createRoot`                                                                                    |
+| `ReactDOM.hydrate` 仍可用                         | **React 19 已移除**，SSR 用 `hydrateRoot`                                                                                                  |
+| React 19 仍提供官方 UMD                           | 官方已移除 UMD；真实项目用构建工具或 ESM CDN（如 esm.sh）；本仓库用本地运行时文件教学                                                      |
+| `createRoot` 一调用就全面开启并发                 | `createRoot` 是新根 API 前提；并发/低优先级更新需 `startTransition`、`useDeferredValue` 等 **opt-in**                                      |
+| `use()` 可以替代所有数据请求                      | 读取 Promise 需 `Suspense` + Error Boundary；事件触发请求、订阅、副作用仍常用事件处理或 `useEffect`                                        |
+| ref as prop 后 `forwardRef` 立刻废弃              | React 19 允许 ref 作为 prop；**React 18 消费者仍依赖 `forwardRef`**，组件库需看最低支持版本                                                |
+| Actions = 任意 async 函数                         | Actions 是表单 `action` / transition 内标准化异步更新流程；配合 `useActionState`、`useFormStatus`                                          |
+| `useOptimistic` 会持久化乐观结果                  | 提交完成前临时 UI；失败或完成后需与真实 state 对齐                                                                                         |
+| 小写 `<ele1 />` 会 ReferenceError                 | 等价 `createElement('ele1')`，渲染未知 HTML 标签，**不报错**                                                                               |
+| `{ele1}` 未定义与小写标签是一回事                 | 花括号表达式求值时才 `ReferenceError`                                                                                                      |
+| `root.render(App)` 与 `root.render(<App />)` 一样 | 前者传函数引用会报 _Functions are not valid as a React child_                                                                              |
+| RSC 在纯 script 标签 demo 里可直接演示            | RSC 通常通过 Next.js 等框架落地；本仓库 UMD demo 只讲**概念边界**，不假装 runnable                                                         |
 
 ### 3. PAGE_DOM / 示例代码区
 
 按 demo **类型**处理：
 
-| 类型 | 判断 | PAGE_DOM 要求 |
-|------|------|---------------|
-| **A. 纯挂载** | 仅 `#root`，交互在 React 内 | 保留 `<div id="root"></div>` |
-| **B. React 内交互** | 按钮、表单在组件内 | `#root` 即可；hint 引导看页面 + Console |
-| **C. 对比/表格** | 速记、面试对照表 | 保留表格/静态结构；复杂逻辑放 SCRIPT |
-| **D. 概念边界** | RSC、Server Components | 保留讲解结构；NOTES 标明「概念向，非完整 RSC 运行时」 |
+| 类型                | 判断                        | PAGE_DOM 要求                                         |
+| ------------------- | --------------------------- | ----------------------------------------------------- |
+| **A. 纯挂载**       | 仅 `#root`，交互在 React 内 | 保留 `<div id="root"></div>`                          |
+| **B. React 内交互** | 按钮、表单在组件内          | `#root` 即可；hint 引导看页面 + Console               |
+| **C. 对比/表格**    | 速记、面试对照表            | 保留表格/静态结构；复杂逻辑放 SCRIPT                  |
+| **D. 概念边界**     | RSC、Server Components      | 保留讲解结构；NOTES 标明「概念向，非完整 RSC 运行时」 |
 
 补全规则：
 
@@ -198,7 +198,7 @@ NOTES / 面试里提到但脚本缺失的常见项，**按主题补**：
 ### 交付汇总表（Markdown）
 
 | 文件路径 | 主要修复 | 新增/增强演示 | 参考 react.dev |
-|---------|---------|--------------|----------------|
+| -------- | -------- | ------------- | -------------- |
 
 另附：
 
@@ -210,19 +210,19 @@ NOTES / 面试里提到但脚本缺失的常见项，**按主题补**：
 
 ## 五、各文件侧重点
 
-| 文件 | 侧重点 |
-|------|--------|
-| `01-入门-createRoot与元素.html` | **标杆**，跳过或仅做一致性检查 |
-| `02-JSX表达式与自动批处理.html` | JSX 表达式、&& 短路 0、自动批处理、flushSync 边界 |
-| `03-Actions与useActionState.html` | form action、useActionState pending/result、与手写 useState 对比 |
-| `04-useOptimistic乐观更新.html` | 乐观 UI、提交失败回滚、与真实 state 对齐 |
-| `05-use读取Promise与Context.html` | use(Promise/Context)、Suspense、Error Boundary 边界 |
-| `06-ref作为prop传递.html` | ref as prop、与 forwardRef 的 React 18 兼容 |
-| `02-面试题/01-React19相对18变化速记.html` | 变化对照表、升级检查清单 |
-| `02-面试题/02-表单Action与useFormStatus.html` | useFormStatus、父子表单提交状态 |
-| `02-面试题/03-并发渲染与Transitions面试.html` | useTransition、useDeferredValue、opt-in 并发 |
-| `02-面试题/04-错误边界与状态边界.html` | Error Boundary、Suspense 与 use() 失败边界 |
-| `02-面试题/05-RSC与Server-Components边界.html` | RSC 概念、框架落地、本仓库 demo 边界 |
+| 文件                                           | 侧重点                                                           |
+| ---------------------------------------------- | ---------------------------------------------------------------- |
+| `01-入门-createRoot与元素.html`                | **标杆**，跳过或仅做一致性检查                                   |
+| `02-JSX表达式与自动批处理.html`                | JSX 表达式、&& 短路 0、自动批处理、flushSync 边界                |
+| `03-Actions与useActionState.html`              | form action、useActionState pending/result、与手写 useState 对比 |
+| `04-useOptimistic乐观更新.html`                | 乐观 UI、提交失败回滚、与真实 state 对齐                         |
+| `05-use读取Promise与Context.html`              | use(Promise/Context)、Suspense、Error Boundary 边界              |
+| `06-ref作为prop传递.html`                      | ref as prop、与 forwardRef 的 React 18 兼容                      |
+| `02-面试题/01-React19相对18变化速记.html`      | 变化对照表、升级检查清单                                         |
+| `02-面试题/02-表单Action与useFormStatus.html`  | useFormStatus、父子表单提交状态                                  |
+| `02-面试题/03-并发渲染与Transitions面试.html`  | useTransition、useDeferredValue、opt-in 并发                     |
+| `02-面试题/04-错误边界与状态边界.html`         | Error Boundary、Suspense 与 use() 失败边界                       |
+| `02-面试题/05-RSC与Server-Components边界.html` | RSC 概念、框架落地、本仓库 demo 边界                             |
 
 ---
 

@@ -21,10 +21,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>fetch 与跨域</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
-      button { margin: 4px 6px 4px 0; padding: 6px 10px; }
-      #output { padding: 12px; border: 1px solid #ddd; background: #fafafa; white-space: pre-wrap; font-family: ui-monospace, monospace; font-size: 0.8125rem; min-height: 4rem; }
-      #env-banner { padding: 8px 10px; background: #fff8e6; border-left: 3px solid #f0ad4e; font-size: 0.875rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 1.5rem;
+        line-height: 1.6;
+      }
+      button {
+        margin: 4px 6px 4px 0;
+        padding: 6px 10px;
+      }
+      #output {
+        padding: 12px;
+        border: 1px solid #ddd;
+        background: #fafafa;
+        white-space: pre-wrap;
+        font-family: ui-monospace, monospace;
+        font-size: 0.8125rem;
+        min-height: 4rem;
+      }
+      #env-banner {
+        padding: 8px 10px;
+        background: #fff8e6;
+        border-left: 3px solid #f0ad4e;
+        font-size: 0.875rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -33,29 +53,122 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>fetch 基础与 CORS 跨域</h1>
-      <p class="hint">请阅读本复习区，并在下方演示区点击按钮发起请求；需人工验证：公共 API 请求依赖外网，CORS 拦截细节请结合 DevTools Network 面板观察。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>fetch()</code> 返回 Promise，但只有网络层失败、请求被中止或浏览器安全策略阻止这类场景会 reject；HTTP 404/500 仍会 resolve 成 <code>Response</code>，所以业务代码必须检查 <code>response.ok</code> 或 <code>status</code>。</li>
-          <li>CORS 是浏览器在同源策略上的受控放行机制。是否允许跨域读取响应由目标服务端通过 <code>Access-Control-Allow-Origin</code>、<code>Access-Control-Allow-Methods</code>、<code>Access-Control-Allow-Headers</code> 等响应头决定，前端单独改请求参数不能替服务端授权。</li>
-          <li>简单请求会直接发送；使用非简单方法、自定义请求头，或 <code>Content-Type</code> 不属于表单三类时，浏览器会先发 OPTIONS 预检请求。预检失败时 JS 通常只能看到泛化的 <code>TypeError</code>，具体原因要结合 Network 面板和服务端日志排查。</li>
-          <li><code>mode: "no-cors"</code> 不能解决跨域读取，它只允许发出受限请求并返回不可读的 opaque response，前端拿不到状态码和响应体。真实项目要用后端 CORS 配置、同源代理或后端转发解决。</li>
-          <li>本页用 <code>textContent</code> 展示请求结果，避免把远程响应拼成 HTML；网络 demo 还要准备失败路径、加载中状态、超时或 AbortController 取消，避免用户面对静默失败。</li>
+          <li>
+            <code>fetch()</code>
+            返回 Promise，但只有网络层失败、请求被中止或浏览器安全策略阻止这类场景会 reject；HTTP
+            404/500 仍会 resolve 成
+            <code>Response</code>
+            ，所以业务代码必须检查
+            <code>response.ok</code>
+            或
+            <code>status</code>
+            。
+          </li>
+          <li>
+            CORS 是浏览器在同源策略上的受控放行机制。是否允许跨域读取响应由目标服务端通过
+            <code>Access-Control-Allow-Origin</code>
+            、
+            <code>Access-Control-Allow-Methods</code>
+            、
+            <code>Access-Control-Allow-Headers</code>
+            等响应头决定，前端单独改请求参数不能替服务端授权。
+          </li>
+          <li>
+            简单请求会直接发送；使用非简单方法、自定义请求头，或
+            <code>Content-Type</code>
+            不属于表单三类时，浏览器会先发 OPTIONS 预检请求。预检失败时 JS 通常只能看到泛化的
+            <code>TypeError</code>
+            ，具体原因要结合 Network 面板和服务端日志排查。
+          </li>
+          <li>
+            <code>mode: "no-cors"</code>
+            不能解决跨域读取，它只允许发出受限请求并返回不可读的 opaque
+            response，前端拿不到状态码和响应体。真实项目要用后端 CORS 配置、同源代理或后端转发解决。
+          </li>
+          <li>
+            本页用
+            <code>textContent</code>
+            展示请求结果，避免把远程响应拼成 HTML；网络 demo 还要准备失败路径、加载中状态、超时或
+            AbortController 取消，避免用户面对静默失败。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>fetch 与 axios 在错误处理上有何不同？</strong> 结论是原生 <code>fetch</code> 对 HTTP 4xx/5xx 不会自动 reject，axios 默认会把非 2xx 状态当作 rejected Promise。原因是 Fetch 标准把“请求成功拿到响应”和“业务状态成功”分开。项目里封装请求层时应统一检查 <code>response.ok</code>、解析错误体，并把网络错误、HTTP 错误和业务错误区分开。</li>
-          <li><strong>什么是 CORS 预检请求？何时触发？</strong> 结论是预检是浏览器在正式跨域请求前发送的 OPTIONS 请求，用来询问服务端是否允许方法、请求头和来源。原因是非简单请求可能产生更强副作用，浏览器需要先确认授权。项目里如果新增 <code>Authorization</code> 或自定义头，要同步配置 <code>Access-Control-Allow-Headers</code>。</li>
-          <li><strong><code>mode: "no-cors"</code> 能解决跨域吗？</strong> 结论是不能解决“读取跨域响应”的问题，只会得到不可读 opaque 响应。原因是它不会绕过同源策略，浏览器仍不允许 JS 读取未授权响应体。项目里正确做法是服务端 CORS、同源反向代理或后端转发，而不是让前端强行 no-cors。</li>
-          <li><strong>前端请求失败时如何区分网络错误、HTTP 错误和 CORS 拦截？</strong> 结论是先看 Promise 是否 reject，再看 <code>response.ok/status</code>，同时结合 DevTools Network 判断是否被 CORS 或预检拦截。原因是浏览器出于安全考虑不会把所有跨域失败细节暴露给 JS。项目中要给用户展示可理解的失败提示，并在日志里记录 URL、状态码、请求 ID 和失败阶段。</li>
+          <li>
+            <strong>fetch 与 axios 在错误处理上有何不同？</strong>
+            结论是原生
+            <code>fetch</code>
+            对 HTTP 4xx/5xx 不会自动 reject，axios 默认会把非 2xx 状态当作 rejected Promise。原因是
+            Fetch 标准把“请求成功拿到响应”和“业务状态成功”分开。项目里封装请求层时应统一检查
+            <code>response.ok</code>
+            、解析错误体，并把网络错误、HTTP 错误和业务错误区分开。
+          </li>
+          <li>
+            <strong>什么是 CORS 预检请求？何时触发？</strong>
+            结论是预检是浏览器在正式跨域请求前发送的 OPTIONS
+            请求，用来询问服务端是否允许方法、请求头和来源。原因是非简单请求可能产生更强副作用，浏览器需要先确认授权。项目里如果新增
+            <code>Authorization</code>
+            或自定义头，要同步配置
+            <code>Access-Control-Allow-Headers</code>
+            。
+          </li>
+          <li>
+            <strong>
+              <code>mode: "no-cors"</code>
+              能解决跨域吗？
+            </strong>
+            结论是不能解决“读取跨域响应”的问题，只会得到不可读 opaque
+            响应。原因是它不会绕过同源策略，浏览器仍不允许 JS
+            读取未授权响应体。项目里正确做法是服务端 CORS、同源反向代理或后端转发，而不是让前端强行
+            no-cors。
+          </li>
+          <li>
+            <strong>前端请求失败时如何区分网络错误、HTTP 错误和 CORS 拦截？</strong>
+            结论是先看 Promise 是否 reject，再看
+            <code>response.ok/status</code>
+            ，同时结合 DevTools Network 判断是否被 CORS
+            或预检拦截。原因是浏览器出于安全考虑不会把所有跨域失败细节暴露给
+            JS。项目中要给用户展示可理解的失败提示，并在日志里记录 URL、状态码、请求 ID 和失败阶段。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch" target="_blank" rel="noreferrer">MDN: Using the Fetch API</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS" target="_blank" rel="noreferrer">MDN: Cross-Origin Resource Sharing (CORS)</a></li>
-          <li><a href="https://fetch.spec.whatwg.org/" target="_blank" rel="noreferrer">WHATWG Fetch Standard</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Response/ok" target="_blank" rel="noreferrer">MDN: Response.ok</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Using the Fetch API
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Cross-Origin Resource Sharing (CORS)
+            </a>
+          </li>
+          <li>
+            <a href="https://fetch.spec.whatwg.org/" target="_blank" rel="noreferrer">
+              WHATWG Fetch Standard
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Response/ok"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Response.ok
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -64,62 +177,73 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block">
       <h2>fetch 请求演示</h2>
-      <p class="tip">「公共 API」需外网；「HTTP 404」演示 response.ok 检查；「no-cors 说明」在 Console 输出 opaque 响应特征。</p>
+      <p class="tip">
+        「公共 API」需外网；「HTTP 404」演示 response.ok 检查；「no-cors 说明」在 Console 输出
+        opaque 响应特征。
+      </p>
       <p id="env-banner"></p>
       <button type="button" id="fetchBtn">请求 public API</button>
       <button type="button" id="httpErrBtn">请求 HTTP 404</button>
       <button type="button" id="fallbackBtn">查看本地 fallback</button>
       <button type="button" id="nocorsBtn">no-cors 说明（Console）</button>
-      <pre id="output" aria-live="polite">fetch 示例依赖网络；如果失败，仍可从代码里学习错误处理与 CORS 规则。</pre>
+      <pre id="output" aria-live="polite">
+fetch 示例依赖网络；如果失败，仍可从代码里学习错误处理与 CORS 规则。</pre
+      >
     </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      const output = document.getElementById("output");
+      const output = document.getElementById('output');
 
       function show(value) {
-        output.textContent = typeof value === "string" ? value : JSON.stringify(value, null, 2);
+        output.textContent = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
       }
 
       // ============ 0. 环境信息 ============
-      document.getElementById("env-banner").textContent =
-        "protocol=" + location.protocol +
-        " | origin=" + location.origin +
-        " | file:// 下 fetch 跨域仍受同源策略约束；CORS 细节需 DevTools Network 验证";
+      document.getElementById('env-banner').textContent =
+        'protocol=' +
+        location.protocol +
+        ' | origin=' +
+        location.origin +
+        ' | file:// 下 fetch 跨域仍受同源策略约束；CORS 细节需 DevTools Network 验证';
 
       // ============ 1. 成功路径：检查 response.ok ============
       async function fetchPost() {
-        show("加载中…");
+        show('加载中…');
         try {
-          const response = await fetch("https://jsonplaceholder.typicode.com/posts/1");
+          const response = await fetch('https://jsonplaceholder.typicode.com/posts/1');
           if (!response.ok) {
-            throw new Error("HTTP Error: " + response.status);
+            throw new Error('HTTP Error: ' + response.status);
           }
           const data = await response.json();
           show(data);
         } catch (error) {
-          show([
-            "请求失败：" + error.message,
-            "",
-            "可能原因：网络不可用、目标域名不可访问、浏览器 CORS 拦截。",
-            "真实项目中跨域要由服务端返回 Access-Control-Allow-Origin 等响应头解决。",
-          ].join("\n"));
+          show(
+            [
+              '请求失败：' + error.message,
+              '',
+              '可能原因：网络不可用、目标域名不可访问、浏览器 CORS 拦截。',
+              '真实项目中跨域要由服务端返回 Access-Control-Allow-Origin 等响应头解决。',
+            ].join('\n'),
+          );
         }
       }
 
       // ============ 2. HTTP 错误：fetch 不会 reject ============
       async function fetch404() {
-        show("加载中…");
+        show('加载中…');
         try {
-          const response = await fetch("https://jsonplaceholder.typicode.com/posts/999999");
-          show([
-            "response.ok: " + response.ok,
-            "response.status: " + response.status,
-            "说明：HTTP 4xx/5xx 仍 resolve，必须手动检查 response.ok",
-          ].join("\n"));
+          const response = await fetch('https://jsonplaceholder.typicode.com/posts/999999');
+          show(
+            [
+              'response.ok: ' + response.ok,
+              'response.status: ' + response.status,
+              '说明：HTTP 4xx/5xx 仍 resolve，必须手动检查 response.ok',
+            ].join('\n'),
+          );
         } catch (error) {
-          show("网络层 reject：" + error.message);
+          show('网络层 reject：' + error.message);
         }
       }
 
@@ -128,37 +252,39 @@
         show({
           userId: 1,
           id: 1,
-          title: "local fallback",
-          body: "用于没有网络时观察 fetch 返回数据的形状",
+          title: 'local fallback',
+          body: '用于没有网络时观察 fetch 返回数据的形状',
         });
       }
 
       // ============ 4. no-cors：opaque 响应不可读 ============
       async function demoNoCors() {
         try {
-          const response = await fetch("https://example.com", { mode: "no-cors" });
-          console.log("no-cors response.type:", response.type); // 预期: opaque
-          console.log("no-cors response.status:", response.status); // 预期: 0
-          show([
-            "已在 Console 输出 no-cors 响应特征。",
-            "type=" + response.type + "，status=" + response.status,
-            "opaque 响应无法读取 body，不能当作跨域解决方案。",
-          ].join("\n"));
+          const response = await fetch('https://example.com', { mode: 'no-cors' });
+          console.log('no-cors response.type:', response.type); // 预期: opaque
+          console.log('no-cors response.status:', response.status); // 预期: 0
+          show(
+            [
+              '已在 Console 输出 no-cors 响应特征。',
+              'type=' + response.type + '，status=' + response.status,
+              'opaque 响应无法读取 body，不能当作跨域解决方案。',
+            ].join('\n'),
+          );
         } catch (error) {
-          show("no-cors 失败：" + error.message);
+          show('no-cors 失败：' + error.message);
         }
       }
 
-      document.getElementById("fetchBtn").addEventListener("click", fetchPost);
-      document.getElementById("httpErrBtn").addEventListener("click", fetch404);
-      document.getElementById("fallbackBtn").addEventListener("click", showFallback);
-      document.getElementById("nocorsBtn").addEventListener("click", demoNoCors);
+      document.getElementById('fetchBtn').addEventListener('click', fetchPost);
+      document.getElementById('httpErrBtn').addEventListener('click', fetch404);
+      document.getElementById('fallbackBtn').addEventListener('click', showFallback);
+      document.getElementById('nocorsBtn').addEventListener('click', demoNoCors);
 
       // ============ 5. CORS 预检触发条件（Console 说明，无需真实 OPTIONS）============
       // 简单请求：GET/HEAD/POST + 限定 Content-Type + 无自定义头 → 直接跨域
       // 非简单：PUT/DELETE、Authorization、application/json 等 → 浏览器先发 OPTIONS 预检
       console.log("CORS 预检触发示例：fetch(url, { method:'PUT' }) 或 headers: { Authorization }");
-      console.log("预检失败时 JS 通常只见 TypeError，细节需 DevTools Network 查看 OPTIONS");
+      console.log('预检失败时 JS 通常只见 TypeError，细节需 DevTools Network 查看 OPTIONS');
     </script>
     <!-- SCRIPT_END -->
 
@@ -174,9 +300,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

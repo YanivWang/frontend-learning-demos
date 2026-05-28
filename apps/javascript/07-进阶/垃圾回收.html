@@ -32,25 +32,87 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>JavaScript 会在创建对象、数组、函数和闭包时自动分配内存，并由垃圾回收器在对象不再需要时回收；开发者不能可靠地手动触发标准 GC，只能管理引用关系。</li>
-          <li>现代 GC 的核心判断是可达性：从全局对象、当前调用栈、闭包环境、活动 DOM 和宿主对象出发能访问到的对象都是可达对象，不会被回收。</li>
-          <li>标记清除会从根对象出发标记所有可达对象，再清理未标记对象，所以即使两个对象互相引用，只要整体从根不可达，也可以回收；这比单纯引用计数更能处理循环引用。</li>
-          <li>本页的闭包示例展示了 <code>reader</code> 会保留 <code>bigData</code>，直到 <code>reader = null</code> 断开最后一条强引用；真实泄漏常来自全局缓存、未清理定时器、事件监听和长期闭包。</li>
-          <li><code>WeakMap</code> 的键和 <code>WeakSet</code> 的值是弱持有，不会阻止对象被 GC，适合给 DOM 节点或对象实例挂元数据；代价是不可枚举、不能依赖它判断对象是否已经被回收。</li>
+          <li>
+            JavaScript
+            会在创建对象、数组、函数和闭包时自动分配内存，并由垃圾回收器在对象不再需要时回收；开发者不能可靠地手动触发标准
+            GC，只能管理引用关系。
+          </li>
+          <li>
+            现代 GC 的核心判断是可达性：从全局对象、当前调用栈、闭包环境、活动 DOM
+            和宿主对象出发能访问到的对象都是可达对象，不会被回收。
+          </li>
+          <li>
+            标记清除会从根对象出发标记所有可达对象，再清理未标记对象，所以即使两个对象互相引用，只要整体从根不可达，也可以回收；这比单纯引用计数更能处理循环引用。
+          </li>
+          <li>
+            本页的闭包示例展示了
+            <code>reader</code>
+            会保留
+            <code>bigData</code>
+            ，直到
+            <code>reader = null</code>
+            断开最后一条强引用；真实泄漏常来自全局缓存、未清理定时器、事件监听和长期闭包。
+          </li>
+          <li>
+            <code>WeakMap</code>
+            的键和
+            <code>WeakSet</code>
+            的值是弱持有，不会阻止对象被 GC，适合给 DOM
+            节点或对象实例挂元数据；代价是不可枚举、不能依赖它判断对象是否已经被回收。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>JavaScript 的垃圾回收为什么通常按可达性判断？</strong> 结论是引擎只能安全回收从根对象不可达的对象。原因是“对象是否还会被业务使用”无法被精确判定，可达性是可实现的近似模型。边界是对象不可达后也不保证立刻释放，GC 时机由引擎根据内存压力和性能策略决定。</li>
-          <li><strong>标记清除为什么能处理循环引用？</strong> 结论是它看的是整组对象是否能从根访问到，而不是对象之间是否互相引用。原因是循环中的对象如果整体不可达，就不会被标记，清除阶段可以一起回收。项目中循环引用本身不一定泄漏，真正的问题是循环中的某个对象仍被全局、DOM、监听器或闭包持有。</li>
-          <li><strong>WeakMap 和 Map 在内存保留上的关键区别是什么？</strong> 结论是 Map 强持有键和值，WeakMap 不会因为键存在于集合中而阻止键对象被回收。原因是 WeakMap 的键是弱引用，键被回收后对应值也可成为回收候选。边界是 WeakMap 只能用对象或非注册 Symbol 作键，且不能枚举键集合。</li>
-          <li><strong>项目里哪些引用最容易造成对象无法回收？</strong> 结论是生命周期比对象更长的引用最危险，例如全局缓存、模块单例、定时器、事件监听、闭包回调和 DOM 节点引用。原因是这些引用会把本该随页面片段释放的数据留在可达图里。排查时应结合 Heap snapshot 的 retainers 找到具体引用链。</li>
+          <li>
+            <strong>JavaScript 的垃圾回收为什么通常按可达性判断？</strong>
+            结论是引擎只能安全回收从根对象不可达的对象。原因是“对象是否还会被业务使用”无法被精确判定，可达性是可实现的近似模型。边界是对象不可达后也不保证立刻释放，GC
+            时机由引擎根据内存压力和性能策略决定。
+          </li>
+          <li>
+            <strong>标记清除为什么能处理循环引用？</strong>
+            结论是它看的是整组对象是否能从根访问到，而不是对象之间是否互相引用。原因是循环中的对象如果整体不可达，就不会被标记，清除阶段可以一起回收。项目中循环引用本身不一定泄漏，真正的问题是循环中的某个对象仍被全局、DOM、监听器或闭包持有。
+          </li>
+          <li>
+            <strong>WeakMap 和 Map 在内存保留上的关键区别是什么？</strong>
+            结论是 Map 强持有键和值，WeakMap 不会因为键存在于集合中而阻止键对象被回收。原因是
+            WeakMap 的键是弱引用，键被回收后对应值也可成为回收候选。边界是 WeakMap
+            只能用对象或非注册 Symbol 作键，且不能枚举键集合。
+          </li>
+          <li>
+            <strong>项目里哪些引用最容易造成对象无法回收？</strong>
+            结论是生命周期比对象更长的引用最危险，例如全局缓存、模块单例、定时器、事件监听、闭包回调和
+            DOM 节点引用。原因是这些引用会把本该随页面片段释放的数据留在可达图里。排查时应结合 Heap
+            snapshot 的 retainers 找到具体引用链。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Memory_management">MDN: Memory management</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap">MDN: WeakMap</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet">MDN: WeakSet</a></li>
-          <li><a href="https://developer.chrome.com/docs/devtools/memory-problems">Chrome DevTools: Fix memory problems</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Memory_management"
+            >
+              MDN: Memory management
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap"
+            >
+              MDN: WeakMap
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet"
+            >
+              MDN: WeakSet
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.chrome.com/docs/devtools/memory-problems">
+              Chrome DevTools: Fix memory problems
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -59,10 +121,10 @@
     <!-- SCRIPT_START -->
     <script>
       // ============ 1. 可达性：强引用链决定对象能否被回收 ============
-      let user = { name: "Ada" };
+      let user = { name: 'Ada' };
       let admin = user;
       user = null;
-      console.log("admin 仍可达:", admin.name); // "Ada"
+      console.log('admin 仍可达:', admin.name); // "Ada"
       admin = null; // 断开最后强引用，对象才有机会被 GC
 
       // ============ 2. 标记清除能处理整体不可达的循环引用 ============
@@ -71,46 +133,46 @@
         const b = {};
         a.friend = b;
         b.friend = a;
-        return "函数返回后 a/b 无外部引用，整体不可达，可被回收";
+        return '函数返回后 a/b 无外部引用，整体不可达，可被回收';
       }
       console.log(makeCycle());
 
       // ============ 3. 闭包引用导致对象保活 ============
       function createCacheReader() {
-        const bigData = new Array(10000).fill("data");
+        const bigData = new Array(10000).fill('data');
         return function read(index) {
           return bigData[index];
         };
       }
       let reader = createCacheReader();
-      console.log("闭包保活 bigData:", reader(0));
+      console.log('闭包保活 bigData:', reader(0));
       reader = null; // 解除对闭包的引用，bigData 才有机会被回收
 
       // ============ 4. Map vs WeakMap：强引用 vs 弱引用键 ============
-      let keyObj = { id: "cache-key" };
+      let keyObj = { id: 'cache-key' };
       const strongMap = new Map();
       strongMap.set(keyObj, { hits: 1 });
-      console.log("Map 强引用键:", strongMap.get(keyObj));
+      console.log('Map 强引用键:', strongMap.get(keyObj));
       keyObj = null; // Map 仍持有键对象，键不会被 GC
 
-      let domLike = { id: "node-1" };
+      let domLike = { id: 'node-1' };
       const meta = new WeakMap();
       meta.set(domLike, { clicked: 1 });
-      console.log("WeakMap 元数据:", meta.get(domLike));
+      console.log('WeakMap 元数据:', meta.get(domLike));
       domLike = null; // WeakMap 键是弱引用，不会因此强行保活
 
       // ============ 5. WeakSet：弱持有对象值 ============
-      let visitor = { id: "u-1" };
+      let visitor = { id: 'u-1' };
       const seen = new WeakSet();
       seen.add(visitor);
-      console.log("WeakSet 已访问:", seen.has(visitor)); // true
+      console.log('WeakSet 已访问:', seen.has(visitor)); // true
       visitor = null; // 不阻止 visitor 被 GC
 
       // ============ 6. 开发实践：及时清理定时器与监听 ============
       const timer = setInterval(() => {}, 1000);
       clearInterval(timer);
-      console.log("实践：不用的定时器、事件监听、大对象引用要及时释放。");
-      console.log("继续实验 → 07-进阶/内存泄漏/ 目录");
+      console.log('实践：不用的定时器、事件监听、大对象引用要及时释放。');
+      console.log('继续实验 → 07-进阶/内存泄漏/ 目录');
     </script>
     <!-- SCRIPT_END -->
 
@@ -121,14 +183,18 @@
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
         <a href="./%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/index.html">相关 · 内存泄漏/index</a>
         <a href="./%E6%B7%B1%E6%8B%B7%E8%B4%9D.html">相关 · 深拷贝</a>
-        <a href="../06-%E6%B5%8F%E8%A7%88%E5%99%A8API/WebWorker/02-%E5%91%BD%E5%90%8D%E4%B8%8E%E6%B6%88%E6%81%AF%E5%88%86%E5%8F%91/01-Worker-%E5%91%BD%E5%90%8D%E4%B8%8E%E6%B6%88%E6%81%AF%E5%88%86%E5%8F%91.html">← Worker-命名与消息分发</a>
+        <a
+          href="../06-%E6%B5%8F%E8%A7%88%E5%99%A8API/WebWorker/02-%E5%91%BD%E5%90%8D%E4%B8%8E%E6%B6%88%E6%81%AF%E5%88%86%E5%8F%91/01-Worker-%E5%91%BD%E5%90%8D%E4%B8%8E%E6%B6%88%E6%81%AF%E5%88%86%E5%8F%91.html"
+        >
+          ← Worker-命名与消息分发
+        </a>
         <a href="./%E6%B7%B1%E6%8B%B7%E8%B4%9D.html">深拷贝 →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

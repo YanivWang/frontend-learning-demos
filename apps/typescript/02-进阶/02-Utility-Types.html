@@ -21,9 +21,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TypeScript · Utility Types</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 860px; line-height: 1.6; }
-      pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
-      #log { background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; white-space: pre-wrap; font-size: 0.85rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 860px;
+        line-height: 1.6;
+      }
+      pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 14px;
+        border-radius: 8px;
+        overflow: auto;
+        font-size: 0.86rem;
+      }
+      #log {
+        background: #f6f8fa;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 12px;
+        white-space: pre-wrap;
+        font-size: 0.85rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -36,24 +55,103 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Utility Types 是 TypeScript 标准库提供的内置泛型类型工具，用来基于已有类型派生新类型，避免手写重复的 DTO、表单补丁和展示模型。</li>
-          <li><code>Partial&lt;T&gt;</code> 把属性变可选，<code>Required&lt;T&gt;</code> 把属性变必填，<code>Readonly&lt;T&gt;</code> 把属性变只读；它们只影响类型检查，不会冻结运行时对象。</li>
-          <li><code>Pick&lt;T, K&gt;</code> 从对象类型中挑字段，<code>Omit&lt;T, K&gt;</code> 排除字段，本页示例用它们表达“更新入参”和“对外展示用户”的差异。</li>
-          <li><code>Record&lt;K, V&gt;</code> 适合把联合键映射到同一种值，例如角色文案、权限配置、状态到渲染组件的查表。</li>
-          <li>常见坑是过度叠加工具类型导致类型难读，或把 <code>Partial</code> 用在深层对象后误以为嵌套字段也会递归可选；需要深层变换时要单独定义递归工具或显式建模。</li>
+          <li>
+            Utility Types 是 TypeScript
+            标准库提供的内置泛型类型工具，用来基于已有类型派生新类型，避免手写重复的
+            DTO、表单补丁和展示模型。
+          </li>
+          <li>
+            <code>Partial&lt;T&gt;</code>
+            把属性变可选，
+            <code>Required&lt;T&gt;</code>
+            把属性变必填，
+            <code>Readonly&lt;T&gt;</code>
+            把属性变只读；它们只影响类型检查，不会冻结运行时对象。
+          </li>
+          <li>
+            <code>Pick&lt;T, K&gt;</code>
+            从对象类型中挑字段，
+            <code>Omit&lt;T, K&gt;</code>
+            排除字段，本页示例用它们表达“更新入参”和“对外展示用户”的差异。
+          </li>
+          <li>
+            <code>Record&lt;K, V&gt;</code>
+            适合把联合键映射到同一种值，例如角色文案、权限配置、状态到渲染组件的查表。
+          </li>
+          <li>
+            常见坑是过度叠加工具类型导致类型难读，或把
+            <code>Partial</code>
+            用在深层对象后误以为嵌套字段也会递归可选；需要深层变换时要单独定义递归工具或显式建模。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Partial、Required、Readonly 分别解决什么问题？</strong> 结论是它们分别把属性改成可选、必填和只读。原因是底层通过映射类型遍历 <code>keyof T</code> 并调整属性修饰符。边界是这些都是浅层类型变换，不会在运行时补字段或冻结对象。</li>
-          <li><strong>Pick、Omit 和 Record 在业务里怎么用？</strong> 结论是 <code>Pick</code> 表达白名单字段，<code>Omit</code> 表达排除敏感字段，<code>Record</code> 表达完整映射表。原因是它们能把业务模型和派生模型绑定起来，字段改名时让编译器提醒。项目里常用于 API DTO、列表展示和权限配置。</li>
-          <li><strong>Utility Types 为什么不会改变运行时数据？</strong> 结论是它们只存在于类型系统。原因是 TypeScript 类型会在编译后擦除，真正的数据拷贝、过滤或冻结仍要写 JavaScript 逻辑。示例里的 <code>publicUser</code> 是手动创建的运行时对象，不是 <code>Omit</code> 自动生成的。</li>
-          <li><strong>什么时候不该继续堆工具类型？</strong> 结论是当类型表达已经影响阅读或包含业务语义时，应显式命名新类型。原因是 <code>Partial&lt;Pick&lt;...&gt;&gt;</code> 适合短派生，复杂组合会隐藏意图。团队项目里可以把常用派生命名为 <code>UserPatch</code>、<code>PublicUser</code> 这类稳定边界。</li>
+          <li>
+            <strong>Partial、Required、Readonly 分别解决什么问题？</strong>
+            结论是它们分别把属性改成可选、必填和只读。原因是底层通过映射类型遍历
+            <code>keyof T</code>
+            并调整属性修饰符。边界是这些都是浅层类型变换，不会在运行时补字段或冻结对象。
+          </li>
+          <li>
+            <strong>Pick、Omit 和 Record 在业务里怎么用？</strong>
+            结论是
+            <code>Pick</code>
+            表达白名单字段，
+            <code>Omit</code>
+            表达排除敏感字段，
+            <code>Record</code>
+            表达完整映射表。原因是它们能把业务模型和派生模型绑定起来，字段改名时让编译器提醒。项目里常用于
+            API DTO、列表展示和权限配置。
+          </li>
+          <li>
+            <strong>Utility Types 为什么不会改变运行时数据？</strong>
+            结论是它们只存在于类型系统。原因是 TypeScript
+            类型会在编译后擦除，真正的数据拷贝、过滤或冻结仍要写 JavaScript 逻辑。示例里的
+            <code>publicUser</code>
+            是手动创建的运行时对象，不是
+            <code>Omit</code>
+            自动生成的。
+          </li>
+          <li>
+            <strong>什么时候不该继续堆工具类型？</strong>
+            结论是当类型表达已经影响阅读或包含业务语义时，应显式命名新类型。原因是
+            <code>Partial&lt;Pick&lt;...&gt;&gt;</code>
+            适合短派生，复杂组合会隐藏意图。团队项目里可以把常用派生命名为
+            <code>UserPatch</code>
+            、
+            <code>PublicUser</code>
+            这类稳定边界。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html" target="_blank" rel="noopener">TypeScript Handbook: Utility Types</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/mapped-types.html" target="_blank" rel="noopener">TypeScript Handbook: Mapped Types</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/keyof-types.html" target="_blank" rel="noopener">TypeScript Handbook: keyof Type Operator</a></li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/utility-types.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Utility Types
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/mapped-types.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Mapped Types
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/keyof-types.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: keyof Type Operator
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -62,14 +160,16 @@
     <!-- PAGE_DOM_START -->
     <p>上方为 TypeScript 源码（在 .ts / IDE 中检查），下方为等价的可运行 JavaScript + 断言输出。</p>
     <p class="ts"><strong>TypeScript</strong></p>
-    <pre>interface User {
-  id: number; name: string; email: string; role: "admin" | "guest";
-}
-type UserPatch = Partial&lt;Pick&lt;User, "name" | "email"&gt;&gt;;
-type PublicUser = Omit&lt;User, "email"&gt;;
-type CompleteUser = Required&lt;User&gt;;
-type FrozenUser = Readonly&lt;User&gt;;
-type RoleLabels = Record&lt;User["role"], string&gt;;</pre>
+    <pre>
+interface User {
+      id: number; name: string; email: string; role: "admin" | "guest";
+      }
+      type UserPatch = Partial&lt;Pick&lt;User, "name" | "email"&gt;&gt;;
+      type PublicUser = Omit&lt;User, "email"&gt;;
+      type CompleteUser = Required&lt;User&gt;;
+      type FrozenUser = Readonly&lt;User&gt;;
+      type RoleLabels = Record&lt;User["role"], string&gt;;</pre
+    >
     <p><strong>运行时 JavaScript（本页执行）</strong></p>
     <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
@@ -77,29 +177,35 @@ type RoleLabels = Record&lt;User["role"], string&gt;;</pre>
     <!-- SCRIPT_START -->
     <script>
       // ============ 1. Partial + Pick：更新入参 ============
-      const user = { id: 1, name: "Ada", email: "ada@example.com", role: "admin" };
-      const patch = { name: "Ada Lovelace" };
+      const user = { id: 1, name: 'Ada', email: 'ada@example.com', role: 'admin' };
+      const patch = { name: 'Ada Lovelace' };
 
       // ============ 2. Omit：对外展示 ============
       const publicUser = { id: user.id, name: patch.name ?? user.name, role: user.role };
 
       // ============ 3. Required + Readonly ============
-      const completeUser = { ...user, email: user.email ?? "missing@example.com" };
+      const completeUser = { ...user, email: user.email ?? 'missing@example.com' };
       const frozenUser = Object.freeze({ ...user });
 
       // ============ 4. Record：角色文案映射 ============
-      const roleLabels = { admin: "管理员", guest: "访客" };
+      const roleLabels = { admin: '管理员', guest: '访客' };
 
       const lines = [];
-      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+      const assert = (cond, msg) => lines.push((cond ? '✓ ' : '✗ ') + msg);
 
-      assert(patch.name === "Ada Lovelace" && !("id" in patch), "Partial&lt;Pick&lt;User,'name'|'email'&gt;&gt; 更新入参");
-      assert(!("email" in publicUser), "Omit&lt;User,'email'&gt; 对外展示无 email");
-      assert(completeUser.email === "ada@example.com", "Required&lt;User&gt; 类型层必填（运行时须自己补齐）");
-      assert(Object.isFrozen(frozenUser), "Readonly&lt;User&gt; 运行时冻结需 Object.freeze");
-      assert(roleLabels[user.role] === "管理员", "Record&lt;User['role'], string&gt; 角色文案");
+      assert(
+        patch.name === 'Ada Lovelace' && !('id' in patch),
+        "Partial&lt;Pick&lt;User,'name'|'email'&gt;&gt; 更新入参",
+      );
+      assert(!('email' in publicUser), "Omit&lt;User,'email'&gt; 对外展示无 email");
+      assert(
+        completeUser.email === 'ada@example.com',
+        'Required&lt;User&gt; 类型层必填（运行时须自己补齐）',
+      );
+      assert(Object.isFrozen(frozenUser), 'Readonly&lt;User&gt; 运行时冻结需 Object.freeze');
+      assert(roleLabels[user.role] === '管理员', "Record&lt;User['role'], string&gt; 角色文案");
 
-      document.getElementById("log").textContent = lines.join("\n");
+      document.getElementById('log').textContent = lines.join('\n');
     </script>
     <!-- SCRIPT_END -->
 
@@ -109,19 +215,21 @@ type RoleLabels = Record&lt;User["role"], string&gt;;</pre>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
         <a href="./01-%E7%B1%BB%E5%9E%8B%E6%94%B6%E7%AA%84.html">相关 · 类型收窄</a>
-        <a href="./03-%E6%9D%A1%E4%BB%B6%E7%B1%BB%E5%9E%8B%E4%B8%8Einfer.html">相关 · 条件类型与infer</a>
+        <a href="./03-%E6%9D%A1%E4%BB%B6%E7%B1%BB%E5%9E%8B%E4%B8%8Einfer.html">
+          相关 · 条件类型与infer
+        </a>
         <a href="./01-%E7%B1%BB%E5%9E%8B%E6%94%B6%E7%AA%84.html">← 类型收窄</a>
         <a href="./03-%E6%9D%A1%E4%BB%B6%E7%B1%BB%E5%9E%8B%E4%B8%8Einfer.html">条件类型与infer →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

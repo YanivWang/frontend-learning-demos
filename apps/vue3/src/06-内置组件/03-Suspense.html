@@ -22,12 +22,38 @@
     <title>Vue3 · Suspense</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { padding: 6px 12px; }
-      code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
-      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
-      .box button { margin-bottom: 8px; }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          'PingFang SC',
+          sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+      }
+      button {
+        padding: 6px 12px;
+      }
+      code {
+        background: #f6f8fa;
+        padding: 2px 5px;
+        border-radius: 6px;
+      }
+      .box {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 760px;
+      }
+      .box .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
+      .box button {
+        margin-bottom: 8px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -40,24 +66,110 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>Suspense</code> 是 Vue 内置组件，用来等待默认插槽中的异步依赖；等待期间渲染 <code>#fallback</code>，依赖完成后再显示默认内容。</li>
-          <li>本页 <code>AsyncPanel</code> 使用 <code>async setup()</code> 并等待 800ms，因此首次渲染会先显示“加载中...”，再显示异步内容；点“重新加载”可再次观察 fallback。</li>
-          <li><code>async setup</code>、异步组件都可能成为 Suspense 依赖；多个依赖在同一个 Suspense 边界内时，fallback 会覆盖整个边界。组件级异步见 <a href="../05-%E6%8F%92%E6%A7%BD%E4%B8%8E%E7%BB%84%E4%BB%B6%E5%BD%A2%E6%80%81/02-%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6%E4%B8%8E%E5%BC%82%E6%AD%A5%E7%BB%84%E4%BB%B6.html">05-动态组件与异步组件</a>。</li>
-          <li>Vue 官方仍将 <code>Suspense</code> 标记为<strong>实验性</strong>特性，API 未来可能调整；业务项目应确认当前 Vue 版本、SSR 框架支持和团队约定。</li>
-          <li>Suspense 主要处理 pending，不负责吞掉错误；加载失败应通过组件自身错误状态、<code>defineAsyncComponent</code> 的 <code>errorComponent</code>，或 <code>onErrorCaptured</code> / <code>errorCaptured</code> 处理。</li>
+          <li>
+            <code>Suspense</code>
+            是 Vue 内置组件，用来等待默认插槽中的异步依赖；等待期间渲染
+            <code>#fallback</code>
+            ，依赖完成后再显示默认内容。
+          </li>
+          <li>
+            本页
+            <code>AsyncPanel</code>
+            使用
+            <code>async setup()</code>
+            并等待 800ms，因此首次渲染会先显示“加载中...”，再显示异步内容；点“重新加载”可再次观察
+            fallback。
+          </li>
+          <li>
+            <code>async setup</code>
+            、异步组件都可能成为 Suspense 依赖；多个依赖在同一个 Suspense 边界内时，fallback
+            会覆盖整个边界。组件级异步见
+            <a
+              href="../05-%E6%8F%92%E6%A7%BD%E4%B8%8E%E7%BB%84%E4%BB%B6%E5%BD%A2%E6%80%81/02-%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6%E4%B8%8E%E5%BC%82%E6%AD%A5%E7%BB%84%E4%BB%B6.html"
+            >
+              05-动态组件与异步组件
+            </a>
+            。
+          </li>
+          <li>
+            Vue 官方仍将
+            <code>Suspense</code>
+            标记为
+            <strong>实验性</strong>
+            特性，API 未来可能调整；业务项目应确认当前 Vue 版本、SSR 框架支持和团队约定。
+          </li>
+          <li>
+            Suspense 主要处理 pending，不负责吞掉错误；加载失败应通过组件自身错误状态、
+            <code>defineAsyncComponent</code>
+            的
+            <code>errorComponent</code>
+            ，或
+            <code>onErrorCaptured</code>
+            /
+            <code>errorCaptured</code>
+            处理。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Suspense 解决的 pending 边界是什么？</strong> 结论是把一组异步组件或 <code>async setup</code> 的等待过程收敛到一个 fallback UI。原因是没有 Suspense 时，每个组件要自己管理 loading。边界是 fallback 覆盖的是整个 Suspense 默认插槽，不适合所有局部小 loading 都集中处理。</li>
-          <li><strong>async setup 如何触发 Suspense？</strong> 当组件 <code>setup</code> 返回 Promise 时，父级 Suspense 会等待它 resolve 后再展示默认内容。本页通过定时 Promise 模拟数据准备。项目中如果没有 Suspense 包裹，异步 setup 的渲染体验和框架集成要额外确认。</li>
-          <li><strong>Suspense 能不能当错误边界？</strong> 不能，Suspense 主要处理等待状态，不是 React Error Boundary 那类错误边界。异步失败要由组件捕获、异步组件配置 <code>errorComponent</code>，或通过错误捕获钩子处理。否则用户可能只看到控制台错误或空白区域。</li>
-          <li><strong>Suspense 和组件内部 loading 怎么选？</strong> 需要统一包住一组异步依赖时用 Suspense，单个按钮、局部列表刷新或需要细粒度重试时用组件内部 loading 更灵活。SSR、路由数据预取和实验性 API 风险也会影响选型。</li>
+          <li>
+            <strong>Suspense 解决的 pending 边界是什么？</strong>
+            结论是把一组异步组件或
+            <code>async setup</code>
+            的等待过程收敛到一个 fallback UI。原因是没有 Suspense 时，每个组件要自己管理
+            loading。边界是 fallback 覆盖的是整个 Suspense 默认插槽，不适合所有局部小 loading
+            都集中处理。
+          </li>
+          <li>
+            <strong>async setup 如何触发 Suspense？</strong>
+            当组件
+            <code>setup</code>
+            返回 Promise 时，父级 Suspense 会等待它 resolve 后再展示默认内容。本页通过定时 Promise
+            模拟数据准备。项目中如果没有 Suspense 包裹，异步 setup 的渲染体验和框架集成要额外确认。
+          </li>
+          <li>
+            <strong>Suspense 能不能当错误边界？</strong>
+            不能，Suspense 主要处理等待状态，不是 React Error Boundary
+            那类错误边界。异步失败要由组件捕获、异步组件配置
+            <code>errorComponent</code>
+            ，或通过错误捕获钩子处理。否则用户可能只看到控制台错误或空白区域。
+          </li>
+          <li>
+            <strong>Suspense 和组件内部 loading 怎么选？</strong>
+            需要统一包住一组异步依赖时用
+            Suspense，单个按钮、局部列表刷新或需要细粒度重试时用组件内部 loading
+            更灵活。SSR、路由数据预取和实验性 API 风险也会影响选型。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/guide/built-ins/suspense.html" target="_blank" rel="noreferrer">Vue 官方指南：Suspense</a></li>
-          <li><a href="https://vuejs.org/guide/components/async.html" target="_blank" rel="noreferrer">Vue 官方指南：异步组件</a></li>
-          <li><a href="https://vuejs.org/api/composition-api-lifecycle.html#onerrorcaptured" target="_blank" rel="noreferrer">Vue API：onErrorCaptured</a></li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/built-ins/suspense.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 官方指南：Suspense
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/components/async.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 官方指南：异步组件
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/api/composition-api-lifecycle.html#onerrorcaptured"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue API：onErrorCaptured
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -67,7 +179,9 @@
     <div id="app">
       <h1>Suspense</h1>
       <div class="box">
-        <p class="hint-inline">点击“重新加载”会销毁并重建 AsyncPanel，再次经历约 800ms 的 fallback → 默认内容切换。</p>
+        <p class="hint-inline">
+          点击“重新加载”会销毁并重建 AsyncPanel，再次经历约 800ms 的 fallback → 默认内容切换。
+        </p>
         <button type="button" @click="reload">重新加载 AsyncPanel</button>
         <suspense>
           <template #default>
@@ -90,7 +204,7 @@
       const AsyncPanel = {
         async setup() {
           // --- 演示状态 ---
-          const text = ref("异步内容已加载");
+          const text = ref('异步内容已加载');
           await new Promise((resolve) => setTimeout(resolve, 800));
           return { text };
         },
@@ -104,10 +218,10 @@
           function reload() {
             panelKey.value++;
           }
-          
+
           // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
           onMounted(() => {
-            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+            console.log('[mounted] createApp 已接管 #app，DOM 已渲染');
           });
 
           return { panelKey, reload };
@@ -115,9 +229,8 @@
       });
       // mount 须在 app.use / app.component / app.config 等配置之后调用
       // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
-      const rootInstance = app.mount("#app");
-      console.log("[mount] 根组件实例", rootInstance);
-
+      const rootInstance = app.mount('#app');
+      console.log('[mount] 根组件实例', rootInstance);
     </script>
     <!-- SCRIPT_END -->
 
@@ -131,13 +244,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

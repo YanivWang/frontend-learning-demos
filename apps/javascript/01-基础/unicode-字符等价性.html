@@ -27,30 +27,104 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Unicode 字符等价性（NFC / NFD）</h1>
-      <p class="hint">请阅读本复习区，并在下方演示区输入两段文本比较；同时打开 DevTools Console 查看 normalize 示例输出。</p>
+      <p class="hint">
+        请阅读本复习区，并在下方演示区输入两段文本比较；同时打开 DevTools Console 查看 normalize
+        示例输出。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
           <li>Unicode 允许多种编码表示同一「字符」（如 é 可以是单码点或 e+组合重音）。</li>
-          <li>NFC 会尽量组合为预组合字符，NFD 会拆成基字符 + 组合标记；<code>str.normalize('NFC')</code> 后再比较可减少误判。</li>
-          <li>NFKC / NFKD 是兼容规范化，可能把某些兼容字符折叠成普通形式；适合搜索或宽松匹配，不一定适合保留用户原文。</li>
-          <li>全角/半角、不同空格（如 NBSP）、大小写和语言特定排序不完全由 <code>normalize</code> 解决，必要时配合 <code>Intl.Collator</code> 或业务规则。</li>
-          <li>用户输入清洗流程常见为 <code>trim</code> → 折叠连续空白 → <code>normalize</code> → 再比较/入库，但应保留原始输入用于展示或审计。</li>
-          <li><code>normalize</code> 不能消除所有同形字符风险，例如拉丁 <code>a</code> 与西里尔 <code>а</code> 是不同字符；账号、域名等安全场景需要白名单或混合脚本检测。</li>
+          <li>
+            NFC 会尽量组合为预组合字符，NFD 会拆成基字符 + 组合标记；
+            <code>str.normalize('NFC')</code>
+            后再比较可减少误判。
+          </li>
+          <li>
+            NFKC / NFKD
+            是兼容规范化，可能把某些兼容字符折叠成普通形式；适合搜索或宽松匹配，不一定适合保留用户原文。
+          </li>
+          <li>
+            全角/半角、不同空格（如 NBSP）、大小写和语言特定排序不完全由
+            <code>normalize</code>
+            解决，必要时配合
+            <code>Intl.Collator</code>
+            或业务规则。
+          </li>
+          <li>
+            用户输入清洗流程常见为
+            <code>trim</code>
+            → 折叠连续空白 →
+            <code>normalize</code>
+            → 再比较/入库，但应保留原始输入用于展示或审计。
+          </li>
+          <li>
+            <code>normalize</code>
+            不能消除所有同形字符风险，例如拉丁
+            <code>a</code>
+            与西里尔
+            <code>а</code>
+            是不同字符；账号、域名等安全场景需要白名单或混合脚本检测。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>相同外观为何不相等？</strong> 结论是它们可能由不同 Unicode 码点序列组成。比如 <code>é</code> 可以是单个预组合码点，也可以是 <code>e</code> 加组合重音；直接 <code>===</code> 比较的是序列，不是视觉外观。</li>
-          <li><strong>NFC、NFD、NFKC、NFKD 有什么区别？</strong> 结论是 NFC/NFD 处理规范等价，NFKC/NFKD 还处理兼容等价。NFC 适合大多数存储与比较，NFKC 会改变更多字符形态，适合搜索归一化但不一定适合展示原文。</li>
-          <li><strong>用户名、搜索和去重要注意什么？</strong> 结论是先定义业务等价规则，再做规范化。常见做法是 <code>trim</code>、折叠空白、<code>normalize('NFC')</code>，再按场景决定是否忽略大小写或全半角；数据库唯一约束要和前端规则一致。</li>
-          <li><strong>normalize 能解决同形字符攻击吗？</strong> 结论是不能完全解决。它处理的是 Unicode 规范化形式，不会把所有视觉相似字符合并；安全敏感标识需要限制字符集、检测混合脚本，或使用成熟的 IDN / 账号策略。</li>
+          <li>
+            <strong>相同外观为何不相等？</strong>
+            结论是它们可能由不同 Unicode 码点序列组成。比如
+            <code>é</code>
+            可以是单个预组合码点，也可以是
+            <code>e</code>
+            加组合重音；直接
+            <code>===</code>
+            比较的是序列，不是视觉外观。
+          </li>
+          <li>
+            <strong>NFC、NFD、NFKC、NFKD 有什么区别？</strong>
+            结论是 NFC/NFD 处理规范等价，NFKC/NFKD 还处理兼容等价。NFC 适合大多数存储与比较，NFKC
+            会改变更多字符形态，适合搜索归一化但不一定适合展示原文。
+          </li>
+          <li>
+            <strong>用户名、搜索和去重要注意什么？</strong>
+            结论是先定义业务等价规则，再做规范化。常见做法是
+            <code>trim</code>
+            、折叠空白、
+            <code>normalize('NFC')</code>
+            ，再按场景决定是否忽略大小写或全半角；数据库唯一约束要和前端规则一致。
+          </li>
+          <li>
+            <strong>normalize 能解决同形字符攻击吗？</strong>
+            结论是不能完全解决。它处理的是 Unicode
+            规范化形式，不会把所有视觉相似字符合并；安全敏感标识需要限制字符集、检测混合脚本，或使用成熟的
+            IDN / 账号策略。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize">MDN：String.prototype.normalize()</a></li>
-          <li><a href="https://unicode.org/reports/tr15/">Unicode Standard Annex #15：Unicode Normalization Forms</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Collator">MDN：Intl.Collator</a></li>
-          <li><a href="https://unicode.org/reports/tr36/">Unicode Technical Report #36：Unicode Security Considerations</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize"
+            >
+              MDN：String.prototype.normalize()
+            </a>
+          </li>
+          <li>
+            <a href="https://unicode.org/reports/tr15/">
+              Unicode Standard Annex #15：Unicode Normalization Forms
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Collator"
+            >
+              MDN：Intl.Collator
+            </a>
+          </li>
+          <li>
+            <a href="https://unicode.org/reports/tr36/">
+              Unicode Technical Report #36：Unicode Security Considerations
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -59,7 +133,9 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block">
       <h2>Unicode 等价性比较</h2>
-      <p class="tip">页面上方两个「ぎ」视觉相同但码点序列不同；在文本框输入两段字符串（空格分隔）后点击比较。</p>
+      <p class="tip">
+        页面上方两个「ぎ」视觉相同但码点序列不同；在文本框输入两段字符串（空格分隔）后点击比较。
+      </p>
       <div id="unicode-samples">
         <span id="sample-a">ぎ</span>
         <span id="sample-b">き&#x3099;</span>
@@ -73,42 +149,42 @@
     <!-- SCRIPT_START -->
     <script>
       // ============ 1. 日文「ぎ」：预组合 vs 基字符 + 组合标记 ============
-      const code1 = "ぎ";
-      const code2 = "き\u3099";
-      console.log("ぎ 直接 ===:", code1 === code2); // false
-      console.log("ぎ normalize(NFC):", code1.normalize("NFC") === code2.normalize("NFC")); // true
+      const code1 = 'ぎ';
+      const code2 = 'き\u3099';
+      console.log('ぎ 直接 ===:', code1 === code2); // false
+      console.log('ぎ normalize(NFC):', code1.normalize('NFC') === code2.normalize('NFC')); // true
 
       // ============ 2. 拉丁 é：预组合 vs e + 组合重音 ============
-      const foo = "é";
-      const bar = "e\u0301";
-      console.log("é 直接 ===:", foo === bar); // false
-      console.log("é normalize(NFC):", foo.normalize("NFC") === bar.normalize("NFC")); // true
+      const foo = 'é';
+      const bar = 'e\u0301';
+      console.log('é 直接 ===:', foo === bar); // false
+      console.log('é normalize(NFC):', foo.normalize('NFC') === bar.normalize('NFC')); // true
 
       // ============ 3. NFKC / NFKD：兼容规范化（搜索场景） ============
-      const fullWidth = "Ａ"; // U+FF21 全角 A
-      const halfWidth = "A";
-      console.log("全角半角直接 ===:", fullWidth === halfWidth); // false
-      console.log("NFKC 后 ===:", fullWidth.normalize("NFKC") === halfWidth.normalize("NFKC")); // true
+      const fullWidth = 'Ａ'; // U+FF21 全角 A
+      const halfWidth = 'A';
+      console.log('全角半角直接 ===:', fullWidth === halfWidth); // false
+      console.log('NFKC 后 ===:', fullWidth.normalize('NFKC') === halfWidth.normalize('NFKC')); // true
 
       function logCompare(label, a, b) {
         const lines = [
           `${label} 原始 ===: ${a === b}`,
-          `${label} NFC ===: ${a.normalize("NFC") === b.normalize("NFC")}`,
-          `${label} NFKC ===: ${a.normalize("NFKC") === b.normalize("NFKC")}`,
+          `${label} NFC ===: ${a.normalize('NFC') === b.normalize('NFC')}`,
+          `${label} NFKC ===: ${a.normalize('NFKC') === b.normalize('NFKC')}`,
         ];
-        console.log(lines.join("\n"));
-        return lines.join("\n");
+        console.log(lines.join('\n'));
+        return lines.join('\n');
       }
 
-      document.getElementById("unicode-compare-btn").addEventListener("click", () => {
-        const output = document.getElementById("runtime-output");
-        const value = document.getElementById("unicode-input").value.trim().replace(/\s+/g, " ");
-        const parts = value.split(" ");
+      document.getElementById('unicode-compare-btn').addEventListener('click', () => {
+        const output = document.getElementById('runtime-output');
+        const value = document.getElementById('unicode-input').value.trim().replace(/\s+/g, ' ');
+        const parts = value.split(' ');
         if (parts.length < 2) {
-          output.textContent = "请输入至少两段文本，用空格分隔。";
+          output.textContent = '请输入至少两段文本，用空格分隔。';
           return;
         }
-        output.textContent = logCompare("用户输入", parts[0], parts[1]);
+        output.textContent = logCompare('用户输入', parts[0], parts[1]);
       });
     </script>
     <!-- SCRIPT_END -->
@@ -124,9 +200,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

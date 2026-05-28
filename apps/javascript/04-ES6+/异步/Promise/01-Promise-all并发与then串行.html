@@ -30,24 +30,122 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>Promise.all(iterable)</code> 接收一组 Promise 或普通值，返回一个新的 Promise；全部 fulfilled 后，结果数组按输入顺序排列，而不是按完成先后排列。</li>
-          <li><code>Promise.all</code> 本身不“创建任务”，并发来自你已经调用了多个异步函数并拿到多个 Promise；总耗时通常接近最慢的那个任务。</li>
-          <li><code>Promise.all</code> 是 fail-fast：任一输入 reject，外层 Promise 就以首个拒因 reject；如果需要收集每个任务的成功/失败结果，应选择 <code>Promise.allSettled</code> 或给单个任务包 <code>catch</code>。</li>
-          <li>串行执行要在 <code>then</code> 回调里返回下一个任务的 Promise，例如 <code>.then(() =&gt; taskP1())</code>；直接写 <code>.then(taskP1())</code> 会立刻启动任务并把 Promise 实例当作非函数参数传入。</li>
-          <li><code>new Promise(executor)</code> 的 executor 会同步执行；真正异步的是 <code>resolve</code> 后排队执行的 <code>then</code>/<code>catch</code> 回调。</li>
+          <li>
+            <code>Promise.all(iterable)</code>
+            接收一组 Promise 或普通值，返回一个新的 Promise；全部 fulfilled
+            后，结果数组按输入顺序排列，而不是按完成先后排列。
+          </li>
+          <li>
+            <code>Promise.all</code>
+            本身不“创建任务”，并发来自你已经调用了多个异步函数并拿到多个
+            Promise；总耗时通常接近最慢的那个任务。
+          </li>
+          <li>
+            <code>Promise.all</code>
+            是 fail-fast：任一输入 reject，外层 Promise 就以首个拒因
+            reject；如果需要收集每个任务的成功/失败结果，应选择
+            <code>Promise.allSettled</code>
+            或给单个任务包
+            <code>catch</code>
+            。
+          </li>
+          <li>
+            串行执行要在
+            <code>then</code>
+            回调里返回下一个任务的 Promise，例如
+            <code>.then(() =&gt; taskP1())</code>
+            ；直接写
+            <code>.then(taskP1())</code>
+            会立刻启动任务并把 Promise 实例当作非函数参数传入。
+          </li>
+          <li>
+            <code>new Promise(executor)</code>
+            的 executor 会同步执行；真正异步的是
+            <code>resolve</code>
+            后排队执行的
+            <code>then</code>
+            /
+            <code>catch</code>
+            回调。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>Promise.all</code> 为什么是并发等待而不是自动创建并发？</strong> 结论是 <code>Promise.all</code> 只聚合已经传入的 Promise，不负责启动异步任务。原因是任务在调用 <code>taskP1()</code> 时就开始了；项目里要并发请求就先调用多个请求函数，要串行就把下一次调用放进前一个 <code>then</code> 或 <code>await</code> 之后。</li>
-          <li><strong><code>Promise.all</code> 的结果顺序如何确定？</strong> 结果数组按输入 iterable 的顺序排列，和各任务完成时间无关。边界是任一任务 reject 会让整体 reject，成功数组不会返回；需要部分成功结果时不要直接用裸 <code>Promise.all</code>。</li>
-          <li><strong><code>Promise.all</code>、<code>allSettled</code> 和串行 then 链如何选？</strong> 多个互不依赖且任一失败就整体失败时用 <code>all</code>；需要拿到每个任务状态时用 <code>allSettled</code>；后一个任务依赖前一个结果或要限流时用串行链。项目里请求详情页多个独立接口常用 <code>all</code>，批量上传需要逐项结果常用 <code>allSettled</code>。</li>
-          <li><strong>为什么 then 里要传函数而不是直接传 Promise 实例？</strong> <code>then</code> 需要的是回调函数，回调返回的 Promise 会决定下一步等待什么。直接传 Promise 实例既不会被当作回调执行，也容易让任务提前启动，导致串行代码实际变成并发。</li>
+          <li>
+            <strong>
+              <code>Promise.all</code>
+              为什么是并发等待而不是自动创建并发？
+            </strong>
+            结论是
+            <code>Promise.all</code>
+            只聚合已经传入的 Promise，不负责启动异步任务。原因是任务在调用
+            <code>taskP1()</code>
+            时就开始了；项目里要并发请求就先调用多个请求函数，要串行就把下一次调用放进前一个
+            <code>then</code>
+            或
+            <code>await</code>
+            之后。
+          </li>
+          <li>
+            <strong>
+              <code>Promise.all</code>
+              的结果顺序如何确定？
+            </strong>
+            结果数组按输入 iterable 的顺序排列，和各任务完成时间无关。边界是任一任务 reject 会让整体
+            reject，成功数组不会返回；需要部分成功结果时不要直接用裸
+            <code>Promise.all</code>
+            。
+          </li>
+          <li>
+            <strong>
+              <code>Promise.all</code>
+              、
+              <code>allSettled</code>
+              和串行 then 链如何选？
+            </strong>
+            多个互不依赖且任一失败就整体失败时用
+            <code>all</code>
+            ；需要拿到每个任务状态时用
+            <code>allSettled</code>
+            ；后一个任务依赖前一个结果或要限流时用串行链。项目里请求详情页多个独立接口常用
+            <code>all</code>
+            ，批量上传需要逐项结果常用
+            <code>allSettled</code>
+            。
+          </li>
+          <li>
+            <strong>为什么 then 里要传函数而不是直接传 Promise 实例？</strong>
+            <code>then</code>
+            需要的是回调函数，回调返回的 Promise 会决定下一步等待什么。直接传 Promise
+            实例既不会被当作回调执行，也容易让任务提前启动，导致串行代码实际变成并发。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">MDN: Promise</a>：executor 同步执行，then/catch 回调进入微任务。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all">MDN: Promise.all()</a>：并发等待、fail-fast、结果按输入顺序排列。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled">MDN: Promise.allSettled()</a>：收集每个任务成功/失败状态。</li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise"
+            >
+              MDN: Promise
+            </a>
+            ：executor 同步执行，then/catch 回调进入微任务。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all"
+            >
+              MDN: Promise.all()
+            </a>
+            ：并发等待、fail-fast、结果按输入顺序排列。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled"
+            >
+              MDN: Promise.allSettled()
+            </a>
+            ：收集每个任务成功/失败状态。
+          </li>
         </ul>
       </div>
     </section>
@@ -63,50 +161,50 @@
             resolve(label);
           }, ms);
         });
-      const taskP1 = () => delay(1500, "p1");
-      const taskP2 = () => delay(1000, "p2");
-      const taskP3 = () => delay(2000, "p3");
-      const taskP4 = () => delay(1000, "p4");
+      const taskP1 = () => delay(1500, 'p1');
+      const taskP2 = () => delay(1000, 'p2');
+      const taskP3 = () => delay(2000, 'p3');
+      const taskP4 = () => delay(1000, 'p4');
 
       // ============ 2. Promise.all 并发：任务在调用时已启动，总耗时 ≈ max(各任务) ============
       // MDN：全部 fulfilled 后按输入顺序返回结果数组；任一 reject 则 fail-fast
-      console.log("--- Promise.all 并发 ---");
-      console.log("all start...");
+      console.log('--- Promise.all 并发 ---');
+      console.log('all start...');
       Promise.all([taskP1(), taskP2(), taskP3(), taskP4()])
         .then((values) => {
-          console.log("all values（按输入顺序）:", values); // ["p1","p2","p3","p4"]
-          console.log("all finish...");
+          console.log('all values（按输入顺序）:', values); // ["p1","p2","p3","p4"]
+          console.log('all finish...');
         })
         .catch((reason) => {
-          console.log("all rejected:", reason);
+          console.log('all rejected:', reason);
         });
 
       // ============ 3. fail-fast 演示：任一输入 reject，外层立即 reject ============
       Promise.all([
-        Promise.resolve("ok"),
-        Promise.reject(new Error("fail-fast")),
-        Promise.resolve("ignored"),
+        Promise.resolve('ok'),
+        Promise.reject(new Error('fail-fast')),
+        Promise.resolve('ignored'),
       ]).catch((err) => {
-        console.log("fail-fast:", err.message); // "fail-fast"
+        console.log('fail-fast:', err.message); // "fail-fast"
       });
 
       // ============ 4. then 链串行：回调须返回下一个 Promise ============
       // 易错点：.then(taskP1()) 会立刻启动 taskP1 并把 Promise 实例当非函数参数忽略
-      console.log("--- then 链串行 ---");
+      console.log('--- then 链串行 ---');
       Promise.resolve()
         .then(() => {
-          console.log("serial start...");
+          console.log('serial start...');
         })
         .then(() => taskP1())
         .then(() => taskP2())
         .then(() => {
-          console.log("serial end...");
+          console.log('serial end...');
         });
 
       // 错误写法（注释保留）：任务会提前启动，无法串行
       // Promise.resolve().then(taskP1()).then(taskP2());
 
-      console.log("script end（同步，早于上述异步输出）...");
+      console.log('script end（同步，早于上述异步输出）...');
     </script>
     <!-- SCRIPT_END -->
 
@@ -115,14 +213,20 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../../index.html">目录</a>
-        <a href="../generator%E4%B8%8Easync/06-async-%E5%A3%B0%E6%98%8E%E5%BD%A2%E5%BC%8F%E4%B8%8E%E5%BC%82%E5%B8%B8%E7%BB%BC%E5%90%88.html">← async-声明形式与异常综合</a>
-        <a href="./02-Promise-%E4%B8%8E%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF.html">Promise-与事件循环 →</a>
+        <a
+          href="../generator%E4%B8%8Easync/06-async-%E5%A3%B0%E6%98%8E%E5%BD%A2%E5%BC%8F%E4%B8%8E%E5%BC%82%E5%B8%B8%E7%BB%BC%E5%90%88.html"
+        >
+          ← async-声明形式与异常综合
+        </a>
+        <a href="./02-Promise-%E4%B8%8E%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF.html">
+          Promise-与事件循环 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

@@ -31,30 +31,112 @@
       <h1>ref 引用 DOM / 子组件实例</h1>
       <p class="hint">
         点「focus()」通过 DOM ref 聚焦输入框；点「调用子组件方法」观察子组件
-        <code>sayHi</code> 返回值写入日志区。
+        <code>sayHi</code>
+        返回值写入日志区。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>普通 DOM 元素上写 <code>ref="myInput"</code>，<code>this.$refs.myInput</code> 拿到原生 DOM 节点。本页点击 <code>focus()</code> 会调用输入框的原生 <code>focus</code> 方法。</li>
-          <li>自定义组件上写 <code>ref="hello"</code>，<code>this.$refs.hello</code> 拿到子组件实例，可以访问它的方法和实例状态。本页“调用子组件方法”会触发子组件公开方法并写入日志。</li>
-          <li><code>$refs</code> 不是响应式数据，也不会驱动模板更新；它更像命令式 escape hatch。不要把业务数据流设计成父组件频繁读写子组件实例。</li>
-          <li><code>$refs</code> 需要等挂载后才稳定可用；如果元素受 <code>v-if</code> 控制，切换显示后马上读取可能拿不到最新节点，应配合 <code>this.$nextTick</code>。</li>
-          <li>父子通信优先 <code>props</code> 向下传数据、<code>$emit</code> 向上传事件；ref 适合聚焦、测量尺寸、滚动、集成第三方 DOM 库或调用明确暴露的命令式方法。Vue 2 已 EOL，新项目优先 Vue 3。</li>
+          <li>
+            普通 DOM 元素上写
+            <code>ref="myInput"</code>
+            ，
+            <code>this.$refs.myInput</code>
+            拿到原生 DOM 节点。本页点击
+            <code>focus()</code>
+            会调用输入框的原生
+            <code>focus</code>
+            方法。
+          </li>
+          <li>
+            自定义组件上写
+            <code>ref="hello"</code>
+            ，
+            <code>this.$refs.hello</code>
+            拿到子组件实例，可以访问它的方法和实例状态。本页“调用子组件方法”会触发子组件公开方法并写入日志。
+          </li>
+          <li>
+            <code>$refs</code>
+            不是响应式数据，也不会驱动模板更新；它更像命令式 escape
+            hatch。不要把业务数据流设计成父组件频繁读写子组件实例。
+          </li>
+          <li>
+            <code>$refs</code>
+            需要等挂载后才稳定可用；如果元素受
+            <code>v-if</code>
+            控制，切换显示后马上读取可能拿不到最新节点，应配合
+            <code>this.$nextTick</code>
+            。
+          </li>
+          <li>
+            父子通信优先
+            <code>props</code>
+            向下传数据、
+            <code>$emit</code>
+            向上传事件；ref 适合聚焦、测量尺寸、滚动、集成第三方 DOM
+            库或调用明确暴露的命令式方法。Vue 2 已 EOL，新项目优先 Vue 3。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue 2 中 ref 放在 DOM 和组件上分别拿到什么？</strong> 结论是普通元素拿到原生 DOM 节点，自定义组件拿到组件实例。原因是 ref 绑定的是渲染后的实际目标。项目里输入框聚焦用 DOM ref，调用子组件暴露的命令式方法用组件 ref。</li>
-          <li><strong>为什么不建议把 ref 当成常规数据流？</strong> 结论是 ref 是命令式访问通道，不是响应式数据设计。原因是 <code>$refs</code> 本身不响应式，父组件直接读写子组件实例会让依赖关系变隐蔽。项目里常规通信仍优先 props 和 events，ref 只处理少量边界动作。</li>
-          <li><strong>什么时候访问 $refs 会拿不到值？</strong> 结论是首次渲染前、组件未挂载、受 <code>v-if</code> 控制且当前未渲染时都可能拿不到。原因是 ref 依赖真实节点或组件实例已经创建。项目里条件渲染后要访问 DOM，通常在状态变化后放到 <code>nextTick</code>。</li>
-          <li><strong>调用子组件方法应该优先 ref 还是 props / events？</strong> 结论是常规业务交互优先 props / events，明确命令式动作才使用 ref。原因是 props/events 更符合单向数据流，ref 会增加父子耦合。边界是表单校验暴露 <code>validate()</code>、播放器暴露 <code>play()</code> 这类命令式 API 可以用 ref。</li>
-          <li><strong>维护 Vue 2 项目时如何说明 ref 与 Vue 3 选型边界？</strong> 结论是 Vue 2/3 的 ref 语义一致，Vue 3 组合式 API 中 ref 还可指响应式引用。原因是 Vue 2 已 EOL，新项目应优先 Vue 3；存量项目的 <code>$refs</code> 用法可直接迁移。边界是 Vue 3 的 template ref 在 setup 中需用 <code>ref()</code> 声明。</li>
+          <li>
+            <strong>Vue 2 中 ref 放在 DOM 和组件上分别拿到什么？</strong>
+            结论是普通元素拿到原生 DOM 节点，自定义组件拿到组件实例。原因是 ref
+            绑定的是渲染后的实际目标。项目里输入框聚焦用 DOM ref，调用子组件暴露的命令式方法用组件
+            ref。
+          </li>
+          <li>
+            <strong>为什么不建议把 ref 当成常规数据流？</strong>
+            结论是 ref 是命令式访问通道，不是响应式数据设计。原因是
+            <code>$refs</code>
+            本身不响应式，父组件直接读写子组件实例会让依赖关系变隐蔽。项目里常规通信仍优先 props 和
+            events，ref 只处理少量边界动作。
+          </li>
+          <li>
+            <strong>什么时候访问 $refs 会拿不到值？</strong>
+            结论是首次渲染前、组件未挂载、受
+            <code>v-if</code>
+            控制且当前未渲染时都可能拿不到。原因是 ref
+            依赖真实节点或组件实例已经创建。项目里条件渲染后要访问 DOM，通常在状态变化后放到
+            <code>nextTick</code>
+            。
+          </li>
+          <li>
+            <strong>调用子组件方法应该优先 ref 还是 props / events？</strong>
+            结论是常规业务交互优先 props / events，明确命令式动作才使用 ref。原因是 props/events
+            更符合单向数据流，ref 会增加父子耦合。边界是表单校验暴露
+            <code>validate()</code>
+            、播放器暴露
+            <code>play()</code>
+            这类命令式 API 可以用 ref。
+          </li>
+          <li>
+            <strong>维护 Vue 2 项目时如何说明 ref 与 Vue 3 选型边界？</strong>
+            结论是 Vue 2/3 的 ref 语义一致，Vue 3 组合式 API 中 ref 还可指响应式引用。原因是 Vue 2
+            已 EOL，新项目应优先 Vue 3；存量项目的
+            <code>$refs</code>
+            用法可直接迁移。边界是 Vue 3 的 template ref 在 setup 中需用
+            <code>ref()</code>
+            声明。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://v2.vuejs.org/v2/api/#ref" target="_blank" rel="noopener">Vue 2 API：ref</a></li>
-          <li><a href="https://v2.vuejs.org/v2/guide/components.html" target="_blank" rel="noopener">Vue 2 官方文档：Components Basics</a></li>
-          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 官方说明：Vue 2 Has Reached End of Life</a></li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/api/#ref" target="_blank" rel="noopener">
+              Vue 2 API：ref
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/guide/components.html" target="_blank" rel="noopener">
+              Vue 2 官方文档：Components Basics
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">
+              Vue 官方说明：Vue 2 Has Reached End of Life
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -84,8 +166,8 @@
           sayHi: function () {
             this.count++;
             return 'child sayHi #' + this.count;
-          }
-        }
+          },
+        },
       });
 
       // ---------------------------------------------------------------------------
@@ -96,7 +178,7 @@
         el: '#app',
         data: function () {
           return {
-            logs: []
+            logs: [],
           };
         },
         methods: {
@@ -106,10 +188,9 @@
           },
           callChild: function () {
             this.logs.unshift(this.$refs.hello.sayHi());
-          }
-        }
+          },
+        },
       });
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -123,13 +204,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

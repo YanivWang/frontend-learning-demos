@@ -31,23 +31,99 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>await</code> 后面可以是 Promise、thenable 或普通值；普通值会按已 fulfilled 的值处理，但 async 函数后续代码仍会让出到微任务恢复。</li>
-          <li><code>async</code> 函数 <code>return</code> 的普通值会成为外层 Promise 的 fulfilled value；未捕获异常或 rejected await 会让外层 Promise rejected。</li>
-          <li>任一 <code>await</code> 的 Promise rejected，当前 async 函数会像同步 <code>throw</code> 一样中断，后续语句不再执行，除非用 <code>try...catch</code> 捕获。</li>
-          <li>本页用 localforage 演示存储 Promise：浏览器隐私模式、配额不足、序列化失败或底层存储不可用都可能 reject，不能只写成功路径。</li>
-          <li>如果多个存储写入互不依赖，提前创建多个 Promise 会并发执行；如果需要严格顺序，应传入函数并在 async 函数内部逐个调用。</li>
+          <li>
+            <code>await</code>
+            后面可以是 Promise、thenable 或普通值；普通值会按已 fulfilled 的值处理，但 async
+            函数后续代码仍会让出到微任务恢复。
+          </li>
+          <li>
+            <code>async</code>
+            函数
+            <code>return</code>
+            的普通值会成为外层 Promise 的 fulfilled value；未捕获异常或 rejected await 会让外层
+            Promise rejected。
+          </li>
+          <li>
+            任一
+            <code>await</code>
+            的 Promise rejected，当前 async 函数会像同步
+            <code>throw</code>
+            一样中断，后续语句不再执行，除非用
+            <code>try...catch</code>
+            捕获。
+          </li>
+          <li>
+            本页用 localforage 演示存储
+            Promise：浏览器隐私模式、配额不足、序列化失败或底层存储不可用都可能
+            reject，不能只写成功路径。
+          </li>
+          <li>
+            如果多个存储写入互不依赖，提前创建多个 Promise
+            会并发执行；如果需要严格顺序，应传入函数并在 async 函数内部逐个调用。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>await</code> 后面不是 Promise 时会发生什么？</strong> 它会按 Promise resolution 规则处理表达式，普通值会成为 fulfilled value，thenable 会被吸收。边界是即使值已经可用，<code>await</code> 后续代码仍会异步恢复，不会继续留在当前同步调用栈。</li>
-          <li><strong>async 函数 <code>return</code> 和 <code>throw</code> 如何影响外层 Promise？</strong> <code>return value</code> 会让返回的 Promise fulfilled 为 value；抛错或未捕获的 await rejection 会让返回的 Promise rejected。调用方必须用 <code>await try...catch</code> 或 <code>.catch</code> 处理失败。</li>
-          <li><strong><code>await</code> 的 Promise reject 后后续代码是否继续？</strong> 默认不会继续，控制流会跳到最近的 <code>catch</code> 或让 async 函数返回 rejected Promise。项目里如果要失败后继续执行，应在当前步骤局部捕获并提供默认值。</li>
-          <li><strong>使用浏览器存储 API 时需要补哪些失败路径？</strong> 要处理配额不足、权限限制、隐私模式、序列化失败和库未加载等情况。存储成功后再更新 UI，失败时给用户提示并避免把未确认的数据当作已持久化状态。</li>
+          <li>
+            <strong>
+              <code>await</code>
+              后面不是 Promise 时会发生什么？
+            </strong>
+            它会按 Promise resolution 规则处理表达式，普通值会成为 fulfilled value，thenable
+            会被吸收。边界是即使值已经可用，
+            <code>await</code>
+            后续代码仍会异步恢复，不会继续留在当前同步调用栈。
+          </li>
+          <li>
+            <strong>
+              async 函数
+              <code>return</code>
+              和
+              <code>throw</code>
+              如何影响外层 Promise？
+            </strong>
+            <code>return value</code>
+            会让返回的 Promise fulfilled 为 value；抛错或未捕获的 await rejection 会让返回的 Promise
+            rejected。调用方必须用
+            <code>await try...catch</code>
+            或
+            <code>.catch</code>
+            处理失败。
+          </li>
+          <li>
+            <strong>
+              <code>await</code>
+              的 Promise reject 后后续代码是否继续？
+            </strong>
+            默认不会继续，控制流会跳到最近的
+            <code>catch</code>
+            或让 async 函数返回 rejected
+            Promise。项目里如果要失败后继续执行，应在当前步骤局部捕获并提供默认值。
+          </li>
+          <li>
+            <strong>使用浏览器存储 API 时需要补哪些失败路径？</strong>
+            要处理配额不足、权限限制、隐私模式、序列化失败和库未加载等情况。存储成功后再更新
+            UI，失败时给用户提示并避免把未确认的数据当作已持久化状态。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await">MDN: await</a>：非 Promise 值按 fulfilled 处理，后续仍让出到微任务。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function">MDN: async function</a>：return 变 fulfilled，throw/reject 变 rejected。</li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await"
+            >
+              MDN: await
+            </a>
+            ：非 Promise 值按 fulfilled 处理，后续仍让出到微任务。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function"
+            >
+              MDN: async function
+            </a>
+            ：return 变 fulfilled，throw/reject 变 rejected。
+          </li>
         </ul>
       </div>
     </section>
@@ -69,34 +145,34 @@
       async function awaitNonPromise() {
         const thenable = {
           then(resolve) {
-            resolve("thenable-value");
+            resolve('thenable-value');
           },
         };
         const fromThenable = await thenable;
         const fromNumber = await 123;
-        console.log("await thenable:", fromThenable);
-        console.log("await 普通值:", fromNumber);
+        console.log('await thenable:', fromThenable);
+        console.log('await 普通值:', fromNumber);
         return fromNumber;
       }
 
       // ============ 2. await rejection 中断 async 函数，后续语句不执行 ============
       async function awaitRejectionStops() {
         try {
-          await Promise.reject(new Error("await-reject"));
-          console.log("不会执行（reject 后中断）");
+          await Promise.reject(new Error('await-reject'));
+          console.log('不会执行（reject 后中断）');
         } catch (e) {
-          console.log("try/catch 捕获 await rejection:", e.message);
+          console.log('try/catch 捕获 await rejection:', e.message);
         }
       }
 
       // ============ 3. async return → 外层 Promise fulfilled；throw → rejected ============
       async function asyncReturnAndThrow() {
-        const fulfilled = await Promise.resolve("ok-value");
+        const fulfilled = await Promise.resolve('ok-value');
         return fulfilled;
       }
 
       async function asyncThrow() {
-        throw new Error("async-throw");
+        throw new Error('async-throw');
       }
 
       // ============ 4. localforage：try/catch 捕获存储失败并 rethrow ============
@@ -107,52 +183,49 @@
           const r2 = await m2;
           return [r1, r2];
         } catch (error) {
-          console.error("存储失败", error.name, error.message);
+          console.error('存储失败', error.name, error.message);
           throw error;
         }
       }
 
       // ============ 5. 调用 async 立即返回 Promise；第一个 await 前同步执行 ============
       async function asyncPrint(value, ms) {
-        console.log("asyncPrint 同步开头:", value);
+        console.log('asyncPrint 同步开头:', value);
         await timeout(ms);
-        console.log("asyncPrint await 后:", value);
-        return "qwert";
+        console.log('asyncPrint await 后:', value);
+        return 'qwert';
       }
 
-      console.log("同步：早于所有 await 完成");
+      console.log('同步：早于所有 await 完成');
 
       (async function main() {
-        console.log("--- §1 await 非 Promise ---");
+        console.log('--- §1 await 非 Promise ---');
         const n = await awaitNonPromise();
-        console.log("asyncReturn fulfilled:", await asyncReturnAndThrow());
+        console.log('asyncReturn fulfilled:', await asyncReturnAndThrow());
 
-        console.log("--- §2 await rejection ---");
+        console.log('--- §2 await rejection ---');
         await awaitRejectionStops();
 
         try {
           await asyncThrow();
         } catch (e) {
-          console.log("外层 catch async throw:", e.message);
+          console.log('外层 catch async throw:', e.message);
         }
 
-        console.log("--- §4 localforage 存储 ---");
+        console.log('--- §4 localforage 存储 ---');
         try {
-          const stored = await storeData(
-            setStorage("name", "Join"),
-            setStorage("age", "30"),
-          );
-          console.log("storeData 成功:", stored);
+          const stored = await storeData(setStorage('name', 'Join'), setStorage('age', '30'));
+          console.log('storeData 成功:', stored);
         } catch (err) {
-          console.error("storeData 外层 catch:", err.name, err.message);
+          console.error('storeData 外层 catch:', err.name, err.message);
         }
 
-        console.log("--- §5 async 立即返回 Promise ---");
-        const p = asyncPrint("Hello World", 800);
-        console.log("asyncPrint 返回值是 Promise:", p instanceof Promise);
-        console.log("asyncPrint return:", await p);
+        console.log('--- §5 async 立即返回 Promise ---');
+        const p = asyncPrint('Hello World', 800);
+        console.log('asyncPrint 返回值是 Promise:', p instanceof Promise);
+        console.log('asyncPrint return:', await p);
       })().catch(function (err) {
-        console.error("demo 未捕获错误:", err.name, err.message);
+        console.error('demo 未捕获错误:', err.name, err.message);
       });
     </script>
     <!-- SCRIPT_END -->
@@ -162,14 +235,20 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../../index.html">目录</a>
-        <a href="./04-async-%E9%94%99%E8%AF%AF%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6.html">← async-错误重试机制</a>
-        <a href="./06-async-%E5%A3%B0%E6%98%8E%E5%BD%A2%E5%BC%8F%E4%B8%8E%E5%BC%82%E5%B8%B8%E7%BB%BC%E5%90%88.html">async-声明形式与异常综合 →</a>
+        <a href="./04-async-%E9%94%99%E8%AF%AF%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6.html">
+          ← async-错误重试机制
+        </a>
+        <a
+          href="./06-async-%E5%A3%B0%E6%98%8E%E5%BD%A2%E5%BC%8F%E4%B8%8E%E5%BC%82%E5%B8%B8%E7%BB%BC%E5%90%88.html"
+        >
+          async-声明形式与异常综合 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

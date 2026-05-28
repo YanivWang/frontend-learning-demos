@@ -28,53 +28,131 @@
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>手写 Vue2 响应式核心（Observer / Dep / Watcher / Computed）</h1>
       <p class="hint">
-        在下方输入新 message 并点「写入 message」观察 watch 回调；点「读取 messageLength」验证 computed 的 lazy
-        缓存（依赖未变时不会重复求值）；日志区与 Console 同步输出 Observer / Dep / Watcher / Computed 链路。
+        在下方输入新 message 并点「写入 message」观察 watch 回调；点「读取 messageLength」验证
+        computed 的 lazy 缓存（依赖未变时不会重复求值）；日志区与 Console 同步输出 Observer / Dep /
+        Watcher / Computed 链路。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue2 的响应式入口是观察 <code>data</code>：把普通对象的每个已有字段转换成 getter/setter。这样模板渲染、计算属性或侦听器读取字段时能被追踪，字段写入时能通知更新。</li>
-          <li><code>Dep</code> 是依赖容器，保存“谁依赖了这个属性”；<code>Watcher</code> 是订阅者，代表一次渲染、一个 <code>watch</code> 回调或一个计算属性求值。读取时通过 <code>Dep.target</code> 建立当前 watcher 与属性 dep 的关系。</li>
-          <li>普通 watcher 在依赖变化时立即重新取值并触发回调；computed watcher 是 <code>lazy</code> 的，依赖变化只把 <code>dirty</code> 设为 true，下次访问计算属性时才重新执行 getter。</li>
-          <li>真实 Vue2 还要处理 watcher 栈、重复依赖去重、异步更新队列、数组方法拦截、删除属性、组件渲染 watcher 等细节；本页是教学版模型，不等价于完整源码。</li>
-          <li>常见限制来自 <code>Object.defineProperty</code>：新增对象属性和数组索引/长度变化无法自动被拦截，需要 <code>Vue.set</code>、<code>splice</code> 或整体替换。Vue 3 改用 Proxy 后这类边界明显减少，但 Vue2 存量项目仍要掌握。</li>
+          <li>
+            Vue2 的响应式入口是观察
+            <code>data</code>
+            ：把普通对象的每个已有字段转换成
+            getter/setter。这样模板渲染、计算属性或侦听器读取字段时能被追踪，字段写入时能通知更新。
+          </li>
+          <li>
+            <code>Dep</code>
+            是依赖容器，保存“谁依赖了这个属性”；
+            <code>Watcher</code>
+            是订阅者，代表一次渲染、一个
+            <code>watch</code>
+            回调或一个计算属性求值。读取时通过
+            <code>Dep.target</code>
+            建立当前 watcher 与属性 dep 的关系。
+          </li>
+          <li>
+            普通 watcher 在依赖变化时立即重新取值并触发回调；computed watcher 是
+            <code>lazy</code>
+            的，依赖变化只把
+            <code>dirty</code>
+            设为 true，下次访问计算属性时才重新执行 getter。
+          </li>
+          <li>
+            真实 Vue2 还要处理 watcher
+            栈、重复依赖去重、异步更新队列、数组方法拦截、删除属性、组件渲染 watcher
+            等细节；本页是教学版模型，不等价于完整源码。
+          </li>
+          <li>
+            常见限制来自
+            <code>Object.defineProperty</code>
+            ：新增对象属性和数组索引/长度变化无法自动被拦截，需要
+            <code>Vue.set</code>
+            、
+            <code>splice</code>
+            或整体替换。Vue 3 改用 Proxy 后这类边界明显减少，但 Vue2 存量项目仍要掌握。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue2 响应式为什么要在初始化时遍历 data？</strong> 结论是因为 <code>Object.defineProperty</code> 只能拦截已经定义好的属性。Vue2 必须在实例创建时把 <code>data</code> 中已有字段转换成 getter/setter，后续读取和写入才能被追踪。边界是运行时新增属性默认不响应，必须用 <code>Vue.set</code> 或替换对象。</li>
-          <li><strong>Dep 和 Watcher 分别解决什么问题？</strong> 结论是 Dep 管“这个属性有哪些订阅者”，Watcher 管“某段逻辑依赖了哪些属性并如何更新”。原因是 getter 阶段只有当前正在执行的 watcher 才知道自己依赖谁，setter 阶段属性自己的 dep 才知道该通知谁。项目里 render、watch、computed 都可以理解成不同类型的 watcher。</li>
-          <li><strong>computed 为什么可以缓存，watch 为什么适合副作用？</strong> 结论是 computed 背后是 lazy watcher，依赖变化只标记 dirty，下次读取才重新求值并缓存；watch 在依赖变化时立即执行回调，适合异步请求、DOM 操作等副作用。边界是 computed getter 必须同步、无副作用；需要“数据变了就做事”时用 watch。</li>
-          <li><strong>手写响应式和真实 Vue2 实现有哪些边界差距？</strong> 结论是教学版只演示核心链路，真实 Vue2 还包含依赖去重、异步批量更新、数组拦截、组件生命周期和错误处理。原因是框架要在复杂组件树中控制更新成本。面试回答时不要把几十行教学代码说成完整 Vue 源码。</li>
-          <li><strong>Vue2 defineProperty 响应式相比 Vue3 Proxy 有什么限制？</strong> 结论是 defineProperty 只能逐属性拦截，无法天然感知新增/删除属性和数组索引变化。原因是每个 key 都要单独定义描述符。Vue2 因此需要 <code>Vue.set</code> 和数组变更方法；Vue3 Proxy 能从对象层面拦截更多操作。</li>
+          <li>
+            <strong>Vue2 响应式为什么要在初始化时遍历 data？</strong>
+            结论是因为
+            <code>Object.defineProperty</code>
+            只能拦截已经定义好的属性。Vue2 必须在实例创建时把
+            <code>data</code>
+            中已有字段转换成
+            getter/setter，后续读取和写入才能被追踪。边界是运行时新增属性默认不响应，必须用
+            <code>Vue.set</code>
+            或替换对象。
+          </li>
+          <li>
+            <strong>Dep 和 Watcher 分别解决什么问题？</strong>
+            结论是 Dep 管“这个属性有哪些订阅者”，Watcher
+            管“某段逻辑依赖了哪些属性并如何更新”。原因是 getter 阶段只有当前正在执行的 watcher
+            才知道自己依赖谁，setter 阶段属性自己的 dep 才知道该通知谁。项目里
+            render、watch、computed 都可以理解成不同类型的 watcher。
+          </li>
+          <li>
+            <strong>computed 为什么可以缓存，watch 为什么适合副作用？</strong>
+            结论是 computed 背后是 lazy watcher，依赖变化只标记
+            dirty，下次读取才重新求值并缓存；watch 在依赖变化时立即执行回调，适合异步请求、DOM
+            操作等副作用。边界是 computed getter 必须同步、无副作用；需要“数据变了就做事”时用
+            watch。
+          </li>
+          <li>
+            <strong>手写响应式和真实 Vue2 实现有哪些边界差距？</strong>
+            结论是教学版只演示核心链路，真实 Vue2
+            还包含依赖去重、异步批量更新、数组拦截、组件生命周期和错误处理。原因是框架要在复杂组件树中控制更新成本。面试回答时不要把几十行教学代码说成完整
+            Vue 源码。
+          </li>
+          <li>
+            <strong>Vue2 defineProperty 响应式相比 Vue3 Proxy 有什么限制？</strong>
+            结论是 defineProperty
+            只能逐属性拦截，无法天然感知新增/删除属性和数组索引变化。原因是每个 key
+            都要单独定义描述符。Vue2 因此需要
+            <code>Vue.set</code>
+            和数组变更方法；Vue3 Proxy 能从对象层面拦截更多操作。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://v2.vuejs.org/v2/guide/reactivity.html" target="_blank" rel="noreferrer">Vue 2 官方文档：Reactivity in Depth</a></li>
-          <li><a href="https://v2.vuejs.org/v2/guide/computed.html" target="_blank" rel="noreferrer">Vue 2 官方文档：Computed Properties and Watchers</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty" target="_blank" rel="noreferrer">MDN：Object.defineProperty()</a></li>
-          <li><a href="https://vuejs.org/guide/extras/reactivity-in-depth.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Reactivity in Depth</a></li>
+          <li>
+            <a
+              href="https://v2.vuejs.org/v2/guide/reactivity.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 2 官方文档：Reactivity in Depth
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/guide/computed.html" target="_blank" rel="noreferrer">
+              Vue 2 官方文档：Computed Properties and Watchers
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN：Object.defineProperty()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/extras/reactivity-in-depth.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方文档：Reactivity in Depth
+            </a>
+          </li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
-
-    <!-- PAGE_DOM_START -->
-    <section class="demo-block demo-block--run" aria-label="手写响应式交互演示">
-      <h2 class="demo-block__label">交互演示</h2>
-      <p>message: <strong id="msg-display">—</strong></p>
-      <p>messageLength（computed）: <strong id="len-display">—</strong></p>
-      <p>
-        <label for="msg-input">新 message：</label>
-        <input id="msg-input" type="text" value="Hello Vue2" />
-      </p>
-      <p>
-        <button type="button" id="btn-set">写入 message（触发 setter + watch）</button>
-        <button type="button" id="btn-read-len">读取 messageLength（lazy computed）</button>
-      </p>
-      <pre id="reactive-log" class="demo-output" aria-live="polite"></pre>
-    </section>
-    <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
@@ -99,7 +177,7 @@
           const dep = new Dep();
 
           // 递归处理嵌套对象
-          if (typeof val === "object" && val !== null) {
+          if (typeof val === 'object' && val !== null) {
             new Observer(val);
           }
 
@@ -119,7 +197,7 @@
               if (newVal === val) return;
               val = newVal;
               // 新值如果是对象，继续劫持
-              if (typeof newVal === "object") {
+              if (typeof newVal === 'object') {
                 new Observer(newVal);
               }
               // 通知所有依赖此属性的 Watcher 更新
@@ -218,13 +296,13 @@
           // 创建 lazy Watcher(计算属性创建的 watcher，内部设置 lazy = true)
           this.watcher = new Watcher(getter, { lazy: true });
 
-          this.value = undefined;//用于存储计算属性的计算后的值
-          this.dirty = true;//计算属性默认是脏值
+          this.value = undefined; //用于存储计算属性的计算后的值
+          this.dirty = true; //计算属性默认是脏值
         }
 
         // 获取计算属性的值时触发
         get() {
-          appendLog("计算属性 getter 执行（lazy：dirty 时才重新求值）");
+          appendLog('计算属性 getter 执行（lazy：dirty 时才重新求值）');
           if (this.watcher.dirty) {
             // 执行计算并更新值
             this.watcher.evaluate();
@@ -241,12 +319,12 @@
         // debugger;
         //一：处理data
         let data = vm.$options.data;
-        data = typeof data === "function" ? data.call(vm) : data || {};
+        data = typeof data === 'function' ? data.call(vm) : data || {};
         vm._data = data;
         new Observer(data); // 开始劫持 data
         // 代理 data 到 Vue 实例，支持 this.key 访问
         Object.keys(data).forEach((key) => {
-          proxy(vm, "_data", key);
+          proxy(vm, '_data', key);
         });
 
         //二: 处理 watch
@@ -265,7 +343,7 @@
             configurable: true,
             get() {
               return computedRef.get();
-            }
+            },
           });
         });
       }
@@ -285,15 +363,15 @@
       // ---------------------------------------------------------------------------
       // 页面日志与展示：同步写入 #reactive-log 与 Console
       // ---------------------------------------------------------------------------
-      var logEl = document.getElementById("reactive-log");
-      var msgDisplay = document.getElementById("msg-display");
-      var lenDisplay = document.getElementById("len-display");
-      var msgInput = document.getElementById("msg-input");
+      var logEl = document.getElementById('reactive-log');
+      var msgDisplay = document.getElementById('msg-display');
+      var lenDisplay = document.getElementById('len-display');
+      var msgInput = document.getElementById('msg-input');
 
       function appendLog(text) {
-        var line = new Date().toLocaleTimeString() + "  " + text;
+        var line = new Date().toLocaleTimeString() + '  ' + text;
         if (logEl) {
-          logEl.textContent = line + "\n" + logEl.textContent;
+          logEl.textContent = line + '\n' + logEl.textContent;
         }
         console.log(line);
       }
@@ -314,7 +392,7 @@
         $options: {
           data() {
             return {
-              message: "Hello Vue2",
+              message: 'Hello Vue2',
               nested: { count: 0 },
             };
           },
@@ -333,24 +411,23 @@
 
       initData(vm);
 
-      appendLog("初始化完成：读取 message 触发 getter");
-      appendLog("message = " + vm.message);
+      appendLog('初始化完成：读取 message 触发 getter');
+      appendLog('message = ' + vm.message);
       refreshDisplay(vm);
 
-      document.getElementById("btn-set").addEventListener("click", function () {
+      document.getElementById('btn-set').addEventListener('click', function () {
         var next = msgInput.value;
         appendLog("写入 vm.message = '" + next + "'（触发 setter）");
         vm.message = next;
         refreshDisplay(vm);
       });
 
-      document.getElementById("btn-read-len").addEventListener("click", function () {
-        appendLog("读取 vm.messageLength");
+      document.getElementById('btn-read-len').addEventListener('click', function () {
+        appendLog('读取 vm.messageLength');
         var len = vm.messageLength;
-        appendLog("messageLength = " + len);
+        appendLog('messageLength = ' + len);
         refreshDisplay(vm);
       });
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -359,18 +436,22 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="../01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/19-%E8%AE%BE%E5%A4%87%E4%BF%A1%E6%81%AFBOM.html">← 设备信息BOM</a>
+        <a
+          href="../01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/19-%E8%AE%BE%E5%A4%87%E4%BF%A1%E6%81%AFBOM.html"
+        >
+          ← 设备信息BOM
+        </a>
         <a href="./02-defineProperty%E8%AE%BF%E9%97%AE%E5%99%A8.html">defineProperty访问器 →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

@@ -21,9 +21,19 @@
     <title>响应式：大数组与 Performance timeline</title>
     <script src="../../libs/vue.js"></script>
     <style>
-      button { display: block; margin: 8px 0; }
-      pre { background: #f5f5f5; padding: 12px; max-height: 280px; overflow: auto; }
-      .warn { color: #c00; }
+      button {
+        display: block;
+        margin: 8px 0;
+      }
+      pre {
+        background: #f5f5f5;
+        padding: 12px;
+        max-height: 280px;
+        overflow: auto;
+      }
+      .warn {
+        color: #c00;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -34,30 +44,110 @@
       <h1>用 Performance 时间线观察大数组对响应式性能的影响</h1>
       <p class="hint">
         先打开 DevTools → Performance 并开始录制，再依次点击「慢：循环 push」与「快：整体赋值」对比
-        <code>arr.length</code> 与日志耗时；也可点错误 <code>onclick</code> 按钮观察报错；复习要点与面试答法见本区块。
+        <code>arr.length</code>
+        与日志耗时；也可点错误
+        <code>onclick</code>
+        按钮观察报错；复习要点与面试答法见本区块。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue 模板中的 <code>@click</code> 会在组件实例上下文中解析 methods；原生 <code>onclick="handleClickFn()"</code> 在全局作用域查找函数，访问不到当前 Vue 实例的 methods。</li>
-          <li>本页按钮对比 1 万次逐项 <code>push</code> 与一次整体赋值。逐项写入会多次经过 Vue2 包装的数组变更方法，制造更多依赖通知和调度压力。</li>
-          <li>批量数据处理时，实践中通常先在普通数组 <code>buffer</code> 中完成计算、过滤、排序，再一次性赋给响应式状态，减少不必要的中间更新。</li>
-          <li>Chrome DevTools Performance 面板可观察 scripting 耗时、long task、渲染和布局成本。示例中的 <code>performance.now()</code> 只测局部 JS 耗时，不能替代完整 timeline 分析。</li>
-          <li>性能优化边界：大列表不应只靠减少 push 次数，还要考虑分页、虚拟列表、稳定 <code>key</code>、避免深层响应式大对象、减少 watcher 数量和不必要的 DOM 渲染。</li>
+          <li>
+            Vue 模板中的
+            <code>@click</code>
+            会在组件实例上下文中解析 methods；原生
+            <code>onclick="handleClickFn()"</code>
+            在全局作用域查找函数，访问不到当前 Vue 实例的 methods。
+          </li>
+          <li>
+            本页按钮对比 1 万次逐项
+            <code>push</code>
+            与一次整体赋值。逐项写入会多次经过 Vue2 包装的数组变更方法，制造更多依赖通知和调度压力。
+          </li>
+          <li>
+            批量数据处理时，实践中通常先在普通数组
+            <code>buffer</code>
+            中完成计算、过滤、排序，再一次性赋给响应式状态，减少不必要的中间更新。
+          </li>
+          <li>
+            Chrome DevTools Performance 面板可观察 scripting 耗时、long
+            task、渲染和布局成本。示例中的
+            <code>performance.now()</code>
+            只测局部 JS 耗时，不能替代完整 timeline 分析。
+          </li>
+          <li>
+            性能优化边界：大列表不应只靠减少 push 次数，还要考虑分页、虚拟列表、稳定
+            <code>key</code>
+            、避免深层响应式大对象、减少 watcher 数量和不必要的 DOM 渲染。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>为什么大数组逐项 push 可能比整体赋值慢？</strong> 结论是逐项 push 会让响应式系统经历更多次数组变更拦截和更新调度。原因是 Vue2 对数组变更方法做了包装，每次变更都可能通知依赖。项目里导入、筛选或聚合大量数据时，先构造普通数组再整体替换通常更稳定。</li>
-          <li><strong>原生 onclick 和 Vue 的 @click 有什么作用域区别？</strong> 结论是 <code>@click</code> 在 Vue 模板编译后的组件上下文中调用 methods，原生 <code>onclick</code> 是浏览器内联事件，默认找全局函数。原因是二者绑定和作用域模型不同。Vue 项目里应使用 <code>v-on</code>/<code>@</code>，并把错误路径作为调试信号。</li>
-          <li><strong>Performance 面板应该观察哪些信号？</strong> 结论是看长任务、scripting 耗时、渲染和布局是否被数据更新放大。原因是 <code>performance.now()</code> 只能给一段代码打点，无法展示浏览器主线程完整工作。项目里要结合录制结果、组件更新范围和 DOM 数量判断瓶颈。</li>
-          <li><strong>Vue2 大列表性能优化有哪些边界方案？</strong> 结论是减少响应式写入次数、减少渲染节点、减少 watcher 和稳定 diff。原因是性能压力可能来自数据观察、虚拟 DOM diff、真实 DOM 更新或布局。项目边界上，大量可见行优先虚拟列表，大量静态数据可考虑冻结或不放入深层响应式对象。</li>
+          <li>
+            <strong>为什么大数组逐项 push 可能比整体赋值慢？</strong>
+            结论是逐项 push 会让响应式系统经历更多次数组变更拦截和更新调度。原因是 Vue2
+            对数组变更方法做了包装，每次变更都可能通知依赖。项目里导入、筛选或聚合大量数据时，先构造普通数组再整体替换通常更稳定。
+          </li>
+          <li>
+            <strong>原生 onclick 和 Vue 的 @click 有什么作用域区别？</strong>
+            结论是
+            <code>@click</code>
+            在 Vue 模板编译后的组件上下文中调用 methods，原生
+            <code>onclick</code>
+            是浏览器内联事件，默认找全局函数。原因是二者绑定和作用域模型不同。Vue 项目里应使用
+            <code>v-on</code>
+            /
+            <code>@</code>
+            ，并把错误路径作为调试信号。
+          </li>
+          <li>
+            <strong>Performance 面板应该观察哪些信号？</strong>
+            结论是看长任务、scripting 耗时、渲染和布局是否被数据更新放大。原因是
+            <code>performance.now()</code>
+            只能给一段代码打点，无法展示浏览器主线程完整工作。项目里要结合录制结果、组件更新范围和
+            DOM 数量判断瓶颈。
+          </li>
+          <li>
+            <strong>Vue2 大列表性能优化有哪些边界方案？</strong>
+            结论是减少响应式写入次数、减少渲染节点、减少 watcher 和稳定
+            diff。原因是性能压力可能来自数据观察、虚拟 DOM diff、真实 DOM
+            更新或布局。项目边界上，大量可见行优先虚拟列表，大量静态数据可考虑冻结或不放入深层响应式对象。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://v2.vuejs.org/v2/guide/reactivity.html" target="_blank" rel="noreferrer">Vue 2 官方文档：Reactivity in Depth</a></li>
-          <li><a href="https://v2.vuejs.org/v2/guide/events.html" target="_blank" rel="noreferrer">Vue 2 官方文档：Event Handling</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Performance/now" target="_blank" rel="noreferrer">MDN：performance.now()</a></li>
-          <li><a href="https://developer.chrome.com/docs/devtools/performance" target="_blank" rel="noreferrer">Chrome DevTools：Performance 面板</a></li>
+          <li>
+            <a
+              href="https://v2.vuejs.org/v2/guide/reactivity.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 2 官方文档：Reactivity in Depth
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/guide/events.html" target="_blank" rel="noreferrer">
+              Vue 2 官方文档：Event Handling
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Performance/now"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN：performance.now()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.chrome.com/docs/devtools/performance"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Chrome DevTools：Performance 面板
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -67,13 +157,22 @@
     <div id="app">
       <div>{{ message }}</div>
       <p class="warn">错误写法（原生 onclick 无法调用 Vue methods）：</p>
-      <button type="button" onclick="handleClickFn()">onclick="handleClickFn()" — 点击会报错</button>
+      <button type="button" onclick="handleClickFn()">
+        onclick="handleClickFn()" — 点击会报错
+      </button>
       <p>正确写法：</p>
       <button type="button" @click="pushManyTimes">慢：循环 push 1 万次到响应式 arr</button>
-      <button type="button" @click="assignWhole">快：非响应式 buffer 处理后 this.arr = buffer</button>
+      <button type="button" @click="assignWhole">
+        快：非响应式 buffer 处理后 this.arr = buffer
+      </button>
       <div>arr.length = {{ arr.length }}</div>
       <pre>{{ logs.join('\n') }}</pre>
-      <p><small>提示：点击按钮前打开 DevTools → Performance → 录制，可在 timeline 中看到 scripting 耗时差异</small></p>
+      <p>
+        <small>
+          提示：点击按钮前打开 DevTools → Performance → 录制，可在 timeline 中看到 scripting
+          耗时差异
+        </small>
+      </p>
     </div>
     <!-- PAGE_DOM_END -->
 
@@ -83,41 +182,40 @@
       // 大数组性能对比：逐项 push vs buffer 整体赋值；原生 onclick 与 @click 作用域
       // ---------------------------------------------------------------------------
       new Vue({
-        el: "#app",
+        el: '#app',
         data() {
           return {
-            message: "大数组响应式性能对比",
+            message: '大数组响应式性能对比',
             arr: [],
-            logs: []
+            logs: [],
           };
         },
         mounted() {
-          console.log("vm._data:", this._data);
-          console.log("vm.data 不存在:", this.data);
+          console.log('vm._data:', this._data);
+          console.log('vm.data 不存在:', this.data);
         },
         methods: {
           _log(msg) {
-            this.logs.unshift(new Date().toLocaleTimeString() + "  " + msg);
+            this.logs.unshift(new Date().toLocaleTimeString() + '  ' + msg);
           },
           pushManyTimes() {
             var t0 = performance.now();
-            var buffer = new Array(10000).fill("x");
+            var buffer = new Array(10000).fill('x');
             for (var i = 0; i < buffer.length; i++) {
               this.arr.push(buffer[i]);
             }
             var ms = (performance.now() - t0).toFixed(1);
-            this._log("循环 push 1 万次耗时 " + ms + "ms（打开 Performance 面板可录 timeline）");
+            this._log('循环 push 1 万次耗时 ' + ms + 'ms（打开 Performance 面板可录 timeline）');
           },
           assignWhole() {
             var t0 = performance.now();
-            var buffer = new Array(10000).fill("x");
+            var buffer = new Array(10000).fill('x');
             this.arr = buffer.slice();
             var ms = (performance.now() - t0).toFixed(1);
-            this._log("整体赋值 1 万元素耗时 " + ms + "ms");
-          }
-        }
+            this._log('整体赋值 1 万元素耗时 ' + ms + 'ms');
+          },
+        },
       });
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -127,17 +225,21 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./05-%E5%AE%9E%E4%BE%8B%E4%B8%8Edata%E4%BB%A3%E7%90%86.html">← 实例与data代理</a>
-        <a href="../03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/01-%E5%85%AB%E4%B8%AA%E9%92%A9%E5%AD%90%E9%80%9F%E8%AE%B0.html">八个钩子速记 →</a>
+        <a
+          href="../03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/01-%E5%85%AB%E4%B8%AA%E9%92%A9%E5%AD%90%E9%80%9F%E8%AE%B0.html"
+        >
+          八个钩子速记 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

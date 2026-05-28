@@ -29,31 +29,141 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>通过 iterate 统计已用容量</h1>
-      <p class="hint">阅读本复习区后，点击下方按钮运行 iterate 估算与 origin 配额对照。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>localforage.iterate()</code> 会遍历当前 store 的每个 key/value，适合做业务层“我写入了多少数据”的粗略统计，但它不是浏览器底层物理占用统计。</li>
-          <li>用 <code>TextEncoder</code> 计算字符串 UTF-8 字节数，比直接用 <code>length</code> 更接近真实文本大小；中文、emoji 等字符用 <code>length</code> 会明显低估或误判。</li>
-          <li>值类型会影响估算策略：<code>Blob</code> 可直接读 <code>size</code>，<code>ArrayBuffer</code> 可读 <code>byteLength</code>，普通对象可 JSON 序列化估算，<code>Date</code>、<code>Map</code>、循环引用需要特殊处理。</li>
-          <li><code>navigator.storage.estimate()</code> 返回的是整个 origin 的 <code>usage</code> 和 <code>quota</code>，包含 IndexedDB、Cache Storage 等来源；它适合判断总体配额压力，不适合精确归因到某个 localforage store。</li>
-          <li>全量遍历本身是异步 I/O 和序列化工作，数据量大时可能很慢；实际项目应维护增量元数据、分批统计，或只在设置页/诊断页触发。</li>
-          <li><strong>运行环境：</strong> <code>navigator.storage.estimate()</code> 在多数现代浏览器可用；<code>file://</code> 下配额数值可能为 0 或与 http 不同。结果仅为估算，非精确物理占用。</li>
+          <li>
+            <code>localforage.iterate()</code>
+            会遍历当前 store 的每个
+            key/value，适合做业务层“我写入了多少数据”的粗略统计，但它不是浏览器底层物理占用统计。
+          </li>
+          <li>
+            用
+            <code>TextEncoder</code>
+            计算字符串 UTF-8 字节数，比直接用
+            <code>length</code>
+            更接近真实文本大小；中文、emoji 等字符用
+            <code>length</code>
+            会明显低估或误判。
+          </li>
+          <li>
+            值类型会影响估算策略：
+            <code>Blob</code>
+            可直接读
+            <code>size</code>
+            ，
+            <code>ArrayBuffer</code>
+            可读
+            <code>byteLength</code>
+            ，普通对象可 JSON 序列化估算，
+            <code>Date</code>
+            、
+            <code>Map</code>
+            、循环引用需要特殊处理。
+          </li>
+          <li>
+            <code>navigator.storage.estimate()</code>
+            返回的是整个 origin 的
+            <code>usage</code>
+            和
+            <code>quota</code>
+            ，包含 IndexedDB、Cache Storage 等来源；它适合判断总体配额压力，不适合精确归因到某个
+            localforage store。
+          </li>
+          <li>
+            全量遍历本身是异步 I/O
+            和序列化工作，数据量大时可能很慢；实际项目应维护增量元数据、分批统计，或只在设置页/诊断页触发。
+          </li>
+          <li>
+            <strong>运行环境：</strong>
+            <code>navigator.storage.estimate()</code>
+            在多数现代浏览器可用；
+            <code>file://</code>
+            下配额数值可能为 0 或与 http 不同。结果仅为估算，非精确物理占用。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>如何粗略统计 localforage 当前 store 已用容量？</strong> 结论是遍历 store 后按 key 和 value 的序列化字节数累加。原因是 localforage 没有提供单个 store 的精确物理占用 API；项目里可用这个估算给用户展示缓存大小，但不能把它当作浏览器配额判定。</li>
-          <li><strong>为什么 <code>key.length + JSON.stringify(value).length</code> 不是准确字节数？</strong> 结论是它只是字符数近似。原因是 JavaScript 字符串长度按 UTF-16 code unit 计算，存储层可能按 UTF-8、结构化克隆或浏览器内部格式保存；中文、emoji、Blob 和对象都会让误差变大。</li>
-          <li><strong><code>StorageManager.estimate()</code> 和业务自算容量有什么区别？</strong> 结论是前者看 origin 总体，后者看业务数据估算。原因是 <code>estimate()</code> 汇总浏览器认为当前源已用和可用的配额，不能告诉你某个 key 或 store 占多少；排查配额压力时两者可以结合。</li>
-          <li><strong>遍历统计容量在大数据量场景有什么性能风险？</strong> 结论是可能造成明显耗时和额外序列化开销。原因是每条数据都要读取、转换、累计；真实项目应避免在首屏自动运行，改成用户主动触发、分页统计或写入时维护累计元数据。</li>
-          <li><strong>Blob、Date、循环引用等值如何影响容量估算？</strong> 结论是不能统一用 JSON。原因是 <code>Blob</code> 有 <code>size</code>，<code>Date</code> 会被 JSON 转成字符串，循环引用会直接抛错；业务上应按数据类型选择估算策略并捕获异常。</li>
+          <li>
+            <strong>如何粗略统计 localforage 当前 store 已用容量？</strong>
+            结论是遍历 store 后按 key 和 value 的序列化字节数累加。原因是 localforage 没有提供单个
+            store 的精确物理占用
+            API；项目里可用这个估算给用户展示缓存大小，但不能把它当作浏览器配额判定。
+          </li>
+          <li>
+            <strong>
+              为什么
+              <code>key.length + JSON.stringify(value).length</code>
+              不是准确字节数？
+            </strong>
+            结论是它只是字符数近似。原因是 JavaScript 字符串长度按 UTF-16 code unit
+            计算，存储层可能按 UTF-8、结构化克隆或浏览器内部格式保存；中文、emoji、Blob
+            和对象都会让误差变大。
+          </li>
+          <li>
+            <strong>
+              <code>StorageManager.estimate()</code>
+              和业务自算容量有什么区别？
+            </strong>
+            结论是前者看 origin 总体，后者看业务数据估算。原因是
+            <code>estimate()</code>
+            汇总浏览器认为当前源已用和可用的配额，不能告诉你某个 key 或 store
+            占多少；排查配额压力时两者可以结合。
+          </li>
+          <li>
+            <strong>遍历统计容量在大数据量场景有什么性能风险？</strong>
+            结论是可能造成明显耗时和额外序列化开销。原因是每条数据都要读取、转换、累计；真实项目应避免在首屏自动运行，改成用户主动触发、分页统计或写入时维护累计元数据。
+          </li>
+          <li>
+            <strong>Blob、Date、循环引用等值如何影响容量估算？</strong>
+            结论是不能统一用 JSON。原因是
+            <code>Blob</code>
+            有
+            <code>size</code>
+            ，
+            <code>Date</code>
+            会被 JSON 转成字符串，循环引用会直接抛错；业务上应按数据类型选择估算策略并捕获异常。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://localforage.github.io/localForage/#data-api-iterate" target="_blank" rel="noreferrer">localForage API: iterate()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder" target="_blank" rel="noreferrer">MDN: TextEncoder</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/estimate" target="_blank" rel="noreferrer">MDN: StorageManager estimate()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob/size" target="_blank" rel="noreferrer">MDN: Blob size</a></li>
+          <li>
+            <a
+              href="https://localforage.github.io/localForage/#data-api-iterate"
+              target="_blank"
+              rel="noreferrer"
+            >
+              localForage API: iterate()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: TextEncoder
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/estimate"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: StorageManager estimate()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Blob/size"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Blob size
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -62,7 +172,11 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block" aria-label="已用容量估算">
       <h2 class="demo-block__label">运行示例</h2>
-      <p class="tip">会先写入示例数据，再遍历 store 累加字节并调用 <code>storage.estimate()</code>。</p>
+      <p class="tip">
+        会先写入示例数据，再遍历 store 累加字节并调用
+        <code>storage.estimate()</code>
+        。
+      </p>
       <button id="run-estimate" type="button">运行容量估算</button>
       <pre id="runtime-output" aria-live="polite">尚未运行。</pre>
     </section>
@@ -71,79 +185,79 @@
     <!-- SCRIPT_START -->
     <script>
       (function () {
-        var outputEl = document.getElementById("runtime-output");
+        var outputEl = document.getElementById('runtime-output');
         var lines = [];
 
         function log(text) {
           lines.push(text);
           console.log(text);
-          outputEl.textContent = lines.join("\n");
+          outputEl.textContent = lines.join('\n');
         }
 
-      // ============ 1. 字节估算工具 ============
-      const encoder = new TextEncoder();
-      const store = localforage.createInstance({
-        name: "frontend-learning-demos",
-        storeName: "localforage_usage_estimate",
-      });
-
-      function stringBytes(text) {
-        return encoder.encode(String(text)).byteLength;
-      }
-
-      function valueBytes(value) {
-        if (value == null) return 0;
-        if (typeof value === "string") return stringBytes(value);
-        if (value instanceof Blob) return value.size;
-        if (value instanceof ArrayBuffer) return value.byteLength;
-
-        try {
-          return stringBytes(JSON.stringify(value));
-        } catch (error) {
-          console.warn("无法序列化，使用字符串兜底估算：", error);
-          return stringBytes(String(value));
-        }
-      }
-
-      async function seedDemoData() {
-        await store.setItem("name", "Join");
-        await store.setItem("profile", { level: "demo", updatedAt: new Date().toISOString() });
-        await store.setItem("note", "localforage 容量估算示例：中文和 emoji 🚀 会占用多个字节。");
-      }
-
-      // ============ 2. 遍历 store 估算业务已用 ============
-      async function estimateStoreUsage() {
-        lines = [];
-        await seedDemoData();
-
-        const startedAt = performance.now();
-        let totalBytes = 0;
-
-        await store.iterate(function (value, key, iterationNumber) {
-          const bytes = stringBytes(key) + valueBytes(value);
-          totalBytes += bytes;
-          log(iterationNumber + ": " + key + " → " + bytes + " bytes");
+        // ============ 1. 字节估算工具 ============
+        const encoder = new TextEncoder();
+        const store = localforage.createInstance({
+          name: 'frontend-learning-demos',
+          storeName: 'localforage_usage_estimate',
         });
 
-        log("业务估算已用：" + (totalBytes / 1024).toFixed(2) + " KB");
-        log("遍历耗时：" + ((performance.now() - startedAt) / 1000).toFixed(3) + "s");
-
-        // ============ 3. origin 级 estimate（若支持）============
-        if (navigator.storage?.estimate) {
-          const estimate = await navigator.storage.estimate();
-          log("origin 总体用量：" + Math.round((estimate.usage || 0) / 1024) + " KB");
-          log("origin 总体配额：" + Math.round((estimate.quota || 0) / 1024 / 1024) + " MB");
-        } else {
-          log("当前环境不支持 navigator.storage.estimate()");
+        function stringBytes(text) {
+          return encoder.encode(String(text)).byteLength;
         }
-      }
 
-      document.getElementById("run-estimate").addEventListener("click", function () {
-        estimateStoreUsage().catch(function (error) {
-          log("失败: " + error.name + " - " + error.message);
-          console.error("容量估算失败：", error);
+        function valueBytes(value) {
+          if (value == null) return 0;
+          if (typeof value === 'string') return stringBytes(value);
+          if (value instanceof Blob) return value.size;
+          if (value instanceof ArrayBuffer) return value.byteLength;
+
+          try {
+            return stringBytes(JSON.stringify(value));
+          } catch (error) {
+            console.warn('无法序列化，使用字符串兜底估算：', error);
+            return stringBytes(String(value));
+          }
+        }
+
+        async function seedDemoData() {
+          await store.setItem('name', 'Join');
+          await store.setItem('profile', { level: 'demo', updatedAt: new Date().toISOString() });
+          await store.setItem('note', 'localforage 容量估算示例：中文和 emoji 🚀 会占用多个字节。');
+        }
+
+        // ============ 2. 遍历 store 估算业务已用 ============
+        async function estimateStoreUsage() {
+          lines = [];
+          await seedDemoData();
+
+          const startedAt = performance.now();
+          let totalBytes = 0;
+
+          await store.iterate(function (value, key, iterationNumber) {
+            const bytes = stringBytes(key) + valueBytes(value);
+            totalBytes += bytes;
+            log(iterationNumber + ': ' + key + ' → ' + bytes + ' bytes');
+          });
+
+          log('业务估算已用：' + (totalBytes / 1024).toFixed(2) + ' KB');
+          log('遍历耗时：' + ((performance.now() - startedAt) / 1000).toFixed(3) + 's');
+
+          // ============ 3. origin 级 estimate（若支持）============
+          if (navigator.storage?.estimate) {
+            const estimate = await navigator.storage.estimate();
+            log('origin 总体用量：' + Math.round((estimate.usage || 0) / 1024) + ' KB');
+            log('origin 总体配额：' + Math.round((estimate.quota || 0) / 1024 / 1024) + ' MB');
+          } else {
+            log('当前环境不支持 navigator.storage.estimate()');
+          }
+        }
+
+        document.getElementById('run-estimate').addEventListener('click', function () {
+          estimateStoreUsage().catch(function (error) {
+            log('失败: ' + error.name + ' - ' + error.message);
+            console.error('容量估算失败：', error);
+          });
         });
-      });
       })();
     </script>
     <!-- SCRIPT_END -->
@@ -154,15 +268,19 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./01-localforage-%E5%9F%BA%E7%A1%80API.html">相关 · localforage-基础API</a>
-        <a href="./03-%E8%8E%B7%E5%8F%96%E5%89%A9%E4%BD%99%E5%AE%B9%E9%87%8F.html">相关 · 获取剩余容量</a>
+        <a href="./03-%E8%8E%B7%E5%8F%96%E5%89%A9%E4%BD%99%E5%AE%B9%E9%87%8F.html">
+          相关 · 获取剩余容量
+        </a>
         <a href="./01-localforage-%E5%9F%BA%E7%A1%80API.html">← localforage-基础API</a>
-        <a href="./03-%E8%8E%B7%E5%8F%96%E5%89%A9%E4%BD%99%E5%AE%B9%E9%87%8F.html">获取剩余容量 →</a>
+        <a href="./03-%E8%8E%B7%E5%8F%96%E5%89%A9%E4%BD%99%E5%AE%B9%E9%87%8F.html">
+          获取剩余容量 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

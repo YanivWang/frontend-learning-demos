@@ -27,29 +27,161 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>手写 instanceof</h1>
-      <p class="hint">先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。</p>
+      <p class="hint">
+        先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>value instanceof Constructor</code> 的核心是原型链匹配：从左值对象的 <code>[[Prototype]]</code> 开始向上查找，能找到 <code>Constructor.prototype</code> 就返回 <code>true</code>。</li>
-          <li>左值如果是原始值、<code>null</code> 或 <code>undefined</code>，没有普通对象原型链可遍历，原生 <code>instanceof</code> 会直接得到 <code>false</code>。</li>
-          <li>右值不是函数时，原生 <code>instanceof</code> 会抛 <code>TypeError</code>；面试手写版至少要区分“左值不匹配返回 false”和“右值非法抛错”。</li>
-          <li>遍历原型链时推荐使用 <code>Object.getPrototypeOf()</code>，它是标准 API；<code>__proto__</code> 是历史访问器，不适合作为现代实现的首选。</li>
-          <li><code>instanceof</code> 依赖构造函数原型，跨 iframe、手动改原型、<code>Symbol.hasInstance</code> 自定义判断时都可能和直觉不同；判断数组优先用 <code>Array.isArray()</code>。</li>
-          <li>业务代码通常不需要手写 <code>instanceof</code>，这个题主要考原型链、异常边界和类型判断 API 的取舍。</li>
+          <li>
+            <code>value instanceof Constructor</code>
+            的核心是原型链匹配：从左值对象的
+            <code>[[Prototype]]</code>
+            开始向上查找，能找到
+            <code>Constructor.prototype</code>
+            就返回
+            <code>true</code>
+            。
+          </li>
+          <li>
+            左值如果是原始值、
+            <code>null</code>
+            或
+            <code>undefined</code>
+            ，没有普通对象原型链可遍历，原生
+            <code>instanceof</code>
+            会直接得到
+            <code>false</code>
+            。
+          </li>
+          <li>
+            右值不是函数时，原生
+            <code>instanceof</code>
+            会抛
+            <code>TypeError</code>
+            ；面试手写版至少要区分“左值不匹配返回 false”和“右值非法抛错”。
+          </li>
+          <li>
+            遍历原型链时推荐使用
+            <code>Object.getPrototypeOf()</code>
+            ，它是标准 API；
+            <code>__proto__</code>
+            是历史访问器，不适合作为现代实现的首选。
+          </li>
+          <li>
+            <code>instanceof</code>
+            依赖构造函数原型，跨 iframe、手动改原型、
+            <code>Symbol.hasInstance</code>
+            自定义判断时都可能和直觉不同；判断数组优先用
+            <code>Array.isArray()</code>
+            。
+          </li>
+          <li>
+            业务代码通常不需要手写
+            <code>instanceof</code>
+            ，这个题主要考原型链、异常边界和类型判断 API 的取舍。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>instanceof</code> 的判断过程是什么？</strong> 结论：它判断右侧构造函数的 <code>prototype</code> 是否出现在左侧对象的原型链上。原因是实例方法查找和构造关系都依赖原型链，而不是只看构造函数名称。边界是自定义 <code>Symbol.hasInstance</code>、跨 realm 对象和被改写的 <code>prototype</code> 会影响判断结果。</li>
-          <li><strong>为什么原始值和 <code>null</code> 做 <code>instanceof</code> 会返回 <code>false</code>？</strong> 结论：左侧没有可遍历的对象原型链时不会命中构造函数原型。原因是 <code>instanceof</code> 检查的是对象内部原型，而不是装箱后的临时包装对象。项目里判断基础类型应优先用 <code>typeof</code>，不要用 <code>instanceof String</code> 判断字符串字面量。</li>
-          <li><strong>手写 <code>instanceof</code> 为什么要校验右侧构造函数？</strong> 结论：右侧不是可调用对象时应抛出 <code>TypeError</code>，不能简单返回 <code>false</code>。原因是原生运算符把“类型错误”和“原型链不匹配”作为不同语义处理。面试实现可以覆盖常规函数构造器，但要说明未完整实现 <code>Symbol.hasInstance</code> 等规范细节。</li>
-          <li><strong><code>instanceof</code>、<code>typeof</code> 和 <code>Array.isArray()</code> 应该如何选？</strong> 结论：基础类型用 <code>typeof</code>，数组用 <code>Array.isArray()</code>，自定义类实例关系才考虑 <code>instanceof</code>。原因是 <code>typeof</code> 不看原型链，<code>Array.isArray()</code> 对数组品牌判断更可靠。边界是多窗口对象或可伪造原型时，<code>instanceof</code> 不适合当安全边界。</li>
+          <li>
+            <strong>
+              <code>instanceof</code>
+              的判断过程是什么？
+            </strong>
+            结论：它判断右侧构造函数的
+            <code>prototype</code>
+            是否出现在左侧对象的原型链上。原因是实例方法查找和构造关系都依赖原型链，而不是只看构造函数名称。边界是自定义
+            <code>Symbol.hasInstance</code>
+            、跨 realm 对象和被改写的
+            <code>prototype</code>
+            会影响判断结果。
+          </li>
+          <li>
+            <strong>
+              为什么原始值和
+              <code>null</code>
+              做
+              <code>instanceof</code>
+              会返回
+              <code>false</code>
+              ？
+            </strong>
+            结论：左侧没有可遍历的对象原型链时不会命中构造函数原型。原因是
+            <code>instanceof</code>
+            检查的是对象内部原型，而不是装箱后的临时包装对象。项目里判断基础类型应优先用
+            <code>typeof</code>
+            ，不要用
+            <code>instanceof String</code>
+            判断字符串字面量。
+          </li>
+          <li>
+            <strong>
+              手写
+              <code>instanceof</code>
+              为什么要校验右侧构造函数？
+            </strong>
+            结论：右侧不是可调用对象时应抛出
+            <code>TypeError</code>
+            ，不能简单返回
+            <code>false</code>
+            。原因是原生运算符把“类型错误”和“原型链不匹配”作为不同语义处理。面试实现可以覆盖常规函数构造器，但要说明未完整实现
+            <code>Symbol.hasInstance</code>
+            等规范细节。
+          </li>
+          <li>
+            <strong>
+              <code>instanceof</code>
+              、
+              <code>typeof</code>
+              和
+              <code>Array.isArray()</code>
+              应该如何选？
+            </strong>
+            结论：基础类型用
+            <code>typeof</code>
+            ，数组用
+            <code>Array.isArray()</code>
+            ，自定义类实例关系才考虑
+            <code>instanceof</code>
+            。原因是
+            <code>typeof</code>
+            不看原型链，
+            <code>Array.isArray()</code>
+            对数组品牌判断更可靠。边界是多窗口对象或可伪造原型时，
+            <code>instanceof</code>
+            不适合当安全边界。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof" target="_blank" rel="noreferrer">MDN: instanceof</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf" target="_blank" rel="noreferrer">MDN: Object.getPrototypeOf()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray" target="_blank" rel="noreferrer">MDN: Array.isArray()</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: instanceof
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Object.getPrototypeOf()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Array.isArray()
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -66,20 +198,20 @@
     <!-- SCRIPT_START -->
     <script>
       (function () {
-        var out = document.getElementById("runtime-output");
+        var out = document.getElementById('runtime-output');
         var lines = [];
         function emit(line) {
           console.log(line);
           lines.push(line);
-          if (out) out.textContent = lines.join("\n");
+          if (out) out.textContent = lines.join('\n');
         }
 
         // ============ 1. 手写 myInstanceof：沿原型链查找 Constructor.prototype ============
         function myInstanceof(value, Constructor) {
           if (value === null || value === undefined) return false;
-          if (typeof value !== "object" && typeof value !== "function") return false;
-          if (typeof Constructor !== "function") {
-            throw new TypeError("Right-hand side of instanceof is not callable");
+          if (typeof value !== 'object' && typeof value !== 'function') return false;
+          if (typeof Constructor !== 'function') {
+            throw new TypeError('Right-hand side of instanceof is not callable');
           }
           const targetPrototype = Constructor.prototype;
           let current = Object.getPrototypeOf(value);
@@ -94,18 +226,18 @@
         function Person() {}
         const p = new Person();
 
-        emit("p instanceof Person: " + myInstanceof(p, Person));
-        emit("p instanceof Object: " + myInstanceof(p, Object));
-        emit("[] instanceof Array: " + myInstanceof([], Array));
-        emit('"abc" instanceof String: ' + myInstanceof("abc", String));
-        emit("null instanceof Object: " + myInstanceof(null, Object));
+        emit('p instanceof Person: ' + myInstanceof(p, Person));
+        emit('p instanceof Object: ' + myInstanceof(p, Object));
+        emit('[] instanceof Array: ' + myInstanceof([], Array));
+        emit('"abc" instanceof String: ' + myInstanceof('abc', String));
+        emit('null instanceof Object: ' + myInstanceof(null, Object));
 
         // ============ 3. 验证：右值非函数抛 TypeError ============
         try {
           myInstanceof({}, {});
-          emit("右值非函数: 未抛错");
+          emit('右值非函数: 未抛错');
         } catch (e) {
-          emit("右值非函数: " + e.name); // TypeError
+          emit('右值非函数: ' + e.name); // TypeError
         }
       })();
     </script>
@@ -117,15 +249,19 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./03-new.html">相关 · new</a>
-        <a href="../../03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%8E%9F%E5%9E%8B%E9%93%BE.html">相关 · 03-对象与原型/原型链</a>
+        <a
+          href="../../03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%8E%9F%E5%9E%8B%E9%93%BE.html"
+        >
+          相关 · 03-对象与原型/原型链
+        </a>
         <a href="./03-new.html">← new</a>
         <a href="./05-Promise.html">Promise →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

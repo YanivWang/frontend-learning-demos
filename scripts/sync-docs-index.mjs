@@ -6,13 +6,13 @@
  * 运行：node scripts/sync-docs-index.mjs [--check]
  */
 
-import { readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
-const INDEX_PATH = join(ROOT, "docs/index.md");
-const isCheckMode = process.argv.includes("--check");
+const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
+const INDEX_PATH = join(ROOT, 'docs/index.md');
+const isCheckMode = process.argv.includes('--check');
 
 function countSection(manifest, title) {
   const sec = manifest.sections.find((s) => s.title === title);
@@ -23,16 +23,16 @@ function countSection(manifest, title) {
 function renderIndex(manifest) {
   const total = manifest.sections.reduce(
     (sum, sec) => sum + sec.groups.reduce((n, g) => n + g.items.length, 0),
-    0
+    0,
   );
-  const js = countSection(manifest, "JavaScript");
-  const css = countSection(manifest, "CSS");
-  const vue2 = countSection(manifest, "Vue 2");
-  const vue3 = countSection(manifest, "Vue 3");
-  const react18 = countSection(manifest, "React 18");
-  const react19 = countSection(manifest, "React 19");
-  const ts = countSection(manifest, "TypeScript");
-  const demos = countSection(manifest, "综合 Demo");
+  const js = countSection(manifest, 'JavaScript');
+  const css = countSection(manifest, 'CSS');
+  const vue2 = countSection(manifest, 'Vue 2');
+  const vue3 = countSection(manifest, 'Vue 3');
+  const react18 = countSection(manifest, 'React 18');
+  const react19 = countSection(manifest, 'React 19');
+  const ts = countSection(manifest, 'TypeScript');
+  const demos = countSection(manifest, '综合 Demo');
 
   return `---
 layout: home
@@ -77,25 +77,27 @@ features:
 }
 
 async function main() {
-  const manifest = JSON.parse(await readFile(join(ROOT, "manifest.json"), "utf8"));
+  const manifest = JSON.parse(await readFile(join(ROOT, 'manifest.json'), 'utf8'));
   const next = renderIndex(manifest);
-  const current = await readFile(INDEX_PATH, "utf8");
+  const current = await readFile(INDEX_PATH, 'utf8');
 
   if (isCheckMode) {
     if (current !== next) {
-      console.error("[sync-docs-index] 失败：docs/index.md 与 manifest 不一致，请运行 node scripts/sync-docs-index.mjs");
+      console.error(
+        '[sync-docs-index] 失败：docs/index.md 与 manifest 不一致，请运行 node scripts/sync-docs-index.mjs',
+      );
       process.exitCode = 1;
       return;
     }
-    console.log("[sync-docs-index] 通过：docs/index.md 已同步");
+    console.log('[sync-docs-index] 通过：docs/index.md 已同步');
     return;
   }
 
-  await writeFile(INDEX_PATH, next, "utf8");
-  console.log("[sync-docs-index] 已更新 docs/index.md");
+  await writeFile(INDEX_PATH, next, 'utf8');
+  console.log('[sync-docs-index] 已更新 docs/index.md');
 }
 
 main().catch((err) => {
-  console.error("[sync-docs-index] 异常：", err);
+  console.error('[sync-docs-index] 异常：', err);
   process.exitCode = 1;
 });

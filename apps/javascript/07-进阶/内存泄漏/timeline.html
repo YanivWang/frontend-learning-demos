@@ -28,28 +28,87 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>用 Performance 面板观察 DOM 节点 + 内存增长</h1>
-      <p class="hint">打开 DevTools 的 Performance Monitor，点击“增长”观察 JS heap 与 DOM Nodes 曲线。<strong>需人工在浏览器验证</strong>：多次点击会明显占用内存，请在本地环境操作。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>本页每次点击都会向 <code>document.body</code> 追加 10000 个 <code>p</code> 节点，这些节点仍连接在文档树上，因此会直接增加 DOM Nodes、样式计算、布局和绘制压力。</li>
-          <li>已连接 DOM 增长和 Detached DOM 泄漏不同：前者还在页面里，通常是渲染策略或清理策略问题；Detached 节点是从 DOM 树移除后仍被 JavaScript 引用，需用 Memory 面板看 retainers。</li>
-          <li><code>x = x.concat(...)</code> 会创建新数组并复制旧元素和新增元素，反复合并大数组会推高 JS heap，造成更多分配、复制和 GC 压力；如果只是追加少量元素，通常用 <code>push</code> 更直接。</li>
-          <li>Performance Monitor 适合实时观察 JS heap size、DOM Nodes、CPU usage 和 event listeners 是否随操作持续上升；发现异常后，再用 Performance 录制或 Memory heap snapshot 定位具体对象。</li>
-          <li>这个 demo 故意制造增长，真实项目必须限制列表长度、做虚拟滚动或分页、复用节点，并在组件卸载或数据失效时清理 DOM、事件监听和大数组引用。</li>
+          <li>
+            本页每次点击都会向
+            <code>document.body</code>
+            追加 10000 个
+            <code>p</code>
+            节点，这些节点仍连接在文档树上，因此会直接增加 DOM Nodes、样式计算、布局和绘制压力。
+          </li>
+          <li>
+            已连接 DOM 增长和 Detached DOM
+            泄漏不同：前者还在页面里，通常是渲染策略或清理策略问题；Detached 节点是从 DOM
+            树移除后仍被 JavaScript 引用，需用 Memory 面板看 retainers。
+          </li>
+          <li>
+            <code>x = x.concat(...)</code>
+            会创建新数组并复制旧元素和新增元素，反复合并大数组会推高 JS heap，造成更多分配、复制和
+            GC 压力；如果只是追加少量元素，通常用
+            <code>push</code>
+            更直接。
+          </li>
+          <li>
+            Performance Monitor 适合实时观察 JS heap size、DOM Nodes、CPU usage 和 event listeners
+            是否随操作持续上升；发现异常后，再用 Performance 录制或 Memory heap snapshot
+            定位具体对象。
+          </li>
+          <li>
+            这个 demo
+            故意制造增长，真实项目必须限制列表长度、做虚拟滚动或分页、复用节点，并在组件卸载或数据失效时清理
+            DOM、事件监听和大数组引用。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>如何用 Performance Monitor 判断页面是否持续涨内存？</strong> 结论是边复现操作边观察 JS heap size、DOM Nodes 和 CPU 曲线是否持续上升且不能回落。原因是这些指标能快速提示是对象堆增长、DOM 节点增长还是执行开销过高。边界是它只能给趋势，不能直接告诉你哪段代码持有对象，根因还要靠 Performance 录制和 Heap snapshot。</li>
-          <li><strong>本页的 appendChild 和 Detached DOM 泄漏有什么区别？</strong> 结论是本页创建的是仍连接在文档中的 DOM 节点，不是 Detached 节点。原因是节点被追加到 document.body 后仍属于页面结构，浏览器必须参与渲染。项目里如果节点被移除后仍被数组、闭包或监听器引用，才需要按 Detached DOM 泄漏去查。</li>
-          <li><strong>为什么反复 concat 大数组会造成 GC 压力？</strong> 结论是 concat 返回新数组，旧数组和新数组在一段时间内都可能存在，且元素复制成本很高。原因是每次增长都要分配更大的连续结构并复制引用。项目中应避免无上限累积，按场景选择 push、环形缓冲、分页或流式处理。</li>
-          <li><strong>线上发现内存曲线持续上升怎么排查？</strong> 结论是先复现最小操作路径，再区分 DOM 增长、JS heap 增长和监听器增长。原因是不同指标对应不同问题：列表未清理、缓存无上限、闭包保留状态、重复绑定监听。边界是偶发峰值不等于泄漏，只有多轮操作后基线持续升高才更值得按泄漏处理。</li>
+          <li>
+            <strong>如何用 Performance Monitor 判断页面是否持续涨内存？</strong>
+            结论是边复现操作边观察 JS heap size、DOM Nodes 和 CPU
+            曲线是否持续上升且不能回落。原因是这些指标能快速提示是对象堆增长、DOM
+            节点增长还是执行开销过高。边界是它只能给趋势，不能直接告诉你哪段代码持有对象，根因还要靠
+            Performance 录制和 Heap snapshot。
+          </li>
+          <li>
+            <strong>本页的 appendChild 和 Detached DOM 泄漏有什么区别？</strong>
+            结论是本页创建的是仍连接在文档中的 DOM 节点，不是 Detached 节点。原因是节点被追加到
+            document.body
+            后仍属于页面结构，浏览器必须参与渲染。项目里如果节点被移除后仍被数组、闭包或监听器引用，才需要按
+            Detached DOM 泄漏去查。
+          </li>
+          <li>
+            <strong>为什么反复 concat 大数组会造成 GC 压力？</strong>
+            结论是 concat
+            返回新数组，旧数组和新数组在一段时间内都可能存在，且元素复制成本很高。原因是每次增长都要分配更大的连续结构并复制引用。项目中应避免无上限累积，按场景选择
+            push、环形缓冲、分页或流式处理。
+          </li>
+          <li>
+            <strong>线上发现内存曲线持续上升怎么排查？</strong>
+            结论是先复现最小操作路径，再区分 DOM 增长、JS heap
+            增长和监听器增长。原因是不同指标对应不同问题：列表未清理、缓存无上限、闭包保留状态、重复绑定监听。边界是偶发峰值不等于泄漏，只有多轮操作后基线持续升高才更值得按泄漏处理。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.chrome.com/docs/devtools/performance-monitor">Chrome DevTools: Performance monitor panel</a></li>
-          <li><a href="https://developer.chrome.com/docs/devtools/memory-problems">Chrome DevTools: Fix memory problems</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Memory_management">MDN: Memory management</a></li>
+          <li>
+            <a href="https://developer.chrome.com/docs/devtools/performance-monitor">
+              Chrome DevTools: Performance monitor panel
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.chrome.com/docs/devtools/memory-problems">
+              Chrome DevTools: Fix memory problems
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Memory_management"
+            >
+              MDN: Memory management
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -58,7 +117,10 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block" aria-label="内存增长演示">
       <h2>DOM + JS heap 增长演示</h2>
-      <p class="tip">打开 DevTools → More tools → Performance monitor，观察 DOM Nodes 与 JS heap size，然后多次点击按钮。</p>
+      <p class="tip">
+        打开 DevTools → More tools → Performance monitor，观察 DOM Nodes 与 JS heap
+        size，然后多次点击按钮。
+      </p>
       <button type="button" id="grow">增长</button>
       <p id="stats" aria-live="polite"></p>
     </section>
@@ -75,21 +137,21 @@
 
         // 追加 10000 个已连接 DOM 节点（非 Detached DOM）
         for (let i = 0; i < 10000; i++) {
-          document.body.appendChild(document.createElement("p"));
+          document.body.appendChild(document.createElement('p'));
         }
 
         // concat 大数组：返回新数组并复制元素，推高 JS heap
-        x = x.concat(new Array(1000 * 1000).fill("11111111"));
+        x = x.concat(new Array(1000 * 1000).fill('11111111'));
 
-        const domCount = document.getElementsByTagName("p").length;
-        document.getElementById("stats").textContent =
+        const domCount = document.getElementsByTagName('p').length;
+        document.getElementById('stats').textContent =
           `已点击 ${clickCount} 次 | DOM p 节点: ${domCount} | 累积数组 length: ${x.length}`;
         console.log(`第 ${clickCount} 次增长 | p 节点: ${domCount} | x.length: ${x.length}`);
-        console.log("→ 需人工在浏览器验证：Performance Monitor 观察 JS heap / DOM Nodes 曲线");
+        console.log('→ 需人工在浏览器验证：Performance Monitor 观察 JS heap / DOM Nodes 曲线');
       }
 
       // ============ 2. 绑定点击事件 ============
-      document.getElementById("grow").addEventListener("click", grow);
+      document.getElementById('grow').addEventListener('click', grow);
     </script>
     <!-- SCRIPT_END -->
 
@@ -105,9 +167,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

@@ -210,27 +210,123 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>拖拽调整宽度的核心流程是：按下时记录 <code>clientX</code> 和初始宽度，移动时计算偏移量，松开时解绑全局监听并恢复状态。</li>
-          <li>把 <code>mousemove</code>/<code>mouseup</code> 监听临时绑定到 <code>document</code>，可以避免鼠标移出手柄或侧栏后拖拽丢失；结束时必须解绑，避免内存泄漏和重复响应。</li>
-          <li>拖拽中临时添加 <code>.no-transition</code>，并在 <code>mousedown</code> 里 <code>preventDefault()</code>，可以减少宽度跟手滞后和文本被选中的问题。</li>
-          <li><code>requestAnimationFrame</code> 不是让宽度变化“更少计算”，而是把高频 <code>mousemove</code> 合并到浏览器下一帧提交，避免一帧内多次写响应式状态。</li>
-          <li>侧栏宽度要设置最小/最大边界，保证菜单仍可用、主内容不被完全挤压；真实项目还应支持键盘操作或可访问的替代设置项。</li>
-          <li><strong>运行环境：</strong> 鼠标拖拽在 <code>file://</code> 与 <code>http(s)://</code> 均可；触屏需 Pointer Events。本页通过 CDN 同级路径加载 Vue3，不依赖 HTTPS 特权 API。</li>
+          <li>
+            拖拽调整宽度的核心流程是：按下时记录
+            <code>clientX</code>
+            和初始宽度，移动时计算偏移量，松开时解绑全局监听并恢复状态。
+          </li>
+          <li>
+            把
+            <code>mousemove</code>
+            /
+            <code>mouseup</code>
+            监听临时绑定到
+            <code>document</code>
+            ，可以避免鼠标移出手柄或侧栏后拖拽丢失；结束时必须解绑，避免内存泄漏和重复响应。
+          </li>
+          <li>
+            拖拽中临时添加
+            <code>.no-transition</code>
+            ，并在
+            <code>mousedown</code>
+            里
+            <code>preventDefault()</code>
+            ，可以减少宽度跟手滞后和文本被选中的问题。
+          </li>
+          <li>
+            <code>requestAnimationFrame</code>
+            不是让宽度变化“更少计算”，而是把高频
+            <code>mousemove</code>
+            合并到浏览器下一帧提交，避免一帧内多次写响应式状态。
+          </li>
+          <li>
+            侧栏宽度要设置最小/最大边界，保证菜单仍可用、主内容不被完全挤压；真实项目还应支持键盘操作或可访问的替代设置项。
+          </li>
+          <li>
+            <strong>运行环境：</strong>
+            鼠标拖拽在
+            <code>file://</code>
+            与
+            <code>http(s)://</code>
+            均可；触屏需 Pointer Events。本页通过 CDN 同级路径加载 Vue3，不依赖 HTTPS 特权 API。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>拖拽调整宽度为什么要把 move/up 监听绑到 <code>document</code>？</strong> 结论是为了让拖拽在鼠标离开手柄后仍能继续并正确结束。原因是 <code>mousemove</code> 只绑在手柄上很容易断流；边界是拖拽结束必须解绑，否则会造成重复监听和异常更新。</li>
-          <li><strong><code>requestAnimationFrame</code> 在拖拽节流里解决什么问题？</strong> 结论是把高频事件合并到浏览器绘制节奏中提交。原因是鼠标移动事件可能远高于屏幕刷新率，一帧内多次改宽度只会制造额外布局压力；项目里通常记录最新值，在下一帧一次性写入。</li>
-          <li><strong>拖拽过程中为什么要禁用 <code>transition</code> 并阻止默认行为？</strong> 结论是为了保证跟手和避免误选文本。原因是宽度过渡会让视觉变化滞后于指针，默认拖选文本会干扰交互；拖拽结束后再恢复过渡效果即可。</li>
-          <li><strong>为什么要限制侧栏最小和最大宽度？</strong> 结论是拖拽必须有业务边界。原因是过窄会隐藏菜单，过宽会挤压内容；后台系统常把边界和用户偏好一起持久化，下次打开恢复。</li>
-          <li><strong>Mouse Events 和 Pointer Events 在拖拽交互里如何选？</strong> 结论是现代项目优先 Pointer Events，简单桌面 demo 可用 Mouse Events。原因是 Pointer Events 统一鼠标、触摸和触控笔，还支持 pointer capture；如果只支持鼠标，移动端拖拽要额外写 touch 逻辑。</li>
+          <li>
+            <strong>
+              拖拽调整宽度为什么要把 move/up 监听绑到
+              <code>document</code>
+              ？
+            </strong>
+            结论是为了让拖拽在鼠标离开手柄后仍能继续并正确结束。原因是
+            <code>mousemove</code>
+            只绑在手柄上很容易断流；边界是拖拽结束必须解绑，否则会造成重复监听和异常更新。
+          </li>
+          <li>
+            <strong>
+              <code>requestAnimationFrame</code>
+              在拖拽节流里解决什么问题？
+            </strong>
+            结论是把高频事件合并到浏览器绘制节奏中提交。原因是鼠标移动事件可能远高于屏幕刷新率，一帧内多次改宽度只会制造额外布局压力；项目里通常记录最新值，在下一帧一次性写入。
+          </li>
+          <li>
+            <strong>
+              拖拽过程中为什么要禁用
+              <code>transition</code>
+              并阻止默认行为？
+            </strong>
+            结论是为了保证跟手和避免误选文本。原因是宽度过渡会让视觉变化滞后于指针，默认拖选文本会干扰交互；拖拽结束后再恢复过渡效果即可。
+          </li>
+          <li>
+            <strong>为什么要限制侧栏最小和最大宽度？</strong>
+            结论是拖拽必须有业务边界。原因是过窄会隐藏菜单，过宽会挤压内容；后台系统常把边界和用户偏好一起持久化，下次打开恢复。
+          </li>
+          <li>
+            <strong>Mouse Events 和 Pointer Events 在拖拽交互里如何选？</strong>
+            结论是现代项目优先 Pointer Events，简单桌面 demo 可用 Mouse Events。原因是 Pointer
+            Events 统一鼠标、触摸和触控笔，还支持 pointer
+            capture；如果只支持鼠标，移动端拖拽要额外写 touch 逻辑。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/mousemove_event" target="_blank" rel="noreferrer">MDN: Document mousemove event</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame" target="_blank" rel="noreferrer">MDN: requestAnimationFrame()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events" target="_blank" rel="noreferrer">MDN: Pointer events</a></li>
-          <li><a href="https://vuejs.org/guide/essentials/event-handling.html" target="_blank" rel="noreferrer">Vue Docs: Event Handling</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Document/mousemove_event"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Document mousemove event
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: requestAnimationFrame()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Pointer events
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/essentials/event-handling.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue Docs: Event Handling
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -239,44 +335,41 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block" aria-label="贴边侧栏拖拽演示">
       <h2 class="demo-block__label">运行示例</h2>
-    <div id="app">
-      <!-- 左侧导航栏 -->
-      <div
-        class="sidebar"
-        :class="{ 'no-transition': isResizing }"
-        :style="{ width: sidebarWidth + 'px' }"
-        ref="sidebar"
+      <div id="app">
+        <!-- 左侧导航栏 -->
+        <div
+          class="sidebar"
+          :class="{ 'no-transition': isResizing }"
+          :style="{ width: sidebarWidth + 'px' }"
+          ref="sidebar"
         >
-        <div class="sidebar-content">
-          <div class="logo">
-            <div class="logo-icon">📊</div>
-            <div class="logo-text">管理系统</div>
-          </div>
-          <div class="menu">
-            <div
-              v-for="(item, index) in menuItems"
-              :key="index"
-              class="menu-item"
-              :class="{ active: activeMenu === index }"
-              @click="activeMenu = index"
+          <div class="sidebar-content">
+            <div class="logo">
+              <div class="logo-icon">📊</div>
+              <div class="logo-text">管理系统</div>
+            </div>
+            <div class="menu">
+              <div
+                v-for="(item, index) in menuItems"
+                :key="index"
+                class="menu-item"
+                :class="{ active: activeMenu === index }"
+                @click="activeMenu = index"
               >
-              <div class="menu-icon">{{ item.icon }}</div>
-              <div class="menu-text">{{ item.text }}</div>
+                <div class="menu-icon">{{ item.icon }}</div>
+                <div class="menu-text">{{ item.text }}</div>
+              </div>
             </div>
           </div>
-        </div>
-        <!-- 拖拽手柄 -->
-        <div
-          class="resize-handle"
-          @mousedown="startResize"
-          ></div>
+          <!-- 拖拽手柄 -->
+          <div class="resize-handle" @mousedown="startResize"></div>
         </div>
         <!-- 主内容区域 -->
         <div
           class="main-content"
           :class="{ 'no-transition': isResizing }"
           :style="{ marginLeft: sidebarWidth + 'px' }"
-          >
+        >
           <div class="content-header">
             <h1>可调整宽度的悬浮导航栏（优化版）</h1>
             <p class="description">
@@ -287,34 +380,36 @@
           <div class="features">
             <div class="feature-card">
               <h3 class="feature-title">
-                <span class="feature-icon">⚡</span> 性能优化
-                </h3>
-                <p class="feature-text">
-                  使用requestAnimationFrame确保动画与屏幕刷新率同步，
-                  避免拖拽过程中的卡顿现象，提供流畅的用户体验。
-                </p>
-              </div>
-              <div class="feature-card">
-                <h3 class="feature-title">
-                  <span class="feature-icon">🔄</span> 过渡控制
-                  </h3>
-                  <p class="feature-text">
-                    拖拽过程中禁用CSS过渡效果，减少浏览器重排计算，
-                    结束后恢复过渡效果，平衡性能与视觉体验。
-                  </p>
-                </div>
-                <div class="feature-card">
-                  <h3 class="feature-title">
-                    <span class="feature-icon">🎯</span> 精准控制
-                    </h3>
-                    <p class="feature-text">
-                      优化事件处理逻辑，减少不必要的DOM操作，
-                      确保每次调整都能精准响应鼠标移动。
-                    </p>
-                  </div>
-                </div>
-              </div>
+                <span class="feature-icon">⚡</span>
+                性能优化
+              </h3>
+              <p class="feature-text">
+                使用requestAnimationFrame确保动画与屏幕刷新率同步，
+                避免拖拽过程中的卡顿现象，提供流畅的用户体验。
+              </p>
             </div>
+            <div class="feature-card">
+              <h3 class="feature-title">
+                <span class="feature-icon">🔄</span>
+                过渡控制
+              </h3>
+              <p class="feature-text">
+                拖拽过程中禁用CSS过渡效果，减少浏览器重排计算，
+                结束后恢复过渡效果，平衡性能与视觉体验。
+              </p>
+            </div>
+            <div class="feature-card">
+              <h3 class="feature-title">
+                <span class="feature-icon">🎯</span>
+                精准控制
+              </h3>
+              <p class="feature-text">
+                优化事件处理逻辑，减少不必要的DOM操作， 确保每次调整都能精准响应鼠标移动。
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
     <!-- PAGE_DOM_END -->
 
@@ -330,13 +425,13 @@
 
           // 菜单项数据
           const menuItems = reactive([
-            { icon: "🏠", text: "首页概览" },
-            { icon: "📊", text: "数据分析" },
-            { icon: "📁", text: "文件管理" },
-            { icon: "⚙️", text: "系统设置" },
-            { icon: "👥", text: "用户管理" },
-            { icon: "📈", text: "统计报表" },
-            { icon: "🔒", text: "权限管理" }
+            { icon: '🏠', text: '首页概览' },
+            { icon: '📊', text: '数据分析' },
+            { icon: '📁', text: '文件管理' },
+            { icon: '⚙️', text: '系统设置' },
+            { icon: '👥', text: '用户管理' },
+            { icon: '📈', text: '统计报表' },
+            { icon: '🔒', text: '权限管理' },
           ]);
 
           // 当前激活的菜单项
@@ -411,11 +506,10 @@
             menuItems,
             activeMenu,
             isResizing,
-            startResize
+            startResize,
           };
-        }
+        },
       }).mount('#app');
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -424,17 +518,31 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./02-%E6%82%AC%E6%B5%AE%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html">相关 · 悬浮侧栏拖拽</a>
-        <a href="./03-%E5%8E%9F%E7%94%9F%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html">相关 · 原生侧栏拖拽</a>
-        <a href="../%E4%BA%8B%E4%BB%B6%E6%A8%A1%E5%9E%8B/02-dom%E4%BA%8B%E4%BB%B6-%E5%86%92%E6%B3%A1%E6%8D%95%E8%8E%B7%E5%A7%94%E6%89%98.html">相关 · dom事件-冒泡捕获委托</a>
-        <a href="../%E4%BA%8B%E4%BB%B6%E6%A8%A1%E5%9E%8B/03-Node%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E5%AF%B9%E6%AF%94.html">← Node与浏览器事件循环对比</a>
-        <a href="./02-%E6%82%AC%E6%B5%AE%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html">悬浮侧栏拖拽 →</a>
+        <a href="./02-%E6%82%AC%E6%B5%AE%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html">
+          相关 · 悬浮侧栏拖拽
+        </a>
+        <a href="./03-%E5%8E%9F%E7%94%9F%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html">
+          相关 · 原生侧栏拖拽
+        </a>
+        <a
+          href="../%E4%BA%8B%E4%BB%B6%E6%A8%A1%E5%9E%8B/02-dom%E4%BA%8B%E4%BB%B6-%E5%86%92%E6%B3%A1%E6%8D%95%E8%8E%B7%E5%A7%94%E6%89%98.html"
+        >
+          相关 · dom事件-冒泡捕获委托
+        </a>
+        <a
+          href="../%E4%BA%8B%E4%BB%B6%E6%A8%A1%E5%9E%8B/03-Node%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E5%AF%B9%E6%AF%94.html"
+        >
+          ← Node与浏览器事件循环对比
+        </a>
+        <a href="./02-%E6%82%AC%E6%B5%AE%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html">
+          悬浮侧栏拖拽 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

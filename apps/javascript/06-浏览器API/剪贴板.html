@@ -22,11 +22,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>剪贴板复制</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 1.5rem; }
-      button { padding: 6px 12px; margin-right: 8px; margin-bottom: 8px; }
-      #target { padding: 10px; background: #f5f5f5; border-radius: 4px; }
-      #env-banner { padding: 8px 10px; background: #fff8e6; border-left: 3px solid #f0ad4e; font-size: 0.875rem; margin-bottom: 12px; }
-      #hint { color: #0969da; font-family: ui-monospace, monospace; font-size: 0.875rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 1.5rem;
+      }
+      button {
+        padding: 6px 12px;
+        margin-right: 8px;
+        margin-bottom: 8px;
+      }
+      #target {
+        padding: 10px;
+        background: #f5f5f5;
+        border-radius: 4px;
+      }
+      #env-banner {
+        padding: 8px 10px;
+        background: #fff8e6;
+        border-left: 3px solid #f0ad4e;
+        font-size: 0.875rem;
+        margin-bottom: 12px;
+      }
+      #hint {
+        color: #0969da;
+        font-family: ui-monospace, monospace;
+        font-size: 0.875rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -35,30 +56,113 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>把文本复制到剪贴板</h1>
-      <p class="hint">请阅读本复习区，并在下方演示区点击复制按钮；需人工验证：Clipboard API 要求安全上下文（HTTPS/localhost）和用户手势，file:// 可能失败。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>navigator.clipboard.writeText()</code> 是现代异步剪贴板写入 API，返回 Promise；成功只代表浏览器接受了写入请求，不代表业务上可以忽略失败提示。</li>
-          <li>Clipboard API 通常只能在安全上下文（HTTPS 或 localhost）和用户激活下使用。非安全页面、后台脚本、自动触发或权限策略限制都可能抛出 <code>NotAllowedError</code>。</li>
-          <li><code>document.execCommand("copy")</code> 已废弃，但一些旧浏览器仍可用；它依赖当前选区或临时输入框，容易影响焦点和选择状态，只适合作为兼容兜底。</li>
-          <li>复制 DOM 内容时优先使用 <code>textContent</code> 得到纯文本；不要把用户生成的 <code>innerHTML</code> 直接复制或展示成可信 HTML，避免把 XSS 载荷在系统间传播。</li>
-          <li>用户体验上必须处理失败路径：按钮应在点击回调里调用复制、捕获异常、显示可理解的失败原因，并可提供“手动选择复制”的 fallback。</li>
+          <li>
+            <code>navigator.clipboard.writeText()</code>
+            是现代异步剪贴板写入 API，返回
+            Promise；成功只代表浏览器接受了写入请求，不代表业务上可以忽略失败提示。
+          </li>
+          <li>
+            Clipboard API 通常只能在安全上下文（HTTPS 或
+            localhost）和用户激活下使用。非安全页面、后台脚本、自动触发或权限策略限制都可能抛出
+            <code>NotAllowedError</code>
+            。
+          </li>
+          <li>
+            <code>document.execCommand("copy")</code>
+            已废弃，但一些旧浏览器仍可用；它依赖当前选区或临时输入框，容易影响焦点和选择状态，只适合作为兼容兜底。
+          </li>
+          <li>
+            复制 DOM 内容时优先使用
+            <code>textContent</code>
+            得到纯文本；不要把用户生成的
+            <code>innerHTML</code>
+            直接复制或展示成可信 HTML，避免把 XSS 载荷在系统间传播。
+          </li>
+          <li>
+            用户体验上必须处理失败路径：按钮应在点击回调里调用复制、捕获异常、显示可理解的失败原因，并可提供“手动选择复制”的
+            fallback。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>复制文本为什么优先使用 <code>navigator.clipboard.writeText</code>？</strong> 结论是现代项目优先用 Clipboard API。原因是它是异步 Promise API，不需要人为操作选区，语义比 <code>execCommand</code> 明确；边界是它受安全上下文、用户激活和权限策略限制，失败时要兜底提示。</li>
-          <li><strong>Clipboard API 为什么经常要求 HTTPS 和用户点击？</strong> 结论是这是浏览器的安全约束。原因是剪贴板可能包含敏感信息，任意页面自动读写会造成隐私和钓鱼风险；项目里应把复制调用放在按钮点击等用户手势内，并在 HTTP 环境下提示手动复制。</li>
-          <li><strong><code>execCommand("copy")</code> 为什么只能作为兜底？</strong> 结论是它已废弃且行为依赖选区。原因是浏览器保留它主要是兼容旧内容，未来行为和支持都不应作为新代码基础；兼容方案应创建临时输入框、恢复焦点，并捕获失败。</li>
-          <li><strong>剪贴板复制失败时产品上怎么处理？</strong> 结论是失败是正常路径，不应只在控制台报错。原因是权限、协议、iframe 权限策略、浏览器设置都可能拒绝写入；项目里应展示“复制失败，请手动选择文本”的提示，并保留可选中文本。</li>
-          <li><strong>复制 DOM 内容时为什么优先取 <code>textContent</code>？</strong> 结论是复制纯文本更安全、更可预测。原因是 <code>innerHTML</code> 可能包含用户注入的标签和事件属性；分享码、命令、邀请链接这类场景通常只需要文本，应该避免把 HTML 当作可信载荷。</li>
+          <li>
+            <strong>
+              复制文本为什么优先使用
+              <code>navigator.clipboard.writeText</code>
+              ？
+            </strong>
+            结论是现代项目优先用 Clipboard API。原因是它是异步 Promise
+            API，不需要人为操作选区，语义比
+            <code>execCommand</code>
+            明确；边界是它受安全上下文、用户激活和权限策略限制，失败时要兜底提示。
+          </li>
+          <li>
+            <strong>Clipboard API 为什么经常要求 HTTPS 和用户点击？</strong>
+            结论是这是浏览器的安全约束。原因是剪贴板可能包含敏感信息，任意页面自动读写会造成隐私和钓鱼风险；项目里应把复制调用放在按钮点击等用户手势内，并在
+            HTTP 环境下提示手动复制。
+          </li>
+          <li>
+            <strong>
+              <code>execCommand("copy")</code>
+              为什么只能作为兜底？
+            </strong>
+            结论是它已废弃且行为依赖选区。原因是浏览器保留它主要是兼容旧内容，未来行为和支持都不应作为新代码基础；兼容方案应创建临时输入框、恢复焦点，并捕获失败。
+          </li>
+          <li>
+            <strong>剪贴板复制失败时产品上怎么处理？</strong>
+            结论是失败是正常路径，不应只在控制台报错。原因是权限、协议、iframe
+            权限策略、浏览器设置都可能拒绝写入；项目里应展示“复制失败，请手动选择文本”的提示，并保留可选中文本。
+          </li>
+          <li>
+            <strong>
+              复制 DOM 内容时为什么优先取
+              <code>textContent</code>
+              ？
+            </strong>
+            结论是复制纯文本更安全、更可预测。原因是
+            <code>innerHTML</code>
+            可能包含用户注入的标签和事件属性；分享码、命令、邀请链接这类场景通常只需要文本，应该避免把
+            HTML 当作可信载荷。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/writeText" target="_blank" rel="noreferrer">MDN: Clipboard writeText()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API" target="_blank" rel="noreferrer">MDN: Clipboard API</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand" target="_blank" rel="noreferrer">MDN: Document execCommand()</a></li>
-          <li><a href="https://w3c.github.io/clipboard-apis/" target="_blank" rel="noreferrer">W3C: Clipboard API and events</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/writeText"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Clipboard writeText()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Clipboard API
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Document execCommand()
+            </a>
+          </li>
+          <li>
+            <a href="https://w3c.github.io/clipboard-apis/" target="_blank" rel="noreferrer">
+              W3C: Clipboard API and events
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -67,9 +171,17 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block">
       <h2>剪贴板复制演示</h2>
-      <p class="tip">复制 <code>textContent</code> 纯文本；粘贴到任意编辑器验证结果。</p>
+      <p class="tip">
+        复制
+        <code>textContent</code>
+        纯文本；粘贴到任意编辑器验证结果。
+      </p>
       <p id="env-banner"></p>
-      <div id="target">我是要被复制的内容（<span>包含嵌套 span</span>），文本可自定义。</div>
+      <div id="target">
+        我是要被复制的内容（
+        <span>包含嵌套 span</span>
+        ），文本可自定义。
+      </div>
       <button type="button" id="legacy">① 兼容方式 · execCommand('copy')</button>
       <button type="button" id="modern">② 现代方式 · navigator.clipboard</button>
       <p id="hint"></p>
@@ -78,51 +190,58 @@
 
     <!-- SCRIPT_START -->
     <script>
-      const target = document.getElementById("target");
-      const hint = document.getElementById("hint");
+      const target = document.getElementById('target');
+      const hint = document.getElementById('hint');
 
       // ============ 0. 环境检测 ============
-      document.getElementById("env-banner").textContent =
-        "protocol=" + location.protocol +
-        " | isSecureContext=" + window.isSecureContext +
-        " | clipboard.writeText 需 HTTPS/localhost + 用户手势";
+      document.getElementById('env-banner').textContent =
+        'protocol=' +
+        location.protocol +
+        ' | isSecureContext=' +
+        window.isSecureContext +
+        ' | clipboard.writeText 需 HTTPS/localhost + 用户手势';
 
       // textContent 取纯文本；innerHTML 含标签，复制/传播 HTML 有 XSS 风险
-      console.log("textContent 长度:", target.textContent.length, "innerHTML 长度:", target.innerHTML.length);
+      console.log(
+        'textContent 长度:',
+        target.textContent.length,
+        'innerHTML 长度:',
+        target.innerHTML.length,
+      );
 
       // ============ 1. execCommand 兜底（已废弃） ============
-      document.getElementById("legacy").addEventListener("click", () => {
+      document.getElementById('legacy').addEventListener('click', () => {
         const text = target.textContent;
-        const input = document.createElement("input");
-        input.setAttribute("readonly", "readonly");
-        input.setAttribute("value", text);
-        input.style.cssText = "position:fixed;top:-1000px;";
+        const input = document.createElement('input');
+        input.setAttribute('readonly', 'readonly');
+        input.setAttribute('value', text);
+        input.style.cssText = 'position:fixed;top:-1000px;';
         document.body.appendChild(input);
         input.setSelectionRange(0, 9999);
         input.select();
         try {
-          const ok = document.execCommand("copy");
-          hint.textContent = ok ? "复制成功（execCommand）" : "复制失败";
+          const ok = document.execCommand('copy');
+          hint.textContent = ok ? '复制成功（execCommand）' : '复制失败';
         } catch (e) {
-          hint.textContent = "复制失败：" + e.message;
+          hint.textContent = '复制失败：' + e.message;
         }
         document.body.removeChild(input);
       });
 
       // ============ 2. Clipboard API（现代推荐） ============
-      document.getElementById("modern").addEventListener("click", async () => {
+      document.getElementById('modern').addEventListener('click', async () => {
         if (!navigator.clipboard?.writeText) {
-          hint.textContent = "当前浏览器不支持 Clipboard API，请用兼容方式或手动复制。";
+          hint.textContent = '当前浏览器不支持 Clipboard API，请用兼容方式或手动复制。';
           return;
         }
         if (!window.isSecureContext) {
-          hint.textContent = "非安全上下文（file:// 或 HTTP），Clipboard API 可能 NotAllowedError";
+          hint.textContent = '非安全上下文（file:// 或 HTTP），Clipboard API 可能 NotAllowedError';
         }
         try {
           await navigator.clipboard.writeText(target.textContent);
-          hint.textContent = "复制成功（clipboard.writeText）";
+          hint.textContent = '复制成功（clipboard.writeText）';
         } catch (e) {
-          hint.textContent = e.name + ": " + e.message + " — 请手动选择文本复制";
+          hint.textContent = e.name + ': ' + e.message + ' — 请手动选择文本复制';
         }
       });
     </script>
@@ -136,13 +255,15 @@
         <a href="./DOM%E6%93%8D%E4%BD%9C.html">相关 · DOM操作</a>
         <a href="./Notification.html">相关 · Notification</a>
         <a href="../05-%E5%85%83%E7%BC%96%E7%A8%8B/proxy.html">← proxy</a>
-        <a href="./%E6%B5%8F%E8%A7%88%E5%99%A8%E6%B8%B2%E6%9F%93%E4%B8%8E%E6%80%A7%E8%83%BD.html">浏览器渲染与性能 →</a>
+        <a href="./%E6%B5%8F%E8%A7%88%E5%99%A8%E6%B8%B2%E6%9F%93%E4%B8%8E%E6%80%A7%E8%83%BD.html">
+          浏览器渲染与性能 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

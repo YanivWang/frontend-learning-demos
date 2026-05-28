@@ -23,36 +23,117 @@
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
     <style>
-      pre { background: #f5f5f5; padding: 1rem; border-radius: 4px; }
+      pre {
+        background: #f5f5f5;
+        padding: 1rem;
+        border-radius: 4px;
+      }
     </style>
   </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>加权随机 / 抽奖概率</h1>
-      <p class="hint">先看本复习区，再查看下方 10000 次采样命中率是否接近期望比例。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>加权随机的核心是把权重转成连续区间：例如 <code>A:0.5, B:0.3, C:0.2</code> 对应 <code>[0,0.5)</code>、<code>[0.5,0.8)</code>、<code>[0.8,1)</code>，随机数落在哪段就返回哪项。</li>
-          <li>扩容数组法把每个候选项重复放入查找表，再用均匀随机取下标，写法直观但空间复杂度和权重放大倍数相关，权重很大或有小数时不适合。</li>
-          <li>累加权重法先计算总权重，再生成 <code>[0,total)</code> 的随机阈值，遍历时不断累加，第一次超过阈值的项就是结果；单次抽取时间 <code>O(n)</code>，额外空间可做到 <code>O(1)</code>。</li>
-          <li>权重输入要校验：空对象、非数字、负数、全 0、<code>NaN</code> 都应拒绝或明确兜底，否则可能返回 <code>undefined</code> 或造成概率偏差。</li>
-          <li><code>Math.random()</code> 适合前端演示、动画和非安全抽样，不提供密码学安全性；真实抽奖、红包、风控等涉及利益的场景应由服务端使用可信随机源并记录审计。</li>
-          <li>验证概率只能看统计近似，样本越多越接近期望比例；单次或少量抽样不可能保证严格按权重分布。</li>
+          <li>
+            加权随机的核心是把权重转成连续区间：例如
+            <code>A:0.5, B:0.3, C:0.2</code>
+            对应
+            <code>[0,0.5)</code>
+            、
+            <code>[0.5,0.8)</code>
+            、
+            <code>[0.8,1)</code>
+            ，随机数落在哪段就返回哪项。
+          </li>
+          <li>
+            扩容数组法把每个候选项重复放入查找表，再用均匀随机取下标，写法直观但空间复杂度和权重放大倍数相关，权重很大或有小数时不适合。
+          </li>
+          <li>
+            累加权重法先计算总权重，再生成
+            <code>[0,total)</code>
+            的随机阈值，遍历时不断累加，第一次超过阈值的项就是结果；单次抽取时间
+            <code>O(n)</code>
+            ，额外空间可做到
+            <code>O(1)</code>
+            。
+          </li>
+          <li>
+            权重输入要校验：空对象、非数字、负数、全 0、
+            <code>NaN</code>
+            都应拒绝或明确兜底，否则可能返回
+            <code>undefined</code>
+            或造成概率偏差。
+          </li>
+          <li>
+            <code>Math.random()</code>
+            适合前端演示、动画和非安全抽样，不提供密码学安全性；真实抽奖、红包、风控等涉及利益的场景应由服务端使用可信随机源并记录审计。
+          </li>
+          <li>
+            验证概率只能看统计近似，样本越多越接近期望比例；单次或少量抽样不可能保证严格按权重分布。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>加权随机如何用累加区间实现？</strong> 结论：先求总权重，再生成一个小于总权重的随机阈值，遍历累加到超过阈值时返回当前项。原因是每个项占据的区间长度等于它的权重，随机数落入该区间的概率自然与权重成正比。边界是权重必须为有限非负数，并且总权重要大于 0。</li>
-          <li><strong>扩容数组法和前缀权重法怎么比较？</strong> 结论：扩容数组适合讲解，累加权重更适合通用实现。原因是扩容数组需要把权重放大成整数份，空间成本和精度取舍都不可控；累加权重只依赖数值区间，空间可做到常量级。项目里如果需要高频抽取，可以预先存前缀和再用二分查找，把单次抽取降到 <code>O(log n)</code>。</li>
-          <li><strong>为什么前端 <code>Math.random()</code> 不适合真实抽奖开奖？</strong> 结论：它不是安全随机源，也不应由客户端决定有利益的开奖结果。原因是浏览器随机算法不保证密码学安全，客户端代码和请求都可被观察或篡改。真实抽奖应放在服务端，用可信随机源、签名日志和幂等校验保证可审计。</li>
-          <li><strong>如何验证加权随机实现是否大致符合权重？</strong> 结论：用大量采样统计命中率，并和期望比例比较。原因是随机结果有波动，样本量越大越接近期望分布。边界是采样验证只能发现明显偏差，不能证明随机源安全，也不能保证每个短窗口都严格满足比例。</li>
+          <li>
+            <strong>加权随机如何用累加区间实现？</strong>
+            结论：先求总权重，再生成一个小于总权重的随机阈值，遍历累加到超过阈值时返回当前项。原因是每个项占据的区间长度等于它的权重，随机数落入该区间的概率自然与权重成正比。边界是权重必须为有限非负数，并且总权重要大于
+            0。
+          </li>
+          <li>
+            <strong>扩容数组法和前缀权重法怎么比较？</strong>
+            结论：扩容数组适合讲解，累加权重更适合通用实现。原因是扩容数组需要把权重放大成整数份，空间成本和精度取舍都不可控；累加权重只依赖数值区间，空间可做到常量级。项目里如果需要高频抽取，可以预先存前缀和再用二分查找，把单次抽取降到
+            <code>O(log n)</code>
+            。
+          </li>
+          <li>
+            <strong>
+              为什么前端
+              <code>Math.random()</code>
+              不适合真实抽奖开奖？
+            </strong>
+            结论：它不是安全随机源，也不应由客户端决定有利益的开奖结果。原因是浏览器随机算法不保证密码学安全，客户端代码和请求都可被观察或篡改。真实抽奖应放在服务端，用可信随机源、签名日志和幂等校验保证可审计。
+          </li>
+          <li>
+            <strong>如何验证加权随机实现是否大致符合权重？</strong>
+            结论：用大量采样统计命中率，并和期望比例比较。原因是随机结果有波动，样本量越大越接近期望分布。边界是采样验证只能发现明显偏差，不能证明随机源安全，也不能保证每个短窗口都严格满足比例。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random" target="_blank" rel="noreferrer">MDN: Math.random()</a>：伪随机数生成与适用边界。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Crypto/getRandomValues" target="_blank" rel="noreferrer">MDN: Crypto.getRandomValues()</a>：密码学安全随机源。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isFinite" target="_blank" rel="noreferrer">MDN: Number.isFinite()</a>：权重校验。</li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Math.random()
+            </a>
+            ：伪随机数生成与适用边界。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Crypto/getRandomValues"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Crypto.getRandomValues()
+            </a>
+            ：密码学安全随机源。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isFinite"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Number.isFinite()
+            </a>
+            ：权重校验。
+          </li>
         </ul>
       </div>
     </section>
@@ -61,7 +142,11 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block">
       <h2>加权随机采样验证</h2>
-      <p class="tip">按概率 <code>{A: 0.5, B: 0.3, C: 0.2}</code> 各跑 10000 次，命中率应大致接近期望比例。</p>
+      <p class="tip">
+        按概率
+        <code>{A: 0.5, B: 0.3, C: 0.2}</code>
+        各跑 10000 次，命中率应大致接近期望比例。
+      </p>
       <h3>方案 1：扩容数组 + Math.random（直观）</h3>
       <pre id="out1"></pre>
       <h3>方案 2：累加阈值 + Math.random（推荐，O(1) 额外空间）</h3>
@@ -86,12 +171,12 @@
         const entries = Object.entries(spec);
         const total = entries.reduce((sum, [, weight]) => {
           if (!Number.isFinite(weight) || weight < 0) {
-            throw new TypeError("weight must be a finite non-negative number");
+            throw new TypeError('weight must be a finite non-negative number');
           }
           return sum + weight;
         }, 0);
         if (total <= 0) {
-          throw new RangeError("total weight must be greater than 0");
+          throw new RangeError('total weight must be greater than 0');
         }
 
         const r = Math.random() * total;
@@ -111,30 +196,30 @@
           stat[k] = (stat[k] || 0) + 1;
         }
         return Object.fromEntries(
-          Object.entries(stat).map(([k, v]) => [k, (v / 10000).toFixed(3)])
+          Object.entries(stat).map(([k, v]) => [k, (v / 10000).toFixed(3)]),
         );
       }
 
       const result1 = bench(weightedRandV1);
       const result2 = bench(weightedRandV2);
-      document.getElementById("out1").textContent =
-        "10000 次采样命中率：\n" + JSON.stringify(result1, null, 2);
-      document.getElementById("out2").textContent =
-        "10000 次采样命中率：\n" + JSON.stringify(result2, null, 2);
+      document.getElementById('out1').textContent =
+        '10000 次采样命中率：\n' + JSON.stringify(result1, null, 2);
+      document.getElementById('out2').textContent =
+        '10000 次采样命中率：\n' + JSON.stringify(result2, null, 2);
 
-      console.log("方案1 命中率:", result1); // 预期: A≈0.5, B≈0.3, C≈0.2
-      console.log("方案2 命中率:", result2);
+      console.log('方案1 命中率:', result1); // 预期: A≈0.5, B≈0.3, C≈0.2
+      console.log('方案2 命中率:', result2);
 
       // ============ 4. 权重校验：非法输入应抛错 ============
       try {
         weightedRandV2({ A: NaN, B: 0.3 });
       } catch (e) {
-        console.log("NaN 权重抛错:", e.message);
+        console.log('NaN 权重抛错:', e.message);
       }
       try {
         weightedRandV2({});
       } catch (e) {
-        console.log("总权重为 0 抛错:", e.message);
+        console.log('总权重为 0 抛错:', e.message);
       }
     </script>
     <!-- SCRIPT_END -->
@@ -151,9 +236,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

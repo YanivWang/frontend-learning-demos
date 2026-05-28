@@ -21,10 +21,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BOM hash 路由</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
-      button { margin: 4px 8px 4px 0; padding: 6px 12px; }
-      #route-view { padding: 16px; margin: 12px 0; border: 2px solid #94a3b8; border-radius: 8px; background: #f8fafc; min-height: 48px; }
-      #runtime-output { padding: 10px; background: #f6f8fa; border-radius: 6px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; min-height: 4rem; max-height: 200px; overflow: auto; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 1.5rem;
+        line-height: 1.6;
+      }
+      button {
+        margin: 4px 8px 4px 0;
+        padding: 6px 12px;
+      }
+      #route-view {
+        padding: 16px;
+        margin: 12px 0;
+        border: 2px solid #94a3b8;
+        border-radius: 8px;
+        background: #f8fafc;
+        min-height: 48px;
+      }
+      #runtime-output {
+        padding: 10px;
+        background: #f6f8fa;
+        border-radius: 6px;
+        font-family: ui-monospace, monospace;
+        font-size: 0.8125rem;
+        white-space: pre-wrap;
+        min-height: 4rem;
+        max-height: 200px;
+        overflow: auto;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -33,29 +57,102 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>hash 路由的基本演示</h1>
-      <p class="hint">请阅读本复习区，并在下方演示区点击导航按钮；观察 #route-view 与事件日志，同时可用浏览器后退验证历史栈。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>location.hash</code> 对应 URL 中 <code>#</code> 后面的片段标识符；浏览器不会把片段发送给服务器，因此片段变化通常不会触发整页重新请求。</li>
-          <li>hash 路由的核心是监听 <code>hashchange</code>：当 <code>location.hash</code> 变化时，根据新片段匹配页面组件或渲染逻辑。</li>
-          <li>直接给 <code>location.hash</code> 赋值会增加一条可后退的历史记录；<code>location.replace("#/...")</code> 会替换当前记录，更适合重定向或不希望用户回到中间态的场景。</li>
-          <li><code>popstate</code> 主要服务于 History API 导航，不能替代 <code>hashchange</code> 作为 hash 路由的核心监听。</li>
-          <li>hash 路由部署简单，刷新不会要求服务端把所有路径 fallback 到入口 HTML；代价是 URL 带 <code>#</code>，语义、滚动锚点和部分 SEO/统计处理需要额外设计。</li>
+          <li>
+            <code>location.hash</code>
+            对应 URL 中
+            <code>#</code>
+            后面的片段标识符；浏览器不会把片段发送给服务器，因此片段变化通常不会触发整页重新请求。
+          </li>
+          <li>
+            hash 路由的核心是监听
+            <code>hashchange</code>
+            ：当
+            <code>location.hash</code>
+            变化时，根据新片段匹配页面组件或渲染逻辑。
+          </li>
+          <li>
+            直接给
+            <code>location.hash</code>
+            赋值会增加一条可后退的历史记录；
+            <code>location.replace("#/...")</code>
+            会替换当前记录，更适合重定向或不希望用户回到中间态的场景。
+          </li>
+          <li>
+            <code>popstate</code>
+            主要服务于 History API 导航，不能替代
+            <code>hashchange</code>
+            作为 hash 路由的核心监听。
+          </li>
+          <li>
+            hash 路由部署简单，刷新不会要求服务端把所有路径 fallback 到入口 HTML；代价是 URL 带
+            <code>#</code>
+            ，语义、滚动锚点和部分 SEO/统计处理需要额外设计。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>hash 路由为什么切换页面时不会刷新整页？</strong> 结论是 hash 只改变 URL 片段，浏览器不会为片段变化重新向服务器请求文档。原因是片段标识符用于客户端定位文档内资源，不属于 HTTP 请求路径。项目里可以据此在前端监听 <code>hashchange</code> 并局部更新视图。</li>
-          <li><strong>hashchange 和 popstate 分别适合监听哪类导航？</strong> 结论是 hash 路由监听 <code>hashchange</code>，History 路由监听 <code>popstate</code>。原因是二者对应不同的浏览器导航机制。边界是浏览器前进后退如果导致 hash 改变，也会触发 <code>hashchange</code>，但单纯调用 <code>pushState</code> 不会触发 <code>popstate</code>。</li>
-          <li><strong>location.hash 赋值和 location.replace("#/...") 对历史栈有什么区别？</strong> 结论是前者通常新增历史记录，后者替换当前记录。原因是 <code>replace</code> 的语义就是不保留当前条目。登录后跳转、非法路由纠正等场景常用 replace，普通页面导航更常用可后退的 hash 赋值。</li>
-          <li><strong>hash 路由和 History 路由在部署与用户体验上如何取舍？</strong> 结论是 hash 路由部署成本低，History 路由 URL 更自然。原因是 hash 路由刷新时服务器只看到入口路径，而 History 路由刷新深层路径需要服务端 fallback。项目里静态托管、旧系统嵌入常选 hash，对 URL 语义要求高的 SPA 通常选 History。</li>
+          <li>
+            <strong>hash 路由为什么切换页面时不会刷新整页？</strong>
+            结论是 hash 只改变 URL
+            片段，浏览器不会为片段变化重新向服务器请求文档。原因是片段标识符用于客户端定位文档内资源，不属于
+            HTTP 请求路径。项目里可以据此在前端监听
+            <code>hashchange</code>
+            并局部更新视图。
+          </li>
+          <li>
+            <strong>hashchange 和 popstate 分别适合监听哪类导航？</strong>
+            结论是 hash 路由监听
+            <code>hashchange</code>
+            ，History 路由监听
+            <code>popstate</code>
+            。原因是二者对应不同的浏览器导航机制。边界是浏览器前进后退如果导致 hash 改变，也会触发
+            <code>hashchange</code>
+            ，但单纯调用
+            <code>pushState</code>
+            不会触发
+            <code>popstate</code>
+            。
+          </li>
+          <li>
+            <strong>location.hash 赋值和 location.replace("#/...") 对历史栈有什么区别？</strong>
+            结论是前者通常新增历史记录，后者替换当前记录。原因是
+            <code>replace</code>
+            的语义就是不保留当前条目。登录后跳转、非法路由纠正等场景常用
+            replace，普通页面导航更常用可后退的 hash 赋值。
+          </li>
+          <li>
+            <strong>hash 路由和 History 路由在部署与用户体验上如何取舍？</strong>
+            结论是 hash 路由部署成本低，History 路由 URL 更自然。原因是 hash
+            路由刷新时服务器只看到入口路径，而 History 路由刷新深层路径需要服务端
+            fallback。项目里静态托管、旧系统嵌入常选 hash，对 URL 语义要求高的 SPA 通常选 History。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Location/hash">MDN: Location.hash</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/hashchange_event">MDN: Window hashchange event</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Location/replace">MDN: Location.replace()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event">MDN: Window popstate event</a></li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Location/hash">
+              MDN: Location.hash
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/hashchange_event">
+              MDN: Window hashchange event
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Location/replace">
+              MDN: Location.replace()
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event">
+              MDN: Window popstate event
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -64,64 +161,70 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block">
       <h2>hash 路由演示</h2>
-      <p class="tip">「导航到 A」新增历史记录可后退；「导航到 B（replace）」替换当前记录。片段变化不触发整页刷新。</p>
+      <p class="tip">
+        「导航到 A」新增历史记录可后退；「导航到
+        B（replace）」替换当前记录。片段变化不触发整页刷新。
+      </p>
       <button type="button" id="btnA">修改 hash 导航到 A 页面</button>
       <button type="button" id="btnB">replace 导航到 B 页面</button>
-      <div id="route-view">当前路由：<em>（初始）</em></div>
+      <div id="route-view">
+        当前路由：
+        <em>（初始）</em>
+      </div>
       <pre id="runtime-output" aria-live="polite"></pre>
     </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      const routeView = document.getElementById("route-view");
-      const logBox = document.getElementById("runtime-output");
+      const routeView = document.getElementById('route-view');
+      const logBox = document.getElementById('runtime-output');
       const logs = [];
 
       function appendLog(text) {
-        logs.push("[" + new Date().toLocaleTimeString() + "] " + text);
+        logs.push('[' + new Date().toLocaleTimeString() + '] ' + text);
         if (logs.length > 20) logs.shift();
-        logBox.textContent = logs.join("\n");
+        logBox.textContent = logs.join('\n');
         console.log(text);
       }
 
       const routes = {
-        "#/page-aaa": "A 页面 — 首页内容",
-        "#/page-bbb": "B 页面 — 替换导航",
+        '#/page-aaa': 'A 页面 — 首页内容',
+        '#/page-bbb': 'B 页面 — 替换导航',
       };
 
       // ============ 1. 根据 hash 渲染视图 ============
       function renderRoute() {
-        const hash = location.hash || "（无 hash）";
-        const content = routes[hash] || "未知路由: " + hash;
-        routeView.innerHTML = "当前路由：<strong>" + hash + "</strong><br>" + content;
+        const hash = location.hash || '（无 hash）';
+        const content = routes[hash] || '未知路由: ' + hash;
+        routeView.innerHTML = '当前路由：<strong>' + hash + '</strong><br>' + content;
       }
 
       // ============ 2. location.hash 赋值（新增历史记录） ============
-      document.getElementById("btnA").addEventListener("click", () => {
-        location.hash = "#/page-aaa";
-        appendLog("location.hash = #/page-aaa（新增历史记录）");
+      document.getElementById('btnA').addEventListener('click', () => {
+        location.hash = '#/page-aaa';
+        appendLog('location.hash = #/page-aaa（新增历史记录）');
       });
 
       // ============ 3. location.replace（替换历史记录） ============
-      document.getElementById("btnB").addEventListener("click", () => {
-        location.replace("#/page-bbb");
-        appendLog("location.replace(#/page-bbb)（替换当前记录）");
+      document.getElementById('btnB').addEventListener('click', () => {
+        location.replace('#/page-bbb');
+        appendLog('location.replace(#/page-bbb)（替换当前记录）');
       });
 
       // ============ 4. hashchange：hash 路由核心事件 ============
-      window.addEventListener("hashchange", (event) => {
-        appendLog("hashchange: " + event.oldURL + " → " + event.newURL);
+      window.addEventListener('hashchange', (event) => {
+        appendLog('hashchange: ' + event.oldURL + ' → ' + event.newURL);
         renderRoute();
       });
 
       // ============ 5. popstate 不监听纯 hash 变化（对比用） ============
-      window.addEventListener("popstate", (event) => {
-        appendLog("popstate（History API）state=" + JSON.stringify(event.state));
+      window.addEventListener('popstate', (event) => {
+        appendLog('popstate（History API）state=' + JSON.stringify(event.state));
       });
 
       renderRoute();
-      appendLog("页面就绪，当前 hash: " + (location.hash || "（空）"));
+      appendLog('页面就绪，当前 hash: ' + (location.hash || '（空）'));
     </script>
     <!-- SCRIPT_END -->
 
@@ -132,14 +235,18 @@
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./history.html">相关 · history</a>
         <a href="../DOM%E6%93%8D%E4%BD%9C.html">相关 · DOM操作</a>
-        <a href="../%E6%8B%96%E6%9B%B3%E6%89%8B%E6%9F%84/03-%E5%8E%9F%E7%94%9F%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html">← 原生侧栏拖拽</a>
+        <a
+          href="../%E6%8B%96%E6%9B%B3%E6%89%8B%E6%9F%84/03-%E5%8E%9F%E7%94%9F%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html"
+        >
+          ← 原生侧栏拖拽
+        </a>
         <a href="./history.html">history →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

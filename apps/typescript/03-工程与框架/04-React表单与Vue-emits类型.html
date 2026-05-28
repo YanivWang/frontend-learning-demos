@@ -21,10 +21,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>React / Vue 表单与 emits 类型</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 780px; line-height: 1.65; }
-      pre { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 8px; font-size: 0.82rem; overflow: auto; }
-      input { padding: 8px; width: 100%; max-width: 320px; box-sizing: border-box; }
-      #log { margin-top: 1rem; background: #f6f8fa; padding: 12px; border-radius: 8px; font-family: ui-monospace, monospace; white-space: pre-wrap; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 780px;
+        line-height: 1.65;
+      }
+      pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        overflow: auto;
+      }
+      input {
+        padding: 8px;
+        width: 100%;
+        max-width: 320px;
+        box-sizing: border-box;
+      }
+      #log {
+        margin-top: 1rem;
+        background: #f6f8fa;
+        padding: 12px;
+        border-radius: 8px;
+        font-family: ui-monospace, monospace;
+        white-space: pre-wrap;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -37,48 +61,175 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>React 的合成事件类型要绑定到真实元素：输入框变更常写 <code>React.ChangeEvent&lt;HTMLInputElement&gt;</code>，表单提交常写 <code>React.FormEvent&lt;HTMLFormElement&gt;</code>。这样 <code>currentTarget</code>、<code>target</code> 和表单控件属性才不会退化成宽泛的 <code>EventTarget</code>。</li>
-          <li>读取表单值时要理解 DOM 类型：<code>input.value</code> 永远是字符串，<code>type="number"</code> 也需要 <code>valueAsNumber</code> 或手动转换；复选框读 <code>checked</code>，文件读 <code>files</code>。类型标注不能替代这些运行时分支。</li>
-          <li>Vue 3 的 <code>defineEmits</code> 可以用类型参数声明事件契约；Vue 3.3+ 的具名元组写法如 <code>{ submit: [email: string]; cancel: [] }</code> 同时约束事件名、参数个数和 payload 类型，比字符串数组更适合组件库和表单组件。</li>
-          <li>推荐在 React 表单中优先使用 <code>currentTarget</code> 读取绑定了泛型的元素，避免从冒泡来源的 <code>target</code> 上直接假设类型；Vue 中则把校验后的值作为 emit payload，不把 DOM 事件对象泄漏给父组件。</li>
-          <li>涉及用户输入时，类型安全只覆盖编译期。邮箱格式、空字符串、重复提交、后端校验失败和 XSS 风险仍要在运行时处理；本页用 <code>checkValidity()</code> 拦截非法邮箱，并用 <code>textContent</code> 输出，避免把输入当 HTML 解析。</li>
+          <li>
+            React 的合成事件类型要绑定到真实元素：输入框变更常写
+            <code>React.ChangeEvent&lt;HTMLInputElement&gt;</code>
+            ，表单提交常写
+            <code>React.FormEvent&lt;HTMLFormElement&gt;</code>
+            。这样
+            <code>currentTarget</code>
+            、
+            <code>target</code>
+            和表单控件属性才不会退化成宽泛的
+            <code>EventTarget</code>
+            。
+          </li>
+          <li>
+            读取表单值时要理解 DOM 类型：
+            <code>input.value</code>
+            永远是字符串，
+            <code>type="number"</code>
+            也需要
+            <code>valueAsNumber</code>
+            或手动转换；复选框读
+            <code>checked</code>
+            ，文件读
+            <code>files</code>
+            。类型标注不能替代这些运行时分支。
+          </li>
+          <li>
+            Vue 3 的
+            <code>defineEmits</code>
+            可以用类型参数声明事件契约；Vue 3.3+ 的具名元组写法如
+            <code>{ submit: [email: string]; cancel: [] }</code>
+            同时约束事件名、参数个数和 payload 类型，比字符串数组更适合组件库和表单组件。
+          </li>
+          <li>
+            推荐在 React 表单中优先使用
+            <code>currentTarget</code>
+            读取绑定了泛型的元素，避免从冒泡来源的
+            <code>target</code>
+            上直接假设类型；Vue 中则把校验后的值作为 emit payload，不把 DOM 事件对象泄漏给父组件。
+          </li>
+          <li>
+            涉及用户输入时，类型安全只覆盖编译期。邮箱格式、空字符串、重复提交、后端校验失败和 XSS
+            风险仍要在运行时处理；本页用
+            <code>checkValidity()</code>
+            拦截非法邮箱，并用
+            <code>textContent</code>
+            输出，避免把输入当 HTML 解析。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>React 表单事件为什么要写具体元素泛型？</strong> 结论是让事件对象携带准确的 DOM 元素能力，例如 <code>HTMLInputElement.value</code> 和 <code>HTMLFormElement.checkValidity()</code>。原因是基础的 <code>EventTarget</code> 不保证有 <code>value</code>，直接访问会丢失类型安全。项目里复杂表单通常把事件处理器类型写在函数签名上，并优先用 <code>currentTarget</code> 读取当前绑定元素。</li>
-          <li><strong>Vue defineEmits 的类型声明解决什么问题？</strong> 结论是把子组件对外发出的事件名和参数类型变成组件公共契约。原因是父组件监听事件时依赖这些 payload，字符串数组只能限制事件名，不能限制参数形状。边界是运行时仍可配合对象校验器做值校验，尤其是表单提交、上传和跨团队组件库。</li>
-          <li><strong>表单类型安全和浏览器校验如何分工？</strong> 结论是 TypeScript 负责“代码是否按约定读写”，浏览器约束验证和业务逻辑负责“用户输入是否有效”。原因是用户可以输入空值、非法邮箱或绕过前端，类型系统不会在运行时阻止。真实项目要同时处理前端提示、后端错误、重复提交和可访问性反馈。</li>
-          <li><strong>为什么不建议把事件参数写成 any？</strong> 结论是 <code>any</code> 会绕过表单控件差异，容易把 <code>checked</code>、<code>files</code>、<code>valueAsNumber</code> 混成一个字符串读取路径。原因是不同输入类型的 DOM API 不同，精确类型能让编辑器提前暴露错误。边界是封装通用表单库时可以用泛型或受控字段模型，而不是把每个 handler 都退回 <code>any</code>。</li>
+          <li>
+            <strong>React 表单事件为什么要写具体元素泛型？</strong>
+            结论是让事件对象携带准确的 DOM 元素能力，例如
+            <code>HTMLInputElement.value</code>
+            和
+            <code>HTMLFormElement.checkValidity()</code>
+            。原因是基础的
+            <code>EventTarget</code>
+            不保证有
+            <code>value</code>
+            ，直接访问会丢失类型安全。项目里复杂表单通常把事件处理器类型写在函数签名上，并优先用
+            <code>currentTarget</code>
+            读取当前绑定元素。
+          </li>
+          <li>
+            <strong>Vue defineEmits 的类型声明解决什么问题？</strong>
+            结论是把子组件对外发出的事件名和参数类型变成组件公共契约。原因是父组件监听事件时依赖这些
+            payload，字符串数组只能限制事件名，不能限制参数形状。边界是运行时仍可配合对象校验器做值校验，尤其是表单提交、上传和跨团队组件库。
+          </li>
+          <li>
+            <strong>表单类型安全和浏览器校验如何分工？</strong>
+            结论是 TypeScript
+            负责“代码是否按约定读写”，浏览器约束验证和业务逻辑负责“用户输入是否有效”。原因是用户可以输入空值、非法邮箱或绕过前端，类型系统不会在运行时阻止。真实项目要同时处理前端提示、后端错误、重复提交和可访问性反馈。
+          </li>
+          <li>
+            <strong>为什么不建议把事件参数写成 any？</strong>
+            结论是
+            <code>any</code>
+            会绕过表单控件差异，容易把
+            <code>checked</code>
+            、
+            <code>files</code>
+            、
+            <code>valueAsNumber</code>
+            混成一个字符串读取路径。原因是不同输入类型的 DOM API
+            不同，精确类型能让编辑器提前暴露错误。边界是封装通用表单库时可以用泛型或受控字段模型，而不是把每个
+            handler 都退回
+            <code>any</code>
+            。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react-dom/components/input" target="_blank" rel="noopener">React 文档：&lt;input&gt; 组件与受控输入</a></li>
-          <li><a href="https://react.dev/reference/react-dom/components/form" target="_blank" rel="noopener">React 文档：&lt;form&gt; 组件与表单提交</a></li>
-          <li><a href="https://vuejs.org/guide/typescript/composition-api.html#typing-component-emits" target="_blank" rel="noopener">Vue 文档：TypeScript 与 defineEmits 类型声明</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/functions.html" target="_blank" rel="noopener">TypeScript Handbook：函数参数与回调类型</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/checkValidity" target="_blank" rel="noopener">MDN：HTMLInputElement.checkValidity()</a></li>
+          <li>
+            <a
+              href="https://react.dev/reference/react-dom/components/input"
+              target="_blank"
+              rel="noopener"
+            >
+              React 文档：&lt;input&gt; 组件与受控输入
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react-dom/components/form"
+              target="_blank"
+              rel="noopener"
+            >
+              React 文档：&lt;form&gt; 组件与表单提交
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/typescript/composition-api.html#typing-component-emits"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue 文档：TypeScript 与 defineEmits 类型声明
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/functions.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook：函数参数与回调类型
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/checkValidity"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN：HTMLInputElement.checkValidity()
+            </a>
+          </li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>上方为 React/Vue 类型片段；下方原生表单演示等价逻辑，提交后观察 <code>#log</code>。</p>
-    <pre>// React
-function onChange(e: React.ChangeEvent&lt;HTMLInputElement&gt;) {
-  const value: string = e.currentTarget.value;
-}
-function onSubmit(e: React.FormEvent&lt;HTMLFormElement&gt;) {
-  e.preventDefault();
-  if (!e.currentTarget.checkValidity()) return;
-}
-
-// Vue 3.3+ defineEmits
-const emit = defineEmits&lt;{ submit: [email: string]; cancel: [] }&gt;();
-emit("submit", email.value);</pre>
+    <p>
+      上方为 React/Vue 类型片段；下方原生表单演示等价逻辑，提交后观察
+      <code>#log</code>
+      。
+    </p>
+    <pre>
+// React
+      function onChange(e: React.ChangeEvent&lt;HTMLInputElement&gt;) {
+      const value: string = e.currentTarget.value;
+      }
+      function onSubmit(e: React.FormEvent&lt;HTMLFormElement&gt;) {
+      e.preventDefault();
+      if (!e.currentTarget.checkValidity()) return;
+      }
+      // Vue 3.3+ defineEmits
+      const emit = defineEmits&lt;{ submit: [email: string]; cancel: [] }&gt;();
+      emit("submit", email.value);</pre
+    >
     <h2>原生表单演示（等价逻辑）</h2>
     <form id="demo-form">
-      <label>邮箱 <input type="email" id="email" value="demo@ex.com" required /></label>
+      <label>
+        邮箱
+        <input type="email" id="email" value="demo@ex.com" required />
+      </label>
       <button type="submit">submit emit</button>
     </form>
     <div id="log">提交表单开始演示…</div>
@@ -87,32 +238,32 @@ emit("submit", email.value);</pre>
     <!-- SCRIPT_START -->
     <script>
       // ============ 1. React.FormEvent 等价：form submit + checkValidity ============
-      const form = document.getElementById("demo-form");
-      const emailInput = document.getElementById("email");
-      const log = document.getElementById("log");
+      const form = document.getElementById('demo-form');
+      const emailInput = document.getElementById('email');
+      const log = document.getElementById('log');
 
       // ============ 2. Vue defineEmits submit payload 等价 ============
-      form.addEventListener("submit", (event) => {
+      form.addEventListener('submit', (event) => {
         event.preventDefault();
 
         if (!emailInput.checkValidity()) {
           emailInput.reportValidity();
-          log.textContent = "✗ 邮箱格式未通过浏览器约束验证，submit payload 不会发出。";
+          log.textContent = '✗ 邮箱格式未通过浏览器约束验证，submit payload 不会发出。';
           return;
         }
 
         const email = emailInput.value.trim();
         const lines = [];
-        const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+        const assert = (cond, msg) => lines.push((cond ? '✓ ' : '✗ ') + msg);
 
-        assert(typeof email === "string", "input.value 运行时永远是 string");
-        assert(email.includes("@"), "checkValidity 通过后 email 含 @");
+        assert(typeof email === 'string', 'input.value 运行时永远是 string');
+        assert(email.includes('@'), 'checkValidity 通过后 email 含 @');
         assert(
-          email === "demo@ex.com",
-          `emit("submit", ${JSON.stringify(email)}) payload 类型为 string`
+          email === 'demo@ex.com',
+          `emit("submit", ${JSON.stringify(email)}) payload 类型为 string`,
         );
 
-        log.textContent = lines.join("\n");
+        log.textContent = lines.join('\n');
       });
     </script>
     <!-- SCRIPT_END -->
@@ -122,20 +273,24 @@ emit("submit", email.value);</pre>
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="./03-Vue3%E4%B8%8EReact%E7%BB%84%E4%BB%B6%E7%B1%BB%E5%9E%8B.html">相关 · Vue3与React组件类型</a>
+        <a href="./03-Vue3%E4%B8%8EReact%E7%BB%84%E4%BB%B6%E7%B1%BB%E5%9E%8B.html">
+          相关 · Vue3与React组件类型
+        </a>
         <a href="../../javascript/04-ES6%2B/ES6%E6%A8%A1%E5%9D%97/index.html">相关 · index</a>
-        <a href="./03-Vue3%E4%B8%8EReact%E7%BB%84%E4%BB%B6%E7%B1%BB%E5%9E%8B.html">← Vue3与React组件类型</a>
+        <a href="./03-Vue3%E4%B8%8EReact%E7%BB%84%E4%BB%B6%E7%B1%BB%E5%9E%8B.html">
+          ← Vue3与React组件类型
+        </a>
         <a href="../mini-project/index.html">index →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

@@ -32,29 +32,118 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>class 组件 refs 访问 DOM 与实例</h1>
-      <p class="hint">请打开 DevTools Console 查看 componentDidMount 中 ref.current 与回调 ref 日志；点击下方按钮验证 createRef 聚焦 DOM、父调子实例方法，以及"只改实例字段不触发 render"；下方 #root 为 React 挂载/交互演示区。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看 componentDidMount 中 ref.current 与回调 ref
+        日志；点击下方按钮验证 createRef 聚焦 DOM、父调子实例方法，以及"只改实例字段不触发
+        render"；下方 #root 为 React 挂载/交互演示区。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><strong><code>createRef</code>：</strong>在 class 构造函数中创建 ref 容器，React 提交挂载后把 DOM 节点或 class 组件实例写入 <code>ref.current</code>，卸载后再置空；因此事件和生命周期里可读，render 中不应依赖它计算 UI。</li>
-          <li><strong>回调 ref：</strong><code>ref={(node) =&gt; ...}</code> 允许自定义保存节点；挂载时收到节点，卸载时收到 <code>null</code>。如果用内联函数，每次 render 都会得到新的回调，React 可能先清空旧 ref 再设置新 ref。</li>
-          <li><strong>适用场景：</strong>ref 是命令式逃生口，适合输入框聚焦、文本选择、滚动定位、测量尺寸、播放媒体、集成非 React DOM 库；业务数据同步应优先用 props、state、Context 或回调函数。</li>
-          <li><strong>访问实例：</strong>ref 指向 class 组件时拿到的是组件实例，可以调用公开方法；这会增加父子耦合，通常只在表单校验、动画控制、兼容旧组件时使用，不能当作常规状态管理。</li>
-          <li><strong>版本边界：</strong>字符串 ref 已废弃；React 18 中函数组件没有实例，想让父组件传入 ref 需要 <code>forwardRef</code> 暴露 DOM 或配合 <code>useImperativeHandle</code> 暴露受控命令式方法。</li>
+          <li>
+            <strong>
+              <code>createRef</code>
+              ：
+            </strong>
+            在 class 构造函数中创建 ref 容器，React 提交挂载后把 DOM 节点或 class 组件实例写入
+            <code>ref.current</code>
+            ，卸载后再置空；因此事件和生命周期里可读，render 中不应依赖它计算 UI。
+          </li>
+          <li>
+            <strong>回调 ref：</strong>
+            <code>ref={(node) =&gt; ...}</code>
+            允许自定义保存节点；挂载时收到节点，卸载时收到
+            <code>null</code>
+            。如果用内联函数，每次 render 都会得到新的回调，React 可能先清空旧 ref 再设置新 ref。
+          </li>
+          <li>
+            <strong>适用场景：</strong>
+            ref 是命令式逃生口，适合输入框聚焦、文本选择、滚动定位、测量尺寸、播放媒体、集成非 React
+            DOM 库；业务数据同步应优先用 props、state、Context 或回调函数。
+          </li>
+          <li>
+            <strong>访问实例：</strong>
+            ref 指向 class
+            组件时拿到的是组件实例，可以调用公开方法；这会增加父子耦合，通常只在表单校验、动画控制、兼容旧组件时使用，不能当作常规状态管理。
+          </li>
+          <li>
+            <strong>版本边界：</strong>
+            字符串 ref 已废弃；React 18 中函数组件没有实例，想让父组件传入 ref 需要
+            <code>forwardRef</code>
+            暴露 DOM 或配合
+            <code>useImperativeHandle</code>
+            暴露受控命令式方法。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>class 组件里 createRef 和回调 ref 有什么区别？</strong> 结论是 <code>createRef</code> 适合大多数稳定节点，回调 ref 适合自定义保存或处理动态节点。原因是 <code>createRef</code> 提供固定容器，React 自动维护 <code>current</code>；回调 ref 直接接收节点和 <code>null</code>，控制力更强。项目里输入框聚焦通常用 <code>createRef</code>，复杂列表节点管理才考虑回调 ref。</li>
-          <li><strong>ref.current 什么时候可用，为什么 render 里不能依赖它？</strong> 结论是提交挂载后才可靠可用。原因是 render 阶段只是描述 UI，真实 DOM 尚未提交，ref 写入发生在提交阶段；ref 变化也不会触发 render。需要读取尺寸或操作 DOM 时应放在事件、<code>componentDidMount</code> 或 <code>componentDidUpdate</code>。</li>
-          <li><strong>什么时候应该用 ref，什么时候应该改用 props/state？</strong> 结论是命令式 DOM 操作用 ref，声明式业务数据用 props/state。因为 React 的渲染一致性依赖单向数据流，绕过数据流会让状态来源不清。项目里主题、表单值、是否展开这类 UI 状态不要放 ref；聚焦、滚动、媒体播放可以用 ref。</li>
-          <li><strong>父组件通过 ref 调子 class 方法有什么风险？</strong> 结论是可以做，但会增强耦合。原因是父组件直接依赖子组件实例方法名和实现细节，子组件重构为函数组件或替换实现时容易破坏调用方。维护旧组件时可用于少量命令式能力，新设计更推荐通过 props 回调或受控状态表达交互。</li>
-          <li><strong>React 18 中函数组件为什么不能直接像 class 一样被 ref 拿到实例？</strong> 结论是函数组件没有 <code>this</code> 实例，ref 默认无法绑定。原因是函数组件只是普通函数调用，React 不会为它创建可命令式访问的实例对象；若父组件需要 ref，子组件须用 <code>forwardRef</code> 把 ref 转发到内部 DOM，或用 <code>useImperativeHandle</code> 暴露受控方法。</li>
+          <li>
+            <strong>class 组件里 createRef 和回调 ref 有什么区别？</strong>
+            结论是
+            <code>createRef</code>
+            适合大多数稳定节点，回调 ref 适合自定义保存或处理动态节点。原因是
+            <code>createRef</code>
+            提供固定容器，React 自动维护
+            <code>current</code>
+            ；回调 ref 直接接收节点和
+            <code>null</code>
+            ，控制力更强。项目里输入框聚焦通常用
+            <code>createRef</code>
+            ，复杂列表节点管理才考虑回调 ref。
+          </li>
+          <li>
+            <strong>ref.current 什么时候可用，为什么 render 里不能依赖它？</strong>
+            结论是提交挂载后才可靠可用。原因是 render 阶段只是描述 UI，真实 DOM 尚未提交，ref
+            写入发生在提交阶段；ref 变化也不会触发 render。需要读取尺寸或操作 DOM 时应放在事件、
+            <code>componentDidMount</code>
+            或
+            <code>componentDidUpdate</code>
+            。
+          </li>
+          <li>
+            <strong>什么时候应该用 ref，什么时候应该改用 props/state？</strong>
+            结论是命令式 DOM 操作用 ref，声明式业务数据用 props/state。因为 React
+            的渲染一致性依赖单向数据流，绕过数据流会让状态来源不清。项目里主题、表单值、是否展开这类
+            UI 状态不要放 ref；聚焦、滚动、媒体播放可以用 ref。
+          </li>
+          <li>
+            <strong>父组件通过 ref 调子 class 方法有什么风险？</strong>
+            结论是可以做，但会增强耦合。原因是父组件直接依赖子组件实例方法名和实现细节，子组件重构为函数组件或替换实现时容易破坏调用方。维护旧组件时可用于少量命令式能力，新设计更推荐通过
+            props 回调或受控状态表达交互。
+          </li>
+          <li>
+            <strong>React 18 中函数组件为什么不能直接像 class 一样被 ref 拿到实例？</strong>
+            结论是函数组件没有
+            <code>this</code>
+            实例，ref 默认无法绑定。原因是函数组件只是普通函数调用，React
+            不会为它创建可命令式访问的实例对象；若父组件需要 ref，子组件须用
+            <code>forwardRef</code>
+            把 ref 转发到内部 DOM，或用
+            <code>useImperativeHandle</code>
+            暴露受控方法。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/createRef" target="_blank" rel="noreferrer">react.dev: createRef</a></li>
-          <li><a href="https://react.dev/learn/manipulating-the-dom-with-refs" target="_blank" rel="noreferrer">react.dev: Manipulating the DOM with Refs</a></li>
-          <li><a href="https://react.dev/reference/react/forwardRef" target="_blank" rel="noreferrer">react.dev: forwardRef（函数组件 ref 边界）</a></li>
+          <li>
+            <a href="https://react.dev/reference/react/createRef" target="_blank" rel="noreferrer">
+              react.dev: createRef
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/manipulating-the-dom-with-refs"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Manipulating the DOM with Refs
+            </a>
+          </li>
+          <li>
+            <a href="https://react.dev/reference/react/forwardRef" target="_blank" rel="noreferrer">
+              react.dev: forwardRef（函数组件 ref 边界）
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -69,7 +158,7 @@
       // ====== 1. 子 class 组件：ref 指向 class 时拿到组件实例 ======
       class Child extends React.Component {
         sayHello() {
-          alert("Child 实例方法被父组件通过 ref 调用");
+          alert('Child 实例方法被父组件通过 ref 调用');
         }
 
         render() {
@@ -90,16 +179,16 @@
 
         // ====== 2. componentDidMount：ref.current 在提交挂载后才可用 ======
         componentDidMount() {
-          console.log("componentDidMount inputRef.current:", this.inputRef.current);
+          console.log('componentDidMount inputRef.current:', this.inputRef.current);
           // 预期: <input> DOM 节点
-          console.log("componentDidMount childRef.current:", this.childRef.current);
+          console.log('componentDidMount childRef.current:', this.childRef.current);
           // 预期: Child 组件实例
         }
 
         focusInput = () => {
           if (this.inputRef.current) {
             this.inputRef.current.focus();
-            console.log("聚焦 inputRef.current:", this.inputRef.current);
+            console.log('聚焦 inputRef.current:', this.inputRef.current);
           }
         };
 
@@ -111,16 +200,16 @@
 
         addCount = () => {
           this.clickCount += 1;
-          console.log("实例字段 clickCount:", this.clickCount);
+          console.log('实例字段 clickCount:', this.clickCount);
           // 改实例字段不触发 render，页面上的 renderCount 不会变
         };
 
         // ====== 3. 回调 ref：挂载时收到节点，卸载时收到 null ======
         handleCallbackRef = (node) => {
           if (node) {
-            console.log("回调 ref 挂载:", node.tagName);
+            console.log('回调 ref 挂载:', node.tagName);
           } else {
-            console.log("回调 ref 卸载");
+            console.log('回调 ref 卸载');
           }
         };
 
@@ -128,7 +217,9 @@
           return (
             <section>
               <input ref={this.inputRef} placeholder="createRef 聚焦到这里" />
-              <button type="button" onClick={this.focusInput}>聚焦 input</button>
+              <button type="button" onClick={this.focusInput}>
+                聚焦 input
+              </button>
               <button type="button" onClick={this.addCount} style={{ marginLeft: 8 }}>
                 只改实例字段（不触发 render）
               </button>
@@ -136,19 +227,21 @@
 
               <div
                 ref={this.handleCallbackRef}
-                style={{ marginTop: 12, padding: 8, border: "1px dashed #999" }}
+                style={{ marginTop: 12, padding: 8, border: '1px dashed #999' }}
               >
                 回调 ref 绑定的 div
               </div>
 
               <Child ref={this.childRef} />
-              <button type="button" onClick={this.callChild}>通过 ref 调用子组件方法</button>
+              <button type="button" onClick={this.callChild}>
+                通过 ref 调用子组件方法
+              </button>
             </section>
           );
         }
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<FocusBox />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<FocusBox />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -157,17 +250,33 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html">相关 · 06-class-完整生命周期与API</a>
-        <a href="./11-class-%E5%8F%97%E6%8E%A7%E4%B8%8E%E9%9D%9E%E5%8F%97%E6%8E%A7%E8%A1%A8%E5%8D%95.html">相关 · 11-class-受控与非受控表单</a>
-        <a href="./17-class-defaultProps%E4%B8%8E%E9%9D%99%E6%80%81%E5%B1%9E%E6%80%A7.html">相关 · 17-class-defaultProps与静态属性</a>
-        <a href="./06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html">← class-完整生命周期与API</a>
-        <a href="./08-class-PureComponent%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">class-PureComponent性能优化 →</a>
+        <a
+          href="./06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html"
+        >
+          相关 · 06-class-完整生命周期与API
+        </a>
+        <a
+          href="./11-class-%E5%8F%97%E6%8E%A7%E4%B8%8E%E9%9D%9E%E5%8F%97%E6%8E%A7%E8%A1%A8%E5%8D%95.html"
+        >
+          相关 · 11-class-受控与非受控表单
+        </a>
+        <a href="./17-class-defaultProps%E4%B8%8E%E9%9D%99%E6%80%81%E5%B1%9E%E6%80%A7.html">
+          相关 · 17-class-defaultProps与静态属性
+        </a>
+        <a
+          href="./06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html"
+        >
+          ← class-完整生命周期与API
+        </a>
+        <a href="./08-class-PureComponent%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">
+          class-PureComponent性能优化 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

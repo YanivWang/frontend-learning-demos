@@ -30,25 +30,151 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>function*</code> 定义 generator 函数；调用它只会返回一个 Generator 对象，函数体会停在开头，直到第一次 <code>next()</code> 才开始执行。</li>
-          <li>每次 <code>next()</code> 都把函数推进到下一个 <code>yield</code>、<code>return</code> 或函数结束位置，并返回迭代器结果对象 <code>{ value, done }</code>。</li>
-          <li><code>yield</code> 会把右侧值交给调用方并暂停执行；下一次 <code>next(value)</code> 传入的值会成为当前暂停的 <code>yield</code> 表达式结果。</li>
-          <li><code>return</code> 会结束 generator，返回 <code>{ value, done: true }</code>；之后继续 <code>next()</code> 只会得到 <code>{ value: undefined, done: true }</code>。</li>
-          <li>可迭代对象必须实现 <code>Symbol.iterator</code> 并返回带 <code>next()</code> 的迭代器；数组、Map、Set、字符串内置可迭代，普通对象默认不可 <code>for...of</code>。</li>
-          <li>generator 仍适合惰性序列、自定义迭代和可暂停流程；现代异步控制流通常优先用 <code>async</code>/<code>await</code>，可读性和错误处理更直接。</li>
+          <li>
+            <code>function*</code>
+            定义 generator 函数；调用它只会返回一个 Generator 对象，函数体会停在开头，直到第一次
+            <code>next()</code>
+            才开始执行。
+          </li>
+          <li>
+            每次
+            <code>next()</code>
+            都把函数推进到下一个
+            <code>yield</code>
+            、
+            <code>return</code>
+            或函数结束位置，并返回迭代器结果对象
+            <code>{ value, done }</code>
+            。
+          </li>
+          <li>
+            <code>yield</code>
+            会把右侧值交给调用方并暂停执行；下一次
+            <code>next(value)</code>
+            传入的值会成为当前暂停的
+            <code>yield</code>
+            表达式结果。
+          </li>
+          <li>
+            <code>return</code>
+            会结束 generator，返回
+            <code>{ value, done: true }</code>
+            ；之后继续
+            <code>next()</code>
+            只会得到
+            <code>{ value: undefined, done: true }</code>
+            。
+          </li>
+          <li>
+            可迭代对象必须实现
+            <code>Symbol.iterator</code>
+            并返回带
+            <code>next()</code>
+            的迭代器；数组、Map、Set、字符串内置可迭代，普通对象默认不可
+            <code>for...of</code>
+            。
+          </li>
+          <li>
+            generator 仍适合惰性序列、自定义迭代和可暂停流程；现代异步控制流通常优先用
+            <code>async</code>
+            /
+            <code>await</code>
+            ，可读性和错误处理更直接。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>generator 函数调用后为什么不会立即执行函数体？</strong> 因为调用 <code>function*</code> 返回的是 Generator 对象，执行权由调用方通过 <code>next()</code> 驱动。这样函数可以在多个 <code>yield</code> 点暂停和恢复，适合惰性产生数据或表达可暂停流程。</li>
-          <li><strong><code>yield</code>、<code>return</code> 和 <code>next()</code> 的结果如何理解？</strong> <code>yield</code> 产生一个中间值，<code>done</code> 为 <code>false</code>；<code>return</code> 或函数结束表示迭代完成，<code>done</code> 为 <code>true</code>。项目里消费迭代器时不能只看 <code>value</code>，还要看 <code>done</code>。</li>
-          <li><strong>普通对象如何支持 <code>for...of</code>？</strong> 给对象实现 <code>[Symbol.iterator]()</code>，返回包含 <code>next()</code> 的迭代器即可。边界是对象属性枚举用 <code>Object.keys</code> 或 <code>for...in</code>，不是所有对象都天然可迭代。</li>
-          <li><strong>generator 和 async/await 如何取舍？</strong> generator 适合自定义迭代和惰性序列；异步请求、串行流程和错误处理优先使用 <code>async</code>/<code>await</code>。历史上 generator 可配合执行器模拟异步流程，但现代项目很少需要手写。</li>
+          <li>
+            <strong>generator 函数调用后为什么不会立即执行函数体？</strong>
+            因为调用
+            <code>function*</code>
+            返回的是 Generator 对象，执行权由调用方通过
+            <code>next()</code>
+            驱动。这样函数可以在多个
+            <code>yield</code>
+            点暂停和恢复，适合惰性产生数据或表达可暂停流程。
+          </li>
+          <li>
+            <strong>
+              <code>yield</code>
+              、
+              <code>return</code>
+              和
+              <code>next()</code>
+              的结果如何理解？
+            </strong>
+            <code>yield</code>
+            产生一个中间值，
+            <code>done</code>
+            为
+            <code>false</code>
+            ；
+            <code>return</code>
+            或函数结束表示迭代完成，
+            <code>done</code>
+            为
+            <code>true</code>
+            。项目里消费迭代器时不能只看
+            <code>value</code>
+            ，还要看
+            <code>done</code>
+            。
+          </li>
+          <li>
+            <strong>
+              普通对象如何支持
+              <code>for...of</code>
+              ？
+            </strong>
+            给对象实现
+            <code>[Symbol.iterator]()</code>
+            ，返回包含
+            <code>next()</code>
+            的迭代器即可。边界是对象属性枚举用
+            <code>Object.keys</code>
+            或
+            <code>for...in</code>
+            ，不是所有对象都天然可迭代。
+          </li>
+          <li>
+            <strong>generator 和 async/await 如何取舍？</strong>
+            generator 适合自定义迭代和惰性序列；异步请求、串行流程和错误处理优先使用
+            <code>async</code>
+            /
+            <code>await</code>
+            。历史上 generator 可配合执行器模拟异步流程，但现代项目很少需要手写。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">MDN: function*</a>：调用返回 Generator，函数体不立即执行。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/yield">MDN: yield</a>：暂停并把值交给调用方；next(value) 可送回暂停点。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols">MDN: Iteration protocols</a>：<code>Symbol.iterator</code> 与 <code>{ value, done }</code>。</li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*"
+            >
+              MDN: function*
+            </a>
+            ：调用返回 Generator，函数体不立即执行。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/yield"
+            >
+              MDN: yield
+            </a>
+            ：暂停并把值交给调用方；next(value) 可送回暂停点。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols"
+            >
+              MDN: Iteration protocols
+            </a>
+            ：
+            <code>Symbol.iterator</code>
+            与
+            <code>{ value, done }</code>
+            。
+          </li>
         </ul>
       </div>
     </section>
@@ -58,17 +184,17 @@
     <script>
       // ============ 1. function* 调用返回 Generator，函数体不立即执行 ============
       function* generator1() {
-        const incoming = yield "wang"; // 暂停；next(value) 传入的值成为 yield 表达式结果
-        console.log("收到 next 传入:", incoming); // "hello"
-        yield "cheng";
-        return "ending"; // return 结束迭代，done: true
+        const incoming = yield 'wang'; // 暂停；next(value) 传入的值成为 yield 表达式结果
+        console.log('收到 next 传入:', incoming); // "hello"
+        yield 'cheng';
+        return 'ending'; // return 结束迭代，done: true
       }
 
       const hw = generator1();
-      console.log("首次 next（启动）:", hw.next()); // { value: 'wang', done: false }
-      console.log("next('hello'):", hw.next("hello")); // { value: 'cheng', done: false }
-      console.log("第三次 next:", hw.next()); // { value: 'ending', done: true }
-      console.log("结束后 next:", hw.next()); // { value: undefined, done: true }
+      console.log('首次 next（启动）:', hw.next()); // { value: 'wang', done: false }
+      console.log("next('hello'):", hw.next('hello')); // { value: 'cheng', done: false }
+      console.log('第三次 next:', hw.next()); // { value: 'ending', done: true }
+      console.log('结束后 next:', hw.next()); // { value: undefined, done: true }
 
       // ============ 2. 普通对象实现 Symbol.iterator 后可 for...of ============
       const range = {
@@ -88,14 +214,14 @@
       };
 
       const it = range[Symbol.iterator]();
-      console.log("手动 next:", it.next()); // { value: 1, done: false }
-      console.log("手动 next:", it.next()); // { value: 2, done: false }
-      console.log("手动 next:", it.next()); // { value: 3, done: false }
-      console.log("手动 next:", it.next()); // { value: undefined, done: true }
+      console.log('手动 next:', it.next()); // { value: 1, done: false }
+      console.log('手动 next:', it.next()); // { value: 2, done: false }
+      console.log('手动 next:', it.next()); // { value: 3, done: false }
+      console.log('手动 next:', it.next()); // { value: undefined, done: true }
 
       // ============ 3. 实现 Symbol.iterator 后支持 for...of / 展开 ============
-      for (const n of range) console.log("for..of", n); // 1, 2, 3
-      console.log("spread", [...range]); // [1, 2, 3]
+      for (const n of range) console.log('for..of', n); // 1, 2, 3
+      console.log('spread', [...range]); // [1, 2, 3]
     </script>
     <!-- SCRIPT_END -->
 
@@ -105,13 +231,15 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../../index.html">目录</a>
         <a href="../../%E6%A8%A1%E5%9D%97%E5%8C%96/CommonJS-vs-ESM.html">← CommonJS-vs-ESM</a>
-        <a href="./02-async-await-%E4%B8%B2%E8%A1%8C%E6%B5%81%E7%A8%8B.html">async-await-串行流程 →</a>
+        <a href="./02-async-await-%E4%B8%B2%E8%A1%8C%E6%B5%81%E7%A8%8B.html">
+          async-await-串行流程 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

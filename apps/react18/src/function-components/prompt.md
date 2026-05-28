@@ -56,14 +56,14 @@
 
 检查并补齐：
 
-| 字段 | 要求 |
-|------|------|
+| 字段   | 要求                                                           |
+| ------ | -------------------------------------------------------------- |
 | `分类` | `react18 / function-components` 或更细子主题（如 hooks、性能） |
-| `主题` | 一句话，与 `<h1>` 一致 |
-| `要点` | 3～6 条，**必须对应当前 SCRIPT 能演示的内容** |
-| `面试` | 3～6 条，具体问句，禁止泛化模板（如「有什么应用场景？」） |
-| `相关` | 同目录上下游 demo，与页脚 NAV 一致 |
-| 可选 | `难度`、`前置` |
+| `主题` | 一句话，与 `<h1>` 一致                                         |
+| `要点` | 3～6 条，**必须对应当前 SCRIPT 能演示的内容**                  |
+| `面试` | 3～6 条，具体问句，禁止泛化模板（如「有什么应用场景？」）      |
+| `相关` | 同目录上下游 demo，与页脚 NAV 一致                             |
+| 可选   | `难度`、`前置`                                                 |
 
 **质量检查**：随机抽一条 `要点`，在 SCRIPT / PAGE_DOM 里能找到对应代码；找不到则删改要点或补代码/注释。
 
@@ -81,30 +81,30 @@
 
 **React 常见需修正的表述**（以 react.dev 为准）：
 
-| 易错说法 | 正确说法 |
-|---------|---------|
-| JSX 一定转译为 `React.createElement` | classic runtime → `createElement`；现代工程 automatic → `react/jsx-runtime` 的 `jsx()`；本仓库 demo 用浏览器 Babel 走 classic |
-| `createRoot` 一调用就全面开启并发 | `createRoot` 是 React 18 新根 API 前提；并发需 `startTransition` 等 **opt-in** |
-| `ReactDOM.render` 仍推荐 | React 18 已废弃，会以 React 17 模式运行 |
-| 小写 `<ele1 />` 会 ReferenceError | 等价 `createElement('ele1')`，渲染未知 HTML 标签，**不报错** |
-| `{ele1}` 未定义与小写标签是一回事 | 花括号表达式求值时才 `ReferenceError` |
-| `root.render(App)` 与 `root.render(<App />)` 一样 | 前者传函数引用会报 *Functions are not valid as a React child* |
-| setState / useState 后立刻读到新值 | 当前 render 是快照；新值在下一次 render |
-| 连续 `setCount(count+1)` 会加 3 | 同一次事件中读同一快照，通常只 +1；应函数式更新 |
-| useEffect 等于 componentDidMount | 依赖数组决定运行时机；空数组才是 mount 后一次 |
-| useMemo / useCallback 一定提升性能 | 有开销；仅在昂贵计算或稳定引用必要时使用 |
-| Fiber / 虚拟 DOM 口语化瞎编 | 以 react.dev 批处理、协调、element 描述为准，不臆造内部实现细节 |
+| 易错说法                                          | 正确说法                                                                                                                      |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| JSX 一定转译为 `React.createElement`              | classic runtime → `createElement`；现代工程 automatic → `react/jsx-runtime` 的 `jsx()`；本仓库 demo 用浏览器 Babel 走 classic |
+| `createRoot` 一调用就全面开启并发                 | `createRoot` 是 React 18 新根 API 前提；并发需 `startTransition` 等 **opt-in**                                                |
+| `ReactDOM.render` 仍推荐                          | React 18 已废弃，会以 React 17 模式运行                                                                                       |
+| 小写 `<ele1 />` 会 ReferenceError                 | 等价 `createElement('ele1')`，渲染未知 HTML 标签，**不报错**                                                                  |
+| `{ele1}` 未定义与小写标签是一回事                 | 花括号表达式求值时才 `ReferenceError`                                                                                         |
+| `root.render(App)` 与 `root.render(<App />)` 一样 | 前者传函数引用会报 _Functions are not valid as a React child_                                                                 |
+| setState / useState 后立刻读到新值                | 当前 render 是快照；新值在下一次 render                                                                                       |
+| 连续 `setCount(count+1)` 会加 3                   | 同一次事件中读同一快照，通常只 +1；应函数式更新                                                                               |
+| useEffect 等于 componentDidMount                  | 依赖数组决定运行时机；空数组才是 mount 后一次                                                                                 |
+| useMemo / useCallback 一定提升性能                | 有开销；仅在昂贵计算或稳定引用必要时使用                                                                                      |
+| Fiber / 虚拟 DOM 口语化瞎编                       | 以 react.dev 批处理、协调、element 描述为准，不臆造内部实现细节                                                               |
 
 ### 3. PAGE_DOM / 示例代码区
 
 按 demo **类型**处理：
 
-| 类型 | 判断 | PAGE_DOM 要求 |
-|------|------|---------------|
-| **A. 纯挂载** | 仅 `#root`，交互在 React 内 | 保留 `<div id="root"></div>`；复杂 demo 可在 root 外加说明性静态 HTML |
-| **B. React 内交互** | 按钮、表单在组件内 | `#root` 即可；hint 引导看页面 + Console |
-| **C. 对比演示** | 批处理、memo 对比等 | 保留原有 UI 结构；必要时补 label / 分区标题 |
-| **D. 概念/面试向** | Router、Fiber 等偏讲解 | 保留现有结构；无法 runnable 的部分在 NOTES 标注 |
+| 类型                | 判断                        | PAGE_DOM 要求                                                         |
+| ------------------- | --------------------------- | --------------------------------------------------------------------- |
+| **A. 纯挂载**       | 仅 `#root`，交互在 React 内 | 保留 `<div id="root"></div>`；复杂 demo 可在 root 外加说明性静态 HTML |
+| **B. React 内交互** | 按钮、表单在组件内          | `#root` 即可；hint 引导看页面 + Console                               |
+| **C. 对比演示**     | 批处理、memo 对比等         | 保留原有 UI 结构；必要时补 label / 分区标题                           |
+| **D. 概念/面试向**  | Router、Fiber 等偏讲解      | 保留现有结构；无法 runnable 的部分在 NOTES 标注                       |
 
 补全规则：
 
@@ -174,7 +174,7 @@ NOTES / 面试里提到但脚本缺失的常见项，**按主题补**：
 ### 交付汇总表（Markdown）
 
 | 文件路径 | 主要修复 | 新增/增强演示 | 参考 react.dev |
-|---------|---------|--------------|----------------|
+| -------- | -------- | ------------- | -------------- |
 
 另附：
 
@@ -186,16 +186,16 @@ NOTES / 面试里提到但脚本缺失的常见项，**按主题补**：
 
 ## 五、各文件侧重点（按编号）
 
-| 编号范围 | 侧重点 |
-|---------|--------|
-| 01～04 | JSX、element、createRoot、组件、不可变更新 |
-| 05～07 | props、事件、state 基础 |
-| 08～10 | 状态快照、flushSync、React 18 自动批处理 |
-| 11～18 | useEffect、useRef、useMemo/useCallback、useReducer、自定义 Hook、闭包与依赖数组 |
-| 19～21 | key/diff、受控表单、children 组合 |
-| 22～24 | Context、memo、合成事件 |
-| 25～28 | 协调/批处理概念、Fragment/Portal/StrictMode、forwardRef、lazy/Suspense |
-| 29～35 | Router/状态管理面试、defaultProps/displayName、HOC/renderProps、useLayoutEffect、派生状态、React 19 概览、并发 opt-in |
+| 编号范围 | 侧重点                                                                                                                |
+| -------- | --------------------------------------------------------------------------------------------------------------------- |
+| 01～04   | JSX、element、createRoot、组件、不可变更新                                                                            |
+| 05～07   | props、事件、state 基础                                                                                               |
+| 08～10   | 状态快照、flushSync、React 18 自动批处理                                                                              |
+| 11～18   | useEffect、useRef、useMemo/useCallback、useReducer、自定义 Hook、闭包与依赖数组                                       |
+| 19～21   | key/diff、受控表单、children 组合                                                                                     |
+| 22～24   | Context、memo、合成事件                                                                                               |
+| 25～28   | 协调/批处理概念、Fragment/Portal/StrictMode、forwardRef、lazy/Suspense                                                |
+| 29～35   | Router/状态管理面试、defaultProps/displayName、HOC/renderProps、useLayoutEffect、派生状态、React 19 概览、并发 opt-in |
 
 ---
 

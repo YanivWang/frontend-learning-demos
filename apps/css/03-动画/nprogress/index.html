@@ -1,5 +1,5 @@
 <!--
-分类: css / 03-动画 / nprogress
+  分类: css / 03-动画 / nprogress
   主题: NProgress 顶部进度条第三方库
   要点:
     - NProgress 用 start() 显示顶部进度条，用 done() 收尾并隐藏
@@ -20,8 +20,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NProgress 顶部进度条</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
-      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        color: #222;
+      }
+      .tip {
+        margin: 0.5rem 0 1rem;
+        color: #666;
+        font-size: 0.875rem;
+      }
       #runtime-output {
         margin: 0.75rem 0 0;
         padding: 0.75rem 1rem;
@@ -43,28 +51,86 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>NProgress 顶部进度条</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出 NProgress 状态与任务结果。</p>
+      <p class="hint">
+        在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出 NProgress
+        状态与任务结果。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>NProgress 是轻量顶部进度条库，常用于页面跳转、动态导入或全局异步任务；<code>NProgress.start()</code> 显示进度，<code>NProgress.done()</code> 完成并隐藏。</li>
-          <li>它展示的是感知进度，不是网络真实百分比；如果需要上传/下载百分比，应使用请求进度事件或服务端进度接口，而不是只靠 NProgress。</li>
-          <li>SPA 中通常在路由开始前 <code>start()</code>，在成功、失败、重定向和取消路径里统一 <code>done()</code>，避免异常时顶部条一直挂着。</li>
-          <li>全局进度条适合“整页正在切换”，局部按钮 loading 或骨架屏适合局部内容更新；不要让一个全局条掩盖具体错误信息。</li>
-          <li>本页第三方源码位于 <code>lib/</code>，按仓库约定不修改库文件；业务层只封装调用时机、错误处理和可访问性提示。</li>
+          <li>
+            NProgress 是轻量顶部进度条库，常用于页面跳转、动态导入或全局异步任务；
+            <code>NProgress.start()</code>
+            显示进度，
+            <code>NProgress.done()</code>
+            完成并隐藏。
+          </li>
+          <li>
+            它展示的是感知进度，不是网络真实百分比；如果需要上传/下载百分比，应使用请求进度事件或服务端进度接口，而不是只靠
+            NProgress。
+          </li>
+          <li>
+            SPA 中通常在路由开始前
+            <code>start()</code>
+            ，在成功、失败、重定向和取消路径里统一
+            <code>done()</code>
+            ，避免异常时顶部条一直挂着。
+          </li>
+          <li>
+            全局进度条适合“整页正在切换”，局部按钮 loading
+            或骨架屏适合局部内容更新；不要让一个全局条掩盖具体错误信息。
+          </li>
+          <li>
+            本页第三方源码位于
+            <code>lib/</code>
+            ，按仓库约定不修改库文件；业务层只封装调用时机、错误处理和可访问性提示。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>NProgress 表示的是真实进度吗？</strong> 结论是不是，它主要表示“任务正在进行”的感知进度。原因是很多路由切换和接口请求没有稳定的总进度，NProgress 只能用递增动画缓解等待感。边界是文件上传、下载或长任务需要真实百分比时，应接入 progress 事件或后端任务状态。</li>
-          <li><strong>SPA 路由里怎么保证进度条不挂死？</strong> 结论是在所有结束路径调用 <code>done()</code>。原因是路由守卫、懒加载组件、接口预取都可能成功、失败、重定向或取消。项目里常在 router beforeEach 里 start，在 afterEach 和 onError/finally 里 done，并处理重复导航。</li>
-          <li><strong>顶部进度条、骨架屏和局部 loading 怎么选？</strong> 结论是整页切换用顶部进度条，内容占位用骨架屏，按钮提交或局部列表刷新用局部 loading。原因是反馈范围要和任务影响范围一致。边界是全局条不能替代错误提示，失败后必须给出可见状态和重试入口。</li>
-          <li><strong>第三方进度条库接入有哪些风险？</strong> 结论是要封装调用点，不要把库 API 散落到业务里。原因是异步竞态、重复请求和页面卸载都可能让进度条状态错乱。项目里还要给屏幕阅读器提供文本状态，例如本页用 <code>aria-live</code> 更新任务结果。</li>
+          <li>
+            <strong>NProgress 表示的是真实进度吗？</strong>
+            结论是不是，它主要表示“任务正在进行”的感知进度。原因是很多路由切换和接口请求没有稳定的总进度，NProgress
+            只能用递增动画缓解等待感。边界是文件上传、下载或长任务需要真实百分比时，应接入 progress
+            事件或后端任务状态。
+          </li>
+          <li>
+            <strong>SPA 路由里怎么保证进度条不挂死？</strong>
+            结论是在所有结束路径调用
+            <code>done()</code>
+            。原因是路由守卫、懒加载组件、接口预取都可能成功、失败、重定向或取消。项目里常在 router
+            beforeEach 里 start，在 afterEach 和 onError/finally 里 done，并处理重复导航。
+          </li>
+          <li>
+            <strong>顶部进度条、骨架屏和局部 loading 怎么选？</strong>
+            结论是整页切换用顶部进度条，内容占位用骨架屏，按钮提交或局部列表刷新用局部
+            loading。原因是反馈范围要和任务影响范围一致。边界是全局条不能替代错误提示，失败后必须给出可见状态和重试入口。
+          </li>
+          <li>
+            <strong>第三方进度条库接入有哪些风险？</strong>
+            结论是要封装调用点，不要把库 API
+            散落到业务里。原因是异步竞态、重复请求和页面卸载都可能让进度条状态错乱。项目里还要给屏幕阅读器提供文本状态，例如本页用
+            <code>aria-live</code>
+            更新任务结果。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://github.com/rstacruz/nprogress">NProgress 官方仓库</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch">MDN: try...catch</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/finally">MDN: Promise.prototype.finally()</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch"
+            >
+              MDN: try...catch
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/finally"
+            >
+              MDN: Promise.prototype.finally()
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -73,7 +139,13 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block">
       <h2 class="demo-block__label">异步任务演示</h2>
-      <p class="tip">点击按钮后顶部会出现 NProgress 进度条；成功和失败路径都会在 <code>finally</code> 中调用 <code>done()</code> 收尾。</p>
+      <p class="tip">
+        点击按钮后顶部会出现 NProgress 进度条；成功和失败路径都会在
+        <code>finally</code>
+        中调用
+        <code>done()</code>
+        收尾。
+      </p>
       <button type="button" id="successTask">模拟成功任务</button>
       <button type="button" id="failTask">模拟失败任务</button>
       <p id="taskStatus" role="status" aria-live="polite">等待触发任务。</p>
@@ -84,12 +156,9 @@
     <!-- SCRIPT_START -->
     <script>
       (function () {
-        var status = document.getElementById("taskStatus");
-        var output = document.getElementById("runtime-output");
-        var buttons = [
-          document.getElementById("successTask"),
-          document.getElementById("failTask"),
-        ];
+        var status = document.getElementById('taskStatus');
+        var output = document.getElementById('runtime-output');
+        var buttons = [document.getElementById('successTask'), document.getElementById('failTask')];
 
         /** 检测 NProgress 是否可用，对应第三方库 start/done API */
         function getNProgressState() {
@@ -106,20 +175,17 @@
         /** 渲染 NProgress 运行时状态到 #runtime-output */
         function renderRuntimeState(extra) {
           var np = getNProgressState();
-          var lines = [
-            "── NProgress 状态 ──",
-            "NProgress 可用: " + (np.available ? "是" : "否"),
-          ];
+          var lines = ['── NProgress 状态 ──', 'NProgress 可用: ' + (np.available ? '是' : '否')];
           if (np.available) {
-            lines.push("NProgress.isStarted(): " + np.isStarted);
-            lines.push("NProgress.status: " + (np.status === null ? "null（未显示）" : np.status));
+            lines.push('NProgress.isStarted(): ' + np.isStarted);
+            lines.push('NProgress.status: ' + (np.status === null ? 'null（未显示）' : np.status));
           }
           if (extra) {
-            lines.push("");
-            lines.push("── 最近任务 ──");
+            lines.push('');
+            lines.push('── 最近任务 ──');
             lines.push(extra);
           }
-          output.textContent = lines.join("\n");
+          output.textContent = lines.join('\n');
         }
 
         /** 禁用/启用按钮，防止重复触发 */
@@ -135,33 +201,32 @@
          */
         function runTask(shouldFail) {
           if (!window.NProgress) {
-            status.textContent = "NProgress 资源加载失败，无法显示顶部进度条。";
-            renderRuntimeState("资源加载失败");
+            status.textContent = 'NProgress 资源加载失败，无法显示顶部进度条。';
+            renderRuntimeState('资源加载失败');
             return;
           }
 
           setBusy(true);
           status.textContent = shouldFail
-            ? "任务执行中，稍后会模拟失败。"
-            : "任务执行中，稍后会模拟成功。";
+            ? '任务执行中，稍后会模拟失败。'
+            : '任务执行中，稍后会模拟成功。';
           NProgress.start();
-          renderRuntimeState("任务进行中…");
+          renderRuntimeState('任务进行中…');
 
           new Promise(function (resolve, reject) {
             setTimeout(function () {
               if (shouldFail) {
-                reject(new Error("模拟接口失败"));
+                reject(new Error('模拟接口失败'));
                 return;
               }
               resolve();
             }, 1200);
           })
             .then(function () {
-              status.textContent = "任务成功：进度条已完成。";
+              status.textContent = '任务成功：进度条已完成。';
             })
             .catch(function (error) {
-              status.textContent =
-                error.message + "：进度条同样需要收尾，并给用户错误反馈。";
+              status.textContent = error.message + '：进度条同样需要收尾，并给用户错误反馈。';
             })
             .finally(function () {
               NProgress.done();
@@ -170,14 +235,14 @@
             });
         }
 
-        document.getElementById("successTask").addEventListener("click", function () {
+        document.getElementById('successTask').addEventListener('click', function () {
           runTask(false);
         });
-        document.getElementById("failTask").addEventListener("click", function () {
+        document.getElementById('failTask').addEventListener('click', function () {
           runTask(true);
         });
 
-        renderRuntimeState("等待触发任务");
+        renderRuntimeState('等待触发任务');
       })();
     </script>
     <!-- SCRIPT_END -->
@@ -192,13 +257,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

@@ -23,15 +23,57 @@
     <title>Vue3 · provide / inject</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; margin-top: 4px; padding: 6px 12px; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; max-height: 160px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
-      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
-      .theme-dark { background: #202124; color: #e8eaed; border-radius: 6px; padding: 12px; }
-      .theme-light { background: #f8f9fa; color: #202124; border-radius: 6px; padding: 12px; }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          'PingFang SC',
+          sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+      }
+      button {
+        margin-right: 8px;
+        margin-top: 4px;
+        padding: 6px 12px;
+      }
+      code,
+      pre {
+        background: #f6f8fa;
+        border-radius: 6px;
+      }
+      code {
+        padding: 2px 5px;
+      }
+      pre {
+        padding: 12px;
+        overflow: auto;
+        max-height: 160px;
+      }
+      .box {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 760px;
+      }
+      .box .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
+      .theme-dark {
+        background: #202124;
+        color: #e8eaed;
+        border-radius: 6px;
+        padding: 12px;
+      }
+      .theme-light {
+        background: #f8f9fa;
+        color: #202124;
+        border-radius: 6px;
+        padding: 12px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -44,25 +86,117 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>provide</code> 在祖先组件登记依赖，<code>inject</code> 在任意深度后代读取依赖，适合主题、表单上下文、插件能力这类跨层共享，不适合替代清晰的父子 <code>props</code>。本页中间层 <code>MiddlePanel</code> 不声明 theme 相关 props，深层子组件仍能注入。</li>
-          <li>本页 provider 提供 <code>theme</code> 这个 <code>ref</code>，深层子组件注入后仍指向同一个响应式对象；Vue 不会自动解包注入的 <code>ref</code>，模板渲染时才会按模板规则解包。点「切换主题」父/深子任一处点击，背景 class 同步变化。</li>
-          <li>如果 provider 提供普通字符串，后代拿到的是当前值快照而不是响应式连接；需要共享变化时应提供 <code>ref</code>、<code>reactive</code>、<code>computed</code> 或显式更新函数。本页 pre 区对比「注入 ref」与「注入普通值」差异说明。</li>
-          <li>修改共享状态时推荐同时提供 <code>toggleTheme</code>，由数据提供方集中控制写入逻辑，避免多个后代直接改同一份状态导致来源混乱。事件日志区记录每次切换来源（父或深子）。</li>
-          <li>项目中应给注入项准备默认值（<code>inject('key', defaultValue)</code>），公共库或大型应用中优先用 <code>Symbol</code> 作为 key，避免字符串 key 冲突。props 逐级传递对比见 <a href="./01-props%E4%B8%8Eemit.html">01-props与emit</a>。</li>
-          <li>composable 也可内部使用 provide/inject 封装上下文，见 <a href="../03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E7%BB%84%E5%90%88%E5%BC%8F/02-composable%E5%A4%8D%E7%94%A8.html">03-composable复用</a>。全应用共享状态仍优先 Pinia。</li>
+          <li>
+            <code>provide</code>
+            在祖先组件登记依赖，
+            <code>inject</code>
+            在任意深度后代读取依赖，适合主题、表单上下文、插件能力这类跨层共享，不适合替代清晰的父子
+            <code>props</code>
+            。本页中间层
+            <code>MiddlePanel</code>
+            不声明 theme 相关 props，深层子组件仍能注入。
+          </li>
+          <li>
+            本页 provider 提供
+            <code>theme</code>
+            这个
+            <code>ref</code>
+            ，深层子组件注入后仍指向同一个响应式对象；Vue 不会自动解包注入的
+            <code>ref</code>
+            ，模板渲染时才会按模板规则解包。点「切换主题」父/深子任一处点击，背景 class 同步变化。
+          </li>
+          <li>
+            如果 provider
+            提供普通字符串，后代拿到的是当前值快照而不是响应式连接；需要共享变化时应提供
+            <code>ref</code>
+            、
+            <code>reactive</code>
+            、
+            <code>computed</code>
+            或显式更新函数。本页 pre 区对比「注入 ref」与「注入普通值」差异说明。
+          </li>
+          <li>
+            修改共享状态时推荐同时提供
+            <code>toggleTheme</code>
+            ，由数据提供方集中控制写入逻辑，避免多个后代直接改同一份状态导致来源混乱。事件日志区记录每次切换来源（父或深子）。
+          </li>
+          <li>
+            项目中应给注入项准备默认值（
+            <code>inject('key', defaultValue)</code>
+            ），公共库或大型应用中优先用
+            <code>Symbol</code>
+            作为 key，避免字符串 key 冲突。props 逐级传递对比见
+            <a href="./01-props%E4%B8%8Eemit.html">01-props与emit</a>
+            。
+          </li>
+          <li>
+            composable 也可内部使用 provide/inject 封装上下文，见
+            <a
+              href="../03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E7%BB%84%E5%90%88%E5%BC%8F/02-composable%E5%A4%8D%E7%94%A8.html"
+            >
+              03-composable复用
+            </a>
+            。全应用共享状态仍优先 Pinia。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>provide / inject 解决什么问题？</strong> 结论是解决祖先到深层后代的依赖传递，避免中间组件只为转发数据而声明 <code>props</code>。本页 MiddlePanel 零 props 转发即例证。边界是普通父子通信仍优先 props / emit。</li>
-          <li><strong>注入的值一定是响应式的吗？</strong> 不一定，响应式取决于 provider 提供的值本身。提供 <code>ref</code> 或 <code>reactive</code> 时后代能保持连接，提供普通字符串时不会自动变成响应式。本页 theme ref 切换时 UI 同步即 ref 连接证明。</li>
-          <li><strong>为什么不建议后代直接改注入状态？</strong> 结论是写操作最好留在 provider 或由 provider 暴露命令函数。这样状态来源、校验、埋点和失败处理都集中。本页 toggleTheme 由 provider 定义，深子只调用函数。</li>
-          <li><strong>provide / inject 和 Pinia 怎么选？</strong> 局部组件树依赖选 provide / inject，全应用共享、需要 DevTools、持久化或跨路由状态选 Pinia。复杂业务状态不要为了少建 store 而层层注入。</li>
-          <li><strong>注入 key 缺失时如何兜底？</strong> 结论是 <code>inject('key', defaultValue)</code> 或工厂函数 <code>inject('key', () => ref('light'))</code>。缺失时无 provider 会得到默认值而非 undefined 报错。公共库应用 Symbol key 避免与业务字符串冲突。</li>
+          <li>
+            <strong>provide / inject 解决什么问题？</strong>
+            结论是解决祖先到深层后代的依赖传递，避免中间组件只为转发数据而声明
+            <code>props</code>
+            。本页 MiddlePanel 零 props 转发即例证。边界是普通父子通信仍优先 props / emit。
+          </li>
+          <li>
+            <strong>注入的值一定是响应式的吗？</strong>
+            不一定，响应式取决于 provider 提供的值本身。提供
+            <code>ref</code>
+            或
+            <code>reactive</code>
+            时后代能保持连接，提供普通字符串时不会自动变成响应式。本页 theme ref 切换时 UI 同步即
+            ref 连接证明。
+          </li>
+          <li>
+            <strong>为什么不建议后代直接改注入状态？</strong>
+            结论是写操作最好留在 provider 或由 provider
+            暴露命令函数。这样状态来源、校验、埋点和失败处理都集中。本页 toggleTheme 由 provider
+            定义，深子只调用函数。
+          </li>
+          <li>
+            <strong>provide / inject 和 Pinia 怎么选？</strong>
+            局部组件树依赖选 provide / inject，全应用共享、需要 DevTools、持久化或跨路由状态选
+            Pinia。复杂业务状态不要为了少建 store 而层层注入。
+          </li>
+          <li>
+            <strong>注入 key 缺失时如何兜底？</strong>
+            结论是
+            <code>inject('key', defaultValue)</code>
+            或工厂函数
+            <code>inject('key', () => ref('light'))</code>
+            。缺失时无 provider 会得到默认值而非 undefined 报错。公共库应用 Symbol key
+            避免与业务字符串冲突。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/guide/components/provide-inject.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Provide / Inject</a></li>
-          <li><a href="https://vuejs.org/api/composition-api-dependency-injection.html" target="_blank" rel="noreferrer">Vue 3 官方 API：provide() / inject()</a></li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/components/provide-inject.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方文档：Provide / Inject
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/api/composition-api-dependency-injection.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方 API：provide() / inject()
+            </a>
+          </li>
           <li><a href="./01-props%E4%B8%8Eemit.html">本系列：props 与 emit</a></li>
         </ul>
       </div>
@@ -84,10 +218,9 @@
       const { createApp, ref, provide, inject, onMounted } = Vue;
 
       // Symbol key 示例（大型库中避免字符串冲突）
-      const ThemeKey = Symbol("theme");
+      const ThemeKey = Symbol('theme');
 
       // --- 子组件定义 ---
-
 
       const DeepChild = {
         template: `
@@ -100,13 +233,13 @@
           // --- 演示状态 ---
           // 注入 ref：保持与 provider 同一响应式连接
           const theme = inject(ThemeKey);
-          const toggleTheme = inject("toggleTheme");
-          const pushLog = inject("pushLog");
+          const toggleTheme = inject('toggleTheme');
+          const pushLog = inject('pushLog');
 
           function onToggle(source) {
             toggleTheme();
             pushLog(`${source} 调用 toggleTheme → ${theme.value}`);
-            console.log("[provide/inject] 深子切换", theme.value);
+            console.log('[provide/inject] 深子切换', theme.value);
           }
 
           return { theme, onToggle };
@@ -129,7 +262,7 @@
         `,
         setup() {
           const theme = inject(ThemeKey);
-          const plainLabel = inject("plainLabel");
+          const plainLabel = inject('plainLabel');
           return { theme, plainLabel };
         },
       };
@@ -148,11 +281,11 @@
         </div>
         `,
         setup() {
-          const theme = ref("light");
+          const theme = ref('light');
           const logs = ref([]);
 
           function toggleTheme() {
-            theme.value = theme.value === "light" ? "dark" : "light";
+            theme.value = theme.value === 'light' ? 'dark' : 'light';
           }
 
           function pushLog(line) {
@@ -162,14 +295,14 @@
           function onToggle(source) {
             toggleTheme();
             pushLog(`${source} 调用 toggleTheme → ${theme.value}`);
-            console.log("[provide/inject] 父切换", theme.value);
+            console.log('[provide/inject] 父切换', theme.value);
           }
 
           // provide ref + 命令函数 + 日志回调；plainLabel 为普通字符串快照
           provide(ThemeKey, theme);
-          provide("plainLabel", theme.value);
-          provide("toggleTheme", toggleTheme);
-          provide("pushLog", pushLog);
+          provide('plainLabel', theme.value);
+          provide('toggleTheme', toggleTheme);
+          provide('pushLog', pushLog);
 
           return { theme, logs, onToggle };
         },
@@ -179,16 +312,15 @@
         components: { ParentPanel },
         setup() {
           onMounted(() => {
-            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+            console.log('[mounted] createApp 已接管 #app，DOM 已渲染');
           });
           return {};
         },
       });
       // mount 须在 app.use / app.component / app.config 等配置之后调用
       // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
-      const rootInstance = app.mount("#app");
-      console.log("[mount] 根组件实例", rootInstance);
-
+      const rootInstance = app.mount('#app');
+      console.log('[mount] 根组件实例', rootInstance);
     </script>
     <!-- SCRIPT_END -->
 
@@ -202,13 +334,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

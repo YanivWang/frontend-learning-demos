@@ -27,29 +27,142 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>手写 new</h1>
-      <p class="hint">先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。</p>
+      <p class="hint">
+        先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>new Constructor(...args)</code> 的核心步骤是：创建新对象、连接原型、用新对象作为 <code>this</code> 执行构造函数、按返回值规则决定最终结果。</li>
-          <li><code>Object.create(Constructor.prototype)</code> 用来创建一个原型指向构造函数 <code>prototype</code> 的对象，因此实例可以访问原型方法，并满足 <code>instanceof Constructor</code>。</li>
-          <li>构造函数执行时，<code>this</code> 指向新实例，像 <code>this.name = name</code> 这样的赋值会写入实例自身属性。</li>
-          <li>如果构造函数显式返回对象或函数，<code>new</code> 表达式会返回这个对象；如果返回原始值或没有返回值，则返回前面创建的新实例。</li>
-          <li>真实规范还涉及 <code>new.target</code>、派生类构造器、绑定函数、不可构造函数等细节；本 demo 是面试版核心模拟，不等同完整 polyfill。</li>
-          <li>现代代码如果需要以参数数组动态构造对象，优先使用 <code>Reflect.construct()</code> 或展开语法 <code>new Ctor(...args)</code>，不要在业务里自定义 <code>new</code>。</li>
+          <li>
+            <code>new Constructor(...args)</code>
+            的核心步骤是：创建新对象、连接原型、用新对象作为
+            <code>this</code>
+            执行构造函数、按返回值规则决定最终结果。
+          </li>
+          <li>
+            <code>Object.create(Constructor.prototype)</code>
+            用来创建一个原型指向构造函数
+            <code>prototype</code>
+            的对象，因此实例可以访问原型方法，并满足
+            <code>instanceof Constructor</code>
+            。
+          </li>
+          <li>
+            构造函数执行时，
+            <code>this</code>
+            指向新实例，像
+            <code>this.name = name</code>
+            这样的赋值会写入实例自身属性。
+          </li>
+          <li>
+            如果构造函数显式返回对象或函数，
+            <code>new</code>
+            表达式会返回这个对象；如果返回原始值或没有返回值，则返回前面创建的新实例。
+          </li>
+          <li>
+            真实规范还涉及
+            <code>new.target</code>
+            、派生类构造器、绑定函数、不可构造函数等细节；本 demo 是面试版核心模拟，不等同完整
+            polyfill。
+          </li>
+          <li>
+            现代代码如果需要以参数数组动态构造对象，优先使用
+            <code>Reflect.construct()</code>
+            或展开语法
+            <code>new Ctor(...args)</code>
+            ，不要在业务里自定义
+            <code>new</code>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>new</code> 操作符具体做了哪几步？</strong> 结论：创建对象、连接原型、绑定 <code>this</code> 执行构造函数、处理返回值。原因是实例既要拥有构造函数写入的自身属性，也要通过原型链访问方法。边界是构造函数必须可构造，箭头函数和普通非构造调用不能直接套用这套语义。</li>
-          <li><strong>构造函数显式 <code>return</code> 对 <code>new</code> 结果有什么影响？</strong> 结论：返回对象或函数会覆盖默认实例，返回原始值会被忽略。原因是规范对构造调用有专门的返回值处理规则，只有对象类型结果才会成为最终构造结果。项目里构造函数通常不显式返回对象，避免实例语义变得难读。</li>
-          <li><strong><code>Object.create(Constructor.prototype)</code> 解决了什么？</strong> 结论：它让新对象的原型指向构造函数原型。原因是原型链决定方法查找和 <code>instanceof</code> 判断；如果只写 <code>{}</code>，实例就访问不到 <code>Constructor.prototype</code> 上的方法。边界是如果 <code>prototype</code> 不是对象，原生 <code>new</code> 会退回默认对象原型，手写实现要考虑兜底。</li>
-          <li><strong>手写 <code>new</code> 和 <code>Reflect.construct</code> 有什么差异？</strong> 结论：手写版只模拟核心流程，<code>Reflect.construct</code> 更接近规范级构造。原因是 <code>Reflect.construct</code> 能处理 <code>newTarget</code>、类构造器和内置构造语义；而 <code>Constructor.apply(instance, args)</code> 不能直接调用 <code>class</code> 构造器。面试答核心步骤即可，生产动态构造应使用语言内置能力。</li>
+          <li>
+            <strong>
+              <code>new</code>
+              操作符具体做了哪几步？
+            </strong>
+            结论：创建对象、连接原型、绑定
+            <code>this</code>
+            执行构造函数、处理返回值。原因是实例既要拥有构造函数写入的自身属性，也要通过原型链访问方法。边界是构造函数必须可构造，箭头函数和普通非构造调用不能直接套用这套语义。
+          </li>
+          <li>
+            <strong>
+              构造函数显式
+              <code>return</code>
+              对
+              <code>new</code>
+              结果有什么影响？
+            </strong>
+            结论：返回对象或函数会覆盖默认实例，返回原始值会被忽略。原因是规范对构造调用有专门的返回值处理规则，只有对象类型结果才会成为最终构造结果。项目里构造函数通常不显式返回对象，避免实例语义变得难读。
+          </li>
+          <li>
+            <strong>
+              <code>Object.create(Constructor.prototype)</code>
+              解决了什么？
+            </strong>
+            结论：它让新对象的原型指向构造函数原型。原因是原型链决定方法查找和
+            <code>instanceof</code>
+            判断；如果只写
+            <code>{}</code>
+            ，实例就访问不到
+            <code>Constructor.prototype</code>
+            上的方法。边界是如果
+            <code>prototype</code>
+            不是对象，原生
+            <code>new</code>
+            会退回默认对象原型，手写实现要考虑兜底。
+          </li>
+          <li>
+            <strong>
+              手写
+              <code>new</code>
+              和
+              <code>Reflect.construct</code>
+              有什么差异？
+            </strong>
+            结论：手写版只模拟核心流程，
+            <code>Reflect.construct</code>
+            更接近规范级构造。原因是
+            <code>Reflect.construct</code>
+            能处理
+            <code>newTarget</code>
+            、类构造器和内置构造语义；而
+            <code>Constructor.apply(instance, args)</code>
+            不能直接调用
+            <code>class</code>
+            构造器。面试答核心步骤即可，生产动态构造应使用语言内置能力。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new" target="_blank" rel="noreferrer">MDN: new operator</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create" target="_blank" rel="noreferrer">MDN: Object.create()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect/construct" target="_blank" rel="noreferrer">MDN: Reflect.construct()</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: new operator
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Object.create()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect/construct"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Reflect.construct()
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -66,33 +179,31 @@
     <!-- SCRIPT_START -->
     <script>
       (function () {
-        var out = document.getElementById("runtime-output");
+        var out = document.getElementById('runtime-output');
         var lines = [];
         function emit(line) {
           console.log(line);
           lines.push(line);
-          if (out) out.textContent = lines.join("\n");
+          if (out) out.textContent = lines.join('\n');
         }
         function assertOk(ok, msg) {
-          emit((ok ? "✓ " : "✗ ") + msg);
+          emit((ok ? '✓ ' : '✗ ') + msg);
         }
 
         // ============ 1. 手写 myNew：创建对象 → 连原型 → apply 执行 → 处理返回值 ============
         function myNew(Constructor, ...args) {
-          if (typeof Constructor !== "function") {
-            throw new TypeError("Constructor must be a function");
+          if (typeof Constructor !== 'function') {
+            throw new TypeError('Constructor must be a function');
           }
           const prototype = Constructor.prototype;
           const instancePrototype =
-            prototype !== null &&
-            (typeof prototype === "object" || typeof prototype === "function")
+            prototype !== null && (typeof prototype === 'object' || typeof prototype === 'function')
               ? prototype
               : Object.prototype;
           const instance = Object.create(instancePrototype);
           const result = Constructor.apply(instance, args);
           const isObject =
-            result !== null &&
-            (typeof result === "object" || typeof result === "function");
+            result !== null && (typeof result === 'object' || typeof result === 'function');
           return isObject ? result : instance;
         }
 
@@ -101,28 +212,28 @@
           this.name = name;
         }
         Person.prototype.say = function () {
-          return "I am " + this.name;
+          return 'I am ' + this.name;
         };
-        const p = myNew(Person, "Ada");
-        assertOk(p.name === "Ada", "p.name = Ada");
-        assertOk(p instanceof Person, "p instanceof Person");
-        assertOk(p.say() === "I am Ada", "p.say() = " + p.say());
+        const p = myNew(Person, 'Ada');
+        assertOk(p.name === 'Ada', 'p.name = Ada');
+        assertOk(p instanceof Person, 'p instanceof Person');
+        assertOk(p.say() === 'I am Ada', 'p.say() = ' + p.say());
 
         // ============ 3. 验证：构造函数显式 return 对象覆盖默认实例 ============
         function Factory() {
-          this.name = "inner";
-          return { name: "returned object" };
+          this.name = 'inner';
+          return { name: 'returned object' };
         }
         const f = myNew(Factory);
-        assertOk(f.name === "returned object", "Factory return 对象 → " + f.name);
+        assertOk(f.name === 'returned object', 'Factory return 对象 → ' + f.name);
 
         // ============ 4. 验证：return 原始值被忽略，仍返回实例 ============
         function IgnorePrimitive() {
-          this.tag = "instance";
+          this.tag = 'instance';
           return 42;
         }
         const ip = myNew(IgnorePrimitive);
-        assertOk(ip.tag === "instance", "return 原始值忽略 → 仍得实例");
+        assertOk(ip.tag === 'instance', 'return 原始值忽略 → 仍得实例');
       })();
     </script>
     <!-- SCRIPT_END -->
@@ -134,15 +245,19 @@
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./02-bind.html">相关 · bind</a>
         <a href="./04-instanceof.html">相关 · instanceof</a>
-        <a href="../../03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0.html">相关 · 03-对象与原型/构造函数</a>
+        <a
+          href="../../03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0.html"
+        >
+          相关 · 03-对象与原型/构造函数
+        </a>
         <a href="./02-bind.html">← bind</a>
         <a href="./04-instanceof.html">instanceof →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

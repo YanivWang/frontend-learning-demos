@@ -1,5 +1,5 @@
 <!--
-分类: css / 02-布局 / BFC与清除浮动
+  分类: css / 02-布局 / BFC与清除浮动
   主题: BFC 与清除浮动
   要点:
     - BFC 是块格式化上下文，内部浮动会参与该上下文的高度计算
@@ -20,25 +20,107 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BFC 与清除浮动</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
-      h1 { font-size: 1.3rem; }
-      h2 { font-size: 1rem; margin-top: 2rem; }
-      .wrap { width: 420px; padding: 10px; border: 2px dashed #bbb; background: #f8f8f8; }
-      .float-box { float: left; width: 120px; height: 80px; margin-right: 12px; background: #2f80ed; color: #fff; display: grid; place-items: center; }
-      .normal { background: #fff0d6; }
-      .flow-root { display: flow-root; background: #e5f6df; }
-      .overflow-hidden { overflow: hidden; background: #e5f6df; }
-      .inline-block-bfc { display: inline-block; width: 100%; background: #e5f6df; }
-      .float-bfc { float: left; width: 100%; background: #e5f6df; }
-      .side { float: left; width: 120px; height: 90px; background: #eb5757; color: #fff; display: grid; place-items: center; }
-      .content { overflow: hidden; padding: 10px; background: #dff0ff; }
-      .margin-demo { width: 420px; border: 2px dashed #bbb; background: #f8f8f8; }
-      .margin-demo > p { margin: 28px 0; padding: 8px 12px; background: #fff0d6; }
-      .margin-bfc { display: flow-root; background: #eef9f0; }
-      .abs-bfc-wrap { position: relative; width: 420px; height: 100px; border: 2px dashed #bbb; background: #f8f8f8; }
-      .abs-bfc { position: absolute; inset: 10px; overflow: hidden; background: #e5f6df; }
-      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
-      .measure { margin: 0.35rem 0 0; font-size: 0.875rem; color: #444; font-family: ui-monospace, monospace; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        color: #222;
+      }
+      h1 {
+        font-size: 1.3rem;
+      }
+      h2 {
+        font-size: 1rem;
+        margin-top: 2rem;
+      }
+      .wrap {
+        width: 420px;
+        padding: 10px;
+        border: 2px dashed #bbb;
+        background: #f8f8f8;
+      }
+      .float-box {
+        float: left;
+        width: 120px;
+        height: 80px;
+        margin-right: 12px;
+        background: #2f80ed;
+        color: #fff;
+        display: grid;
+        place-items: center;
+      }
+      .normal {
+        background: #fff0d6;
+      }
+      .flow-root {
+        display: flow-root;
+        background: #e5f6df;
+      }
+      .overflow-hidden {
+        overflow: hidden;
+        background: #e5f6df;
+      }
+      .inline-block-bfc {
+        display: inline-block;
+        width: 100%;
+        background: #e5f6df;
+      }
+      .float-bfc {
+        float: left;
+        width: 100%;
+        background: #e5f6df;
+      }
+      .side {
+        float: left;
+        width: 120px;
+        height: 90px;
+        background: #eb5757;
+        color: #fff;
+        display: grid;
+        place-items: center;
+      }
+      .content {
+        overflow: hidden;
+        padding: 10px;
+        background: #dff0ff;
+      }
+      .margin-demo {
+        width: 420px;
+        border: 2px dashed #bbb;
+        background: #f8f8f8;
+      }
+      .margin-demo > p {
+        margin: 28px 0;
+        padding: 8px 12px;
+        background: #fff0d6;
+      }
+      .margin-bfc {
+        display: flow-root;
+        background: #eef9f0;
+      }
+      .abs-bfc-wrap {
+        position: relative;
+        width: 420px;
+        height: 100px;
+        border: 2px dashed #bbb;
+        background: #f8f8f8;
+      }
+      .abs-bfc {
+        position: absolute;
+        inset: 10px;
+        overflow: hidden;
+        background: #e5f6df;
+      }
+      .tip {
+        margin: 0.5rem 0 1rem;
+        color: #666;
+        font-size: 0.875rem;
+      }
+      .measure {
+        margin: 0.35rem 0 0;
+        font-size: 0.875rem;
+        color: #444;
+        font-family: ui-monospace, monospace;
+      }
       #runtime-output {
         margin: 0.75rem 0 0;
         padding: 0.75rem 1rem;
@@ -58,27 +140,97 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>BFC 与清除浮动</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出容器高度实测值。</p>
+      <p class="hint">
+        在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出容器高度实测值。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>BFC</code>（Block Formatting Context）是块级盒子的独立布局上下文，内部块盒按普通流垂直排列，内部浮动不会逃出该上下文的高度计算。</li>
-          <li>常见触发方式包括 <code>display: flow-root</code>、非 <code>visible</code>/<code>clip</code> 的 <code>overflow</code>、浮动元素、绝对/固定定位元素、<code>inline-block</code> 和部分表格/弹性/网格容器。</li>
-          <li>现代清浮动优先用 <code>display: flow-root</code>，语义就是“让这个盒子建立新的块格式化上下文”。</li>
-          <li><code>overflow: hidden</code> 虽然也能创建 BFC，但它会裁剪溢出内容，遇到阴影、弹层、焦点轮廓或内部滚动时容易变成布局副作用。</li>
-          <li>BFC 还能隔离外部浮动，阻止父元素与子元素之间的垂直 <code>margin</code> 折叠；但相邻兄弟块之间的 margin 折叠不是靠给其中一个元素创建 BFC 就一定消失。</li>
+          <li>
+            <code>BFC</code>
+            （Block Formatting
+            Context）是块级盒子的独立布局上下文，内部块盒按普通流垂直排列，内部浮动不会逃出该上下文的高度计算。
+          </li>
+          <li>
+            常见触发方式包括
+            <code>display: flow-root</code>
+            、非
+            <code>visible</code>
+            /
+            <code>clip</code>
+            的
+            <code>overflow</code>
+            、浮动元素、绝对/固定定位元素、
+            <code>inline-block</code>
+            和部分表格/弹性/网格容器。
+          </li>
+          <li>
+            现代清浮动优先用
+            <code>display: flow-root</code>
+            ，语义就是“让这个盒子建立新的块格式化上下文”。
+          </li>
+          <li>
+            <code>overflow: hidden</code>
+            虽然也能创建
+            BFC，但它会裁剪溢出内容，遇到阴影、弹层、焦点轮廓或内部滚动时容易变成布局副作用。
+          </li>
+          <li>
+            BFC 还能隔离外部浮动，阻止父元素与子元素之间的垂直
+            <code>margin</code>
+            折叠；但相邻兄弟块之间的 margin 折叠不是靠给其中一个元素创建 BFC 就一定消失。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>BFC 为什么能解决浮动父元素高度塌陷？</strong> 结论是父元素创建 BFC 后，内部浮动盒会参与该 BFC 的高度计算。原因是 BFC 是独立格式化上下文，浮动不再只影响外部普通流。项目里应优先写 <code>display: flow-root</code>。</li>
-          <li><strong><code>flow-root</code> 和 <code>overflow:hidden</code> 清浮动怎么选？</strong> 结论是现代布局优先 <code>flow-root</code>，它表达的是布局意图。<code>overflow:hidden</code> 的原因是副作用触发 BFC，但边界是会裁剪内容。</li>
-          <li><strong>BFC 对 margin 折叠和浮动环绕有什么影响？</strong> 结论是 BFC 可以阻止父子垂直 margin 折叠，并让内容块避开外部浮动。原因是新的格式化上下文隔离了内部布局计算。边界是它不是万能清除器，兄弟元素之间的 margin 折叠和 stacking 问题要分别处理。</li>
-          <li><strong><code>overflow:hidden</code> 清浮动有什么项目风险？</strong> 结论是能用但不推荐作为默认方案。原因是它把“创建 BFC”和“裁剪溢出”绑定在一起。下拉菜单、阴影、焦点环、绝对定位提示层被截断时，应改用 <code>flow-root</code>。</li>
+          <li>
+            <strong>BFC 为什么能解决浮动父元素高度塌陷？</strong>
+            结论是父元素创建 BFC 后，内部浮动盒会参与该 BFC 的高度计算。原因是 BFC
+            是独立格式化上下文，浮动不再只影响外部普通流。项目里应优先写
+            <code>display: flow-root</code>
+            。
+          </li>
+          <li>
+            <strong>
+              <code>flow-root</code>
+              和
+              <code>overflow:hidden</code>
+              清浮动怎么选？
+            </strong>
+            结论是现代布局优先
+            <code>flow-root</code>
+            ，它表达的是布局意图。
+            <code>overflow:hidden</code>
+            的原因是副作用触发 BFC，但边界是会裁剪内容。
+          </li>
+          <li>
+            <strong>BFC 对 margin 折叠和浮动环绕有什么影响？</strong>
+            结论是 BFC 可以阻止父子垂直 margin
+            折叠，并让内容块避开外部浮动。原因是新的格式化上下文隔离了内部布局计算。边界是它不是万能清除器，兄弟元素之间的
+            margin 折叠和 stacking 问题要分别处理。
+          </li>
+          <li>
+            <strong>
+              <code>overflow:hidden</code>
+              清浮动有什么项目风险？
+            </strong>
+            结论是能用但不推荐作为默认方案。原因是它把“创建
+            BFC”和“裁剪溢出”绑定在一起。下拉菜单、阴影、焦点环、绝对定位提示层被截断时，应改用
+            <code>flow-root</code>
+            。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_display/Block_formatting_context">MDN: Block formatting context</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/display">MDN: display</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_display/Block_formatting_context"
+            >
+              MDN: Block formatting context
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/display">MDN: display</a>
+          </li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/clear">MDN: clear</a></li>
         </ul>
       </div>
@@ -110,7 +262,10 @@
       <div class="float-box">float</div>
     </div>
     <h2>position: absolute 创建 BFC：包住浮动</h2>
-    <p style="color:#666;font-size:0.875rem;margin:0 0 8px;"><code>position: fixed</code> 与 absolute 同理，定位元素自身也会形成 BFC。</p>
+    <p style="color: #666; font-size: 0.875rem; margin: 0 0 8px">
+      <code>position: fixed</code>
+      与 absolute 同理，定位元素自身也会形成 BFC。
+    </p>
     <div class="abs-bfc-wrap">
       <div class="abs-bfc">
         <div class="float-box">float</div>
@@ -118,9 +273,15 @@
     </div>
     <h2>BFC 避免文字环绕浮动</h2>
     <div class="side">左浮动</div>
-    <div class="content">这个内容块设置了 overflow:hidden，形成 BFC，不会钻到左侧浮动元素下面。</div>
+    <div class="content">
+      这个内容块设置了 overflow:hidden，形成 BFC，不会钻到左侧浮动元素下面。
+    </div>
     <h2>BFC 阻止 margin 折叠</h2>
-    <p class="tip">子元素垂直 margin 在普通容器里可能与父级折叠；<code>display: flow-root</code> 可阻止。</p>
+    <p class="tip">
+      子元素垂直 margin 在普通容器里可能与父级折叠；
+      <code>display: flow-root</code>
+      可阻止。
+    </p>
     <div class="margin-demo" id="margin-normal">
       <p>普通容器：上下 margin 可能折叠到父级外面</p>
     </div>
@@ -139,23 +300,25 @@
         }
 
         function renderBfcMetrics() {
-          var collapsed = document.getElementById("wrap-collapsed");
-          var flowRoot = document.getElementById("wrap-flow-root");
-          var marginNormal = document.getElementById("margin-normal");
-          var marginBfc = document.getElementById("margin-bfc");
+          var collapsed = document.getElementById('wrap-collapsed');
+          var flowRoot = document.getElementById('wrap-flow-root');
+          var marginNormal = document.getElementById('margin-normal');
+          var marginBfc = document.getElementById('margin-bfc');
 
-          document.getElementById("measure-collapsed").textContent =
-            "未清浮动容器高度: " + getContainerHeight(collapsed) + "px（浮动 80px 未计入）";
+          document.getElementById('measure-collapsed').textContent =
+            '未清浮动容器高度: ' + getContainerHeight(collapsed) + 'px（浮动 80px 未计入）';
 
-          document.getElementById("runtime-output").textContent = [
-            "── BFC 高度实测 ──",
-            "未清浮动 #wrap-collapsed: " + getContainerHeight(collapsed) + "px",
-            "flow-root #wrap-flow-root: " + getContainerHeight(flowRoot) + "px（应 ≥ 浮动子高度）",
-            "",
-            "── margin 折叠实测 ──",
-            "普通容器 #margin-normal: " + getContainerHeight(marginNormal) + "px",
-            "BFC 容器 #margin-bfc: " + getContainerHeight(marginBfc) + "px（通常更大：子 margin 未折叠到外部）",
-          ].join("\n");
+          document.getElementById('runtime-output').textContent = [
+            '── BFC 高度实测 ──',
+            '未清浮动 #wrap-collapsed: ' + getContainerHeight(collapsed) + 'px',
+            'flow-root #wrap-flow-root: ' + getContainerHeight(flowRoot) + 'px（应 ≥ 浮动子高度）',
+            '',
+            '── margin 折叠实测 ──',
+            '普通容器 #margin-normal: ' + getContainerHeight(marginNormal) + 'px',
+            'BFC 容器 #margin-bfc: ' +
+              getContainerHeight(marginBfc) +
+              'px（通常更大：子 margin 未折叠到外部）',
+          ].join('\n');
         }
 
         renderBfcMetrics();
@@ -173,13 +336,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

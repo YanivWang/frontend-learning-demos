@@ -30,28 +30,115 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>useLayoutEffect 与 useEffect 对比</h1>
-      <p class="hint">请打开 DevTools Console 查看两种 Effect 的执行顺序；下方 #root 为 React 挂载/交互演示区，点击按钮切换 tooltip 文案。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看两种 Effect 的执行顺序；下方 #root 为 React
+        挂载/交互演示区，点击按钮切换 tooltip 文案。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>useEffect</code> 会在浏览器完成绘制后运行，适合网络请求、订阅、日志等不需要卡住首帧的副作用。</li>
-          <li><code>useLayoutEffect</code> 会在 React 把 DOM 更新提交后、浏览器绘制前同步运行；如果在里面读布局并立刻写 state，用户通常看不到中间错误位置。</li>
-          <li>本页 tooltip 先渲染到 DOM，再用 <code>getBoundingClientRect()</code> 判断是否需要上移，正是 <code>useLayoutEffect</code> 的典型场景。</li>
-          <li>常见坑是把请求、计时器或昂贵计算放进 <code>useLayoutEffect</code>，它会延迟绘制并让页面显得卡顿；能用 <code>useEffect</code> 就不要升级为布局副作用。</li>
-          <li>同构渲染中服务端没有布局信息，<code>useLayoutEffect</code> 只在客户端有意义；需要 SSR 的组件应避免依赖首屏同步测量，或延后到客户端交互后再显示。</li>
+          <li>
+            <code>useEffect</code>
+            会在浏览器完成绘制后运行，适合网络请求、订阅、日志等不需要卡住首帧的副作用。
+          </li>
+          <li>
+            <code>useLayoutEffect</code>
+            会在 React 把 DOM 更新提交后、浏览器绘制前同步运行；如果在里面读布局并立刻写
+            state，用户通常看不到中间错误位置。
+          </li>
+          <li>
+            本页 tooltip 先渲染到 DOM，再用
+            <code>getBoundingClientRect()</code>
+            判断是否需要上移，正是
+            <code>useLayoutEffect</code>
+            的典型场景。
+          </li>
+          <li>
+            常见坑是把请求、计时器或昂贵计算放进
+            <code>useLayoutEffect</code>
+            ，它会延迟绘制并让页面显得卡顿；能用
+            <code>useEffect</code>
+            就不要升级为布局副作用。
+          </li>
+          <li>
+            同构渲染中服务端没有布局信息，
+            <code>useLayoutEffect</code>
+            只在客户端有意义；需要 SSR 的组件应避免依赖首屏同步测量，或延后到客户端交互后再显示。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>useLayoutEffect</code> 和 <code>useEffect</code> 的核心区别是什么？</strong> 结论是执行时机不同：前者在绘制前同步执行，后者在绘制后异步执行。原因是 React 需要给布局副作用一个修正 DOM 的窗口。边界是只有测量尺寸、滚动位置、避免闪烁这类视觉同步问题才用 <code>useLayoutEffect</code>。</li>
-          <li><strong>为什么数据请求不要默认放进 <code>useLayoutEffect</code>？</strong> 结论是请求、订阅、日志应优先放进 <code>useEffect</code>。原因是这些工作不需要阻塞首帧，放进布局副作用会拖慢绘制。项目里只有请求结果会立即决定布局且无法接受闪烁时，才考虑重构交互或拆出占位 UI。</li>
-          <li><strong>tooltip 测量为什么适合 <code>useLayoutEffect</code>？</strong> 结论是它要在用户看到页面前完成位置修正。原因是先提交 DOM 才能读取真实尺寸，再同步更新 <code>top</code> 可避免 tooltip 从错误位置跳动。边界是测量逻辑要短小，并把依赖数组限制在真正影响尺寸的值上。</li>
-          <li><strong>SSR 中使用 <code>useLayoutEffect</code> 要注意什么？</strong> 结论是服务端没有浏览器布局，布局副作用只能在客户端运行。原因是 DOM 尺寸、滚动和视口都依赖真实浏览器环境。需要 SSR 的项目通常用 CSS 预留空间、客户端再增强，避免首屏强依赖同步测量。</li>
+          <li>
+            <strong>
+              <code>useLayoutEffect</code>
+              和
+              <code>useEffect</code>
+              的核心区别是什么？
+            </strong>
+            结论是执行时机不同：前者在绘制前同步执行，后者在绘制后异步执行。原因是 React
+            需要给布局副作用一个修正 DOM
+            的窗口。边界是只有测量尺寸、滚动位置、避免闪烁这类视觉同步问题才用
+            <code>useLayoutEffect</code>
+            。
+          </li>
+          <li>
+            <strong>
+              为什么数据请求不要默认放进
+              <code>useLayoutEffect</code>
+              ？
+            </strong>
+            结论是请求、订阅、日志应优先放进
+            <code>useEffect</code>
+            。原因是这些工作不需要阻塞首帧，放进布局副作用会拖慢绘制。项目里只有请求结果会立即决定布局且无法接受闪烁时，才考虑重构交互或拆出占位
+            UI。
+          </li>
+          <li>
+            <strong>
+              tooltip 测量为什么适合
+              <code>useLayoutEffect</code>
+              ？
+            </strong>
+            结论是它要在用户看到页面前完成位置修正。原因是先提交 DOM 才能读取真实尺寸，再同步更新
+            <code>top</code>
+            可避免 tooltip
+            从错误位置跳动。边界是测量逻辑要短小，并把依赖数组限制在真正影响尺寸的值上。
+          </li>
+          <li>
+            <strong>
+              SSR 中使用
+              <code>useLayoutEffect</code>
+              要注意什么？
+            </strong>
+            结论是服务端没有浏览器布局，布局副作用只能在客户端运行。原因是 DOM
+            尺寸、滚动和视口都依赖真实浏览器环境。需要 SSR 的项目通常用 CSS
+            预留空间、客户端再增强，避免首屏强依赖同步测量。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">react.dev: useEffect</a></li>
-          <li><a href="https://react.dev/reference/react/useLayoutEffect" target="_blank" rel="noreferrer">react.dev: useLayoutEffect</a></li>
-          <li><a href="https://react.dev/reference/react/useLayoutEffect#troubleshooting" target="_blank" rel="noreferrer">react.dev: useLayoutEffect troubleshooting</a></li>
+          <li>
+            <a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">
+              react.dev: useEffect
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/useLayoutEffect"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: useLayoutEffect
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/useLayoutEffect#troubleshooting"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: useLayoutEffect troubleshooting
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -74,28 +161,32 @@
           if (!boxRef.current) return;
           const rect = boxRef.current.getBoundingClientRect();
           const nextTop = rect.bottom > window.innerHeight - 40 ? -48 : 24;
-          console.log("useLayoutEffect: 绘制前测量 tooltip", { text, rectBottom: rect.bottom, nextTop }); // 预期: 先于 useEffect 打印
+          console.log('useLayoutEffect: 绘制前测量 tooltip', {
+            text,
+            rectBottom: rect.bottom,
+            nextTop,
+          }); // 预期: 先于 useEffect 打印
           setTop(nextTop);
         }, [text]);
 
         // ====== 2. useEffect：绘制后异步执行，适合请求/订阅 ======
         useEffect(() => {
-          console.log("useEffect: 绘制完成后执行，适合请求/订阅", { text });
+          console.log('useEffect: 绘制完成后执行，适合请求/订阅', { text });
         }, [text]);
 
         return (
-          <div style={{ position: "relative", marginTop: 120 }}>
+          <div style={{ position: 'relative', marginTop: 120 }}>
             <button>布局锚点</button>
             <div
               ref={boxRef}
               style={{
-                position: "absolute",
+                position: 'absolute',
                 top,
                 left: 0,
-                background: "#333",
-                color: "#fff",
-                padding: "4px 8px",
-                borderRadius: 4
+                background: '#333',
+                color: '#fff',
+                padding: '4px 8px',
+                borderRadius: 4,
               }}
             >
               {text}
@@ -106,15 +197,13 @@
 
       // ====== 3. App：切换文案触发依赖 [text] 重新测量 ======
       function App() {
-        const [text, setText] = useState("短提示");
+        const [text, setText] = useState('短提示');
 
         return (
           <section>
             <h1>useLayoutEffect 与 useEffect</h1>
             <button
-              onClick={() =>
-                setText(text === "短提示" ? "这是一段更长的提示文字" : "短提示")
-              }
+              onClick={() => setText(text === '短提示' ? '这是一段更长的提示文字' : '短提示')}
             >
               切换 tooltip 文案
             </button>
@@ -123,7 +212,7 @@
         );
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -132,20 +221,28 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./31-%E9%AB%98%E9%98%B6%E7%BB%84%E4%BB%B6HOC%E4%B8%8ErenderProps.html">相关 · 31-高阶组件HOC与renderProps</a>
-        <a href="./33-props%E6%B4%BE%E7%94%9F%E7%8A%B6%E6%80%81%E4%B8%8Ekey%E9%87%8D%E7%BD%AE.html">相关 · 33-props派生状态与key重置</a>
-        <a href="./31-%E9%AB%98%E9%98%B6%E7%BB%84%E4%BB%B6HOC%E4%B8%8ErenderProps.html">← 高阶组件HOC与renderProps</a>
-        <a href="./33-props%E6%B4%BE%E7%94%9F%E7%8A%B6%E6%80%81%E4%B8%8Ekey%E9%87%8D%E7%BD%AE.html">props派生状态与key重置 →</a>
+        <a href="./31-%E9%AB%98%E9%98%B6%E7%BB%84%E4%BB%B6HOC%E4%B8%8ErenderProps.html">
+          相关 · 31-高阶组件HOC与renderProps
+        </a>
+        <a href="./33-props%E6%B4%BE%E7%94%9F%E7%8A%B6%E6%80%81%E4%B8%8Ekey%E9%87%8D%E7%BD%AE.html">
+          相关 · 33-props派生状态与key重置
+        </a>
+        <a href="./31-%E9%AB%98%E9%98%B6%E7%BB%84%E4%BB%B6HOC%E4%B8%8ErenderProps.html">
+          ← 高阶组件HOC与renderProps
+        </a>
+        <a href="./33-props%E6%B4%BE%E7%94%9F%E7%8A%B6%E6%80%81%E4%B8%8Ekey%E9%87%8D%E7%BD%AE.html">
+          props派生状态与key重置 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

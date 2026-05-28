@@ -21,10 +21,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TypeScript · interface 与 type</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 760px; line-height: 1.6; }
-      pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; font-size: 0.85rem; overflow: auto; }
-      .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-top: 12px; }
-      #log { background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; white-space: pre-wrap; font-size: 0.85rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 760px;
+        line-height: 1.6;
+      }
+      pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 14px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        overflow: auto;
+      }
+      .card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 12px;
+      }
+      #log {
+        background: #f6f8fa;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 12px;
+        white-space: pre-wrap;
+        font-size: 0.85rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -37,49 +61,154 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>interface</code> 主要用来声明对象形状，支持 <code>extends</code> 继承和同名声明合并；适合描述可被第三方扩展的对象契约。</li>
-          <li><code>type</code> 是类型别名，能给任意类型表达式命名，包括联合、交叉、元组、函数签名、条件类型和映射类型；本页的 <code>Role</code> 与 <code>ApiResult</code> 必须用 <code>type</code> 更自然。</li>
-          <li>常见项目约定是“对象模型和组件 props 用 <code>interface</code>，联合状态、工具组合和类型计算用 <code>type</code>”；这不是语法强制，而是为了可读性和团队一致性。</li>
-          <li>两者都能表达很多对象类型：<code>interface extends</code> 和 <code>type A = B &amp; C</code> 都能组合形状，但冲突属性、错误提示和合并行为不同，要按可维护性选择。</li>
-          <li>声明合并既是能力也是风险：写库声明和全局扩展时有用，业务代码中同名接口散落多处容易让真实结构难追踪。</li>
+          <li>
+            <code>interface</code>
+            主要用来声明对象形状，支持
+            <code>extends</code>
+            继承和同名声明合并；适合描述可被第三方扩展的对象契约。
+          </li>
+          <li>
+            <code>type</code>
+            是类型别名，能给任意类型表达式命名，包括联合、交叉、元组、函数签名、条件类型和映射类型；本页的
+            <code>Role</code>
+            与
+            <code>ApiResult</code>
+            必须用
+            <code>type</code>
+            更自然。
+          </li>
+          <li>
+            常见项目约定是“对象模型和组件 props 用
+            <code>interface</code>
+            ，联合状态、工具组合和类型计算用
+            <code>type</code>
+            ”；这不是语法强制，而是为了可读性和团队一致性。
+          </li>
+          <li>
+            两者都能表达很多对象类型：
+            <code>interface extends</code>
+            和
+            <code>type A = B &amp; C</code>
+            都能组合形状，但冲突属性、错误提示和合并行为不同，要按可维护性选择。
+          </li>
+          <li>
+            声明合并既是能力也是风险：写库声明和全局扩展时有用，业务代码中同名接口散落多处容易让真实结构难追踪。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>interface</code> 和 <code>type</code> 的本质区别是什么？</strong> 结论是 <code>interface</code> 声明对象形状，<code>type</code> 给类型表达式起别名。原因是 <code>type</code> 能表达联合、元组和条件类型，而 <code>interface</code> 有声明合并和面向对象式扩展。项目里二者都能写对象时，应遵循团队约定。</li>
-          <li><strong>为什么对象 API 经常优先使用 <code>interface</code>？</strong> 结论是对象契约使用 <code>interface</code> 更便于扩展和阅读。原因是它的声明形式天然表示“形状”，并支持 <code>extends</code> 与库声明合并。边界是如果对象类型依赖联合、映射或条件计算，<code>type</code> 反而更合适。</li>
-          <li><strong>联合类型为什么只能用 <code>type</code> 表达？</strong> 结论是联合是类型表达式，不是单个可声明的对象形状。原因是 <code>interface</code> 不能直接声明 <code>"admin" | "guest"</code> 或 <code>{ ok: true } | { ok: false }</code>。项目中请求结果、状态机、事件名通常用 <code>type</code>。</li>
-          <li><strong>声明合并什么时候是优势，什么时候是风险？</strong> 结论是库扩展和环境声明中是优势，普通业务模型中要谨慎。原因是同名 <code>interface</code> 会自动合并，方便扩展第三方类型，但也可能让字段来源分散。团队可通过命名和 lint 约束避免误合并。</li>
+          <li>
+            <strong>
+              <code>interface</code>
+              和
+              <code>type</code>
+              的本质区别是什么？
+            </strong>
+            结论是
+            <code>interface</code>
+            声明对象形状，
+            <code>type</code>
+            给类型表达式起别名。原因是
+            <code>type</code>
+            能表达联合、元组和条件类型，而
+            <code>interface</code>
+            有声明合并和面向对象式扩展。项目里二者都能写对象时，应遵循团队约定。
+          </li>
+          <li>
+            <strong>
+              为什么对象 API 经常优先使用
+              <code>interface</code>
+              ？
+            </strong>
+            结论是对象契约使用
+            <code>interface</code>
+            更便于扩展和阅读。原因是它的声明形式天然表示“形状”，并支持
+            <code>extends</code>
+            与库声明合并。边界是如果对象类型依赖联合、映射或条件计算，
+            <code>type</code>
+            反而更合适。
+          </li>
+          <li>
+            <strong>
+              联合类型为什么只能用
+              <code>type</code>
+              表达？
+            </strong>
+            结论是联合是类型表达式，不是单个可声明的对象形状。原因是
+            <code>interface</code>
+            不能直接声明
+            <code>"admin" | "guest"</code>
+            或
+            <code>{ ok: true } | { ok: false }</code>
+            。项目中请求结果、状态机、事件名通常用
+            <code>type</code>
+            。
+          </li>
+          <li>
+            <strong>声明合并什么时候是优势，什么时候是风险？</strong>
+            结论是库扩展和环境声明中是优势，普通业务模型中要谨慎。原因是同名
+            <code>interface</code>
+            会自动合并，方便扩展第三方类型，但也可能让字段来源分散。团队可通过命名和 lint
+            约束避免误合并。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#interfaces" target="_blank" rel="noopener">TypeScript Handbook: Interfaces</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-aliases" target="_blank" rel="noopener">TypeScript Handbook: Type Aliases</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/declaration-merging.html" target="_blank" rel="noopener">TypeScript Handbook: Declaration Merging</a></li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#interfaces"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Interfaces
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-aliases"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Type Aliases
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/declaration-merging.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Declaration Merging
+            </a>
+          </li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>上方为 TypeScript 源码（在 .ts / IDE 中检查），下方 DOM 渲染与断言输出验证等价 JavaScript 逻辑。</p>
+    <p>
+      上方为 TypeScript 源码（在 .ts / IDE 中检查），下方 DOM 渲染与断言输出验证等价 JavaScript
+      逻辑。
+    </p>
     <p class="ts"><strong>TypeScript</strong></p>
-    <pre>// —— interface 声明对象形状与声明合并 ——
-interface User {
-  id: number;
-  name: string;
-}
-interface User {
-  email?: string; // 同名 interface 会声明合并
-}
-
-// —— type 表达联合与交叉 ——
-type Role = "admin" | "guest";
-type UserWithRole = User & { role: Role };
-
-// —— type 可辨识联合 ApiResult ——
-type ApiResult&lt;T&gt; =
-  | { ok: true; data: T }
-  | { ok: false; error: string };</pre>
+    <pre>
+// —— interface 声明对象形状与声明合并 ——
+      interface User {
+      id: number;
+      name: string;
+      }
+      interface User {
+      email?: string; // 同名 interface 会声明合并
+      }
+      // —— type 表达联合与交叉 ——
+      type Role = "admin" | "guest";
+      type UserWithRole = User & { role: Role };
+      // —— type 可辨识联合 ApiResult ——
+      type ApiResult&lt;T&gt; =
+      | { ok: true; data: T }
+      | { ok: false; error: string };</pre
+    >
     <div id="app" class="card"></div>
     <p><strong>运行时 JavaScript（本页执行）</strong></p>
     <pre id="log"></pre>
@@ -93,40 +222,38 @@ type ApiResult&lt;T&gt; =
       /** @typedef {{ id: number, name: string, email?: string, role: string }} UserWithRole */
 
       /** @type {UserWithRole} */
-      const user = { id: 1, name: "Alice", email: "alice@example.com", role: "admin" };
+      const user = { id: 1, name: 'Alice', email: 'alice@example.com', role: 'admin' };
 
       // ============ 2. type ApiResult 可辨识联合 ============
       // 对照 type ApiResult&lt;T&gt;：成功分支有 data，失败分支有 error。
       // TS 中 result.ok 收窄后 IDE 知道当前分支有哪些字段；JS 运行时仍需要同样分支逻辑。
       /** @type {{ ok: true, data: UserWithRole } | { ok: false, error: string }} */
       function fetchUser() {
-        return user.id > 0
-          ? { ok: true, data: user }
-          : { ok: false, error: "not found" };
+        return user.id > 0 ? { ok: true, data: user } : { ok: false, error: 'not found' };
       }
 
       const result = fetchUser();
-      const el = document.getElementById("app");
+      const el = document.getElementById('app');
       el.innerHTML = result.ok
         ? `<p>✓ 成功：${result.data.name}（${result.data.role}，${result.data.email}）</p>`
         : `<p>✗ ${result.error}</p>`;
 
       const lines = [];
-      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+      const assert = (cond, msg) => lines.push((cond ? '✓ ' : '✗ ') + msg);
 
-      assert(result.ok === true, "fetchUser 成功分支 ok === true");
-      assert(result.data.name === "Alice", "interface 合并后 name 仍可访问");
-      assert(result.data.email === "alice@example.com", "声明合并后可选 email 字段可正常读取");
-      assert(user.role === "admin", "type Role 联合约束 role 为 admin | guest");
+      assert(result.ok === true, 'fetchUser 成功分支 ok === true');
+      assert(result.data.name === 'Alice', 'interface 合并后 name 仍可访问');
+      assert(result.data.email === 'alice@example.com', '声明合并后可选 email 字段可正常读取');
+      assert(user.role === 'admin', 'type Role 联合约束 role 为 admin | guest');
 
-      const userMinimal = { id: 2, name: "Bob", role: "guest" };
-      assert(!("email" in userMinimal), "声明合并 email? 可选：无 email 字段的对象仍合法");
+      const userMinimal = { id: 2, name: 'Bob', role: 'guest' };
+      assert(!('email' in userMinimal), '声明合并 email? 可选：无 email 字段的对象仍合法');
       assert(
-        typeof fetchUser === "function",
-        "interface/type 编译后擦除，运行时只剩普通 JS 函数（TS 可拦、JS 仍会执行）"
+        typeof fetchUser === 'function',
+        'interface/type 编译后擦除，运行时只剩普通 JS 函数（TS 可拦、JS 仍会执行）',
       );
 
-      document.getElementById("log").textContent = lines.join("\n");
+      document.getElementById('log').textContent = lines.join('\n');
     </script>
     <!-- SCRIPT_END -->
 
@@ -135,20 +262,24 @@ type ApiResult&lt;T&gt; =
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="./01-%E7%B1%BB%E5%9E%8B%E6%B3%A8%E8%A7%A3%E4%B8%8E%E6%8E%A8%E6%96%AD.html">相关 · 类型注解与推断</a>
+        <a href="./01-%E7%B1%BB%E5%9E%8B%E6%B3%A8%E8%A7%A3%E4%B8%8E%E6%8E%A8%E6%96%AD.html">
+          相关 · 类型注解与推断
+        </a>
         <a href="./03-%E6%B3%9B%E5%9E%8B%E5%9F%BA%E7%A1%80.html">相关 · 泛型基础</a>
-        <a href="./01-%E7%B1%BB%E5%9E%8B%E6%B3%A8%E8%A7%A3%E4%B8%8E%E6%8E%A8%E6%96%AD.html">← 类型注解与推断</a>
+        <a href="./01-%E7%B1%BB%E5%9E%8B%E6%B3%A8%E8%A7%A3%E4%B8%8E%E6%8E%A8%E6%96%AD.html">
+          ← 类型注解与推断
+        </a>
         <a href="./03-%E6%B3%9B%E5%9E%8B%E5%9F%BA%E7%A1%80.html">泛型基础 →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

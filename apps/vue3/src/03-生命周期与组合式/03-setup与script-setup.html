@@ -23,14 +23,49 @@
     <title>Vue3 · setup 与 script setup</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; margin-top: 4px; padding: 6px 12px; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; max-height: 220px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 820px; }
-      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
-      .grid { display: grid; gap: 12px; }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          'PingFang SC',
+          sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+      }
+      button {
+        margin-right: 8px;
+        margin-top: 4px;
+        padding: 6px 12px;
+      }
+      code,
+      pre {
+        background: #f6f8fa;
+        border-radius: 6px;
+      }
+      code {
+        padding: 2px 5px;
+      }
+      pre {
+        padding: 12px;
+        overflow: auto;
+        max-height: 220px;
+      }
+      .box {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 820px;
+      }
+      .box .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
+      .grid {
+        display: grid;
+        gap: 12px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -43,26 +78,168 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>setup()</code> 是 Composition API 的组件入口，创建响应式状态、注册生命周期和返回模板可用数据都在这里完成。本页根组件用普通 <code>setup</code> 返回 <code>title</code>、<code>count</code> 等字段，模板可直接访问。</li>
-          <li><code>&lt;script setup&gt;</code> 是单文件组件 SFC 的<strong>编译时</strong>语法糖，不是浏览器原生语法。它会在构建阶段编译成普通 <code>setup()</code>，所以本仓库的全局构建 demo 只能直接运行普通 <code>setup()</code>，下方 pre 区展示等价 SFC 片段。</li>
-          <li><code>&lt;script setup&gt;</code> 中的顶层变量、函数和导入会<strong>自动暴露</strong>给模板，不需要手写 <code>return</code>；本页子组件 <code>CounterBlock</code> 模拟这一行为：setup 内声明的 <code>count</code> 经 return 后在模板可用，与 script setup 编译结果等价。</li>
-          <li><code>defineProps</code>、<code>defineEmits</code>、<code>defineExpose</code> 等是编译宏，不需要从 <code>vue</code> 导入，也不能当运行时函数在普通浏览器 <code>&lt;script&gt;</code> 中调用。本页子组件用手写 <code>props</code> / <code>emits</code> 选项对照，详见 <a href="../04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/01-props%E4%B8%8Eemit.html">04-props与emit</a>。</li>
-          <li>点「子组件 +1」只改变子组件本地 <code>count</code>，父组件 <code>parentCount</code> 不变，说明 setup 返回的状态默认按组件实例隔离；跨组件共享见 composable 或 provide-inject，见 <a href="./02-composable%E5%A4%8D%E7%94%A8.html">02-composable复用</a>、<a href="../04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/03-provide-inject.html">04-provide-inject</a>。</li>
-          <li>Vue 3.5+ 的 <code>useTemplateRef()</code> 进一步简化模板 ref 配对，见 <a href="../01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/06-useTemplateRef%E6%A8%A1%E6%9D%BFref.html">01-useTemplateRef模板ref（3.5+）</a>。需要按条件创建组件选项、兼容老项目或直接在无构建环境运行时，普通 <code>setup()</code> 仍然有价值。</li>
+          <li>
+            <code>setup()</code>
+            是 Composition API
+            的组件入口，创建响应式状态、注册生命周期和返回模板可用数据都在这里完成。本页根组件用普通
+            <code>setup</code>
+            返回
+            <code>title</code>
+            、
+            <code>count</code>
+            等字段，模板可直接访问。
+          </li>
+          <li>
+            <code>&lt;script setup&gt;</code>
+            是单文件组件 SFC 的
+            <strong>编译时</strong>
+            语法糖，不是浏览器原生语法。它会在构建阶段编译成普通
+            <code>setup()</code>
+            ，所以本仓库的全局构建 demo 只能直接运行普通
+            <code>setup()</code>
+            ，下方 pre 区展示等价 SFC 片段。
+          </li>
+          <li>
+            <code>&lt;script setup&gt;</code>
+            中的顶层变量、函数和导入会
+            <strong>自动暴露</strong>
+            给模板，不需要手写
+            <code>return</code>
+            ；本页子组件
+            <code>CounterBlock</code>
+            模拟这一行为：setup 内声明的
+            <code>count</code>
+            经 return 后在模板可用，与 script setup 编译结果等价。
+          </li>
+          <li>
+            <code>defineProps</code>
+            、
+            <code>defineEmits</code>
+            、
+            <code>defineExpose</code>
+            等是编译宏，不需要从
+            <code>vue</code>
+            导入，也不能当运行时函数在普通浏览器
+            <code>&lt;script&gt;</code>
+            中调用。本页子组件用手写
+            <code>props</code>
+            /
+            <code>emits</code>
+            选项对照，详见
+            <a href="../04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/01-props%E4%B8%8Eemit.html">
+              04-props与emit
+            </a>
+            。
+          </li>
+          <li>
+            点「子组件 +1」只改变子组件本地
+            <code>count</code>
+            ，父组件
+            <code>parentCount</code>
+            不变，说明 setup 返回的状态默认按组件实例隔离；跨组件共享见 composable 或
+            provide-inject，见
+            <a href="./02-composable%E5%A4%8D%E7%94%A8.html">02-composable复用</a>
+            、
+            <a href="../04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/03-provide-inject.html">
+              04-provide-inject
+            </a>
+            。
+          </li>
+          <li>
+            Vue 3.5+ 的
+            <code>useTemplateRef()</code>
+            进一步简化模板 ref 配对，见
+            <a
+              href="../01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/06-useTemplateRef%E6%A8%A1%E6%9D%BFref.html"
+            >
+              01-useTemplateRef模板ref（3.5+）
+            </a>
+            。需要按条件创建组件选项、兼容老项目或直接在无构建环境运行时，普通
+            <code>setup()</code>
+            仍然有价值。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>setup</code> 和 <code>script setup</code> 是什么关系？</strong> 结论是 <code>script setup</code> 是编译为 <code>setup()</code> 的 SFC 语法糖。原因是它减少样板代码，让顶层绑定自动进入模板。边界是运行时能力仍来自 Composition API，不是另一套组件模型；本页 pre 区 SFC 片段与下方可运行 demo 对照。</li>
-          <li><strong>为什么普通 HTML 里不能直接写 <code>script setup</code>？</strong> 结论是因为它需要 Vue SFC 编译器处理。浏览器只认识普通 JavaScript，不认识 SFC 编译宏和模板绑定规则。本页因此用全局构建的普通 <code>setup()</code> 演示同一组概念。</li>
-          <li><strong><code>defineProps</code> / <code>defineEmits</code> 为什么不用导入？</strong> 结论是它们是编译宏，不是普通运行时 API。原因是编译器会静态分析并生成组件 props / emits 选项。项目里不要把它们封装进普通函数，也不要期待运行时动态调用。</li>
-          <li><strong>什么时候不用 <code>script setup</code>？</strong> 结论是无构建环境、需要显式组件选项组织、迁移中的 Options API 文件可以继续用普通 <code>setup</code> 或 Options API。原因是 <code>script setup</code> 依赖 SFC 编译流程，且更适合现代构建链。</li>
-          <li><strong>setup 返回值与 script setup 自动暴露有何差异？</strong> 结论是无运行时差异，script setup 只是省掉手写 return。普通 setup 必须显式 return 模板需要的绑定；遗漏 return 会导致模板变量未定义。本页 CounterBlock 的 return 即 script setup 编译后会省略的部分。</li>
+          <li>
+            <strong>
+              <code>setup</code>
+              和
+              <code>script setup</code>
+              是什么关系？
+            </strong>
+            结论是
+            <code>script setup</code>
+            是编译为
+            <code>setup()</code>
+            的 SFC 语法糖。原因是它减少样板代码，让顶层绑定自动进入模板。边界是运行时能力仍来自
+            Composition API，不是另一套组件模型；本页 pre 区 SFC 片段与下方可运行 demo 对照。
+          </li>
+          <li>
+            <strong>
+              为什么普通 HTML 里不能直接写
+              <code>script setup</code>
+              ？
+            </strong>
+            结论是因为它需要 Vue SFC 编译器处理。浏览器只认识普通 JavaScript，不认识 SFC
+            编译宏和模板绑定规则。本页因此用全局构建的普通
+            <code>setup()</code>
+            演示同一组概念。
+          </li>
+          <li>
+            <strong>
+              <code>defineProps</code>
+              /
+              <code>defineEmits</code>
+              为什么不用导入？
+            </strong>
+            结论是它们是编译宏，不是普通运行时 API。原因是编译器会静态分析并生成组件 props / emits
+            选项。项目里不要把它们封装进普通函数，也不要期待运行时动态调用。
+          </li>
+          <li>
+            <strong>
+              什么时候不用
+              <code>script setup</code>
+              ？
+            </strong>
+            结论是无构建环境、需要显式组件选项组织、迁移中的 Options API 文件可以继续用普通
+            <code>setup</code>
+            或 Options API。原因是
+            <code>script setup</code>
+            依赖 SFC 编译流程，且更适合现代构建链。
+          </li>
+          <li>
+            <strong>setup 返回值与 script setup 自动暴露有何差异？</strong>
+            结论是无运行时差异，script setup 只是省掉手写 return。普通 setup 必须显式 return
+            模板需要的绑定；遗漏 return 会导致模板变量未定义。本页 CounterBlock 的 return 即 script
+            setup 编译后会省略的部分。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/api/composition-api-setup.html" target="_blank" rel="noreferrer">Vue 3 官方 API：setup()</a></li>
-          <li><a href="https://vuejs.org/api/sfc-script-setup.html" target="_blank" rel="noreferrer">Vue 3 官方 API：&lt;script setup&gt;</a></li>
-          <li><a href="https://vuejs.org/api/sfc-script-setup.html#defineprops-defineemits" target="_blank" rel="noreferrer">Vue 3 官方 API：defineProps() / defineEmits()</a></li>
+          <li>
+            <a
+              href="https://vuejs.org/api/composition-api-setup.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方 API：setup()
+            </a>
+          </li>
+          <li>
+            <a href="https://vuejs.org/api/sfc-script-setup.html" target="_blank" rel="noreferrer">
+              Vue 3 官方 API：&lt;script setup&gt;
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/api/sfc-script-setup.html#defineprops-defineemits"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方 API：defineProps() / defineEmits()
+            </a>
+          </li>
           <li><a href="./02-composable%E5%A4%8D%E7%94%A8.html">本系列：composable 复用</a></li>
         </ul>
       </div>
@@ -73,8 +250,15 @@
     <div id="app">
       <h1>{{ title }}</h1>
       <div class="box grid">
-        <p class="hint-inline">本仓库用浏览器全局构建，下方为普通 <code>setup()</code> 可运行 demo；pre 区为等价的 <code>&lt;script setup&gt;</code> 写法对照。</p>
-        <p>父组件 parentCount：{{ parentCount }}
+        <p class="hint-inline">
+          本仓库用浏览器全局构建，下方为普通
+          <code>setup()</code>
+          可运行 demo；pre 区为等价的
+          <code>&lt;script setup&gt;</code>
+          写法对照。
+        </p>
+        <p>
+          父组件 parentCount：{{ parentCount }}
           <button type="button" @click="parentCount++">父 +1</button>
         </p>
         <counter-block :initial="2" @changed="onChildChanged"></counter-block>
@@ -92,15 +276,15 @@
       // 模拟 script setup 编译结果：props/emits 由编译器生成，此处手写选项对照
       const CounterBlock = {
         props: { initial: { type: Number, default: 0 } },
-        emits: ["changed"],
+        emits: ['changed'],
         setup(props, { emit }) {
           // script setup 中顶层 const 会自动暴露给模板；普通 setup 需 return
           const count = ref(props.initial);
 
           function increment() {
             count.value++;
-            emit("changed", count.value);
-            console.log("[setup demo] 子组件 emit changed:", count.value);
+            emit('changed', count.value);
+            console.log('[setup demo] 子组件 emit changed:', count.value);
           }
 
           return { count, increment };
@@ -117,9 +301,9 @@
         components: { CounterBlock },
         setup() {
           // --- 演示状态 ---
-          const title = ref("setup 与 script setup");
+          const title = ref('setup 与 script setup');
           const parentCount = ref(0);
-          const childEventLog = ref("");
+          const childEventLog = ref('');
 
           function onChildChanged(value) {
             childEventLog.value = `子组件 count 变为 ${value}（父 parentCount 仍为 ${parentCount.value}）`;
@@ -127,23 +311,22 @@
 
           // 展示 SFC script setup 等价写法（不可在本页直接运行）
           const snippet = [
-            "<!-- 等价 SFC：需构建工具编译 -->",
-            "<script setup>",
-            "const props = defineProps({ initial: Number })",
+            '<!-- 等价 SFC：需构建工具编译 -->',
+            '<script setup>',
+            'const props = defineProps({ initial: Number })',
             "const emit = defineEmits(['changed'])",
-            "const count = ref(props.initial)",
-            "function increment() {",
-            "  count.value++",
+            'const count = ref(props.initial)',
+            'function increment() {',
+            '  count.value++',
             "  emit('changed', count.value)",
-            "}",
-            "<\\/script>",
-            "<p>{{ count }} <button @click=\"increment\">+1</button></p>",
-          ].join("\n");
+            '}',
+            '<\\/script>',
+            '<p>{{ count }} <button @click="increment">+1</button></p>',
+          ].join('\n');
 
-          
           // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
           onMounted(() => {
-            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+            console.log('[mounted] createApp 已接管 #app，DOM 已渲染');
           });
 
           return { title, parentCount, childEventLog, onChildChanged, snippet };
@@ -151,9 +334,8 @@
       });
       // mount 须在 app.use / app.component / app.config 等配置之后调用
       // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
-      const rootInstance = app.mount("#app");
-      console.log("[mount] 根组件实例", rootInstance);
-
+      const rootInstance = app.mount('#app');
+      console.log('[mount] 根组件实例', rootInstance);
     </script>
     <!-- SCRIPT_END -->
 
@@ -163,17 +345,19 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./02-composable%E5%A4%8D%E7%94%A8.html">← composable复用</a>
-        <a href="./04-%E5%85%A8%E9%87%8F%E9%92%A9%E5%AD%90%E4%B8%8EKeepAlive.html">全量钩子与KeepAlive →</a>
+        <a href="./04-%E5%85%A8%E9%87%8F%E9%92%A9%E5%AD%90%E4%B8%8EKeepAlive.html">
+          全量钩子与KeepAlive →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

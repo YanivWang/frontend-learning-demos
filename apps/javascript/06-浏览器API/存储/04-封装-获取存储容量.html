@@ -29,31 +29,141 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>封装 localforage 容量估算工具</h1>
-      <p class="hint">阅读本复习区后，点击下方按钮调用封装的 <code>getStorageInfo()</code> 查看结构化结果。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>容量统计工具应返回清晰的数据结构，例如 <code>storeUsageBytes</code>、<code>originUsageBytes</code>、<code>originQuotaBytes</code> 和 <code>originRemainingBytes</code>，避免调用方误把业务估算当真实配额。</li>
-          <li><code>localforage.iterate()</code> 负责遍历当前 store，适合做局部缓存大小估算；<code>navigator.storage.estimate()</code> 负责读取同源总体用量和配额，适合判断写入风险。</li>
-          <li>比起把累加值挂到外部对象，封装函数内部维护局部变量并返回结果更直观，也减少并发调用时互相污染的风险。</li>
-          <li>估算函数要按类型处理：字符串用 <code>TextEncoder</code>，<code>Blob</code> 用 <code>size</code>，<code>ArrayBuffer</code> 用 <code>byteLength</code>，普通对象再尝试 JSON 序列化。</li>
-          <li>失败路径包括序列化异常、浏览器不支持 <code>StorageManager.estimate()</code>、localforage 后端不可用或配额已满；工具应返回可解释的降级结果或抛出给调用方处理。</li>
-          <li><strong>运行环境：</strong> 与 IndexedDB / <code>storage.estimate</code> 相同；<code>file://</code> 下 origin 字段可能为 <code>null</code>，工具应做降级展示。</li>
+          <li>
+            容量统计工具应返回清晰的数据结构，例如
+            <code>storeUsageBytes</code>
+            、
+            <code>originUsageBytes</code>
+            、
+            <code>originQuotaBytes</code>
+            和
+            <code>originRemainingBytes</code>
+            ，避免调用方误把业务估算当真实配额。
+          </li>
+          <li>
+            <code>localforage.iterate()</code>
+            负责遍历当前 store，适合做局部缓存大小估算；
+            <code>navigator.storage.estimate()</code>
+            负责读取同源总体用量和配额，适合判断写入风险。
+          </li>
+          <li>
+            比起把累加值挂到外部对象，封装函数内部维护局部变量并返回结果更直观，也减少并发调用时互相污染的风险。
+          </li>
+          <li>
+            估算函数要按类型处理：字符串用
+            <code>TextEncoder</code>
+            ，
+            <code>Blob</code>
+            用
+            <code>size</code>
+            ，
+            <code>ArrayBuffer</code>
+            用
+            <code>byteLength</code>
+            ，普通对象再尝试 JSON 序列化。
+          </li>
+          <li>
+            失败路径包括序列化异常、浏览器不支持
+            <code>StorageManager.estimate()</code>
+            、localforage 后端不可用或配额已满；工具应返回可解释的降级结果或抛出给调用方处理。
+          </li>
+          <li>
+            <strong>运行环境：</strong>
+            与 IndexedDB /
+            <code>storage.estimate</code>
+            相同；
+            <code>file://</code>
+            下 origin 字段可能为
+            <code>null</code>
+            ，工具应做降级展示。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>如何把 localforage 容量统计封装成可复用工具？</strong> 结论是把“遍历 store 估算业务数据”和“读取 origin 配额”拆成函数，最后返回结构化对象。原因是两类数据来源不同、精度不同；项目里调用方可以分别展示缓存大小和剩余配额。</li>
-          <li><strong>为什么封装时不建议把统计值写进外部对象？</strong> 结论是局部变量加返回值更稳定。原因是外部可变对象会让数据流不清晰，多次并发调用也可能共享状态；只有需要跨多个回调累加时，才在函数内部用闭包变量。</li>
-          <li><strong>工具返回的 <code>storeUsage</code> 和 <code>originQuota</code> 分别代表什么？</strong> 结论是 <code>storeUsage</code> 是业务层估算，<code>originQuota</code> 是浏览器给整个同源站点的粗略配额。原因是 localforage 只管理自己的 store，而浏览器配额还包含 Cache Storage、其他 IndexedDB 数据等。</li>
-          <li><strong>浏览器不支持 <code>StorageManager.estimate()</code> 时如何降级？</strong> 结论是仍可返回 store 估算值，并把 origin 级字段置为 <code>null</code>。原因是 API 支持度和浏览器策略不同；用户界面应显示“无法获取浏览器配额”，而不是显示一个伪造数字。</li>
-          <li><strong>大数据量缓存页面多久统计一次更合理？</strong> 结论是不要每次渲染或首屏都全量统计。原因是 <code>iterate()</code> 会读取和序列化每条数据；项目里适合在设置页用户主动打开时统计，或在写入/删除时维护增量元数据。</li>
+          <li>
+            <strong>如何把 localforage 容量统计封装成可复用工具？</strong>
+            结论是把“遍历 store 估算业务数据”和“读取 origin
+            配额”拆成函数，最后返回结构化对象。原因是两类数据来源不同、精度不同；项目里调用方可以分别展示缓存大小和剩余配额。
+          </li>
+          <li>
+            <strong>为什么封装时不建议把统计值写进外部对象？</strong>
+            结论是局部变量加返回值更稳定。原因是外部可变对象会让数据流不清晰，多次并发调用也可能共享状态；只有需要跨多个回调累加时，才在函数内部用闭包变量。
+          </li>
+          <li>
+            <strong>
+              工具返回的
+              <code>storeUsage</code>
+              和
+              <code>originQuota</code>
+              分别代表什么？
+            </strong>
+            结论是
+            <code>storeUsage</code>
+            是业务层估算，
+            <code>originQuota</code>
+            是浏览器给整个同源站点的粗略配额。原因是 localforage 只管理自己的
+            store，而浏览器配额还包含 Cache Storage、其他 IndexedDB 数据等。
+          </li>
+          <li>
+            <strong>
+              浏览器不支持
+              <code>StorageManager.estimate()</code>
+              时如何降级？
+            </strong>
+            结论是仍可返回 store 估算值，并把 origin 级字段置为
+            <code>null</code>
+            。原因是 API
+            支持度和浏览器策略不同；用户界面应显示“无法获取浏览器配额”，而不是显示一个伪造数字。
+          </li>
+          <li>
+            <strong>大数据量缓存页面多久统计一次更合理？</strong>
+            结论是不要每次渲染或首屏都全量统计。原因是
+            <code>iterate()</code>
+            会读取和序列化每条数据；项目里适合在设置页用户主动打开时统计，或在写入/删除时维护增量元数据。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://localforage.github.io/localForage/#data-api-iterate" target="_blank" rel="noreferrer">localForage API: iterate()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/estimate" target="_blank" rel="noreferrer">MDN: StorageManager estimate()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria" target="_blank" rel="noreferrer">MDN: Storage quotas and eviction criteria</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob/size" target="_blank" rel="noreferrer">MDN: Blob size</a></li>
+          <li>
+            <a
+              href="https://localforage.github.io/localForage/#data-api-iterate"
+              target="_blank"
+              rel="noreferrer"
+            >
+              localForage API: iterate()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/estimate"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: StorageManager estimate()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Storage quotas and eviction criteria
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Blob/size"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Blob size
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -70,88 +180,97 @@
     <!-- SCRIPT_START -->
     <script>
       (function () {
-        var outputEl = document.getElementById("runtime-output");
+        var outputEl = document.getElementById('runtime-output');
 
-      // ============ 1. 字节估算工具（按类型分别处理）============
-      const encoder = new TextEncoder();
-      const store = localforage.createInstance({
-        name: "frontend-learning-demos",
-        storeName: "localforage_storage_info",
-      });
+        // ============ 1. 字节估算工具（按类型分别处理）============
+        const encoder = new TextEncoder();
+        const store = localforage.createInstance({
+          name: 'frontend-learning-demos',
+          storeName: 'localforage_storage_info',
+        });
 
-      function stringBytes(text) {
-        return encoder.encode(String(text)).byteLength;
-      }
-
-      function valueBytes(value) {
-        if (value == null) return 0;
-        if (typeof value === "string") return stringBytes(value);
-        if (value instanceof Blob) return value.size;
-        if (value instanceof ArrayBuffer) return value.byteLength;
-
-        try {
-          return stringBytes(JSON.stringify(value));
-        } catch (error) {
-          console.warn("无法序列化，使用字符串兜底估算：", error);
-          return stringBytes(String(value));
+        function stringBytes(text) {
+          return encoder.encode(String(text)).byteLength;
         }
-      }
 
-      // ============ 2. 封装 getStorageInfo：返回结构化结果而非外部可变对象 ============
-      async function estimateStoreUsage(targetStore) {
-        let totalBytes = 0;
-        await targetStore.iterate(function (value, key) {
-          totalBytes += stringBytes(key) + valueBytes(value);
+        function valueBytes(value) {
+          if (value == null) return 0;
+          if (typeof value === 'string') return stringBytes(value);
+          if (value instanceof Blob) return value.size;
+          if (value instanceof ArrayBuffer) return value.byteLength;
+
+          try {
+            return stringBytes(JSON.stringify(value));
+          } catch (error) {
+            console.warn('无法序列化，使用字符串兜底估算：', error);
+            return stringBytes(String(value));
+          }
+        }
+
+        // ============ 2. 封装 getStorageInfo：返回结构化结果而非外部可变对象 ============
+        async function estimateStoreUsage(targetStore) {
+          let totalBytes = 0;
+          await targetStore.iterate(function (value, key) {
+            totalBytes += stringBytes(key) + valueBytes(value);
+          });
+          return totalBytes;
+        }
+
+        async function getStorageInfo(targetStore) {
+          const storeUsageBytes = await estimateStoreUsage(targetStore);
+          const originEstimate = navigator.storage?.estimate
+            ? await navigator.storage.estimate()
+            : null;
+          const originUsageBytes = originEstimate?.usage ?? null;
+          const originQuotaBytes = originEstimate?.quota ?? null;
+          const originRemainingBytes =
+            originUsageBytes == null || originQuotaBytes == null
+              ? null
+              : Math.max(originQuotaBytes - originUsageBytes, 0);
+
+          return {
+            storeUsageBytes,
+            storeUsageMB: storeUsageBytes / 1024 / 1024,
+            originUsageBytes,
+            originQuotaBytes,
+            originRemainingBytes,
+          };
+        }
+
+        // ============ 3. 演示：写入混合类型数据并输出 JSON ============
+        async function runDemo() {
+          await store.setItem('todo-cache', [{ id: 1, title: '离线任务', done: false }]);
+          await store.setItem(
+            'avatar-placeholder',
+            new Blob(['demo avatar'], { type: 'text/plain' }),
+          );
+
+          const info = await getStorageInfo(store);
+          const view = {
+            storeUsageKB: (info.storeUsageBytes / 1024).toFixed(2),
+            originUsageMB:
+              info.originUsageBytes == null
+                ? 'unknown'
+                : (info.originUsageBytes / 1024 / 1024).toFixed(2),
+            originQuotaMB:
+              info.originQuotaBytes == null
+                ? 'unknown'
+                : (info.originQuotaBytes / 1024 / 1024).toFixed(2),
+            originRemainingMB:
+              info.originRemainingBytes == null
+                ? 'unknown'
+                : (info.originRemainingBytes / 1024 / 1024).toFixed(2),
+          };
+          outputEl.textContent = JSON.stringify(view, null, 2);
+          console.log('容量信息：', view);
+        }
+
+        document.getElementById('run-info').addEventListener('click', function () {
+          runDemo().catch(function (error) {
+            outputEl.textContent = error.name + ': ' + error.message;
+            console.error('获取存储容量失败：', error);
+          });
         });
-        return totalBytes;
-      }
-
-      async function getStorageInfo(targetStore) {
-        const storeUsageBytes = await estimateStoreUsage(targetStore);
-        const originEstimate = navigator.storage?.estimate
-          ? await navigator.storage.estimate()
-          : null;
-        const originUsageBytes = originEstimate?.usage ?? null;
-        const originQuotaBytes = originEstimate?.quota ?? null;
-        const originRemainingBytes =
-          originUsageBytes == null || originQuotaBytes == null
-            ? null
-            : Math.max(originQuotaBytes - originUsageBytes, 0);
-
-        return {
-          storeUsageBytes,
-          storeUsageMB: storeUsageBytes / 1024 / 1024,
-          originUsageBytes,
-          originQuotaBytes,
-          originRemainingBytes,
-        };
-      }
-
-      // ============ 3. 演示：写入混合类型数据并输出 JSON ============
-      async function runDemo() {
-        await store.setItem("todo-cache", [{ id: 1, title: "离线任务", done: false }]);
-        await store.setItem("avatar-placeholder", new Blob(["demo avatar"], { type: "text/plain" }));
-
-        const info = await getStorageInfo(store);
-        const view = {
-          storeUsageKB: (info.storeUsageBytes / 1024).toFixed(2),
-          originUsageMB:
-            info.originUsageBytes == null ? "unknown" : (info.originUsageBytes / 1024 / 1024).toFixed(2),
-          originQuotaMB:
-            info.originQuotaBytes == null ? "unknown" : (info.originQuotaBytes / 1024 / 1024).toFixed(2),
-          originRemainingMB:
-            info.originRemainingBytes == null ? "unknown" : (info.originRemainingBytes / 1024 / 1024).toFixed(2),
-        };
-        outputEl.textContent = JSON.stringify(view, null, 2);
-        console.log("容量信息：", view);
-      }
-
-      document.getElementById("run-info").addEventListener("click", function () {
-        runDemo().catch(function (error) {
-          outputEl.textContent = error.name + ": " + error.message;
-          console.error("获取存储容量失败：", error);
-        });
-      });
       })();
     </script>
     <!-- SCRIPT_END -->
@@ -161,16 +280,24 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./03-%E8%8E%B7%E5%8F%96%E5%89%A9%E4%BD%99%E5%AE%B9%E9%87%8F.html">相关 · 获取剩余容量</a>
-        <a href="./05-%E6%B5%8B%E8%AF%95%E6%9C%80%E5%A4%A7%E5%AE%B9%E9%87%8F.html">相关 · 测试最大容量</a>
-        <a href="./03-%E8%8E%B7%E5%8F%96%E5%89%A9%E4%BD%99%E5%AE%B9%E9%87%8F.html">← 获取剩余容量</a>
-        <a href="./05-%E6%B5%8B%E8%AF%95%E6%9C%80%E5%A4%A7%E5%AE%B9%E9%87%8F.html">测试最大容量 →</a>
+        <a href="./03-%E8%8E%B7%E5%8F%96%E5%89%A9%E4%BD%99%E5%AE%B9%E9%87%8F.html">
+          相关 · 获取剩余容量
+        </a>
+        <a href="./05-%E6%B5%8B%E8%AF%95%E6%9C%80%E5%A4%A7%E5%AE%B9%E9%87%8F.html">
+          相关 · 测试最大容量
+        </a>
+        <a href="./03-%E8%8E%B7%E5%8F%96%E5%89%A9%E4%BD%99%E5%AE%B9%E9%87%8F.html">
+          ← 获取剩余容量
+        </a>
+        <a href="./05-%E6%B5%8B%E8%AF%95%E6%9C%80%E5%A4%A7%E5%AE%B9%E9%87%8F.html">
+          测试最大容量 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

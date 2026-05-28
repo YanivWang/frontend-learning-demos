@@ -6,33 +6,33 @@
 
 ## 目录分组
 
-| 目录 | 数量 | 说明 |
-|---|---:|---|
-| `src/01-基础语法/` | 6 | `createRoot`、Actions、`useActionState`、`useOptimistic`、`use()`、ref 作为 prop |
-| `src/02-面试题/` | 5 | 19 vs 18、表单 Action、`useFormStatus`、并发/RSC 面试边界 |
+| 目录               | 数量 | 说明                                                                             |
+| ------------------ | ---: | -------------------------------------------------------------------------------- |
+| `src/01-基础语法/` |    6 | `createRoot`、Actions、`useActionState`、`useOptimistic`、`use()`、ref 作为 prop |
+| `src/02-面试题/`   |    5 | 19 vs 18、表单 Action、`useFormStatus`、并发/RSC 面试边界                        |
 
 ## 推荐顺序
 
 ### 基础语法 `01-基础语法`
 
-| # | 文件 | 主题 |
-|---|---|---|
-| 01 | `01-入门-createRoot与元素.html` | React 19 元素、`createRoot`、与 18 相同的渲染入口 |
-| 02 | `02-JSX表达式与自动批处理.html` | JSX 嵌入表达式、React 19 批处理行为复习 |
-| 03 | `03-Actions与useActionState.html` | 表单 `action`、`useActionState` 管理提交与 pending |
-| 04 | `04-useOptimistic乐观更新.html` | `useOptimistic` 在异步完成前展示乐观 UI |
-| 05 | `05-use读取Promise与Context.html` | `use()` 读取 Promise / Context，配合 `Suspense` |
-| 06 | `06-ref作为prop传递.html` | ref 可直接作为 prop，逐步替代 `forwardRef` |
+| #   | 文件                              | 主题                                               |
+| --- | --------------------------------- | -------------------------------------------------- |
+| 01  | `01-入门-createRoot与元素.html`   | React 19 元素、`createRoot`、与 18 相同的渲染入口  |
+| 02  | `02-JSX表达式与自动批处理.html`   | JSX 嵌入表达式、React 19 批处理行为复习            |
+| 03  | `03-Actions与useActionState.html` | 表单 `action`、`useActionState` 管理提交与 pending |
+| 04  | `04-useOptimistic乐观更新.html`   | `useOptimistic` 在异步完成前展示乐观 UI            |
+| 05  | `05-use读取Promise与Context.html` | `use()` 读取 Promise / Context，配合 `Suspense`    |
+| 06  | `06-ref作为prop传递.html`         | ref 可直接作为 prop，逐步替代 `forwardRef`         |
 
 ### 面试题 `02-面试题`
 
-| # | 文件 | 主题 |
-|---|---|---|
-| 01 | `01-React19相对18变化速记.html` | 19 相对 18 的 API 与工程变化面试速记 |
-| 02 | `02-表单Action与useFormStatus.html` | `formAction`、`useFormStatus` 与按钮 pending 状态 |
-| 03 | `03-并发渲染与Transitions面试.html` | `useTransition`、`startTransition` 与 Actions 关系 |
-| 04 | `04-错误边界与状态边界.html` | Error Boundary、Action 错误、状态提交边界 |
-| 05 | `05-RSC与Server-Components边界.html` | RSC / Server Actions 面试边界（概念 + 对照表） |
+| #   | 文件                                 | 主题                                               |
+| --- | ------------------------------------ | -------------------------------------------------- |
+| 01  | `01-React19相对18变化速记.html`      | 19 相对 18 的 API 与工程变化面试速记               |
+| 02  | `02-表单Action与useFormStatus.html`  | `formAction`、`useFormStatus` 与按钮 pending 状态  |
+| 03  | `03-并发渲染与Transitions面试.html`  | `useTransition`、`startTransition` 与 Actions 关系 |
+| 04  | `04-错误边界与状态边界.html`         | Error Boundary、Action 错误、状态提交边界          |
+| 05  | `05-RSC与Server-Components边界.html` | RSC / Server Actions 面试边界（概念 + 对照表）     |
 
 ## 与 React 18 模块的关系
 

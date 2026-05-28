@@ -25,9 +25,20 @@
     <script src="../../libs/react-dom.development.js"></script>
     <script src="../../libs/babel.min.js"></script>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 640px; line-height: 1.6; }
-      label { display: block; margin: 0.75rem 0; }
-      input { padding: 0.45rem 0.6rem; width: 80%; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 640px;
+        line-height: 1.6;
+      }
+      label {
+        display: block;
+        margin: 0.75rem 0;
+      }
+      input {
+        padding: 0.45rem 0.6rem;
+        width: 80%;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -36,30 +47,120 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>ref 作为 prop 传递（React 19）</h1>
-      <p class="hint">下方 #root 为交互演示区：点击「聚焦姓名框」「选中邮箱全文」观察 ref 命令式操作；请打开 DevTools Console 查看 ref.current 绑定日志。</p>
+      <p class="hint">
+        下方 #root 为交互演示区：点击「聚焦姓名框」「选中邮箱全文」观察 ref 命令式操作；请打开
+        DevTools Console 查看 ref.current 绑定日志。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>React 19 允许函数组件直接接收名为 <code>ref</code> 的 prop，本页 <code>TextField</code> 把父组件传入的 ref 绑定到内部 <code>input</code>，无需 <code>forwardRef</code> 包裹。</li>
-          <li>React 18 及更早版本中，函数组件不能直接接收特殊 <code>ref</code>，需要 <code>forwardRef</code>；所以该写法有明确 React 19 版本边界。</li>
-          <li><code>ref</code> 适合聚焦、选中文本、滚动、测量尺寸、整合第三方 DOM 库等命令式场景；普通表单值仍应优先使用受控或非受控表单模式。</li>
-          <li>组件库迁移时要看消费者支持的 React 版本：若还支持 React 18，就不能直接移除 <code>forwardRef</code> 入口。</li>
-          <li>不要用 <code>ref</code> 绕过声明式状态；用 ref 改 DOM 不会触发 React 重新渲染，容易和声明式 UI 脱节。</li>
+          <li>
+            React 19 允许函数组件直接接收名为
+            <code>ref</code>
+            的 prop，本页
+            <code>TextField</code>
+            把父组件传入的 ref 绑定到内部
+            <code>input</code>
+            ，无需
+            <code>forwardRef</code>
+            包裹。
+          </li>
+          <li>
+            React 18 及更早版本中，函数组件不能直接接收特殊
+            <code>ref</code>
+            ，需要
+            <code>forwardRef</code>
+            ；所以该写法有明确 React 19 版本边界。
+          </li>
+          <li>
+            <code>ref</code>
+            适合聚焦、选中文本、滚动、测量尺寸、整合第三方 DOM
+            库等命令式场景；普通表单值仍应优先使用受控或非受控表单模式。
+          </li>
+          <li>
+            组件库迁移时要看消费者支持的 React 版本：若还支持 React 18，就不能直接移除
+            <code>forwardRef</code>
+            入口。
+          </li>
+          <li>
+            不要用
+            <code>ref</code>
+            绕过声明式状态；用 ref 改 DOM 不会触发 React 重新渲染，容易和声明式 UI 脱节。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>React 19 为什么函数组件可以直接接收 ref？</strong> 结论是 React 19 放宽了 ref 传递限制，允许 ref 作为普通 prop 传入函数组件。原因是之前 ref 被 React 保留为特殊 prop，必须通过 <code>forwardRef</code> 透传；React 19 简化了这一流程。边界是 React 18 消费者仍依赖 <code>forwardRef</code>。</li>
-          <li><strong>ref as prop 与 forwardRef 的版本边界是什么？</strong> 结论是 React 19+ 可直接传 ref prop，React 18 及更早必须用 <code>forwardRef</code>。原因是 ref 在旧版本中是特殊 prop，函数组件无法直接接收。组件库需根据最低支持版本选择写法或保留兼容层。</li>
-          <li><strong>ref 应该用于哪些 DOM 命令式场景？</strong> 结论是只在需要命令式访问 DOM 或组件实例能力时使用。原因是聚焦、选中、滚动、测量不是纯 props 能表达的状态。本页两个按钮分别演示 <code>focus()</code> 和 <code>select()</code>。</li>
-          <li><strong>组件库迁移 ref as prop 时如何兼容 React 18 用户？</strong> 结论是先确认最低 React 版本。原因是直接把 <code>forwardRef</code> 改成 ref prop 会破坏 React 18 消费者。项目里可在主版本升级时切换，或继续保留 <code>forwardRef</code> 兼容层直到不再支持 React 18。</li>
-          <li><strong>为什么不要用 ref 绕过声明式状态？</strong> 结论是 ref 不是声明式状态。原因是修改 ref 或直接改 DOM 不会自动驱动 React 渲染，容易产生 UI 与数据不一致。表单值、显示隐藏、列表数据仍应优先由 state / props 管理。</li>
+          <li>
+            <strong>React 19 为什么函数组件可以直接接收 ref？</strong>
+            结论是 React 19 放宽了 ref 传递限制，允许 ref 作为普通 prop 传入函数组件。原因是之前 ref
+            被 React 保留为特殊 prop，必须通过
+            <code>forwardRef</code>
+            透传；React 19 简化了这一流程。边界是 React 18 消费者仍依赖
+            <code>forwardRef</code>
+            。
+          </li>
+          <li>
+            <strong>ref as prop 与 forwardRef 的版本边界是什么？</strong>
+            结论是 React 19+ 可直接传 ref prop，React 18 及更早必须用
+            <code>forwardRef</code>
+            。原因是 ref 在旧版本中是特殊
+            prop，函数组件无法直接接收。组件库需根据最低支持版本选择写法或保留兼容层。
+          </li>
+          <li>
+            <strong>ref 应该用于哪些 DOM 命令式场景？</strong>
+            结论是只在需要命令式访问 DOM 或组件实例能力时使用。原因是聚焦、选中、滚动、测量不是纯
+            props 能表达的状态。本页两个按钮分别演示
+            <code>focus()</code>
+            和
+            <code>select()</code>
+            。
+          </li>
+          <li>
+            <strong>组件库迁移 ref as prop 时如何兼容 React 18 用户？</strong>
+            结论是先确认最低 React 版本。原因是直接把
+            <code>forwardRef</code>
+            改成 ref prop 会破坏 React 18 消费者。项目里可在主版本升级时切换，或继续保留
+            <code>forwardRef</code>
+            兼容层直到不再支持 React 18。
+          </li>
+          <li>
+            <strong>为什么不要用 ref 绕过声明式状态？</strong>
+            结论是 ref 不是声明式状态。原因是修改 ref 或直接改 DOM 不会自动驱动 React 渲染，容易产生
+            UI 与数据不一致。表单值、显示隐藏、列表数据仍应优先由 state / props 管理。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/useRef" target="_blank" rel="noreferrer">React Docs: <code>useRef</code></a></li>
-          <li><a href="https://react.dev/learn/manipulating-the-dom-with-refs" target="_blank" rel="noreferrer">React Docs: Manipulating the DOM with Refs</a></li>
-          <li><a href="https://react.dev/reference/react/forwardRef" target="_blank" rel="noreferrer">React Docs: <code>forwardRef</code></a></li>
-          <li><a href="https://react.dev/blog/2024/12/05/react-19#ref-as-a-prop" target="_blank" rel="noreferrer">React 19 Blog: ref as a prop</a></li>
+          <li>
+            <a href="https://react.dev/reference/react/useRef" target="_blank" rel="noreferrer">
+              React Docs:
+              <code>useRef</code>
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/manipulating-the-dom-with-refs"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React Docs: Manipulating the DOM with Refs
+            </a>
+          </li>
+          <li>
+            <a href="https://react.dev/reference/react/forwardRef" target="_blank" rel="noreferrer">
+              React Docs:
+              <code>forwardRef</code>
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/blog/2024/12/05/react-19#ref-as-a-prop"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React 19 Blog: ref as a prop
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -78,7 +179,7 @@
       function TextField({ ref, label, placeholder }) {
         useEffect(() => {
           if (ref?.current) {
-            console.log("[ref as prop]", label, "绑定到 DOM:", ref.current.tagName);
+            console.log('[ref as prop]', label, '绑定到 DOM:', ref.current.tagName);
           }
         }, [ref, label]);
         return (
@@ -96,12 +197,12 @@
         // ====== 2. 命令式 DOM 操作：focus / select ======
         const focusName = () => {
           nameRef.current?.focus();
-          console.log("[ref] focus 姓名框");
+          console.log('[ref] focus 姓名框');
         };
 
         const selectEmail = () => {
           emailRef.current?.select();
-          console.log("[ref] select 邮箱全文");
+          console.log('[ref] select 邮箱全文');
         };
 
         return (
@@ -119,13 +220,13 @@
         );
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 
       /*
-        React 18 兼容写法（本页 React 19 不需要）：
-        const TextField = React.forwardRef(function TextField(props, ref) {
-          return <input ref={ref} ... />;
-        });
+      React 18 兼容写法（本页 React 19 不需要）：
+      const TextField = React.forwardRef(function TextField(props, ref) {
+        return <input ref={ref} ... />;
+      });
       */
     </script>
     <!-- SCRIPT_END -->
@@ -135,19 +236,24 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./05-use%E8%AF%BB%E5%8F%96Promise%E4%B8%8EContext.html">← use读取Promise与Context</a>
-        <a href="../02-%E9%9D%A2%E8%AF%95%E9%A2%98/01-React19%E7%9B%B8%E5%AF%B918%E5%8F%98%E5%8C%96%E9%80%9F%E8%AE%B0.html">React19相对18变化速记 →</a>
+        <a href="./05-use%E8%AF%BB%E5%8F%96Promise%E4%B8%8EContext.html">
+          ← use读取Promise与Context
+        </a>
+        <a
+          href="../02-%E9%9D%A2%E8%AF%95%E9%A2%98/01-React19%E7%9B%B8%E5%AF%B918%E5%8F%98%E5%8C%96%E9%80%9F%E8%AE%B0.html"
+        >
+          React19相对18变化速记 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-  
-</body>
+  </body>
 </html>

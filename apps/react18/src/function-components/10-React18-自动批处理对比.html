@@ -31,30 +31,121 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>React 18 自动批处理对比</h1>
-      <p class="hint">请打开 DevTools Console 查看 setTimeout 批处理日志；下方 #root 为 React 挂载/交互演示区，对比两种按钮的 effect 日志条数。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看 setTimeout 批处理日志；下方 #root 为 React
+        挂载/交互演示区，对比两种按钮的 effect 日志条数。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>React 18 在 <code>createRoot</code> 根下启用自动批处理：不只 React 事件，<code>setTimeout</code>、Promise、原生事件等异步回调中的多次 state 更新也会合并为更少提交。</li>
-          <li>批处理的目标是减少不必要的 render 和 DOM commit。它不会改变“更新入队并按顺序计算”的语义；本 demo 用 effect 日志观察一次异步点击通常只追加一条。</li>
-          <li>批处理并不保证固定值更新都累加成功。如果新值依赖旧 state，仍应写 <code>setCount(prev =&gt; prev + 1)</code> 这类函数式更新。</li>
-          <li><code>flushSync</code> 可以退出批处理并强制同步提交，本 demo 连续两次 <code>flushSync</code> 用来对比更多 commit。真实业务只在必须同步读 DOM 或集成第三方 API 时使用。</li>
-          <li>React 17 的旧根在异步回调里不会覆盖所有自动批处理场景；React 18 讨论自动批处理时必须说明 <code>createRoot</code> 前提，不能把 legacy root 行为混成当前推荐写法。</li>
+          <li>
+            React 18 在
+            <code>createRoot</code>
+            根下启用自动批处理：不只 React 事件，
+            <code>setTimeout</code>
+            、Promise、原生事件等异步回调中的多次 state 更新也会合并为更少提交。
+          </li>
+          <li>
+            批处理的目标是减少不必要的 render 和 DOM
+            commit。它不会改变“更新入队并按顺序计算”的语义；本 demo 用 effect
+            日志观察一次异步点击通常只追加一条。
+          </li>
+          <li>
+            批处理并不保证固定值更新都累加成功。如果新值依赖旧 state，仍应写
+            <code>setCount(prev =&gt; prev + 1)</code>
+            这类函数式更新。
+          </li>
+          <li>
+            <code>flushSync</code>
+            可以退出批处理并强制同步提交，本 demo 连续两次
+            <code>flushSync</code>
+            用来对比更多 commit。真实业务只在必须同步读 DOM 或集成第三方 API 时使用。
+          </li>
+          <li>
+            React 17 的旧根在异步回调里不会覆盖所有自动批处理场景；React 18 讨论自动批处理时必须说明
+            <code>createRoot</code>
+            前提，不能把 legacy root 行为混成当前推荐写法。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>React 18 自动批处理扩展了哪些场景？</strong> 结论是 <code>createRoot</code> 下 React 会自动批处理更多来源的更新，包括 timeout、Promise、原生事件等。原因是 React 18 root 统一了更新调度；边界是 legacy root 不应拿来代表 React 18 推荐行为。</li>
-          <li><strong><code>createRoot</code> 对自动批处理有什么前提意义？</strong> 结论是自动批处理的更广覆盖依赖 React 18 root。原因是 legacy <code>ReactDOM.render</code> 在 React 18 中以 React 17 模式运行，异步批处理行为不完整；新项目必须用 <code>createRoot</code>。</li>
-          <li><strong>批处理会改变 state 计算结果吗？</strong> 结论是不会改变更新队列语义，但会减少提交次数。原因是更新仍按顺序入队计算；如果传固定值，结果可能看起来被覆盖，如果传 updater，则会基于队列逐步累加。</li>
-          <li><strong><code>flushSync</code> 如何退出批处理？</strong> 结论是把更新放进 <code>flushSync</code> 回调，React 会同步提交。原因是它告诉 React 这个更新必须立刻刷新 DOM；代价是打断批处理和调度优化，因此不适合常规点击或输入更新。</li>
-          <li><strong>异步回调连续更新应怎么写？</strong> 结论是依赖旧值就用函数式更新，不依赖旧值才直接传新值。原因是批处理场景下当前闭包里的 state 可能是旧快照；例如计数、追加日志、切换布尔值都应写 updater。</li>
+          <li>
+            <strong>React 18 自动批处理扩展了哪些场景？</strong>
+            结论是
+            <code>createRoot</code>
+            下 React 会自动批处理更多来源的更新，包括 timeout、Promise、原生事件等。原因是 React 18
+            root 统一了更新调度；边界是 legacy root 不应拿来代表 React 18 推荐行为。
+          </li>
+          <li>
+            <strong>
+              <code>createRoot</code>
+              对自动批处理有什么前提意义？
+            </strong>
+            结论是自动批处理的更广覆盖依赖 React 18 root。原因是 legacy
+            <code>ReactDOM.render</code>
+            在 React 18 中以 React 17 模式运行，异步批处理行为不完整；新项目必须用
+            <code>createRoot</code>
+            。
+          </li>
+          <li>
+            <strong>批处理会改变 state 计算结果吗？</strong>
+            结论是不会改变更新队列语义，但会减少提交次数。原因是更新仍按顺序入队计算；如果传固定值，结果可能看起来被覆盖，如果传
+            updater，则会基于队列逐步累加。
+          </li>
+          <li>
+            <strong>
+              <code>flushSync</code>
+              如何退出批处理？
+            </strong>
+            结论是把更新放进
+            <code>flushSync</code>
+            回调，React 会同步提交。原因是它告诉 React 这个更新必须立刻刷新
+            DOM；代价是打断批处理和调度优化，因此不适合常规点击或输入更新。
+          </li>
+          <li>
+            <strong>异步回调连续更新应怎么写？</strong>
+            结论是依赖旧值就用函数式更新，不依赖旧值才直接传新值。原因是批处理场景下当前闭包里的
+            state 可能是旧快照；例如计数、追加日志、切换布尔值都应写 updater。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://github.com/reactwg/react-18/discussions/21" target="_blank" rel="noreferrer">React 18 Working Group: Automatic batching</a></li>
-          <li><a href="https://react.dev/reference/react-dom/client/createRoot" target="_blank" rel="noreferrer">react.dev: createRoot</a></li>
-          <li><a href="https://react.dev/learn/queueing-a-series-of-state-updates" target="_blank" rel="noreferrer">react.dev: Queueing a Series of State Updates</a></li>
-          <li><a href="https://react.dev/reference/react-dom/flushSync" target="_blank" rel="noreferrer">react.dev: flushSync</a></li>
+          <li>
+            <a
+              href="https://github.com/reactwg/react-18/discussions/21"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React 18 Working Group: Automatic batching
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react-dom/client/createRoot"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: createRoot
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/queueing-a-series-of-state-updates"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Queueing a Series of State Updates
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react-dom/flushSync"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: flushSync
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -81,15 +172,15 @@
         useEffect(() => {
           setCommitLog((prev) => [
             ...prev.slice(-5),
-            "effect: count=" + count + ", flag=" + String(flag),
+            'effect: count=' + count + ', flag=' + String(flag),
           ]);
-          console.log("effect 执行, count:", count, "flag:", flag);
+          console.log('effect 执行, count:', count, 'flag:', flag);
         }, [count, flag]);
 
         // ====== 1. setTimeout 内连续 setState：React 18 createRoot 下应批处理 ======
         function batchInTimeout() {
           setTimeout(() => {
-            console.log("setTimeout 内连续两次 setState（应批处理为一次 commit）");
+            console.log('setTimeout 内连续两次 setState（应批处理为一次 commit）');
             setCount((prev) => prev + 1);
             setFlag((prev) => !prev);
           }, 0);
@@ -97,7 +188,7 @@
 
         // ====== 2. flushSync：退出批处理，两次更新分别同步提交 ======
         function noBatchWithFlushSync() {
-          console.log("flushSync 强制两次独立提交");
+          console.log('flushSync 强制两次独立提交');
           flushSync(() => setCount((prev) => prev + 1));
           flushSync(() => setFlag((prev) => !prev));
         }
@@ -121,7 +212,7 @@
         );
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -130,21 +221,35 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./09-%E7%8A%B6%E6%80%81%E6%9B%B4%E6%96%B0%E5%90%8E%E8%AF%BB%E5%8F%96-flushSync%E4%B8%8EuseEffect.html">相关 · 09-状态更新后读取-flushSync与useEffect</a>
-        <a href="./11-useEffect-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%AF%B9%E7%85%A7.html">相关 · 11-useEffect-生命周期对照</a>
-        <a href="./25-%E8%99%9A%E6%8B%9FDOM-Fiber-%E6%89%B9%E5%A4%84%E7%90%86.html">相关 · 25-虚拟DOM-Fiber-批处理</a>
-        <a href="./09-%E7%8A%B6%E6%80%81%E6%9B%B4%E6%96%B0%E5%90%8E%E8%AF%BB%E5%8F%96-flushSync%E4%B8%8EuseEffect.html">← 状态更新后读取-flushSync与useEffect</a>
-        <a href="./11-useEffect-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%AF%B9%E7%85%A7.html">useEffect-生命周期对照 →</a>
+        <a
+          href="./09-%E7%8A%B6%E6%80%81%E6%9B%B4%E6%96%B0%E5%90%8E%E8%AF%BB%E5%8F%96-flushSync%E4%B8%8EuseEffect.html"
+        >
+          相关 · 09-状态更新后读取-flushSync与useEffect
+        </a>
+        <a href="./11-useEffect-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%AF%B9%E7%85%A7.html">
+          相关 · 11-useEffect-生命周期对照
+        </a>
+        <a href="./25-%E8%99%9A%E6%8B%9FDOM-Fiber-%E6%89%B9%E5%A4%84%E7%90%86.html">
+          相关 · 25-虚拟DOM-Fiber-批处理
+        </a>
+        <a
+          href="./09-%E7%8A%B6%E6%80%81%E6%9B%B4%E6%96%B0%E5%90%8E%E8%AF%BB%E5%8F%96-flushSync%E4%B8%8EuseEffect.html"
+        >
+          ← 状态更新后读取-flushSync与useEffect
+        </a>
+        <a href="./11-useEffect-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%AF%B9%E7%85%A7.html">
+          useEffect-生命周期对照 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

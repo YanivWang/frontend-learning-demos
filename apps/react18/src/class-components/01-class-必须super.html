@@ -33,30 +33,162 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>class 组件 constructor 必须调用 super()</h1>
-      <p class="hint">请打开 DevTools Console 查看 constructor 内 this.props 输出；点击下方按钮验证 bind 后的方法；下方 #root 为 React 挂载演示区。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看 constructor 内 this.props 输出；点击下方按钮验证 bind
+        后的方法；下方 #root 为 React 挂载演示区。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>React class 组件本质上是继承 <code>React.Component</code> 的 ES class；只要显式声明 <code>constructor</code>，就必须先调用 <code>super()</code>，否则在访问 <code>this</code> 前会触发 JavaScript 子类初始化错误（ReferenceError）。</li>
-          <li>React 官方要求：constructor 内须先调用 <code>super(props)</code>，否则 <code>this.props</code> 在 constructor 运行期间可能为 <code>undefined</code>。因此即使不读取 props，也应写 <code>super(props)</code>，不要刻意省略参数。</li>
-          <li><code>constructor</code> 只适合同步初始化 <code>this.state</code> 或绑定实例方法；网络请求、订阅、定时器等副作用应放在 <code>componentDidMount</code>，并在 <code>componentWillUnmount</code> 中清理。</li>
-          <li>若不需要初始化 state 且不需要手动绑定方法，可以完全省略 <code>constructor</code>；现代写法可用类字段 <code>state = {}</code> 和箭头函数替代 constructor 中的 state 赋值与 <code>.bind(this)</code>。</li>
-          <li>class 组件必须实现 <code>render()</code>，它是 React 调用组件并产出 UI 的唯一必需方法；<code>render</code> 应是 props、state、context 的纯函数，不应包含副作用或直接操作 DOM。</li>
+          <li>
+            React class 组件本质上是继承
+            <code>React.Component</code>
+            的 ES class；只要显式声明
+            <code>constructor</code>
+            ，就必须先调用
+            <code>super()</code>
+            ，否则在访问
+            <code>this</code>
+            前会触发 JavaScript 子类初始化错误（ReferenceError）。
+          </li>
+          <li>
+            React 官方要求：constructor 内须先调用
+            <code>super(props)</code>
+            ，否则
+            <code>this.props</code>
+            在 constructor 运行期间可能为
+            <code>undefined</code>
+            。因此即使不读取 props，也应写
+            <code>super(props)</code>
+            ，不要刻意省略参数。
+          </li>
+          <li>
+            <code>constructor</code>
+            只适合同步初始化
+            <code>this.state</code>
+            或绑定实例方法；网络请求、订阅、定时器等副作用应放在
+            <code>componentDidMount</code>
+            ，并在
+            <code>componentWillUnmount</code>
+            中清理。
+          </li>
+          <li>
+            若不需要初始化 state 且不需要手动绑定方法，可以完全省略
+            <code>constructor</code>
+            ；现代写法可用类字段
+            <code>state = {}</code>
+            和箭头函数替代 constructor 中的 state 赋值与
+            <code>.bind(this)</code>
+            。
+          </li>
+          <li>
+            class 组件必须实现
+            <code>render()</code>
+            ，它是 React 调用组件并产出 UI 的唯一必需方法；
+            <code>render</code>
+            应是 props、state、context 的纯函数，不应包含副作用或直接操作 DOM。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>为什么 class 组件 constructor 里要先调用 super(props)？</strong> 结论是：它既满足 ES class 子类必须先初始化父类的规则，也让 React 组件在 constructor 内能正确读取 <code>this.props</code>。原因是子类在 <code>super()</code> 之前不能访问 <code>this</code>；react.dev 还指出若不先 <code>super(props)</code>，<code>this.props</code> 在 constructor 中可能为 <code>undefined</code>。</li>
-          <li><strong>什么时候可以不写 constructor？</strong> 结论是：没有初始化 state、没有手动绑定实例方法时就不要写。原因是 React 会正常构造组件实例，空 constructor 只增加样板代码；现代项目可用类字段 <code>state = {}</code> 和箭头函数进一步省略。</li>
-          <li><strong>super() 与 super(props) 有什么区别？</strong> 结论是：两者都能调用父类构造函数，但 React class 中应始终写 <code>super(props)</code>。原因是 constructor 内若读取 <code>this.props</code>，只有传入 props 才能保证值正确；仅写 <code>super()</code> 时 react.dev 明确警告 <code>this.props</code> 可能为 <code>undefined</code>。</li>
-          <li><strong>constructor 里适合做哪些事？</strong> 结论是：只做同步初始化，例如设置初始 state、<code>this.method = this.method.bind(this)</code>。原因是 constructor 发生在挂载前，不能依赖 DOM，也不适合请求数据；副作用放到 <code>componentDidMount</code>，清理放到 <code>componentWillUnmount</code>。</li>
-          <li><strong>class 组件为什么必须实现 render()？render 里能做什么？</strong> 结论是：<code>render()</code> 是 class 组件描述 UI 的必需方法，漏写会报 <em>No render method found</em>。原因是 React 需要调用它得到 React element；边界是 render 应写为纯函数，可返回 JSX、字符串、数字、<code>null</code> 等，但不应放订阅、请求等副作用。</li>
+          <li>
+            <strong>为什么 class 组件 constructor 里要先调用 super(props)？</strong>
+            结论是：它既满足 ES class 子类必须先初始化父类的规则，也让 React 组件在 constructor
+            内能正确读取
+            <code>this.props</code>
+            。原因是子类在
+            <code>super()</code>
+            之前不能访问
+            <code>this</code>
+            ；react.dev 还指出若不先
+            <code>super(props)</code>
+            ，
+            <code>this.props</code>
+            在 constructor 中可能为
+            <code>undefined</code>
+            。
+          </li>
+          <li>
+            <strong>什么时候可以不写 constructor？</strong>
+            结论是：没有初始化 state、没有手动绑定实例方法时就不要写。原因是 React
+            会正常构造组件实例，空 constructor 只增加样板代码；现代项目可用类字段
+            <code>state = {}</code>
+            和箭头函数进一步省略。
+          </li>
+          <li>
+            <strong>super() 与 super(props) 有什么区别？</strong>
+            结论是：两者都能调用父类构造函数，但 React class 中应始终写
+            <code>super(props)</code>
+            。原因是 constructor 内若读取
+            <code>this.props</code>
+            ，只有传入 props 才能保证值正确；仅写
+            <code>super()</code>
+            时 react.dev 明确警告
+            <code>this.props</code>
+            可能为
+            <code>undefined</code>
+            。
+          </li>
+          <li>
+            <strong>constructor 里适合做哪些事？</strong>
+            结论是：只做同步初始化，例如设置初始 state、
+            <code>this.method = this.method.bind(this)</code>
+            。原因是 constructor 发生在挂载前，不能依赖 DOM，也不适合请求数据；副作用放到
+            <code>componentDidMount</code>
+            ，清理放到
+            <code>componentWillUnmount</code>
+            。
+          </li>
+          <li>
+            <strong>class 组件为什么必须实现 render()？render 里能做什么？</strong>
+            结论是：
+            <code>render()</code>
+            是 class 组件描述 UI 的必需方法，漏写会报
+            <em>No render method found</em>
+            。原因是 React 需要调用它得到 React element；边界是 render 应写为纯函数，可返回
+            JSX、字符串、数字、
+            <code>null</code>
+            等，但不应放订阅、请求等副作用。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/Component#constructor" target="_blank" rel="noreferrer">react.dev: Component — constructor()</a></li>
-          <li><a href="https://react.dev/reference/react/Component#render" target="_blank" rel="noreferrer">react.dev: Component — render()</a></li>
-          <li><a href="https://legacy.reactjs.org/docs/react-component.html#constructor" target="_blank" rel="noreferrer">React Legacy Docs：constructor()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/super" target="_blank" rel="noreferrer">MDN：super</a></li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#constructor"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Component — constructor()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#render"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Component — render()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://legacy.reactjs.org/docs/react-component.html#constructor"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React Legacy Docs：constructor()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/super"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN：super
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -69,16 +201,16 @@
     <!-- SCRIPT_START -->
     <script type="text/babel">
       /*
-        ====== 0. 可省略 constructor 的现代写法（注释示意）======
-        react.dev：若用类字段 state 与箭头函数，通常不必写 constructor。
+      ====== 0. 可省略 constructor 的现代写法（注释示意）======
+      react.dev：若用类字段 state 与箭头函数，通常不必写 constructor。
 
-        class AppMinimal extends React.Component {
-          state = { count: 0 };
-          handleClick = () => this.setState((s) => ({ count: s.count + 1 }));
-          render() {
-            return <button onClick={this.handleClick}>{this.state.count}</button>;
-          }
+      class AppMinimal extends React.Component {
+        state = { count: 0 };
+        handleClick = () => this.setState((s) => ({ count: s.count + 1 }));
+        render() {
+          return <button onClick={this.handleClick}>{this.state.count}</button>;
         }
+      }
       */
 
       // ====== 1. 显式 constructor：super(props) + state 初始化 + 方法绑定 ======
@@ -89,7 +221,7 @@
 
           // 必须先 super(props)：既初始化 React.Component，又保证 constructor 内 this.props 可用
           super(props);
-          console.log("constructor this.props:", this.props);
+          console.log('constructor this.props:', this.props);
           // 预期: { title: "class 组件 super() demo" }
 
           // constructor 典型用途之一：直接赋值初始 state（仅此阶段可直接写 this.state）
@@ -122,40 +254,40 @@
       }
 
       /*
-        ====== 反面教材（取消注释会报错，对应上方 NOTES 易错点）======
+      ====== 反面教材（取消注释会报错，对应上方 NOTES 易错点）======
 
-        反例 2：显式 constructor 但缺少 super()
-        class BrokenApp extends React.Component {
-          constructor(props) {
-            this.state = { count: 0 }; // ReferenceError: Must call super constructor...
-          }
-          render() { return <div />; }
-        }
-
-        反例 3：缺少 render()
-        class NoRenderApp extends React.Component {
-          constructor(props) {
-            super(props);
-          }
-          // App(...): No `render` method found on the returned component instance
-        }
-
-        反例 4：直接读取 super 关键字
+      反例 2：显式 constructor 但缺少 super()
+      class BrokenApp extends React.Component {
         constructor(props) {
-          console.log(super); // SyntaxError: 'super' keyword unexpected here
+          this.state = { count: 0 }; // ReferenceError: Must call super constructor...
         }
+        render() { return <div />; }
+      }
 
-        反例 5：render 合法返回值类型示意（注释，非报错）
-        return "";           // 字符串 → 文本节点
-        return 0;            // 数字 → 文本节点
-        return null;         // 不渲染任何内容
-        return undefined;    // 不渲染任何内容
-        return <div>jsx</div>; // React element（最常用）
+      反例 3：缺少 render()
+      class NoRenderApp extends React.Component {
+        constructor(props) {
+          super(props);
+        }
+        // App(...): No `render` method found on the returned component instance
+      }
+
+      反例 4：直接读取 super 关键字
+      constructor(props) {
+        console.log(super); // SyntaxError: 'super' keyword unexpected here
+      }
+
+      反例 5：render 合法返回值类型示意（注释，非报错）
+      return "";           // 字符串 → 文本节点
+      return 0;            // 数字 → 文本节点
+      return null;         // 不渲染任何内容
+      return undefined;    // 不渲染任何内容
+      return <div>jsx</div>; // React element（最常用）
       */
 
       // ====== 2. React 18 挂载：createRoot 创建根，render 提交 element 树 ======
-      ReactDOM.createRoot(document.getElementById("root")).render(
-        <App title="class 组件 super() demo" />
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        <App title="class 组件 super() demo" />,
       );
     </script>
     <!-- SCRIPT_END -->
@@ -166,19 +298,27 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./02-class-state%E4%B8%8Eprops.html">相关 · 02-class-state与props</a>
-        <a href="./13-class-%E4%BA%8B%E4%BB%B6%E7%BB%91%E5%AE%9A%E4%B8%89%E7%A7%8D%E6%96%B9%E5%BC%8F.html">相关 · 13-class-事件绑定三种方式</a>
-        <a href="../../../vue3/src/08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/06-%E7%BB%BC%E5%90%88%E5%A4%8D%E4%B9%A0.html">← 综合复习</a>
+        <a
+          href="./13-class-%E4%BA%8B%E4%BB%B6%E7%BB%91%E5%AE%9A%E4%B8%89%E7%A7%8D%E6%96%B9%E5%BC%8F.html"
+        >
+          相关 · 13-class-事件绑定三种方式
+        </a>
+        <a
+          href="../../../vue3/src/08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/06-%E7%BB%BC%E5%90%88%E5%A4%8D%E4%B9%A0.html"
+        >
+          ← 综合复习
+        </a>
         <a href="./02-class-state%E4%B8%8Eprops.html">class-state与props →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

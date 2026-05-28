@@ -29,31 +29,148 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>localforage 基础 API</h1>
-      <p class="hint">阅读本复习区后，点击下方按钮运行 localforage API 演示；也可打开 DevTools Console 对照。</p>
+      <p class="hint">
+        阅读本复习区后，点击下方按钮运行 localforage API 演示；也可打开 DevTools Console 对照。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>localforage 的价值是用接近 <code>localStorage</code> 的 key-value 接口封装 IndexedDB，并在不支持时降级到 WebSQL 或 <code>localStorage</code>，让业务代码统一使用 Promise。</li>
-          <li>所有读写方法都是异步的：<code>setItem</code> 完成后再 <code>getItem</code> 才能稳定读到最新值；示例用 <code>async</code> / <code>await</code> 串行展示，避免多个 Promise 并发导致日志顺序误导。</li>
-          <li><code>createInstance({ name, storeName })</code> 可以把 demo 数据隔离到独立仓库；业务代码不应随意调用 <code>clear()</code>，除非确认要清空整个 store，删除单个 key 优先用 <code>removeItem()</code>。</li>
-          <li><code>iterate</code>、<code>keys</code>、<code>length</code> 适合调试和管理小规模 key 集合；大量数据仍应设计索引、分页或直接使用 IndexedDB 游标，避免一次性遍历造成性能问题。</li>
-          <li>失败路径必须处理：配额不足、用户清理、隐私模式、降级驱动差异、Blob 支持差异都可能让 Promise reject；缓存类数据要能从网络或默认值恢复。</li>
-          <li><strong>运行环境：</strong> IndexedDB 在 <code>file://</code> 与 <code>http(s)://</code> 通常可用；隐私模式或禁用存储时可能失败。配额与驱逐策略因浏览器而异，无固定上限保证。</li>
+          <li>
+            localforage 的价值是用接近
+            <code>localStorage</code>
+            的 key-value 接口封装 IndexedDB，并在不支持时降级到 WebSQL 或
+            <code>localStorage</code>
+            ，让业务代码统一使用 Promise。
+          </li>
+          <li>
+            所有读写方法都是异步的：
+            <code>setItem</code>
+            完成后再
+            <code>getItem</code>
+            才能稳定读到最新值；示例用
+            <code>async</code>
+            /
+            <code>await</code>
+            串行展示，避免多个 Promise 并发导致日志顺序误导。
+          </li>
+          <li>
+            <code>createInstance({ name, storeName })</code>
+            可以把 demo 数据隔离到独立仓库；业务代码不应随意调用
+            <code>clear()</code>
+            ，除非确认要清空整个 store，删除单个 key 优先用
+            <code>removeItem()</code>
+            。
+          </li>
+          <li>
+            <code>iterate</code>
+            、
+            <code>keys</code>
+            、
+            <code>length</code>
+            适合调试和管理小规模 key 集合；大量数据仍应设计索引、分页或直接使用 IndexedDB
+            游标，避免一次性遍历造成性能问题。
+          </li>
+          <li>
+            失败路径必须处理：配额不足、用户清理、隐私模式、降级驱动差异、Blob 支持差异都可能让
+            Promise reject；缓存类数据要能从网络或默认值恢复。
+          </li>
+          <li>
+            <strong>运行环境：</strong>
+            IndexedDB 在
+            <code>file://</code>
+            与
+            <code>http(s)://</code>
+            通常可用；隐私模式或禁用存储时可能失败。配额与驱逐策略因浏览器而异，无固定上限保证。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>localforage 相比直接用 <code>localStorage</code> 解决了什么问题？</strong> 结论是它把存储改成异步 Promise 模型，并优先使用 IndexedDB。原因是 <code>localStorage</code> 同步、只能存字符串且不适合大数据；项目里需要离线缓存对象或文件时，localforage 比手写 IndexedDB 更轻量。</li>
-          <li><strong>localforage 的异步 API 为什么要按顺序 <code>await</code>？</strong> 结论是有依赖关系的读写必须串行等待。原因是 <code>setItem</code>、<code>getItem</code>、<code>removeItem</code> 都返回 Promise，不等待就会产生竞态；例如刚写入就读取、刚清理就遍历，日志顺序可能和真实存储状态不一致。</li>
-          <li><strong><code>clear</code> 和 <code>removeItem</code> 在业务数据安全上有什么区别？</strong> 结论是 <code>removeItem</code> 删除单个 key，<code>clear</code> 清空整个 store。原因是同一个 store 里可能有多个业务模块数据；真实项目要用独立实例隔离命名空间，并谨慎暴露清空能力。</li>
-          <li><strong>localforage 与直接使用 IndexedDB 如何选？</strong> 结论是简单 key-value 缓存选 localforage，复杂查询、索引、事务控制选 IndexedDB。原因是 localforage 屏蔽了大量样板代码，但也隐藏了底层能力；离线数据库、搜索索引和多对象仓库通常需要直接建模 IndexedDB。</li>
-          <li><strong>localforage 写入失败时应该处理哪些边界？</strong> 结论是把写入失败当成正常异常处理。原因是配额、浏览器策略、隐私模式、驱动降级和数据类型都可能失败；项目里应捕获错误、提示用户、清理旧缓存或回退到网络数据。</li>
+          <li>
+            <strong>
+              localforage 相比直接用
+              <code>localStorage</code>
+              解决了什么问题？
+            </strong>
+            结论是它把存储改成异步 Promise 模型，并优先使用 IndexedDB。原因是
+            <code>localStorage</code>
+            同步、只能存字符串且不适合大数据；项目里需要离线缓存对象或文件时，localforage 比手写
+            IndexedDB 更轻量。
+          </li>
+          <li>
+            <strong>
+              localforage 的异步 API 为什么要按顺序
+              <code>await</code>
+              ？
+            </strong>
+            结论是有依赖关系的读写必须串行等待。原因是
+            <code>setItem</code>
+            、
+            <code>getItem</code>
+            、
+            <code>removeItem</code>
+            都返回
+            Promise，不等待就会产生竞态；例如刚写入就读取、刚清理就遍历，日志顺序可能和真实存储状态不一致。
+          </li>
+          <li>
+            <strong>
+              <code>clear</code>
+              和
+              <code>removeItem</code>
+              在业务数据安全上有什么区别？
+            </strong>
+            结论是
+            <code>removeItem</code>
+            删除单个 key，
+            <code>clear</code>
+            清空整个 store。原因是同一个 store
+            里可能有多个业务模块数据；真实项目要用独立实例隔离命名空间，并谨慎暴露清空能力。
+          </li>
+          <li>
+            <strong>localforage 与直接使用 IndexedDB 如何选？</strong>
+            结论是简单 key-value 缓存选 localforage，复杂查询、索引、事务控制选 IndexedDB。原因是
+            localforage
+            屏蔽了大量样板代码，但也隐藏了底层能力；离线数据库、搜索索引和多对象仓库通常需要直接建模
+            IndexedDB。
+          </li>
+          <li>
+            <strong>localforage 写入失败时应该处理哪些边界？</strong>
+            结论是把写入失败当成正常异常处理。原因是配额、浏览器策略、隐私模式、驱动降级和数据类型都可能失败；项目里应捕获错误、提示用户、清理旧缓存或回退到网络数据。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://localforage.github.io/localForage/" target="_blank" rel="noreferrer">localForage Documentation</a></li>
-          <li><a href="https://localforage.github.io/localForage/#api-setitem" target="_blank" rel="noreferrer">localForage API: setItem / getItem</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API" target="_blank" rel="noreferrer">MDN: IndexedDB API</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria" target="_blank" rel="noreferrer">MDN: Storage quotas and eviction criteria</a></li>
+          <li>
+            <a href="https://localforage.github.io/localForage/" target="_blank" rel="noreferrer">
+              localForage Documentation
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://localforage.github.io/localForage/#api-setitem"
+              target="_blank"
+              rel="noreferrer"
+            >
+              localForage API: setItem / getItem
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: IndexedDB API
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Storage quotas and eviction criteria
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -62,7 +179,9 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block" aria-label="localforage API 演示">
       <h2 class="demo-block__label">运行示例</h2>
-      <p class="tip">按顺序演示 setItem → getItem → keys/length → iterate → removeItem；结束后会清理 demo 数据。</p>
+      <p class="tip">
+        按顺序演示 setItem → getItem → keys/length → iterate → removeItem；结束后会清理 demo 数据。
+      </p>
       <button id="run-demo" type="button">运行 API 演示</button>
       <pre id="runtime-output" aria-live="polite">尚未运行。</pre>
     </section>
@@ -71,54 +190,54 @@
     <!-- SCRIPT_START -->
     <script>
       (function () {
-        var outputEl = document.getElementById("runtime-output");
+        var outputEl = document.getElementById('runtime-output');
         var lines = [];
 
         function log(step, payload) {
-          var text = step + (payload !== undefined ? ": " + JSON.stringify(payload) : "");
+          var text = step + (payload !== undefined ? ': ' + JSON.stringify(payload) : '');
           lines.push(text);
           console.log(text);
-          outputEl.textContent = lines.join("\n");
+          outputEl.textContent = lines.join('\n');
         }
 
         var store = localforage.createInstance({
-          name: "frontend-learning-demos",
-          storeName: "localforage_basic_api",
-          description: "localforage 基础 API demo",
+          name: 'frontend-learning-demos',
+          storeName: 'localforage_basic_api',
+          description: 'localforage 基础 API demo',
         });
 
         async function runLocalforageDemo() {
           lines = [];
           try {
             // ============ 1. setItem / getItem ============
-            var savedValue = await store.setItem("profile", { name: "王成", role: "learner" });
-            log("1 setItem", savedValue);
+            var savedValue = await store.setItem('profile', { name: '王成', role: 'learner' });
+            log('1 setItem', savedValue);
 
-            var profile = await store.getItem("profile");
-            log("2 getItem", profile);
+            var profile = await store.getItem('profile');
+            log('2 getItem', profile);
 
             // ============ 2. keys / length / iterate ============
-            await store.setItem("theme", "dark");
-            log("3 keys", await store.keys());
-            log("4 length", await store.length());
+            await store.setItem('theme', 'dark');
+            log('3 keys', await store.keys());
+            log('4 length', await store.length());
 
             await store.iterate(function (value, key, iterationNumber) {
-              log("5 iterate " + iterationNumber, { key: key, value: value });
+              log('5 iterate ' + iterationNumber, { key: key, value: value });
             });
 
             // ============ 3. removeItem 与清理 ============
-            await store.removeItem("profile");
-            log("6 removeItem profile", await store.getItem("profile"));
+            await store.removeItem('profile');
+            log('6 removeItem profile', await store.getItem('profile'));
 
-            await store.removeItem("theme");
-            log("7 cleanup keys", await store.keys());
+            await store.removeItem('theme');
+            log('7 cleanup keys', await store.keys());
           } catch (error) {
-            log("失败", { name: error.name, message: error.message });
-            console.error("localforage 操作失败：", error);
+            log('失败', { name: error.name, message: error.message });
+            console.error('localforage 操作失败：', error);
           }
         }
 
-        document.getElementById("run-demo").addEventListener("click", runLocalforageDemo);
+        document.getElementById('run-demo').addEventListener('click', runLocalforageDemo);
       })();
     </script>
     <!-- SCRIPT_END -->
@@ -128,16 +247,24 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./00-%E5%AD%98%E5%82%A8%E6%96%B9%E6%A1%88%E5%AF%B9%E6%AF%94.html">相关 · 存储方案对比</a>
-        <a href="./02-%E8%8E%B7%E5%8F%96%E5%B7%B2%E7%94%A8%E5%AE%B9%E9%87%8F.html">相关 · 获取已用容量</a>
-        <a href="./00-%E5%AD%98%E5%82%A8%E6%96%B9%E6%A1%88%E5%AF%B9%E6%AF%94.html">← 存储方案对比</a>
-        <a href="./02-%E8%8E%B7%E5%8F%96%E5%B7%B2%E7%94%A8%E5%AE%B9%E9%87%8F.html">获取已用容量 →</a>
+        <a href="./00-%E5%AD%98%E5%82%A8%E6%96%B9%E6%A1%88%E5%AF%B9%E6%AF%94.html">
+          相关 · 存储方案对比
+        </a>
+        <a href="./02-%E8%8E%B7%E5%8F%96%E5%B7%B2%E7%94%A8%E5%AE%B9%E9%87%8F.html">
+          相关 · 获取已用容量
+        </a>
+        <a href="./00-%E5%AD%98%E5%82%A8%E6%96%B9%E6%A1%88%E5%AF%B9%E6%AF%94.html">
+          ← 存储方案对比
+        </a>
+        <a href="./02-%E8%8E%B7%E5%8F%96%E5%B7%B2%E7%94%A8%E5%AE%B9%E9%87%8F.html">
+          获取已用容量 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

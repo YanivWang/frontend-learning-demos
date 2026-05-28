@@ -4,7 +4,7 @@
  * 注入 demo 页脚「目录」链接时使用；部署 GitHub Pages 时设置 VITEPRESS_BASE。
  */
 export function docsHomeHref() {
-  const base = process.env.VITEPRESS_BASE || "/";
-  if (base === "/") return "/";
-  return base.endsWith("/") ? base : `${base}/`;
+  const base = process.env.VITEPRESS_BASE || '/';
+  if (base === '/') return '/';
+  return base.endsWith('/') ? base : `${base}/`;
 }

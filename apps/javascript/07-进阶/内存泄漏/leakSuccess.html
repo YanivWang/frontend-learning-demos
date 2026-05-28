@@ -28,28 +28,89 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>通过手动置 null 释放闭包引用</h1>
-      <p class="hint">请打开 DevTools Console 与 Memory 面板，等待 15 秒后对比闭包引用被置空前后的快照。<strong>需人工在浏览器验证</strong>：GC 无同步 API，内存下降取决于引擎调度。</p>
+      <p class="hint">
+        请打开 DevTools Console 与 Memory 面板，等待 15 秒后对比闭包引用被置空前后的快照。
+        <strong>需人工在浏览器验证</strong>
+        ：GC 无同步 API，内存下降取决于引擎调度。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>闭包是函数和其词法环境的组合。只要返回的函数仍可达，它就可以继续访问创建时捕获的变量，因此本页 <code>inner</code> 会保留 <code>outer</code> 中的 <code>bigData</code>。</li>
-          <li>把 <code>inner</code> 置为 <code>null</code> 的作用是断开外部变量到闭包函数的强引用；如果没有其他引用链指向该闭包或 <code>bigData</code>，这些对象会在后续 GC 中变为可回收。</li>
-          <li>常见误区是把 <code>null</code> 当成立即释放内存的命令。JavaScript 标准不提供同步触发 GC 的能力，DevTools 中看到的内存下降受引擎调度、快照时机和对象晋升策略影响。</li>
-          <li>真实项目里更推荐按生命周期清理：组件卸载时移除事件监听、取消定时器和异步订阅，清空大型缓存或回调引用；只有在长生命周期对象确实持有短生命周期资源时，手动置空才有意义。</li>
-          <li>排查闭包泄漏时，用 Heap snapshot 查看闭包、数组和 retainers 的引用路径，比单纯观察 Console 日志更可靠；本页的 15 秒定时器只是制造一个可观察的释放时点。</li>
+          <li>
+            闭包是函数和其词法环境的组合。只要返回的函数仍可达，它就可以继续访问创建时捕获的变量，因此本页
+            <code>inner</code>
+            会保留
+            <code>outer</code>
+            中的
+            <code>bigData</code>
+            。
+          </li>
+          <li>
+            把
+            <code>inner</code>
+            置为
+            <code>null</code>
+            的作用是断开外部变量到闭包函数的强引用；如果没有其他引用链指向该闭包或
+            <code>bigData</code>
+            ，这些对象会在后续 GC 中变为可回收。
+          </li>
+          <li>
+            常见误区是把
+            <code>null</code>
+            当成立即释放内存的命令。JavaScript 标准不提供同步触发 GC 的能力，DevTools
+            中看到的内存下降受引擎调度、快照时机和对象晋升策略影响。
+          </li>
+          <li>
+            真实项目里更推荐按生命周期清理：组件卸载时移除事件监听、取消定时器和异步订阅，清空大型缓存或回调引用；只有在长生命周期对象确实持有短生命周期资源时，手动置空才有意义。
+          </li>
+          <li>
+            排查闭包泄漏时，用 Heap snapshot 查看闭包、数组和 retainers 的引用路径，比单纯观察
+            Console 日志更可靠；本页的 15 秒定时器只是制造一个可观察的释放时点。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>闭包为什么可能让大对象长期留在内存中？</strong> 结论是闭包函数可达时，它捕获的词法环境也会随之可达。原因是函数需要保留外层变量以便后续调用。边界是现代引擎可能优化未使用变量，但被闭包实际读取的大数组、DOM 节点或业务对象仍可能被保留。</li>
-          <li><strong>把闭包变量置为 null 到底释放了什么？</strong> 结论是它释放的是“引用”，不是直接释放内存。原因是当保存闭包的变量不再指向函数，闭包和它捕获的对象可能从可达图中消失。项目里常见场景是取消回调、清理订阅、把不再使用的大对象从长生命周期实例上移除。</li>
-          <li><strong>为什么置 null 后内存不一定立刻下降？</strong> 结论是对象只是变成可回收，真正回收由垃圾回收器择机执行。原因是 JavaScript 没有标准的同步 GC API，浏览器还可能为了性能延迟回收或保留堆空间复用。排查时应通过多次快照和 retainers 验证引用是否断开，而不是只盯总内存数字。</li>
-          <li><strong>组件或事件场景如何避免闭包泄漏？</strong> 结论是在生命周期结束时移除所有能继续触达组件状态的外部引用。原因是事件监听、定时器、Promise 回调和全局缓存都可能持有闭包。实际项目中要在卸载钩子里 remove listener、clear timer、abort 请求或取消订阅。</li>
+          <li>
+            <strong>闭包为什么可能让大对象长期留在内存中？</strong>
+            结论是闭包函数可达时，它捕获的词法环境也会随之可达。原因是函数需要保留外层变量以便后续调用。边界是现代引擎可能优化未使用变量，但被闭包实际读取的大数组、DOM
+            节点或业务对象仍可能被保留。
+          </li>
+          <li>
+            <strong>把闭包变量置为 null 到底释放了什么？</strong>
+            结论是它释放的是“引用”，不是直接释放内存。原因是当保存闭包的变量不再指向函数，闭包和它捕获的对象可能从可达图中消失。项目里常见场景是取消回调、清理订阅、把不再使用的大对象从长生命周期实例上移除。
+          </li>
+          <li>
+            <strong>为什么置 null 后内存不一定立刻下降？</strong>
+            结论是对象只是变成可回收，真正回收由垃圾回收器择机执行。原因是 JavaScript 没有标准的同步
+            GC API，浏览器还可能为了性能延迟回收或保留堆空间复用。排查时应通过多次快照和 retainers
+            验证引用是否断开，而不是只盯总内存数字。
+          </li>
+          <li>
+            <strong>组件或事件场景如何避免闭包泄漏？</strong>
+            结论是在生命周期结束时移除所有能继续触达组件状态的外部引用。原因是事件监听、定时器、Promise
+            回调和全局缓存都可能持有闭包。实际项目中要在卸载钩子里 remove listener、clear
+            timer、abort 请求或取消订阅。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures">MDN: Closures</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Memory_management">MDN: Memory management</a></li>
-          <li><a href="https://developer.chrome.com/docs/devtools/memory-problems">Chrome DevTools: Fix memory problems</a></li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures">
+              MDN: Closures
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Memory_management"
+            >
+              MDN: Memory management
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.chrome.com/docs/devtools/memory-problems">
+              Chrome DevTools: Fix memory problems
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -58,7 +119,11 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block" aria-label="演示说明">
       <h2>闭包置 null 释放演示</h2>
-      <p class="tip">页面加载后立即创建约 500 万元素的闭包引用；15 秒后自动置 <code>inner = null</code>。请在置空前/后各拍一次 Heap snapshot 对比。</p>
+      <p class="tip">
+        页面加载后立即创建约 500 万元素的闭包引用；15 秒后自动置
+        <code>inner = null</code>
+        。请在置空前/后各拍一次 Heap snapshot 对比。
+      </p>
     </section>
     <!-- PAGE_DOM_END -->
 
@@ -66,9 +131,9 @@
     <script>
       // ============ 1. outer 创建大数组并返回闭包 ============
       function outer() {
-        const bigData = new Array(5000000).fill("11111");
+        const bigData = new Array(5000000).fill('11111');
         return function innerFn() {
-          console.log("闭包仍存活, bigData.length =", bigData.length);
+          console.log('闭包仍存活, bigData.length =', bigData.length);
         };
       }
 
@@ -78,9 +143,9 @@
 
       // ============ 3. 15 秒后断开最后强引用 ============
       setTimeout(() => {
-        console.log("手动解除闭包引用: inner = null");
+        console.log('手动解除闭包引用: inner = null');
         inner = null;
-        console.log("→ 需人工在浏览器验证：置 null 前后各拍 Heap snapshot 对比 retainers");
+        console.log('→ 需人工在浏览器验证：置 null 前后各拍 Heap snapshot 对比 retainers');
       }, 15000);
     </script>
     <!-- SCRIPT_END -->
@@ -97,9 +162,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

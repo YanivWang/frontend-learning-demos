@@ -20,10 +20,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MutationObserver</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
-      #app { min-height: 48px; padding: 12px; border: 2px dashed #94a3b8; border-radius: 8px; background: #f8fafc; }
-      button { margin: 4px 6px 4px 0; padding: 6px 10px; }
-      #runtime-output { margin-top: 12px; padding: 10px; background: #f6f8fa; border-radius: 6px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; min-height: 6rem; max-height: 240px; overflow: auto; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 1.5rem;
+        line-height: 1.6;
+      }
+      #app {
+        min-height: 48px;
+        padding: 12px;
+        border: 2px dashed #94a3b8;
+        border-radius: 8px;
+        background: #f8fafc;
+      }
+      button {
+        margin: 4px 6px 4px 0;
+        padding: 6px 10px;
+      }
+      #runtime-output {
+        margin-top: 12px;
+        padding: 10px;
+        background: #f6f8fa;
+        border-radius: 6px;
+        font-family: ui-monospace, monospace;
+        font-size: 0.8125rem;
+        white-space: pre-wrap;
+        min-height: 6rem;
+        max-height: 240px;
+        overflow: auto;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -32,28 +56,108 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>MutationObserver 监听 DOM 变化</h1>
-      <p class="hint">请阅读本复习区，并在下方演示区点击按钮触发 DOM 变化；观察 #runtime-output 中的 mutation 记录。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>MutationObserver</code> 用来异步观察 DOM 树变化，回调收到一组 <code>MutationRecord</code>，可以区分子节点、属性和文本内容变化。</li>
-          <li><code>observe(target, options)</code> 必须至少启用 <code>childList</code>、<code>attributes</code> 或 <code>characterData</code> 之一；<code>subtree: true</code> 会扩大到所有后代节点，适合容器级监听但成本更高。</li>
-          <li><code>attributeOldValue</code> 与 <code>characterDataOldValue</code> 能记录旧值，便于 diff 和调试，但也会保留更多快照信息，不适合无边界地监听大 DOM。</li>
-          <li>MutationObserver 替代了同步且性能差的旧 Mutation Events；它的回调是异步批量投递，不能假设每次 DOM 改动都会立即单独触发。</li>
-          <li>常见坑是在回调里继续修改被观察区域，导致回调再次入队形成循环；组件卸载、一次性扫描结束或切换观察目标时要调用 <code>disconnect()</code>。</li>
+          <li>
+            <code>MutationObserver</code>
+            用来异步观察 DOM 树变化，回调收到一组
+            <code>MutationRecord</code>
+            ，可以区分子节点、属性和文本内容变化。
+          </li>
+          <li>
+            <code>observe(target, options)</code>
+            必须至少启用
+            <code>childList</code>
+            、
+            <code>attributes</code>
+            或
+            <code>characterData</code>
+            之一；
+            <code>subtree: true</code>
+            会扩大到所有后代节点，适合容器级监听但成本更高。
+          </li>
+          <li>
+            <code>attributeOldValue</code>
+            与
+            <code>characterDataOldValue</code>
+            能记录旧值，便于 diff 和调试，但也会保留更多快照信息，不适合无边界地监听大 DOM。
+          </li>
+          <li>
+            MutationObserver 替代了同步且性能差的旧 Mutation
+            Events；它的回调是异步批量投递，不能假设每次 DOM 改动都会立即单独触发。
+          </li>
+          <li>
+            常见坑是在回调里继续修改被观察区域，导致回调再次入队形成循环；组件卸载、一次性扫描结束或切换观察目标时要调用
+            <code>disconnect()</code>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>MutationObserver 与 DOM Mutation Events 有什么区别？</strong> 结论是 MutationObserver 是现代推荐方案，旧 Mutation Events 已不适合作为监听 DOM 变化的实现。原因是 MutationObserver 异步批量投递记录，能减少同步事件带来的性能和递归问题。项目里应使用它做第三方 DOM 接入、富文本插件适配或调试辅助。</li>
-          <li><strong>observe 配置里 childList、attributes、subtree 分别影响什么？</strong> 结论是 <code>childList</code> 看子节点增删，<code>attributes</code> 看属性变化，<code>subtree</code> 把观察范围扩展到后代。原因是 MutationObserver 不会默认监听所有变化，必须明确声明关心的类型。实际项目应缩小 target 和 options，避免在整个 document 上长期监听。</li>
-          <li><strong>MutationObserver 回调里继续修改 DOM 有什么风险？</strong> 结论是可能触发新的 mutation 并反复进入回调。原因是回调本身的 DOM 写入也会被同一个 observer 观察到。安全做法是加条件过滤、临时 <code>disconnect()</code>、或把修正操作限定到不被观察的节点。</li>
-          <li><strong>MutationObserver 和 ResizeObserver、IntersectionObserver 如何选型？</strong> 结论是 DOM 结构或属性变化用 MutationObserver，元素尺寸变化用 ResizeObserver，可见性或曝光用 IntersectionObserver。原因是三者观察的信号不同。不要用 MutationObserver 推断布局尺寸或滚动曝光，否则容易误判且成本更高。</li>
+          <li>
+            <strong>MutationObserver 与 DOM Mutation Events 有什么区别？</strong>
+            结论是 MutationObserver 是现代推荐方案，旧 Mutation Events 已不适合作为监听 DOM
+            变化的实现。原因是 MutationObserver
+            异步批量投递记录，能减少同步事件带来的性能和递归问题。项目里应使用它做第三方 DOM
+            接入、富文本插件适配或调试辅助。
+          </li>
+          <li>
+            <strong>observe 配置里 childList、attributes、subtree 分别影响什么？</strong>
+            结论是
+            <code>childList</code>
+            看子节点增删，
+            <code>attributes</code>
+            看属性变化，
+            <code>subtree</code>
+            把观察范围扩展到后代。原因是 MutationObserver
+            不会默认监听所有变化，必须明确声明关心的类型。实际项目应缩小 target 和
+            options，避免在整个 document 上长期监听。
+          </li>
+          <li>
+            <strong>MutationObserver 回调里继续修改 DOM 有什么风险？</strong>
+            结论是可能触发新的 mutation 并反复进入回调。原因是回调本身的 DOM 写入也会被同一个
+            observer 观察到。安全做法是加条件过滤、临时
+            <code>disconnect()</code>
+            、或把修正操作限定到不被观察的节点。
+          </li>
+          <li>
+            <strong>MutationObserver 和 ResizeObserver、IntersectionObserver 如何选型？</strong>
+            结论是 DOM 结构或属性变化用 MutationObserver，元素尺寸变化用
+            ResizeObserver，可见性或曝光用 IntersectionObserver。原因是三者观察的信号不同。不要用
+            MutationObserver 推断布局尺寸或滚动曝光，否则容易误判且成本更高。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver" target="_blank" rel="noreferrer">MDN: MutationObserver</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/observe" target="_blank" rel="noreferrer">MDN: MutationObserver.observe()</a></li>
-          <li><a href="https://dom.spec.whatwg.org/#mutation-observers" target="_blank" rel="noreferrer">WHATWG DOM: Mutation observers</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: MutationObserver
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/observe"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: MutationObserver.observe()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://dom.spec.whatwg.org/#mutation-observers"
+              target="_blank"
+              rel="noreferrer"
+            >
+              WHATWG DOM: Mutation observers
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -62,7 +166,9 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block">
       <h2>MutationObserver 交互演示</h2>
-      <p class="tip">点击按钮修改 #app 区域；mutation 回调异步批量投递，多条连续改动可能合并为一次回调。</p>
+      <p class="tip">
+        点击按钮修改 #app 区域；mutation 回调异步批量投递，多条连续改动可能合并为一次回调。
+      </p>
       <div id="app" class="app">初始内容</div>
       <button type="button" id="addChildBtn">添加子节点（childList）</button>
       <button type="button" id="attrBtn">修改 class（attributes）</button>
@@ -74,14 +180,14 @@
 
     <!-- SCRIPT_START -->
     <script>
-      const appDom = document.getElementById("app");
-      const logBox = document.getElementById("runtime-output");
+      const appDom = document.getElementById('app');
+      const logBox = document.getElementById('runtime-output');
       const lines = [];
 
       function appendLog(text) {
-        lines.push("[" + new Date().toLocaleTimeString() + "] " + text);
+        lines.push('[' + new Date().toLocaleTimeString() + '] ' + text);
         if (lines.length > 30) lines.shift();
-        logBox.textContent = lines.join("\n");
+        logBox.textContent = lines.join('\n');
         console.log(text);
       }
 
@@ -90,23 +196,24 @@
       function callback(mutationList) {
         mutationList.forEach((mutation) => {
           switch (mutation.type) {
-            case "childList":
+            case 'childList':
               appendLog(
-                "childList: +" + mutation.addedNodes.length +
-                " / -" + mutation.removedNodes.length
+                'childList: +' + mutation.addedNodes.length + ' / -' + mutation.removedNodes.length,
               );
               break;
-            case "attributes":
+            case 'attributes':
               appendLog(
-                "attributes: " + mutation.attributeName +
-                " 旧值=" + mutation.oldValue +
-                " 新值=" + mutation.target.getAttribute(mutation.attributeName)
+                'attributes: ' +
+                  mutation.attributeName +
+                  ' 旧值=' +
+                  mutation.oldValue +
+                  ' 新值=' +
+                  mutation.target.getAttribute(mutation.attributeName),
               );
               break;
-            case "characterData":
+            case 'characterData':
               appendLog(
-                "characterData: 旧值=" + mutation.oldValue +
-                " 新值=" + mutation.target.textContent
+                'characterData: 旧值=' + mutation.oldValue + ' 新值=' + mutation.target.textContent,
               );
               break;
           }
@@ -125,34 +232,34 @@
         characterDataOldValue: true,
       };
       observer.observe(appDom, config);
-      appendLog("已开始 observe #app");
+      appendLog('已开始 observe #app');
 
       // ============ 3. 演示 childList ============
-      document.getElementById("addChildBtn").addEventListener("click", () => {
-        const span = document.createElement("span");
-        span.textContent = " [子节点 " + Date.now().toString().slice(-4) + "]";
+      document.getElementById('addChildBtn').addEventListener('click', () => {
+        const span = document.createElement('span');
+        span.textContent = ' [子节点 ' + Date.now().toString().slice(-4) + ']';
         appDom.appendChild(span);
       });
 
       // ============ 4. 演示 attributes ============
-      document.getElementById("attrBtn").addEventListener("click", () => {
-        appDom.classList.toggle("appNew");
+      document.getElementById('attrBtn').addEventListener('click', () => {
+        appDom.classList.toggle('appNew');
       });
 
       // ============ 5. 演示 characterData ============
-      document.getElementById("textBtn").addEventListener("click", () => {
+      document.getElementById('textBtn').addEventListener('click', () => {
         const textNode = appDom.firstChild;
         if (textNode && textNode.nodeType === Node.TEXT_NODE) {
-          textNode.textContent = "文本已更新 @" + new Date().toLocaleTimeString();
+          textNode.textContent = '文本已更新 @' + new Date().toLocaleTimeString();
         } else {
-          appDom.insertBefore(document.createTextNode("新文本节点"), appDom.firstChild);
+          appDom.insertBefore(document.createTextNode('新文本节点'), appDom.firstChild);
         }
       });
 
       // ============ 6. disconnect 清理 ============
-      document.getElementById("disconnectBtn").addEventListener("click", () => {
+      document.getElementById('disconnectBtn').addEventListener('click', () => {
         observer.disconnect();
-        appendLog("已 disconnect，后续 DOM 变化不再触发回调");
+        appendLog('已 disconnect，后续 DOM 变化不再触发回调');
       });
     </script>
     <!-- SCRIPT_END -->
@@ -169,9 +276,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

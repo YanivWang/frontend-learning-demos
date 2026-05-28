@@ -30,32 +30,120 @@
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>嵌套路由 + 命名视图组合（settings 综合页）</h1>
       <p class="hint">
-        页面加载后自动进入 <code>/settings</code>；点击 <code>emails</code> / <code>profile</code>
-        链接，观察主内容区变化；切到 <code>profile</code> 时同时出现编辑区与右侧
-        <code>helper</code> 预览区（命名视图）。
+        页面加载后自动进入
+        <code>/settings</code>
+        ；点击
+        <code>emails</code>
+        /
+        <code>profile</code>
+        链接，观察主内容区变化；切到
+        <code>profile</code>
+        时同时出现编辑区与右侧
+        <code>helper</code>
+        预览区（命名视图）。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>本页把 <code>/settings</code> 作为父路由，先渲染 <code>UserSetting</code> 布局组件，再由布局内部的子 <code>&lt;router-view&gt;</code> 渲染设置页内容。</li>
-          <li>命名视图允许一个路由记录同时渲染多个组件：无名出口对应 <code>components.default</code>，<code>&lt;router-view name="helper"&gt;</code> 对应 <code>components.helper</code>。</li>
-          <li><code>/settings/profile</code> 同时渲染编辑区和预览区，说明嵌套路由负责页面层级，命名视图负责同一层级内的多区域布局。</li>
-          <li>本仓库 HTML demo 需要支持直接打开，使用默认 hash 模式更稳定；如果项目改用 <code>history</code> 模式，刷新深层路径时服务器必须把请求回退到入口 HTML。</li>
-          <li>复杂路由配置要按布局层、业务页、辅助区拆清楚，并给不存在的子路径准备 fallback；否则页面会出现布局存在但局部内容空白的问题。</li>
+          <li>
+            本页把
+            <code>/settings</code>
+            作为父路由，先渲染
+            <code>UserSetting</code>
+            布局组件，再由布局内部的子
+            <code>&lt;router-view&gt;</code>
+            渲染设置页内容。
+          </li>
+          <li>
+            命名视图允许一个路由记录同时渲染多个组件：无名出口对应
+            <code>components.default</code>
+            ，
+            <code>&lt;router-view name="helper"&gt;</code>
+            对应
+            <code>components.helper</code>
+            。
+          </li>
+          <li>
+            <code>/settings/profile</code>
+            同时渲染编辑区和预览区，说明嵌套路由负责页面层级，命名视图负责同一层级内的多区域布局。
+          </li>
+          <li>
+            本仓库 HTML demo 需要支持直接打开，使用默认 hash 模式更稳定；如果项目改用
+            <code>history</code>
+            模式，刷新深层路径时服务器必须把请求回退到入口 HTML。
+          </li>
+          <li>
+            复杂路由配置要按布局层、业务页、辅助区拆清楚，并给不存在的子路径准备
+            fallback；否则页面会出现布局存在但局部内容空白的问题。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>嵌套路由和命名视图组合能解决什么布局问题？</strong> 结论是它能同时表达页面层级和同级多区域布局。原因是 children 决定子页面嵌在哪里，命名视图决定同一路由往哪些出口渲染组件。项目里设置页、用户中心、工作台右侧预览都适合这种组合。</li>
-          <li><strong>components.default 和 router-view name 如何对应？</strong> 结论是无名 <code>router-view</code> 对应 <code>default</code>，有名出口按 name 找同名组件。原因是 Vue Router 需要用对象键把多个 outlet 和多个组件一一映射。边界是写成单数 <code>component</code> 时只能填充默认出口。</li>
-          <li><strong>为什么 settings/profile 可以同时渲染内容和预览区？</strong> 结论是它的路由记录使用了 <code>components</code> 对象。原因是一个匹配结果可以给默认出口放编辑组件，同时给 helper 出口放预览组件。项目里这比在组件内部写大量条件渲染更容易表达路由驱动的布局。</li>
-          <li><strong>hash 模式和 history 模式在部署上有什么差异？</strong> 结论是 hash 模式对静态文件更友好，history 模式 URL 更干净但需要服务端兜底。原因是 hash 后面的片段不会发给服务器，而 history 深层路径刷新会请求真实路径。静态 demo 和 GitHub Pages 常用 hash，生产 history 要配置 fallback。</li>
-          <li><strong>复杂路由页面如何避免路由配置失控？</strong> 结论是按布局层、业务页、辅助区拆分 children，命名视图 key 与 outlet name 一一对应，并给未知子路径配 fallback。原因是路由表膨胀后难维护且易出现空白出口。项目里可配合路由模块化与常量命名。</li>
+          <li>
+            <strong>嵌套路由和命名视图组合能解决什么布局问题？</strong>
+            结论是它能同时表达页面层级和同级多区域布局。原因是 children
+            决定子页面嵌在哪里，命名视图决定同一路由往哪些出口渲染组件。项目里设置页、用户中心、工作台右侧预览都适合这种组合。
+          </li>
+          <li>
+            <strong>components.default 和 router-view name 如何对应？</strong>
+            结论是无名
+            <code>router-view</code>
+            对应
+            <code>default</code>
+            ，有名出口按 name 找同名组件。原因是 Vue Router 需要用对象键把多个 outlet
+            和多个组件一一映射。边界是写成单数
+            <code>component</code>
+            时只能填充默认出口。
+          </li>
+          <li>
+            <strong>为什么 settings/profile 可以同时渲染内容和预览区？</strong>
+            结论是它的路由记录使用了
+            <code>components</code>
+            对象。原因是一个匹配结果可以给默认出口放编辑组件，同时给 helper
+            出口放预览组件。项目里这比在组件内部写大量条件渲染更容易表达路由驱动的布局。
+          </li>
+          <li>
+            <strong>hash 模式和 history 模式在部署上有什么差异？</strong>
+            结论是 hash 模式对静态文件更友好，history 模式 URL 更干净但需要服务端兜底。原因是 hash
+            后面的片段不会发给服务器，而 history 深层路径刷新会请求真实路径。静态 demo 和 GitHub
+            Pages 常用 hash，生产 history 要配置 fallback。
+          </li>
+          <li>
+            <strong>复杂路由页面如何避免路由配置失控？</strong>
+            结论是按布局层、业务页、辅助区拆分 children，命名视图 key 与 outlet name
+            一一对应，并给未知子路径配
+            fallback。原因是路由表膨胀后难维护且易出现空白出口。项目里可配合路由模块化与常量命名。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://v3.router.vuejs.org/guide/essentials/nested-routes.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Nested Routes</a></li>
-          <li><a href="https://v3.router.vuejs.org/guide/essentials/named-views.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Named Views</a></li>
-          <li><a href="https://v3.router.vuejs.org/guide/essentials/history-mode.html" target="_blank" rel="noopener">Vue Router 3 官方文档：HTML5 History Mode</a></li>
+          <li>
+            <a
+              href="https://v3.router.vuejs.org/guide/essentials/nested-routes.html"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue Router 3 官方文档：Nested Routes
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://v3.router.vuejs.org/guide/essentials/named-views.html"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue Router 3 官方文档：Named Views
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://v3.router.vuejs.org/guide/essentials/history-mode.html"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue Router 3 官方文档：HTML5 History Mode
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -82,7 +170,7 @@
           <br>
           <router-link to="/settings/profile">profile</router-link>
         </div>
-        `
+        `,
       };
 
       const UserSetting = {
@@ -95,8 +183,8 @@
         </div>
         `,
         components: {
-          UserSettingNav
-        }
+          UserSettingNav,
+        },
       };
 
       const UserEmailsSubscriptions = {
@@ -104,7 +192,7 @@
         <div>
           <h3>Email Subscriptions</h3>
         </div>
-        `
+        `,
       };
 
       const UserProfile = {
@@ -112,7 +200,7 @@
         <div>
           <h3>Edit your profile</h3>
         </div>
-        `
+        `,
       };
 
       const UserProfilePreview = {
@@ -120,7 +208,7 @@
         <div>
           <h3>Preview of your profile</h3>
         </div>
-        `
+        `,
       };
 
       const router = new VueRouter({
@@ -131,25 +219,25 @@
             children: [
               {
                 path: 'emails',
-                component: UserEmailsSubscriptions
+                component: UserEmailsSubscriptions,
               },
               {
                 path: 'profile',
                 components: {
                   default: UserProfile,
-                  helper: UserProfilePreview
-                }
-              }
-            ]
-          }
-        ]
+                  helper: UserProfilePreview,
+                },
+              },
+            ],
+          },
+        ],
       });
 
       router.push('/settings');
 
       new Vue({
-        router
-      }).$mount("#app");
+        router,
+      }).$mount('#app');
     </script>
     <!-- SCRIPT_END -->
 
@@ -163,13 +251,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

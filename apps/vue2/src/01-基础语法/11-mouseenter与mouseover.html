@@ -21,18 +21,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>鼠标事件 enter/leave vs over/out</title>
     <style>
-      #parent{
+      #parent {
         margin: auto;
         margin-top: 150px;
         width: 200px;
         height: 200px;
-        border:1px solid #999;
+        border: 1px solid #999;
       }
-      #son{
+      #son {
         margin: auto;
         width: 150px;
         height: 150px;
-        border:1px solid #999;
+        border: 1px solid #999;
         margin-top: 25px;
       }
     </style>
@@ -44,32 +44,151 @@
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>mouseenter / leave vs mouseover / out 差异</h1>
       <p class="hint">
-        在 parent 与 son 之间移动鼠标，观察下方日志：<code>mouseenter/leave</code> 各触发一次，
-        <code>mouseover/out</code> 因冒泡可能多次触发；打开 Console 也可查看输出。
+        在 parent 与 son 之间移动鼠标，观察下方日志：
+        <code>mouseenter/leave</code>
+        各触发一次，
+        <code>mouseover/out</code>
+        因冒泡可能多次触发；打开 Console 也可查看输出。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>mouseenter</code> / <code>mouseleave</code> 不冒泡，表示指针进入或离开当前元素这个整体。鼠标从父元素移动到子元素时，不会因为经过子元素边界而再次触发父级 <code>mouseenter</code>。</li>
-          <li><code>mouseover</code> / <code>mouseout</code> 会冒泡。鼠标在父子元素之间移动时，子元素的事件会冒泡到父元素，因此父级日志可能比 <code>mouseenter</code> 更频繁。</li>
-          <li>如果做卡片、菜单、悬浮面板这类“整体 hover”，优先用 <code>mouseenter</code> / <code>mouseleave</code> 或 CSS <code>:hover</code>。如果需要事件委托到父容器处理很多子项，才更常用 <code>mouseover</code> / <code>mouseout</code>。</li>
-          <li><code>relatedTarget</code> 表示鼠标来自哪个元素或要去哪个元素。使用 <code>mouseover</code> / <code>mouseout</code> 做复杂判断时，常用它判断是否仍在同一个容器内，避免误判离开。</li>
-          <li>鼠标事件只覆盖鼠标输入；现代项目如果要统一鼠标、触控笔等指针输入，可以了解 <code>pointerenter</code> / <code>pointerleave</code>。本页是 Vue 2 基础目录里的 DOM 事件对比，重点仍是事件冒泡差异。</li>
+          <li>
+            <code>mouseenter</code>
+            /
+            <code>mouseleave</code>
+            不冒泡，表示指针进入或离开当前元素这个整体。鼠标从父元素移动到子元素时，不会因为经过子元素边界而再次触发父级
+            <code>mouseenter</code>
+            。
+          </li>
+          <li>
+            <code>mouseover</code>
+            /
+            <code>mouseout</code>
+            会冒泡。鼠标在父子元素之间移动时，子元素的事件会冒泡到父元素，因此父级日志可能比
+            <code>mouseenter</code>
+            更频繁。
+          </li>
+          <li>
+            如果做卡片、菜单、悬浮面板这类“整体 hover”，优先用
+            <code>mouseenter</code>
+            /
+            <code>mouseleave</code>
+            或 CSS
+            <code>:hover</code>
+            。如果需要事件委托到父容器处理很多子项，才更常用
+            <code>mouseover</code>
+            /
+            <code>mouseout</code>
+            。
+          </li>
+          <li>
+            <code>relatedTarget</code>
+            表示鼠标来自哪个元素或要去哪个元素。使用
+            <code>mouseover</code>
+            /
+            <code>mouseout</code>
+            做复杂判断时，常用它判断是否仍在同一个容器内，避免误判离开。
+          </li>
+          <li>
+            鼠标事件只覆盖鼠标输入；现代项目如果要统一鼠标、触控笔等指针输入，可以了解
+            <code>pointerenter</code>
+            /
+            <code>pointerleave</code>
+            。本页是 Vue 2 基础目录里的 DOM 事件对比，重点仍是事件冒泡差异。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>mouseenter 和 mouseover 的根本区别是什么？</strong> 结论是 <code>mouseenter</code> 不冒泡，<code>mouseover</code> 会冒泡。原因是鼠标进入子元素时，<code>mouseover</code> 可以从子元素冒泡到父元素，而 <code>mouseenter</code> 只关心是否进入当前元素整体。项目里整体悬停用 <code>mouseenter</code> 更直观。</li>
-          <li><strong>为什么从父元素移到子元素时 mouseover / mouseout 可能重复触发？</strong> 结论是因为父子元素之间也存在事件目标切换。原因是进入子元素会触发子元素的 <code>mouseover</code>，离开父元素内部某个目标也可能触发 <code>mouseout</code> 并冒泡。边界判断要看 <code>relatedTarget</code> 是否仍在容器内。</li>
-          <li><strong>做卡片整体 hover 应该选哪组事件？</strong> 结论是优先 <code>mouseenter</code> / <code>mouseleave</code> 或 CSS <code>:hover</code>。原因是它们不会因为子元素层级变化而频繁触发。项目里如果只是切换样式，用 CSS 更简单；如果要触发 JS 状态或埋点，再用事件。</li>
-          <li><strong>relatedTarget 能解决什么边界判断？</strong> 结论是用 <code>mouseover/out</code> 时可判断鼠标是否仍在容器内。原因是 <code>relatedTarget</code> 指向关联元素，可区分「进入子元素」与「真正离开容器」。项目里复杂 hover 菜单常用此属性避免误触发 leave 逻辑。</li>
-          <li><strong>鼠标事件和 pointer 事件在现代项目里如何取舍？</strong> 结论是只关心鼠标时可用 mouse 事件，需要统一鼠标、触控笔等输入时优先了解 pointer 事件。原因是 pointer 事件覆盖更广的输入设备。边界是老项目或 Vue 2 静态 demo 里仍常见 mouse 事件，需要先理解其冒泡语义。</li>
+          <li>
+            <strong>mouseenter 和 mouseover 的根本区别是什么？</strong>
+            结论是
+            <code>mouseenter</code>
+            不冒泡，
+            <code>mouseover</code>
+            会冒泡。原因是鼠标进入子元素时，
+            <code>mouseover</code>
+            可以从子元素冒泡到父元素，而
+            <code>mouseenter</code>
+            只关心是否进入当前元素整体。项目里整体悬停用
+            <code>mouseenter</code>
+            更直观。
+          </li>
+          <li>
+            <strong>为什么从父元素移到子元素时 mouseover / mouseout 可能重复触发？</strong>
+            结论是因为父子元素之间也存在事件目标切换。原因是进入子元素会触发子元素的
+            <code>mouseover</code>
+            ，离开父元素内部某个目标也可能触发
+            <code>mouseout</code>
+            并冒泡。边界判断要看
+            <code>relatedTarget</code>
+            是否仍在容器内。
+          </li>
+          <li>
+            <strong>做卡片整体 hover 应该选哪组事件？</strong>
+            结论是优先
+            <code>mouseenter</code>
+            /
+            <code>mouseleave</code>
+            或 CSS
+            <code>:hover</code>
+            。原因是它们不会因为子元素层级变化而频繁触发。项目里如果只是切换样式，用 CSS
+            更简单；如果要触发 JS 状态或埋点，再用事件。
+          </li>
+          <li>
+            <strong>relatedTarget 能解决什么边界判断？</strong>
+            结论是用
+            <code>mouseover/out</code>
+            时可判断鼠标是否仍在容器内。原因是
+            <code>relatedTarget</code>
+            指向关联元素，可区分「进入子元素」与「真正离开容器」。项目里复杂 hover
+            菜单常用此属性避免误触发 leave 逻辑。
+          </li>
+          <li>
+            <strong>鼠标事件和 pointer 事件在现代项目里如何取舍？</strong>
+            结论是只关心鼠标时可用 mouse 事件，需要统一鼠标、触控笔等输入时优先了解 pointer
+            事件。原因是 pointer 事件覆盖更广的输入设备。边界是老项目或 Vue 2 静态 demo 里仍常见
+            mouse 事件，需要先理解其冒泡语义。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/mouseenter_event" target="_blank" rel="noopener">MDN：Element mouseenter event</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/mouseover_event" target="_blank" rel="noopener">MDN：Element mouseover event</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/relatedTarget" target="_blank" rel="noopener">MDN：MouseEvent.relatedTarget</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events" target="_blank" rel="noopener">MDN：Pointer events</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Element/mouseenter_event"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN：Element mouseenter event
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Element/mouseover_event"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN：Element mouseover event
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/relatedTarget"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN：MouseEvent.relatedTarget
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN：Pointer events
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -81,14 +200,14 @@
     2.mouseover mouseout穿过一次元素，可能会触发一次，具体触发几次，要看其
     子元素的数量
     -->
-    <div id="parent"
+    <div
+      id="parent"
       onmouseenter="parentMoEnter()"
       onmouseleave="parentMoLeave()"
       onmouseover="parentMoOver()"
       onmouseout="parentMoOut()"
-      >
-      <div id="son">
-      </div>
+    >
+      <div id="son"></div>
     </div>
     <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
@@ -100,26 +219,25 @@
       // MDN：mouseenter 只在进入元素整体时触发；mouseover 会随子元素边界重复触发。
       // ---------------------------------------------------------------------------
       function parentMoEnter() {
-        log("mouseenter：进入 parent 整体");
+        log('mouseenter：进入 parent 整体');
       }
 
       function parentMoLeave() {
-        log("mouseleave：离开 parent 整体");
+        log('mouseleave：离开 parent 整体');
       }
 
       function parentMoOver() {
-        log("mouseover：可能来自 parent 或 son，且会冒泡");
+        log('mouseover：可能来自 parent 或 son，且会冒泡');
       }
 
       function parentMoOut() {
-        log("mouseout：目标切换到子元素或离开容器时都可能出现");
+        log('mouseout：目标切换到子元素或离开容器时都可能出现');
       }
 
       function log(message) {
-        var logEl = document.getElementById("log");
-        logEl.textContent = message + "\n" + logEl.textContent;
+        var logEl = document.getElementById('log');
+        logEl.textContent = message + '\n' + logEl.textContent;
       }
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -133,13 +251,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

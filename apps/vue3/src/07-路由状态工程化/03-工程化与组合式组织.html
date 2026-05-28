@@ -21,16 +21,59 @@
     <title>Vue3 · 工程化与组合式组织</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 860px; }
-      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
-      button { padding: 6px 12px; margin-right: 8px; }
-      table { border-collapse: collapse; width: 100%; font-size: 0.9rem; margin-top: 12px; }
-      th, td { border: 1px solid #e3e3e3; padding: 8px 10px; text-align: left; vertical-align: top; }
-      th { background: #f6f8fa; }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          'PingFang SC',
+          sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+      }
+      code,
+      pre {
+        background: #f6f8fa;
+        border-radius: 6px;
+      }
+      code {
+        padding: 2px 5px;
+      }
+      pre {
+        padding: 12px;
+        overflow: auto;
+      }
+      .box {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 860px;
+      }
+      .box .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
+      button {
+        padding: 6px 12px;
+        margin-right: 8px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 0.9rem;
+        margin-top: 12px;
+      }
+      th,
+      td {
+        border: 1px solid #e3e3e3;
+        padding: 8px 10px;
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        background: #f6f8fa;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -43,25 +86,110 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>本页点击表格「查看边界」可切换各目录说明；下方 <code>pre</code> 为推荐目录树。Vue 3 工程常见分层是 <code>views</code> 放路由页面、<code>components</code> 放可复用 UI、<code>composables</code> 放组合式逻辑、<code>stores</code> 放全局状态、<code>router</code> 放路由表与守卫、<code>services</code> 放请求封装。</li>
-          <li>组合式函数应围绕业务能力或技术能力命名为 <code>useXxx</code>，例如 <code>useUserSearch</code>、<code>usePolling</code>；它解决的是逻辑复用和关注点聚合，不是把一个组件按生命周期硬切成多个文件。</li>
-          <li>store 适合跨页面共享、需要调试或持久化的状态；composable 适合复用一段响应式逻辑；纯格式化、计算、校验优先放 <code>utils</code>，避免把所有函数都包装成 Hook 风格。</li>
-          <li>工程化组织要配合 TypeScript 类型、路径别名、ESLint/Prettier、单元测试（见 <a href="./07-Vitest%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E9%9D%A2%E8%AF%95%E7%82%B9.html">07-Vitest单元测试面试点</a>）和目录约束，否则目录命名只是形式。</li>
-          <li>控制台无报错；点不同职责行的按钮后，<code>active</code> 与边界说明会更新。常见坑包括循环依赖、composable 在组件外错误依赖当前实例、store 承载过多临时 UI 状态、请求层直接操作组件状态，以及路由页面和基础组件互相引用。</li>
+          <li>
+            本页点击表格「查看边界」可切换各目录说明；下方
+            <code>pre</code>
+            为推荐目录树。Vue 3 工程常见分层是
+            <code>views</code>
+            放路由页面、
+            <code>components</code>
+            放可复用 UI、
+            <code>composables</code>
+            放组合式逻辑、
+            <code>stores</code>
+            放全局状态、
+            <code>router</code>
+            放路由表与守卫、
+            <code>services</code>
+            放请求封装。
+          </li>
+          <li>
+            组合式函数应围绕业务能力或技术能力命名为
+            <code>useXxx</code>
+            ，例如
+            <code>useUserSearch</code>
+            、
+            <code>usePolling</code>
+            ；它解决的是逻辑复用和关注点聚合，不是把一个组件按生命周期硬切成多个文件。
+          </li>
+          <li>
+            store 适合跨页面共享、需要调试或持久化的状态；composable
+            适合复用一段响应式逻辑；纯格式化、计算、校验优先放
+            <code>utils</code>
+            ，避免把所有函数都包装成 Hook 风格。
+          </li>
+          <li>
+            工程化组织要配合 TypeScript 类型、路径别名、ESLint/Prettier、单元测试（见
+            <a
+              href="./07-Vitest%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E9%9D%A2%E8%AF%95%E7%82%B9.html"
+            >
+              07-Vitest单元测试面试点
+            </a>
+            ）和目录约束，否则目录命名只是形式。
+          </li>
+          <li>
+            控制台无报错；点不同职责行的按钮后，
+            <code>active</code>
+            与边界说明会更新。常见坑包括循环依赖、composable 在组件外错误依赖当前实例、store
+            承载过多临时 UI 状态、请求层直接操作组件状态，以及路由页面和基础组件互相引用。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue 3 项目目录为什么要按职责分层？</strong> 结论是分层是为了降低协作成本和依赖混乱，不是为了追求目录数量。原因是路由页面、基础组件、业务逻辑、请求层和全局状态的变化频率不同；边界是小 demo 可以扁平一些，大项目要用约定和 lint/code review 保证单向依赖。</li>
-          <li><strong>composable 和 store 的边界怎么划？</strong> 结论是 composable 复用逻辑，store 保存跨组件共享状态。原因是 composable 每次调用可以创建独立状态，也可以组合生命周期和监听；store 是全局容器，适合登录态、购物车、权限等共享数据。项目里不要把一次性表单输入都放进 store。</li>
-          <li><strong>为什么不建议按生命周期拆分组合式函数？</strong> 结论是组合式 API 推荐按关注点组织代码。原因是一个业务能力往往同时需要 state、computed、watch 和生命周期，按 mounted/watch 拆分会把同一能力打散；边界是底层工具型 composable 可以只暴露某个生命周期相关能力。</li>
-          <li><strong>service、utils、components、views 如何分工？</strong> 结论是 service 负责外部 I/O，utils 负责无副作用纯函数，components 负责 UI 复用，views 负责路由页面编排。原因是这样可测试、可替换、可定位问题；项目里若 service 直接改 Pinia 或组件状态，需要明确这是业务层设计而非通用工具。</li>
+          <li>
+            <strong>Vue 3 项目目录为什么要按职责分层？</strong>
+            结论是分层是为了降低协作成本和依赖混乱，不是为了追求目录数量。原因是路由页面、基础组件、业务逻辑、请求层和全局状态的变化频率不同；边界是小
+            demo 可以扁平一些，大项目要用约定和 lint/code review 保证单向依赖。
+          </li>
+          <li>
+            <strong>composable 和 store 的边界怎么划？</strong>
+            结论是 composable 复用逻辑，store 保存跨组件共享状态。原因是 composable
+            每次调用可以创建独立状态，也可以组合生命周期和监听；store
+            是全局容器，适合登录态、购物车、权限等共享数据。项目里不要把一次性表单输入都放进 store。
+          </li>
+          <li>
+            <strong>为什么不建议按生命周期拆分组合式函数？</strong>
+            结论是组合式 API 推荐按关注点组织代码。原因是一个业务能力往往同时需要
+            state、computed、watch 和生命周期，按 mounted/watch
+            拆分会把同一能力打散；边界是底层工具型 composable 可以只暴露某个生命周期相关能力。
+          </li>
+          <li>
+            <strong>service、utils、components、views 如何分工？</strong>
+            结论是 service 负责外部 I/O，utils 负责无副作用纯函数，components 负责 UI 复用，views
+            负责路由页面编排。原因是这样可测试、可替换、可定位问题；项目里若 service 直接改 Pinia
+            或组件状态，需要明确这是业务层设计而非通用工具。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/guide/reusability/composables.html" target="_blank" rel="noreferrer">Vue 官方指南：Composables</a></li>
-          <li><a href="https://vuejs.org/guide/scaling-up/sfc.html" target="_blank" rel="noreferrer">Vue 官方指南：Single-File Components</a></li>
-          <li><a href="https://vuejs.org/guide/scaling-up/state-management.html" target="_blank" rel="noreferrer">Vue 官方指南：State Management</a></li>
-          <li><a href="./04-Vite%E5%B7%A5%E7%A8%8B%E5%8C%96%E9%9D%A2%E8%AF%95%E7%82%B9.html">本系列：Vite 工程化面试点</a></li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/reusability/composables.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 官方指南：Composables
+            </a>
+          </li>
+          <li>
+            <a href="https://vuejs.org/guide/scaling-up/sfc.html" target="_blank" rel="noreferrer">
+              Vue 官方指南：Single-File Components
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/scaling-up/state-management.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 官方指南：State Management
+            </a>
+          </li>
+          <li>
+            <a href="./04-Vite%E5%B7%A5%E7%A8%8B%E5%8C%96%E9%9D%A2%E8%AF%95%E7%82%B9.html">
+              本系列：Vite 工程化面试点
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -74,7 +202,11 @@
         <p class="hint-inline">点击职责行，查看该目录“放什么 / 不放什么”；下方为推荐目录树。</p>
         <table>
           <thead>
-            <tr><th>目录</th><th>职责</th><th>操作</th></tr>
+            <tr>
+              <th>目录</th>
+              <th>职责</th>
+              <th>操作</th>
+            </tr>
           </thead>
           <tbody>
             <tr v-for="row in layers" :key="row.dir">
@@ -84,7 +216,10 @@
             </tr>
           </tbody>
         </table>
-        <p v-if="activeDetail"><strong>{{ active }}：</strong>{{ activeDetail }}</p>
+        <p v-if="activeDetail">
+          <strong>{{ active }}：</strong>
+          {{ activeDetail }}
+        </p>
         <pre>{{ tree }}</pre>
       </div>
     </div>
@@ -100,36 +235,63 @@
           // --- 演示状态 ---
           // --- 目录分层数据 ---
           const layers = [
-            { dir: "views/", summary: "路由页面编排", detail: "放页面级组件与路由入口；不放可复用原子 UI 和纯工具函数。" },
-            { dir: "components/", summary: "可复用 UI", detail: "放与业务弱耦合的展示组件；避免直接写 API 请求和全局 store 副作用。" },
-            { dir: "composables/", summary: "useXxx 逻辑复用", detail: "放可复用响应式逻辑；不要按 mounted/watch 硬拆文件。" },
-            { dir: "stores/", summary: "Pinia 全局状态", detail: "放跨页面共享状态；不要把一次性表单草稿都塞进来。" },
-            { dir: "router/", summary: "路由表与守卫", detail: "放 routes、beforeEach；可运行示例见 06-Router与Pinia可运行示例。" },
-            { dir: "services/", summary: "API 封装", detail: "放请求与 DTO 转换；边界是是否允许直接改 store 要在团队约定里写清。" },
-            { dir: "utils/", summary: "纯函数工具", detail: "放无副作用格式化/校验；不要包装成 useXxx 除非确实需要响应式。" },
+            {
+              dir: 'views/',
+              summary: '路由页面编排',
+              detail: '放页面级组件与路由入口；不放可复用原子 UI 和纯工具函数。',
+            },
+            {
+              dir: 'components/',
+              summary: '可复用 UI',
+              detail: '放与业务弱耦合的展示组件；避免直接写 API 请求和全局 store 副作用。',
+            },
+            {
+              dir: 'composables/',
+              summary: 'useXxx 逻辑复用',
+              detail: '放可复用响应式逻辑；不要按 mounted/watch 硬拆文件。',
+            },
+            {
+              dir: 'stores/',
+              summary: 'Pinia 全局状态',
+              detail: '放跨页面共享状态；不要把一次性表单草稿都塞进来。',
+            },
+            {
+              dir: 'router/',
+              summary: '路由表与守卫',
+              detail: '放 routes、beforeEach；可运行示例见 06-Router与Pinia可运行示例。',
+            },
+            {
+              dir: 'services/',
+              summary: 'API 封装',
+              detail: '放请求与 DTO 转换；边界是是否允许直接改 store 要在团队约定里写清。',
+            },
+            {
+              dir: 'utils/',
+              summary: '纯函数工具',
+              detail: '放无副作用格式化/校验；不要包装成 useXxx 除非确实需要响应式。',
+            },
           ];
 
-          const active = ref("composables/");
+          const active = ref('composables/');
           const activeDetail = computed(() => {
             const row = layers.find((r) => r.dir === active.value);
-            return row ? row.detail : "";
+            return row ? row.detail : '';
           });
 
           const tree = [
-            "src/",
-            "  router/          路由表与守卫",
-            "  stores/          Pinia store",
-            "  composables/     useXxx 组合式函数",
-            "  components/      可复用组件",
-            "  views/           路由页面",
-            "  services/        API 请求封装",
-            "  utils/           纯工具函数",
-          ].join("\n");
+            'src/',
+            '  router/          路由表与守卫',
+            '  stores/          Pinia store',
+            '  composables/     useXxx 组合式函数',
+            '  components/      可复用组件',
+            '  views/           路由页面',
+            '  services/        API 请求封装',
+            '  utils/           纯工具函数',
+          ].join('\n');
 
-          
           // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
           onMounted(() => {
-            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+            console.log('[mounted] createApp 已接管 #app，DOM 已渲染');
           });
 
           return { layers, active, activeDetail, tree };
@@ -137,9 +299,8 @@
       });
       // mount 须在 app.use / app.component / app.config 等配置之后调用
       // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
-      const rootInstance = app.mount("#app");
-      console.log("[mount] 根组件实例", rootInstance);
-
+      const rootInstance = app.mount('#app');
+      console.log('[mount] 根组件实例', rootInstance);
     </script>
     <!-- SCRIPT_END -->
 
@@ -149,17 +310,19 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./02-Pinia%E6%A0%B8%E5%BF%83%E9%9D%A2%E8%AF%95%E7%82%B9.html">← Pinia核心面试点</a>
-        <a href="./04-Vite%E5%B7%A5%E7%A8%8B%E5%8C%96%E9%9D%A2%E8%AF%95%E7%82%B9.html">Vite工程化面试点 →</a>
+        <a href="./04-Vite%E5%B7%A5%E7%A8%8B%E5%8C%96%E9%9D%A2%E8%AF%95%E7%82%B9.html">
+          Vite工程化面试点 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

@@ -32,29 +32,143 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>class 组件中的受控与非受控表单</h1>
-      <p class="hint">请填写下方表单并点击提交，观察受控字段实时回显与非受控字段通过 ref 读取的差异；下方 #root 为 React 挂载/交互演示区。</p>
+      <p class="hint">
+        请填写下方表单并点击提交，观察受控字段实时回显与非受控字段通过 ref 读取的差异；下方 #root 为
+        React 挂载/交互演示区。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>受控组件把输入值放在 <code>this.state</code> 中，<code>value</code> 或 <code>checked</code> 由 React 传回输入框，<code>onChange</code> 再把用户输入写回 state，因此校验、联动、禁用提交按钮和回显都可以由同一份数据驱动。</li>
-          <li>非受控组件让 DOM 保存当前值，React 只用 <code>defaultValue</code> 或 <code>defaultChecked</code> 设置初始值，提交时通过 <code>ref</code> 读取。它适合简单一次性读取、迁移旧表单或文件输入这类 DOM 自有状态。</li>
-          <li><code>value</code> 与 <code>defaultValue</code> 不是同一种控制权：前者每次渲染都以 React state 为准，后者只影响初始值。不要在同一个输入生命周期内从未定义 <code>value</code> 切到有值，避免受控/非受控切换警告。</li>
-          <li>class 组件里表单事件仍是合成事件，读取 <code>event.target.value</code> 后用 <code>setState</code> 更新；如果下一步依赖更新后的 state，应放到 <code>setState</code> 回调或 <code>componentDidUpdate</code>。</li>
-          <li>涉及用户输入时不要把输入内容拼进 <code>innerHTML</code>。本 demo 提交时用 <code>alert(JSON.stringify(...))</code> 展示数据，没有把用户输入作为 HTML 注入页面。</li>
+          <li>
+            受控组件把输入值放在
+            <code>this.state</code>
+            中，
+            <code>value</code>
+            或
+            <code>checked</code>
+            由 React 传回输入框，
+            <code>onChange</code>
+            再把用户输入写回 state，因此校验、联动、禁用提交按钮和回显都可以由同一份数据驱动。
+          </li>
+          <li>
+            非受控组件让 DOM 保存当前值，React 只用
+            <code>defaultValue</code>
+            或
+            <code>defaultChecked</code>
+            设置初始值，提交时通过
+            <code>ref</code>
+            读取。它适合简单一次性读取、迁移旧表单或文件输入这类 DOM 自有状态。
+          </li>
+          <li>
+            <code>value</code>
+            与
+            <code>defaultValue</code>
+            不是同一种控制权：前者每次渲染都以 React state
+            为准，后者只影响初始值。不要在同一个输入生命周期内从未定义
+            <code>value</code>
+            切到有值，避免受控/非受控切换警告。
+          </li>
+          <li>
+            class 组件里表单事件仍是合成事件，读取
+            <code>event.target.value</code>
+            后用
+            <code>setState</code>
+            更新；如果下一步依赖更新后的 state，应放到
+            <code>setState</code>
+            回调或
+            <code>componentDidUpdate</code>
+            。
+          </li>
+          <li>
+            涉及用户输入时不要把输入内容拼进
+            <code>innerHTML</code>
+            。本 demo 提交时用
+            <code>alert(JSON.stringify(...))</code>
+            展示数据，没有把用户输入作为 HTML 注入页面。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>受控组件为什么说 React state 是唯一数据源？</strong> 结论是输入显示值由 state 决定。原因是 <code>value</code> 绑定 state 后，用户输入必须经过 <code>onChange</code> 和 <code>setState</code> 才能反映到界面；边界是高频大表单要注意渲染成本，可拆分字段组件或局部状态。</li>
-          <li><strong>defaultValue 和 value 的行为差异是什么？</strong> <code>value</code> 是持续控制，<code>defaultValue</code> 只是初始值。原因是 React 后续渲染不会再用 <code>defaultValue</code> 覆盖 DOM 当前值；项目中如果要重置非受控输入，通常改 <code>key</code> 重新挂载或直接操作 ref。</li>
-          <li><strong>表单校验、联动和一次性提交时如何选择？</strong> 结论是需要实时校验、联动、回显、禁用提交时优先受控，只在简单采集或接入旧 DOM 插件时考虑非受控。原因是受控值在 React 数据流里更容易组合；边界是文件输入不能被脚本设置文件路径，通常用非受控读取。</li>
-          <li><strong>为什么文件输入和部分第三方控件更适合非受控？</strong> 结论是浏览器安全限制和 DOM 自有状态。原因是 <code>&lt;input type="file"&gt;</code> 的值只能由用户选择，React 不能通过 <code>value</code> 设置文件路径；集成 jQuery UI、富文本编辑器等命令式 DOM 库时，也常用 ref 读取而非受控 state。</li>
-          <li><strong>class 表单里如何避免受控/非受控切换警告？</strong> 结论是给 <code>value</code> 稳定默认值（如空字符串），不要在受控/非受控之间切换。原因是 React 检测到 <code>value</code> 从 <code>undefined</code> 变为字符串时会警告；项目中字符串字段初始化为 <code>""</code>，布尔字段用 <code>checked</code> + 明确布尔值。</li>
+          <li>
+            <strong>受控组件为什么说 React state 是唯一数据源？</strong>
+            结论是输入显示值由 state 决定。原因是
+            <code>value</code>
+            绑定 state 后，用户输入必须经过
+            <code>onChange</code>
+            和
+            <code>setState</code>
+            才能反映到界面；边界是高频大表单要注意渲染成本，可拆分字段组件或局部状态。
+          </li>
+          <li>
+            <strong>defaultValue 和 value 的行为差异是什么？</strong>
+            <code>value</code>
+            是持续控制，
+            <code>defaultValue</code>
+            只是初始值。原因是 React 后续渲染不会再用
+            <code>defaultValue</code>
+            覆盖 DOM 当前值；项目中如果要重置非受控输入，通常改
+            <code>key</code>
+            重新挂载或直接操作 ref。
+          </li>
+          <li>
+            <strong>表单校验、联动和一次性提交时如何选择？</strong>
+            结论是需要实时校验、联动、回显、禁用提交时优先受控，只在简单采集或接入旧 DOM
+            插件时考虑非受控。原因是受控值在 React
+            数据流里更容易组合；边界是文件输入不能被脚本设置文件路径，通常用非受控读取。
+          </li>
+          <li>
+            <strong>为什么文件输入和部分第三方控件更适合非受控？</strong>
+            结论是浏览器安全限制和 DOM 自有状态。原因是
+            <code>&lt;input type="file"&gt;</code>
+            的值只能由用户选择，React 不能通过
+            <code>value</code>
+            设置文件路径；集成 jQuery UI、富文本编辑器等命令式 DOM 库时，也常用 ref 读取而非受控
+            state。
+          </li>
+          <li>
+            <strong>class 表单里如何避免受控/非受控切换警告？</strong>
+            结论是给
+            <code>value</code>
+            稳定默认值（如空字符串），不要在受控/非受控之间切换。原因是 React 检测到
+            <code>value</code>
+            从
+            <code>undefined</code>
+            变为字符串时会警告；项目中字符串字段初始化为
+            <code>""</code>
+            ，布尔字段用
+            <code>checked</code>
+            + 明确布尔值。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react-dom/components/input#controlling-an-input-with-a-state-variable" target="_blank" rel="noreferrer">react.dev: Controlling an input with a state variable</a></li>
-          <li><a href="https://react.dev/reference/react-dom/components/input#providing-an-initial-value-for-an-input" target="_blank" rel="noreferrer">react.dev: Providing an initial value (defaultValue)</a></li>
-          <li><a href="https://react.dev/reference/react-dom/components/select" target="_blank" rel="noreferrer">react.dev: &lt;select&gt;</a></li>
+          <li>
+            <a
+              href="https://react.dev/reference/react-dom/components/input#controlling-an-input-with-a-state-variable"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Controlling an input with a state variable
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react-dom/components/input#providing-an-initial-value-for-an-input"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Providing an initial value (defaultValue)
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react-dom/components/select"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: &lt;select&gt;
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -73,20 +187,20 @@
           this.noteRef = React.createRef();
           // 受控：state 为唯一数据源
           this.state = {
-            username: "",
-            role: "user",
+            username: '',
+            role: 'user',
           };
         }
 
         // ====== 1. 受控 input/select：value + onChange + setState ======
         handleUsernameChange = (e) => {
           this.setState({ username: e.target.value });
-          console.log("受控 username onChange:", e.target.value);
+          console.log('受控 username onChange:', e.target.value);
         };
 
         handleRoleChange = (e) => {
           this.setState({ role: e.target.value });
-          console.log("受控 role onChange:", e.target.value);
+          console.log('受控 role onChange:', e.target.value);
         };
 
         // ====== 2. 提交：受控读 state，非受控读 ref.current.value ======
@@ -97,7 +211,7 @@
             role: this.state.role,
             note: this.noteRef.current.value,
           };
-          console.log("提交数据:", payload);
+          console.log('提交数据:', payload);
           alert(JSON.stringify(payload, null, 2));
         };
 
@@ -108,10 +222,7 @@
                 <div>
                   <label>
                     用户名（受控）:
-                    <input
-                      value={this.state.username}
-                      onChange={this.handleUsernameChange}
-                    />
+                    <input value={this.state.username} onChange={this.handleUsernameChange} />
                   </label>
                 </div>
                 <div>
@@ -131,13 +242,15 @@
                 </div>
                 <button type="submit">提交</button>
               </form>
-              <p>当前受控值: {this.state.username || "空"} / {this.state.role}</p>
+              <p>
+                当前受控值: {this.state.username || '空'} / {this.state.role}
+              </p>
             </section>
           );
         }
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -147,16 +260,22 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./07-class-refs%E4%B8%8EDOM.html">相关 · 07-class-refs与DOM</a>
-        <a href="./09-class-getDerivedStateFromProps%E4%B8%8EgetSnapshotBeforeUpdate.html">相关 · 09-class-getDerivedStateFromProps与getSnapshotBeforeUpdate</a>
-        <a href="./12-class-setState%E7%AC%AC%E4%BA%8C%E5%8F%82%E6%95%B0%E5%9B%9E%E8%B0%83.html">相关 · 12-class-setState第二参数回调</a>
+        <a href="./09-class-getDerivedStateFromProps%E4%B8%8EgetSnapshotBeforeUpdate.html">
+          相关 · 09-class-getDerivedStateFromProps与getSnapshotBeforeUpdate
+        </a>
+        <a href="./12-class-setState%E7%AC%AC%E4%BA%8C%E5%8F%82%E6%95%B0%E5%9B%9E%E8%B0%83.html">
+          相关 · 12-class-setState第二参数回调
+        </a>
         <a href="./10-class-Context%E4%B8%8A%E4%B8%8B%E6%96%87.html">← class-Context上下文</a>
-        <a href="./12-class-setState%E7%AC%AC%E4%BA%8C%E5%8F%82%E6%95%B0%E5%9B%9E%E8%B0%83.html">class-setState第二参数回调 →</a>
+        <a href="./12-class-setState%E7%AC%AC%E4%BA%8C%E5%8F%82%E6%95%B0%E5%9B%9E%E8%B0%83.html">
+          class-setState第二参数回调 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

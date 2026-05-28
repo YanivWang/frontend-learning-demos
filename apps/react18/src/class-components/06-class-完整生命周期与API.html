@@ -32,30 +32,169 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>class 组件生命周期与常用实例 API</h1>
-      <p class="hint">请打开 DevTools Console 观察 constructor、render、componentDidMount、shouldComponentUpdate、componentDidUpdate 的调用顺序；点击下方按钮验证 setState 与 forceUpdate 的区别；下方 #root 为 React 挂载/交互演示区。</p>
+      <p class="hint">
+        请打开 DevTools Console 观察
+        constructor、render、componentDidMount、shouldComponentUpdate、componentDidUpdate
+        的调用顺序；点击下方按钮验证 setState 与 forceUpdate 的区别；下方 #root 为 React
+        挂载/交互演示区。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><strong>挂载阶段：</strong><code>constructor</code> 用来初始化 state 和绑定实例字段，<code>render</code> 必须保持纯渲染，访问 DOM、启动 timer、订阅事件或发起请求应放到 <code>componentDidMount</code>。</li>
-          <li><strong>更新阶段：</strong><code>setState</code> 或 props 变化会进入更新流程；<code>shouldComponentUpdate</code> 可返回 <code>false</code> 跳过当前组件渲染，<code>componentDidUpdate</code> 适合根据上一次 props/state 做 DOM 同步或补充请求，但必须避免无条件再次 <code>setState</code>。</li>
-          <li><strong>卸载阶段：</strong><code>componentWillUnmount</code> 是清理副作用的位置，timer、订阅、手写 DOM 监听和未取消的异步回调都要在这里处理，否则容易出现内存泄漏或卸载后更新状态的警告。</li>
-          <li><strong>旧生命周期边界：</strong><code>componentWillMount</code>、<code>componentWillReceiveProps</code>、<code>componentWillUpdate</code> 在现代 React 中被标记为不安全；维护旧 class 代码时只能以 <code>UNSAFE_</code> 前缀保留，并优先迁移到 <code>componentDidMount</code>、<code>componentDidUpdate</code>、<code>getDerivedStateFromProps</code> 或函数组件 Hooks。</li>
-          <li><strong>实例 API：</strong><code>forceUpdate</code> 会强制当前组件重新 render，并跳过当前组件的 <code>shouldComponentUpdate</code>；它只适合桥接非 React 数据源，常规业务状态应放进 state/props，事件处理器也要用箭头函数或显式绑定保证 <code>this</code> 指向组件实例。</li>
+          <li>
+            <strong>挂载阶段：</strong>
+            <code>constructor</code>
+            用来初始化 state 和绑定实例字段，
+            <code>render</code>
+            必须保持纯渲染，访问 DOM、启动 timer、订阅事件或发起请求应放到
+            <code>componentDidMount</code>
+            。
+          </li>
+          <li>
+            <strong>更新阶段：</strong>
+            <code>setState</code>
+            或 props 变化会进入更新流程；
+            <code>shouldComponentUpdate</code>
+            可返回
+            <code>false</code>
+            跳过当前组件渲染，
+            <code>componentDidUpdate</code>
+            适合根据上一次 props/state 做 DOM 同步或补充请求，但必须避免无条件再次
+            <code>setState</code>
+            。
+          </li>
+          <li>
+            <strong>卸载阶段：</strong>
+            <code>componentWillUnmount</code>
+            是清理副作用的位置，timer、订阅、手写 DOM
+            监听和未取消的异步回调都要在这里处理，否则容易出现内存泄漏或卸载后更新状态的警告。
+          </li>
+          <li>
+            <strong>旧生命周期边界：</strong>
+            <code>componentWillMount</code>
+            、
+            <code>componentWillReceiveProps</code>
+            、
+            <code>componentWillUpdate</code>
+            在现代 React 中被标记为不安全；维护旧 class 代码时只能以
+            <code>UNSAFE_</code>
+            前缀保留，并优先迁移到
+            <code>componentDidMount</code>
+            、
+            <code>componentDidUpdate</code>
+            、
+            <code>getDerivedStateFromProps</code>
+            或函数组件 Hooks。
+          </li>
+          <li>
+            <strong>实例 API：</strong>
+            <code>forceUpdate</code>
+            会强制当前组件重新 render，并跳过当前组件的
+            <code>shouldComponentUpdate</code>
+            ；它只适合桥接非 React 数据源，常规业务状态应放进
+            state/props，事件处理器也要用箭头函数或显式绑定保证
+            <code>this</code>
+            指向组件实例。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>class 组件挂载、更新、卸载阶段各自适合放什么逻辑？</strong> 结论是 render 只负责返回 UI，副作用按时机放到提交后的生命周期。因为 constructor 和 render 可能在渲染流程中被调用，不能依赖真实 DOM；DOM 测量、订阅和 timer 应在 <code>componentDidMount</code> 建立，在 <code>componentWillUnmount</code> 清理。项目里如果更新后要同步滚动或请求数据，放在 <code>componentDidUpdate</code> 并比较前后 props/state。</li>
-          <li><strong>为什么 constructor 里不能做网络请求或订阅？</strong> 结论是 constructor 只做初始化。原因是此时组件尚未挂载，DOM 不存在，副作用也没有对应的清理时机；并发渲染和严格检查语境下，把副作用放进渲染前阶段更容易产生重复执行和难以回收的问题。真实项目里请求通常放到 <code>componentDidMount</code>，函数组件则放到 <code>useEffect</code>。</li>
-          <li><strong>shouldComponentUpdate、forceUpdate 和 setState 的边界是什么？</strong> 结论是业务更新优先用 <code>setState</code>，性能裁剪才考虑 <code>shouldComponentUpdate</code>，<code>forceUpdate</code> 是少用的命令式兜底。因为 <code>setState</code> 会进入 React 的调度和合并流程，<code>shouldComponentUpdate</code> 可以阻止不必要渲染，而 <code>forceUpdate</code> 会绕过当前组件的该判断。维护旧代码时只有 render 依赖了非 state/props 的外部可变值，才考虑临时使用 <code>forceUpdate</code>。</li>
-          <li><strong>React 18 项目里遇到 UNSAFE_ 生命周期应该怎么迁移？</strong> 结论是先确认它原来承载的是初始化、副作用、派生状态还是 DOM 快照，再迁移到对应现代 API。因为这些旧生命周期发生在提交前，容易和异步渲染模型冲突。常见做法是把请求和订阅迁到 <code>componentDidMount</code>/<code>componentDidUpdate</code>，把 props 派生状态收敛到受控数据流或 <code>getDerivedStateFromProps</code>，新代码则优先写函数组件和 Hooks。</li>
-          <li><strong>componentWillUnmount 不清理副作用会造成什么问题？</strong> 结论是组件卸载后 timer/订阅仍运行，会继续调用 <code>setState</code> 或持有 DOM 引用，导致内存泄漏和控制台警告 "Can't perform a React state update on an unmounted component"。原因是 React 不会自动清理浏览器 timer 和外部订阅；项目中必须在 <code>componentWillUnmount</code> 中 <code>clearInterval</code>、取消订阅、移除事件监听。</li>
+          <li>
+            <strong>class 组件挂载、更新、卸载阶段各自适合放什么逻辑？</strong>
+            结论是 render 只负责返回 UI，副作用按时机放到提交后的生命周期。因为 constructor 和
+            render 可能在渲染流程中被调用，不能依赖真实 DOM；DOM 测量、订阅和 timer 应在
+            <code>componentDidMount</code>
+            建立，在
+            <code>componentWillUnmount</code>
+            清理。项目里如果更新后要同步滚动或请求数据，放在
+            <code>componentDidUpdate</code>
+            并比较前后 props/state。
+          </li>
+          <li>
+            <strong>为什么 constructor 里不能做网络请求或订阅？</strong>
+            结论是 constructor 只做初始化。原因是此时组件尚未挂载，DOM
+            不存在，副作用也没有对应的清理时机；并发渲染和严格检查语境下，把副作用放进渲染前阶段更容易产生重复执行和难以回收的问题。真实项目里请求通常放到
+            <code>componentDidMount</code>
+            ，函数组件则放到
+            <code>useEffect</code>
+            。
+          </li>
+          <li>
+            <strong>shouldComponentUpdate、forceUpdate 和 setState 的边界是什么？</strong>
+            结论是业务更新优先用
+            <code>setState</code>
+            ，性能裁剪才考虑
+            <code>shouldComponentUpdate</code>
+            ，
+            <code>forceUpdate</code>
+            是少用的命令式兜底。因为
+            <code>setState</code>
+            会进入 React 的调度和合并流程，
+            <code>shouldComponentUpdate</code>
+            可以阻止不必要渲染，而
+            <code>forceUpdate</code>
+            会绕过当前组件的该判断。维护旧代码时只有 render 依赖了非 state/props
+            的外部可变值，才考虑临时使用
+            <code>forceUpdate</code>
+            。
+          </li>
+          <li>
+            <strong>React 18 项目里遇到 UNSAFE_ 生命周期应该怎么迁移？</strong>
+            结论是先确认它原来承载的是初始化、副作用、派生状态还是 DOM 快照，再迁移到对应现代
+            API。因为这些旧生命周期发生在提交前，容易和异步渲染模型冲突。常见做法是把请求和订阅迁到
+            <code>componentDidMount</code>
+            /
+            <code>componentDidUpdate</code>
+            ，把 props 派生状态收敛到受控数据流或
+            <code>getDerivedStateFromProps</code>
+            ，新代码则优先写函数组件和 Hooks。
+          </li>
+          <li>
+            <strong>componentWillUnmount 不清理副作用会造成什么问题？</strong>
+            结论是组件卸载后 timer/订阅仍运行，会继续调用
+            <code>setState</code>
+            或持有 DOM 引用，导致内存泄漏和控制台警告 "Can't perform a React state update on an
+            unmounted component"。原因是 React 不会自动清理浏览器 timer 和外部订阅；项目中必须在
+            <code>componentWillUnmount</code>
+            中
+            <code>clearInterval</code>
+            、取消订阅、移除事件监听。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/Component" target="_blank" rel="noreferrer">react.dev: Component（生命周期 API 总览）</a></li>
-          <li><a href="https://react.dev/reference/react/Component#componentdidmount" target="_blank" rel="noreferrer">react.dev: componentDidMount()</a></li>
-          <li><a href="https://react.dev/reference/react/Component#componentwillunmount" target="_blank" rel="noreferrer">react.dev: componentWillUnmount()</a></li>
-          <li><a href="https://react.dev/reference/react/Component#forceupdate" target="_blank" rel="noreferrer">react.dev: forceUpdate()</a></li>
+          <li>
+            <a href="https://react.dev/reference/react/Component" target="_blank" rel="noreferrer">
+              react.dev: Component（生命周期 API 总览）
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#componentdidmount"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: componentDidMount()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#componentwillunmount"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: componentWillUnmount()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#forceupdate"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: forceUpdate()
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -68,32 +207,32 @@
     <!-- SCRIPT_START -->
     <script type="text/babel">
       /*
-        ====== 0. 现代替代写法（注释示意）======
-        react.dev 推荐新代码用函数组件 + Hooks 替代 class 生命周期三件套。
+      ====== 0. 现代替代写法（注释示意）======
+      react.dev 推荐新代码用函数组件 + Hooks 替代 class 生命周期三件套。
 
-        useEffect(() => {
-          const id = setInterval(() => setCount(c => c + 1), 1000);
-          return () => clearInterval(id); // 对应 componentWillUnmount
-        }, []);
+      useEffect(() => {
+        const id = setInterval(() => setCount(c => c + 1), 1000);
+        return () => clearInterval(id); // 对应 componentWillUnmount
+      }, []);
       */
 
       // ====== 1. 挂载阶段：constructor → render → componentDidMount ======
       class LifecycleDemo extends React.Component {
         constructor(props) {
           super(props);
-          console.log("[生命周期] constructor");
+          console.log('[生命周期] constructor');
           this.state = { num: 0 };
           // 非响应式实例字段：不参与 render，适合存 timer id 等
-          this.forceUpdateContent = "非 state 数据";
+          this.forceUpdateContent = '非 state 数据';
         }
 
         // UNSAFE_ 前缀：仅维护旧代码，新项目不应使用
         UNSAFE_componentWillMount() {
-          console.log("[生命周期] UNSAFE_componentWillMount（已废弃，仅旧代码保留）");
+          console.log('[生命周期] UNSAFE_componentWillMount（已废弃，仅旧代码保留）');
         }
 
         componentDidMount() {
-          console.log("[生命周期] componentDidMount — 副作用应放这里");
+          console.log('[生命周期] componentDidMount — 副作用应放这里');
           // 定时器属于副作用：建立于 didMount，清理于 willUnmount
           this.timer = setInterval(() => {
             this.setState((s) => ({ num: s.num + 1 }));
@@ -102,7 +241,7 @@
 
         // ====== 2. 更新阶段：shouldComponentUpdate → render → componentDidUpdate ======
         shouldComponentUpdate(nextProps, nextState) {
-          console.log("[生命周期] shouldComponentUpdate", { nextProps, nextState });
+          console.log('[生命周期] shouldComponentUpdate', { nextProps, nextState });
           return true; // 返回 false 可跳过 render
         }
 
@@ -111,18 +250,18 @@
         }
 
         componentDidUpdate(prevProps, prevState) {
-          console.log("[生命周期] componentDidUpdate", { prevProps, prevState });
+          console.log('[生命周期] componentDidUpdate', { prevProps, prevState });
         }
 
         // ====== 3. 卸载阶段：componentWillUnmount 清理副作用 ======
         componentWillUnmount() {
           clearInterval(this.timer);
-          console.log("[生命周期] componentWillUnmount — timer 已清理");
+          console.log('[生命周期] componentWillUnmount — timer 已清理');
         }
 
         // 未 bind 的方法：作为 onClick 回调时 this 为 undefined
         startCountHandle() {
-          console.log("未 bind 的 handler this:", this);
+          console.log('未 bind 的 handler this:', this);
           // 预期: undefined
         }
 
@@ -133,13 +272,13 @@
 
         // forceUpdate：跳过 shouldComponentUpdate，强制 re-render
         forceUpdateClickHandle = () => {
-          this.forceUpdateContent = this.forceUpdateContent + "·";
-          console.log("forceUpdate 前 forceUpdateContent:", this.forceUpdateContent);
+          this.forceUpdateContent = this.forceUpdateContent + '·';
+          console.log('forceUpdate 前 forceUpdateContent:', this.forceUpdateContent);
           this.forceUpdate();
         };
 
         render() {
-          console.log("[生命周期] render");
+          console.log('[生命周期] render');
           return (
             <section>
               <p>自动计时 num（每 10s +1）：{this.state.num}</p>
@@ -158,7 +297,7 @@
         }
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<LifecycleDemo />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<LifecycleDemo />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -167,17 +306,23 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./05-Clock-setState-%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html">相关 · 05-Clock-setState-批处理对比</a>
+        <a href="./05-Clock-setState-%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html">
+          相关 · 05-Clock-setState-批处理对比
+        </a>
         <a href="./07-class-refs%E4%B8%8EDOM.html">相关 · 07-class-refs与DOM</a>
-        <a href="./09-class-getDerivedStateFromProps%E4%B8%8EgetSnapshotBeforeUpdate.html">相关 · 09-class-getDerivedStateFromProps与getSnapshotBeforeUpdate</a>
-        <a href="./05-Clock-setState-%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html">← Clock-setState-批处理对比</a>
+        <a href="./09-class-getDerivedStateFromProps%E4%B8%8EgetSnapshotBeforeUpdate.html">
+          相关 · 09-class-getDerivedStateFromProps与getSnapshotBeforeUpdate
+        </a>
+        <a href="./05-Clock-setState-%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html">
+          ← Clock-setState-批处理对比
+        </a>
         <a href="./07-class-refs%E4%B8%8EDOM.html">class-refs与DOM →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

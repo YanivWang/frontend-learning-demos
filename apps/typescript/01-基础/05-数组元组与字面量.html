@@ -21,9 +21,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TypeScript · 数组元组与字面量</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 820px; line-height: 1.6; }
-      pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
-      #log { background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; white-space: pre-wrap; font-size: 0.85rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 820px;
+        line-height: 1.6;
+      }
+      pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 14px;
+        border-radius: 8px;
+        overflow: auto;
+        font-size: 0.86rem;
+      }
+      #log {
+        background: #f6f8fa;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 12px;
+        white-space: pre-wrap;
+        font-size: 0.85rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -36,25 +55,130 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>数组适合变长同类集合，例如 <code>number[]</code>；元组适合固定长度且每个位置有语义的数据，例如本页的 <code>readonly [number, number]</code> 坐标。</li>
-          <li><code>readonly</code> 是类型层面的不可写约束，能阻止调用方在 TypeScript 中修改入参；它不会自动冻结运行时对象，本页用 <code>Object.freeze</code> 才让路由对象运行时也不可变。</li>
-          <li>字面量类型把值限制为有限集合，适合状态机、路由键、事件名和组件 variant；比裸 <code>string</code> 更能提前发现拼写错误。</li>
-          <li><code>as const</code> 会把对象和数组推断为最窄的 readonly 字面量；普通 <code>const</code> 只保证变量绑定不可重新赋值，不会让对象属性都变成只读字面量。</li>
-          <li><code>satisfies</code> 是 TypeScript 4.9+ 能力；它校验表达式满足目标类型，同时尽量保留表达式自身的精确推断，适合配置表。本仓库校验使用 TypeScript 5.8.3，可直接使用。</li>
+          <li>
+            数组适合变长同类集合，例如
+            <code>number[]</code>
+            ；元组适合固定长度且每个位置有语义的数据，例如本页的
+            <code>readonly [number, number]</code>
+            坐标。
+          </li>
+          <li>
+            <code>readonly</code>
+            是类型层面的不可写约束，能阻止调用方在 TypeScript
+            中修改入参；它不会自动冻结运行时对象，本页用
+            <code>Object.freeze</code>
+            才让路由对象运行时也不可变。
+          </li>
+          <li>
+            字面量类型把值限制为有限集合，适合状态机、路由键、事件名和组件 variant；比裸
+            <code>string</code>
+            更能提前发现拼写错误。
+          </li>
+          <li>
+            <code>as const</code>
+            会把对象和数组推断为最窄的 readonly 字面量；普通
+            <code>const</code>
+            只保证变量绑定不可重新赋值，不会让对象属性都变成只读字面量。
+          </li>
+          <li>
+            <code>satisfies</code>
+            是 TypeScript 4.9+
+            能力；它校验表达式满足目标类型，同时尽量保留表达式自身的精确推断，适合配置表。本仓库校验使用
+            TypeScript 5.8.3，可直接使用。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>数组和元组的建模边界是什么？</strong> 结论是变长同类数据用数组，固定位置语义用元组。原因是元组能表达第 0 位、第 1 位分别代表什么，并限制长度和元素类型。项目里坐标、RGB、Hook 返回值常用元组，普通列表用数组。</li>
-          <li><strong><code>readonly</code> 类型为什么不等于 <code>Object.freeze</code>？</strong> 结论是 <code>readonly</code> 只影响 TypeScript 检查，<code>Object.freeze</code> 才是运行时冻结。原因是类型会被编译擦除。跨模块传配置时可以用 <code>readonly</code> 防误改，确实要运行时不可变时再冻结或深拷贝。</li>
-          <li><strong><code>as const</code> 和普通 <code>const</code> 声明有什么区别？</strong> 结论是普通 <code>const</code> 固定变量绑定，<code>as const</code> 还会把属性和值收窄为 readonly 字面量。原因是对象属性默认仍可变，推断通常会放宽为 <code>string</code> 等类型。配置对象、路由表和事件名表常用 <code>as const</code>。</li>
-          <li><strong><code>satisfies</code> 相比类型注解和 <code>as</code> 断言有什么优势？</strong> 结论是它既检查结构，又保留更精确的推断。原因是类型注解可能把字面量放宽，<code>as</code> 断言可能绕过部分错误。TS 4.9+ 项目中，配置表常写成 <code>as const satisfies Record&lt;...&gt;</code>。</li>
+          <li>
+            <strong>数组和元组的建模边界是什么？</strong>
+            结论是变长同类数据用数组，固定位置语义用元组。原因是元组能表达第 0 位、第 1
+            位分别代表什么，并限制长度和元素类型。项目里坐标、RGB、Hook
+            返回值常用元组，普通列表用数组。
+          </li>
+          <li>
+            <strong>
+              <code>readonly</code>
+              类型为什么不等于
+              <code>Object.freeze</code>
+              ？
+            </strong>
+            结论是
+            <code>readonly</code>
+            只影响 TypeScript 检查，
+            <code>Object.freeze</code>
+            才是运行时冻结。原因是类型会被编译擦除。跨模块传配置时可以用
+            <code>readonly</code>
+            防误改，确实要运行时不可变时再冻结或深拷贝。
+          </li>
+          <li>
+            <strong>
+              <code>as const</code>
+              和普通
+              <code>const</code>
+              声明有什么区别？
+            </strong>
+            结论是普通
+            <code>const</code>
+            固定变量绑定，
+            <code>as const</code>
+            还会把属性和值收窄为 readonly 字面量。原因是对象属性默认仍可变，推断通常会放宽为
+            <code>string</code>
+            等类型。配置对象、路由表和事件名表常用
+            <code>as const</code>
+            。
+          </li>
+          <li>
+            <strong>
+              <code>satisfies</code>
+              相比类型注解和
+              <code>as</code>
+              断言有什么优势？
+            </strong>
+            结论是它既检查结构，又保留更精确的推断。原因是类型注解可能把字面量放宽，
+            <code>as</code>
+            断言可能绕过部分错误。TS 4.9+ 项目中，配置表常写成
+            <code>as const satisfies Record&lt;...&gt;</code>
+            。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#arrays" target="_blank" rel="noopener">TypeScript Handbook: Arrays</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/objects.html#tuple-types" target="_blank" rel="noopener">TypeScript Handbook: Tuple Types</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#literal-types" target="_blank" rel="noopener">TypeScript Handbook: Literal Types</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html" target="_blank" rel="noopener">TypeScript 4.9 Release Notes: satisfies Operator</a></li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#arrays"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Arrays
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/objects.html#tuple-types"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Tuple Types
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#literal-types"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Literal Types
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript 4.9 Release Notes: satisfies Operator
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -63,17 +187,18 @@
     <!-- PAGE_DOM_START -->
     <p>上方为 TypeScript 源码（在 .ts / IDE 中检查），下方为等价的可运行 JavaScript + 断言输出。</p>
     <p class="ts"><strong>TypeScript</strong></p>
-    <pre>// —— 数组 vs readonly 元组 ——
-const scores: number[] = [95, 88, 100];
-type Point = readonly [number, number];
-function distance([x, y]: Point): number { return Math.hypot(x, y); }
-
-// —— 字面量联合与 as const satisfies ——
-type Status = "idle" | "loading" | "success" | "error";
-const routes = {
-  home: "/",
-  user: "/user/:id",
-} as const satisfies Record&lt;string, `/${string}`&gt;;</pre>
+    <pre>
+// —— 数组 vs readonly 元组 ——
+      const scores: number[] = [95, 88, 100];
+      type Point = readonly [number, number];
+      function distance([x, y]: Point): number { return Math.hypot(x, y); }
+      // —— 字面量联合与 as const satisfies ——
+      type Status = "idle" | "loading" | "success" | "error";
+      const routes = {
+      home: "/",
+      user: "/user/:id",
+      } as const satisfies Record&lt;string, `/${string}`&gt;;</pre
+    >
     <p><strong>运行时 JavaScript（本页执行）</strong></p>
     <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
@@ -92,27 +217,27 @@ const routes = {
 
       // ============ 3. as const + satisfies（运行时 Object.freeze 模拟不可变） ============
       const routes = Object.freeze({
-        home: "/",
-        user: "/user/:id",
+        home: '/',
+        user: '/user/:id',
       });
 
       // ============ 4. 字面量联合 Status ============
-      const statusList = ["idle", "loading", "success", "error"];
+      const statusList = ['idle', 'loading', 'success', 'error'];
 
       const lines = [];
-      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+      const assert = (cond, msg) => lines.push((cond ? '✓ ' : '✗ ') + msg);
 
-      assert(scores.length === 3, "数组 number[] 变长同类集合");
-      assert(distance([3, 4]) === 5, "readonly 元组 Point: distance([3,4]) = 5");
-      assert(statusList.includes("idle"), "字面量联合 Status 约束状态字符串");
-      assert(routes.user === "/user/:id", "as const satisfies 配置表 routes.user");
-      assert(Object.isFrozen(routes), "readonly 类型 ≠ Object.freeze；运行时冻结需显式调用");
+      assert(scores.length === 3, '数组 number[] 变长同类集合');
+      assert(distance([3, 4]) === 5, 'readonly 元组 Point: distance([3,4]) = 5');
+      assert(statusList.includes('idle'), '字面量联合 Status 约束状态字符串');
+      assert(routes.user === '/user/:id', 'as const satisfies 配置表 routes.user');
+      assert(Object.isFrozen(routes), 'readonly 类型 ≠ Object.freeze；运行时冻结需显式调用');
       assert(
-        typeof routes.home === "string",
-        "as const 收窄推断；普通 const 对象属性默认仍可变（TS 可拦、JS 仍可改）"
+        typeof routes.home === 'string',
+        'as const 收窄推断；普通 const 对象属性默认仍可变（TS 可拦、JS 仍可改）',
       );
 
-      document.getElementById("log").textContent = lines.join("\n");
+      document.getElementById('log').textContent = lines.join('\n');
     </script>
     <!-- SCRIPT_END -->
 
@@ -121,20 +246,24 @@ const routes = {
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="./04-%E5%87%BD%E6%95%B0%E7%B1%BB%E5%9E%8B%E4%B8%8E%E9%87%8D%E8%BD%BD.html">相关 · 函数类型与重载</a>
+        <a href="./04-%E5%87%BD%E6%95%B0%E7%B1%BB%E5%9E%8B%E4%B8%8E%E9%87%8D%E8%BD%BD.html">
+          相关 · 函数类型与重载
+        </a>
         <a href="./06-class%E4%B8%8Eimplements.html">相关 · class与implements</a>
-        <a href="./04-%E5%87%BD%E6%95%B0%E7%B1%BB%E5%9E%8B%E4%B8%8E%E9%87%8D%E8%BD%BD.html">← 函数类型与重载</a>
+        <a href="./04-%E5%87%BD%E6%95%B0%E7%B1%BB%E5%9E%8B%E4%B8%8E%E9%87%8D%E8%BD%BD.html">
+          ← 函数类型与重载
+        </a>
         <a href="./06-class%E4%B8%8Eimplements.html">class与implements →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

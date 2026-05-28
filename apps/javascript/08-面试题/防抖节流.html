@@ -23,37 +23,136 @@
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
     <style>
-      .box { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; min-height: 36px; }
-      input { padding: 6px 8px; width: 240px; }
+      .box {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-bottom: 8px;
+        min-height: 36px;
+      }
+      input {
+        padding: 6px 8px;
+        width: 240px;
+      }
     </style>
   </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>防抖（debounce）/ 节流（throttle）</h1>
-      <p class="hint">先看本复习区，再在下方演示区输入或移动鼠标观察效果。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>防抖（debounce）的结论是“等用户停下来再执行”：每次触发都会清掉上一个定时器，只有连续触发停止超过 <code>wait</code> 后才调用目标函数。</li>
-          <li>节流（throttle）的结论是“固定频率执行”：连续触发期间，每个 <code>wait</code> 时间窗口最多执行一次，适合滚动、拖拽、鼠标移动等高频事件。</li>
-          <li>时间戳节流通常偏 <code>leading</code>，第一次可立即执行但末尾可能不补；定时器节流通常偏 <code>trailing</code>，等待窗口结束后再执行一次，交互体感不同。</li>
-          <li>手写时要保留调用时的 <code>this</code> 和参数，本 demo 用 <code>fn.apply(this, args)</code>；如果用于组件、弹窗或路由页面，还要在销毁时取消未执行的定时器。</li>
-          <li>用户输入场景要考虑失败路径：输入过快会取消前一次防抖任务，网络搜索还需要处理请求取消、响应乱序和错误提示，不能只靠防抖保证结果正确。</li>
-          <li>浏览器会对后台页或嵌套定时器做节流，<code>setTimeout</code> 不是精确定时器；动画类高频更新通常优先考虑 <code>requestAnimationFrame</code>。</li>
+          <li>
+            防抖（debounce）的结论是“等用户停下来再执行”：每次触发都会清掉上一个定时器，只有连续触发停止超过
+            <code>wait</code>
+            后才调用目标函数。
+          </li>
+          <li>
+            节流（throttle）的结论是“固定频率执行”：连续触发期间，每个
+            <code>wait</code>
+            时间窗口最多执行一次，适合滚动、拖拽、鼠标移动等高频事件。
+          </li>
+          <li>
+            时间戳节流通常偏
+            <code>leading</code>
+            ，第一次可立即执行但末尾可能不补；定时器节流通常偏
+            <code>trailing</code>
+            ，等待窗口结束后再执行一次，交互体感不同。
+          </li>
+          <li>
+            手写时要保留调用时的
+            <code>this</code>
+            和参数，本 demo 用
+            <code>fn.apply(this, args)</code>
+            ；如果用于组件、弹窗或路由页面，还要在销毁时取消未执行的定时器。
+          </li>
+          <li>
+            用户输入场景要考虑失败路径：输入过快会取消前一次防抖任务，网络搜索还需要处理请求取消、响应乱序和错误提示，不能只靠防抖保证结果正确。
+          </li>
+          <li>
+            浏览器会对后台页或嵌套定时器做节流，
+            <code>setTimeout</code>
+            不是精确定时器；动画类高频更新通常优先考虑
+            <code>requestAnimationFrame</code>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>防抖和节流的核心区别是什么？</strong> 结论：防抖关心“最后一次触发后再执行”，节流关心“连续触发时按频率执行”。原因是防抖通过重置定时器合并一段连续输入，节流通过时间窗口限制执行次数。边界是防抖可能长期不执行，节流可能拿到中间态数据。</li>
-          <li><strong>搜索建议、窗口 <code>resize</code>、滚动监听分别该选防抖还是节流？</strong> 结论：搜索建议和最终布局计算常用防抖，滚动位置同步、拖拽反馈、鼠标坐标展示常用节流。原因是前者通常只关心用户停止后的最终值，后者需要持续反馈但不能每次事件都执行重逻辑。项目里真实搜索还要配合请求取消和响应序号，避免慢响应覆盖新结果。</li>
-          <li><strong><code>leading</code> 和 <code>trailing</code> 选项会改变什么行为？</strong> 结论：<code>leading</code> 决定是否第一次立即执行，<code>trailing</code> 决定窗口结束时是否补最后一次。原因是同样叫防抖或节流，不同触发边界会改变用户体感和数据完整性。边界是按钮防连点常要 leading，输入搜索常要 trailing，复杂场景可直接使用成熟工具库实现。</li>
-          <li><strong>手写防抖节流时有哪些容易漏掉的边界？</strong> 结论：常漏 <code>this</code>、参数、取消能力、组件卸载清理和异常处理。原因是包装函数改变了执行时机，如果不保留上下文或不清理定时器，就可能出现回调访问已销毁 DOM、旧请求覆盖新状态等问题。项目里还要根据事件类型考虑 <code>passive</code> 监听和 <code>requestAnimationFrame</code>。</li>
+          <li>
+            <strong>防抖和节流的核心区别是什么？</strong>
+            结论：防抖关心“最后一次触发后再执行”，节流关心“连续触发时按频率执行”。原因是防抖通过重置定时器合并一段连续输入，节流通过时间窗口限制执行次数。边界是防抖可能长期不执行，节流可能拿到中间态数据。
+          </li>
+          <li>
+            <strong>
+              搜索建议、窗口
+              <code>resize</code>
+              、滚动监听分别该选防抖还是节流？
+            </strong>
+            结论：搜索建议和最终布局计算常用防抖，滚动位置同步、拖拽反馈、鼠标坐标展示常用节流。原因是前者通常只关心用户停止后的最终值，后者需要持续反馈但不能每次事件都执行重逻辑。项目里真实搜索还要配合请求取消和响应序号，避免慢响应覆盖新结果。
+          </li>
+          <li>
+            <strong>
+              <code>leading</code>
+              和
+              <code>trailing</code>
+              选项会改变什么行为？
+            </strong>
+            结论：
+            <code>leading</code>
+            决定是否第一次立即执行，
+            <code>trailing</code>
+            决定窗口结束时是否补最后一次。原因是同样叫防抖或节流，不同触发边界会改变用户体感和数据完整性。边界是按钮防连点常要
+            leading，输入搜索常要 trailing，复杂场景可直接使用成熟工具库实现。
+          </li>
+          <li>
+            <strong>手写防抖节流时有哪些容易漏掉的边界？</strong>
+            结论：常漏
+            <code>this</code>
+            、参数、取消能力、组件卸载清理和异常处理。原因是包装函数改变了执行时机，如果不保留上下文或不清理定时器，就可能出现回调访问已销毁
+            DOM、旧请求覆盖新状态等问题。项目里还要根据事件类型考虑
+            <code>passive</code>
+            监听和
+            <code>requestAnimationFrame</code>
+            。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout" target="_blank" rel="noreferrer">MDN: Window.setTimeout()</a>：防抖/节流的定时调度基础。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener" target="_blank" rel="noreferrer">MDN: EventTarget.addEventListener()</a>：高频事件监听与 <code>passive</code> 选项。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame" target="_blank" rel="noreferrer">MDN: Window.requestAnimationFrame()</a>：动画类高频更新的替代方案。</li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Window.setTimeout()
+            </a>
+            ：防抖/节流的定时调度基础。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: EventTarget.addEventListener()
+            </a>
+            ：高频事件监听与
+            <code>passive</code>
+            选项。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Window.requestAnimationFrame()
+            </a>
+            ：动画类高频更新的替代方案。
+          </li>
         </ul>
       </div>
     </section>
@@ -62,12 +161,15 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block">
       <h2>1. 防抖：连续触发只在停止后执行</h2>
-      <p class="tip">在输入框快速输入，观察下方文本只在停顿约 500ms 后更新（适合搜索建议、按钮防连点）。</p>
+      <p class="tip">
+        在输入框快速输入，观察下方文本只在停顿约 500ms 后更新（适合搜索建议、按钮防连点）。
+      </p>
       <input id="searchInput" placeholder="输入关键词搜索..." />
       <div class="box" id="debounceBox">等待输入...</div>
-
       <h2>2. 节流：固定间隔最多执行一次</h2>
-      <p class="tip">在页面移动鼠标，观察坐标约每 300ms 更新一次（适合 scroll、resize、mousemove）。</p>
+      <p class="tip">
+        在页面移动鼠标，观察坐标约每 300ms 更新一次（适合 scroll、resize、mousemove）。
+      </p>
       <div class="box" id="throttleBox">移动鼠标试试...</div>
     </section>
     <!-- PAGE_DOM_END -->
@@ -108,25 +210,25 @@
       }
 
       // ============ 4. 演示：搜索输入防抖（trailing）============
-      const debounceBox = document.getElementById("debounceBox");
+      const debounceBox = document.getElementById('debounceBox');
       const handleSearch = debounce(function (e) {
         debounceBox.textContent =
-          "搜索：" + e.target.value + "（" + new Date().toLocaleTimeString() + "）";
+          '搜索：' + e.target.value + '（' + new Date().toLocaleTimeString() + '）';
       }, 500);
-      document.getElementById("searchInput").addEventListener("input", handleSearch);
+      document.getElementById('searchInput').addEventListener('input', handleSearch);
 
       // ============ 5. 演示：鼠标移动节流（时间戳版 leading）============
-      const throttleBox = document.getElementById("throttleBox");
+      const throttleBox = document.getElementById('throttleBox');
       const handleMove = throttle(function (e) {
         throttleBox.textContent = `(${e.clientX}, ${e.clientY}) at ${Date.now()}`;
       }, 300);
-      document.addEventListener("mousemove", handleMove);
+      document.addEventListener('mousemove', handleMove);
 
       // ============ 6. console 验证：定时器版节流 + leading 防抖 ============
       let trailingRuns = 0;
       const trailingFn = throttleTimer(() => {
         trailingRuns++;
-        console.log("throttleTimer 执行次数:", trailingRuns); // 200ms 内连调 3 次 → 1
+        console.log('throttleTimer 执行次数:', trailingRuns); // 200ms 内连调 3 次 → 1
       }, 200);
       trailingFn();
       trailingFn();
@@ -145,10 +247,10 @@
         };
       }
       const leadingLog = debounceLeading((msg) => {
-        console.log("leading debounce:", msg); // 首次立即执行
+        console.log('leading debounce:', msg); // 首次立即执行
       }, 300);
-      leadingLog("first call immediate");
-      leadingLog("suppressed until wait");
+      leadingLog('first call immediate');
+      leadingLog('suppressed until wait');
     </script>
     <!-- SCRIPT_END -->
 
@@ -158,14 +260,16 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
         <a href="./%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA.html">相关 · 加权随机</a>
-        <a href="../07-%E8%BF%9B%E9%98%B6/UMD%E6%8F%92%E4%BB%B6%E6%A8%A1%E5%BC%8F/index.html">← index</a>
+        <a href="../07-%E8%BF%9B%E9%98%B6/UMD%E6%8F%92%E4%BB%B6%E6%A8%A1%E5%BC%8F/index.html">
+          ← index
+        </a>
         <a href="./%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA.html">加权随机 →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

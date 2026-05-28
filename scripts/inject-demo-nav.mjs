@@ -8,36 +8,36 @@
  * 由 npm run build:index 链式调用。
  */
 
-import { readFile, readdir, stat, writeFile } from "node:fs/promises";
-import { dirname, join, relative, sep } from "node:path";
-import { fileURLToPath } from "node:url";
-import { docsHomeHref } from "./docs-home.mjs";
+import { readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { dirname, join, relative, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { docsHomeHref } from './docs-home.mjs';
 
-const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
-const NAV_START = "<!-- NAV_START -->";
-const NAV_END = "<!-- NAV_END -->";
+const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
+const NAV_START = '<!-- NAV_START -->';
+const NAV_END = '<!-- NAV_END -->';
 
 const SECTIONS = [
-  join("apps", "javascript"),
-  join("apps", "css"),
-  join("apps", "vue2"),
-  join("apps", "vue3"),
-  join("apps", "react18"),
-  join("apps", "react19"),
-  join("apps", "demos"),
-  join("apps", "typescript"),
+  join('apps', 'javascript'),
+  join('apps', 'css'),
+  join('apps', 'vue2'),
+  join('apps', 'vue3'),
+  join('apps', 'react18'),
+  join('apps', 'react19'),
+  join('apps', 'demos'),
+  join('apps', 'typescript'),
 ];
-const SKIP_DIRS = new Set(["libs", "lib", "node_modules", ".git", "scripts"]);
+const SKIP_DIRS = new Set(['libs', 'lib', 'node_modules', '.git', 'scripts']);
 
 function toPosix(p) {
-  return p.split(sep).join("/");
+  return p.split(sep).join('/');
 }
 
 function relHref(fromAbs, toAbs) {
   let rel = relative(dirname(fromAbs), toAbs);
   rel = toPosix(rel);
-  if (!rel.startsWith(".")) rel = `./${rel}`;
-  return rel.split("/").map(encodeURIComponent).join("/");
+  if (!rel.startsWith('.')) rel = `./${rel}`;
+  return rel.split('/').map(encodeURIComponent).join('/');
 }
 
 function decodeHref(href) {
@@ -55,12 +55,12 @@ function ensureHeadMeta(content) {
     if (/<meta\s+charset/i.test(next)) {
       next = next.replace(
         /(<meta\s+charset[^>]*\/?>)/i,
-        '$1\n  <meta name="viewport" content="width=device-width, initial-scale=1.0" />'
+        '$1\n  <meta name="viewport" content="width=device-width, initial-scale=1.0" />',
       );
     } else if (/<head[^>]*>/i.test(next)) {
       next = next.replace(
         /(<head[^>]*>)/i,
-        '$1\n  <meta name="viewport" content="width=device-width, initial-scale=1.0" />'
+        '$1\n  <meta name="viewport" content="width=device-width, initial-scale=1.0" />',
       );
     }
   }
@@ -68,10 +68,10 @@ function ensureHeadMeta(content) {
 }
 
 function appsIndexRel(fromAbs) {
-  let rel = relative(dirname(fromAbs), join(ROOT, "apps/index.html"));
+  let rel = relative(dirname(fromAbs), join(ROOT, 'apps/index.html'));
   rel = toPosix(rel);
-  if (!rel.startsWith(".")) rel = `./${rel}`;
-  return rel.split("/").map(encodeURIComponent).join("/");
+  if (!rel.startsWith('.')) rel = `./${rel}`;
+  return rel.split('/').map(encodeURIComponent).join('/');
 }
 
 function resolveRelatedHref(fromAbs, relatedTitle, flat) {
@@ -79,7 +79,7 @@ function resolveRelatedHref(fromAbs, relatedTitle, flat) {
     (it) =>
       it.title === relatedTitle ||
       it.href.endsWith(`/${encodeURIComponent(relatedTitle)}.html`) ||
-      decodeHref(it.href).endsWith(`/${relatedTitle}.html`)
+      decodeHref(it.href).endsWith(`/${relatedTitle}.html`),
   );
   if (!hit) return null;
   return relHref(fromAbs, join(ROOT, decodeHref(hit.href)));
@@ -90,7 +90,7 @@ function isSectionCatalog(relPath) {
 }
 
 function sectionDirFromCatalog(relPath) {
-  return relPath.replace(/\/index\.html$/i, "");
+  return relPath.replace(/\/index\.html$/i, '');
 }
 
 function buildNavHtml(fromAbs, prev, nextItem, current, flat) {
@@ -110,16 +110,20 @@ function buildNavHtml(fromAbs, prev, nextItem, current, flat) {
   }
 
   if (prev) {
-    parts.push(`<a href="${relHref(fromAbs, join(ROOT, decodeHref(prev.href)))}">← ${escapeHtml(prev.title)}</a>`);
+    parts.push(
+      `<a href="${relHref(fromAbs, join(ROOT, decodeHref(prev.href)))}">← ${escapeHtml(prev.title)}</a>`,
+    );
   }
   if (nextItem) {
-    parts.push(`<a href="${relHref(fromAbs, join(ROOT, decodeHref(nextItem.href)))}">${escapeHtml(nextItem.title)} →</a>`);
+    parts.push(
+      `<a href="${relHref(fromAbs, join(ROOT, decodeHref(nextItem.href)))}">${escapeHtml(nextItem.title)} →</a>`,
+    );
   }
   return `${NAV_START}
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
-        ${parts.join("\n        ")}
+        ${parts.join('\n        ')}
       </nav>
       <script>
         (function () {
@@ -135,16 +139,16 @@ function buildNavHtml(fromAbs, prev, nextItem, current, flat) {
 
 function escapeHtml(s) {
   return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 function injectNav(content, navBlock) {
   const re = new RegExp(
     `(?:<!--\\s*(?:DEMO_)?NAV_START\\s*-->[\\s\\S]*?<!--\\s*(?:DEMO_)?NAV_END\\s*-->)`,
-    "m"
+    'm',
   );
   if (re.test(content)) return content.replace(re, navBlock);
   if (/<\/body>/i.test(content)) {
@@ -160,14 +164,14 @@ async function collectHtml(dirAbs, list) {
     if (ent.isDirectory()) {
       if (SKIP_DIRS.has(ent.name)) continue;
       await collectHtml(abs, list);
-    } else if (ent.isFile() && ent.name.toLowerCase().endsWith(".html")) {
+    } else if (ent.isFile() && ent.name.toLowerCase().endsWith('.html')) {
       list.push(abs);
     }
   }
 }
 
 async function main() {
-  const manifest = JSON.parse(await readFile(join(ROOT, "manifest.json"), "utf8"));
+  const manifest = JSON.parse(await readFile(join(ROOT, 'manifest.json'), 'utf8'));
   const flat = [];
   for (const sec of manifest.sections) {
     for (const gr of sec.groups) {
@@ -200,7 +204,7 @@ async function main() {
     let navPrev = prev;
 
     if (isSectionCatalog(rel)) {
-      navPrev = { href: "apps/index.html", title: "总目录" };
+      navPrev = { href: 'apps/index.html', title: '总目录' };
       const sectionDir = sectionDirFromCatalog(rel);
       const firstInSection = flat.find((it, i) => i > idx && it.href.startsWith(`${sectionDir}/`));
       if (firstInSection) nextItem = firstInSection;
@@ -208,20 +212,22 @@ async function main() {
 
     const navBlock = buildNavHtml(abs, navPrev, nextItem, flat[idx], flat);
 
-    let content = await readFile(abs, "utf8");
+    let content = await readFile(abs, 'utf8');
     const before = content;
     content = ensureHeadMeta(content);
     content = injectNav(content, navBlock);
     if (content !== before) {
-      await writeFile(abs, content, "utf8");
+      await writeFile(abs, content, 'utf8');
       updated++;
     }
   }
 
-  console.log(`[inject-demo-nav] 已处理 ${files.length} 个 HTML，更新 ${updated} 个（viewport / lang / 页脚导航）`);
+  console.log(
+    `[inject-demo-nav] 已处理 ${files.length} 个 HTML，更新 ${updated} 个（viewport / lang / 页脚导航）`,
+  );
 }
 
 main().catch((err) => {
-  console.error("[inject-demo-nav] 失败：", err);
+  console.error('[inject-demo-nav] 失败：', err);
   process.exitCode = 1;
 });

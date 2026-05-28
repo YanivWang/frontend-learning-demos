@@ -34,33 +34,185 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>React 元素与渲染（React 18 createRoot）</h1>
-      <p class="hint">请打开 DevTools Console 查看 props 与 element 结构输出；下方 #root 为 React 挂载演示区。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看 props 与 element 结构输出；下方 #root 为 React 挂载演示区。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>JSX</code> 是 JavaScript 的语法扩展。Babel 转译有两种 runtime：<strong>classic</strong> 生成 <code>React.createElement(type, props, ...children)</code>；现代工程默认的 <strong>automatic</strong> 生成 <code>react/jsx-runtime</code> 中的 <code>jsx()</code> 调用。浏览器不能直接理解 JSX；本 demo 用 <code>babel.min.js</code> 做运行时转译（classic），只适合学习演示。</li>
-          <li><code>React.createElement</code> 返回 React element：描述 UI 的不可变普通对象（含 <code>type</code>、<code>props</code>、<code>key</code>、<code>ref</code>），不是真实 DOM。ReactDOM 根据 element 树创建、对比并最小化更新浏览器 DOM。</li>
-          <li>React 18 客户端入口为 <code>ReactDOM.createRoot(container).render(element)</code>。旧版 <code>ReactDOM.render</code> 已废弃，在 React 18 中会以 React 17 模式运行，无法使用 React 18 新根 API 相关特性。</li>
-          <li>自定义组件名必须大写，例如 <code>&lt;App /&gt;</code>。小写 <code>&lt;ele1 /&gt;</code> 等价于 <code>createElement('ele1')</code>，会渲染为未知 HTML 标签，<strong>不会</strong> 抛 ReferenceError。花括号表达式 <code>{ele1}</code> 在变量未定义时才会 <code>ReferenceError</code>。</li>
-          <li>挂载时须传入 React element：<code>root.render(&lt;App /&gt;)</code> 正确；<code>root.render(App)</code> 传入函数引用会报 <em>Functions are not valid as a React child</em>。</li>
+          <li>
+            <code>JSX</code>
+            是 JavaScript 的语法扩展。Babel 转译有两种 runtime：
+            <strong>classic</strong>
+            生成
+            <code>React.createElement(type, props, ...children)</code>
+            ；现代工程默认的
+            <strong>automatic</strong>
+            生成
+            <code>react/jsx-runtime</code>
+            中的
+            <code>jsx()</code>
+            调用。浏览器不能直接理解 JSX；本 demo 用
+            <code>babel.min.js</code>
+            做运行时转译（classic），只适合学习演示。
+          </li>
+          <li>
+            <code>React.createElement</code>
+            返回 React element：描述 UI 的不可变普通对象（含
+            <code>type</code>
+            、
+            <code>props</code>
+            、
+            <code>key</code>
+            、
+            <code>ref</code>
+            ），不是真实 DOM。ReactDOM 根据 element 树创建、对比并最小化更新浏览器 DOM。
+          </li>
+          <li>
+            React 18 客户端入口为
+            <code>ReactDOM.createRoot(container).render(element)</code>
+            。旧版
+            <code>ReactDOM.render</code>
+            已废弃，在 React 18 中会以 React 17 模式运行，无法使用 React 18 新根 API 相关特性。
+          </li>
+          <li>
+            自定义组件名必须大写，例如
+            <code>&lt;App /&gt;</code>
+            。小写
+            <code>&lt;ele1 /&gt;</code>
+            等价于
+            <code>createElement('ele1')</code>
+            ，会渲染为未知 HTML 标签，
+            <strong>不会</strong>
+            抛 ReferenceError。花括号表达式
+            <code>{ele1}</code>
+            在变量未定义时才会
+            <code>ReferenceError</code>
+            。
+          </li>
+          <li>
+            挂载时须传入 React element：
+            <code>root.render(&lt;App /&gt;)</code>
+            正确；
+            <code>root.render(App)</code>
+            传入函数引用会报
+            <em>Functions are not valid as a React child</em>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>JSX、React.createElement 和 React element 是什么关系？</strong> 结论是 JSX 被 Babel 转译为 <code>createElement</code>（classic）或 <code>jsx()</code>（automatic），调用结果是 React element。原因是 React 用 element 描述 UI，渲染器（ReactDOM）负责落到具体平台；浏览器 DOM 只是目标之一。</li>
-          <li><strong>React 18 为什么使用 createRoot 而不是 ReactDOM.render？</strong> 结论是 <code>createRoot</code> 是 React 18 新客户端根 API，<code>ReactDOM.render</code> 已废弃。原因是 React 18 的新根特性（如更广范围的自动批处理）依赖 <code>createRoot</code>；并发渲染需通过 <code>startTransition</code> 等 API 按需启用，不是调用 <code>createRoot</code> 就全面开启。</li>
-          <li><strong>React element 和真实 DOM 节点有什么区别？</strong> React element 是不可变描述对象，真实 DOM 是浏览器节点。原因是 React 先 diff element 树，再最小化更新 DOM；不要把 element 当 DOM 节点去 <code>appendChild</code>。</li>
-          <li><strong>自定义组件为什么必须以大写字母开头？</strong> 结论是 React 用大小写区分组件与内置标签。小写 <code>&lt;div&gt;</code> 的 <code>type</code> 是字符串 <code>'div'</code>；大写 <code>&lt;App&gt;</code> 的 <code>type</code> 是组件函数本身。</li>
-          <li><strong>JSX 表达式里引用未定义变量会发生什么？</strong> 结论是渲染阶段求值 <code>{变量名}</code> 时若绑定不存在，会抛 <code>ReferenceError</code>，当前渲染失败。注意与 <code>&lt;ele1 /&gt;</code> 区分：后者是合法 JSX，只是不会调用你的组件。</li>
-          <li><strong>root.render(&lt;App /&gt;) 和 root.render(App) 有什么区别？</strong> 结论是前者传入 React element，后者传入函数引用。原因是 <code>render</code> 需要的是描述 UI 的 element/node，不是组件函数本身；传 <code>App</code> 会报函数不能作为 React 子节点。</li>
+          <li>
+            <strong>JSX、React.createElement 和 React element 是什么关系？</strong>
+            结论是 JSX 被 Babel 转译为
+            <code>createElement</code>
+            （classic）或
+            <code>jsx()</code>
+            （automatic），调用结果是 React element。原因是 React 用 element 描述
+            UI，渲染器（ReactDOM）负责落到具体平台；浏览器 DOM 只是目标之一。
+          </li>
+          <li>
+            <strong>React 18 为什么使用 createRoot 而不是 ReactDOM.render？</strong>
+            结论是
+            <code>createRoot</code>
+            是 React 18 新客户端根 API，
+            <code>ReactDOM.render</code>
+            已废弃。原因是 React 18 的新根特性（如更广范围的自动批处理）依赖
+            <code>createRoot</code>
+            ；并发渲染需通过
+            <code>startTransition</code>
+            等 API 按需启用，不是调用
+            <code>createRoot</code>
+            就全面开启。
+          </li>
+          <li>
+            <strong>React element 和真实 DOM 节点有什么区别？</strong>
+            React element 是不可变描述对象，真实 DOM 是浏览器节点。原因是 React 先 diff element
+            树，再最小化更新 DOM；不要把 element 当 DOM 节点去
+            <code>appendChild</code>
+            。
+          </li>
+          <li>
+            <strong>自定义组件为什么必须以大写字母开头？</strong>
+            结论是 React 用大小写区分组件与内置标签。小写
+            <code>&lt;div&gt;</code>
+            的
+            <code>type</code>
+            是字符串
+            <code>'div'</code>
+            ；大写
+            <code>&lt;App&gt;</code>
+            的
+            <code>type</code>
+            是组件函数本身。
+          </li>
+          <li>
+            <strong>JSX 表达式里引用未定义变量会发生什么？</strong>
+            结论是渲染阶段求值
+            <code>{变量名}</code>
+            时若绑定不存在，会抛
+            <code>ReferenceError</code>
+            ，当前渲染失败。注意与
+            <code>&lt;ele1 /&gt;</code>
+            区分：后者是合法 JSX，只是不会调用你的组件。
+          </li>
+          <li>
+            <strong>root.render(&lt;App /&gt;) 和 root.render(App) 有什么区别？</strong>
+            结论是前者传入 React element，后者传入函数引用。原因是
+            <code>render</code>
+            需要的是描述 UI 的 element/node，不是组件函数本身；传
+            <code>App</code>
+            会报函数不能作为 React 子节点。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/createElement" target="_blank" rel="noreferrer">react.dev: createElement</a></li>
-          <li><a href="https://react.dev/reference/react-dom/client/createRoot" target="_blank" rel="noreferrer">react.dev: createRoot</a></li>
-          <li><a href="https://react.dev/reference/react-dom/render" target="_blank" rel="noreferrer">react.dev: render（已废弃）</a></li>
-          <li><a href="https://react.dev/learn/writing-markup-with-jsx" target="_blank" rel="noreferrer">react.dev: Writing Markup with JSX</a></li>
-          <li><a href="https://react.dev/blog/2022/03/29/react-v18" target="_blank" rel="noreferrer">react.dev: React 18 发布公告</a></li>
-          <li><a href="https://babeljs.io/docs/babel-plugin-transform-react-jsx" target="_blank" rel="noreferrer">Babel: Transform React JSX</a></li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/createElement"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: createElement
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react-dom/client/createRoot"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: createRoot
+            </a>
+          </li>
+          <li>
+            <a href="https://react.dev/reference/react-dom/render" target="_blank" rel="noreferrer">
+              react.dev: render（已废弃）
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/writing-markup-with-jsx"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Writing Markup with JSX
+            </a>
+          </li>
+          <li>
+            <a href="https://react.dev/blog/2022/03/29/react-v18" target="_blank" rel="noreferrer">
+              react.dev: React 18 发布公告
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://babeljs.io/docs/babel-plugin-transform-react-jsx"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Babel: Transform React JSX
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -77,32 +229,28 @@
       const elementOld = <h1 className="greeting">Hello, world!</h1>;
 
       // 与 elementOld 等价的显式 createElement 写法（转译结果示意）
-      const elementNew = React.createElement(
-        "h1",
-        { className: "greeting" },
-        "Hello, world!"
-      );
+      const elementNew = React.createElement('h1', { className: 'greeting' }, 'Hello, world!');
 
       // createElement 返回的 React element 结构（简化示意；真实对象还含 key、ref 等字段）
       const elementShape = {
-        type: "h1",
+        type: 'h1',
         props: {
-          className: "greeting",
-          children: "Hello, world!",
+          className: 'greeting',
+          children: 'Hello, world!',
         },
         key: null,
         ref: null,
       };
 
       // 对比：JSX 与 createElement 产出的 element.type / props 一致
-      console.log("elementOld.type:", elementOld.type); // "h1"
-      console.log("elementNew.props:", elementNew.props); // { className: "greeting", children: "Hello, world!" }
-      console.log("示意结构 elementShape:", elementShape);
+      console.log('elementOld.type:', elementOld.type); // "h1"
+      console.log('elementNew.props:', elementNew.props); // { className: "greeting", children: "Hello, world!" }
+      console.log('示意结构 elementShape:', elementShape);
 
       // ====== 2. 函数式组件：接收 props，返回 React element ======
       // React 调用函数组件时传入 props（父组件写的 attribute 都会出现在 props 里）
       const App = (props) => {
-        console.log("App props:", props); // 例如 { id: "app01" }
+        console.log('App props:', props); // 例如 { id: "app01" }
 
         // 组件必须 return 一段 JSX（即一个 React element 树）
         return (
@@ -117,7 +265,7 @@
               反面教材（已注释，取消注释可观察差异）：
               - <ele1 />  → createElement('ele1')，渲染未知 HTML 标签，不报错
               - {ele1}    → 变量 ele1 未定义，渲染时 ReferenceError
-            */}
+              */}
             {/* <ele1 /> */}
           </div>
         );
@@ -125,7 +273,7 @@
 
       // ====== 3. React 18 挂载三步骤：容器 → 根 → render ======
       // ① 获取 HTML 中的挂载容器（须先于 script 存在于 DOM 中）
-      const domContainer = document.getElementById("root");
+      const domContainer = document.getElementById('root');
 
       // ② 创建 React 18 客户端根（新代码勿用已废弃的 ReactDOM.render）
       const appRoot = ReactDOM.createRoot(domContainer);
@@ -142,18 +290,24 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="../class-components/19-%E9%94%99%E8%AF%AF%E8%BE%B9%E7%95%8C%E4%B8%8E%E5%B8%B8%E8%A7%81%E4%BC%98%E5%8C%96%E6%B8%85%E5%8D%95.html">← 错误边界与常见优化清单</a>
-        <a href="./02-JSX-%E6%9D%A1%E4%BB%B6%E6%B8%B2%E6%9F%93%E7%9F%AD%E8%B7%AF.html">JSX-条件渲染短路 →</a>
+        <a
+          href="../class-components/19-%E9%94%99%E8%AF%AF%E8%BE%B9%E7%95%8C%E4%B8%8E%E5%B8%B8%E8%A7%81%E4%BC%98%E5%8C%96%E6%B8%85%E5%8D%95.html"
+        >
+          ← 错误边界与常见优化清单
+        </a>
+        <a href="./02-JSX-%E6%9D%A1%E4%BB%B6%E6%B8%B2%E6%9F%93%E7%9F%AD%E8%B7%AF.html">
+          JSX-条件渲染短路 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

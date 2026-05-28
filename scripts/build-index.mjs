@@ -11,43 +11,43 @@
  *   - libs / lib 子目录视为第三方/工具，不扫描
  */
 
-import { readFile, readdir, stat, writeFile } from "node:fs/promises";
-import { join, relative, sep, posix } from "node:path";
-import { fileURLToPath } from "node:url";
-import { parseDemoMetaFromContent } from "./lib/parse-demo-meta.mjs";
+import { readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { join, relative, sep, posix } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { parseDemoMetaFromContent } from './lib/parse-demo-meta.mjs';
 
-const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
+const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
 const args = new Set(process.argv.slice(2));
-const isCheckMode = args.has("--check");
+const isCheckMode = args.has('--check');
 
 for (const arg of args) {
-  if (arg !== "--check") {
-    console.error("用法: node scripts/build-index.mjs [--check]");
+  if (arg !== '--check') {
+    console.error('用法: node scripts/build-index.mjs [--check]');
     process.exit(1);
   }
 }
 
 const SECTIONS = [
-  { dir: "apps/javascript", title: "JavaScript" },
-  { dir: "apps/css", title: "CSS" },
-  { dir: "apps/vue2", title: "Vue 2" },
-  { dir: "apps/vue3", title: "Vue 3" },
-  { dir: "apps/react18", title: "React 18" },
-  { dir: "apps/react19", title: "React 19" },
-  { dir: "apps/demos", title: "综合 Demo" },
-  { dir: "apps/typescript", title: "TypeScript" },
+  { dir: 'apps/javascript', title: 'JavaScript' },
+  { dir: 'apps/css', title: 'CSS' },
+  { dir: 'apps/vue2', title: 'Vue 2' },
+  { dir: 'apps/vue3', title: 'Vue 3' },
+  { dir: 'apps/react18', title: 'React 18' },
+  { dir: 'apps/react19', title: 'React 19' },
+  { dir: 'apps/demos', title: '综合 Demo' },
+  { dir: 'apps/typescript', title: 'TypeScript' },
 ];
 
-const SKIP_DIRS = new Set(["libs", "lib", "node_modules", ".git", "scripts"]);
+const SKIP_DIRS = new Set(['libs', 'lib', 'node_modules', '.git', 'scripts']);
 
 function toHref(absPath) {
   const rel = relative(ROOT, absPath).split(sep).join(posix.sep);
-  return rel.split("/").map(encodeURIComponent).join("/");
+  return rel.split('/').map(encodeURIComponent).join('/');
 }
 
 function fileToTitle(filename) {
-  let name = filename.replace(/\.html$/i, "");
-  name = name.replace(/^\d{2}-/, "");
+  let name = filename.replace(/\.html$/i, '');
+  name = name.replace(/^\d{2}-/, '');
   return name;
 }
 
@@ -57,11 +57,11 @@ function sortFiles(a, b) {
   if (numA && numB) return Number(numA[1]) - Number(numB[1]);
   if (numA) return -1;
   if (numB) return 1;
-  return a.localeCompare(b, "zh-Hans-CN");
+  return a.localeCompare(b, 'zh-Hans-CN');
 }
 
 async function parseDemoMeta(absPath) {
-  const content = await readFile(absPath, "utf8");
+  const content = await readFile(absPath, 'utf8');
   return parseDemoMetaFromContent(content);
 }
 
@@ -73,7 +73,7 @@ async function collect(dirAbs, results) {
     if (ent.isDirectory()) {
       if (SKIP_DIRS.has(ent.name)) continue;
       await collect(abs, results);
-    } else if (ent.isFile() && ent.name.toLowerCase().endsWith(".html")) {
+    } else if (ent.isFile() && ent.name.toLowerCase().endsWith('.html')) {
       htmls.push(ent.name);
     }
   }
@@ -84,13 +84,13 @@ async function collect(dirAbs, results) {
 }
 
 function relDirDisplay(dirAbs) {
-  return relative(ROOT, dirAbs).split(sep).join("/");
+  return relative(ROOT, dirAbs).split(sep).join('/');
 }
 
 async function buildManifest() {
   const manifest = {
     schemaVersion: 1,
-    generatedBy: "scripts/build-index.mjs",
+    generatedBy: 'scripts/build-index.mjs',
     sections: [],
   };
 
@@ -108,7 +108,7 @@ async function buildManifest() {
     await collect(sectionAbs, dirToFiles);
 
     const groupsSorted = [...dirToFiles.entries()].sort((a, b) =>
-      relDirDisplay(a[0]).localeCompare(relDirDisplay(b[0]), "zh-Hans-CN")
+      relDirDisplay(a[0]).localeCompare(relDirDisplay(b[0]), 'zh-Hans-CN'),
     );
     if (!groupsSorted.length) continue;
 
@@ -130,9 +130,9 @@ async function buildManifest() {
             related: meta.related,
             points: meta.points,
             interviewPoints: meta.interviewPoints,
-            searchText: [fileToTitle(f), meta.theme, meta.category, meta.keywords].join(" "),
+            searchText: [fileToTitle(f), meta.theme, meta.category, meta.keywords].join(' '),
           };
-        })
+        }),
       );
       sectionManifest.groups.push({ path: groupRel, items });
     }
@@ -145,34 +145,34 @@ async function buildManifest() {
 
 async function main() {
   const manifest = await buildManifest();
-  const manifestJson = JSON.stringify(manifest, null, 2) + "\n";
+  const manifestJson = JSON.stringify(manifest, null, 2) + '\n';
   const totalFiles = manifest.sections.reduce(
     (s, sec) => s + sec.groups.reduce((g, gr) => g + gr.items.length, 0),
-    0
+    0,
   );
 
   if (isCheckMode) {
-    const currentManifest = await readFile(join(ROOT, "manifest.json"), "utf8");
+    const currentManifest = await readFile(join(ROOT, 'manifest.json'), 'utf8');
     if (currentManifest !== manifestJson) {
       console.error(
-        "[build-index] 失败：manifest.json 与脚本输出不一致，请运行 node scripts/build-index.mjs"
+        '[build-index] 失败：manifest.json 与脚本输出不一致，请运行 node scripts/build-index.mjs',
       );
       process.exitCode = 1;
       return;
     }
     console.log(
-      `[build-index] 通过：manifest.json 已同步，共 ${manifest.sections.length} 个分类、${totalFiles} 个 demo`
+      `[build-index] 通过：manifest.json 已同步，共 ${manifest.sections.length} 个分类、${totalFiles} 个 demo`,
     );
     return;
   }
 
-  await writeFile(join(ROOT, "manifest.json"), manifestJson, "utf8");
+  await writeFile(join(ROOT, 'manifest.json'), manifestJson, 'utf8');
   console.log(
-    `[build-index] 已生成 manifest.json，共扫描 ${manifest.sections.length} 个分类、${totalFiles} 个 demo`
+    `[build-index] 已生成 manifest.json，共扫描 ${manifest.sections.length} 个分类、${totalFiles} 个 demo`,
   );
 }
 
 main().catch((err) => {
-  console.error("[build-index] 失败：", err);
+  console.error('[build-index] 失败：', err);
   process.exitCode = 1;
 });

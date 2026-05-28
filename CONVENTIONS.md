@@ -6,18 +6,18 @@
 
 ## 1. 顶层目录
 
-| 目录 | 用途 | 说明 |
-|---|---|---|
-| `apps/javascript/` | 纯 JavaScript 知识点 demo | 按 `01-` ~ `09-` 编号分类 |
-| `apps/css/` | CSS 布局 / 动画 / 视觉 / 响应式 / 性能 / 现代特性 | 按 `01-` ~ `07-` 编号分类 |
-| `apps/vue2/` `apps/vue3/` | Vue 框架 demo | 内含 `libs/`（框架运行时）与 `src/`（demo）；通用库见 `packages/shared/libs/` |
-| `apps/react18/` | React 18 demo | 内含 `libs/` 与 `src/`（`function-components` + `class-components`） |
-| `apps/react19/` | React 19 新特性与面试 demo | 内含 React 19 运行时与 `src/` |
-| `apps/typescript/` | TypeScript 面试基础 / 进阶 / 工程与框架 demo | 按 `01-基础` / `02-进阶` / `03-工程与框架` 编号 |
-| `apps/demos/` | 综合性 / 交互小项目 | `drag`、`todo`、`virtual-list` 等 |
-| `apps/index.html` | file:// 与本地静态服务的总入口 | VitePress 仍为推荐入口 |
-| `packages/shared/` | 跨 demo 共用脚本与 vendored 库 | `demo-log.js`、`libs/`（axios、lodash 等） |
-| `scripts/` | 仓库工具脚本 | `build-index.mjs`、`sync-readmes.mjs`、`validate-demos.mjs` 等 |
+| 目录                      | 用途                                              | 说明                                                                          |
+| ------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `apps/javascript/`        | 纯 JavaScript 知识点 demo                         | 按 `01-` ~ `09-` 编号分类                                                     |
+| `apps/css/`               | CSS 布局 / 动画 / 视觉 / 响应式 / 性能 / 现代特性 | 按 `01-` ~ `07-` 编号分类                                                     |
+| `apps/vue2/` `apps/vue3/` | Vue 框架 demo                                     | 内含 `libs/`（框架运行时）与 `src/`（demo）；通用库见 `packages/shared/libs/` |
+| `apps/react18/`           | React 18 demo                                     | 内含 `libs/` 与 `src/`（`function-components` + `class-components`）          |
+| `apps/react19/`           | React 19 新特性与面试 demo                        | 内含 React 19 运行时与 `src/`                                                 |
+| `apps/typescript/`        | TypeScript 面试基础 / 进阶 / 工程与框架 demo      | 按 `01-基础` / `02-进阶` / `03-工程与框架` 编号                               |
+| `apps/demos/`             | 综合性 / 交互小项目                               | `drag`、`todo`、`virtual-list` 等                                             |
+| `apps/index.html`         | file:// 与本地静态服务的总入口                    | VitePress 仍为推荐入口                                                        |
+| `packages/shared/`        | 跨 demo 共用脚本与 vendored 库                    | `demo-log.js`、`libs/`（axios、lodash 等）                                    |
+| `scripts/`                | 仓库工具脚本                                      | `build-index.mjs`、`sync-readmes.mjs`、`validate-demos.mjs` 等                |
 
 ## 2. 目录命名规则
 
@@ -79,17 +79,25 @@
     <p class="hint"><!-- 引导语 --></p>
     <div class="demo-notes">
       <h2>知识点要点</h2>
-      <ul><!-- 4～6 条展开说明 --></ul>
+      <ul>
+        <!-- 4～6 条展开说明 -->
+      </ul>
       <h2>面试考点</h2>
-      <ul><!-- 问句标题 + 标准答法 --></ul>
+      <ul>
+        <!-- 问句标题 + 标准答法 -->
+      </ul>
       <h2>参考资料</h2>
-      <ul><!-- 1～5 条权威资料链接；窄 API 至少 1 条官方/规范来源，综合主题 2～5 条 --></ul>
+      <ul>
+        <!-- 1～5 条权威资料链接；窄 API 至少 1 条官方/规范来源，综合主题 2～5 条 -->
+      </ul>
     </div>
   </section>
   <!-- NOTES_END -->
 
   <!-- SCRIPT_START -->
-  <script>/* demo 逻辑 */</script>
+  <script>
+    /* demo 逻辑 */
+  </script>
   <!-- SCRIPT_END -->
 
   <!-- NAV_START -->
@@ -104,7 +112,8 @@
 - `<head>` 须引入 `demo-notes.css` 与 `demo-shell.css`
 - 运行 `npm run migrate:demo-shell` 可批量迁移为上述骨架
 - 运行 `npm run transform:all-demos` 可批量补齐头注释 `面试:`、`.demo-notes` 正文（不覆盖已有正文）
-- 运行 `npm run format:all-demos` 可批量对齐缩进并移除 demo-log / RUN 区块
+- 运行 `npm run format`（Prettier，企业通用代码风格）统一 HTML / JS / CSS 缩进与换行
+- 运行 `npm run format:all-demos` 仅用于批量迁移骨架（hint、RUN 区块、页脚导航等结构，不替代 Prettier）
 - 批量脚本只用于迁移结构、定位缺项和辅助格式化；不得把脚本生成的要点、面试答法、参考资料当作最终学习内容。最终正文必须人工核对当前 demo 代码和权威资料后改写。
 - 纯 console demo（如 `字符串方法.html`）省略 RUN 区块，hint 引导打开 DevTools
 
@@ -114,14 +123,14 @@
 
 ### 4.2 复习区块写作规范（全库）
 
-| 区块 | 条数 | 写法 |
-|---|---|---|
-| 头注释 `要点:` | 3～5 条 | 精炼 bullet，写入 manifest 搜索关键词；必须对应当前 demo 的真实主题 |
-| 头注释 `面试:` | 3～5 条 | 精炼问句或考点短语；禁止使用泛化模板问句 |
-| 正文「知识点要点」 | 4～6 条 | 概念 + 行为 + 易错点 + 现代推荐写法；可比头注释多 1～2 句 |
-| 正文「面试考点」 | 3～5 条 | `<strong>问句？</strong>` + 2～4 句标准答法；先结论，再原因，再边界或项目场景 |
-| 正文「参考资料」 | 1～5 条 | 窄 API 至少 1 条官方/规范来源；综合主题 2～5 条；链接必须支撑正文关键结论，禁止凑弱相关链接 |
-| 低频 API demo | 面试可写「了解即可」 | 说明现代替代方案，避免硬凑 |
+| 区块               | 条数                 | 写法                                                                                        |
+| ------------------ | -------------------- | ------------------------------------------------------------------------------------------- |
+| 头注释 `要点:`     | 3～5 条              | 精炼 bullet，写入 manifest 搜索关键词；必须对应当前 demo 的真实主题                         |
+| 头注释 `面试:`     | 3～5 条              | 精炼问句或考点短语；禁止使用泛化模板问句                                                    |
+| 正文「知识点要点」 | 4～6 条              | 概念 + 行为 + 易错点 + 现代推荐写法；可比头注释多 1～2 句                                   |
+| 正文「面试考点」   | 3～5 条              | `<strong>问句？</strong>` + 2～4 句标准答法；先结论，再原因，再边界或项目场景               |
+| 正文「参考资料」   | 1～5 条              | 窄 API 至少 1 条官方/规范来源；综合主题 2～5 条；链接必须支撑正文关键结论，禁止凑弱相关链接 |
+| 低频 API demo      | 面试可写「了解即可」 | 说明现代替代方案，避免硬凑                                                                  |
 
 **分工**：头注释供检索速览；正文供打开 HTML 直接复习；下方 `<script>` / `<h2>` 演示区负责「跑起来看结果」。
 

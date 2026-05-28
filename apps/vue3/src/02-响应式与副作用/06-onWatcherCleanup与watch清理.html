@@ -23,15 +23,56 @@
     <title>Vue3 · onWatcherCleanup</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; padding: 6px 12px; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; max-height: 280px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 820px; }
-      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
-      .box button { margin-top: 4px; }
-      .badge { display: inline-block; background: #e8f0fe; color: #1967d2; padding: 2px 8px; border-radius: 4px; font-size: 13px; margin-left: 8px; }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          'PingFang SC',
+          sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+      }
+      button {
+        margin-right: 8px;
+        padding: 6px 12px;
+      }
+      code,
+      pre {
+        background: #f6f8fa;
+        border-radius: 6px;
+      }
+      code {
+        padding: 2px 5px;
+      }
+      pre {
+        padding: 12px;
+        overflow: auto;
+        max-height: 280px;
+      }
+      .box {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 820px;
+      }
+      .box .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
+      .box button {
+        margin-top: 4px;
+      }
+      .badge {
+        display: inline-block;
+        background: #e8f0fe;
+        color: #1967d2;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 13px;
+        margin-left: 8px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -40,31 +81,146 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>onWatcherCleanup（Vue 3.5+）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见本复习区。本页依赖 Vue 3.5+，低于 3.5 请用回调 <code>onCleanup</code> 参数。</p>
+      <p class="hint">
+        在浏览器中操作下方交互演示；复习要点与面试答法见本复习区。本页依赖 Vue 3.5+，低于 3.5
+        请用回调
+        <code>onCleanup</code>
+        参数。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>onWatcherCleanup()</code> 是 <strong>Vue 3.5+</strong> 提供的 watcher 清理 API；本仓库 <code>vue.global.js</code> 为 3.5.34，可从全局 <code>Vue</code> 解构并直接运行。3.4 及以下项目应使用 watch 回调第三参数 <code>onCleanup</code>。</li>
-          <li>必须在 <code>watch</code> 或 <code>watchEffect</code> 的<strong>同步执行阶段</strong>调用，注册“本轮 watcher 失效时”的清理函数；切换 <code>activeId</code> 时会先看到 <code>cleanup：停止 id=…</code>，再开始新 id 的定时器 tick。</li>
-          <li>本页每个 id 启动 <code>setInterval</code> 模拟异步副作用；快速切换 A/B/C 时，旧 id 的 tick 应被清理，日志里不应混入多个 id 的并发 tick（开启“无清理对照”可对比脏数据）。</li>
-          <li>若把 <code>onWatcherCleanup</code> 写在 <code>await</code> 之后，当前活跃 watcher 上下文已丢失，清理无法绑定到本轮；异步请求应先创建 <code>AbortController</code> 并同步注册清理，再 <code>fetch</code>。</li>
-          <li>Vue 3.5 之前写法：<code>watch(src, (v, o, onCleanup) =&gt; { onCleanup(() =&gt; ...) })</code>，语义与 <code>onWatcherCleanup</code> 一致。组件销毁级清理用 <code>onUnmounted</code>；整组 watcher 停止见 <a href="./05-effectScope%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8%E6%B8%85%E7%90%86.html">05-effectScope与副作用清理</a>。</li>
-          <li>异步竞态与 watch 选型背景见 <a href="./02-computed-watch-watchEffect.html">02-computed-watch-watchEffect</a>，本页专注“每轮 watcher 清理”而非 computed 缓存。</li>
+          <li>
+            <code>onWatcherCleanup()</code>
+            是
+            <strong>Vue 3.5+</strong>
+            提供的 watcher 清理 API；本仓库
+            <code>vue.global.js</code>
+            为 3.5.34，可从全局
+            <code>Vue</code>
+            解构并直接运行。3.4 及以下项目应使用 watch 回调第三参数
+            <code>onCleanup</code>
+            。
+          </li>
+          <li>
+            必须在
+            <code>watch</code>
+            或
+            <code>watchEffect</code>
+            的
+            <strong>同步执行阶段</strong>
+            调用，注册“本轮 watcher 失效时”的清理函数；切换
+            <code>activeId</code>
+            时会先看到
+            <code>cleanup：停止 id=…</code>
+            ，再开始新 id 的定时器 tick。
+          </li>
+          <li>
+            本页每个 id 启动
+            <code>setInterval</code>
+            模拟异步副作用；快速切换 A/B/C 时，旧 id 的 tick 应被清理，日志里不应混入多个 id 的并发
+            tick（开启“无清理对照”可对比脏数据）。
+          </li>
+          <li>
+            若把
+            <code>onWatcherCleanup</code>
+            写在
+            <code>await</code>
+            之后，当前活跃 watcher 上下文已丢失，清理无法绑定到本轮；异步请求应先创建
+            <code>AbortController</code>
+            并同步注册清理，再
+            <code>fetch</code>
+            。
+          </li>
+          <li>
+            Vue 3.5 之前写法：
+            <code>watch(src, (v, o, onCleanup) =&gt; { onCleanup(() =&gt; ...) })</code>
+            ，语义与
+            <code>onWatcherCleanup</code>
+            一致。组件销毁级清理用
+            <code>onUnmounted</code>
+            ；整组 watcher 停止见
+            <a href="./05-effectScope%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8%E6%B8%85%E7%90%86.html">
+              05-effectScope与副作用清理
+            </a>
+            。
+          </li>
+          <li>
+            异步竞态与 watch 选型背景见
+            <a href="./02-computed-watch-watchEffect.html">02-computed-watch-watchEffect</a>
+            ，本页专注“每轮 watcher 清理”而非 computed 缓存。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>onWatcherCleanup 解决哪类竞态？</strong> 结论是 watcher 每次重新运行前旧副作用未取消，慢任务回调覆盖新状态。典型场景是搜索、路由参数变化、轮询定时器。本页切换 id 即验证。</li>
-          <li><strong>为什么必须同步调用？</strong> 结论是 Vue 依赖当前活跃 watcher 记录清理函数，<code>await</code> 后已脱离同步追踪。应先注册 <code>AbortController</code> 清理再请求。</li>
-          <li><strong>Vue 3.5 前怎么写？</strong> 结论是 watch 第三参数 <code>onCleanup</code> 或 watchEffect 参数。库要兼容 3.4 时不应直接依赖 <code>onWatcherCleanup</code>。</li>
-          <li><strong>与 onUnmounted 的区别？</strong> 结论是 watcher cleanup 管“本轮监听失效”，<code>onUnmounted</code> 管“组件实例销毁”。同一组件内 watcher 可能运行很多轮，应按轮次清理请求与定时器。</li>
-          <li><strong>与 effectScope.stop 的区别？</strong> 结论是 scope.stop 停整个作用域内所有 effect；onWatcherCleanup 管单次 watcher 运行之间的清理。两者可组合：scope 停止时也会触发 watcher cleanup。</li>
+          <li>
+            <strong>onWatcherCleanup 解决哪类竞态？</strong>
+            结论是 watcher
+            每次重新运行前旧副作用未取消，慢任务回调覆盖新状态。典型场景是搜索、路由参数变化、轮询定时器。本页切换
+            id 即验证。
+          </li>
+          <li>
+            <strong>为什么必须同步调用？</strong>
+            结论是 Vue 依赖当前活跃 watcher 记录清理函数，
+            <code>await</code>
+            后已脱离同步追踪。应先注册
+            <code>AbortController</code>
+            清理再请求。
+          </li>
+          <li>
+            <strong>Vue 3.5 前怎么写？</strong>
+            结论是 watch 第三参数
+            <code>onCleanup</code>
+            或 watchEffect 参数。库要兼容 3.4 时不应直接依赖
+            <code>onWatcherCleanup</code>
+            。
+          </li>
+          <li>
+            <strong>与 onUnmounted 的区别？</strong>
+            结论是 watcher cleanup 管“本轮监听失效”，
+            <code>onUnmounted</code>
+            管“组件实例销毁”。同一组件内 watcher 可能运行很多轮，应按轮次清理请求与定时器。
+          </li>
+          <li>
+            <strong>与 effectScope.stop 的区别？</strong>
+            结论是 scope.stop 停整个作用域内所有 effect；onWatcherCleanup 管单次 watcher
+            运行之间的清理。两者可组合：scope 停止时也会触发 watcher cleanup。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/api/reactivity-core.html#onwatchercleanup" target="_blank" rel="noreferrer">Vue 3 官方 API：onWatcherCleanup()（3.5+）</a></li>
-          <li><a href="https://vuejs.org/guide/essentials/watchers.html#side-effect-cleanup" target="_blank" rel="noreferrer">Vue 3 官方文档：Watcher Side Effect Cleanup</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/AbortController" target="_blank" rel="noreferrer">MDN：AbortController</a></li>
-          <li><a href="./05-effectScope%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8%E6%B8%85%E7%90%86.html">本系列：effectScope 与副作用清理</a></li>
+          <li>
+            <a
+              href="https://vuejs.org/api/reactivity-core.html#onwatchercleanup"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方 API：onWatcherCleanup()（3.5+）
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/essentials/watchers.html#side-effect-cleanup"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方文档：Watcher Side Effect Cleanup
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/AbortController"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN：AbortController
+            </a>
+          </li>
+          <li>
+            <a href="./05-effectScope%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8%E6%B8%85%E7%90%86.html">
+              本系列：effectScope 与副作用清理
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -72,11 +228,16 @@
 
     <!-- PAGE_DOM_START -->
     <div id="app">
-      <h1>onWatcherCleanup（Vue 3.5+）<span class="badge">需要 Vue ≥ 3.5</span></h1>
+      <h1>
+        onWatcherCleanup（Vue 3.5+）
+        <span class="badge">需要 Vue ≥ 3.5</span>
+      </h1>
       <div class="box">
         <p>当前 id：{{ activeId }}</p>
         <p>清理模式：{{ useCleanup ? "onWatcherCleanup（推荐）" : "无清理（对照，易脏 tick）" }}</p>
-        <p class="hint-inline">快速连点 A/B/C：开启清理时旧 id 的 tick 应停止；关闭清理时日志会混入多个 id 的 tick。</p>
+        <p class="hint-inline">
+          快速连点 A/B/C：开启清理时旧 id 的 tick 应停止；关闭清理时日志会混入多个 id 的 tick。
+        </p>
         <button type="button" @click="activeId = 'A'">切到 A</button>
         <button type="button" @click="activeId = 'B'">切到 B</button>
         <button type="button" @click="activeId = 'C'">切到 C</button>
@@ -95,7 +256,7 @@
       const app = createApp({
         setup() {
           // --- 演示状态 ---
-          const activeId = ref("A");
+          const activeId = ref('A');
           const logs = ref([]);
           const useCleanup = ref(true);
 
@@ -127,10 +288,9 @@
             }
           });
 
-          
           // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
           onMounted(() => {
-            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+            console.log('[mounted] createApp 已接管 #app，DOM 已渲染');
           });
 
           return { activeId, logs, useCleanup, clearLogs };
@@ -138,9 +298,8 @@
       });
       // mount 须在 app.use / app.component / app.config 等配置之后调用
       // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
-      const rootInstance = app.mount("#app");
-      console.log("[mount] 根组件实例", rootInstance);
-
+      const rootInstance = app.mount('#app');
+      console.log('[mount] 根组件实例', rootInstance);
     </script>
     <!-- SCRIPT_END -->
 
@@ -149,14 +308,18 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./05-effectScope%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8%E6%B8%85%E7%90%86.html">← effectScope与副作用清理</a>
-        <a href="./07-ref-reactive-shallowRef%E5%AF%B9%E6%AF%94.html">ref-reactive-shallowRef对比 →</a>
+        <a href="./05-effectScope%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8%E6%B8%85%E7%90%86.html">
+          ← effectScope与副作用清理
+        </a>
+        <a href="./07-ref-reactive-shallowRef%E5%AF%B9%E6%AF%94.html">
+          ref-reactive-shallowRef对比 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

@@ -33,24 +33,109 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>Proxy</code> 可以代理普通属性访问，但不能让所有内建对象“透明工作”。<code>Date</code>、<code>Map</code>、<code>Set</code> 等方法依赖规范里的内部槽位，代理对象本身没有这些槽位。</li>
-          <li>本 demo 中空 handler 的 <code>proxy instanceof Date</code> 仍为 <code>true</code>，但调用 <code>proxy.getDate()</code> 会报不兼容接收者错误，因为方法收到的 <code>this</code> 是代理对象而不是原始 <code>Date</code> 实例。</li>
-          <li>常见修复是在 <code>get</code> trap 中遇到函数就 <code>bind</code> 到原对象，或只针对少量方法手动转发；这能让示例运行，但会让方法始终绑定原对象，影响继承、mock 和后续二次包装。</li>
-          <li><code>Proxy</code> 还有其他边界：对象相等性不会被代理抹平（<code>proxy !== target</code>），带私有字段的类方法也可能因为 <code>this</code> 不是原实例而失败，且旧环境无法完整 polyfill。</li>
-          <li><strong>性能与工程代价</strong>：trap 在每次属性访问时分发，热路径上比直接访问慢；实践中不要默认给所有内建对象、DOM 节点或第三方类实例套通用代理，应封装明确 API 或只代理 plain object。</li>
+          <li>
+            <code>Proxy</code>
+            可以代理普通属性访问，但不能让所有内建对象“透明工作”。
+            <code>Date</code>
+            、
+            <code>Map</code>
+            、
+            <code>Set</code>
+            等方法依赖规范里的内部槽位，代理对象本身没有这些槽位。
+          </li>
+          <li>
+            本 demo 中空 handler 的
+            <code>proxy instanceof Date</code>
+            仍为
+            <code>true</code>
+            ，但调用
+            <code>proxy.getDate()</code>
+            会报不兼容接收者错误，因为方法收到的
+            <code>this</code>
+            是代理对象而不是原始
+            <code>Date</code>
+            实例。
+          </li>
+          <li>
+            常见修复是在
+            <code>get</code>
+            trap 中遇到函数就
+            <code>bind</code>
+            到原对象，或只针对少量方法手动转发；这能让示例运行，但会让方法始终绑定原对象，影响继承、mock
+            和后续二次包装。
+          </li>
+          <li>
+            <code>Proxy</code>
+            还有其他边界：对象相等性不会被代理抹平（
+            <code>proxy !== target</code>
+            ），带私有字段的类方法也可能因为
+            <code>this</code>
+            不是原实例而失败，且旧环境无法完整 polyfill。
+          </li>
+          <li>
+            <strong>性能与工程代价</strong>
+            ：trap 在每次属性访问时分发，热路径上比直接访问慢；实践中不要默认给所有内建对象、DOM
+            节点或第三方类实例套通用代理，应封装明确 API 或只代理 plain object。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>为什么空 handler 的 Proxy 也不能透明代理 Date？</strong> 结论是空 handler 只代表 trap 默认转发，不代表代理对象拥有目标对象的内部槽位。原因是 <code>Date.prototype.getDate</code> 会检查 <code>this</code> 上的 Date 内部数据，而代理对象不是那个原始 Date 实例。项目里给内建对象做日志、权限或响应式包装时，要先验证其方法是否依赖内部槽位。</li>
-          <li><strong>bind 原对象修复内建方法调用有什么副作用？</strong> 结论是它能解决当前调用，但不是完全透明代理。原因是方法的 <code>this</code> 被固定为原对象，后续继承、二次代理、测试替身或希望 receiver 参与逻辑的场景都会受影响。工程上更推荐只对白名单方法转发，并把这种包装边界写清楚。</li>
-          <li><strong>Proxy 在私有字段、=== 和旧浏览器兼容上有哪些边界？</strong> 结论是代理不会改变对象身份，<code>proxy !== target</code>；私有字段方法可能因 <code>this</code> 不匹配而失败；旧环境也无法完整 polyfill。原因是这些能力依赖语言内部机制而不是普通属性访问。需要跨环境兼容或代理 class 实例时，要优先考虑显式适配层。</li>
-          <li><strong>遇到内建对象或类实例时是否应该直接套 Proxy？</strong> 结论是不应默认直接套通用代理。原因是普通对象数据和带内部槽位/私有状态的对象行为差异很大。项目里更稳的做法是代理 plain object，或为 Date、Map、DOM 节点、第三方实例分别设计清晰的封装 API。</li>
+          <li>
+            <strong>为什么空 handler 的 Proxy 也不能透明代理 Date？</strong>
+            结论是空 handler 只代表 trap 默认转发，不代表代理对象拥有目标对象的内部槽位。原因是
+            <code>Date.prototype.getDate</code>
+            会检查
+            <code>this</code>
+            上的 Date 内部数据，而代理对象不是那个原始 Date
+            实例。项目里给内建对象做日志、权限或响应式包装时，要先验证其方法是否依赖内部槽位。
+          </li>
+          <li>
+            <strong>bind 原对象修复内建方法调用有什么副作用？</strong>
+            结论是它能解决当前调用，但不是完全透明代理。原因是方法的
+            <code>this</code>
+            被固定为原对象，后续继承、二次代理、测试替身或希望 receiver
+            参与逻辑的场景都会受影响。工程上更推荐只对白名单方法转发，并把这种包装边界写清楚。
+          </li>
+          <li>
+            <strong>Proxy 在私有字段、=== 和旧浏览器兼容上有哪些边界？</strong>
+            结论是代理不会改变对象身份，
+            <code>proxy !== target</code>
+            ；私有字段方法可能因
+            <code>this</code>
+            不匹配而失败；旧环境也无法完整
+            polyfill。原因是这些能力依赖语言内部机制而不是普通属性访问。需要跨环境兼容或代理 class
+            实例时，要优先考虑显式适配层。
+          </li>
+          <li>
+            <strong>遇到内建对象或类实例时是否应该直接套 Proxy？</strong>
+            结论是不应默认直接套通用代理。原因是普通对象数据和带内部槽位/私有状态的对象行为差异很大。项目里更稳的做法是代理
+            plain object，或为 Date、Map、DOM 节点、第三方实例分别设计清晰的封装 API。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">MDN: Proxy</a>：内建对象与内部槽位限制。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getDate">MDN: Date.prototype.getDate()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_properties">MDN: Private elements</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy"
+            >
+              MDN: Proxy
+            </a>
+            ：内建对象与内部槽位限制。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getDate"
+            >
+              MDN: Date.prototype.getDate()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_properties"
+            >
+              MDN: Private elements
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -62,36 +147,36 @@
 
       // ============ 1. 空 handler：trap 默认转发，但内建方法仍失败 ============
       const proxy = new Proxy(target, {});
-      console.log("proxy instanceof Date:", proxy instanceof Date); // true
+      console.log('proxy instanceof Date:', proxy instanceof Date); // true
 
-      console.log("target.getDate():", target.getDate()); // 正常
+      console.log('target.getDate():', target.getDate()); // 正常
 
       try {
         proxy.getDate();
       } catch (err) {
         // TypeError: 'getDate' called on an object that is not a valid instance of Date
-        console.log("空 handler 代理调用 getDate 报错:", err.name, "-", err.message);
+        console.log('空 handler 代理调用 getDate 报错:', err.name, '-', err.message);
       }
 
       // ============ 2. 对象身份：proxy !== target ============
-      console.log("proxy === target:", proxy === target); // false
+      console.log('proxy === target:', proxy === target); // false
 
       // ============ 3. 修复：get trap 中对函数 bind 到原对象 ============
       const proxyFixed = new Proxy(target, {
         get(obj, prop) {
           const value = Reflect.get(obj, prop, obj);
-          if (typeof value === "function") {
+          if (typeof value === 'function') {
             return value.bind(obj); // this 固定为原 Date 实例
           }
           return value;
         },
       });
 
-      console.log("修复后 proxyFixed.getDate():", proxyFixed.getDate());
+      console.log('修复后 proxyFixed.getDate():', proxyFixed.getDate());
 
       // ============ 4. bind 修复的副作用：receiver 不再参与 ============
       // 若方法依赖继承链上的 this 或二次包装，bind 会破坏语义
-      console.log("bind 后方法 this 固定为原对象，不适合通用透明代理");
+      console.log('bind 后方法 this 固定为原对象，不适合通用透明代理');
 
       // ============ 5. 私有字段：代理后 this 不匹配导致读取失败 ============
       class Secret {
@@ -101,12 +186,12 @@
         }
       }
       const inst = new Secret();
-      console.log("原实例 read():", inst.read()); // 42
+      console.log('原实例 read():', inst.read()); // 42
       const privateProxy = new Proxy(inst, {});
       try {
         privateProxy.read();
       } catch (err) {
-        console.log("私有字段方法经代理调用:", err.name, "-", err.message);
+        console.log('私有字段方法经代理调用:', err.name, '-', err.message);
       }
     </script>
     <!-- SCRIPT_END -->
@@ -123,9 +208,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

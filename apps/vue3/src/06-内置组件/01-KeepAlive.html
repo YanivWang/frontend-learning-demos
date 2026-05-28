@@ -22,14 +22,47 @@
     <title>Vue3 · KeepAlive</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; padding: 6px 12px; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; max-height: 220px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
-      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
-      .box button { margin-top: 4px; }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          'PingFang SC',
+          sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+      }
+      button {
+        margin-right: 8px;
+        padding: 6px 12px;
+      }
+      code,
+      pre {
+        background: #f6f8fa;
+        border-radius: 6px;
+      }
+      code {
+        padding: 2px 5px;
+      }
+      pre {
+        padding: 12px;
+        overflow: auto;
+        max-height: 220px;
+      }
+      .box {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 760px;
+      }
+      .box .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
+      .box button {
+        margin-top: 4px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -42,24 +75,96 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>KeepAlive</code> 是 Vue 内置组件，用来缓存被包裹的动态组件实例；本页 Tab 输入框切走再回来，文本仍会保留。</li>
-          <li>缓存命中时组件不会重新执行普通挂载流程，而是在重新显示和离开缓存树时触发 <code>activated</code> / <code>deactivated</code>，适合恢复定时器、订阅或滚动位置。</li>
-          <li><code>include</code>、<code>exclude</code> 按组件名筛选缓存对象，<code>max</code> 控制最大缓存数量；大型页面应避免无上限缓存导致内存上涨。</li>
-          <li>适合缓存 tab、详情页返回、搜索条件、表单草稿等局部 UI 状态；不适合缓存强实时数据、权限敏感页面或必须每次重新拉取的流程。</li>
-          <li>KeepAlive 保留的是组件实例状态，不等于 HTTP 缓存或全局 store；跨路由共享状态见 <a href="../07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html">07-Router与Pinia可运行示例</a>。</li>
+          <li>
+            <code>KeepAlive</code>
+            是 Vue 内置组件，用来缓存被包裹的动态组件实例；本页 Tab 输入框切走再回来，文本仍会保留。
+          </li>
+          <li>
+            缓存命中时组件不会重新执行普通挂载流程，而是在重新显示和离开缓存树时触发
+            <code>activated</code>
+            /
+            <code>deactivated</code>
+            ，适合恢复定时器、订阅或滚动位置。
+          </li>
+          <li>
+            <code>include</code>
+            、
+            <code>exclude</code>
+            按组件名筛选缓存对象，
+            <code>max</code>
+            控制最大缓存数量；大型页面应避免无上限缓存导致内存上涨。
+          </li>
+          <li>
+            适合缓存 tab、详情页返回、搜索条件、表单草稿等局部 UI
+            状态；不适合缓存强实时数据、权限敏感页面或必须每次重新拉取的流程。
+          </li>
+          <li>
+            KeepAlive 保留的是组件实例状态，不等于 HTTP 缓存或全局 store；跨路由共享状态见
+            <a
+              href="../07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html"
+            >
+              07-Router与Pinia可运行示例
+            </a>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>KeepAlive 缓存的到底是什么？</strong> 结论是缓存组件实例及其响应式状态，而不是简单把 DOM 隐藏起来。原因是 Vue 会把离开的组件实例放入缓存，回来时复用实例。边界是外部数据是否重新请求取决于你的生命周期和路由逻辑。</li>
-          <li><strong>activated / deactivated 和 mounted / unmounted 有什么区别？</strong> 缓存组件第一次创建仍会 mounted，后续切入切出触发 activated / deactivated，而不是反复 mounted / unmounted。适合在 activated 恢复订阅，在 deactivated 暂停副作用。真正离开缓存或缓存被淘汰时才会 unmounted。</li>
-          <li><strong>怎么控制 KeepAlive 缓存范围？</strong> 使用 <code>include</code>、<code>exclude</code> 按组件 name 匹配，用 <code>max</code> 限制数量。原因是缓存越多占用越高，且 stale 状态越难管理。项目里常结合路由 meta 决定哪些页面缓存。</li>
-          <li><strong>什么时候不应该用 KeepAlive？</strong> 实时行情、权限状态敏感页面、一次性提交流程和必须重新初始化的页面不适合盲目缓存。否则用户可能看到过期数据或残留表单。更稳的做法是缓存 UI 状态，同时在 activated 中按需刷新关键数据。</li>
+          <li>
+            <strong>KeepAlive 缓存的到底是什么？</strong>
+            结论是缓存组件实例及其响应式状态，而不是简单把 DOM 隐藏起来。原因是 Vue
+            会把离开的组件实例放入缓存，回来时复用实例。边界是外部数据是否重新请求取决于你的生命周期和路由逻辑。
+          </li>
+          <li>
+            <strong>activated / deactivated 和 mounted / unmounted 有什么区别？</strong>
+            缓存组件第一次创建仍会 mounted，后续切入切出触发 activated / deactivated，而不是反复
+            mounted / unmounted。适合在 activated 恢复订阅，在 deactivated
+            暂停副作用。真正离开缓存或缓存被淘汰时才会 unmounted。
+          </li>
+          <li>
+            <strong>怎么控制 KeepAlive 缓存范围？</strong>
+            使用
+            <code>include</code>
+            、
+            <code>exclude</code>
+            按组件 name 匹配，用
+            <code>max</code>
+            限制数量。原因是缓存越多占用越高，且 stale 状态越难管理。项目里常结合路由 meta
+            决定哪些页面缓存。
+          </li>
+          <li>
+            <strong>什么时候不应该用 KeepAlive？</strong>
+            实时行情、权限状态敏感页面、一次性提交流程和必须重新初始化的页面不适合盲目缓存。否则用户可能看到过期数据或残留表单。更稳的做法是缓存
+            UI 状态，同时在 activated 中按需刷新关键数据。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/guide/built-ins/keep-alive.html" target="_blank" rel="noreferrer">Vue 官方指南：KeepAlive</a></li>
-          <li><a href="https://vuejs.org/api/composition-api-lifecycle.html#onactivated" target="_blank" rel="noreferrer">Vue API：onActivated / onDeactivated</a></li>
-          <li><a href="../05-%E6%8F%92%E6%A7%BD%E4%B8%8E%E7%BB%84%E4%BB%B6%E5%BD%A2%E6%80%81/02-%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6%E4%B8%8E%E5%BC%82%E6%AD%A5%E7%BB%84%E4%BB%B6.html">本系列：动态组件与异步组件</a></li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/built-ins/keep-alive.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 官方指南：KeepAlive
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/api/composition-api-lifecycle.html#onactivated"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue API：onActivated / onDeactivated
+            </a>
+          </li>
+          <li>
+            <a
+              href="../05-%E6%8F%92%E6%A7%BD%E4%B8%8E%E7%BB%84%E4%BB%B6%E5%BD%A2%E6%80%81/02-%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6%E4%B8%8E%E5%BC%82%E6%AD%A5%E7%BB%84%E4%BB%B6.html"
+            >
+              本系列：动态组件与异步组件
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -71,8 +176,13 @@
       <div class="box">
         <h2>基础缓存</h2>
         <p class="hint-inline">
-          当前 Tab：<strong>{{ current }}</strong>。在输入框输入文字后切换 Tab，再切回来应仍保留；控制台可见
-          <code>[keepalive]</code> 与 <code>[mounted]</code> 日志。
+          当前 Tab：
+          <strong>{{ current }}</strong>
+          。在输入框输入文字后切换 Tab，再切回来应仍保留；控制台可见
+          <code>[keepalive]</code>
+          与
+          <code>[mounted]</code>
+          日志。
         </p>
         <button type="button" @click="current = 'TabA'">Tab A</button>
         <button type="button" @click="current = 'TabB'">Tab B</button>
@@ -82,7 +192,9 @@
         <h2>include 筛选</h2>
         <label class="hint-inline">
           <input type="checkbox" v-model="onlyCacheTabA" />
-          只缓存 TabA（<code>include="TabA"</code>；取消勾选后 TabB 切走即销毁）
+          只缓存 TabA（
+          <code>include="TabA"</code>
+          ；取消勾选后 TabB 切走即销毁）
         </label>
         <pre>{{ logs.length ? logs.join("\n") : "（切换 Tab 后出现生命周期日志）" }}</pre>
       </div>
@@ -102,14 +214,14 @@
           name,
           template: `<p>${name} 输入：<input v-model="text" placeholder="切走再回来应保留" /></p>`,
           setup() {
-            const text = ref("");
+            const text = ref('');
             onActivated(() => {
               logs.value.push(`${name} activated`);
-              console.log("[keepalive] activated", name);
+              console.log('[keepalive] activated', name);
             });
             onDeactivated(() => {
               logs.value.push(`${name} deactivated`);
-              console.log("[keepalive] deactivated", name);
+              console.log('[keepalive] deactivated', name);
             });
             return { text };
           },
@@ -117,15 +229,15 @@
       }
 
       const app = createApp({
-        components: { TabA: makeTab("TabA"), TabB: makeTab("TabB") },
+        components: { TabA: makeTab('TabA'), TabB: makeTab('TabB') },
         setup() {
-          const current = ref("TabA");
+          const current = ref('TabA');
           const onlyCacheTabA = ref(false);
           // include 为 undefined 时缓存全部；为 "TabA" 时只缓存 TabA
-          const cacheInclude = computed(() => (onlyCacheTabA.value ? "TabA" : undefined));
+          const cacheInclude = computed(() => (onlyCacheTabA.value ? 'TabA' : undefined));
 
           onMounted(() => {
-            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+            console.log('[mounted] createApp 已接管 #app，DOM 已渲染');
           });
 
           return { current, logs, onlyCacheTabA, cacheInclude };
@@ -133,9 +245,8 @@
       });
       // mount 须在 app.use / app.component / app.config 等配置之后调用
       // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
-      const rootInstance = app.mount("#app");
-      console.log("[mount] 根组件实例", rootInstance);
-
+      const rootInstance = app.mount('#app');
+      console.log('[mount] 根组件实例', rootInstance);
     </script>
     <!-- SCRIPT_END -->
 
@@ -144,18 +255,22 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="../05-%E6%8F%92%E6%A7%BD%E4%B8%8E%E7%BB%84%E4%BB%B6%E5%BD%A2%E6%80%81/02-%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6%E4%B8%8E%E5%BC%82%E6%AD%A5%E7%BB%84%E4%BB%B6.html">← 动态组件与异步组件</a>
+        <a
+          href="../05-%E6%8F%92%E6%A7%BD%E4%B8%8E%E7%BB%84%E4%BB%B6%E5%BD%A2%E6%80%81/02-%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6%E4%B8%8E%E5%BC%82%E6%AD%A5%E7%BB%84%E4%BB%B6.html.tmpfmt.html"
+        >
+          ← 动态组件与异步组件.html.tmpfmt
+        </a>
         <a href="./02-Teleport.html">Teleport →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

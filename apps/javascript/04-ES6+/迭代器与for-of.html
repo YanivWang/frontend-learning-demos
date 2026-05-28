@@ -32,25 +32,129 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><strong>可迭代协议</strong>：对象实现 <code>[Symbol.iterator]()</code> 并返回迭代器；迭代器的 <code>next()</code> 返回 <code>{ value, done }</code>。</li>
-          <li><code>for...of</code> 反复调用 <code>next()</code> 直到 <code>done: true</code>，遍历的是<strong>值</strong>；<code>for...in</code> 遍历可枚举<strong>键</strong>，数组上会包含索引字符串且可能沿原型链向上。</li>
-          <li>内置可迭代：Array、String、Map、Set、TypedArray、arguments、DOM collections 等；普通 plain object 默认不可 <code>for...of</code>。</li>
-          <li><code>function*</code> 返回的 Generator 既是迭代器也是可迭代对象，可 <code>for...of</code> 或手动 <code>.next()</code>。</li>
-          <li><code>Array.from(iterable)</code>、<code>[...iterable]</code>、<code>new Map(iterable)</code> 等都消费 Iterable；<code>Array.fromAsync</code> 用于异步 Iterable（需较新运行时）。</li>
+          <li>
+            <strong>可迭代协议</strong>
+            ：对象实现
+            <code>[Symbol.iterator]()</code>
+            并返回迭代器；迭代器的
+            <code>next()</code>
+            返回
+            <code>{ value, done }</code>
+            。
+          </li>
+          <li>
+            <code>for...of</code>
+            反复调用
+            <code>next()</code>
+            直到
+            <code>done: true</code>
+            ，遍历的是
+            <strong>值</strong>
+            ；
+            <code>for...in</code>
+            遍历可枚举
+            <strong>键</strong>
+            ，数组上会包含索引字符串且可能沿原型链向上。
+          </li>
+          <li>
+            内置可迭代：Array、String、Map、Set、TypedArray、arguments、DOM collections 等；普通
+            plain object 默认不可
+            <code>for...of</code>
+            。
+          </li>
+          <li>
+            <code>function*</code>
+            返回的 Generator 既是迭代器也是可迭代对象，可
+            <code>for...of</code>
+            或手动
+            <code>.next()</code>
+            。
+          </li>
+          <li>
+            <code>Array.from(iterable)</code>
+            、
+            <code>[...iterable]</code>
+            、
+            <code>new Map(iterable)</code>
+            等都消费 Iterable；
+            <code>Array.fromAsync</code>
+            用于异步 Iterable（需较新运行时）。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>for...of 和 for...in 有什么区别？</strong> 结论：<code>for...of</code> 遍历迭代值，<code>for...in</code> 遍历可枚举键。原因是前者依赖 <code>Symbol.iterator</code>，后者走属性枚举。数组上 <code>for...in</code> 可能扫到原型方法，业务遍历数组元素优先 <code>for...of</code> 或数组方法。</li>
-          <li><strong>如何手写可迭代对象？</strong> 结论：实现 <code>[Symbol.iterator]() { return { next() { … } } }</code>。原因是 ES 内置语法和 API 都统一消费这一协议。项目里分页、游标、树遍历都可封装成 Iterable，便于与 <code>for...of</code>、展开语法组合。</li>
-          <li><strong>Generator 与迭代器协议的关系？</strong> 结论：Generator 是迭代器协议的语法糖。原因是 <code>function*</code> 自动生成带 <code>next</code> 的对象，且自身也可被再次迭代。async generator 则对应异步迭代，配合 <code>for await...of</code>。</li>
-          <li><strong>Array.from 消费 Iterable 的边界？</strong> 结论：只拉平一层 Iterable，不会递归；对 Map 会得到 <code>[key, value]</code> 条目数组。原因是 <code>Array.from</code> 按迭代协议逐个取值。无限 Iterable 会导致死循环，需要业务侧限制步数。</li>
+          <li>
+            <strong>for...of 和 for...in 有什么区别？</strong>
+            结论：
+            <code>for...of</code>
+            遍历迭代值，
+            <code>for...in</code>
+            遍历可枚举键。原因是前者依赖
+            <code>Symbol.iterator</code>
+            ，后者走属性枚举。数组上
+            <code>for...in</code>
+            可能扫到原型方法，业务遍历数组元素优先
+            <code>for...of</code>
+            或数组方法。
+          </li>
+          <li>
+            <strong>如何手写可迭代对象？</strong>
+            结论：实现
+            <code>[Symbol.iterator]() { return { next() { … } } }</code>
+            。原因是 ES 内置语法和 API 都统一消费这一协议。项目里分页、游标、树遍历都可封装成
+            Iterable，便于与
+            <code>for...of</code>
+            、展开语法组合。
+          </li>
+          <li>
+            <strong>Generator 与迭代器协议的关系？</strong>
+            结论：Generator 是迭代器协议的语法糖。原因是
+            <code>function*</code>
+            自动生成带
+            <code>next</code>
+            的对象，且自身也可被再次迭代。async generator 则对应异步迭代，配合
+            <code>for await...of</code>
+            。
+          </li>
+          <li>
+            <strong>Array.from 消费 Iterable 的边界？</strong>
+            结论：只拉平一层 Iterable，不会递归；对 Map 会得到
+            <code>[key, value]</code>
+            条目数组。原因是
+            <code>Array.from</code>
+            按迭代协议逐个取值。无限 Iterable 会导致死循环，需要业务侧限制步数。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols">MDN: Iteration protocols</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of">MDN: for...of</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from">MDN: Array.from()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/fromAsync">MDN: Array.fromAsync()</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols"
+            >
+              MDN: Iteration protocols
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of"
+            >
+              MDN: for...of
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from"
+            >
+              MDN: Array.from()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/fromAsync"
+            >
+              MDN: Array.fromAsync()
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -76,24 +180,24 @@
         },
       };
 
-      console.log("Range for...of:", [...range]); // [1, 2, 3]
+      console.log('Range for...of:', [...range]); // [1, 2, 3]
 
       // ============ 2. for...of vs for...in（数组） ============
-      const arr = ["a", "b"];
-      arr.extra = "not-index";
+      const arr = ['a', 'b'];
+      arr.extra = 'not-index';
 
       const ofValues = [];
       for (const v of arr) ofValues.push(v);
-      console.log("for...of 值:", ofValues); // ["a", "b"]
+      console.log('for...of 值:', ofValues); // ["a", "b"]
 
       const inKeys = [];
       for (const k in arr) inKeys.push(k);
-      console.log("for...in 键:", inKeys); // ["0", "1", "extra"]
+      console.log('for...in 键:', inKeys); // ["0", "1", "extra"]
 
       // ============ 3. Map / Set / 字符串 ============
-      console.log("Map entries:", [...new Map([["x", 1]])]); // [["x", 1]]
-      console.log("Set values:", [...new Set([1, 1, 2])]); // [1, 2]
-      console.log("string chars:", [... "hi"]); // ["h", "i"]
+      console.log('Map entries:', [...new Map([['x', 1]])]); // [["x", 1]]
+      console.log('Set values:', [...new Set([1, 1, 2])]); // [1, 2]
+      console.log('string chars:', [...'hi']); // ["h", "i"]
 
       // ============ 4. Generator 即 Iterable + Iterator ============
       function* ids() {
@@ -101,23 +205,23 @@
         yield 20;
       }
       const gen = ids();
-      console.log("generator next:", gen.next(), gen.next(), gen.next());
-      console.log("generator for...of:", [...ids()]); // [10, 20]
+      console.log('generator next:', gen.next(), gen.next(), gen.next());
+      console.log('generator for...of:', [...ids()]); // [10, 20]
 
       // ============ 5. Array.from 与 Iterable ============
-      console.log("Array.from(range):", Array.from(range)); // [1, 2, 3]
+      console.log('Array.from(range):', Array.from(range)); // [1, 2, 3]
 
       // ============ 6. Array.fromAsync（异步 Iterable，需较新浏览器） ============
       async function* asyncNums() {
         yield 1;
         yield 2;
       }
-      if (typeof Array.fromAsync === "function") {
+      if (typeof Array.fromAsync === 'function') {
         Array.fromAsync(asyncNums()).then((list) => {
-          console.log("Array.fromAsync:", list); // [1, 2]
+          console.log('Array.fromAsync:', list); // [1, 2]
         });
       } else {
-        console.log("Array.fromAsync: 当前环境不支持，跳过演示");
+        console.log('Array.fromAsync: 当前环境不支持，跳过演示');
       }
 
       // ============ 7. plain object 不可 for...of ============
@@ -127,7 +231,7 @@
           console.log(x);
         }
       } catch (err) {
-        console.log("plain object for...of:", err.name, "-", err.message);
+        console.log('plain object for...of:', err.name, '-', err.message);
       }
     </script>
     <!-- SCRIPT_END -->
@@ -137,17 +241,29 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="./%E5%BC%82%E6%AD%A5/generator%E4%B8%8Easync/01-generator-%E5%9F%BA%E7%A1%80yield%E4%B8%8Enext.html">相关 · generator-基础yield与next</a>
+        <a
+          href="./%E5%BC%82%E6%AD%A5/generator%E4%B8%8Easync/01-generator-%E5%9F%BA%E7%A1%80yield%E4%B8%8Enext.html"
+        >
+          相关 · generator-基础yield与next
+        </a>
         <a href="./%E9%9B%86%E5%90%88/Map.html">相关 · Map</a>
         <a href="./%E9%9B%86%E5%90%88/Set.html">相关 · Set</a>
-        <a href="../03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%8E%9F%E5%9E%8B%E5%B1%9E%E6%80%A7vs%E5%AE%9E%E4%BE%8B%E5%B1%9E%E6%80%A7.html">← 原型属性vs实例属性</a>
-        <a href="./%E8%A7%A3%E6%9E%84%E5%B1%95%E5%BC%80%E4%B8%8E%E6%A8%A1%E6%9D%BF%E5%AD%97%E7%AC%A6%E4%B8%B2.html">解构展开与模板字符串 →</a>
+        <a
+          href="../03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%8E%9F%E5%9E%8B%E5%B1%9E%E6%80%A7vs%E5%AE%9E%E4%BE%8B%E5%B1%9E%E6%80%A7.html"
+        >
+          ← 原型属性vs实例属性
+        </a>
+        <a
+          href="./%E8%A7%A3%E6%9E%84%E5%B1%95%E5%BC%80%E4%B8%8E%E6%A8%A1%E6%9D%BF%E5%AD%97%E7%AC%A6%E4%B8%B2.html"
+        >
+          解构展开与模板字符串 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

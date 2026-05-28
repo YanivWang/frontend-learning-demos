@@ -24,8 +24,17 @@
     <script src="../../libs/react-dom.development.js"></script>
     <script src="../../libs/babel.min.js"></script>
     <style>
-      #modal-root { position: fixed; right: 20px; top: 20px; }
-      .modal { border: 1px solid #999; background: #fff; padding: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.2); }
+      #modal-root {
+        position: fixed;
+        right: 20px;
+        top: 20px;
+      }
+      .modal {
+        border: 1px solid #999;
+        background: #fff;
+        padding: 12px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -34,29 +43,95 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Fragment、Portal 与 StrictMode</h1>
-      <p class="hint">请打开 DevTools Console 查看 Portal 挂载与 StrictMode 日志；下方 #root 为 React 挂载/交互演示区（弹窗 Portal 挂载在 #modal-root）。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看 Portal 挂载与 StrictMode 日志；下方 #root 为 React
+        挂载/交互演示区（弹窗 Portal 挂载在 #modal-root）。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>Fragment</code> 允许组件返回多个兄弟节点而不额外创建 DOM 包裹层，适合列表项、表格结构和不希望影响 CSS 布局的场景。</li>
-          <li><code>createPortal(children, domNode)</code> 会把子节点挂到指定 DOM 节点；它只改变真实 DOM 位置，不改变 React 组件树关系。</li>
-          <li>Portal 中触发的 React 事件仍按 React 组件树冒泡，而不是按真实 DOM 层级冒泡；弹窗、Tooltip、浮层要特别留意事件关闭逻辑。</li>
-          <li><code>StrictMode</code> 只在开发环境生效，会额外执行一些检查，并可能重复调用渲染逻辑和 Effect setup/cleanup，以暴露不纯渲染和遗漏清理的问题。</li>
-          <li>本 demo 的 Portal 只演示挂载位置。生产弹窗还应处理焦点陷阱、Esc 关闭、滚动锁定、遮罩点击、<code>aria-modal</code> 等交互和无障碍边界。</li>
+          <li>
+            <code>Fragment</code>
+            允许组件返回多个兄弟节点而不额外创建 DOM 包裹层，适合列表项、表格结构和不希望影响 CSS
+            布局的场景。
+          </li>
+          <li>
+            <code>createPortal(children, domNode)</code>
+            会把子节点挂到指定 DOM 节点；它只改变真实 DOM 位置，不改变 React 组件树关系。
+          </li>
+          <li>
+            Portal 中触发的 React 事件仍按 React 组件树冒泡，而不是按真实 DOM
+            层级冒泡；弹窗、Tooltip、浮层要特别留意事件关闭逻辑。
+          </li>
+          <li>
+            <code>StrictMode</code>
+            只在开发环境生效，会额外执行一些检查，并可能重复调用渲染逻辑和 Effect
+            setup/cleanup，以暴露不纯渲染和遗漏清理的问题。
+          </li>
+          <li>
+            本 demo 的 Portal 只演示挂载位置。生产弹窗还应处理焦点陷阱、Esc
+            关闭、滚动锁定、遮罩点击、
+            <code>aria-modal</code>
+            等交互和无障碍边界。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Fragment 与普通 div 包裹有什么区别？</strong> 结论是 Fragment 不会产生真实 DOM 节点。原因是它只是 React 组件返回多个子节点的语法容器。边界是需要 class、样式、语义或布局容器时仍应使用真实元素。</li>
-          <li><strong>Portal 渲染到 root 外时事件为什么仍能回到 React 父组件？</strong> 因为 Portal 保留在原 React 组件树里，只是提交到另一个 DOM 容器。本 demo 弹窗显示在 <code>#modal-root</code>，但状态仍由父组件控制。项目里不要把 DOM 层级和 React 事件路径混为一谈。</li>
-          <li><strong>StrictMode 为什么会让开发环境出现重复执行？</strong> 结论是这是有意的开发检查。原因是 React 通过重复调用暴露不纯渲染、遗漏 Effect 清理和废弃 API。边界是生产构建不会因为 StrictMode 自动重复执行这些检查，但代码仍应按可重复执行来写。</li>
-          <li><strong>用 Portal 做弹窗有哪些边界？</strong> 结论是 Portal 只解决挂载位置，不解决完整弹窗体验。原因是焦点管理、键盘关闭、滚动锁定和无障碍语义属于应用逻辑。真实项目应补 <code>role="dialog"</code>、焦点回收、Esc 关闭和遮罩策略。</li>
+          <li>
+            <strong>Fragment 与普通 div 包裹有什么区别？</strong>
+            结论是 Fragment 不会产生真实 DOM 节点。原因是它只是 React
+            组件返回多个子节点的语法容器。边界是需要 class、样式、语义或布局容器时仍应使用真实元素。
+          </li>
+          <li>
+            <strong>Portal 渲染到 root 外时事件为什么仍能回到 React 父组件？</strong>
+            因为 Portal 保留在原 React 组件树里，只是提交到另一个 DOM 容器。本 demo 弹窗显示在
+            <code>#modal-root</code>
+            ，但状态仍由父组件控制。项目里不要把 DOM 层级和 React 事件路径混为一谈。
+          </li>
+          <li>
+            <strong>StrictMode 为什么会让开发环境出现重复执行？</strong>
+            结论是这是有意的开发检查。原因是 React 通过重复调用暴露不纯渲染、遗漏 Effect 清理和废弃
+            API。边界是生产构建不会因为 StrictMode
+            自动重复执行这些检查，但代码仍应按可重复执行来写。
+          </li>
+          <li>
+            <strong>用 Portal 做弹窗有哪些边界？</strong>
+            结论是 Portal
+            只解决挂载位置，不解决完整弹窗体验。原因是焦点管理、键盘关闭、滚动锁定和无障碍语义属于应用逻辑。真实项目应补
+            <code>role="dialog"</code>
+            、焦点回收、Esc 关闭和遮罩策略。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/Fragment" target="_blank" rel="noreferrer">react.dev: Fragment</a></li>
-          <li><a href="https://react.dev/reference/react-dom/createPortal" target="_blank" rel="noreferrer">react.dev: createPortal</a></li>
-          <li><a href="https://react.dev/reference/react/StrictMode" target="_blank" rel="noreferrer">react.dev: StrictMode</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/dialog_role" target="_blank" rel="noreferrer">MDN: ARIA dialog role</a></li>
+          <li>
+            <a href="https://react.dev/reference/react/Fragment" target="_blank" rel="noreferrer">
+              react.dev: Fragment
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react-dom/createPortal"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: createPortal
+            </a>
+          </li>
+          <li>
+            <a href="https://react.dev/reference/react/StrictMode" target="_blank" rel="noreferrer">
+              react.dev: StrictMode
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/dialog_role"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: ARIA dialog role
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -75,8 +150,11 @@
       // 对应 react.dev createPortal；事件仍沿 React 组件树冒泡
       function Modal({ onClose }) {
         useEffect(() => {
-          const modalRoot = document.getElementById("modal-root");
-          console.log("Portal 已挂载到 #modal-root:", modalRoot?.contains(document.querySelector(".modal")));
+          const modalRoot = document.getElementById('modal-root');
+          console.log(
+            'Portal 已挂载到 #modal-root:',
+            modalRoot?.contains(document.querySelector('.modal')),
+          );
           // 预期: true；弹窗 DOM 不在 #root 内
         }, []);
 
@@ -86,7 +164,7 @@
             <p>我渲染在 #modal-root 中，不在 #root 内。</p>
             <button onClick={onClose}>关闭</button>
           </div>,
-          document.getElementById("modal-root")
+          document.getElementById('modal-root'),
         );
       }
 
@@ -95,7 +173,7 @@
         const [open, setOpen] = useState(false);
 
         useEffect(() => {
-          console.log("App StrictMode 开发检查: open =", open);
+          console.log('App StrictMode 开发检查: open =', open);
           // 预期: 开发模式下 StrictMode 可能重复 mount，日志会出现两次
         }, [open]);
 
@@ -112,10 +190,10 @@
       }
 
       // ====== 3. StrictMode 包裹根组件（仅开发环境额外检查） ======
-      ReactDOM.createRoot(document.getElementById("root")).render(
+      ReactDOM.createRoot(document.getElementById('root')).render(
         <StrictMode>
           <App />
-        </StrictMode>
+        </StrictMode>,
       );
     </script>
     <!-- SCRIPT_END -->
@@ -125,20 +203,28 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./25-%E8%99%9A%E6%8B%9FDOM-Fiber-%E6%89%B9%E5%A4%84%E7%90%86.html">相关 · 25-虚拟DOM-Fiber-批处理</a>
-        <a href="./27-forwardRef%E4%B8%8EuseImperativeHandle.html">相关 · 27-forwardRef与useImperativeHandle</a>
-        <a href="./25-%E8%99%9A%E6%8B%9FDOM-Fiber-%E6%89%B9%E5%A4%84%E7%90%86.html">← 虚拟DOM-Fiber-批处理</a>
-        <a href="./27-forwardRef%E4%B8%8EuseImperativeHandle.html">forwardRef与useImperativeHandle →</a>
+        <a href="./25-%E8%99%9A%E6%8B%9FDOM-Fiber-%E6%89%B9%E5%A4%84%E7%90%86.html">
+          相关 · 25-虚拟DOM-Fiber-批处理
+        </a>
+        <a href="./27-forwardRef%E4%B8%8EuseImperativeHandle.html">
+          相关 · 27-forwardRef与useImperativeHandle
+        </a>
+        <a href="./25-%E8%99%9A%E6%8B%9FDOM-Fiber-%E6%89%B9%E5%A4%84%E7%90%86.html">
+          ← 虚拟DOM-Fiber-批处理
+        </a>
+        <a href="./27-forwardRef%E4%B8%8EuseImperativeHandle.html">
+          forwardRef与useImperativeHandle →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

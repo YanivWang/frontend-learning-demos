@@ -31,25 +31,125 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>extends</code> 会建立两条关系：<code>Object.getPrototypeOf(Child) === Parent</code> 让静态成员可继承，<code>Object.getPrototypeOf(Child.prototype) === Parent.prototype</code> 让实例方法可继承。</li>
-          <li>派生类如果显式声明 constructor，必须先调用 <code>super(...args)</code> 才能使用 <code>this</code>；因为实例的 <code>this</code> 需要由父类构造器先完成初始化。</li>
-          <li><code>super()</code> 只用于派生类构造器调用父类构造器；<code>super.method()</code> 可在实例方法中调用父类原型方法，也可在静态方法/静态块中调用父类静态方法。</li>
-          <li>实例方法挂在 <code>prototype</code> 上，由所有实例共享；实例字段和私有字段在每次 <code>new</code> 时初始化，每个实例各有自己的状态。</li>
-          <li>读取私有字段必须写 <code>this.#field</code>，不能写成具体实例名；私有字段也不能在类体外新增或访问。</li>
-          <li>继承适合稳定的 “is-a” 关系；如果只是复用能力或包装内建对象，组合通常更清晰，也能避开内建对象子类化的性能和语义风险。</li>
+          <li>
+            <code>extends</code>
+            会建立两条关系：
+            <code>Object.getPrototypeOf(Child) === Parent</code>
+            让静态成员可继承，
+            <code>Object.getPrototypeOf(Child.prototype) === Parent.prototype</code>
+            让实例方法可继承。
+          </li>
+          <li>
+            派生类如果显式声明 constructor，必须先调用
+            <code>super(...args)</code>
+            才能使用
+            <code>this</code>
+            ；因为实例的
+            <code>this</code>
+            需要由父类构造器先完成初始化。
+          </li>
+          <li>
+            <code>super()</code>
+            只用于派生类构造器调用父类构造器；
+            <code>super.method()</code>
+            可在实例方法中调用父类原型方法，也可在静态方法/静态块中调用父类静态方法。
+          </li>
+          <li>
+            实例方法挂在
+            <code>prototype</code>
+            上，由所有实例共享；实例字段和私有字段在每次
+            <code>new</code>
+            时初始化，每个实例各有自己的状态。
+          </li>
+          <li>
+            读取私有字段必须写
+            <code>this.#field</code>
+            ，不能写成具体实例名；私有字段也不能在类体外新增或访问。
+          </li>
+          <li>
+            继承适合稳定的 “is-a”
+            关系；如果只是复用能力或包装内建对象，组合通常更清晰，也能避开内建对象子类化的性能和语义风险。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>extends</code> 会建立哪两条原型链？</strong> 结论是子类构造器继承父类构造器，子类原型继承父类原型。前者让静态成员可沿构造器链查找，后者让实例方法可沿实例原型链查找；排查继承问题时要分清静态方法和实例方法放在哪里。</li>
-          <li><strong>为什么派生类 constructor 必须先调用 <code>super()</code>？</strong> 因为派生类实例的 <code>this</code> 由父类构造器初始化，在 <code>super()</code> 返回前访问 <code>this</code> 会抛 ReferenceError。项目中常见错误是在 <code>super()</code> 前设置实例字段或调用依赖 <code>this</code> 的方法。</li>
-          <li><strong><code>super()</code> 和 <code>super.method()</code> 有什么区别？</strong> <code>super()</code> 是构造器调用，只能在派生类 constructor 中使用；<code>super.method()</code> 是属性查找，可在实例方法或静态方法中调用父级同名方法。边界是静态上下文查父类构造器，实例上下文查父类 prototype。</li>
-          <li><strong>什么时候应该用组合替代继承？</strong> 当关系不是稳定的 “is-a”，或只是复用一组能力时，组合更合适。原因是继承会默认继承父类所有行为，扩展内建对象还可能遇到性能、安全和新方法语义变化；业务封装 Map、Array、Date 时尤其要谨慎。</li>
+          <li>
+            <strong>
+              <code>extends</code>
+              会建立哪两条原型链？
+            </strong>
+            结论是子类构造器继承父类构造器，子类原型继承父类原型。前者让静态成员可沿构造器链查找，后者让实例方法可沿实例原型链查找；排查继承问题时要分清静态方法和实例方法放在哪里。
+          </li>
+          <li>
+            <strong>
+              为什么派生类 constructor 必须先调用
+              <code>super()</code>
+              ？
+            </strong>
+            因为派生类实例的
+            <code>this</code>
+            由父类构造器初始化，在
+            <code>super()</code>
+            返回前访问
+            <code>this</code>
+            会抛 ReferenceError。项目中常见错误是在
+            <code>super()</code>
+            前设置实例字段或调用依赖
+            <code>this</code>
+            的方法。
+          </li>
+          <li>
+            <strong>
+              <code>super()</code>
+              和
+              <code>super.method()</code>
+              有什么区别？
+            </strong>
+            <code>super()</code>
+            是构造器调用，只能在派生类 constructor 中使用；
+            <code>super.method()</code>
+            是属性查找，可在实例方法或静态方法中调用父级同名方法。边界是静态上下文查父类构造器，实例上下文查父类
+            prototype。
+          </li>
+          <li>
+            <strong>什么时候应该用组合替代继承？</strong>
+            当关系不是稳定的
+            “is-a”，或只是复用一组能力时，组合更合适。原因是继承会默认继承父类所有行为，扩展内建对象还可能遇到性能、安全和新方法语义变化；业务封装
+            Map、Array、Date 时尤其要谨慎。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/extends" target="_blank" rel="noreferrer">MDN: extends</a>：两条原型链与派生类构造器规则。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/super" target="_blank" rel="noreferrer">MDN: super</a>：super() 与 super.method() 用法。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements" target="_blank" rel="noreferrer">MDN: Private elements</a>：私有字段在继承中的访问规则。</li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/extends"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: extends
+            </a>
+            ：两条原型链与派生类构造器规则。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/super"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: super
+            </a>
+            ：super() 与 super.method() 用法。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Private elements
+            </a>
+            ：私有字段在继承中的访问规则。
+          </li>
         </ul>
       </div>
     </section>
@@ -59,8 +159,8 @@
     <script>
       // ============ 1. 基类：静态/实例/私有字段与原型方法 ============
       class Person {
-        static userType = "person";
-        static #typeCode = "P";
+        static userType = 'person';
+        static #typeCode = 'P';
 
         userAge = 18;
         #userAgeName = 18;
@@ -79,20 +179,17 @@
         }
       }
 
-      const p1 = new Person("Alice");
+      const p1 = new Person('Alice');
       p1.eat();
-      console.log(
-        "instance prototype:",
-        Person.prototype === Object.getPrototypeOf(p1)
-      ); // true
+      console.log('instance prototype:', Person.prototype === Object.getPrototypeOf(p1)); // true
 
       // ============ 2. extends 建立两条原型链 ============
       class WhitePerson extends Person {
-        skinColor = "white";
+        skinColor = 'white';
 
         constructor(userName) {
           super(userName); // 必须先 super() 才能用 this
-          this.skinColor = "white";
+          this.skinColor = 'white';
         }
 
         greet() {
@@ -101,17 +198,11 @@
         }
       }
 
-      const wp = new WhitePerson("Bob");
-      console.log("greet override:", wp.greet());
-      console.log(
-        "静态链:",
-        Object.getPrototypeOf(WhitePerson) === Person
-      ); // true
-      console.log(
-        "实例原型链:",
-        Object.getPrototypeOf(WhitePerson.prototype) === Person.prototype
-      ); // true
-      console.log("继承静态字段:", WhitePerson.userType); // "person"
+      const wp = new WhitePerson('Bob');
+      console.log('greet override:', wp.greet());
+      console.log('静态链:', Object.getPrototypeOf(WhitePerson) === Person); // true
+      console.log('实例原型链:', Object.getPrototypeOf(WhitePerson.prototype) === Person.prototype); // true
+      console.log('继承静态字段:', WhitePerson.userType); // "person"
 
       // ============ 3. super() 前访问 this 会 ReferenceError ============
       class BadChild extends Person {
@@ -119,16 +210,16 @@
           try {
             this.name = name; // super() 前
           } catch (err) {
-            console.log("super 前 this:", err.name, "-", err.message);
+            console.log('super 前 this:', err.name, '-', err.message);
           }
           super(name);
         }
       }
-      new BadChild("test");
+      new BadChild('test');
 
       // ============ 4. 实例字段 vs 原型方法 ============
-      console.log("eat 共享:", p1.eat === wp.eat); // true（原型方法）
-      console.log("userAge 独立:", p1.userAge === wp.userAge); // true 但各自实例字段
+      console.log('eat 共享:', p1.eat === wp.eat); // true（原型方法）
+      console.log('userAge 独立:', p1.userAge === wp.userAge); // true 但各自实例字段
     </script>
     <!-- SCRIPT_END -->
 
@@ -144,9 +235,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

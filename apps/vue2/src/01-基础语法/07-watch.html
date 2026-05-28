@@ -30,31 +30,107 @@
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>watch 与 computed 的取舍</h1>
       <p class="hint">
-        在 <code>app1</code>～<code>app3</code> 修改 firstName/lastName 观察 fullName 同步方式；
-        在 <code>app4</code> 输入含 <code>?</code> 的问题（试 yes/no/fail）观察防抖与异步竞态处理。
+        在
+        <code>app1</code>
+        ～
+        <code>app3</code>
+        修改 firstName/lastName 观察 fullName 同步方式； 在
+        <code>app4</code>
+        输入含
+        <code>?</code>
+        的问题（试 yes/no/fail）观察防抖与异步竞态处理。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>computed</code> 负责“由已有响应式数据得到一个新值”，例如 <code>firstName + ' ' + lastName</code>。它有依赖缓存，模板多次读取同一个派生值时不会无意义重复计算。</li>
-          <li><code>watch</code> 负责“某个值变化后要做一件事”。回调能拿到 <code>newValue</code> 和 <code>oldValue</code>，适合做异步请求、防抖、表单校验、同步本地存储或通知外部系统。</li>
-          <li>本页第一个示例用 watch 手动维护 <code>fullName</code>，能运行但不是推荐写法；第二个示例用 computed 派生 <code>fullName</code>，更少状态、更不容易漏同步。</li>
-          <li>computed 也可以写成 <code>{ get, set }</code>，适合把一个可读写派生值拆回多个源字段。边界是 setter 仍应保持同步、可预测，不要把请求、计时器这类副作用塞进去。</li>
-          <li>异步 watch 必须考虑失败路径和竞态。本页使用防抖计时器和 <code>requestVersion</code>，避免重复输入时旧异步结果覆盖新答案；真实项目还要处理取消请求、错误提示和组件销毁后的清理。</li>
+          <li>
+            <code>computed</code>
+            负责“由已有响应式数据得到一个新值”，例如
+            <code>firstName + ' ' + lastName</code>
+            。它有依赖缓存，模板多次读取同一个派生值时不会无意义重复计算。
+          </li>
+          <li>
+            <code>watch</code>
+            负责“某个值变化后要做一件事”。回调能拿到
+            <code>newValue</code>
+            和
+            <code>oldValue</code>
+            ，适合做异步请求、防抖、表单校验、同步本地存储或通知外部系统。
+          </li>
+          <li>
+            本页第一个示例用 watch 手动维护
+            <code>fullName</code>
+            ，能运行但不是推荐写法；第二个示例用 computed 派生
+            <code>fullName</code>
+            ，更少状态、更不容易漏同步。
+          </li>
+          <li>
+            computed 也可以写成
+            <code>{ get, set }</code>
+            ，适合把一个可读写派生值拆回多个源字段。边界是 setter
+            仍应保持同步、可预测，不要把请求、计时器这类副作用塞进去。
+          </li>
+          <li>
+            异步 watch 必须考虑失败路径和竞态。本页使用防抖计时器和
+            <code>requestVersion</code>
+            ，避免重复输入时旧异步结果覆盖新答案；真实项目还要处理取消请求、错误提示和组件销毁后的清理。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>watch 和 computed 最核心的职责区别是什么？</strong> 结论是 computed 用来得到派生值，watch 用来响应变化后执行副作用。原因是 computed 有依赖缓存并作为属性读取，watch 是命令式回调，能做异步和外部同步。项目里全名、过滤列表、汇总价格用 computed；输入变化后请求接口或写缓存用 watch。</li>
-          <li><strong>为什么 fullName 用 computed 比用 watch 同步字段更好？</strong> 结论是 computed 状态更少，数据来源更清楚。原因是 watch 方案需要额外维护 <code>fullName</code>，任何一个源字段同步漏掉都会出错；computed 每次都从 <code>firstName</code> 和 <code>lastName</code> 派生，不存第二份真相。边界是如果变化后要触发请求或埋点，才应使用 watch。</li>
-          <li><strong>watch 里发请求为什么要处理防抖和旧结果覆盖？</strong> 结论是用户快速输入会触发多次变化，旧异步结果可能晚于新请求返回。原因是异步完成顺序不等于输入顺序，不处理会把界面改回过期答案。项目里通常配合防抖、取消请求、版本号或 AbortController，并明确展示错误状态。</li>
-          <li><strong>computed setter 适合解决什么问题？</strong> 结论是适合把一个可写的派生值拆分回多个源数据。原因是 getter 定义如何组合，setter 定义外部赋值时如何反向更新源字段。项目里可用于姓名拆分、区间输入等同步逻辑，但复杂副作用仍应放在 methods 或 watch。</li>
-          <li><strong>维护 Vue 2 项目时如何说明 watch 与 Vue 3 选型边界？</strong> 结论是 Vue 2/3 的 watch 语义基本一致，Vue 3 新增 <code>watchEffect</code> 等组合式 API。原因是 Vue 2 已 EOL，新项目应优先 Vue 3 Composition API；存量项目的 watch 选项可直接迁移。边界是复杂副作用在 Vue 3 中也可用 composable 封装。</li>
+          <li>
+            <strong>watch 和 computed 最核心的职责区别是什么？</strong>
+            结论是 computed 用来得到派生值，watch 用来响应变化后执行副作用。原因是 computed
+            有依赖缓存并作为属性读取，watch
+            是命令式回调，能做异步和外部同步。项目里全名、过滤列表、汇总价格用
+            computed；输入变化后请求接口或写缓存用 watch。
+          </li>
+          <li>
+            <strong>为什么 fullName 用 computed 比用 watch 同步字段更好？</strong>
+            结论是 computed 状态更少，数据来源更清楚。原因是 watch 方案需要额外维护
+            <code>fullName</code>
+            ，任何一个源字段同步漏掉都会出错；computed 每次都从
+            <code>firstName</code>
+            和
+            <code>lastName</code>
+            派生，不存第二份真相。边界是如果变化后要触发请求或埋点，才应使用 watch。
+          </li>
+          <li>
+            <strong>watch 里发请求为什么要处理防抖和旧结果覆盖？</strong>
+            结论是用户快速输入会触发多次变化，旧异步结果可能晚于新请求返回。原因是异步完成顺序不等于输入顺序，不处理会把界面改回过期答案。项目里通常配合防抖、取消请求、版本号或
+            AbortController，并明确展示错误状态。
+          </li>
+          <li>
+            <strong>computed setter 适合解决什么问题？</strong>
+            结论是适合把一个可写的派生值拆分回多个源数据。原因是 getter 定义如何组合，setter
+            定义外部赋值时如何反向更新源字段。项目里可用于姓名拆分、区间输入等同步逻辑，但复杂副作用仍应放在
+            methods 或 watch。
+          </li>
+          <li>
+            <strong>维护 Vue 2 项目时如何说明 watch 与 Vue 3 选型边界？</strong>
+            结论是 Vue 2/3 的 watch 语义基本一致，Vue 3 新增
+            <code>watchEffect</code>
+            等组合式 API。原因是 Vue 2 已 EOL，新项目应优先 Vue 3 Composition API；存量项目的 watch
+            选项可直接迁移。边界是复杂副作用在 Vue 3 中也可用 composable 封装。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://v2.vuejs.org/v2/guide/computed.html" target="_blank" rel="noopener">Vue 2 官方文档：Computed Properties and Watchers</a></li>
-          <li><a href="https://v2.vuejs.org/v2/api/#watch" target="_blank" rel="noopener">Vue 2 API：watch</a></li>
-          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 官方说明：Vue 2 Has Reached End of Life</a></li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/guide/computed.html" target="_blank" rel="noopener">
+              Vue 2 官方文档：Computed Properties and Watchers
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/api/#watch" target="_blank" rel="noopener">
+              Vue 2 API：watch
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">
+              Vue 官方说明：Vue 2 Has Reached End of Life
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -65,28 +141,28 @@
     <div id="app1">
       <!--使用watch来监听某个属性的变化-->
       <div>name: {{fullName}}</div>
-      <input v-model="firstName">
-      <input v-model="lastName">
+      <input v-model="firstName" />
+      <input v-model="lastName" />
     </div>
     <div>计算属性：</div>
     <div id="app2">
       <!--使用 computed 派生 fullName（由 firstName、lastName 计算得出）-->
       <div>name: {{fullName}}</div>
-      <input v-model="firstName">
-      <input v-model="lastName">
+      <input v-model="firstName" />
+      <input v-model="lastName" />
     </div>
     <div>计算属性的set和get：</div>
     <div id="app3">
       <!--使用 computed 的 get/set 对象形式（可拆分赋值 fullName）-->
       <div>name: {{fullName}}</div>
-      <input v-model="firstName">
-      <input v-model="lastName">
-      <input v-model="fullName" placeholder="直接改 fullName 触发 setter">
+      <input v-model="firstName" />
+      <input v-model="lastName" />
+      <input v-model="fullName" placeholder="直接改 fullName 触发 setter" />
     </div>
     <div id="app4">
       <div>当需要在数据变化时，执行异步或者开销较大的操作时，使用 watch 才是有效选择</div>
       输入 yes / no / fail 观察异步成功、默认答案和失败路径
-      <input v-model="question">
+      <input v-model="question" />
       <p>{{answer}}</p>
     </div>
     <!-- PAGE_DOM_END -->
@@ -100,23 +176,23 @@
       var vm4 = new Vue({
         el: '#app4',
         data: {
-          question: "yes?",
-          answer: "",
+          question: 'yes?',
+          answer: '',
           pendingTimer: null,
-          requestVersion: 0
+          requestVersion: 0,
         },
         watch: {
           question: function (newValue, oldValue) {
-            this.answer = "等待输入停止...";
+            this.answer = '等待输入停止...';
 
             window.clearTimeout(this.pendingTimer);
             this.pendingTimer = window.setTimeout(this.getAnswer, 500);
-          }
+          },
         },
         methods: {
           getAnswer: function () {
             if (this.question.indexOf('?') === -1) {
-              this.answer = "失败路径：问题需要包含问号 ?";
+              this.answer = '失败路径：问题需要包含问号 ?';
               return;
             }
 
@@ -137,8 +213,8 @@
 
               this.answer = normalized.indexOf('yes') > -1 ? 'Yes' : 'No';
             }, 600);
-          }
-        }
+          },
+        },
       });
 
       // ---------------------------------------------------------------------------
@@ -147,18 +223,18 @@
       var vm1 = new Vue({
         el: '#app1',
         data: {
-          firstName: "cheng",
-          lastName: "wang",
-          fullName: "cheng wang"
+          firstName: 'cheng',
+          lastName: 'wang',
+          fullName: 'cheng wang',
         },
         watch: {
           firstName: function (newValue, oldValue) {
-            this.fullName = newValue + " " + this.lastName;
+            this.fullName = newValue + ' ' + this.lastName;
           },
           lastName: function (newValue, oldValue) {
-            this.fullName = this.firstName + " " + newValue
-          }
-        }
+            this.fullName = this.firstName + ' ' + newValue;
+          },
+        },
       });
 
       // ---------------------------------------------------------------------------
@@ -167,16 +243,16 @@
       var vm2 = new Vue({
         el: '#app2',
         data: {
-          firstName: "cheng",
-          lastName: "wang"
+          firstName: 'cheng',
+          lastName: 'wang',
         },
         computed: {
           //计算属性的结尾语句必须是return，因为计算属性的值，是定义值提供的函数的计算结果
           //getter
           fullName: function () {
-            return this.firstName + " " + this.lastName;
+            return this.firstName + ' ' + this.lastName;
           },
-        }
+        },
       });
 
       // ---------------------------------------------------------------------------
@@ -185,31 +261,30 @@
       var vm3 = new Vue({
         el: '#app3',
         data: {
-          firstName: "cheng",
-          lastName: "wang"
+          firstName: 'cheng',
+          lastName: 'wang',
         },
         computed: {
           //计算属性的结尾语句必须是return，因为计算属性的值，是定义值提供的函数的计算结果
           //getter
           fullName: {
             get: function () {
-              return this.firstName + " " + this.lastName;
+              return this.firstName + ' ' + this.lastName;
             },
             //setter
             set: function (newVal) {
-              console.log("set函数被调用");
+              console.log('set函数被调用');
               var reg = /\s+/;
               var nameArray = newVal.split(reg);
 
-              this.firstName = nameArray[0] || "";
-              this.lastName = nameArray[1] || "";
-            }
-          }
-        }
+              this.firstName = nameArray[0] || '';
+              this.lastName = nameArray[1] || '';
+            },
+          },
+        },
       });
 
-      vm3.fullName = "xiao  guang";
-
+      vm3.fullName = 'xiao  guang';
     </script>
     <!-- SCRIPT_END -->
 
@@ -223,14 +298,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-  
-</body>
+  </body>
 </html>

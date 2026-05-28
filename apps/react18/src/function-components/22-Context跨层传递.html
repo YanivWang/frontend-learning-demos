@@ -30,28 +30,100 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Context 跨层传递</h1>
-      <p class="hint">请打开 DevTools Console 查看主题切换与消费输出；下方 #root 为 React 挂载演示区。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看主题切换与消费输出；下方 #root 为 React 挂载演示区。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Context 用来把数据提供给某棵组件树下的所有后代，典型场景是主题、语言、当前用户、权限配置等跨层但相对稳定的数据。</li>
-          <li><code>useContext(ThemeContext)</code> 会沿组件树向上查找最近的 <code>ThemeContext.Provider</code>；如果没有匹配 Provider，才会使用 <code>createContext</code> 的默认值。</li>
-          <li>Provider 的 <code>value</code> 按引用传递，父组件每次创建新对象都可能让消费者重渲染；本 demo 用 <code>useMemo</code> 稳定主题对象，只在 <code>dark</code> 改变时生成新值。</li>
-          <li>Context 不负责异步请求、缓存、时间旅行调试或复杂派生状态；大型业务状态通常要拆分 Provider，或引入 Redux、Zustand、TanStack Query 等更专门的工具。</li>
-          <li>现代写法优先用函数组件与 <code>useContext</code>；维护旧 class 代码时才会遇到 <code>Context.Consumer</code> 或 <code>contextType</code>。</li>
+          <li>
+            Context
+            用来把数据提供给某棵组件树下的所有后代，典型场景是主题、语言、当前用户、权限配置等跨层但相对稳定的数据。
+          </li>
+          <li>
+            <code>useContext(ThemeContext)</code>
+            会沿组件树向上查找最近的
+            <code>ThemeContext.Provider</code>
+            ；如果没有匹配 Provider，才会使用
+            <code>createContext</code>
+            的默认值。
+          </li>
+          <li>
+            Provider 的
+            <code>value</code>
+            按引用传递，父组件每次创建新对象都可能让消费者重渲染；本 demo 用
+            <code>useMemo</code>
+            稳定主题对象，只在
+            <code>dark</code>
+            改变时生成新值。
+          </li>
+          <li>
+            Context 不负责异步请求、缓存、时间旅行调试或复杂派生状态；大型业务状态通常要拆分
+            Provider，或引入 Redux、Zustand、TanStack Query 等更专门的工具。
+          </li>
+          <li>
+            现代写法优先用函数组件与
+            <code>useContext</code>
+            ；维护旧 class 代码时才会遇到
+            <code>Context.Consumer</code>
+            或
+            <code>contextType</code>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Context 适合传什么数据，不适合传什么数据？</strong> 结论是适合跨层、低频、读多写少的数据。原因是它避免层层透传 props，但 Provider value 变化会影响所有消费者。项目里主题、登录用户可放 Context，输入框草稿、列表缓存和高频动画状态不宜直接塞进一个大 Context。</li>
-          <li><strong>useContext 如何决定读取哪个 Provider？</strong> 它读取调用组件上方最近的同一个 Context Provider。原因是 React 按组件树而不是 DOM 层级查找上下文；没有 Provider 时使用默认值。嵌套主题、局部权限覆盖等场景可以用内层 Provider 覆盖外层值。</li>
-          <li><strong>Provider value 为什么常配合 useMemo 或拆分 Context？</strong> 结论是为了减少不必要的消费者重渲染。原因是对象、数组、函数每次重新创建都会变成新的引用。本 demo 的主题对象只依赖 <code>dark</code>，真实项目还会把读状态和写 dispatch 分到不同 Context。</li>
-          <li><strong>Context 与 props 组合、状态库如何取舍？</strong> 少量中间层优先 props 或 children 组合，跨很多层共享稳定配置再用 Context。需要复杂更新流程、调试工具、服务端缓存或跨页面协作时，Context 通常只是底层通道，不应当承担完整状态管理。</li>
+          <li>
+            <strong>Context 适合传什么数据，不适合传什么数据？</strong>
+            结论是适合跨层、低频、读多写少的数据。原因是它避免层层透传 props，但 Provider value
+            变化会影响所有消费者。项目里主题、登录用户可放
+            Context，输入框草稿、列表缓存和高频动画状态不宜直接塞进一个大 Context。
+          </li>
+          <li>
+            <strong>useContext 如何决定读取哪个 Provider？</strong>
+            它读取调用组件上方最近的同一个 Context Provider。原因是 React 按组件树而不是 DOM
+            层级查找上下文；没有 Provider 时使用默认值。嵌套主题、局部权限覆盖等场景可以用内层
+            Provider 覆盖外层值。
+          </li>
+          <li>
+            <strong>Provider value 为什么常配合 useMemo 或拆分 Context？</strong>
+            结论是为了减少不必要的消费者重渲染。原因是对象、数组、函数每次重新创建都会变成新的引用。本
+            demo 的主题对象只依赖
+            <code>dark</code>
+            ，真实项目还会把读状态和写 dispatch 分到不同 Context。
+          </li>
+          <li>
+            <strong>Context 与 props 组合、状态库如何取舍？</strong>
+            少量中间层优先 props 或 children 组合，跨很多层共享稳定配置再用
+            Context。需要复杂更新流程、调试工具、服务端缓存或跨页面协作时，Context
+            通常只是底层通道，不应当承担完整状态管理。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/learn/passing-data-deeply-with-context" target="_blank" rel="noreferrer">react.dev: Passing Data Deeply with Context</a></li>
-          <li><a href="https://react.dev/reference/react/useContext" target="_blank" rel="noreferrer">react.dev: useContext</a></li>
-          <li><a href="https://react.dev/reference/react/createContext" target="_blank" rel="noreferrer">react.dev: createContext</a></li>
+          <li>
+            <a
+              href="https://react.dev/learn/passing-data-deeply-with-context"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Passing Data Deeply with Context
+            </a>
+          </li>
+          <li>
+            <a href="https://react.dev/reference/react/useContext" target="_blank" rel="noreferrer">
+              react.dev: useContext
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/createContext"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: createContext
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -75,7 +147,7 @@
       // ====== 2. 深层消费：无需中间层透传 props ======
       function ThemeButton() {
         const theme = useContext(ThemeContext);
-        console.log("ThemeButton 读取 theme:", theme.name); // 每次 Provider value 变化时输出
+        console.log('ThemeButton 读取 theme:', theme.name); // 每次 Provider value 变化时输出
         return (
           <button style={{ background: theme.background, color: theme.color }}>
             当前主题: {theme.name}
@@ -89,13 +161,13 @@
 
         const themeValue = useMemo(() => {
           return dark
-            ? { name: "dark", background: "#222", color: "#fff" }
-            : { name: "light", background: "#fff", color: "#222" };
+            ? { name: 'dark', background: '#222', color: '#fff' }
+            : { name: 'light', background: '#fff', color: '#222' };
         }, [dark]);
 
         function toggleTheme() {
           const next = !dark;
-          console.log("切换主题 →", next ? "dark" : "light"); // 观察消费组件重渲染
+          console.log('切换主题 →', next ? 'dark' : 'light'); // 观察消费组件重渲染
           setDark(next);
         }
 
@@ -111,7 +183,7 @@
       }
 
       // ====== 4. createRoot 挂载 ======
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -120,20 +192,26 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./21-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1%E4%B8%8Echildren%E7%BB%84%E5%90%88.html">相关 · 21-组件通信与children组合</a>
-        <a href="./23-Reactmemo%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">相关 · 23-Reactmemo性能优化</a>
-        <a href="./21-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1%E4%B8%8Echildren%E7%BB%84%E5%90%88.html">← 组件通信与children组合</a>
+        <a href="./21-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1%E4%B8%8Echildren%E7%BB%84%E5%90%88.html">
+          相关 · 21-组件通信与children组合
+        </a>
+        <a href="./23-Reactmemo%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">
+          相关 · 23-Reactmemo性能优化
+        </a>
+        <a href="./21-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1%E4%B8%8Echildren%E7%BB%84%E5%90%88.html">
+          ← 组件通信与children组合
+        </a>
         <a href="./23-Reactmemo%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">Reactmemo性能优化 →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

@@ -30,24 +30,101 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>async</code> 可用于函数声明、函数表达式、箭头函数、对象方法和类方法；每次调用都会返回一个 Promise。</li>
-          <li>async 函数内部 <code>return</code> 的值会成为返回 Promise 的 fulfilled value；内部未捕获的 <code>throw</code> 或 await rejection 会让返回 Promise rejected。</li>
-          <li><code>try...catch</code> 包住 <code>await</code> 可以捕获 await 产生的异常；如果在 await 前对 Promise 先接了 <code>.catch</code> 并吞掉错误，外层 <code>try...catch</code> 就接不到原始 rejection。</li>
-          <li>局部 <code>catch</code> 适合把某一步失败转为默认值；外层 <code>try...catch</code> 适合让一组步骤共享失败处理。两者混用时要清楚错误是否继续抛出。</li>
-          <li>调用 async 函数时仍要在外层 <code>await try...catch</code> 或 <code>.catch</code> 兜底，否则未处理 rejection 会进入全局错误处理。</li>
+          <li>
+            <code>async</code>
+            可用于函数声明、函数表达式、箭头函数、对象方法和类方法；每次调用都会返回一个 Promise。
+          </li>
+          <li>
+            async 函数内部
+            <code>return</code>
+            的值会成为返回 Promise 的 fulfilled value；内部未捕获的
+            <code>throw</code>
+            或 await rejection 会让返回 Promise rejected。
+          </li>
+          <li>
+            <code>try...catch</code>
+            包住
+            <code>await</code>
+            可以捕获 await 产生的异常；如果在 await 前对 Promise 先接了
+            <code>.catch</code>
+            并吞掉错误，外层
+            <code>try...catch</code>
+            就接不到原始 rejection。
+          </li>
+          <li>
+            局部
+            <code>catch</code>
+            适合把某一步失败转为默认值；外层
+            <code>try...catch</code>
+            适合让一组步骤共享失败处理。两者混用时要清楚错误是否继续抛出。
+          </li>
+          <li>
+            调用 async 函数时仍要在外层
+            <code>await try...catch</code>
+            或
+            <code>.catch</code>
+            兜底，否则未处理 rejection 会进入全局错误处理。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>async 可以声明在哪些函数形态上？</strong> 可以用于函数声明、函数表达式、箭头函数、对象方法和类方法。无论哪种形态，调用结果都是 Promise；区别主要在 this、提升和命名调试信息等普通函数语义上。</li>
-          <li><strong>async 函数内部 throw 和 await rejection 如何传到调用方？</strong> 未捕获的 throw 或 await rejection 会让 async 函数返回的 Promise rejected。调用方可以用 <code>await</code> 外层 <code>try...catch</code> 捕获，也可以用 <code>.catch</code> 捕获。</li>
-          <li><strong><code>await promise.catch(...)</code> 和 <code>try/catch</code> 包 await 有什么区别？</strong> 前者先在 Promise 链上局部处理错误，如果 catch 返回正常值，外层 await 看到的是 fulfilled；后者统一捕获 await 抛出的异常。项目里局部降级用前者，整体失败流程用后者。</li>
-          <li><strong>为什么调用 async 函数时外层仍要写 catch？</strong> 因为 async 内部未处理错误不会同步抛给调用栈，而是表现为返回 Promise rejected。没有外层 catch 会形成未处理 rejection，生产环境应统一兜底、提示用户并上报监控。</li>
+          <li>
+            <strong>async 可以声明在哪些函数形态上？</strong>
+            可以用于函数声明、函数表达式、箭头函数、对象方法和类方法。无论哪种形态，调用结果都是
+            Promise；区别主要在 this、提升和命名调试信息等普通函数语义上。
+          </li>
+          <li>
+            <strong>async 函数内部 throw 和 await rejection 如何传到调用方？</strong>
+            未捕获的 throw 或 await rejection 会让 async 函数返回的 Promise rejected。调用方可以用
+            <code>await</code>
+            外层
+            <code>try...catch</code>
+            捕获，也可以用
+            <code>.catch</code>
+            捕获。
+          </li>
+          <li>
+            <strong>
+              <code>await promise.catch(...)</code>
+              和
+              <code>try/catch</code>
+              包 await 有什么区别？
+            </strong>
+            前者先在 Promise 链上局部处理错误，如果 catch 返回正常值，外层 await 看到的是
+            fulfilled；后者统一捕获 await 抛出的异常。项目里局部降级用前者，整体失败流程用后者。
+          </li>
+          <li>
+            <strong>为什么调用 async 函数时外层仍要写 catch？</strong>
+            因为 async 内部未处理错误不会同步抛给调用栈，而是表现为返回 Promise rejected。没有外层
+            catch 会形成未处理 rejection，生产环境应统一兜底、提示用户并上报监控。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function">MDN: async function</a>：可用于声明、表达式、箭头、对象/类方法。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await">MDN: await</a>：rejection 中断 async 函数；局部 .catch 可吞掉错误。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncFunction">MDN: AsyncFunction</a>：async 函数的构造器类型。</li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function"
+            >
+              MDN: async function
+            </a>
+            ：可用于声明、表达式、箭头、对象/类方法。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await"
+            >
+              MDN: await
+            </a>
+            ：rejection 中断 async 函数；局部 .catch 可吞掉错误。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncFunction"
+            >
+              MDN: AsyncFunction
+            </a>
+            ：async 函数的构造器类型。
+          </li>
         </ul>
       </div>
     </section>
@@ -57,24 +134,24 @@
     <script>
       // ============ 1. async 多种声明形态，调用结果都是 Promise ============
       async function f1() {
-        return "声明式";
+        return '声明式';
       }
 
       const foo = async function () {
-        return "函数表达式";
+        return '函数表达式';
       };
 
-      const arrowFoo = async () => "箭头函数";
+      const arrowFoo = async () => '箭头函数';
 
       const obj = {
         async method() {
-          return "对象方法";
+          return '对象方法';
         },
       };
 
       class Service {
         async classMethod() {
-          return "类方法";
+          return '类方法';
         }
       }
 
@@ -82,61 +159,61 @@
 
       // ============ 2. await rejection 中断函数体，外层 .catch 接收 ============
       async function handleError() {
-        await Promise.reject("出错");
-        console.log("111（不会执行）");
-        return "执行完毕";
+        await Promise.reject('出错');
+        console.log('111（不会执行）');
+        return '执行完毕';
       }
 
       // ============ 3. await 前 .catch 局部吞错 vs try/catch 包 await ============
       async function handleException() {
         try {
-          await Promise.reject("出错").catch(function () {
-            console.log("AAA（局部 catch 吞错）");
+          await Promise.reject('出错').catch(function () {
+            console.log('AAA（局部 catch 吞错）');
           });
 
-          await Promise.reject("出错了啊");
+          await Promise.reject('出错了啊');
         } catch (e) {
-          console.log(e + " BBB");
+          console.log(e + ' BBB');
         }
-        console.log("CCC（catch 后继续执行）");
-        return "执行完毕";
+        console.log('CCC（catch 后继续执行）');
+        return '执行完毕';
       }
 
       // ============ 4. 外层仍要 catch：内部未处理错误表现为 rejected Promise ============
       async function unhandledInside() {
-        await Promise.reject(new Error("内部未 try/catch"));
+        await Promise.reject(new Error('内部未 try/catch'));
       }
 
       (async function main() {
-        console.log("--- §1 声明形态 ---");
-        console.log("f1:", await f1());
-        console.log("foo:", await foo());
-        console.log("arrowFoo:", await arrowFoo());
-        console.log("obj.method:", await obj.method());
-        console.log("classMethod:", await service.classMethod());
+        console.log('--- §1 声明形态 ---');
+        console.log('f1:', await f1());
+        console.log('foo:', await foo());
+        console.log('arrowFoo:', await arrowFoo());
+        console.log('obj.method:', await obj.method());
+        console.log('classMethod:', await service.classMethod());
         console.log(
-          "均为 Promise:",
+          '均为 Promise:',
           [f1(), foo(), arrowFoo()].every((p) => p instanceof Promise),
         );
 
-        console.log("--- §2 await rejection ---");
+        console.log('--- §2 await rejection ---');
         try {
           await handleError();
         } catch (err) {
-          console.error("handleError 外层 catch:", err);
+          console.error('handleError 外层 catch:', err);
         }
 
-        console.log("--- §3 局部 .catch vs try/catch ---");
-        console.log("DDD:", await handleException());
+        console.log('--- §3 局部 .catch vs try/catch ---');
+        console.log('DDD:', await handleException());
 
-        console.log("--- §4 外层兜底 ---");
+        console.log('--- §4 外层兜底 ---');
         try {
           await unhandledInside();
         } catch (e) {
-          console.error("unhandledInside 外层 catch:", e.name, e.message);
+          console.error('unhandledInside 外层 catch:', e.name, e.message);
         }
       })().catch(function (err) {
-        console.error("demo 未捕获错误:", err.name, err.message);
+        console.error('demo 未捕获错误:', err.name, err.message);
       });
     </script>
     <!-- SCRIPT_END -->
@@ -146,14 +223,18 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../../index.html">目录</a>
-        <a href="./05-async-await-%E8%A1%A8%E8%BE%BE%E5%BC%8F%E4%B8%8E%E5%BC%82%E5%B8%B8.html">← async-await-表达式与异常</a>
-        <a href="../Promise/01-Promise-all%E5%B9%B6%E5%8F%91%E4%B8%8Ethen%E4%B8%B2%E8%A1%8C.html">Promise-all并发与then串行 →</a>
+        <a href="./05-async-await-%E8%A1%A8%E8%BE%BE%E5%BC%8F%E4%B8%8E%E5%BC%82%E5%B8%B8.html">
+          ← async-await-表达式与异常
+        </a>
+        <a href="../Promise/01-Promise-all%E5%B9%B6%E5%8F%91%E4%B8%8Ethen%E4%B8%B2%E8%A1%8C.html">
+          Promise-all并发与then串行 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

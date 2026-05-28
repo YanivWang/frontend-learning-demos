@@ -30,28 +30,89 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>useEffect 副作用、依赖数组与清理函数</h1>
-      <p class="hint">请打开 DevTools Console 查看 effect 建立/cleanup 与 document.title 同步；下方 #root 为 React 挂载/交互演示区。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看 effect 建立/cleanup 与 document.title 同步；下方 #root 为 React
+        挂载/交互演示区。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>useEffect</code> 表达“这次渲染结果需要和哪个外部系统同步”，常见外部系统包括定时器、DOM API、浏览器事件、网络连接和第三方库。</li>
-          <li>依赖数组不是手动优化开关，而是 effect 读取的响应式值清单；示例中定时器依赖 <code>step</code>，所以 <code>step</code> 变化时必须重新建立定时器。</li>
-          <li>cleanup 会在组件卸载前执行，也会在依赖变化导致下一次 setup 前执行；定时器、订阅和事件监听如果不清理，会造成重复执行或内存泄漏。</li>
-          <li>空依赖数组表示 effect 不读取组件内会变化的响应式值；如果实际读取了却强行省略，容易产生旧闭包和线上难复现的状态不同步。</li>
-          <li>React 18 开发环境 Strict Mode 会额外做一次 setup + cleanup + setup，用来检查 cleanup 是否完整；生产环境不会因此重复挂载业务逻辑。</li>
+          <li>
+            <code>useEffect</code>
+            表达“这次渲染结果需要和哪个外部系统同步”，常见外部系统包括定时器、DOM
+            API、浏览器事件、网络连接和第三方库。
+          </li>
+          <li>
+            依赖数组不是手动优化开关，而是 effect 读取的响应式值清单；示例中定时器依赖
+            <code>step</code>
+            ，所以
+            <code>step</code>
+            变化时必须重新建立定时器。
+          </li>
+          <li>
+            cleanup 会在组件卸载前执行，也会在依赖变化导致下一次 setup
+            前执行；定时器、订阅和事件监听如果不清理，会造成重复执行或内存泄漏。
+          </li>
+          <li>
+            空依赖数组表示 effect
+            不读取组件内会变化的响应式值；如果实际读取了却强行省略，容易产生旧闭包和线上难复现的状态不同步。
+          </li>
+          <li>
+            React 18 开发环境 Strict Mode 会额外做一次 setup + cleanup + setup，用来检查 cleanup
+            是否完整；生产环境不会因此重复挂载业务逻辑。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>useEffect</code> 到底同步什么？</strong> 结论是同步 React 渲染结果与外部系统。原因是渲染本身应保持纯净，DOM 标题、定时器、订阅和网络连接这类副作用必须在提交到页面后处理。</li>
-          <li><strong>依赖数组应该怎么写？</strong> 结论是 effect 中读取的 props、state 和组件内声明的响应式值都应列入依赖。原因是 React 依赖这份清单决定何时重新同步外部系统。</li>
-          <li><strong>为什么 cleanup 会在下一次 effect 前执行？</strong> 结论是 React 要先撤销上一轮渲染对应的外部副作用，再建立新副作用。原因是每次 effect 都属于某一次渲染快照。</li>
-          <li><strong>React 18 Strict Mode 下 effect 执行两次是不是 bug？</strong> 结论是不是 bug，这是开发环境的检查。原因是 React 通过额外 setup + cleanup 暴露不可重复执行或清理不完整的副作用。</li>
+          <li>
+            <strong>
+              <code>useEffect</code>
+              到底同步什么？
+            </strong>
+            结论是同步 React 渲染结果与外部系统。原因是渲染本身应保持纯净，DOM
+            标题、定时器、订阅和网络连接这类副作用必须在提交到页面后处理。
+          </li>
+          <li>
+            <strong>依赖数组应该怎么写？</strong>
+            结论是 effect 中读取的 props、state 和组件内声明的响应式值都应列入依赖。原因是 React
+            依赖这份清单决定何时重新同步外部系统。
+          </li>
+          <li>
+            <strong>为什么 cleanup 会在下一次 effect 前执行？</strong>
+            结论是 React 要先撤销上一轮渲染对应的外部副作用，再建立新副作用。原因是每次 effect
+            都属于某一次渲染快照。
+          </li>
+          <li>
+            <strong>React 18 Strict Mode 下 effect 执行两次是不是 bug？</strong>
+            结论是不是 bug，这是开发环境的检查。原因是 React 通过额外 setup + cleanup
+            暴露不可重复执行或清理不完整的副作用。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">react.dev: useEffect</a></li>
-          <li><a href="https://react.dev/learn/synchronizing-with-effects" target="_blank" rel="noreferrer">react.dev: Synchronizing with Effects</a></li>
-          <li><a href="https://react.dev/learn/lifecycle-of-reactive-effects" target="_blank" rel="noreferrer">react.dev: Lifecycle of Reactive Effects</a></li>
+          <li>
+            <a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">
+              react.dev: useEffect
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/synchronizing-with-effects"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Synchronizing with Effects
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/lifecycle-of-reactive-effects"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Lifecycle of Reactive Effects
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -70,21 +131,25 @@
         const [seconds, setSeconds] = useState(0);
 
         useEffect(() => {
-          console.log("effect setup: 建立定时器，step =", step);
+          console.log('effect setup: 建立定时器，step =', step);
 
           const timer = setInterval(() => {
-            setSeconds(prev => prev + step);
+            setSeconds((prev) => prev + step);
           }, 1000);
 
           // ====== 2. cleanup：撤销上一轮外部副作用 ======
           // 清理函数非常关键：清定时器、解绑事件、取消订阅都在这里做
           return () => {
-            console.log("effect cleanup: 清理定时器，step =", step);
+            console.log('effect cleanup: 清理定时器，step =', step);
             clearInterval(timer);
           };
         }, [step]);
 
-        return <p>秒数: {seconds}，当前步长: {step}</p>;
+        return (
+          <p>
+            秒数: {seconds}，当前步长: {step}
+          </p>
+        );
       }
 
       function App() {
@@ -93,8 +158,8 @@
 
         // ====== 3. document.title：渲染结果同步到浏览器 DOM API ======
         useEffect(() => {
-          document.title = "step: " + step;
-          console.log("document.title 同步:", document.title);
+          document.title = 'step: ' + step;
+          console.log('document.title 同步:', document.title);
         }, [step]);
 
         return (
@@ -109,7 +174,7 @@
       }
 
       // ====== 4. createRoot 挂载 ======
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -125,13 +190,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

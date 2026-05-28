@@ -21,9 +21,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TypeScript · tsconfig strict 配置</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 900px; line-height: 1.6; }
-      pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
-      #log { background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; white-space: pre-wrap; font-size: 0.85rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 900px;
+        line-height: 1.6;
+      }
+      pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 14px;
+        border-radius: 8px;
+        overflow: auto;
+        font-size: 0.86rem;
+      }
+      #log {
+        background: #f6f8fa;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 12px;
+        white-space: pre-wrap;
+        font-size: 0.85rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -32,49 +51,151 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>tsconfig 与 strict</h1>
-      <p class="hint">本页展示 tsconfig 配置片段；各 strict 相关项须在 IDE 或 <code>tsc</code> 中验证，下方输出为配置说明清单。</p>
+      <p class="hint">
+        本页展示 tsconfig 配置片段；各 strict 相关项须在 IDE 或
+        <code>tsc</code>
+        中验证，下方输出为配置说明清单。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>tsconfig.json</code> 是项目级 TypeScript 配置入口，决定哪些文件参与检查、目标语法、模块系统、模块解析策略和严格程度。</li>
-          <li><code>strict</code> 是一组严格检查开关的总开关，会启用 <code>strictNullChecks</code>、<code>strictFunctionTypes</code> 等能力；新项目建议默认开启，旧项目可分目录逐步治理。</li>
-          <li><code>noImplicitAny</code> 禁止参数和变量悄悄退化成隐式 <code>any</code>，能尽早暴露回调、事件参数和第三方数据建模缺口。</li>
-          <li><code>noUncheckedIndexedAccess</code> 会把索引读取结果标成可能为 <code>undefined</code>，适合暴露数组越界、字典缺 key 这类运行时风险，但可能增加必要的空值处理。</li>
-          <li>Vite、Webpack、esbuild 等前端项目通常让构建工具输出代码，TypeScript 只跑 <code>tsc --noEmit</code> 做类型检查；<code>moduleResolution: "Bundler"</code> 适合现代打包器解析 ESM、exports/imports 的场景。</li>
+          <li>
+            <code>tsconfig.json</code>
+            是项目级 TypeScript
+            配置入口，决定哪些文件参与检查、目标语法、模块系统、模块解析策略和严格程度。
+          </li>
+          <li>
+            <code>strict</code>
+            是一组严格检查开关的总开关，会启用
+            <code>strictNullChecks</code>
+            、
+            <code>strictFunctionTypes</code>
+            等能力；新项目建议默认开启，旧项目可分目录逐步治理。
+          </li>
+          <li>
+            <code>noImplicitAny</code>
+            禁止参数和变量悄悄退化成隐式
+            <code>any</code>
+            ，能尽早暴露回调、事件参数和第三方数据建模缺口。
+          </li>
+          <li>
+            <code>noUncheckedIndexedAccess</code>
+            会把索引读取结果标成可能为
+            <code>undefined</code>
+            ，适合暴露数组越界、字典缺 key 这类运行时风险，但可能增加必要的空值处理。
+          </li>
+          <li>
+            Vite、Webpack、esbuild 等前端项目通常让构建工具输出代码，TypeScript 只跑
+            <code>tsc --noEmit</code>
+            做类型检查；
+            <code>moduleResolution: "Bundler"</code>
+            适合现代打包器解析 ESM、exports/imports 的场景。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>strict 为什么建议新项目默认开启？</strong> 结论是它能把空值、函数参数兼容性、隐式 any 等高风险问题前移到编译期。原因是 TypeScript 的收益来自约束边界，而不是只写几个注解。旧项目迁移时可以先开启局部配置或逐项打开，避免一次性产生过多错误。</li>
-          <li><strong>noImplicitAny 和 noUncheckedIndexedAccess 分别防什么？</strong> 结论是前者防类型缺失，后者防索引读取不存在。原因是隐式 <code>any</code> 会让类型检查断链，索引读取在 JS 里天然可能得到 <code>undefined</code>。项目里常见于事件回调、字典表、数组查找和接口缓存。</li>
-          <li><strong>为什么前端项目常用 tsc --noEmit？</strong> 结论是把类型检查和代码转译分工给不同工具。原因是 Vite/esbuild/SWC 更适合快速打包，而 <code>tsc --noEmit</code> 专注类型正确性。边界是如果项目需要生成声明文件，就不能只依赖 <code>noEmit</code>。</li>
-          <li><strong>moduleResolution: Bundler 适合什么场景？</strong> 结论是适合由现代打包器处理模块解析的前端应用。原因是它更贴近 bundler 对 package.json <code>exports</code>/<code>imports</code> 和扩展名的处理方式。库项目、Node 运行时代码或老构建链路仍要按目标环境选择 <code>NodeNext</code>、<code>Node16</code> 等策略。</li>
+          <li>
+            <strong>strict 为什么建议新项目默认开启？</strong>
+            结论是它能把空值、函数参数兼容性、隐式 any 等高风险问题前移到编译期。原因是 TypeScript
+            的收益来自约束边界，而不是只写几个注解。旧项目迁移时可以先开启局部配置或逐项打开，避免一次性产生过多错误。
+          </li>
+          <li>
+            <strong>noImplicitAny 和 noUncheckedIndexedAccess 分别防什么？</strong>
+            结论是前者防类型缺失，后者防索引读取不存在。原因是隐式
+            <code>any</code>
+            会让类型检查断链，索引读取在 JS 里天然可能得到
+            <code>undefined</code>
+            。项目里常见于事件回调、字典表、数组查找和接口缓存。
+          </li>
+          <li>
+            <strong>为什么前端项目常用 tsc --noEmit？</strong>
+            结论是把类型检查和代码转译分工给不同工具。原因是 Vite/esbuild/SWC 更适合快速打包，而
+            <code>tsc --noEmit</code>
+            专注类型正确性。边界是如果项目需要生成声明文件，就不能只依赖
+            <code>noEmit</code>
+            。
+          </li>
+          <li>
+            <strong>moduleResolution: Bundler 适合什么场景？</strong>
+            结论是适合由现代打包器处理模块解析的前端应用。原因是它更贴近 bundler 对 package.json
+            <code>exports</code>
+            /
+            <code>imports</code>
+            和扩展名的处理方式。库项目、Node 运行时代码或老构建链路仍要按目标环境选择
+            <code>NodeNext</code>
+            、
+            <code>Node16</code>
+            等策略。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://www.typescriptlang.org/tsconfig/" target="_blank" rel="noopener">TypeScript: TSConfig Reference</a></li>
-          <li><a href="https://www.typescriptlang.org/tsconfig/#strict" target="_blank" rel="noopener">TSConfig Reference: strict</a></li>
-          <li><a href="https://www.typescriptlang.org/tsconfig/#noImplicitAny" target="_blank" rel="noopener">TSConfig Reference: noImplicitAny</a></li>
-          <li><a href="https://www.typescriptlang.org/tsconfig/#noUncheckedIndexedAccess" target="_blank" rel="noopener">TSConfig Reference: noUncheckedIndexedAccess</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-0.html#--moduleresolution-bundler" target="_blank" rel="noopener">TypeScript 5.0 Release Notes: moduleResolution bundler</a></li>
+          <li>
+            <a href="https://www.typescriptlang.org/tsconfig/" target="_blank" rel="noopener">
+              TypeScript: TSConfig Reference
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/tsconfig/#strict"
+              target="_blank"
+              rel="noopener"
+            >
+              TSConfig Reference: strict
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/tsconfig/#noImplicitAny"
+              target="_blank"
+              rel="noopener"
+            >
+              TSConfig Reference: noImplicitAny
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/tsconfig/#noUncheckedIndexedAccess"
+              target="_blank"
+              rel="noopener"
+            >
+              TSConfig Reference: noUncheckedIndexedAccess
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-0.html#--moduleresolution-bundler"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript 5.0 Release Notes: moduleResolution bundler
+            </a>
+          </li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>下方为典型前端项目 <code>tsconfig.json</code> 片段；各配置项须在 CLI / IDE 中验证效果。</p>
-    <pre>{
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "strict": true,
-    "noImplicitAny": true,
-    "noUncheckedIndexedAccess": true,
-    "noEmit": true
-  },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
-}</pre>
+    <p>
+      下方为典型前端项目
+      <code>tsconfig.json</code>
+      片段；各配置项须在 CLI / IDE 中验证效果。
+    </p>
+    <pre>
+{
+      "compilerOptions": {
+      "target": "ES2022",
+      "module": "ESNext",
+      "moduleResolution": "Bundler",
+      "strict": true,
+      "noImplicitAny": true,
+      "noUncheckedIndexedAccess": true,
+      "noEmit": true
+      },
+      "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
+      }</pre
+    >
     <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
 
@@ -83,20 +204,20 @@
       // ============ 1. tsconfig strict 相关项说明 ============
       // tsconfig 是工程配置，不会在浏览器里执行；下方清单对应上方 compilerOptions。
       const flags = [
-        ["strict", "开启一组严格检查（含 strictNullChecks 等）"],
-        ["noImplicitAny", "参数/变量隐式 any 时报错"],
-        ["noUncheckedIndexedAccess", "arr[i] / obj[k] 结果含 undefined"],
-        ["noEmit", "只做类型检查，构建交给 Vite 等工具"],
-        ["moduleResolution: Bundler", "适配现代打包器的 ESM 解析"],
+        ['strict', '开启一组严格检查（含 strictNullChecks 等）'],
+        ['noImplicitAny', '参数/变量隐式 any 时报错'],
+        ['noUncheckedIndexedAccess', 'arr[i] / obj[k] 结果含 undefined'],
+        ['noEmit', '只做类型检查，构建交给 Vite 等工具'],
+        ['moduleResolution: Bundler', '适配现代打包器的 ESM 解析'],
       ];
 
       const lines = [];
-      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+      const assert = (cond, msg) => lines.push((cond ? '✓ ' : '✗ ') + msg);
 
       flags.forEach(([name]) => assert(true, `${name} 已在上方 tsconfig 片段中展示`));
-      assert(flags.length === 5, "NOTES 要点与 tsconfig 片段逐条对应");
+      assert(flags.length === 5, 'NOTES 要点与 tsconfig 片段逐条对应');
 
-      document.getElementById("log").textContent = lines.join("\n");
+      document.getElementById('log').textContent = lines.join('\n');
     </script>
     <!-- SCRIPT_END -->
 
@@ -105,20 +226,32 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="../02-%E8%BF%9B%E9%98%B6/06-%E6%89%8B%E5%86%99Utility-Types%E7%BB%83%E4%B9%A0.html">相关 · 手写Utility-Types练习</a>
-        <a href="./02-%E7%B1%BB%E5%9E%8B%E5%A3%B0%E6%98%8E%E4%B8%8E%E6%A8%A1%E5%9D%97.html">相关 · 类型声明与模块</a>
-        <a href="../02-%E8%BF%9B%E9%98%B6/06-%E6%89%8B%E5%86%99Utility-Types%E7%BB%83%E4%B9%A0.html">← 手写Utility-Types练习</a>
-        <a href="./02-%E7%B1%BB%E5%9E%8B%E5%A3%B0%E6%98%8E%E4%B8%8E%E6%A8%A1%E5%9D%97.html">类型声明与模块 →</a>
+        <a
+          href="../02-%E8%BF%9B%E9%98%B6/06-%E6%89%8B%E5%86%99Utility-Types%E7%BB%83%E4%B9%A0.html"
+        >
+          相关 · 手写Utility-Types练习
+        </a>
+        <a href="./02-%E7%B1%BB%E5%9E%8B%E5%A3%B0%E6%98%8E%E4%B8%8E%E6%A8%A1%E5%9D%97.html">
+          相关 · 类型声明与模块
+        </a>
+        <a
+          href="../02-%E8%BF%9B%E9%98%B6/06-%E6%89%8B%E5%86%99Utility-Types%E7%BB%83%E4%B9%A0.html"
+        >
+          ← 手写Utility-Types练习
+        </a>
+        <a href="./02-%E7%B1%BB%E5%9E%8B%E5%A3%B0%E6%98%8E%E4%B8%8E%E6%A8%A1%E5%9D%97.html">
+          类型声明与模块 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

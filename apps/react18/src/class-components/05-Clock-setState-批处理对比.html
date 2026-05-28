@@ -32,30 +32,130 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Clock 演示 setState 批处理（对象式 vs 函数式）</h1>
-      <p class="hint">请打开 DevTools Console 查看批处理前后 count 快照；点击下方按钮立即触发对比，或等待 6s 定时器自动触发；下方 #root 为 React 挂载/交互演示区。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看批处理前后 count 快照；点击下方按钮立即触发对比，或等待 6s
+        定时器自动触发；下方 #root 为 React 挂载/交互演示区。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>counterOld</code> 连续三次对象式 <code>setState</code> 都先用旧 <code>this.state.count1</code> 算出同样的下一个值，React 批处理并浅合并后，<code>count1</code> 每轮只增加 1。</li>
-          <li><code>counterNew</code> 连续三次函数式 <code>setState</code> 会按队列顺序拿到最新 <code>prevState.count2</code>，因此每轮增加 3；页面同时展示两个计数值，方便观察差异。</li>
-          <li><code>setState</code> 后立即读取 <code>this.state</code> 仍可能是旧快照。需要观察提交后的结果时，可以使用 <code>setState</code> 第二个参数回调、<code>componentDidUpdate</code>，或把 UI 直接交给下一次 render 展示。</li>
-          <li>定时器、订阅、手动 DOM 监听都属于副作用；class 组件应在 <code>componentDidMount</code> 建立，在 <code>componentWillUnmount</code> 清理，拼写错误会导致 React 无法调用清理逻辑。</li>
-          <li>新项目通常用函数组件表达 Clock：用 <code>useEffect</code> 建立和清理 interval，用 <code>useState</code> 保存计数；维护老 class 时仍需理解本页的批处理和生命周期边界。</li>
+          <li>
+            <code>counterOld</code>
+            连续三次对象式
+            <code>setState</code>
+            都先用旧
+            <code>this.state.count1</code>
+            算出同样的下一个值，React 批处理并浅合并后，
+            <code>count1</code>
+            每轮只增加 1。
+          </li>
+          <li>
+            <code>counterNew</code>
+            连续三次函数式
+            <code>setState</code>
+            会按队列顺序拿到最新
+            <code>prevState.count2</code>
+            ，因此每轮增加 3；页面同时展示两个计数值，方便观察差异。
+          </li>
+          <li>
+            <code>setState</code>
+            后立即读取
+            <code>this.state</code>
+            仍可能是旧快照。需要观察提交后的结果时，可以使用
+            <code>setState</code>
+            第二个参数回调、
+            <code>componentDidUpdate</code>
+            ，或把 UI 直接交给下一次 render 展示。
+          </li>
+          <li>
+            定时器、订阅、手动 DOM 监听都属于副作用；class 组件应在
+            <code>componentDidMount</code>
+            建立，在
+            <code>componentWillUnmount</code>
+            清理，拼写错误会导致 React 无法调用清理逻辑。
+          </li>
+          <li>
+            新项目通常用函数组件表达 Clock：用
+            <code>useEffect</code>
+            建立和清理 interval，用
+            <code>useState</code>
+            保存计数；维护老 class 时仍需理解本页的批处理和生命周期边界。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>对象式 setState 和函数式 setState 在批处理中为什么结果不同？</strong> 结论是：对象式会把旧 state 先算成对象，函数式会在队列执行时逐步读取最新 <code>prevState</code>。原因是 React 批处理时会合并多个更新；项目中只要依赖前一次结果，就应写函数式更新。</li>
-          <li><strong>setState 后立即读取 this.state 为什么不可靠？</strong> 结论是：因为 <code>setState</code> 安排更新，不等于同步改写实例字段。原因是 React 可能把多次更新合并到一次 render；如果要做提交后的日志、埋点或 DOM 测量，要放到回调或更新后的生命周期中。</li>
-          <li><strong>定时器驱动的 class 组件为什么必须清理 componentWillUnmount？</strong> 结论是：否则组件卸载后定时器仍会运行，继续调用 <code>setState</code> 或持有资源。原因是浏览器定时器不受 React 自动管理；项目中还要同样清理订阅、WebSocket、DOM 事件监听等外部资源。</li>
-          <li><strong>setState 第二个参数回调适合解决什么问题？</strong> 结论是：适合在 state 提交并完成重新渲染后执行一次性逻辑。原因是它比立即读取 <code>this.state</code> 更可靠；边界是复杂派生逻辑不要塞进回调，优先通过 render 或 <code>componentDidUpdate</code> 表达。</li>
-          <li><strong>维护 Clock 这类 class 组件时如何迁移到函数组件？</strong> 结论是：用 <code>useState</code> 存储计数和时间，用 <code>useEffect</code> 负责 interval 的建立与清理。原因是函数组件是现代 React 的主线；但迁移时仍要保留"依赖旧值用函数式更新、卸载时清理副作用"的规则。</li>
+          <li>
+            <strong>对象式 setState 和函数式 setState 在批处理中为什么结果不同？</strong>
+            结论是：对象式会把旧 state 先算成对象，函数式会在队列执行时逐步读取最新
+            <code>prevState</code>
+            。原因是 React 批处理时会合并多个更新；项目中只要依赖前一次结果，就应写函数式更新。
+          </li>
+          <li>
+            <strong>setState 后立即读取 this.state 为什么不可靠？</strong>
+            结论是：因为
+            <code>setState</code>
+            安排更新，不等于同步改写实例字段。原因是 React 可能把多次更新合并到一次
+            render；如果要做提交后的日志、埋点或 DOM 测量，要放到回调或更新后的生命周期中。
+          </li>
+          <li>
+            <strong>定时器驱动的 class 组件为什么必须清理 componentWillUnmount？</strong>
+            结论是：否则组件卸载后定时器仍会运行，继续调用
+            <code>setState</code>
+            或持有资源。原因是浏览器定时器不受 React
+            自动管理；项目中还要同样清理订阅、WebSocket、DOM 事件监听等外部资源。
+          </li>
+          <li>
+            <strong>setState 第二个参数回调适合解决什么问题？</strong>
+            结论是：适合在 state 提交并完成重新渲染后执行一次性逻辑。原因是它比立即读取
+            <code>this.state</code>
+            更可靠；边界是复杂派生逻辑不要塞进回调，优先通过 render 或
+            <code>componentDidUpdate</code>
+            表达。
+          </li>
+          <li>
+            <strong>维护 Clock 这类 class 组件时如何迁移到函数组件？</strong>
+            结论是：用
+            <code>useState</code>
+            存储计数和时间，用
+            <code>useEffect</code>
+            负责 interval 的建立与清理。原因是函数组件是现代 React
+            的主线；但迁移时仍要保留"依赖旧值用函数式更新、卸载时清理副作用"的规则。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/Component#setstate" target="_blank" rel="noreferrer">react.dev: Component — setState()</a></li>
-          <li><a href="https://react.dev/reference/react/Component#componentwillunmount" target="_blank" rel="noreferrer">react.dev: Component — componentWillUnmount()</a></li>
-          <li><a href="https://react.dev/learn/queueing-a-series-of-state-updates" target="_blank" rel="noreferrer">react.dev: Queueing a Series of State Updates</a></li>
-          <li><a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">react.dev: useEffect（函数组件替代写法）</a></li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#setstate"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Component — setState()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#componentwillunmount"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Component — componentWillUnmount()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/queueing-a-series-of-state-updates"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Queueing a Series of State Updates
+            </a>
+          </li>
+          <li>
+            <a href="https://react.dev/reference/react/useEffect" target="_blank" rel="noreferrer">
+              react.dev: useEffect（函数组件替代写法）
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -79,7 +179,7 @@
 
         // ====== 1. 副作用：componentDidMount 建立定时器，componentWillUnmount 清理 ======
         componentDidMount() {
-          console.log("componentDidMount: 定时器已建立，每 6s 自动触发批处理对比");
+          console.log('componentDidMount: 定时器已建立，每 6s 自动触发批处理对比');
           this.timer = setInterval(() => {
             this.runBatchCompare();
           }, 6000);
@@ -87,32 +187,32 @@
 
         componentWillUnmount() {
           clearInterval(this.timer);
-          console.log("componentWillUnmount: 定时器已清理");
+          console.log('componentWillUnmount: 定时器已清理');
         }
 
         // ====== 2. 对象式 setState：连续 3 次都基于旧 count1，批处理后只 +1 ======
         counterOld = () => {
-          console.log("--- 对象式 setState ---");
-          console.log("count1 更新前:", this.state.count1);
+          console.log('--- 对象式 setState ---');
+          console.log('count1 更新前:', this.state.count1);
 
           this.setState({ count1: this.state.count1 + 1 });
           this.setState({ count1: this.state.count1 + 1 });
           this.setState({ count1: this.state.count1 + 1 });
 
-          console.log("count1 更新后（仍是旧快照）:", this.state.count1);
+          console.log('count1 更新后（仍是旧快照）:', this.state.count1);
           // 预期: 与更新前相同；UI 在下一次 render 才 +1
         };
 
         // ====== 3. 函数式 setState：连续 3 次按队列读取 prevState，批处理后 +3 ======
         counterNew = () => {
-          console.log("--- 函数式 setState ---");
-          console.log("count2 更新前:", this.state.count2);
+          console.log('--- 函数式 setState ---');
+          console.log('count2 更新前:', this.state.count2);
 
           this.setState((prev) => ({ count2: prev.count2 + 1 }));
           this.setState((prev) => ({ count2: prev.count2 + 1 }));
           this.setState((prev) => ({ count2: prev.count2 + 1 }));
 
-          console.log("count2 更新后（仍是旧快照）:", this.state.count2);
+          console.log('count2 更新后（仍是旧快照）:', this.state.count2);
           // 预期: 与更新前相同；UI 在下一次 render 才 +3
         };
 
@@ -123,17 +223,21 @@
 
         // ====== 4. setState 后立即读 this.state 不可靠（id 示例） ======
         tickId = () => {
-          console.log("id 更新前:", this.state.id || 1);
+          console.log('id 更新前:', this.state.id || 1);
           this.setState({ id: (this.state.id || 1) + 1 });
-          console.log("id 更新后（仍是旧快照）:", this.state.id || 1);
+          console.log('id 更新后（仍是旧快照）:', this.state.id || 1);
         };
 
         render() {
           return (
             <section>
               <p>初始时间：{this.state.date.toLocaleTimeString()}</p>
-              <p>对象式 setState（count1）：<strong>{this.state.count1}</strong>（每轮 +1）</p>
-              <p>函数式 setState（count2）：<strong>{this.state.count2}</strong>（每轮 +3）</p>
+              <p>
+                对象式 setState（count1）：<strong>{this.state.count1}</strong>（每轮 +1）
+              </p>
+              <p>
+                函数式 setState（count2）：<strong>{this.state.count2}</strong>（每轮 +3）
+              </p>
               <button type="button" onClick={this.runBatchCompare}>
                 立即触发批处理对比
               </button>
@@ -145,7 +249,7 @@
         }
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<Clock />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<Clock />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -154,17 +258,31 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./03-setState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6.html">相关 · 03-setState-异步合并</a>
-        <a href="./04-setState-%E5%87%BD%E6%95%B0%E5%BC%8F%E6%9B%B4%E6%96%B0.html">相关 · 04-setState-函数式更新</a>
-        <a href="./06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html">相关 · 06-class-完整生命周期与API</a>
-        <a href="./04-setState-%E5%87%BD%E6%95%B0%E5%BC%8F%E6%9B%B4%E6%96%B0.html">← setState-函数式更新</a>
-        <a href="./06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html">class-完整生命周期与API →</a>
+        <a href="./03-setState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6.html">
+          相关 · 03-setState-异步合并
+        </a>
+        <a href="./04-setState-%E5%87%BD%E6%95%B0%E5%BC%8F%E6%9B%B4%E6%96%B0.html">
+          相关 · 04-setState-函数式更新
+        </a>
+        <a
+          href="./06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html"
+        >
+          相关 · 06-class-完整生命周期与API
+        </a>
+        <a href="./04-setState-%E5%87%BD%E6%95%B0%E5%BC%8F%E6%9B%B4%E6%96%B0.html">
+          ← setState-函数式更新
+        </a>
+        <a
+          href="./06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html"
+        >
+          class-完整生命周期与API →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

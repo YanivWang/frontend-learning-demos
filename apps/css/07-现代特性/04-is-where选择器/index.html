@@ -1,5 +1,5 @@
 <!--
-分类: css / 07-现代特性 / 04-is-where选择器
+  分类: css / 07-现代特性 / 04-is-where选择器
   主题: :is() 与 :where() 及特异性
   要点:
     - :is() 合并多个候选选择器，特异性取参数列表中最高的一项
@@ -20,13 +20,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CSS :is() 与 :where()</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 720px; color: #222; }
-      .demo article :is(h2, h3, strong) { color: #0969da; }
-      .demo article :where(p, li) { line-height: 1.7; margin: 0.5rem 0; }
-      .override-test p { color: #cf222e; }
-      .override-test :where(p) { color: #1a7f37; font-weight: 600; }
-      .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin: 1rem 0; }
-      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 720px;
+        color: #222;
+      }
+      .demo article :is(h2, h3, strong) {
+        color: #0969da;
+      }
+      .demo article :where(p, li) {
+        line-height: 1.7;
+        margin: 0.5rem 0;
+      }
+      .override-test p {
+        color: #cf222e;
+      }
+      .override-test :where(p) {
+        color: #1a7f37;
+        font-weight: 600;
+      }
+      .card {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 16px;
+        margin: 1rem 0;
+      }
+      .tip {
+        margin: 0.5rem 0 1rem;
+        color: #666;
+        font-size: 0.875rem;
+      }
       #runtime-output {
         margin: 0.75rem 0 0;
         padding: 0.75rem 1rem;
@@ -46,29 +70,111 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>:is() 与 :where()</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出 :is() / :where() 命中元素的 computed color。</p>
+      <p class="hint">
+        在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出 :is() /
+        :where() 命中元素的 computed color。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>:is()</code> 和 <code>:where()</code> 都是函数式伪类，可以把多个候选选择器写进同一个参数列表，减少 <code>.demo article h2, .demo article h3, .demo article strong</code> 这类重复父级。</li>
-          <li><code>:is()</code> 的特异性不是固定值，而是取参数列表中最高特异性的选择器。本页 <code>:is(h2, h3, strong)</code> 只包含类型选择器，所以权重较低；如果写成 <code>:is(#hero, .title)</code>，整条规则会按 ID 权重参与级联。</li>
-          <li><code>:where()</code> 的匹配能力类似 <code>:is()</code>，但自身特异性恒为 0。它适合写 reset、base、主题默认值和设计系统低优先级规则，让业务选择器更容易覆盖。</li>
-          <li>两者使用 forgiving selector list：参数列表里某个选择器无效时，浏览器可以忽略无效分支，而不是让整条选择器列表全部失效。实践中仍应避免把实验性选择器混入核心样式，兼容性要单独核对。</li>
-          <li>选择器写短不代表优先级更低。项目里需要“合并写法但保留真实权重”时用 <code>:is()</code>；需要“命中很多元素但不抢覆盖权”时用 <code>:where()</code>。</li>
+          <li>
+            <code>:is()</code>
+            和
+            <code>:where()</code>
+            都是函数式伪类，可以把多个候选选择器写进同一个参数列表，减少
+            <code>.demo article h2, .demo article h3, .demo article strong</code>
+            这类重复父级。
+          </li>
+          <li>
+            <code>:is()</code>
+            的特异性不是固定值，而是取参数列表中最高特异性的选择器。本页
+            <code>:is(h2, h3, strong)</code>
+            只包含类型选择器，所以权重较低；如果写成
+            <code>:is(#hero, .title)</code>
+            ，整条规则会按 ID 权重参与级联。
+          </li>
+          <li>
+            <code>:where()</code>
+            的匹配能力类似
+            <code>:is()</code>
+            ，但自身特异性恒为 0。它适合写
+            reset、base、主题默认值和设计系统低优先级规则，让业务选择器更容易覆盖。
+          </li>
+          <li>
+            两者使用 forgiving selector
+            list：参数列表里某个选择器无效时，浏览器可以忽略无效分支，而不是让整条选择器列表全部失效。实践中仍应避免把实验性选择器混入核心样式，兼容性要单独核对。
+          </li>
+          <li>
+            选择器写短不代表优先级更低。项目里需要“合并写法但保留真实权重”时用
+            <code>:is()</code>
+            ；需要“命中很多元素但不抢覆盖权”时用
+            <code>:where()</code>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>:is() 和 :where() 的共同点与根本区别是什么？</strong> 结论是二者都能把多个候选选择器合并到一个函数式伪类里，根本区别是特异性计算。原因是 <code>:is()</code> 取参数中最高权重，<code>:where()</code> 永远是 0。项目里组件状态选择器常用 <code>:is()</code> 简化书写，低优先级默认样式常用 <code>:where()</code>。</li>
-          <li><strong>为什么 :where() 很适合写 reset、base 或设计系统默认样式？</strong> 结论是它能扩大命中范围但不抬高覆盖成本。原因是 <code>:where(p, li)</code> 的特异性为 0，后续普通元素、类选择器更容易覆盖它。边界是源码顺序仍会在同等特异性时生效，不能把它当成完全“无影响”的样式。</li>
-          <li><strong>:is() 参数里出现 ID 选择器为什么可能造成覆盖困难？</strong> 结论是参数中最高特异性会代表整个 <code>:is()</code>。原因是 <code>:is(#hero, .card)</code> 会让匹配 <code>.card</code> 的分支也按 ID 级别参与级联。项目里不要为了少写几行把 ID 和普通类混在同一个 <code>:is()</code>，否则后续覆盖可能不得不加重选择器。</li>
-          <li><strong>:is()、:where()、普通选择器列表在可维护性上怎么取舍？</strong> 结论是普通列表最直观，<code>:is()</code> 适合消除重复上下文，<code>:where()</code> 适合低权重批量命中。原因是三者的可读性和级联影响不同。团队样式规范里应明确 reset/base 优先用 <code>:where()</code>，组件强匹配再用 <code>:is()</code>。</li>
+          <li>
+            <strong>:is() 和 :where() 的共同点与根本区别是什么？</strong>
+            结论是二者都能把多个候选选择器合并到一个函数式伪类里，根本区别是特异性计算。原因是
+            <code>:is()</code>
+            取参数中最高权重，
+            <code>:where()</code>
+            永远是 0。项目里组件状态选择器常用
+            <code>:is()</code>
+            简化书写，低优先级默认样式常用
+            <code>:where()</code>
+            。
+          </li>
+          <li>
+            <strong>为什么 :where() 很适合写 reset、base 或设计系统默认样式？</strong>
+            结论是它能扩大命中范围但不抬高覆盖成本。原因是
+            <code>:where(p, li)</code>
+            的特异性为
+            0，后续普通元素、类选择器更容易覆盖它。边界是源码顺序仍会在同等特异性时生效，不能把它当成完全“无影响”的样式。
+          </li>
+          <li>
+            <strong>:is() 参数里出现 ID 选择器为什么可能造成覆盖困难？</strong>
+            结论是参数中最高特异性会代表整个
+            <code>:is()</code>
+            。原因是
+            <code>:is(#hero, .card)</code>
+            会让匹配
+            <code>.card</code>
+            的分支也按 ID 级别参与级联。项目里不要为了少写几行把 ID 和普通类混在同一个
+            <code>:is()</code>
+            ，否则后续覆盖可能不得不加重选择器。
+          </li>
+          <li>
+            <strong>:is()、:where()、普通选择器列表在可维护性上怎么取舍？</strong>
+            结论是普通列表最直观，
+            <code>:is()</code>
+            适合消除重复上下文，
+            <code>:where()</code>
+            适合低权重批量命中。原因是三者的可读性和级联影响不同。团队样式规范里应明确 reset/base
+            优先用
+            <code>:where()</code>
+            ，组件强匹配再用
+            <code>:is()</code>
+            。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/:is">MDN: :is()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/:where">MDN: :where()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_cascade/Specificity">MDN: Specificity</a></li>
-          <li><a href="https://drafts.csswg.org/selectors-4/#matches">Selectors Level 4: The Matches-Any Pseudo-class :is()</a></li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/:where">MDN: :where()</a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_cascade/Specificity">
+              MDN: Specificity
+            </a>
+          </li>
+          <li>
+            <a href="https://drafts.csswg.org/selectors-4/#matches">
+              Selectors Level 4: The Matches-Any Pseudo-class :is()
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -76,7 +182,10 @@
 
     <!-- PAGE_DOM_START -->
     <h2>:is() 合并选择器</h2>
-    <p class="tip"><code>:is(h2, h3, strong)</code> 合并多条规则；特异性取参数中最高项（MDN :is）。</p>
+    <p class="tip">
+      <code>:is(h2, h3, strong)</code>
+      合并多条规则；特异性取参数中最高项（MDN :is）。
+    </p>
     <div class="demo card" id="is-demo">
       <article>
         <h2 id="is-h2">标题 h2（:is 命中，蓝色）</h2>
@@ -86,14 +195,31 @@
       </article>
     </div>
     <h2>:where() 特异性为 0</h2>
-    <p class="tip"><code>:where(p)</code> 特异性为 0，易被同等元素选择器覆盖；脚本对比 computed color。</p>
+    <p class="tip">
+      <code>:where(p)</code>
+      特异性为 0，易被同等元素选择器覆盖；脚本对比 computed color。
+    </p>
     <div class="override-test card" id="where-demo">
-      <p id="where-p">这条 p 同时被 <code>.override-test p</code> 和后面的 <code>.override-test :where(p)</code> 命中；最终仍是红色，因为 <code>:where(p)</code> 自身特异性为 0，整条规则权重低于普通后代选择器。</p>
+      <p id="where-p">
+        这条 p 同时被
+        <code>.override-test p</code>
+        和后面的
+        <code>.override-test :where(p)</code>
+        命中；最终仍是红色，因为
+        <code>:where(p)</code>
+        自身特异性为 0，整条规则权重低于普通后代选择器。
+      </p>
     </div>
     <h2>特异性对比</h2>
     <ul>
-      <li><code>:is(.a, #b)</code> 特异性 = 100（#b 决定）</li>
-      <li><code>:where(.a, #b)</code> 特异性 = 0</li>
+      <li>
+        <code>:is(.a, #b)</code>
+        特异性 = 100（#b 决定）
+      </li>
+      <li>
+        <code>:where(.a, #b)</code>
+        特异性 = 0
+      </li>
     </ul>
     <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
@@ -104,27 +230,29 @@
         /** 读取元素 computed color，验证 :is() / :where() 特异性差异（MDN Specificity） */
         function renderSelectorMetrics() {
           var targets = [
-            { id: "is-h2", label: ":is 命中 h2" },
-            { id: "is-h3", label: ":is 命中 h3" },
-            { id: "is-strong", label: ":is 命中 strong" },
-            { id: "is-p", label: "普通 p（未命中 :is）" },
-            { id: "where-p", label: ":where 覆盖测试 p" },
+            { id: 'is-h2', label: ':is 命中 h2' },
+            { id: 'is-h3', label: ':is 命中 h3' },
+            { id: 'is-strong', label: ':is 命中 strong' },
+            { id: 'is-p', label: '普通 p（未命中 :is）' },
+            { id: 'where-p', label: ':where 覆盖测试 p' },
           ];
-          var output = document.getElementById("runtime-output");
+          var output = document.getElementById('runtime-output');
           if (!output) return;
 
-          var lines = ["── :is() / :where() computed color 实测 ──"];
+          var lines = ['── :is() / :where() computed color 实测 ──'];
           targets.forEach(function (item) {
             var el = document.getElementById(item.id);
             if (!el) return;
-            lines.push("#" + item.id + "（" + item.label + "）→ color: " + getComputedStyle(el).color);
+            lines.push(
+              '#' + item.id + '（' + item.label + '）→ color: ' + getComputedStyle(el).color,
+            );
           });
           lines.push(
-            "",
-            "结论: #where-p 为红色 → .override-test p（0,0,1,1）胜 .override-test :where(p)（0,0,1,0）"
+            '',
+            '结论: #where-p 为红色 → .override-test p（0,0,1,1）胜 .override-test :where(p)（0,0,1,0）',
           );
 
-          output.textContent = lines.join("\n");
+          output.textContent = lines.join('\n');
         }
 
         renderSelectorMetrics();
@@ -142,13 +270,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

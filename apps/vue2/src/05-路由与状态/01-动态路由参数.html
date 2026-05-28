@@ -30,32 +30,141 @@
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>动态路径参数 :id 与 $route.params</h1>
       <p class="hint">
-        点击 <code>home</code> / <code>userA</code> / <code>userB</code> 切换路由，观察下方
-        <code>user</code> 区显示的 <code>id</code> 与 <code>postid</code>；从 userA 切到 userB 时打开
-        Console，查看 <code>route params changed</code> 日志（同组件复用、生命周期不重新执行）。
+        点击
+        <code>home</code>
+        /
+        <code>userA</code>
+        /
+        <code>userB</code>
+        切换路由，观察下方
+        <code>user</code>
+        区显示的
+        <code>id</code>
+        与
+        <code>postid</code>
+        ；从 userA 切到 userB 时打开 Console，查看
+        <code>route params changed</code>
+        日志（同组件复用、生命周期不重新执行）。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>vue-router 3 在 <code>path</code> 中用冒号声明动态片段，例如 <code>/user/:id/post/:postid</code>，匹配后可以通过 <code>this.$route.params.id</code> 读取。</li>
-          <li><code>params</code> 是路径结构的一部分，适合资源标识；<code>query</code> 是问号后的附加参数，适合筛选、分页、来源标记等可选信息。</li>
-          <li>从 <code>/user/wangcheng/post/123</code> 切到 <code>/user/wangcheng/post/456</code> 时，匹配的是同一个路由记录，组件实例会复用，<code>created</code> 不会再次执行。</li>
-          <li>参数变化后的数据刷新应放在 <code>watch: { $route() {} }</code> 或组件内守卫 <code>beforeRouteUpdate</code> 中，避免只在初始化钩子里请求一次数据。</li>
-          <li>真实项目还要校验参数是否存在、是否符合格式、资源是否可访问；失败时显示空状态、错误提示或跳转 404，不能假设 URL 永远正确。</li>
+          <li>
+            vue-router 3 在
+            <code>path</code>
+            中用冒号声明动态片段，例如
+            <code>/user/:id/post/:postid</code>
+            ，匹配后可以通过
+            <code>this.$route.params.id</code>
+            读取。
+          </li>
+          <li>
+            <code>params</code>
+            是路径结构的一部分，适合资源标识；
+            <code>query</code>
+            是问号后的附加参数，适合筛选、分页、来源标记等可选信息。
+          </li>
+          <li>
+            从
+            <code>/user/wangcheng/post/123</code>
+            切到
+            <code>/user/wangcheng/post/456</code>
+            时，匹配的是同一个路由记录，组件实例会复用，
+            <code>created</code>
+            不会再次执行。
+          </li>
+          <li>
+            参数变化后的数据刷新应放在
+            <code>watch: { $route() {} }</code>
+            或组件内守卫
+            <code>beforeRouteUpdate</code>
+            中，避免只在初始化钩子里请求一次数据。
+          </li>
+          <li>
+            真实项目还要校验参数是否存在、是否符合格式、资源是否可访问；失败时显示空状态、错误提示或跳转
+            404，不能假设 URL 永远正确。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>vue-router 3 动态路径参数如何声明和读取？</strong> 结论是在路由 <code>path</code> 中用 <code>:name</code> 声明，在组件中通过 <code>$route.params.name</code> 读取。原因是路由匹配器会把动态片段解析成 params。边界是 query 不会进入 params，二者不能混用。</li>
-          <li><strong>params 变化为什么不会重新触发 created？</strong> 结论是同一个路由记录只是参数变化时，Vue Router 会复用原组件实例。原因是复用比销毁重建更高效，也能保留局部状态。项目里如果要重新请求详情，需要 watch <code>$route</code> 或使用 <code>beforeRouteUpdate</code>。</li>
-          <li><strong>params 和 query 应该如何区分？</strong> 结论是资源身份用 params，可选条件用 query。原因是 params 通常是路径模式的一部分，query 可以增删而不改变路由层级。比如 <code>/users/42</code> 表示用户 42，<code>?tab=orders</code> 表示当前展示订单页签。</li>
-          <li><strong>动态路由参数缺失或格式错误时怎么兜底？</strong> 结论是要校验并处理失败路径。原因是用户可以手动改 URL，参数也可能过期或没有权限。项目里常做格式判断、接口 404 展示、路由守卫拦截或跳转统一错误页。</li>
-          <li><strong>为什么推荐用 props: true 解耦路由组件？</strong> 结论是用 props 接收 params 后，组件不再硬依赖 <code>$route</code>，可在 Storybook、单测或非路由场景复用。原因是官方 <code>props: true</code> 会把 <code>route.params</code> 按字段名注入组件。边界是仍需 watch prop 或 <code>$route</code> 处理同组件 params 变化。</li>
+          <li>
+            <strong>vue-router 3 动态路径参数如何声明和读取？</strong>
+            结论是在路由
+            <code>path</code>
+            中用
+            <code>:name</code>
+            声明，在组件中通过
+            <code>$route.params.name</code>
+            读取。原因是路由匹配器会把动态片段解析成 params。边界是 query 不会进入
+            params，二者不能混用。
+          </li>
+          <li>
+            <strong>params 变化为什么不会重新触发 created？</strong>
+            结论是同一个路由记录只是参数变化时，Vue Router
+            会复用原组件实例。原因是复用比销毁重建更高效，也能保留局部状态。项目里如果要重新请求详情，需要
+            watch
+            <code>$route</code>
+            或使用
+            <code>beforeRouteUpdate</code>
+            。
+          </li>
+          <li>
+            <strong>params 和 query 应该如何区分？</strong>
+            结论是资源身份用 params，可选条件用 query。原因是 params 通常是路径模式的一部分，query
+            可以增删而不改变路由层级。比如
+            <code>/users/42</code>
+            表示用户 42，
+            <code>?tab=orders</code>
+            表示当前展示订单页签。
+          </li>
+          <li>
+            <strong>动态路由参数缺失或格式错误时怎么兜底？</strong>
+            结论是要校验并处理失败路径。原因是用户可以手动改
+            URL，参数也可能过期或没有权限。项目里常做格式判断、接口 404
+            展示、路由守卫拦截或跳转统一错误页。
+          </li>
+          <li>
+            <strong>为什么推荐用 props: true 解耦路由组件？</strong>
+            结论是用 props 接收 params 后，组件不再硬依赖
+            <code>$route</code>
+            ，可在 Storybook、单测或非路由场景复用。原因是官方
+            <code>props: true</code>
+            会把
+            <code>route.params</code>
+            按字段名注入组件。边界是仍需 watch prop 或
+            <code>$route</code>
+            处理同组件 params 变化。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://v3.router.vuejs.org/guide/essentials/dynamic-matching.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Dynamic Route Matching</a></li>
-          <li><a href="https://v3.router.vuejs.org/guide/essentials/passing-props.html" target="_blank" rel="noopener">Vue Router 3 官方文档：Passing Props to Route Components</a></li>
-          <li><a href="https://v3.router.vuejs.org/guide/advanced/navigation-guards.html#in-component-guards" target="_blank" rel="noopener">Vue Router 3 官方文档：In-Component Guards</a></li>
+          <li>
+            <a
+              href="https://v3.router.vuejs.org/guide/essentials/dynamic-matching.html"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue Router 3 官方文档：Dynamic Route Matching
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://v3.router.vuejs.org/guide/essentials/passing-props.html"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue Router 3 官方文档：Passing Props to Route Components
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://v3.router.vuejs.org/guide/advanced/navigation-guards.html#in-component-guards"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue Router 3 官方文档：In-Component Guards
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -86,30 +195,30 @@
       // 同一路由记录仅 params 变化时组件会复用，需 watch $route 或 beforeRouteUpdate。
       // ---------------------------------------------------------------------------
       const home = {
-        template: "<div>home</div>"
+        template: '<div>home</div>',
       };
 
       const user = {
         watch: {
           $route: function (to, from) {
-            console.log("route params changed:", from.params, "=>", to.params);
-          }
+            console.log('route params changed:', from.params, '=>', to.params);
+          },
         },
         template: `<div>
         <span>user</span>
         <span>id: {{ $route.params.id }}</span>
         <span>postid: {{ $route.params.postid }}</span>
-      </div>`
+      </div>`,
       };
 
       const routes = [
-        { path: "/", component: home },
-        { path: "/user/:id/post/:postid", component: user }
+        { path: '/', component: home },
+        { path: '/user/:id/post/:postid', component: user },
       ];
 
       const router = new VueRouter({ routes });
 
-      new Vue({ router }).$mount("#app");
+      new Vue({ router }).$mount('#app');
     </script>
     <!-- SCRIPT_END -->
 
@@ -118,18 +227,20 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="../04-%E7%BB%84%E4%BB%B6/12-%E5%8F%82%E6%95%B0%E8%A7%A3%E6%9E%84.html">← 参数解构</a>
+        <a href="../04-%E7%BB%84%E4%BB%B6/12-%E5%8F%82%E6%95%B0%E8%A7%A3%E6%9E%84.html">
+          ← 参数解构
+        </a>
         <a href="./02-%E5%91%BD%E5%90%8D%E8%B7%AF%E7%94%B1.html">命名路由 →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

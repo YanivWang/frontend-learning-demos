@@ -1,5 +1,5 @@
 <!--
-分类: css / 04-视觉效果 / 多行省略
+  分类: css / 04-视觉效果 / 多行省略
   主题: 多行文本省略、line-clamp
   要点:
     - 多行省略需要限制行数、隐藏溢出，并用 line-clamp 截断
@@ -19,10 +19,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>多行文本省略</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; line-height: 1.6; }
-      h1 { font-size: 1.3rem; }
-      h2 { font-size: 1rem; margin-top: 2rem; }
-      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        color: #222;
+        line-height: 1.6;
+      }
+      h1 {
+        font-size: 1.3rem;
+      }
+      h2 {
+        font-size: 1rem;
+        margin-top: 2rem;
+      }
+      .tip {
+        margin: 0.5rem 0 1rem;
+        color: #666;
+        font-size: 0.875rem;
+      }
       .box {
         width: 320px;
         border: 1px solid #ddd;
@@ -77,28 +91,127 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>多行文本省略（line-clamp）</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出省略与行高实测值。</p>
+      <p class="hint">
+        在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出省略与行高实测值。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>单行省略靠 <code>white-space: nowrap</code> + <code>overflow: hidden</code> + <code>text-overflow: ellipsis</code>；多行省略则要限制<strong>最大行数</strong>，常见写法是 <code>line-clamp: N</code> 配合 <code>overflow: hidden</code>。</li>
-          <li>MDN 说明 <code>line-clamp</code> 是截断块级容器内行数的简写；旧写法还需 <code>display: -webkit-box</code> 与 <code>-webkit-box-orient: vertical</code>，现代浏览器可直接写 <code>line-clamp</code>。</li>
-          <li>省略生效前提是容器有<strong>可计算宽度</strong>；在 flex/grid 子项里如果省略失效，常见原因是默认 <code>min-width: auto</code> 让子项被内容撑开，需要补 <code>min-width: 0</code>。</li>
-          <li>被裁掉的文本仍然在 DOM 中，但视觉上不可见；标题、摘要如果承载关键信息，hover 展开、详情页或 <code>title</code>/ARIA 提示仍要考虑，不能把所有语义都压在 CSS 省略上。</li>
-          <li><code>text-overflow: ellipsis</code> 只在块级/行内块且发生<strong>行内方向溢出</strong>时生效；多行场景应使用 line clamping，而不是强行 <code>nowrap</code> 单行截断。</li>
+          <li>
+            单行省略靠
+            <code>white-space: nowrap</code>
+            +
+            <code>overflow: hidden</code>
+            +
+            <code>text-overflow: ellipsis</code>
+            ；多行省略则要限制
+            <strong>最大行数</strong>
+            ，常见写法是
+            <code>line-clamp: N</code>
+            配合
+            <code>overflow: hidden</code>
+            。
+          </li>
+          <li>
+            MDN 说明
+            <code>line-clamp</code>
+            是截断块级容器内行数的简写；旧写法还需
+            <code>display: -webkit-box</code>
+            与
+            <code>-webkit-box-orient: vertical</code>
+            ，现代浏览器可直接写
+            <code>line-clamp</code>
+            。
+          </li>
+          <li>
+            省略生效前提是容器有
+            <strong>可计算宽度</strong>
+            ；在 flex/grid 子项里如果省略失效，常见原因是默认
+            <code>min-width: auto</code>
+            让子项被内容撑开，需要补
+            <code>min-width: 0</code>
+            。
+          </li>
+          <li>
+            被裁掉的文本仍然在 DOM 中，但视觉上不可见；标题、摘要如果承载关键信息，hover
+            展开、详情页或
+            <code>title</code>
+            /ARIA 提示仍要考虑，不能把所有语义都压在 CSS 省略上。
+          </li>
+          <li>
+            <code>text-overflow: ellipsis</code>
+            只在块级/行内块且发生
+            <strong>行内方向溢出</strong>
+            时生效；多行场景应使用 line clamping，而不是强行
+            <code>nowrap</code>
+            单行截断。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>多行省略和单行 ellipsis 的核心区别是什么？</strong> 结论是多行省略要限制行数并截断盒子高度，单行 ellipsis 只处理一行不换行文本。原因是单行方案依赖 <code>nowrap</code>，多行方案依赖 <code>line-clamp</code>。项目里卡片摘要、评论预览常用 2–3 行 clamp，表格单元格标题仍可能用单行 ellipsis。</li>
-          <li><strong><code>line-clamp</code> 为什么常配合 <code>overflow: hidden</code>？</strong> 结论是没有隐藏溢出，超出行数的文本仍会显示出来。原因是 clamp 通过限制盒子展示区域实现“截断”，溢出部分必须被裁掉，省略号才会出现。</li>
-          <li><strong>flex 子项里多行省略不生效通常是什么原因？</strong> 结论是子项默认最小宽度受内容保护，容器宽度算不出来。原因是 flex item 的 <code>min-width: auto</code> 会阻止收缩。项目里文本区常见写法是 <code>flex: 1; min-width: 0; overflow: hidden; line-clamp: 2</code>。</li>
-          <li><strong>多行省略有哪些可访问性和 SEO 边界？</strong> 结论是 CSS 省略不会删除 DOM 文本，但视觉和部分交互场景下用户可能看不到完整内容。原因是被裁切内容不可见，屏幕阅读器是否完整朗读还取决于 DOM 结构和 aria 设计。项目里重要信息应保留完整文本入口，而不是只显示 clamp 后的摘要。</li>
+          <li>
+            <strong>多行省略和单行 ellipsis 的核心区别是什么？</strong>
+            结论是多行省略要限制行数并截断盒子高度，单行 ellipsis
+            只处理一行不换行文本。原因是单行方案依赖
+            <code>nowrap</code>
+            ，多行方案依赖
+            <code>line-clamp</code>
+            。项目里卡片摘要、评论预览常用 2–3 行 clamp，表格单元格标题仍可能用单行 ellipsis。
+          </li>
+          <li>
+            <strong>
+              <code>line-clamp</code>
+              为什么常配合
+              <code>overflow: hidden</code>
+              ？
+            </strong>
+            结论是没有隐藏溢出，超出行数的文本仍会显示出来。原因是 clamp
+            通过限制盒子展示区域实现“截断”，溢出部分必须被裁掉，省略号才会出现。
+          </li>
+          <li>
+            <strong>flex 子项里多行省略不生效通常是什么原因？</strong>
+            结论是子项默认最小宽度受内容保护，容器宽度算不出来。原因是 flex item 的
+            <code>min-width: auto</code>
+            会阻止收缩。项目里文本区常见写法是
+            <code>flex: 1; min-width: 0; overflow: hidden; line-clamp: 2</code>
+            。
+          </li>
+          <li>
+            <strong>多行省略有哪些可访问性和 SEO 边界？</strong>
+            结论是 CSS 省略不会删除 DOM
+            文本，但视觉和部分交互场景下用户可能看不到完整内容。原因是被裁切内容不可见，屏幕阅读器是否完整朗读还取决于
+            DOM 结构和 aria 设计。项目里重要信息应保留完整文本入口，而不是只显示 clamp 后的摘要。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/line-clamp" target="_blank" rel="noreferrer">MDN: line-clamp</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/text-overflow" target="_blank" rel="noreferrer">MDN: text-overflow</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_overflow/Line_clamp" target="_blank" rel="noreferrer">MDN: Line clamping</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/CSS/line-clamp"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: line-clamp
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/CSS/text-overflow"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: text-overflow
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_overflow/Line_clamp"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Line clamping
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -107,20 +220,33 @@
     <!-- PAGE_DOM_START -->
     <h2>单行省略（对照）</h2>
     <p class="tip">观察单行容器：文本不换行且溢出被裁切后，末尾出现省略号（MDN text-overflow）。</p>
-    <div class="box single" id="demo-single">这是一段很长很长的标题，超出容器后应该显示单行省略号。</div>
-
-    <h2>多行省略 · 3 行</h2>
-    <p class="tip">容器写 <code>line-clamp: 3</code> + <code>overflow: hidden</code>，超过 3 行后截断并显示省略号。</p>
-    <div class="box clamp-modern" id="demo-clamp">
-      这是一段用于演示多行省略的长文本。单行 ellipsis 只能处理一行，而卡片摘要、评论预览、搜索结果描述通常需要保留两到三行后再截断。line-clamp 会在指定行数后显示省略号，同时配合 overflow hidden 裁掉后续内容。
+    <div class="box single" id="demo-single">
+      这是一段很长很长的标题，超出容器后应该显示单行省略号。
     </div>
-
+    <h2>多行省略 · 3 行</h2>
+    <p class="tip">
+      容器写
+      <code>line-clamp: 3</code>
+      +
+      <code>overflow: hidden</code>
+      ，超过 3 行后截断并显示省略号。
+    </p>
+    <div class="box clamp-modern" id="demo-clamp">
+      这是一段用于演示多行省略的长文本。单行 ellipsis
+      只能处理一行，而卡片摘要、评论预览、搜索结果描述通常需要保留两到三行后再截断。line-clamp
+      会在指定行数后显示省略号，同时配合 overflow hidden 裁掉后续内容。
+    </div>
     <h2>flex 卡片中的多行省略</h2>
-    <p class="tip">文本列必须 <code>min-width: 0</code>，否则 flex 子项会被长文本撑开，line-clamp 可能失效。</p>
+    <p class="tip">
+      文本列必须
+      <code>min-width: 0</code>
+      ，否则 flex 子项会被长文本撑开，line-clamp 可能失效。
+    </p>
     <div class="flex-card" id="demo-flex-card">
       <div class="thumb" aria-hidden="true"></div>
       <div class="content" id="demo-flex-text">
-        左侧缩略图 + 右侧摘要是非常常见的列表卡片结构。如果忘记给文本列设置 min-width: 0，flex 子项会被长文本撑开，多行省略就不会按预期工作。
+        左侧缩略图 + 右侧摘要是非常常见的列表卡片结构。如果忘记给文本列设置 min-width: 0，flex
+        子项会被长文本撑开，多行省略就不会按预期工作。
       </div>
     </div>
     <pre id="runtime-output" aria-live="polite"></pre>
@@ -141,7 +267,7 @@
         function readClampStyle(el) {
           var style = getComputedStyle(el);
           return {
-            lineClamp: style.lineClamp || style.webkitLineClamp || "none",
+            lineClamp: style.lineClamp || style.webkitLineClamp || 'none',
             textOverflow: style.textOverflow,
             overflow: style.overflow,
             minWidth: style.minWidth,
@@ -150,33 +276,42 @@
 
         /** 输出单行、多行与 flex 场景的实测报告 */
         function renderEllipsisMetrics() {
-          var single = document.getElementById("demo-single");
-          var clamp = document.getElementById("demo-clamp");
-          var flexText = document.getElementById("demo-flex-text");
-          var flexCard = document.getElementById("demo-flex-card");
+          var single = document.getElementById('demo-single');
+          var clamp = document.getElementById('demo-clamp');
+          var flexText = document.getElementById('demo-flex-text');
+          var flexCard = document.getElementById('demo-flex-card');
           var singleStyle = getComputedStyle(single);
           var clampStyle = readClampStyle(clamp);
           var flexStyle = readClampStyle(flexText);
 
-          document.getElementById("runtime-output").textContent = [
-            "── 单行 ellipsis 实测 ──",
-            "#demo-single: text-overflow=" + singleStyle.textOverflow +
-              ", overflow=" + singleStyle.overflow +
-              ", 溢出=" + isOverflowing(single),
-            "scrollWidth=" + single.scrollWidth + "px, clientWidth=" + single.clientWidth + "px",
-            "",
-            "── 多行 line-clamp 实测 ──",
-            "#demo-clamp: line-clamp=" + clampStyle.lineClamp +
-              ", overflow=" + clampStyle.overflow +
-              ", 溢出=" + isOverflowing(clamp),
-            "scrollHeight=" + clamp.scrollHeight + "px, clientHeight=" + clamp.clientHeight + "px",
-            "",
-            "── flex 子项实测 ──",
-            "#demo-flex-text: min-width=" + flexStyle.minWidth +
-              ", line-clamp=" + flexStyle.lineClamp +
-              ", 溢出=" + isOverflowing(flexText),
-            "#demo-flex-card 宽度=" + flexCard.clientWidth + "px（文本列需 min-width:0 才能收缩）",
-          ].join("\n");
+          document.getElementById('runtime-output').textContent = [
+            '── 单行 ellipsis 实测 ──',
+            '#demo-single: text-overflow=' +
+              singleStyle.textOverflow +
+              ', overflow=' +
+              singleStyle.overflow +
+              ', 溢出=' +
+              isOverflowing(single),
+            'scrollWidth=' + single.scrollWidth + 'px, clientWidth=' + single.clientWidth + 'px',
+            '',
+            '── 多行 line-clamp 实测 ──',
+            '#demo-clamp: line-clamp=' +
+              clampStyle.lineClamp +
+              ', overflow=' +
+              clampStyle.overflow +
+              ', 溢出=' +
+              isOverflowing(clamp),
+            'scrollHeight=' + clamp.scrollHeight + 'px, clientHeight=' + clamp.clientHeight + 'px',
+            '',
+            '── flex 子项实测 ──',
+            '#demo-flex-text: min-width=' +
+              flexStyle.minWidth +
+              ', line-clamp=' +
+              flexStyle.lineClamp +
+              ', 溢出=' +
+              isOverflowing(flexText),
+            '#demo-flex-card 宽度=' + flexCard.clientWidth + 'px（文本列需 min-width:0 才能收缩）',
+          ].join('\n');
         }
 
         renderEllipsisMetrics();
@@ -190,17 +325,19 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="../%E7%99%BE%E5%88%86%E6%AF%94%E5%9C%86%E7%8E%AF/index.html">← index</a>
-        <a href="../%E6%96%87%E6%9C%AC%E4%B8%8E%E5%9B%BE%E7%89%87%E5%A4%84%E7%90%86/index.html">index →</a>
+        <a href="../%E6%96%87%E6%9C%AC%E4%B8%8E%E5%9B%BE%E7%89%87%E5%A4%84%E7%90%86/index.html">
+          index →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

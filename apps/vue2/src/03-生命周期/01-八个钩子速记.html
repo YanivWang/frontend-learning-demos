@@ -30,51 +30,167 @@
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vue 2 八个生命周期钩子速记</h1>
       <p class="hint">
-        打开页面后先看 <code>#app</code> 下方 <code>&lt;pre&gt;</code> 里自动出现的
-        <code>created</code> → <code>beforeMount</code> → <code>mounted</code> 顺序；点「触发更新」观察
-        <code>beforeUpdate</code> / <code>updated</code>；点「销毁实例」观察
-        <code>beforeDestroy</code>，并打开 Console 查看 <code>destroyed</code> 日志。
+        打开页面后先看
+        <code>#app</code>
+        下方
+        <code>&lt;pre&gt;</code>
+        里自动出现的
+        <code>created</code>
+        →
+        <code>beforeMount</code>
+        →
+        <code>mounted</code>
+        顺序；点「触发更新」观察
+        <code>beforeUpdate</code>
+        /
+        <code>updated</code>
+        ；点「销毁实例」观察
+        <code>beforeDestroy</code>
+        ，并打开 Console 查看
+        <code>destroyed</code>
+        日志。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>创建阶段顺序是 <code>beforeCreate</code> → <code>created</code>。<code>beforeCreate</code> 时 data、computed、methods、watch 还没初始化；<code>created</code> 后可以访问响应式数据和方法，但还没有挂载真实 DOM。</li>
-          <li>挂载阶段顺序是 <code>beforeMount</code> → <code>mounted</code>。<code>mounted</code> 后当前实例的 <code>$el</code> 已可访问；若要确保整个视图已根据后续状态变化更新，再配合 <code>$nextTick</code>。</li>
-          <li>更新阶段顺序是 <code>beforeUpdate</code> → <code>updated</code>。<code>beforeUpdate</code> 中数据已经是新值，DOM 可能还是旧值；<code>updated</code> 中 DOM 已 patch，但不要在这里无条件改状态，容易形成更新循环。</li>
-          <li>销毁阶段顺序是 <code>beforeDestroy</code> → <code>destroyed</code>。定时器、全局事件、第三方实例、订阅等副作用优先在 <code>beforeDestroy</code> 清理；<code>$destroy()</code> 会触发这两个钩子，但日常更推荐用 <code>v-if</code> 控制组件生命周期。</li>
-          <li>Vue 2 使用 <code>beforeDestroy/destroyed</code>，Vue 3 Options API 改名为 <code>beforeUnmount/unmounted</code>；维护 Vue 2 老项目时要用旧命名，新项目迁移时要注意生命周期名和组合式 API 写法差异。</li>
+          <li>
+            创建阶段顺序是
+            <code>beforeCreate</code>
+            →
+            <code>created</code>
+            。
+            <code>beforeCreate</code>
+            时 data、computed、methods、watch 还没初始化；
+            <code>created</code>
+            后可以访问响应式数据和方法，但还没有挂载真实 DOM。
+          </li>
+          <li>
+            挂载阶段顺序是
+            <code>beforeMount</code>
+            →
+            <code>mounted</code>
+            。
+            <code>mounted</code>
+            后当前实例的
+            <code>$el</code>
+            已可访问；若要确保整个视图已根据后续状态变化更新，再配合
+            <code>$nextTick</code>
+            。
+          </li>
+          <li>
+            更新阶段顺序是
+            <code>beforeUpdate</code>
+            →
+            <code>updated</code>
+            。
+            <code>beforeUpdate</code>
+            中数据已经是新值，DOM 可能还是旧值；
+            <code>updated</code>
+            中 DOM 已 patch，但不要在这里无条件改状态，容易形成更新循环。
+          </li>
+          <li>
+            销毁阶段顺序是
+            <code>beforeDestroy</code>
+            →
+            <code>destroyed</code>
+            。定时器、全局事件、第三方实例、订阅等副作用优先在
+            <code>beforeDestroy</code>
+            清理；
+            <code>$destroy()</code>
+            会触发这两个钩子，但日常更推荐用
+            <code>v-if</code>
+            控制组件生命周期。
+          </li>
+          <li>
+            Vue 2 使用
+            <code>beforeDestroy/destroyed</code>
+            ，Vue 3 Options API 改名为
+            <code>beforeUnmount/unmounted</code>
+            ；维护 Vue 2 老项目时要用旧命名，新项目迁移时要注意生命周期名和组合式 API 写法差异。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>beforeCreate 和 created 最大区别是什么？</strong> 结论是 <code>beforeCreate</code> 不能可靠访问 data/methods，<code>created</code> 可以。原因是 Vue 初始化选项、响应式数据和方法绑定发生在这两个钩子之间。项目里初始化纯 JS 数据请求通常从 <code>created</code> 起步，不要在 <code>beforeCreate</code> 调用 methods。</li>
-          <li><strong>created 和 mounted 分别适合放什么逻辑？</strong> 结论是 created 适合不依赖 DOM 的初始化，mounted 适合依赖 DOM 的第三方插件、尺寸读取或焦点处理。原因是 created 阶段实例数据已就绪但 DOM 未挂载，mounted 后才有 <code>$el</code>。边界是服务端渲染和异步子组件场景下，DOM 相关逻辑还要更谨慎。</li>
-          <li><strong>beforeUpdate 和 updated 中读 DOM 有什么边界？</strong> 结论是 <code>beforeUpdate</code> 读到的 DOM 可能仍是旧状态，<code>updated</code> 后 DOM 已与本次状态同步。原因是更新流程先改响应式数据，再进行虚拟 DOM patch。项目里如果要在状态变化后读最新 DOM，也常用 <code>$nextTick</code> 聚焦到一次具体更新；在 <code>updated</code> 里无条件改 data 可能触发更新循环。</li>
-          <li><strong>beforeDestroy / destroyed 应该如何清理副作用？</strong> 结论是外部资源在 <code>beforeDestroy</code> 清理，<code>destroyed</code> 时实例已不可用。原因是 Vue 会清理自己的指令、事件和子组件，但不会自动取消你手动注册到 <code>window</code> 的监听、定时器、WebSocket 或第三方库实例。项目里通常在 <code>beforeDestroy</code> 做清理，避免内存泄漏和重复回调。</li>
-          <li><strong>Vue2 生命周期和 Vue3 命名有什么迁移差异？</strong> 结论是核心阶段类似，但销毁命名从 destroy 改为 unmount。原因是 Vue 3 API 统一表达「卸载组件」。维护 Vue 2 用 <code>beforeDestroy/destroyed</code>，迁到 Vue 3 Options API 用 <code>beforeUnmount/unmounted</code>，组合式 API 用 <code>onBeforeUnmount/onUnmounted</code>。</li>
+          <li>
+            <strong>beforeCreate 和 created 最大区别是什么？</strong>
+            结论是
+            <code>beforeCreate</code>
+            不能可靠访问 data/methods，
+            <code>created</code>
+            可以。原因是 Vue 初始化选项、响应式数据和方法绑定发生在这两个钩子之间。项目里初始化纯 JS
+            数据请求通常从
+            <code>created</code>
+            起步，不要在
+            <code>beforeCreate</code>
+            调用 methods。
+          </li>
+          <li>
+            <strong>created 和 mounted 分别适合放什么逻辑？</strong>
+            结论是 created 适合不依赖 DOM 的初始化，mounted 适合依赖 DOM
+            的第三方插件、尺寸读取或焦点处理。原因是 created 阶段实例数据已就绪但 DOM
+            未挂载，mounted 后才有
+            <code>$el</code>
+            。边界是服务端渲染和异步子组件场景下，DOM 相关逻辑还要更谨慎。
+          </li>
+          <li>
+            <strong>beforeUpdate 和 updated 中读 DOM 有什么边界？</strong>
+            结论是
+            <code>beforeUpdate</code>
+            读到的 DOM 可能仍是旧状态，
+            <code>updated</code>
+            后 DOM 已与本次状态同步。原因是更新流程先改响应式数据，再进行虚拟 DOM
+            patch。项目里如果要在状态变化后读最新 DOM，也常用
+            <code>$nextTick</code>
+            聚焦到一次具体更新；在
+            <code>updated</code>
+            里无条件改 data 可能触发更新循环。
+          </li>
+          <li>
+            <strong>beforeDestroy / destroyed 应该如何清理副作用？</strong>
+            结论是外部资源在
+            <code>beforeDestroy</code>
+            清理，
+            <code>destroyed</code>
+            时实例已不可用。原因是 Vue 会清理自己的指令、事件和子组件，但不会自动取消你手动注册到
+            <code>window</code>
+            的监听、定时器、WebSocket 或第三方库实例。项目里通常在
+            <code>beforeDestroy</code>
+            做清理，避免内存泄漏和重复回调。
+          </li>
+          <li>
+            <strong>Vue2 生命周期和 Vue3 命名有什么迁移差异？</strong>
+            结论是核心阶段类似，但销毁命名从 destroy 改为 unmount。原因是 Vue 3 API
+            统一表达「卸载组件」。维护 Vue 2 用
+            <code>beforeDestroy/destroyed</code>
+            ，迁到 Vue 3 Options API 用
+            <code>beforeUnmount/unmounted</code>
+            ，组合式 API 用
+            <code>onBeforeUnmount/onUnmounted</code>
+            。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://v2.vuejs.org/v2/guide/instance.html#Instance-Lifecycle-Hooks">Vue 2 Guide: Instance Lifecycle Hooks</a></li>
-          <li><a href="https://v2.vuejs.org/v2/api/#Options-Lifecycle-Hooks">Vue 2 API: Options / Lifecycle Hooks</a></li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/guide/instance.html#Instance-Lifecycle-Hooks">
+              Vue 2 Guide: Instance Lifecycle Hooks
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/api/#Options-Lifecycle-Hooks">
+              Vue 2 API: Options / Lifecycle Hooks
+            </a>
+          </li>
           <li><a href="https://v2.vuejs.org/v2/api/#vm-destroy">Vue 2 API: vm.$destroy()</a></li>
-          <li><a href="https://v3-migration.vuejs.org/breaking-changes/vnode-lifecycle-events.html">Vue 3 Migration Guide: Lifecycle hook rename</a></li>
+          <li>
+            <a href="https://v3-migration.vuejs.org/breaking-changes/vnode-lifecycle-events.html">
+              Vue 3 Migration Guide: Lifecycle hook rename
+            </a>
+          </li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
-
-    <!-- PAGE_DOM_START -->
-    <section class="demo-block demo-block--run" aria-label="生命周期钩子演示">
-      <h2 class="demo-block__label">交互演示</h2>
-      <div id="app">
-        <p>msg: {{ msg }}（count: {{ count }}）</p>
-        <button type="button" @click="count++">触发更新（beforeUpdate / updated）</button>
-        <button type="button" @click="destroyVm">销毁实例（beforeDestroy / destroyed）</button>
-        <h3>钩子执行顺序（最新在上）：</h3>
-        <pre class="demo-output">{{ logs.join('\n') }}</pre>
-      </div>
-    </section>
-    <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
@@ -88,7 +204,7 @@
         data: {
           msg: '生命周期演示',
           count: 0,
-          logs: []
+          logs: [],
         },
         beforeCreate: function () {
           // 官方：此时 data / methods 尚未初始化，勿访问 this.msg
@@ -124,8 +240,8 @@
           destroyVm: function () {
             this._pushLog('调用 $destroy()…');
             this.$destroy();
-          }
-        }
+          },
+        },
       });
     </script>
     <!-- SCRIPT_END -->
@@ -135,14 +251,22 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="../02-%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/06-%E5%93%8D%E5%BA%94%E5%BC%8F%E6%80%A7%E8%83%BDtimeline.html">← 响应式性能timeline</a>
-        <a href="../04-%E7%BB%84%E4%BB%B6/01-%E5%85%A8%E5%B1%80%E4%B8%8E%E5%B1%80%E9%83%A8%E7%BB%84%E4%BB%B6.html">全局与局部组件 →</a>
+        <a
+          href="../02-%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/06-%E5%93%8D%E5%BA%94%E5%BC%8F%E6%80%A7%E8%83%BDtimeline.html"
+        >
+          ← 响应式性能timeline
+        </a>
+        <a
+          href="../04-%E7%BB%84%E4%BB%B6/01-%E5%85%A8%E5%B1%80%E4%B8%8E%E5%B1%80%E9%83%A8%E7%BB%84%E4%BB%B6.html"
+        >
+          全局与局部组件 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

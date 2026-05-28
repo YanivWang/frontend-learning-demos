@@ -27,30 +27,140 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Worker 基础与子脚本</h1>
-      <p class="hint">阅读本复习区后，在下方启动 Worker、发送消息并观察输出；建议同时打开 DevTools Console。</p>
+      <p class="hint">
+        阅读本复习区后，在下方启动 Worker、发送消息并观察输出；建议同时打开 DevTools Console。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>new Worker("worker.js")</code> 会创建一个独立的 worker 执行环境，适合把计算、解析、压缩等耗时任务移出主线程，避免阻塞点击、滚动和渲染。</li>
-          <li>Worker 没有主线程的 <code>window</code> 和 DOM 访问能力，脚本里的全局对象通常通过 <code>self</code> 使用；需要更新页面时只能把结果发回主线程。</li>
-          <li>主线程和 worker 通过 <code>postMessage()</code> 与 <code>message</code> 事件通信，消息默认按结构化克隆算法复制；函数、DOM 节点等不可克隆对象会失败，大型 <code>ArrayBuffer</code> 可考虑 transfer 避免复制成本。</li>
-          <li><code>worker.js</code> 里用 <code>importScripts("childWorker.js")</code> 同步加载子脚本，这是 classic worker 的写法；现代模块化代码可用 <code>new Worker(url, { type: "module" })</code> 后在 worker 中使用静态 <code>import</code>。</li>
-          <li>生命周期要显式收尾：主线程不再需要任务时调用 <code>worker.terminate()</code>，worker 内部完成或收到停止命令时可调用 <code>self.close()</code>；同时要监听 <code>error</code>，避免失败后资源悬挂。</li>
-          <li><strong>运行环境：</strong> Worker 脚本须与页面<strong>同源</strong>；<code>file://</code> 下部分浏览器对 Worker 限制更严，推荐用本地静态服务（如 <code>npm run dev</code>）打开。若 Worker 无法创建，下方会显示错误信息。</li>
+          <li>
+            <code>new Worker("worker.js")</code>
+            会创建一个独立的 worker
+            执行环境，适合把计算、解析、压缩等耗时任务移出主线程，避免阻塞点击、滚动和渲染。
+          </li>
+          <li>
+            Worker 没有主线程的
+            <code>window</code>
+            和 DOM 访问能力，脚本里的全局对象通常通过
+            <code>self</code>
+            使用；需要更新页面时只能把结果发回主线程。
+          </li>
+          <li>
+            主线程和 worker 通过
+            <code>postMessage()</code>
+            与
+            <code>message</code>
+            事件通信，消息默认按结构化克隆算法复制；函数、DOM 节点等不可克隆对象会失败，大型
+            <code>ArrayBuffer</code>
+            可考虑 transfer 避免复制成本。
+          </li>
+          <li>
+            <code>worker.js</code>
+            里用
+            <code>importScripts("childWorker.js")</code>
+            同步加载子脚本，这是 classic worker 的写法；现代模块化代码可用
+            <code>new Worker(url, { type: "module" })</code>
+            后在 worker 中使用静态
+            <code>import</code>
+            。
+          </li>
+          <li>
+            生命周期要显式收尾：主线程不再需要任务时调用
+            <code>worker.terminate()</code>
+            ，worker 内部完成或收到停止命令时可调用
+            <code>self.close()</code>
+            ；同时要监听
+            <code>error</code>
+            ，避免失败后资源悬挂。
+          </li>
+          <li>
+            <strong>运行环境：</strong>
+            Worker 脚本须与页面
+            <strong>同源</strong>
+            ；
+            <code>file://</code>
+            下部分浏览器对 Worker 限制更严，推荐用本地静态服务（如
+            <code>npm run dev</code>
+            ）打开。若 Worker 无法创建，下方会显示错误信息。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Web Worker 能解决什么问题，不能直接操作哪些浏览器对象？</strong> 结论是它能把耗时 JS 放到独立线程执行，降低主线程卡顿，但不能直接操作 DOM。原因是 worker 有独立的全局作用域和事件循环，只暴露一部分 Web API。项目里常把图片处理、JSON 解析、加解密和大量计算放进 worker，再把结果发回主线程渲染。</li>
-          <li><strong>postMessage 为什么不能传函数或 DOM 节点，大数据传输如何优化？</strong> 结论是普通消息依赖结构化克隆，函数、DOM 节点这类带执行环境或页面引用的对象不可克隆。原因是浏览器需要在线程边界复制或转移数据，不能共享任意对象引用。传大块二进制时优先使用 transferable objects，例如把 <code>ArrayBuffer</code> 所有权转给 worker，减少复制成本。</li>
-          <li><strong>importScripts() 与 module worker 的 import 有什么区别？</strong> 结论是 <code>importScripts()</code> 属于 classic worker，同步加载并执行脚本；module worker 使用标准 ESM <code>import</code>，更适合现代工程。原因是两者的加载、作用域和依赖解析模型不同。老 demo 或简单脚本可用 <code>importScripts()</code>，新项目更推荐 <code>{ type: "module" }</code> 配合构建工具。</li>
-          <li><strong>terminate() 和 self.close() 分别适合在哪一侧调用？</strong> 结论是主线程调用 <code>worker.terminate()</code> 强制结束 worker，worker 内部调用 <code>self.close()</code> 主动结束自己。原因是控制权所在不同：主线程负责管理任务生命周期，worker 负责在任务完成或收到停止命令时自我收尾。实际项目还要处理错误、取消和重复创建，避免僵尸 worker 或重复计算。</li>
+          <li>
+            <strong>Web Worker 能解决什么问题，不能直接操作哪些浏览器对象？</strong>
+            结论是它能把耗时 JS 放到独立线程执行，降低主线程卡顿，但不能直接操作 DOM。原因是 worker
+            有独立的全局作用域和事件循环，只暴露一部分 Web API。项目里常把图片处理、JSON
+            解析、加解密和大量计算放进 worker，再把结果发回主线程渲染。
+          </li>
+          <li>
+            <strong>postMessage 为什么不能传函数或 DOM 节点，大数据传输如何优化？</strong>
+            结论是普通消息依赖结构化克隆，函数、DOM
+            节点这类带执行环境或页面引用的对象不可克隆。原因是浏览器需要在线程边界复制或转移数据，不能共享任意对象引用。传大块二进制时优先使用
+            transferable objects，例如把
+            <code>ArrayBuffer</code>
+            所有权转给 worker，减少复制成本。
+          </li>
+          <li>
+            <strong>importScripts() 与 module worker 的 import 有什么区别？</strong>
+            结论是
+            <code>importScripts()</code>
+            属于 classic worker，同步加载并执行脚本；module worker 使用标准 ESM
+            <code>import</code>
+            ，更适合现代工程。原因是两者的加载、作用域和依赖解析模型不同。老 demo 或简单脚本可用
+            <code>importScripts()</code>
+            ，新项目更推荐
+            <code>{ type: "module" }</code>
+            配合构建工具。
+          </li>
+          <li>
+            <strong>terminate() 和 self.close() 分别适合在哪一侧调用？</strong>
+            结论是主线程调用
+            <code>worker.terminate()</code>
+            强制结束 worker，worker 内部调用
+            <code>self.close()</code>
+            主动结束自己。原因是控制权所在不同：主线程负责管理任务生命周期，worker
+            负责在任务完成或收到停止命令时自我收尾。实际项目还要处理错误、取消和重复创建，避免僵尸
+            worker 或重复计算。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers" target="_blank" rel="noreferrer">MDN: Using Web Workers</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Worker/postMessage" target="_blank" rel="noreferrer">MDN: Worker.postMessage()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/WorkerGlobalScope/importScripts" target="_blank" rel="noreferrer">MDN: WorkerGlobalScope.importScripts()</a></li>
-          <li><a href="https://html.spec.whatwg.org/multipage/workers.html" target="_blank" rel="noreferrer">WHATWG HTML Standard: Workers</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Using Web Workers
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Worker/postMessage"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Worker.postMessage()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/WorkerGlobalScope/importScripts"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: WorkerGlobalScope.importScripts()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://html.spec.whatwg.org/multipage/workers.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              WHATWG HTML Standard: Workers
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -71,15 +181,15 @@
     <!-- SCRIPT_START -->
     <script>
       (function () {
-        var outputEl = document.getElementById("runtime-output");
-        var btnStart = document.getElementById("btn-start");
-        var btnMsg = document.getElementById("btn-msg");
-        var btnStop = document.getElementById("btn-stop");
-        var btnPress = document.getElementById("btn-press");
+        var outputEl = document.getElementById('runtime-output');
+        var btnStart = document.getElementById('btn-start');
+        var btnMsg = document.getElementById('btn-msg');
+        var btnStop = document.getElementById('btn-stop');
+        var btnPress = document.getElementById('btn-press');
         var worker = null;
 
         function log(text) {
-          outputEl.textContent += "\n" + text;
+          outputEl.textContent += '\n' + text;
           console.log(text);
         }
 
@@ -90,55 +200,55 @@
         }
 
         // ============ 1. 主线程对比：短循环不阻塞 UI ============
-        btnPress.addEventListener("click", function () {
-          log("press start...");
+        btnPress.addEventListener('click', function () {
+          log('press start...');
           var sum = 0;
           for (var i = 0; i < 1000; i++) {
             sum += i;
           }
-          log("press end: " + sum);
+          log('press end: ' + sum);
         });
 
         // ============ 2. 创建 Worker（同源脚本 worker.js）============
-        btnStart.addEventListener("click", function () {
+        btnStart.addEventListener('click', function () {
           if (worker) return;
-          outputEl.textContent = "";
+          outputEl.textContent = '';
           try {
-            worker = new Worker("worker.js");
+            worker = new Worker('worker.js');
             setReady(true);
-            log("Worker 已创建（classic + importScripts）");
+            log('Worker 已创建（classic + importScripts）');
 
             worker.onmessage = function (event) {
-              log("主线程收到: " + event.data);
+              log('主线程收到: ' + event.data);
             };
 
             worker.onerror = function (event) {
-              log("Worker 错误: " + event.message);
+              log('Worker 错误: ' + event.message);
               worker.terminate();
               worker = null;
               setReady(false);
             };
           } catch (err) {
-            log("无法创建 Worker: " + err.name + " - " + err.message);
-            log("提示: file:// 下可能被浏览器限制，请用本地静态服务打开本页。");
+            log('无法创建 Worker: ' + err.name + ' - ' + err.message);
+            log('提示: file:// 下可能被浏览器限制，请用本地静态服务打开本页。');
             setReady(false);
           }
         });
 
         // ============ 3. postMessage 结构化克隆传参 ============
-        btnMsg.addEventListener("click", function () {
+        btnMsg.addEventListener('click', function () {
           if (!worker) return;
-          worker.postMessage("hello worker!!!");
-          log("主线程已 postMessage");
+          worker.postMessage('hello worker!!!');
+          log('主线程已 postMessage');
         });
 
         // ============ 4. terminate 结束子线程 ============
-        btnStop.addEventListener("click", function () {
+        btnStop.addEventListener('click', function () {
           if (!worker) return;
           worker.terminate();
           worker = null;
           setReady(false);
-          log("主线程已 terminate Worker");
+          log('主线程已 terminate Worker');
         });
       })();
     </script>
@@ -149,15 +259,23 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../../index.html">目录</a>
-        <a href="../02-%E5%91%BD%E5%90%8D%E4%B8%8E%E6%B6%88%E6%81%AF%E5%88%86%E5%8F%91/01-Worker-%E5%91%BD%E5%90%8D%E4%B8%8E%E6%B6%88%E6%81%AF%E5%88%86%E5%8F%91.html">相关 · Worker-命名与消息分发</a>
+        <a
+          href="../02-%E5%91%BD%E5%90%8D%E4%B8%8E%E6%B6%88%E6%81%AF%E5%88%86%E5%8F%91/01-Worker-%E5%91%BD%E5%90%8D%E4%B8%8E%E6%B6%88%E6%81%AF%E5%88%86%E5%8F%91.html"
+        >
+          相关 · Worker-命名与消息分发
+        </a>
         <a href="../../toolTips/index.html">← index</a>
-        <a href="../02-%E5%91%BD%E5%90%8D%E4%B8%8E%E6%B6%88%E6%81%AF%E5%88%86%E5%8F%91/01-Worker-%E5%91%BD%E5%90%8D%E4%B8%8E%E6%B6%88%E6%81%AF%E5%88%86%E5%8F%91.html">Worker-命名与消息分发 →</a>
+        <a
+          href="../02-%E5%91%BD%E5%90%8D%E4%B8%8E%E6%B6%88%E6%81%AF%E5%88%86%E5%8F%91/01-Worker-%E5%91%BD%E5%90%8D%E4%B8%8E%E6%B6%88%E6%81%AF%E5%88%86%E5%8F%91.html"
+        >
+          Worker-命名与消息分发 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

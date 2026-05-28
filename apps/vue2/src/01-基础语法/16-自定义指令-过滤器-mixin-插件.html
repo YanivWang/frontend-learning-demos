@@ -31,32 +31,123 @@
       <h1>自定义指令 / 过滤器 / mixin / 插件</h1>
       <p class="hint">
         输入框自动聚焦（v-focus）；修改 price 看过滤器格式化；点按钮调用 mixin 方法与
-        <code>$toast</code> 插件；日志区显示 created 顺序与调用结果。
+        <code>$toast</code>
+        插件；日志区显示 created 顺序与调用结果。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>自定义指令适合封装底层 DOM 行为，例如自动聚焦、滚动监听、尺寸测量或第三方 DOM 库接入。钩子包括 <code>bind</code>、<code>inserted</code>、<code>update</code>、<code>componentUpdated</code>、<code>unbind</code>，参数里最常用的是 <code>el</code> 和 <code>binding</code>。</li>
-          <li>过滤器用于模板中的轻量文本格式化，例如金额、日期、大小写。本页 <code>currency</code> 只负责展示格式；复杂派生状态应放到 computed，交互动作放到 methods。Vue 3 已移除过滤器。</li>
-          <li>mixin 会把选项合并进组件：生命周期钩子都会执行，data 会合并，同名 methods / components / directives 等对象选项通常由组件自身覆盖。风险是来源隐蔽、命名冲突和调试困难。</li>
-          <li>插件暴露 <code>install(Vue, options)</code>，通常用于统一注册全局组件、指令、过滤器、mixin 或 <code>Vue.prototype</code> 方法。本页 <code>ToastPlugin</code> 在原型上挂了 <code>$toast</code>。</li>
-          <li>维护 Vue 2 项目时可以识别这些 API 的边界：DOM 行为用指令，展示格式用过滤器，横切复用谨慎用 mixin，全局能力用插件。新项目优先 Vue 3 和组合式 API，避免继续扩大过滤器和 mixin 的使用面。</li>
+          <li>
+            自定义指令适合封装底层 DOM 行为，例如自动聚焦、滚动监听、尺寸测量或第三方 DOM
+            库接入。钩子包括
+            <code>bind</code>
+            、
+            <code>inserted</code>
+            、
+            <code>update</code>
+            、
+            <code>componentUpdated</code>
+            、
+            <code>unbind</code>
+            ，参数里最常用的是
+            <code>el</code>
+            和
+            <code>binding</code>
+            。
+          </li>
+          <li>
+            过滤器用于模板中的轻量文本格式化，例如金额、日期、大小写。本页
+            <code>currency</code>
+            只负责展示格式；复杂派生状态应放到 computed，交互动作放到 methods。Vue 3 已移除过滤器。
+          </li>
+          <li>
+            mixin 会把选项合并进组件：生命周期钩子都会执行，data 会合并，同名 methods / components /
+            directives 等对象选项通常由组件自身覆盖。风险是来源隐蔽、命名冲突和调试困难。
+          </li>
+          <li>
+            插件暴露
+            <code>install(Vue, options)</code>
+            ，通常用于统一注册全局组件、指令、过滤器、mixin 或
+            <code>Vue.prototype</code>
+            方法。本页
+            <code>ToastPlugin</code>
+            在原型上挂了
+            <code>$toast</code>
+            。
+          </li>
+          <li>
+            维护 Vue 2 项目时可以识别这些 API 的边界：DOM
+            行为用指令，展示格式用过滤器，横切复用谨慎用 mixin，全局能力用插件。新项目优先 Vue 3
+            和组合式 API，避免继续扩大过滤器和 mixin 的使用面。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>自定义指令适合解决什么问题？</strong> 结论是适合封装需要直接操作 DOM 的低层行为。原因是组件负责数据和视图结构，指令可以拿到真实元素 <code>el</code> 并在插入、更新、解绑等时机处理 DOM。项目里自动聚焦、权限埋点、拖拽和第三方库接入可以考虑指令，但业务组件复用优先用组件。</li>
-          <li><strong>Vue 2 过滤器为什么不适合承载复杂业务逻辑？</strong> 结论是过滤器只适合显示层格式化。原因是它只能在插值和 <code>v-bind</code> 表达式中使用，表达力和可测试性都不适合复杂状态派生。项目里金额展示可以用过滤器，带依赖的计算和复用逻辑应改为 computed、methods 或普通工具函数；Vue 3 已移除过滤器。</li>
-          <li><strong>mixin 的合并规则和风险是什么？</strong> 结论是 mixin 会按 Vue 选项合并策略合并进组件，生命周期钩子都会执行，同名对象选项可能冲突或被组件覆盖。原因是 mixin 本质是把一份组件选项混入另一份组件选项。项目里大量 mixin 会让属性和方法来源不清，维护时要谨慎。</li>
-          <li><strong>插件 install 通常用来注册哪些全局能力？</strong> 结论是插件用于集中安装全局组件、指令、过滤器、mixin 或原型方法。原因是 <code>Vue.use(plugin)</code> 会调用插件的 <code>install</code> 方法，把全局扩展挂到 Vue 构造器上。边界是全局能力会影响整个应用，命名和副作用要非常克制。</li>
-          <li><strong>维护 Vue 2 项目时如何说明这些 API 与 Vue 3 选型边界？</strong> 结论是 Vue 3 移除 filters、弱化 mixin，自定义指令与插件仍可用但写法有变。原因是 Vue 2 已 EOL，新项目应优先 Composition API 与 Vite。存量项目识别这些 API 边界，迁移时 filters→computed/methods，mixin→composables。</li>
+          <li>
+            <strong>自定义指令适合解决什么问题？</strong>
+            结论是适合封装需要直接操作 DOM
+            的低层行为。原因是组件负责数据和视图结构，指令可以拿到真实元素
+            <code>el</code>
+            并在插入、更新、解绑等时机处理
+            DOM。项目里自动聚焦、权限埋点、拖拽和第三方库接入可以考虑指令，但业务组件复用优先用组件。
+          </li>
+          <li>
+            <strong>Vue 2 过滤器为什么不适合承载复杂业务逻辑？</strong>
+            结论是过滤器只适合显示层格式化。原因是它只能在插值和
+            <code>v-bind</code>
+            表达式中使用，表达力和可测试性都不适合复杂状态派生。项目里金额展示可以用过滤器，带依赖的计算和复用逻辑应改为
+            computed、methods 或普通工具函数；Vue 3 已移除过滤器。
+          </li>
+          <li>
+            <strong>mixin 的合并规则和风险是什么？</strong>
+            结论是 mixin 会按 Vue
+            选项合并策略合并进组件，生命周期钩子都会执行，同名对象选项可能冲突或被组件覆盖。原因是
+            mixin 本质是把一份组件选项混入另一份组件选项。项目里大量 mixin
+            会让属性和方法来源不清，维护时要谨慎。
+          </li>
+          <li>
+            <strong>插件 install 通常用来注册哪些全局能力？</strong>
+            结论是插件用于集中安装全局组件、指令、过滤器、mixin 或原型方法。原因是
+            <code>Vue.use(plugin)</code>
+            会调用插件的
+            <code>install</code>
+            方法，把全局扩展挂到 Vue
+            构造器上。边界是全局能力会影响整个应用，命名和副作用要非常克制。
+          </li>
+          <li>
+            <strong>维护 Vue 2 项目时如何说明这些 API 与 Vue 3 选型边界？</strong>
+            结论是 Vue 3 移除 filters、弱化 mixin，自定义指令与插件仍可用但写法有变。原因是 Vue 2 已
+            EOL，新项目应优先 Composition API 与 Vite。存量项目识别这些 API 边界，迁移时
+            filters→computed/methods，mixin→composables。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://v2.vuejs.org/v2/guide/custom-directive" target="_blank" rel="noopener">Vue 2 官方文档：Custom Directives</a></li>
-          <li><a href="https://v2.vuejs.org/v2/guide/filters.html" target="_blank" rel="noopener">Vue 2 官方文档：Filters</a></li>
-          <li><a href="https://v2.vuejs.org/v2/guide/mixins.html" target="_blank" rel="noopener">Vue 2 官方文档：Mixins</a></li>
-          <li><a href="https://v2.vuejs.org/v2/guide/plugins.html" target="_blank" rel="noopener">Vue 2 官方文档：Plugins</a></li>
-          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 官方说明：Vue 2 Has Reached End of Life</a></li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/guide/custom-directive" target="_blank" rel="noopener">
+              Vue 2 官方文档：Custom Directives
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/guide/filters.html" target="_blank" rel="noopener">
+              Vue 2 官方文档：Filters
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/guide/mixins.html" target="_blank" rel="noopener">
+              Vue 2 官方文档：Mixins
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/guide/plugins.html" target="_blank" rel="noopener">
+              Vue 2 官方文档：Plugins
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">
+              Vue 官方说明：Vue 2 Has Reached End of Life
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -64,7 +155,7 @@
 
     <!-- PAGE_DOM_START -->
     <div id="app">
-      <input v-focus v-border="'#409eff'" v-model="price">
+      <input v-focus v-border="'#409eff'" v-model="price" />
       <p>过滤器格式化: {{ price | currency }}</p>
       <button type="button" @click="sayFromMixin">调用 mixin 方法</button>
       <button type="button" @click="$toast('插件方法来自 Vue.prototype')">调用插件方法</button>
@@ -78,38 +169,38 @@
       // 全局自定义指令：v-focus / v-border
       // 官方：指令钩子接收 el、binding 等；适合封装底层 DOM 行为。
       // ---------------------------------------------------------------------------
-      Vue.directive("focus", {
+      Vue.directive('focus', {
         inserted(el) {
           el.focus();
-        }
+        },
       });
 
-      Vue.directive("border", {
+      Vue.directive('border', {
         bind(el, binding) {
-          el.style.border = "2px solid " + binding.value;
+          el.style.border = '2px solid ' + binding.value;
         },
         update(el, binding) {
           if (binding.value === binding.oldValue) {
             return;
           }
           el.style.borderColor = binding.value;
-        }
+        },
       });
 
-      Vue.filter("currency", function (value) {
+      Vue.filter('currency', function (value) {
         const number = Number(value);
-        return Number.isNaN(number) ? value : "￥" + number.toFixed(2);
+        return Number.isNaN(number) ? value : '￥' + number.toFixed(2);
       });
 
       const logMixin = {
         created() {
-          this.logs.push("mixin created 先于组件自己的 created 执行");
+          this.logs.push('mixin created 先于组件自己的 created 执行');
         },
         methods: {
           sayFromMixin() {
-            this.logs.push("mixin method 被调用");
-          }
-        }
+            this.logs.push('mixin method 被调用');
+          },
+        },
       };
 
       const ToastPlugin = {
@@ -117,7 +208,7 @@
           Vue.prototype.$toast = function (message) {
             this.logs.push(message);
           };
-        }
+        },
       };
 
       Vue.use(ToastPlugin);
@@ -126,19 +217,18 @@
       // #app：指令 + 过滤器 + mixin + 插件综合演示
       // ---------------------------------------------------------------------------
       new Vue({
-        el: "#app",
+        el: '#app',
         mixins: [logMixin],
         data() {
           return {
             price: 12,
-            logs: []
+            logs: [],
           };
         },
         created() {
-          this.logs.push("component created");
-        }
+          this.logs.push('component created');
+        },
       });
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -152,13 +242,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

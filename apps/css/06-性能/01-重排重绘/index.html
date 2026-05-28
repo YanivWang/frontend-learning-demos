@@ -1,5 +1,5 @@
 <!--
-分类: css / 06-性能 / 01-重排重绘
+  分类: css / 06-性能 / 01-重排重绘
   主题: CSS 重排、重绘与合成友好动画
   难度: 进阶
   前置: display与文档流
@@ -22,17 +22,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CSS 重排与重绘</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
-      h1 { font-size: 1.3rem; }
-      h2 { font-size: 1rem; margin-top: 2rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        color: #222;
+      }
+      h1 {
+        font-size: 1.3rem;
+      }
+      h2 {
+        font-size: 1rem;
+        margin-top: 2rem;
+      }
       .track {
         width: 360px;
         padding: 12px;
         border: 1px solid #ddd;
         background: #f8f8f8;
       }
-      .compare-row { display: flex; gap: 16px; flex-wrap: wrap; max-width: 760px; }
-      .compare-col { flex: 1; min-width: 280px; }
+      .compare-row {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        max-width: 760px;
+      }
+      .compare-col {
+        flex: 1;
+        min-width: 280px;
+      }
       .compare-track {
         position: relative;
         width: 100%;
@@ -56,16 +73,24 @@
         animation: move-left 1.6s ease-in-out infinite alternate;
       }
       @keyframes move-left {
-        from { left: 12px; }
-        to { left: calc(100% - 60px); }
+        from {
+          left: 12px;
+        }
+        to {
+          left: calc(100% - 60px);
+        }
       }
       .compare-ball--good {
         background: #27ae60;
         animation: move-transform 1.6s ease-in-out infinite alternate;
       }
       @keyframes move-transform {
-        from { transform: translateX(0); }
-        to { transform: translateX(calc(360px - 108px)); }
+        from {
+          transform: translateX(0);
+        }
+        to {
+          transform: translateX(calc(360px - 108px));
+        }
       }
       .ball {
         width: 48px;
@@ -75,12 +100,27 @@
         animation: move 1.6s ease-in-out infinite alternate;
       }
       @keyframes move {
-        from { transform: translateX(0); opacity: 0.7; }
-        to { transform: translateX(280px); opacity: 1; }
+        from {
+          transform: translateX(0);
+          opacity: 0.7;
+        }
+        to {
+          transform: translateX(280px);
+          opacity: 1;
+        }
       }
-      .bad, .good { margin: 10px 0; padding: 10px; color: #fff; }
-      .bad { background: #eb5757; }
-      .good { background: #27ae60; }
+      .bad,
+      .good {
+        margin: 10px 0;
+        padding: 10px;
+        color: #fff;
+      }
+      .bad {
+        background: #eb5757;
+      }
+      .good {
+        background: #27ae60;
+      }
       .contain {
         contain: layout paint;
         padding: 10px;
@@ -94,15 +134,25 @@
         border-radius: 8px;
         color: #fff;
         background: #27ae60;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
       }
       .will-card:hover {
         will-change: transform;
         transform: translateY(-6px) scale(1.03);
         box-shadow: 0 8px 20px rgba(39, 174, 96, 0.35);
       }
-      .will-note { margin-top: 8px; font-size: 0.875rem; color: #666; }
-      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      .will-note {
+        margin-top: 8px;
+        font-size: 0.875rem;
+        color: #666;
+      }
+      .tip {
+        margin: 0.5rem 0 1rem;
+        color: #666;
+        font-size: 0.875rem;
+      }
       #runtime-output {
         margin: 0.75rem 0 0;
         padding: 0.75rem 1rem;
@@ -123,30 +173,104 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>CSS 重排与重绘</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出动画元素的 computed 属性。可配合 DevTools Performance 面板观察。</p>
+      <p class="hint">
+        在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出动画元素的
+        computed 属性。可配合 DevTools Performance 面板观察。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>浏览器渲染通常会经历样式计算、布局、绘制和合成等阶段。修改 <code>width</code>、<code>height</code>、<code>margin</code>、<code>padding</code>、<code>top</code>、<code>left</code>、<code>font-size</code> 等影响盒子几何信息的属性，往往需要重新布局，也就是常说的 reflow/layout。</li>
-          <li>修改 <code>color</code>、<code>background</code>、<code>box-shadow</code> 这类视觉属性通常不改变元素占位，但仍可能让浏览器重新绘制像素。它比重排少了布局计算，但在大面积阴影、滤镜或复杂背景上仍可能很贵。</li>
-          <li>高频动画优先使用 <code>transform</code> 和 <code>opacity</code>，因为它们通常可以在合成阶段更新，不必每帧重新计算文档流。示例中的蓝色圆点用 <code>translateX()</code> 和透明度变化演示了这种写法。</li>
-          <li><code>will-change</code> 只是提前告诉浏览器某个属性即将变化，不是“性能开关”。长期给大量元素设置会提前分配资源、增加内存或显存压力，实践中应只在动画即将发生前添加，并在结束后移除。</li>
-          <li><code>contain: layout paint</code> 可以把组件内部的布局和绘制影响限制在局部，适合复杂卡片、列表项或独立小组件；边界是它会建立隔离上下文，可能影响尺寸依赖、定位、溢出和可访问性关联，需要按组件验证。</li>
+          <li>
+            浏览器渲染通常会经历样式计算、布局、绘制和合成等阶段。修改
+            <code>width</code>
+            、
+            <code>height</code>
+            、
+            <code>margin</code>
+            、
+            <code>padding</code>
+            、
+            <code>top</code>
+            、
+            <code>left</code>
+            、
+            <code>font-size</code>
+            等影响盒子几何信息的属性，往往需要重新布局，也就是常说的 reflow/layout。
+          </li>
+          <li>
+            修改
+            <code>color</code>
+            、
+            <code>background</code>
+            、
+            <code>box-shadow</code>
+            这类视觉属性通常不改变元素占位，但仍可能让浏览器重新绘制像素。它比重排少了布局计算，但在大面积阴影、滤镜或复杂背景上仍可能很贵。
+          </li>
+          <li>
+            高频动画优先使用
+            <code>transform</code>
+            和
+            <code>opacity</code>
+            ，因为它们通常可以在合成阶段更新，不必每帧重新计算文档流。示例中的蓝色圆点用
+            <code>translateX()</code>
+            和透明度变化演示了这种写法。
+          </li>
+          <li>
+            <code>will-change</code>
+            只是提前告诉浏览器某个属性即将变化，不是“性能开关”。长期给大量元素设置会提前分配资源、增加内存或显存压力，实践中应只在动画即将发生前添加，并在结束后移除。
+          </li>
+          <li>
+            <code>contain: layout paint</code>
+            可以把组件内部的布局和绘制影响限制在局部，适合复杂卡片、列表项或独立小组件；边界是它会建立隔离上下文，可能影响尺寸依赖、定位、溢出和可访问性关联，需要按组件验证。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>重排和重绘的区别是什么，为什么重排通常更贵？</strong> 结论是重排会重新计算元素几何和文档流位置，重绘主要更新像素外观。原因是布局变化可能影响祖先、后代和后续兄弟节点，传播范围比单纯绘制更大。项目里滚动、拖拽、动画等高频场景要避免每帧读写布局属性交错，必要时批量读写或使用 <code>requestAnimationFrame</code>。</li>
-          <li><strong>为什么动画优先使用 transform 和 opacity？</strong> 结论是这两个属性通常更容易交给合成阶段处理，帧率更稳定。原因是位移、缩放和透明度变化不一定需要重新排版其他元素。边界是“通常”不等于绝对，滤镜、巨大图层、复杂混合或设备资源不足仍可能掉帧，所以要用 DevTools 实测。</li>
-          <li><strong>will-change 为什么不能长期写在大量元素上？</strong> 结论是它会让浏览器提前做优化准备，滥用反而增加资源占用。原因是浏览器可能提前创建图层或缓存绘制结果，元素越多成本越高。项目里应在交互前短期添加，比如 hover、进入视口或动画开始前，动画结束后清理。</li>
-          <li><strong>contain: layout paint 适合解决什么性能边界？</strong> 结论是它适合把复杂组件的布局和绘制影响限制在组件内部。原因是 containment 告诉浏览器外部不依赖内部布局细节，从而减少无关区域失效。边界是组件如果依赖内容撑开外部、跨容器定位或被外部查询尺寸，就要谨慎测试。</li>
+          <li>
+            <strong>重排和重绘的区别是什么，为什么重排通常更贵？</strong>
+            结论是重排会重新计算元素几何和文档流位置，重绘主要更新像素外观。原因是布局变化可能影响祖先、后代和后续兄弟节点，传播范围比单纯绘制更大。项目里滚动、拖拽、动画等高频场景要避免每帧读写布局属性交错，必要时批量读写或使用
+            <code>requestAnimationFrame</code>
+            。
+          </li>
+          <li>
+            <strong>为什么动画优先使用 transform 和 opacity？</strong>
+            结论是这两个属性通常更容易交给合成阶段处理，帧率更稳定。原因是位移、缩放和透明度变化不一定需要重新排版其他元素。边界是“通常”不等于绝对，滤镜、巨大图层、复杂混合或设备资源不足仍可能掉帧，所以要用
+            DevTools 实测。
+          </li>
+          <li>
+            <strong>will-change 为什么不能长期写在大量元素上？</strong>
+            结论是它会让浏览器提前做优化准备，滥用反而增加资源占用。原因是浏览器可能提前创建图层或缓存绘制结果，元素越多成本越高。项目里应在交互前短期添加，比如
+            hover、进入视口或动画开始前，动画结束后清理。
+          </li>
+          <li>
+            <strong>contain: layout paint 适合解决什么性能边界？</strong>
+            结论是它适合把复杂组件的布局和绘制影响限制在组件内部。原因是 containment
+            告诉浏览器外部不依赖内部布局细节，从而减少无关区域失效。边界是组件如果依赖内容撑开外部、跨容器定位或被外部查询尺寸，就要谨慎测试。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Animation_performance_and_frame_rate">MDN: Animation performance and frame rate</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transform">MDN: transform</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/opacity">MDN: opacity</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/will-change">MDN: will-change</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/contain">MDN: contain</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Animation_performance_and_frame_rate"
+            >
+              MDN: Animation performance and frame rate
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transform">MDN: transform</a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/opacity">MDN: opacity</a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/will-change">
+              MDN: will-change
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/contain">MDN: contain</a>
+          </li>
         </ul>
       </div>
     </section>
@@ -154,38 +278,69 @@
 
     <!-- PAGE_DOM_START -->
     <h2>layout 属性 vs transform 并排对比</h2>
-    <p class="tip">左侧用 <code>left</code> 做位移动画（每帧可能触发布局），右侧用 <code>transform: translateX()</code>（通常走合成阶段）。配合 DevTools Performance 对比帧率。</p>
+    <p class="tip">
+      左侧用
+      <code>left</code>
+      做位移动画（每帧可能触发布局），右侧用
+      <code>transform: translateX()</code>
+      （通常走合成阶段）。配合 DevTools Performance 对比帧率。
+    </p>
     <div class="compare-row">
       <div class="compare-col">
-        <p class="tip" style="margin-top:0;">❌ 改 <code>left</code>（layout 属性）</p>
+        <p class="tip" style="margin-top: 0">
+          ❌ 改
+          <code>left</code>
+          （layout 属性）
+        </p>
         <div class="compare-track" id="track-bad">
           <div class="compare-ball compare-ball--bad" id="ball-bad"></div>
         </div>
       </div>
       <div class="compare-col">
-        <p class="tip" style="margin-top:0;">✓ 改 <code>transform</code>（合成友好）</p>
+        <p class="tip" style="margin-top: 0">
+          ✓ 改
+          <code>transform</code>
+          （合成友好）
+        </p>
         <div class="compare-track" id="track-good">
           <div class="compare-ball compare-ball--good" id="ball-good"></div>
         </div>
       </div>
     </div>
     <h2>动画优先 transform / opacity（合成层友好）</h2>
-    <p class="tip">蓝色圆点用 <code>transform: translateX()</code> 与 <code>opacity</code> 动画，通常可在合成阶段更新而避免每帧重排。</p>
+    <p class="tip">
+      蓝色圆点用
+      <code>transform: translateX()</code>
+      与
+      <code>opacity</code>
+      动画，通常可在合成阶段更新而避免每帧重排。
+    </p>
     <div class="track">
       <div class="ball" id="anim-ball"></div>
     </div>
     <h2>will-change：短期提示浏览器优化</h2>
-    <p class="tip">悬停卡片观察 <code>will-change: transform</code> 仅在 :hover 时生效；脚本读取 computed 值。</p>
+    <p class="tip">
+      悬停卡片观察
+      <code>will-change: transform</code>
+      仅在 :hover 时生效；脚本读取 computed 值。
+    </p>
     <div class="will-card" id="will-card">悬停我（:hover 时设置 will-change: transform）</div>
     <p class="will-note">只在即将动画前声明 will-change，动画结束后移除，避免长期占用显存。</p>
     <h2>属性分类（MDN Animation performance）</h2>
     <p class="tip">对比哪些 CSS 属性更容易触发布局（reflow）或绘制（repaint）。</p>
-    <div class="bad" id="reflow-props">容易重排：width、height、margin、padding、top、left、font-size</div>
+    <div class="bad" id="reflow-props">
+      容易重排：width、height、margin、padding、top、left、font-size
+    </div>
     <div class="bad" id="repaint-props">容易重绘：color、background、box-shadow</div>
     <div class="good" id="composite-props">常用于高性能动画：transform、opacity</div>
     <h2>隔离影响范围</h2>
-    <p class="tip"><code>contain: layout paint</code> 把布局和绘制影响限制在组件内部（MDN contain）。</p>
-    <div class="contain" id="contain-box">contain: layout paint 可把布局和绘制影响限制在局部，适合复杂组件谨慎使用。</div>
+    <p class="tip">
+      <code>contain: layout paint</code>
+      把布局和绘制影响限制在组件内部（MDN contain）。
+    </p>
+    <div class="contain" id="contain-box">
+      contain: layout paint 可把布局和绘制影响限制在局部，适合复杂组件谨慎使用。
+    </div>
     <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
 
@@ -194,17 +349,17 @@
       (function () {
         /** 读取元素 computed 样式中的指定属性 */
         function getComputedProp(el, prop) {
-          return el ? getComputedStyle(el).getPropertyValue(prop) : "";
+          return el ? getComputedStyle(el).getPropertyValue(prop) : '';
         }
 
         /** 输出动画球与 will-change 卡片的 computed 属性，对照 MDN transform/opacity/will-change */
         function renderPerformanceMetrics() {
-          var ballBad = document.getElementById("ball-bad");
-          var ballGood = document.getElementById("ball-good");
-          var ball = document.getElementById("anim-ball");
-          var card = document.getElementById("will-card");
-          var contain = document.getElementById("contain-box");
-          var output = document.getElementById("runtime-output");
+          var ballBad = document.getElementById('ball-bad');
+          var ballGood = document.getElementById('ball-good');
+          var ball = document.getElementById('anim-ball');
+          var card = document.getElementById('will-card');
+          var contain = document.getElementById('contain-box');
+          var output = document.getElementById('runtime-output');
           if (!output) return;
 
           var ballStyle = ball ? getComputedStyle(ball) : null;
@@ -212,36 +367,40 @@
           var containStyle = contain ? getComputedStyle(contain) : null;
 
           output.textContent = [
-            "── layout vs transform 对比 ──",
+            '── layout vs transform 对比 ──',
             ballBad
-              ? "#ball-bad left: " + getComputedStyle(ballBad).left + "（动画属性: left → 可能触发布局）"
-              : "",
+              ? '#ball-bad left: ' +
+                getComputedStyle(ballBad).left +
+                '（动画属性: left → 可能触发布局）'
+              : '',
             ballGood
-              ? "#ball-good transform: " + getComputedStyle(ballGood).transform + "（动画属性: transform → 合成友好）"
-              : "",
-            "",
-            "── 重排/重绘/合成友好属性实测 ──",
-            ballStyle
-              ? "#anim-ball transform: " + ballStyle.transform
-              : "",
-            ballStyle ? "#anim-ball opacity: " + ballStyle.opacity : "",
-            ballStyle ? "#anim-ball animation-name: " + ballStyle.animationName : "",
+              ? '#ball-good transform: ' +
+                getComputedStyle(ballGood).transform +
+                '（动画属性: transform → 合成友好）'
+              : '',
+            '',
+            '── 重排/重绘/合成友好属性实测 ──',
+            ballStyle ? '#anim-ball transform: ' + ballStyle.transform : '',
+            ballStyle ? '#anim-ball opacity: ' + ballStyle.opacity : '',
+            ballStyle ? '#anim-ball animation-name: ' + ballStyle.animationName : '',
             cardStyle
-              ? "#will-card will-change: " + (cardStyle.willChange || "auto") + "（未 hover 时为 auto）"
-              : "",
-            containStyle
-              ? "#contain-box contain: " + containStyle.contain
-              : "",
-            "",
-            "提示: 悬停 #will-card 后重新查看 DevTools computed 中 will-change 是否变为 transform",
-          ].filter(Boolean).join("\n");
+              ? '#will-card will-change: ' +
+                (cardStyle.willChange || 'auto') +
+                '（未 hover 时为 auto）'
+              : '',
+            containStyle ? '#contain-box contain: ' + containStyle.contain : '',
+            '',
+            '提示: 悬停 #will-card 后重新查看 DevTools computed 中 will-change 是否变为 transform',
+          ]
+            .filter(Boolean)
+            .join('\n');
         }
 
         renderPerformanceMetrics();
-        var card = document.getElementById("will-card");
+        var card = document.getElementById('will-card');
         if (card) {
-          card.addEventListener("mouseenter", renderPerformanceMetrics);
-          card.addEventListener("mouseleave", renderPerformanceMetrics);
+          card.addEventListener('mouseenter', renderPerformanceMetrics);
+          card.addEventListener('mouseleave', renderPerformanceMetrics);
         }
       })();
     </script>
@@ -257,13 +416,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

@@ -21,10 +21,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BOM history pushState/replaceState</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
-      button { margin: 4px 8px 4px 0; padding: 6px 12px; }
-      #route-view { padding: 16px; margin: 12px 0; border: 2px solid #94a3b8; border-radius: 8px; background: #f8fafc; min-height: 48px; }
-      #runtime-output { padding: 10px; background: #f6f8fa; border-radius: 6px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; min-height: 4rem; max-height: 200px; overflow: auto; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 1.5rem;
+        line-height: 1.6;
+      }
+      button {
+        margin: 4px 8px 4px 0;
+        padding: 6px 12px;
+      }
+      #route-view {
+        padding: 16px;
+        margin: 12px 0;
+        border: 2px solid #94a3b8;
+        border-radius: 8px;
+        background: #f8fafc;
+        min-height: 48px;
+      }
+      #runtime-output {
+        padding: 10px;
+        background: #f6f8fa;
+        border-radius: 6px;
+        font-family: ui-monospace, monospace;
+        font-size: 0.8125rem;
+        white-space: pre-wrap;
+        min-height: 4rem;
+        max-height: 200px;
+        overflow: auto;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -33,29 +57,106 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>history pushState / replaceState 与 popstate</h1>
-      <p class="hint">请阅读本复习区，并在下方演示区点击导航按钮；pushState 后需主动渲染，popstate 仅在前进/后退时触发。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>history.pushState(state, unused, url)</code> 会向会话历史追加一条同源记录；<code>history.replaceState</code> 会替换当前记录，不增加后退层级。</li>
-          <li><code>state</code> 会和这条历史记录绑定，用户前进/后退回到该记录时可从 <code>popstate</code> 事件的 <code>event.state</code> 中取回。</li>
-          <li>调用 <code>pushState</code> 或 <code>replaceState</code> 本身不会触发 <code>popstate</code>；只有用户触发前进/后退或代码调用 <code>history.back/forward/go</code> 切换历史记录时才触发。</li>
-          <li><code>url</code> 必须与当前页面同源，否则会抛出异常；<code>state</code> 需要可结构化克隆，过大或不可序列化的数据不应塞进历史记录。</li>
-          <li>History 路由的 URL 没有 <code>#</code>，用户体验更自然；但刷新深层路径时服务器会收到真实路径，所以生产部署必须把 SPA 路径 fallback 到入口 HTML。</li>
+          <li>
+            <code>history.pushState(state, unused, url)</code>
+            会向会话历史追加一条同源记录；
+            <code>history.replaceState</code>
+            会替换当前记录，不增加后退层级。
+          </li>
+          <li>
+            <code>state</code>
+            会和这条历史记录绑定，用户前进/后退回到该记录时可从
+            <code>popstate</code>
+            事件的
+            <code>event.state</code>
+            中取回。
+          </li>
+          <li>
+            调用
+            <code>pushState</code>
+            或
+            <code>replaceState</code>
+            本身不会触发
+            <code>popstate</code>
+            ；只有用户触发前进/后退或代码调用
+            <code>history.back/forward/go</code>
+            切换历史记录时才触发。
+          </li>
+          <li>
+            <code>url</code>
+            必须与当前页面同源，否则会抛出异常；
+            <code>state</code>
+            需要可结构化克隆，过大或不可序列化的数据不应塞进历史记录。
+          </li>
+          <li>
+            History 路由的 URL 没有
+            <code>#</code>
+            ，用户体验更自然；但刷新深层路径时服务器会收到真实路径，所以生产部署必须把 SPA 路径
+            fallback 到入口 HTML。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>pushState 和 replaceState 对历史栈的影响有什么区别？</strong> 结论是 <code>pushState</code> 新增一条可后退记录，<code>replaceState</code> 覆盖当前记录。原因是它们分别对应“进入新页面状态”和“修正当前页面状态”。列表页进入详情通常用 push，登录重定向、规范化 URL、替换临时参数常用 replace。</li>
-          <li><strong>为什么调用 pushState 后不会立即触发 popstate？</strong> 结论是不会触发，因为 <code>popstate</code> 表示激活历史记录发生变化，而不是创建历史记录。原因是 <code>pushState</code> 只是写入一条新记录并更新地址栏。SPA 需要在调用 pushState 后主动渲染当前路由，同时监听 popstate 处理前进后退。</li>
-          <li><strong>history state 有哪些同源、序列化和容量边界？</strong> 结论是 URL 必须同源，state 应是可结构化克隆的小对象。原因是浏览器要持久化会话历史，不能保存函数、DOM 节点这类运行时对象。项目里只放路由恢复需要的轻量数据，业务大状态仍放 store、URL 参数或服务端。</li>
-          <li><strong>History 路由为什么需要服务端 fallback？</strong> 结论是刷新深层路径时浏览器会请求真实路径，服务器必须返回 SPA 入口 HTML。原因是 History 路由没有 hash 把路径留在客户端。部署到 Nginx、静态托管或 CDN 时，如果没有 fallback，刷新 `/users/1` 这类路径会变成 404。</li>
+          <li>
+            <strong>pushState 和 replaceState 对历史栈的影响有什么区别？</strong>
+            结论是
+            <code>pushState</code>
+            新增一条可后退记录，
+            <code>replaceState</code>
+            覆盖当前记录。原因是它们分别对应“进入新页面状态”和“修正当前页面状态”。列表页进入详情通常用
+            push，登录重定向、规范化 URL、替换临时参数常用 replace。
+          </li>
+          <li>
+            <strong>为什么调用 pushState 后不会立即触发 popstate？</strong>
+            结论是不会触发，因为
+            <code>popstate</code>
+            表示激活历史记录发生变化，而不是创建历史记录。原因是
+            <code>pushState</code>
+            只是写入一条新记录并更新地址栏。SPA 需要在调用 pushState 后主动渲染当前路由，同时监听
+            popstate 处理前进后退。
+          </li>
+          <li>
+            <strong>history state 有哪些同源、序列化和容量边界？</strong>
+            结论是 URL 必须同源，state
+            应是可结构化克隆的小对象。原因是浏览器要持久化会话历史，不能保存函数、DOM
+            节点这类运行时对象。项目里只放路由恢复需要的轻量数据，业务大状态仍放 store、URL
+            参数或服务端。
+          </li>
+          <li>
+            <strong>History 路由为什么需要服务端 fallback？</strong>
+            结论是刷新深层路径时浏览器会请求真实路径，服务器必须返回 SPA 入口 HTML。原因是 History
+            路由没有 hash 把路径留在客户端。部署到 Nginx、静态托管或 CDN 时，如果没有 fallback，刷新
+            `/users/1` 这类路径会变成 404。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/History/pushState">MDN: History.pushState()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/History/replaceState">MDN: History.replaceState()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event">MDN: Window popstate event</a></li>
-          <li><a href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#the-history-interface">HTML Standard: The History interface</a></li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/History/pushState">
+              MDN: History.pushState()
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/History/replaceState">
+              MDN: History.replaceState()
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/popstate_event">
+              MDN: Window popstate event
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#the-history-interface"
+            >
+              HTML Standard: The History interface
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -64,62 +165,73 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block">
       <h2>History API 演示</h2>
-      <p class="tip">pushState 追加记录、replaceState 替换记录；调用后须主动 renderRoute，popstate 只在前进/后退时触发。</p>
+      <p class="tip">
+        pushState 追加记录、replaceState 替换记录；调用后须主动 renderRoute，popstate
+        只在前进/后退时触发。
+      </p>
       <button type="button" id="btnA">pushState 导航到 A 页面</button>
       <button type="button" id="btnB">replaceState 导航到 B 页面</button>
-      <div id="route-view">当前路由：<em>（初始）</em></div>
+      <div id="route-view">
+        当前路由：
+        <em>（初始）</em>
+      </div>
       <pre id="runtime-output" aria-live="polite"></pre>
     </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      const routeView = document.getElementById("route-view");
-      const logBox = document.getElementById("runtime-output");
+      const routeView = document.getElementById('route-view');
+      const logBox = document.getElementById('runtime-output');
       const logs = [];
 
       function appendLog(text) {
-        logs.push("[" + new Date().toLocaleTimeString() + "] " + text);
+        logs.push('[' + new Date().toLocaleTimeString() + '] ' + text);
         if (logs.length > 20) logs.shift();
-        logBox.textContent = logs.join("\n");
+        logBox.textContent = logs.join('\n');
         console.log(text);
       }
 
       // ============ 1. 根据 history.state 渲染视图 ============
       function renderRoute() {
-        const path = location.pathname.split("/").pop() || location.href;
+        const path = location.pathname.split('/').pop() || location.href;
         const state = history.state;
-        const label = state?.title || "（无 state）";
+        const label = state?.title || '（无 state）';
         routeView.innerHTML =
-          "pathname: <strong>" + location.pathname + "</strong><br>" +
-          "history.state: <code>" + JSON.stringify(state) + "</code><br>" +
-          "视图: " + label;
+          'pathname: <strong>' +
+          location.pathname +
+          '</strong><br>' +
+          'history.state: <code>' +
+          JSON.stringify(state) +
+          '</code><br>' +
+          '视图: ' +
+          label;
       }
 
       // ============ 2. pushState：追加历史记录 ============
-      document.getElementById("btnA").addEventListener("click", () => {
-        const stateObject = { title: "A 页面", name: "wangcheng" };
-        history.pushState(stateObject, "", "page-aaa");
-        appendLog("pushState → page-aaa（不会触发 popstate）");
+      document.getElementById('btnA').addEventListener('click', () => {
+        const stateObject = { title: 'A 页面', name: 'wangcheng' };
+        history.pushState(stateObject, '', 'page-aaa');
+        appendLog('pushState → page-aaa（不会触发 popstate）');
         renderRoute();
       });
 
       // ============ 3. replaceState：替换当前记录 ============
-      document.getElementById("btnB").addEventListener("click", () => {
-        const stateObject = { title: "B 页面", name: "gaojie" };
-        history.replaceState(stateObject, "", "page-bbb");
-        appendLog("replaceState → page-bbb（不会触发 popstate）");
+      document.getElementById('btnB').addEventListener('click', () => {
+        const stateObject = { title: 'B 页面', name: 'gaojie' };
+        history.replaceState(stateObject, '', 'page-bbb');
+        appendLog('replaceState → page-bbb（不会触发 popstate）');
         renderRoute();
       });
 
       // ============ 4. popstate：前进/后退时触发 ============
-      window.addEventListener("popstate", (event) => {
-        appendLog("popstate state=" + JSON.stringify(event.state));
+      window.addEventListener('popstate', (event) => {
+        appendLog('popstate state=' + JSON.stringify(event.state));
         renderRoute();
       });
 
       renderRoute();
-      appendLog("页面就绪；pushState/replaceState 后需主动渲染");
+      appendLog('页面就绪；pushState/replaceState 后需主动渲染');
     </script>
     <!-- SCRIPT_END -->
 
@@ -135,9 +247,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

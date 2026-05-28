@@ -21,10 +21,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>requestAnimationFrame</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
-      #box { width: 48px; height: 48px; background: #3d8bfd; border-radius: 6px; margin: 16px 0; }
-      button { margin: 4px 6px 4px 0; padding: 6px 10px; }
-      #runtime-output { padding: 10px; background: #f6f8fa; border-radius: 6px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; min-height: 4rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 1.5rem;
+        line-height: 1.6;
+      }
+      #box {
+        width: 48px;
+        height: 48px;
+        background: #3d8bfd;
+        border-radius: 6px;
+        margin: 16px 0;
+      }
+      button {
+        margin: 4px 6px 4px 0;
+        padding: 6px 10px;
+      }
+      #runtime-output {
+        padding: 10px;
+        background: #f6f8fa;
+        border-radius: 6px;
+        font-family: ui-monospace, monospace;
+        font-size: 0.8125rem;
+        white-space: pre-wrap;
+        min-height: 4rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -33,28 +54,102 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>requestAnimationFrame 与递归调用对比</h1>
-      <p class="hint">请阅读本复习区，并在下方演示区启动/停止动画；同时打开 DevTools Console 查看帧时间戳输出。</p>
+      <p class="hint">
+        请阅读本复习区，并在下方演示区启动/停止动画；同时打开 DevTools Console 查看帧时间戳输出。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>直接同步递归会在同一轮调用栈里不断调用自己，缺少退出条件时会造成栈溢出；<code>requestAnimationFrame()</code> 则把下一次回调交给浏览器，在下一次重绘前执行。</li>
-          <li>rAF 与浏览器渲染节奏协同，适合驱动视觉动画、滚动跟随、拖拽中的合帧更新。它不是“固定 60Hz 定时器”，高刷新率屏幕、系统负载和后台标签页都会影响回调频率。</li>
-          <li>rAF 回调会收到 <code>DOMHighResTimeStamp</code>，动画应根据时间差计算位移或进度，而不是每帧固定加一个数。这样在 60Hz、120Hz 或掉帧时速度才更稳定。</li>
-          <li>想停止动画必须保存 <code>requestAnimationFrame()</code> 返回的 id，并用 <code>cancelAnimationFrame(id)</code> 取消下一帧；组件卸载、路由切换、弹窗关闭时都应清理，避免后台循环继续跑。</li>
-          <li>与 <code>setTimeout</code>/<code>setInterval</code> 相比，rAF 更适合“下一次绘制前更新 UI”；定时器更适合非视觉任务，但可能和渲染不同步并产生掉帧或无效绘制。</li>
+          <li>
+            直接同步递归会在同一轮调用栈里不断调用自己，缺少退出条件时会造成栈溢出；
+            <code>requestAnimationFrame()</code>
+            则把下一次回调交给浏览器，在下一次重绘前执行。
+          </li>
+          <li>
+            rAF 与浏览器渲染节奏协同，适合驱动视觉动画、滚动跟随、拖拽中的合帧更新。它不是“固定 60Hz
+            定时器”，高刷新率屏幕、系统负载和后台标签页都会影响回调频率。
+          </li>
+          <li>
+            rAF 回调会收到
+            <code>DOMHighResTimeStamp</code>
+            ，动画应根据时间差计算位移或进度，而不是每帧固定加一个数。这样在 60Hz、120Hz
+            或掉帧时速度才更稳定。
+          </li>
+          <li>
+            想停止动画必须保存
+            <code>requestAnimationFrame()</code>
+            返回的 id，并用
+            <code>cancelAnimationFrame(id)</code>
+            取消下一帧；组件卸载、路由切换、弹窗关闭时都应清理，避免后台循环继续跑。
+          </li>
+          <li>
+            与
+            <code>setTimeout</code>
+            /
+            <code>setInterval</code>
+            相比，rAF 更适合“下一次绘制前更新
+            UI”；定时器更适合非视觉任务，但可能和渲染不同步并产生掉帧或无效绘制。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>requestAnimationFrame 为什么比同步递归更适合动画循环？</strong> 结论是同步递归会连续占用当前调用栈，而 rAF 会把下一次更新排到下一帧绘制前。原因是浏览器可以在帧边界统一处理样式、布局、绘制和回调。项目里做动画循环时应在回调尾部再次申请 rAF，而不是直接递归调用函数。</li>
-          <li><strong>rAF 和 setTimeout/setInterval 做动画有什么差异？</strong> 结论是 rAF 面向视觉更新并和渲染节奏同步，定时器只按任务队列延迟执行。原因是定时器可能在浏览器不准备绘制时触发，导致无效更新或帧不稳定。实际动画、拖拽和滚动联动优先 rAF，非视觉轮询或超时逻辑才用定时器。</li>
-          <li><strong>为什么动画逻辑应该使用回调时间戳计算进度？</strong> 结论是应按时间差推进动画，而不是假设每秒 60 帧。原因是用户设备刷新率可能是 60Hz、120Hz，也可能因为负载掉帧或后台降频。项目里常用 <code>delta = timestamp - lastTimestamp</code> 计算位移，保证不同设备上的速度一致。</li>
-          <li><strong>组件卸载或页面隐藏时如何停止 rAF 循环？</strong> 结论是保存 rAF id，在卸载、路由切换或显式停止时调用 <code>cancelAnimationFrame()</code>。原因是只要下一帧已被申请，回调就可能继续运行并持有闭包引用。项目里还可监听 <code>visibilitychange</code> 暂停动画，回到前台后重新同步时间戳。</li>
+          <li>
+            <strong>requestAnimationFrame 为什么比同步递归更适合动画循环？</strong>
+            结论是同步递归会连续占用当前调用栈，而 rAF
+            会把下一次更新排到下一帧绘制前。原因是浏览器可以在帧边界统一处理样式、布局、绘制和回调。项目里做动画循环时应在回调尾部再次申请
+            rAF，而不是直接递归调用函数。
+          </li>
+          <li>
+            <strong>rAF 和 setTimeout/setInterval 做动画有什么差异？</strong>
+            结论是 rAF
+            面向视觉更新并和渲染节奏同步，定时器只按任务队列延迟执行。原因是定时器可能在浏览器不准备绘制时触发，导致无效更新或帧不稳定。实际动画、拖拽和滚动联动优先
+            rAF，非视觉轮询或超时逻辑才用定时器。
+          </li>
+          <li>
+            <strong>为什么动画逻辑应该使用回调时间戳计算进度？</strong>
+            结论是应按时间差推进动画，而不是假设每秒 60 帧。原因是用户设备刷新率可能是
+            60Hz、120Hz，也可能因为负载掉帧或后台降频。项目里常用
+            <code>delta = timestamp - lastTimestamp</code>
+            计算位移，保证不同设备上的速度一致。
+          </li>
+          <li>
+            <strong>组件卸载或页面隐藏时如何停止 rAF 循环？</strong>
+            结论是保存 rAF id，在卸载、路由切换或显式停止时调用
+            <code>cancelAnimationFrame()</code>
+            。原因是只要下一帧已被申请，回调就可能继续运行并持有闭包引用。项目里还可监听
+            <code>visibilitychange</code>
+            暂停动画，回到前台后重新同步时间戳。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame" target="_blank" rel="noreferrer">MDN: Window.requestAnimationFrame()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/cancelAnimationFrame" target="_blank" rel="noreferrer">MDN: Window.cancelAnimationFrame()</a></li>
-          <li><a href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#animation-frames" target="_blank" rel="noreferrer">WHATWG HTML Standard: Animation frames</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Window.requestAnimationFrame()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Window/cancelAnimationFrame"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Window.cancelAnimationFrame()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#animation-frames"
+              target="_blank"
+              rel="noreferrer"
+            >
+              WHATWG HTML Standard: Animation frames
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -63,7 +158,9 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block">
       <h2>rAF 动画演示</h2>
-      <p class="tip">蓝色方块按时间戳匀速移动；后台标签页 rAF 会暂停或降频，需切换标签页人工验证。</p>
+      <p class="tip">
+        蓝色方块按时间戳匀速移动；后台标签页 rAF 会暂停或降频，需切换标签页人工验证。
+      </p>
       <button type="button" id="startBtn">启动 rAF 动画</button>
       <button type="button" id="stopBtn">停止动画</button>
       <div id="box"></div>
@@ -73,8 +170,8 @@
 
     <!-- SCRIPT_START -->
     <script>
-      const box = document.getElementById("box");
-      const output = document.getElementById("runtime-output");
+      const box = document.getElementById('box');
+      const output = document.getElementById('runtime-output');
       let rafId = 0;
       let frameCount = 0;
       let lastTimestamp = 0;
@@ -102,48 +199,57 @@
 
         position += delta * 0.08; // 像素/毫秒
         if (position > 280) position = 0;
-        box.style.transform = "translateX(" + position.toFixed(1) + "px)";
+        box.style.transform = 'translateX(' + position.toFixed(1) + 'px)';
 
         if (frameCount <= 5 || frameCount % 30 === 0) {
-          console.log("帧", frameCount, "timestamp:", Math.round(timestamp), "delta:", Math.round(delta) + "ms");
+          console.log(
+            '帧',
+            frameCount,
+            'timestamp:',
+            Math.round(timestamp),
+            'delta:',
+            Math.round(delta) + 'ms',
+          );
         }
 
-        show([
-          "帧数: " + frameCount,
-          "timestamp: " + Math.round(timestamp) + " ms",
-          "delta: " + Math.round(delta) + " ms",
-          "position: " + position.toFixed(1) + " px",
-        ].join("\n"));
+        show(
+          [
+            '帧数: ' + frameCount,
+            'timestamp: ' + Math.round(timestamp) + ' ms',
+            'delta: ' + Math.round(delta) + ' ms',
+            'position: ' + position.toFixed(1) + ' px',
+          ].join('\n'),
+        );
 
         rafId = requestAnimationFrame(animationLoop);
       }
 
       // ============ 3. 启动 / 停止 ============
-      document.getElementById("startBtn").addEventListener("click", () => {
+      document.getElementById('startBtn').addEventListener('click', () => {
         if (running) return;
         running = true;
         frameCount = 0;
         lastTimestamp = 0;
         position = 0;
-        show("动画运行中…");
+        show('动画运行中…');
         rafId = requestAnimationFrame(animationLoop);
       });
 
-      document.getElementById("stopBtn").addEventListener("click", () => {
+      document.getElementById('stopBtn').addEventListener('click', () => {
         running = false;
         cancelAnimationFrame(rafId);
-        show("已 cancelAnimationFrame，共运行 " + frameCount + " 帧");
+        show('已 cancelAnimationFrame，共运行 ' + frameCount + ' 帧');
       });
 
       // ============ 4. 页面隐藏时清理 ============
-      window.addEventListener("pagehide", () => {
+      window.addEventListener('pagehide', () => {
         running = false;
         cancelAnimationFrame(rafId);
       });
 
-      document.addEventListener("visibilitychange", () => {
+      document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
-          show("页面隐藏 — rAF 通常会暂停或降频（需人工切换标签验证）");
+          show('页面隐藏 — rAF 通常会暂停或降频（需人工切换标签验证）');
         }
       });
     </script>
@@ -155,15 +261,17 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
         <a href="./Performance-API.html">相关 · Performance-API</a>
-        <a href="./%E6%B5%8F%E8%A7%88%E5%99%A8%E6%B8%B2%E6%9F%93%E4%B8%8E%E6%80%A7%E8%83%BD.html">相关 · 浏览器渲染与性能</a>
+        <a href="./%E6%B5%8F%E8%A7%88%E5%99%A8%E6%B8%B2%E6%9F%93%E4%B8%8E%E6%80%A7%E8%83%BD.html">
+          相关 · 浏览器渲染与性能
+        </a>
         <a href="./Performance-API.html">← Performance-API</a>
         <a href="./ServiceWorker.html">ServiceWorker →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

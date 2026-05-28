@@ -21,9 +21,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TypeScript · class 与 implements</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 820px; line-height: 1.6; }
-      pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
-      #log { background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; white-space: pre-wrap; font-size: 0.85rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 820px;
+        line-height: 1.6;
+      }
+      pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 14px;
+        border-radius: 8px;
+        overflow: auto;
+        font-size: 0.86rem;
+      }
+      #log {
+        background: #f6f8fa;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 12px;
+        white-space: pre-wrap;
+        font-size: 0.85rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -36,25 +55,137 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>implements</code> 只在编译期检查 class 的实例侧是否满足接口形状，不会把接口方法注入到类中，也不会生成运行时代码。</li>
-          <li><code>public</code>、<code>private</code>、<code>protected</code> 是 TypeScript 访问控制；编译后是否保留限制取决于目标语法，而 JavaScript <code>#private</code> 字段是运行时私有，本页运行示例使用 <code>#users</code> 演示真实私有字段。</li>
-          <li><code>abstract class</code> 可以放公共实现和抽象成员，不能直接实例化；子类必须实现抽象方法，适合有共享逻辑的类层级。</li>
-          <li><code>interface</code> 只描述形状，<code>abstract class</code> 提供可继承实现，普通 <code>class</code> 同时产生类型和值；是否需要运行时代码是选型关键。</li>
-          <li>常见坑是以为 <code>implements</code> 会检查静态成员或影响运行时。它默认检查实例侧；构造函数和静态属性需要单独建模。</li>
+          <li>
+            <code>implements</code>
+            只在编译期检查 class
+            的实例侧是否满足接口形状，不会把接口方法注入到类中，也不会生成运行时代码。
+          </li>
+          <li>
+            <code>public</code>
+            、
+            <code>private</code>
+            、
+            <code>protected</code>
+            是 TypeScript 访问控制；编译后是否保留限制取决于目标语法，而 JavaScript
+            <code>#private</code>
+            字段是运行时私有，本页运行示例使用
+            <code>#users</code>
+            演示真实私有字段。
+          </li>
+          <li>
+            <code>abstract class</code>
+            可以放公共实现和抽象成员，不能直接实例化；子类必须实现抽象方法，适合有共享逻辑的类层级。
+          </li>
+          <li>
+            <code>interface</code>
+            只描述形状，
+            <code>abstract class</code>
+            提供可继承实现，普通
+            <code>class</code>
+            同时产生类型和值；是否需要运行时代码是选型关键。
+          </li>
+          <li>
+            常见坑是以为
+            <code>implements</code>
+            会检查静态成员或影响运行时。它默认检查实例侧；构造函数和静态属性需要单独建模。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>implements</code> 会不会改变 class 的运行时行为？</strong> 结论是不会，它只做编译期形状检查。原因是接口和 <code>implements</code> 都会在输出 JS 时被擦除。项目中它能保证服务类实现约定方法，但不能替代运行时依赖注入或接口校验。</li>
-          <li><strong>TS <code>private</code> 和 JavaScript <code>#private</code> 有什么区别？</strong> 结论是 TS <code>private</code> 主要是类型检查语义，<code>#private</code> 是 JavaScript 运行时私有字段。原因是类型会被擦除，而 <code>#users</code> 会成为语言级私有槽。需要运行时强私有时优先用 <code>#private</code>，只需类型边界时 TS 修饰符足够。</li>
-          <li><strong><code>abstract class</code> 和 <code>interface</code> 应该如何选？</strong> 结论是只要形状用 <code>interface</code>，需要共享实现和模板方法时用 <code>abstract class</code>。原因是 <code>interface</code> 没有运行时代码，抽象类会生成可继承的 JS 类。项目中仓储契约可用接口，带通用日志、缓存或校验流程的基类可用抽象类。</li>
-          <li><strong><code>implements</code> 检查的是实例侧还是静态侧？</strong> 结论是默认检查实例侧。原因是 class 类型有实例侧和静态侧两部分，<code>implements</code> 面向 <code>new</code> 出来的对象。若要约束构造函数或静态方法，需要单独定义构造签名或工厂函数类型。</li>
+          <li>
+            <strong>
+              <code>implements</code>
+              会不会改变 class 的运行时行为？
+            </strong>
+            结论是不会，它只做编译期形状检查。原因是接口和
+            <code>implements</code>
+            都会在输出 JS
+            时被擦除。项目中它能保证服务类实现约定方法，但不能替代运行时依赖注入或接口校验。
+          </li>
+          <li>
+            <strong>
+              TS
+              <code>private</code>
+              和 JavaScript
+              <code>#private</code>
+              有什么区别？
+            </strong>
+            结论是 TS
+            <code>private</code>
+            主要是类型检查语义，
+            <code>#private</code>
+            是 JavaScript 运行时私有字段。原因是类型会被擦除，而
+            <code>#users</code>
+            会成为语言级私有槽。需要运行时强私有时优先用
+            <code>#private</code>
+            ，只需类型边界时 TS 修饰符足够。
+          </li>
+          <li>
+            <strong>
+              <code>abstract class</code>
+              和
+              <code>interface</code>
+              应该如何选？
+            </strong>
+            结论是只要形状用
+            <code>interface</code>
+            ，需要共享实现和模板方法时用
+            <code>abstract class</code>
+            。原因是
+            <code>interface</code>
+            没有运行时代码，抽象类会生成可继承的 JS
+            类。项目中仓储契约可用接口，带通用日志、缓存或校验流程的基类可用抽象类。
+          </li>
+          <li>
+            <strong>
+              <code>implements</code>
+              检查的是实例侧还是静态侧？
+            </strong>
+            结论是默认检查实例侧。原因是 class 类型有实例侧和静态侧两部分，
+            <code>implements</code>
+            面向
+            <code>new</code>
+            出来的对象。若要约束构造函数或静态方法，需要单独定义构造签名或工厂函数类型。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/classes.html" target="_blank" rel="noopener">TypeScript Handbook: Classes</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/classes.html#implements-clauses" target="_blank" rel="noopener">TypeScript Handbook: implements Clauses</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/classes.html#member-visibility" target="_blank" rel="noopener">TypeScript Handbook: Member Visibility</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements" target="_blank" rel="noopener">MDN: Private elements</a></li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/classes.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Classes
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/classes.html#implements-clauses"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: implements Clauses
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/classes.html#member-visibility"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Member Visibility
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN: Private elements
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -63,21 +194,22 @@
     <!-- PAGE_DOM_START -->
     <p>上方为 TypeScript 源码（在 .ts / IDE 中检查），下方为等价的可运行 JavaScript + 断言输出。</p>
     <p class="ts"><strong>TypeScript</strong></p>
-    <pre>// —— interface 形状 + abstract class ——
-interface Repository&lt;T&gt; {
-  findById(id: number): T | undefined;
-}
-abstract class BaseService {
-  protected prefix = "service";
-  abstract label(): string;
-}
-
-// —— implements + 访问修饰符 ——
-class UserService extends BaseService implements Repository&lt;User&gt; {
-  private users: User[] = [];  // TS private；运行时强私有用 #users
-  findById(id: number) { return this.users.find((u) =&gt; u.id === id); }
-  label() { return this.prefix + ":user"; }
-}</pre>
+    <pre>
+// —— interface 形状 + abstract class ——
+      interface Repository&lt;T&gt; {
+      findById(id: number): T | undefined;
+      }
+      abstract class BaseService {
+      protected prefix = "service";
+      abstract label(): string;
+      }
+      // —— implements + 访问修饰符 ——
+      class UserService extends BaseService implements Repository&lt;User&gt; {
+      private users: User[] = [];  // TS private；运行时强私有用 #users
+      findById(id: number) { return this.users.find((u) =&gt; u.id === id); }
+      label() { return this.prefix + ":user"; }
+      }</pre
+    >
     <p><strong>运行时 JavaScript（本页执行）</strong></p>
     <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
@@ -88,10 +220,10 @@ class UserService extends BaseService implements Repository&lt;User&gt; {
       // JS 没有 TS 的 abstract 关键字，这里用抛错方法模拟“子类必须实现”。
       class BaseService {
         constructor() {
-          this.prefix = "service";
+          this.prefix = 'service';
         }
         label() {
-          throw new Error("abstract method");
+          throw new Error('abstract method');
         }
       }
 
@@ -111,20 +243,20 @@ class UserService extends BaseService implements Repository&lt;User&gt; {
         }
       }
 
-      const service = new UserService([{ id: 1, name: "Ada" }]);
+      const service = new UserService([{ id: 1, name: 'Ada' }]);
       const user = service.findById(1);
 
       const lines = [];
-      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+      const assert = (cond, msg) => lines.push((cond ? '✓ ' : '✗ ') + msg);
 
-      assert(user.name === "Ada", "implements Repository&lt;User&gt;: findById(1) 返回 User");
-      assert(service.label() === "service:user", "abstract class 公共实现 prefix + label()");
+      assert(user.name === 'Ada', 'implements Repository&lt;User&gt;: findById(1) 返回 User');
+      assert(service.label() === 'service:user', 'abstract class 公共实现 prefix + label()');
       assert(
-        typeof service.findById === "function",
-        "interface/implements 编译后擦除，运行时只剩 class 方法（TS 可拦、JS 仍会执行）"
+        typeof service.findById === 'function',
+        'interface/implements 编译后擦除，运行时只剩 class 方法（TS 可拦、JS 仍会执行）',
       );
 
-      document.getElementById("log").textContent = lines.join("\n");
+      document.getElementById('log').textContent = lines.join('\n');
     </script>
     <!-- SCRIPT_END -->
 
@@ -133,20 +265,30 @@ class UserService extends BaseService implements Repository&lt;User&gt; {
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="./05-%E6%95%B0%E7%BB%84%E5%85%83%E7%BB%84%E4%B8%8E%E5%AD%97%E9%9D%A2%E9%87%8F.html">相关 · 数组元组与字面量</a>
-        <a href="./07-enum%E4%B8%8E%E5%AF%B9%E8%B1%A1%E6%9E%9A%E4%B8%BE.html">相关 · enum与对象枚举</a>
-        <a href="./05-%E6%95%B0%E7%BB%84%E5%85%83%E7%BB%84%E4%B8%8E%E5%AD%97%E9%9D%A2%E9%87%8F.html">← 数组元组与字面量</a>
+        <a
+          href="./05-%E6%95%B0%E7%BB%84%E5%85%83%E7%BB%84%E4%B8%8E%E5%AD%97%E9%9D%A2%E9%87%8F.html"
+        >
+          相关 · 数组元组与字面量
+        </a>
+        <a href="./07-enum%E4%B8%8E%E5%AF%B9%E8%B1%A1%E6%9E%9A%E4%B8%BE.html">
+          相关 · enum与对象枚举
+        </a>
+        <a
+          href="./05-%E6%95%B0%E7%BB%84%E5%85%83%E7%BB%84%E4%B8%8E%E5%AD%97%E9%9D%A2%E9%87%8F.html"
+        >
+          ← 数组元组与字面量
+        </a>
         <a href="./07-enum%E4%B8%8E%E5%AF%B9%E8%B1%A1%E6%9E%9A%E4%B8%BE.html">enum与对象枚举 →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

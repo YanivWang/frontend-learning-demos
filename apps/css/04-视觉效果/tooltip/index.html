@@ -1,5 +1,5 @@
 <!--
-分类: css / 04-视觉效果 / tooltip
+  分类: css / 04-视觉效果 / tooltip
   主题: 纯 CSS tooltip（上下左右四方向）
   要点:
     - ::before 绘制三角箭头，::after 通过 attr(data-tip) 读取提示文字
@@ -34,7 +34,8 @@
         display: inline-block;
         position: relative;
       }
-      .tip:before, .tip:after {
+      .tip:before,
+      .tip:after {
         opacity: 0; /* 默认隐藏 tooltip */
         position: absolute;
         z-index: 1000; /*设为最上层*/
@@ -53,8 +54,10 @@
         background-color: #000000;
         color: #ffffff;
       }
-      .tip:hover:before, .tip:hover:after,
-      .tip:focus-visible:before, .tip:focus-visible:after {
+      .tip:hover:before,
+      .tip:hover:after,
+      .tip:focus-visible:before,
+      .tip:focus-visible:after {
         opacity: 1; /* hover 时显示 tooltip */
         z-index: 1000;
       }
@@ -193,29 +196,111 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>纯 CSS tooltip（上下左右四方向）</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出伪元素与 attr() 的实测信息。</p>
+      <p class="hint">
+        在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出伪元素与
+        attr() 的实测信息。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>本页用 <code>::before</code> 画小三角，用 <code>::after</code> 生成提示气泡，<code>content: attr(data-tip)</code> 会读取元素上的 <code>data-tip</code> 文案。</li>
-          <li>定位机制是让触发元素 <code>position: relative</code>，伪元素 <code>position: absolute</code>，再用 <code>top</code>、<code>bottom</code>、<code>left</code>、<code>right</code> 和 margin 控制四个方向。</li>
-          <li>三角形来自透明边框技巧：元素尺寸为 0 时，四条边框会形成四个三角区域，只给某一侧设置颜色就能得到箭头。</li>
-          <li>交互上不能只写 <code>:hover</code>，因为键盘和触屏用户可能无法触发；本页额外支持 <code>:focus-visible</code>，按钮获得焦点时也能显示提示。</li>
-          <li>纯 CSS tooltip 适合短文本装饰说明；如果提示内容很长、需要关闭逻辑、动态定位、防溢出或读屏器稳定朗读，应使用 JS 管理状态并补充 <code>aria-describedby</code> / <code>role="tooltip"</code>。</li>
+          <li>
+            本页用
+            <code>::before</code>
+            画小三角，用
+            <code>::after</code>
+            生成提示气泡，
+            <code>content: attr(data-tip)</code>
+            会读取元素上的
+            <code>data-tip</code>
+            文案。
+          </li>
+          <li>
+            定位机制是让触发元素
+            <code>position: relative</code>
+            ，伪元素
+            <code>position: absolute</code>
+            ，再用
+            <code>top</code>
+            、
+            <code>bottom</code>
+            、
+            <code>left</code>
+            、
+            <code>right</code>
+            和 margin 控制四个方向。
+          </li>
+          <li>
+            三角形来自透明边框技巧：元素尺寸为 0
+            时，四条边框会形成四个三角区域，只给某一侧设置颜色就能得到箭头。
+          </li>
+          <li>
+            交互上不能只写
+            <code>:hover</code>
+            ，因为键盘和触屏用户可能无法触发；本页额外支持
+            <code>:focus-visible</code>
+            ，按钮获得焦点时也能显示提示。
+          </li>
+          <li>
+            纯 CSS tooltip
+            适合短文本装饰说明；如果提示内容很长、需要关闭逻辑、动态定位、防溢出或读屏器稳定朗读，应使用
+            JS 管理状态并补充
+            <code>aria-describedby</code>
+            /
+            <code>role="tooltip"</code>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>纯 CSS tooltip 如何生成提示内容？</strong> 结论是用伪元素生成结构，用 <code>attr(data-tip)</code> 读取提示文案。原因是 <code>::before</code> / <code>::after</code> 可以通过 <code>content</code> 插入生成内容，并相对触发元素定位。边界是生成内容不适合承载复杂交互，也不能替代可靠的无障碍语义。</li>
-          <li><strong>为什么 tooltip 不能只依赖 :hover？</strong> 结论是只依赖 hover 会漏掉键盘和部分触屏场景。原因是键盘用户通过焦点导航，触屏设备没有稳定的悬停状态。本页补了 <code>:focus-visible</code>，真实项目还应根据交互复杂度加入 JS、Escape 关闭和 <code>aria-describedby</code>。</li>
-          <li><strong>CSS 三角形的原理是什么？</strong> 结论是利用透明边框拼出的斜切区域。原因是零尺寸盒子的四条 border 会分别形成三角形，只给目标方向的边框着色，其余保持透明，就能得到箭头。项目里要注意箭头尺寸、气泡背景色和方向边框颜色保持一致。</li>
-          <li><strong>纯 CSS tooltip 适合什么场景？</strong> 结论是适合短提示、静态方向和低风险装饰说明。原因是 CSS 缺少碰撞检测、异步内容、关闭时机和完整可访问性状态管理。复杂表单错误提示、动态菜单或移动端长文本说明应使用组件化 tooltip/popover。</li>
+          <li>
+            <strong>纯 CSS tooltip 如何生成提示内容？</strong>
+            结论是用伪元素生成结构，用
+            <code>attr(data-tip)</code>
+            读取提示文案。原因是
+            <code>::before</code>
+            /
+            <code>::after</code>
+            可以通过
+            <code>content</code>
+            插入生成内容，并相对触发元素定位。边界是生成内容不适合承载复杂交互，也不能替代可靠的无障碍语义。
+          </li>
+          <li>
+            <strong>为什么 tooltip 不能只依赖 :hover？</strong>
+            结论是只依赖 hover
+            会漏掉键盘和部分触屏场景。原因是键盘用户通过焦点导航，触屏设备没有稳定的悬停状态。本页补了
+            <code>:focus-visible</code>
+            ，真实项目还应根据交互复杂度加入 JS、Escape 关闭和
+            <code>aria-describedby</code>
+            。
+          </li>
+          <li>
+            <strong>CSS 三角形的原理是什么？</strong>
+            结论是利用透明边框拼出的斜切区域。原因是零尺寸盒子的四条 border
+            会分别形成三角形，只给目标方向的边框着色，其余保持透明，就能得到箭头。项目里要注意箭头尺寸、气泡背景色和方向边框颜色保持一致。
+          </li>
+          <li>
+            <strong>纯 CSS tooltip 适合什么场景？</strong>
+            结论是适合短提示、静态方向和低风险装饰说明。原因是 CSS
+            缺少碰撞检测、异步内容、关闭时机和完整可访问性状态管理。复杂表单错误提示、动态菜单或移动端长文本说明应使用组件化
+            tooltip/popover。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/::before">MDN: ::before</a></li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/::before">MDN: ::before</a>
+          </li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/attr">MDN: attr()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/:focus-visible">MDN: :focus-visible</a></li>
-          <li><a href="https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/">WAI-ARIA Authoring Practices: Tooltip Pattern</a></li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/:focus-visible">
+              MDN: :focus-visible
+            </a>
+          </li>
+          <li>
+            <a href="https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/">
+              WAI-ARIA Authoring Practices: Tooltip Pattern
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -223,18 +308,34 @@
 
     <!-- PAGE_DOM_START -->
     <h2>四方向 tooltip</h2>
-    <p class="tip">鼠标悬停或 Tab 聚焦按钮，观察 <code>::before</code> 箭头与 <code>::after</code> 气泡；<code>content: attr(data-tip)</code> 读取提示文案（MDN attr）。</p>
-    <p>
-      <button class="tip tip-top" id="tip-top" type="button" data-tip="我是上边提示">上边提示</button>
+    <p class="tip">
+      鼠标悬停或 Tab 聚焦按钮，观察
+      <code>::before</code>
+      箭头与
+      <code>::after</code>
+      气泡；
+      <code>content: attr(data-tip)</code>
+      读取提示文案（MDN attr）。
     </p>
     <p>
-      <button class="tip tip-bottom" id="tip-bottom" type="button" data-tip="我是下边提示">下边提示</button>
+      <button class="tip tip-top" id="tip-top" type="button" data-tip="我是上边提示">
+        上边提示
+      </button>
     </p>
     <p>
-      <button class="tip tip-right" id="tip-right" type="button" data-tip="我是右边提示">右边提示</button>
+      <button class="tip tip-bottom" id="tip-bottom" type="button" data-tip="我是下边提示">
+        下边提示
+      </button>
     </p>
     <p>
-      <button class="tip tip-left" id="tip-left" type="button" data-tip="我是左边提示">左边提示</button>
+      <button class="tip tip-right" id="tip-right" type="button" data-tip="我是右边提示">
+        右边提示
+      </button>
+    </p>
+    <p>
+      <button class="tip tip-left" id="tip-left" type="button" data-tip="我是左边提示">
+        左边提示
+      </button>
     </p>
     <pre id="runtime-output" aria-live="polite"></pre>
     <!-- PAGE_DOM_END -->
@@ -246,7 +347,7 @@
          * 读取触发元素的 data-tip，对应 MDN attr() 在 content 中的用法。
          */
         function getTipText(el) {
-          return el.getAttribute("data-tip") || "";
+          return el.getAttribute('data-tip') || '';
         }
 
         /**
@@ -254,25 +355,30 @@
          * 对应 MDN ::after 与 attr() 文档。
          */
         function getAfterContent(el) {
-          return getComputedStyle(el, "::after").content;
+          return getComputedStyle(el, '::after').content;
         }
 
         /** 汇总四个方向按钮的 data-tip 与伪元素 content，写入 #runtime-output */
         function renderTooltipMetrics() {
-          var ids = ["tip-top", "tip-bottom", "tip-right", "tip-left"];
-          var lines = ["── tooltip 属性与伪元素 content ──"];
+          var ids = ['tip-top', 'tip-bottom', 'tip-right', 'tip-left'];
+          var lines = ['── tooltip 属性与伪元素 content ──'];
           ids.forEach(function (id) {
             var el = document.getElementById(id);
             lines.push(
-              "#" + id +
-                ": data-tip=\"" + getTipText(el) + "\"" +
-                ", ::after content=" + getAfterContent(el) +
-                ", position=" + getComputedStyle(el).position
+              '#' +
+                id +
+                ': data-tip="' +
+                getTipText(el) +
+                '"' +
+                ', ::after content=' +
+                getAfterContent(el) +
+                ', position=' +
+                getComputedStyle(el).position,
             );
           });
-          lines.push("");
-          lines.push("交互：:hover 与 :focus-visible 均会显示 tooltip（键盘 Tab 可验证）");
-          document.getElementById("runtime-output").textContent = lines.join("\n");
+          lines.push('');
+          lines.push('交互：:hover 与 :focus-visible 均会显示 tooltip（键盘 Tab 可验证）');
+          document.getElementById('runtime-output').textContent = lines.join('\n');
         }
 
         renderTooltipMetrics();
@@ -286,17 +392,21 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="../drop-shadow/index.html">← index</a>
-        <a href="../../05-%E5%93%8D%E5%BA%94%E5%BC%8F/media-queries/01-%E5%9F%BA%E7%A1%80%E5%B8%83%E5%B1%80.html">基础布局 →</a>
+        <a
+          href="../../05-%E5%93%8D%E5%BA%94%E5%BC%8F/media-queries/01-%E5%9F%BA%E7%A1%80%E5%B8%83%E5%B1%80.html"
+        >
+          基础布局 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

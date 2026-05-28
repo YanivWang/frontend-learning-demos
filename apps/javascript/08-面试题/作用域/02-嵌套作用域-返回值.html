@@ -27,29 +27,145 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>嵌套函数 - 返回内层函数执行结果</h1>
-      <p class="hint">先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。</p>
+      <p class="hint">
+        先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>f</code> 在 <code>checkscope</code> 内部定义，它的外层词法环境包含局部变量 <code>scope = "local"</code>，所以执行 <code>f()</code> 时优先读取局部 <code>scope</code>。</li>
-          <li><code>return f()</code> 返回的是内层函数的执行结果，调用 <code>checkscope()</code> 得到字符串 <code>"local"</code>，而不是得到函数本身。</li>
-          <li>JavaScript 使用词法作用域：函数能访问哪些外层变量由“定义位置”决定，不会因为未来在哪里调用而改成调用方的局部变量。</li>
-          <li>本题中 <code>f()</code> 在 <code>checkscope</code> 还没返回前执行，结果已经计算完成；调用结束后，如果没有返回函数或其他引用，局部环境即可被回收。</li>
-          <li>与下一题 <code>return f</code> 的区别是：返回函数会把 <code>f</code> 连同它引用的外层词法环境一起带出，形成闭包，因此之后再调用也能读到 <code>"local"</code>。</li>
-          <li>现代代码中更推荐用 <code>let</code> / <code>const</code> 表达块级作用域；面试老题常用 <code>var</code>，答题时要说明这是函数作用域语境。</li>
+          <li>
+            <code>f</code>
+            在
+            <code>checkscope</code>
+            内部定义，它的外层词法环境包含局部变量
+            <code>scope = "local"</code>
+            ，所以执行
+            <code>f()</code>
+            时优先读取局部
+            <code>scope</code>
+            。
+          </li>
+          <li>
+            <code>return f()</code>
+            返回的是内层函数的执行结果，调用
+            <code>checkscope()</code>
+            得到字符串
+            <code>"local"</code>
+            ，而不是得到函数本身。
+          </li>
+          <li>
+            JavaScript
+            使用词法作用域：函数能访问哪些外层变量由“定义位置”决定，不会因为未来在哪里调用而改成调用方的局部变量。
+          </li>
+          <li>
+            本题中
+            <code>f()</code>
+            在
+            <code>checkscope</code>
+            还没返回前执行，结果已经计算完成；调用结束后，如果没有返回函数或其他引用，局部环境即可被回收。
+          </li>
+          <li>
+            与下一题
+            <code>return f</code>
+            的区别是：返回函数会把
+            <code>f</code>
+            连同它引用的外层词法环境一起带出，形成闭包，因此之后再调用也能读到
+            <code>"local"</code>
+            。
+          </li>
+          <li>
+            现代代码中更推荐用
+            <code>let</code>
+            /
+            <code>const</code>
+            表达块级作用域；面试老题常用
+            <code>var</code>
+            ，答题时要说明这是函数作用域语境。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>checkscope()</code> 为什么输出 <code>local</code> 而不是 <code>global</code>？</strong> 结论：因为 <code>f</code> 的词法作用域优先找到 <code>checkscope</code> 内的局部 <code>scope</code>。原因是函数定义时就记录了外层词法环境，变量查找从当前函数环境向外层逐级查找。边界是如果局部没有声明 <code>scope</code>，才会继续向外找到全局变量。</li>
-          <li><strong><code>return f()</code> 和 <code>return f</code> 有什么本质区别？</strong> 结论：<code>return f()</code> 返回执行结果，<code>return f</code> 返回函数引用。原因是前者在外层函数返回前已经调用内层函数，后者把内层函数带到外部等待之后调用。项目里封装工厂函数、权限校验器、事件回调时，返回函数通常意味着要依赖闭包保存外层状态。</li>
-          <li><strong>词法作用域为什么不是按调用位置查找变量？</strong> 结论：JavaScript 是词法作用域语言，不是动态作用域语言。原因是函数创建时的外层环境决定了自由变量解析路径，调用位置只影响调用栈和普通函数的 <code>this</code>。边界是 <code>eval</code>、<code>with</code> 等低频特性会让静态分析变复杂，现代项目应避免使用。</li>
-          <li><strong>闭包什么时候会让外层局部变量继续存活？</strong> 结论：当内层函数被外部引用且仍访问外层变量时，相关词法环境会继续存活。原因是垃圾回收不能释放仍可达的数据。本题返回的是 <code>f()</code> 的字符串结果，不会把函数引用带出；下一题返回 <code>f</code> 才是典型闭包持久化场景。</li>
+          <li>
+            <strong>
+              <code>checkscope()</code>
+              为什么输出
+              <code>local</code>
+              而不是
+              <code>global</code>
+              ？
+            </strong>
+            结论：因为
+            <code>f</code>
+            的词法作用域优先找到
+            <code>checkscope</code>
+            内的局部
+            <code>scope</code>
+            。原因是函数定义时就记录了外层词法环境，变量查找从当前函数环境向外层逐级查找。边界是如果局部没有声明
+            <code>scope</code>
+            ，才会继续向外找到全局变量。
+          </li>
+          <li>
+            <strong>
+              <code>return f()</code>
+              和
+              <code>return f</code>
+              有什么本质区别？
+            </strong>
+            结论：
+            <code>return f()</code>
+            返回执行结果，
+            <code>return f</code>
+            返回函数引用。原因是前者在外层函数返回前已经调用内层函数，后者把内层函数带到外部等待之后调用。项目里封装工厂函数、权限校验器、事件回调时，返回函数通常意味着要依赖闭包保存外层状态。
+          </li>
+          <li>
+            <strong>词法作用域为什么不是按调用位置查找变量？</strong>
+            结论：JavaScript
+            是词法作用域语言，不是动态作用域语言。原因是函数创建时的外层环境决定了自由变量解析路径，调用位置只影响调用栈和普通函数的
+            <code>this</code>
+            。边界是
+            <code>eval</code>
+            、
+            <code>with</code>
+            等低频特性会让静态分析变复杂，现代项目应避免使用。
+          </li>
+          <li>
+            <strong>闭包什么时候会让外层局部变量继续存活？</strong>
+            结论：当内层函数被外部引用且仍访问外层变量时，相关词法环境会继续存活。原因是垃圾回收不能释放仍可达的数据。本题返回的是
+            <code>f()</code>
+            的字符串结果，不会把函数引用带出；下一题返回
+            <code>f</code>
+            才是典型闭包持久化场景。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures" target="_blank" rel="noreferrer">MDN: Closures</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions" target="_blank" rel="noreferrer">MDN: Functions</a></li>
-          <li><a href="https://tc39.es/ecma262/#sec-lexical-environments" target="_blank" rel="noreferrer">ECMA-262: Lexical Environments</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Closures
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Functions
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://tc39.es/ecma262/#sec-lexical-environments"
+              target="_blank"
+              rel="noreferrer"
+            >
+              ECMA-262: Lexical Environments
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -58,7 +174,13 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block">
       <h2>运行结果</h2>
-      <p class="tip">标准答法：<code>checkscope()</code> 输出 <code>"local"</code>（内层函数按定义位置找到局部 scope）。</p>
+      <p class="tip">
+        标准答法：
+        <code>checkscope()</code>
+        输出
+        <code>"local"</code>
+        （内层函数按定义位置找到局部 scope）。
+      </p>
       <pre id="runtime-output" aria-live="polite"></pre>
     </section>
     <!-- PAGE_DOM_END -->
@@ -66,9 +188,9 @@
     <!-- SCRIPT_START -->
     <script>
       // ============ 1. 词法作用域：f 定义在 checkscope 内，优先读局部 scope ============
-      var scope = "global";
+      var scope = 'global';
       function checkscope() {
-        var scope = "local";
+        var scope = 'local';
         function f() {
           return scope;
         }
@@ -77,9 +199,8 @@
 
       // ============ 2. 输出验证 ============
       var result = checkscope();
-      console.log("checkscope():", result); // 预期: "local"
-      document.getElementById("runtime-output").textContent =
-        'checkscope(): "' + result + '"';
+      console.log('checkscope():', result); // 预期: "local"
+      document.getElementById('runtime-output').textContent = 'checkscope(): "' + result + '"';
     </script>
     <!-- SCRIPT_END -->
 
@@ -88,16 +209,28 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./01-this%E6%8C%87%E5%90%91%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE.html">相关 · this指向与作用域链</a>
-        <a href="./03-%E5%B5%8C%E5%A5%97%E4%BD%9C%E7%94%A8%E5%9F%9F-%E8%BF%94%E5%9B%9E%E5%87%BD%E6%95%B0.html">相关 · 嵌套作用域-返回函数</a>
-        <a href="./01-this%E6%8C%87%E5%90%91%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE.html">← this指向与作用域链</a>
-        <a href="./03-%E5%B5%8C%E5%A5%97%E4%BD%9C%E7%94%A8%E5%9F%9F-%E8%BF%94%E5%9B%9E%E5%87%BD%E6%95%B0.html">嵌套作用域-返回函数 →</a>
+        <a href="./01-this%E6%8C%87%E5%90%91%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE.html">
+          相关 · this指向与作用域链
+        </a>
+        <a
+          href="./03-%E5%B5%8C%E5%A5%97%E4%BD%9C%E7%94%A8%E5%9F%9F-%E8%BF%94%E5%9B%9E%E5%87%BD%E6%95%B0.html"
+        >
+          相关 · 嵌套作用域-返回函数
+        </a>
+        <a href="./01-this%E6%8C%87%E5%90%91%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE.html">
+          ← this指向与作用域链
+        </a>
+        <a
+          href="./03-%E5%B5%8C%E5%A5%97%E4%BD%9C%E7%94%A8%E5%9F%9F-%E8%BF%94%E5%9B%9E%E5%87%BD%E6%95%B0.html"
+        >
+          嵌套作用域-返回函数 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

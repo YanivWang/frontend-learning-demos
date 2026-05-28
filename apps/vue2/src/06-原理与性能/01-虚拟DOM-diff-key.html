@@ -29,31 +29,99 @@
       <h1>虚拟 DOM / diff / key</h1>
       <p class="hint">
         在各列表项输入框中分别输入内容，再点「头部插入」或「反转列表」，观察稳定
-        <code>id</code> 作为 <code>:key</code> 时输入框状态是否跟随对应数据项移动；下方
-        <code>&lt;pre&gt;</code> 有面试答法摘要。
+        <code>id</code>
+        作为
+        <code>:key</code>
+        时输入框状态是否跟随对应数据项移动；下方
+        <code>&lt;pre&gt;</code>
+        有面试答法摘要。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue 2 模板最终会进入 render 流程，render 产生 vnode tree；响应式数据变化后 watcher 触发重新 render，再由 patch 比较新旧 vnode 并更新真实 DOM。</li>
-          <li>虚拟 DOM 的价值不是“比 DOM 一定快”，而是用 JavaScript 对象描述 UI，让 Vue 可以跨平台组织更新、批量调度，并避免开发者手写大量命令式 DOM 操作。</li>
-          <li>Vue 2 的 children diff 主要在同一层级内比较节点，不把跨层移动当作同一个节点优化；跨层结构变化通常会销毁并重建相关子树。</li>
-          <li><code>key</code> 的核心是节点身份。稳定唯一的 key 能帮助 Vue 判断哪个 vnode 对应哪个真实 DOM 或组件实例，从而在插入、删除、排序时正确复用和移动。</li>
-          <li>可变列表不推荐用数组 index 做 key，因为头部插入或排序后 index 会变化，输入框值、组件局部状态可能跟错数据；静态、永不重排的展示列表才勉强可接受。</li>
+          <li>
+            Vue 2 模板最终会进入 render 流程，render 产生 vnode tree；响应式数据变化后 watcher
+            触发重新 render，再由 patch 比较新旧 vnode 并更新真实 DOM。
+          </li>
+          <li>
+            虚拟 DOM 的价值不是“比 DOM 一定快”，而是用 JavaScript 对象描述 UI，让 Vue
+            可以跨平台组织更新、批量调度，并避免开发者手写大量命令式 DOM 操作。
+          </li>
+          <li>
+            Vue 2 的 children diff
+            主要在同一层级内比较节点，不把跨层移动当作同一个节点优化；跨层结构变化通常会销毁并重建相关子树。
+          </li>
+          <li>
+            <code>key</code>
+            的核心是节点身份。稳定唯一的 key 能帮助 Vue 判断哪个 vnode 对应哪个真实 DOM
+            或组件实例，从而在插入、删除、排序时正确复用和移动。
+          </li>
+          <li>
+            可变列表不推荐用数组 index 做 key，因为头部插入或排序后 index
+            会变化，输入框值、组件局部状态可能跟错数据；静态、永不重排的展示列表才勉强可接受。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue 2 更新时 template、render、vnode、patch 的关系是什么？</strong> 结论是 template 编译成 render（或直接使用 render），render 执行返回 vnode；数据变化触发 watcher 重新 render，新 vnode 与旧 vnode 经 patch 更新真实 DOM。原因是 Vue 不直接用模板字符串操作 DOM，而是把 UI 表达成 vnode 再 diff。项目里性能分析应关注数据变更规模、render 成本和 patch 后真实 DOM 成本。</li>
-          <li><strong>key 在 diff 中解决的是性能问题还是节点身份问题？</strong> 结论是先解决节点身份，性能收益是副作用。原因是 key 让 Vue 能确认两个 vnode 是否代表同一项数据，再决定复用、移动或销毁。边界是乱用随机 key 会让每次更新都像全量重建，反而更慢。</li>
-          <li><strong>为什么可变列表不能用 index 作为 key？</strong> 结论是 index 会随插入、删除、排序改变，不能稳定代表数据项。原因是 Vue 会把同一个位置的 DOM 当作同一个节点复用。项目里带输入框、动画、组件状态的列表必须用数据库 id 或前端生成的稳定 id。</li>
-          <li><strong>什么时候可以不写 key，什么时候必须写稳定 key？</strong> 结论是简单静态列表或只追加且没有局部状态的列表风险较低，但动态组件、表单项、可重排列表应写稳定 key。原因是无 key 时 Vue 会尽量就地复用。边界是为了强制重建组件，也可以主动改变 key。</li>
+          <li>
+            <strong>Vue 2 更新时 template、render、vnode、patch 的关系是什么？</strong>
+            结论是 template 编译成 render（或直接使用 render），render 执行返回 vnode；数据变化触发
+            watcher 重新 render，新 vnode 与旧 vnode 经 patch 更新真实 DOM。原因是 Vue
+            不直接用模板字符串操作 DOM，而是把 UI 表达成 vnode 再
+            diff。项目里性能分析应关注数据变更规模、render 成本和 patch 后真实 DOM 成本。
+          </li>
+          <li>
+            <strong>key 在 diff 中解决的是性能问题还是节点身份问题？</strong>
+            结论是先解决节点身份，性能收益是副作用。原因是 key 让 Vue 能确认两个 vnode
+            是否代表同一项数据，再决定复用、移动或销毁。边界是乱用随机 key
+            会让每次更新都像全量重建，反而更慢。
+          </li>
+          <li>
+            <strong>为什么可变列表不能用 index 作为 key？</strong>
+            结论是 index 会随插入、删除、排序改变，不能稳定代表数据项。原因是 Vue 会把同一个位置的
+            DOM 当作同一个节点复用。项目里带输入框、动画、组件状态的列表必须用数据库 id
+            或前端生成的稳定 id。
+          </li>
+          <li>
+            <strong>什么时候可以不写 key，什么时候必须写稳定 key？</strong>
+            结论是简单静态列表或只追加且没有局部状态的列表风险较低，但动态组件、表单项、可重排列表应写稳定
+            key。原因是无 key 时 Vue 会尽量就地复用。边界是为了强制重建组件，也可以主动改变 key。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://v2.vuejs.org/v2/guide/list.html#Maintaining-State" target="_blank" rel="noopener">Vue 2 官方文档：Maintaining State</a></li>
-          <li><a href="https://v2.vuejs.org/v2/api/#key" target="_blank" rel="noopener">Vue 2 API：key</a></li>
-          <li><a href="https://v2.vuejs.org/v2/guide/render-function.html#The-Virtual-DOM" target="_blank" rel="noopener">Vue 2 官方文档：The Virtual DOM</a></li>
-          <li><a href="https://v2.vuejs.org/v2/guide/reactivity.html#Async-Update-Queue" target="_blank" rel="noopener">Vue 2 官方文档：Async Update Queue</a></li>
+          <li>
+            <a
+              href="https://v2.vuejs.org/v2/guide/list.html#Maintaining-State"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue 2 官方文档：Maintaining State
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/api/#key" target="_blank" rel="noopener">
+              Vue 2 API：key
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://v2.vuejs.org/v2/guide/render-function.html#The-Virtual-DOM"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue 2 官方文档：The Virtual DOM
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://v2.vuejs.org/v2/guide/reactivity.html#Async-Update-Queue"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue 2 官方文档：Async Update Queue
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -66,7 +134,8 @@
       <button type="button" @click="reverseList">反转列表</button>
       <ul>
         <li v-for="item in list" :key="item.id">
-          {{ item.name }} <input :placeholder="'输入 ' + item.name">
+          {{ item.name }}
+          <input :placeholder="'输入 ' + item.name" />
         </li>
       </ul>
       <pre>{{ interviewAnswer }}</pre>
@@ -81,32 +150,31 @@
       // 头部插入 / 反转后，稳定 id 作 key 时输入框状态跟随数据项，而非错位复用。
       // ---------------------------------------------------------------------------
       new Vue({
-        el: "#app",
+        el: '#app',
         data() {
           return {
             nextId: 4,
             list: [
-              { id: 1, name: "A" },
-              { id: 2, name: "B" },
-              { id: 3, name: "C" }
+              { id: 1, name: 'A' },
+              { id: 2, name: 'B' },
+              { id: 3, name: 'C' },
             ],
             interviewAnswer:
-            "面试答法: Vue 更新时会生成新的 vnode tree，和旧 vnode tree 做 patch。\n" +
-            "同层节点会根据 tag 和 key 判断是否是同一个节点。\n" +
-            "key 稳定时可以复用真实 DOM 并移动位置；key 不稳定时可能错误复用输入框、组件内部状态。"
+              '面试答法: Vue 更新时会生成新的 vnode tree，和旧 vnode tree 做 patch。\n' +
+              '同层节点会根据 tag 和 key 判断是否是同一个节点。\n' +
+              'key 稳定时可以复用真实 DOM 并移动位置；key 不稳定时可能错误复用输入框、组件内部状态。',
           };
         },
         methods: {
           insertAtHead() {
-            this.list.unshift({ id: this.nextId, name: "New-" + this.nextId });
+            this.list.unshift({ id: this.nextId, name: 'New-' + this.nextId });
             this.nextId++;
           },
           reverseList() {
             this.list.reverse();
-          }
-        }
+          },
+        },
       });
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -115,18 +183,22 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="../05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/15-Promise%E5%89%8D%E7%BD%AE%E5%9B%9E%E9%A1%BE.html">← Promise前置回顾</a>
+        <a
+          href="../05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/15-Promise%E5%89%8D%E7%BD%AE%E5%9B%9E%E9%A1%BE.html"
+        >
+          ← Promise前置回顾
+        </a>
         <a href="./02-%E6%A8%A1%E6%9D%BF%E7%BC%96%E8%AF%91-render.html">模板编译-render →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

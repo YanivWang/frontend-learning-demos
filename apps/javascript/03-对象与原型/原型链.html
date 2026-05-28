@@ -33,27 +33,144 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><strong>属性查找：</strong>访问属性时先查自有属性，找不到再沿 <code>[[Prototype]]</code> 指向的对象逐级查找，直到 <code>null</code>（原型链顶端）。</li>
-          <li><strong>组合继承：</strong><code>Parent.call(this, …)</code> 把父构造函数里的实例属性复制到子实例；<code>Object.create(Parent.prototype)</code> 让子 <code>prototype</code> 链接父 <code>prototype</code> 以共享方法。</li>
-          <li><strong>constructor 修复：</strong>把 <code>Child.prototype</code> 整体替换为新对象后，默认 <code>constructor</code> 会来自父原型，需手动设回 <code>Child</code>。</li>
-          <li><strong>hasOwnProperty vs in：</strong><code>hasOwnProperty</code> 只查自有；<code>in</code> 沿原型链查找，能发现继承的方法。</li>
-          <li><strong>静态属性边界：</strong><code>Object.create(Parent.prototype)</code> 只连接 <code>Child.prototype → Parent.prototype</code>，不会复制 <code>Parent.someStatic</code> 这类构造函数自身属性。</li>
-          <li><strong>现代写法：</strong><code>class extends</code> 封装了实例原型链接、<code>super()</code> 和静态继承等细节；理解组合继承有助于解释 class 底层机制。</li>
+          <li>
+            <strong>属性查找：</strong>
+            访问属性时先查自有属性，找不到再沿
+            <code>[[Prototype]]</code>
+            指向的对象逐级查找，直到
+            <code>null</code>
+            （原型链顶端）。
+          </li>
+          <li>
+            <strong>组合继承：</strong>
+            <code>Parent.call(this, …)</code>
+            把父构造函数里的实例属性复制到子实例；
+            <code>Object.create(Parent.prototype)</code>
+            让子
+            <code>prototype</code>
+            链接父
+            <code>prototype</code>
+            以共享方法。
+          </li>
+          <li>
+            <strong>constructor 修复：</strong>
+            把
+            <code>Child.prototype</code>
+            整体替换为新对象后，默认
+            <code>constructor</code>
+            会来自父原型，需手动设回
+            <code>Child</code>
+            。
+          </li>
+          <li>
+            <strong>hasOwnProperty vs in：</strong>
+            <code>hasOwnProperty</code>
+            只查自有；
+            <code>in</code>
+            沿原型链查找，能发现继承的方法。
+          </li>
+          <li>
+            <strong>静态属性边界：</strong>
+            <code>Object.create(Parent.prototype)</code>
+            只连接
+            <code>Child.prototype → Parent.prototype</code>
+            ，不会复制
+            <code>Parent.someStatic</code>
+            这类构造函数自身属性。
+          </li>
+          <li>
+            <strong>现代写法：</strong>
+            <code>class extends</code>
+            封装了实例原型链接、
+            <code>super()</code>
+            和静态继承等细节；理解组合继承有助于解释 class 底层机制。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>原型链属性查找规则是什么？</strong> 先查对象自身，再沿 <code>[[Prototype]]</code> 一层层向上查。JS 复用行为依赖委托而不是类复制；可用 <code>hasOwnProperty</code> / <code>Object.hasOwn</code> 区分自有与继承属性。</li>
-          <li><strong>组合继承为什么要同时用 Parent.call 和 Object.create？</strong> <code>Parent.call(this)</code> 解决每个实例自己的状态，<code>Object.create(Parent.prototype)</code> 解决共享方法。只用原型链会共享引用状态，只借构造函数又拿不到父原型方法。</li>
-          <li><strong>为什么要重置 Child.prototype.constructor？</strong> 替换子原型后，<code>constructor</code> 可能沿链找到 <code>Parent</code>。重置能恢复调试和约定上的指向，但它不是类型判断的唯一依据。</li>
-          <li><strong>父类静态属性为什么不会通过原型链继承？</strong> 连接的是 <code>Child.prototype → Parent.prototype</code>，不是 <code>Child → Parent</code>。静态属性挂在构造函数对象本身，需显式复制或使用 <code>class extends</code> 的静态继承语义。</li>
-          <li><strong>class extends 和组合继承是什么关系？</strong> <code>class extends</code> 是现代语法封装，处理实例原型、<code>super()</code> 和静态继承等细节。面试可先讲组合继承机制，再说明现代项目通常直接用 class。</li>
+          <li>
+            <strong>原型链属性查找规则是什么？</strong>
+            先查对象自身，再沿
+            <code>[[Prototype]]</code>
+            一层层向上查。JS 复用行为依赖委托而不是类复制；可用
+            <code>hasOwnProperty</code>
+            /
+            <code>Object.hasOwn</code>
+            区分自有与继承属性。
+          </li>
+          <li>
+            <strong>组合继承为什么要同时用 Parent.call 和 Object.create？</strong>
+            <code>Parent.call(this)</code>
+            解决每个实例自己的状态，
+            <code>Object.create(Parent.prototype)</code>
+            解决共享方法。只用原型链会共享引用状态，只借构造函数又拿不到父原型方法。
+          </li>
+          <li>
+            <strong>为什么要重置 Child.prototype.constructor？</strong>
+            替换子原型后，
+            <code>constructor</code>
+            可能沿链找到
+            <code>Parent</code>
+            。重置能恢复调试和约定上的指向，但它不是类型判断的唯一依据。
+          </li>
+          <li>
+            <strong>父类静态属性为什么不会通过原型链继承？</strong>
+            连接的是
+            <code>Child.prototype → Parent.prototype</code>
+            ，不是
+            <code>Child → Parent</code>
+            。静态属性挂在构造函数对象本身，需显式复制或使用
+            <code>class extends</code>
+            的静态继承语义。
+          </li>
+          <li>
+            <strong>class extends 和组合继承是什么关系？</strong>
+            <code>class extends</code>
+            是现代语法封装，处理实例原型、
+            <code>super()</code>
+            和静态继承等细节。面试可先讲组合继承机制，再说明现代项目通常直接用 class。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain">MDN: Inheritance and the prototype chain</a>：原型链查找与继承模型。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create">MDN: Object.create()</a>：以指定 <code>[[Prototype]]</code> 创建对象。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/extends">MDN: extends</a>：class 继承与 <code>super</code> 语义。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwn">MDN: Object.hasOwn()</a>：判断自有属性（替代 <code>hasOwnProperty</code> 的现代写法）。</li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain"
+            >
+              MDN: Inheritance and the prototype chain
+            </a>
+            ：原型链查找与继承模型。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create"
+            >
+              MDN: Object.create()
+            </a>
+            ：以指定
+            <code>[[Prototype]]</code>
+            创建对象。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/extends"
+            >
+              MDN: extends
+            </a>
+            ：class 继承与
+            <code>super</code>
+            语义。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwn"
+            >
+              MDN: Object.hasOwn()
+            </a>
+            ：判断自有属性（替代
+            <code>hasOwnProperty</code>
+            的现代写法）。
+          </li>
         </ul>
       </div>
     </section>
@@ -61,7 +178,21 @@
 
     <!-- PAGE_DOM_START -->
     <section class="demo-block" aria-label="原型链示意">
-      <p>每个对象都有内部 <code>[[Prototype]]</code>，指向其构造函数的 <code>prototype</code>（或 <code>Object.create</code> 指定的对象），逐级向上形成原型链。历史属性 <code>__proto__</code> 可读取 <code>[[Prototype]]</code>，项目代码优先 <code>Object.getPrototypeOf()</code>。</p>
+      <p>
+        每个对象都有内部
+        <code>[[Prototype]]</code>
+        ，指向其构造函数的
+        <code>prototype</code>
+        （或
+        <code>Object.create</code>
+        指定的对象），逐级向上形成原型链。历史属性
+        <code>__proto__</code>
+        可读取
+        <code>[[Prototype]]</code>
+        ，项目代码优先
+        <code>Object.getPrototypeOf()</code>
+        。
+      </p>
     </section>
     <!-- PAGE_DOM_END -->
 
@@ -83,42 +214,39 @@
       Child.prototype = Object.create(Person.prototype);
       Child.prototype.constructor = Child; // 重置 constructor，避免指向 Parent
       Child.prototype.run = function () {
-        console.log(this.name + " 跑得快");
+        console.log(this.name + ' 跑得快');
       };
 
-      const c = new Child("小白", 3);
+      const c = new Child('小白', 3);
       c.sayName(); // 继承自 Person.prototype
       c.run(); // Child.prototype 自有
 
       // ============ 3. [[Prototype]] 标准 API ======
       console.log(
-        "getPrototypeOf(c) === Child.prototype:",
-        Object.getPrototypeOf(c) === Child.prototype
+        'getPrototypeOf(c) === Child.prototype:',
+        Object.getPrototypeOf(c) === Child.prototype,
       ); // true
-      console.log(
-        "__proto__ === getPrototypeOf(c):",
-        c.__proto__ === Object.getPrototypeOf(c)
-      ); // true
+      console.log('__proto__ === getPrototypeOf(c):', c.__proto__ === Object.getPrototypeOf(c)); // true
 
       // ============ 4. hasOwnProperty vs in ======
-      console.log("hasOwnProperty('name'):", c.hasOwnProperty("name")); // true（实例自有）
-      console.log("hasOwnProperty('sayName'):", c.hasOwnProperty("sayName")); // false（在原型上）
-      console.log("'sayName' in c:", "sayName" in c); // true（in 沿链查找）
-      console.log("Object.hasOwn(c, 'name'):", Object.hasOwn(c, "name")); // true
+      console.log("hasOwnProperty('name'):", c.hasOwnProperty('name')); // true（实例自有）
+      console.log("hasOwnProperty('sayName'):", c.hasOwnProperty('sayName')); // false（在原型上）
+      console.log("'sayName' in c:", 'sayName' in c); // true（in 沿链查找）
+      console.log("Object.hasOwn(c, 'name'):", Object.hasOwn(c, 'name')); // true
 
       // ============ 5. 多实例共享同一份原型方法 ======
-      const c2 = new Child("小黑", 5);
-      console.log("c.sayName === c2.sayName:", c.sayName === c2.sayName); // true
+      const c2 = new Child('小黑', 5);
+      console.log('c.sayName === c2.sayName:', c.sayName === c2.sayName); // true
 
       // ============ 6. 静态属性不随 Object.create(prototype) 继承 ======
       Person.staticFlag = "I'm static";
-      console.log("Child.staticFlag:", Child.staticFlag); // undefined
-      console.log("Person.staticFlag:", Person.staticFlag); // "I'm static"
+      console.log('Child.staticFlag:', Child.staticFlag); // undefined
+      console.log('Person.staticFlag:', Person.staticFlag); // "I'm static"
 
       // ============ 7. instanceof 沿 [[Prototype]] 链查找 ======
-      console.log("c instanceof Child:", c instanceof Child); // true
-      console.log("c instanceof Person:", c instanceof Person); // true
-      console.log("c instanceof Object:", c instanceof Object); // true
+      console.log('c instanceof Child:', c instanceof Child); // true
+      console.log('c instanceof Person:', c instanceof Person); // true
+      console.log('c instanceof Object:', c instanceof Object); // true
     </script>
     <!-- SCRIPT_END -->
 
@@ -128,16 +256,20 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
         <a href="./%E5%8E%9F%E5%9E%8B.html">相关 · 原型</a>
-        <a href="./%E5%8E%9F%E5%9E%8B%E5%B1%9E%E6%80%A7vs%E5%AE%9E%E4%BE%8B%E5%B1%9E%E6%80%A7.html">相关 · 原型属性vs实例属性</a>
+        <a href="./%E5%8E%9F%E5%9E%8B%E5%B1%9E%E6%80%A7vs%E5%AE%9E%E4%BE%8B%E5%B1%9E%E6%80%A7.html">
+          相关 · 原型属性vs实例属性
+        </a>
         <a href="../04-ES6%2B/class%E8%AF%A6%E8%A7%A3/extends.html">相关 · class详解/extends</a>
         <a href="./%E5%8E%9F%E5%9E%8B.html">← 原型</a>
-        <a href="./%E5%8E%9F%E5%9E%8B%E5%B1%9E%E6%80%A7vs%E5%AE%9E%E4%BE%8B%E5%B1%9E%E6%80%A7.html">原型属性vs实例属性 →</a>
+        <a href="./%E5%8E%9F%E5%9E%8B%E5%B1%9E%E6%80%A7vs%E5%AE%9E%E4%BE%8B%E5%B1%9E%E6%80%A7.html">
+          原型属性vs实例属性 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

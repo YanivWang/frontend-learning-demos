@@ -27,29 +27,143 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>var + function 同名提升经典题</h1>
-      <p class="hint">先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。</p>
+      <p class="hint">
+        先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>这题运行在普通非模块脚本中。代码执行前会先处理 <code>var</code> 声明和函数声明，函数声明会创建函数对象并绑定到名字 <code>a</code>。</li>
-          <li>同一作用域里有多个同名函数声明时，后面的函数声明会覆盖前面的函数声明，所以第一处读取 <code>a</code> 时看到的是后一个 <code>function a() { return 4; }</code>。</li>
-          <li><code>var a</code> 的声明部分不会覆盖已有函数绑定；但 <code>var a = 1</code> 的赋值部分会在执行到该行时把 <code>a</code> 改成数字 <code>1</code>。</li>
-          <li>随后 <code>var a = 3</code> 再次执行赋值，把 <code>a</code> 改成数字 <code>3</code>；函数声明语句本身不会在运行到那一行时重新执行赋值。</li>
-          <li>因此本例控制台依次输出：函数引用、<code>1</code>、<code>3</code>、<code>3</code>。面试答题要把“声明实例化阶段”和“运行期赋值阶段”分开讲。</li>
-          <li>现代代码应避免同一作用域内 <code>var</code> 与函数声明重名；用 <code>let</code> / <code>const</code>、函数表达式或模块作用域能让命名冲突更早暴露。</li>
+          <li>
+            这题运行在普通非模块脚本中。代码执行前会先处理
+            <code>var</code>
+            声明和函数声明，函数声明会创建函数对象并绑定到名字
+            <code>a</code>
+            。
+          </li>
+          <li>
+            同一作用域里有多个同名函数声明时，后面的函数声明会覆盖前面的函数声明，所以第一处读取
+            <code>a</code>
+            时看到的是后一个
+            <code>function a() { return 4; }</code>
+            。
+          </li>
+          <li>
+            <code>var a</code>
+            的声明部分不会覆盖已有函数绑定；但
+            <code>var a = 1</code>
+            的赋值部分会在执行到该行时把
+            <code>a</code>
+            改成数字
+            <code>1</code>
+            。
+          </li>
+          <li>
+            随后
+            <code>var a = 3</code>
+            再次执行赋值，把
+            <code>a</code>
+            改成数字
+            <code>3</code>
+            ；函数声明语句本身不会在运行到那一行时重新执行赋值。
+          </li>
+          <li>
+            因此本例控制台依次输出：函数引用、
+            <code>1</code>
+            、
+            <code>3</code>
+            、
+            <code>3</code>
+            。面试答题要把“声明实例化阶段”和“运行期赋值阶段”分开讲。
+          </li>
+          <li>
+            现代代码应避免同一作用域内
+            <code>var</code>
+            与函数声明重名；用
+            <code>let</code>
+            /
+            <code>const</code>
+            、函数表达式或模块作用域能让命名冲突更早暴露。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>为什么第一行输出的是后一个 <code>function a</code>，不是 <code>undefined</code>？</strong> 结论：因为函数声明在执行前已经完成绑定，并且后面的同名函数声明覆盖前面的。原因是 <code>var a</code> 只声明变量，不会把已经由函数声明创建的绑定重置成 <code>undefined</code>。边界是不同环境中函数源码字符串格式可能不同，但它仍是函数引用。</li>
-          <li><strong><code>var a = 1</code> 为什么会把函数绑定改成数字 <code>1</code>？</strong> 结论：因为赋值发生在运行期，会直接更新同一个名字绑定。原因是 <code>var a = 1</code> 的声明部分已在前置阶段处理，执行到这行时只剩赋值动作。项目里看到“提升”题时不能把声明提升误解为赋值也提前执行。</li>
-          <li><strong>多个同名函数声明和 <code>var</code> 声明的处理顺序怎么理解？</strong> 结论：先建立作用域内声明绑定，再按代码顺序执行赋值和表达式。原因是函数声明会提供初始函数值，同名 <code>var</code> 声明不会覆盖它，而后续赋值会覆盖。边界是块级函数声明在严格模式和不同历史浏览器中曾有兼容差异，现代代码应避免写这种歧义代码。</li>
-          <li><strong>为什么现代代码要避免 <code>var</code> 和 <code>function</code> 同名？</strong> 结论：它依赖提升细节，阅读成本高且容易被打包、拼接或维护修改放大风险。原因是同名绑定会让“函数还是值”随执行位置变化。实际项目用 <code>const fn = function...</code>、唯一命名和模块作用域更清晰，Lint 也通常会禁止重复声明。</li>
+          <li>
+            <strong>
+              为什么第一行输出的是后一个
+              <code>function a</code>
+              ，不是
+              <code>undefined</code>
+              ？
+            </strong>
+            结论：因为函数声明在执行前已经完成绑定，并且后面的同名函数声明覆盖前面的。原因是
+            <code>var a</code>
+            只声明变量，不会把已经由函数声明创建的绑定重置成
+            <code>undefined</code>
+            。边界是不同环境中函数源码字符串格式可能不同，但它仍是函数引用。
+          </li>
+          <li>
+            <strong>
+              <code>var a = 1</code>
+              为什么会把函数绑定改成数字
+              <code>1</code>
+              ？
+            </strong>
+            结论：因为赋值发生在运行期，会直接更新同一个名字绑定。原因是
+            <code>var a = 1</code>
+            的声明部分已在前置阶段处理，执行到这行时只剩赋值动作。项目里看到“提升”题时不能把声明提升误解为赋值也提前执行。
+          </li>
+          <li>
+            <strong>
+              多个同名函数声明和
+              <code>var</code>
+              声明的处理顺序怎么理解？
+            </strong>
+            结论：先建立作用域内声明绑定，再按代码顺序执行赋值和表达式。原因是函数声明会提供初始函数值，同名
+            <code>var</code>
+            声明不会覆盖它，而后续赋值会覆盖。边界是块级函数声明在严格模式和不同历史浏览器中曾有兼容差异，现代代码应避免写这种歧义代码。
+          </li>
+          <li>
+            <strong>
+              为什么现代代码要避免
+              <code>var</code>
+              和
+              <code>function</code>
+              同名？
+            </strong>
+            结论：它依赖提升细节，阅读成本高且容易被打包、拼接或维护修改放大风险。原因是同名绑定会让“函数还是值”随执行位置变化。实际项目用
+            <code>const fn = function...</code>
+            、唯一命名和模块作用域更清晰，Lint 也通常会禁止重复声明。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function" target="_blank" rel="noreferrer">MDN: function declaration</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/var" target="_blank" rel="noreferrer">MDN: var</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Glossary/Hoisting" target="_blank" rel="noreferrer">MDN Glossary: Hoisting</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: function declaration
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/var"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: var
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Glossary/Hoisting"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN Glossary: Hoisting
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -58,7 +172,11 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block">
       <h2>运行结果</h2>
-      <p class="tip">标准答法：依次输出 <strong>函数引用 → 1 → 3 → 3</strong>（声明阶段绑定函数，运行期赋值覆盖）。</p>
+      <p class="tip">
+        标准答法：依次输出
+        <strong>函数引用 → 1 → 3 → 3</strong>
+        （声明阶段绑定函数，运行期赋值覆盖）。
+      </p>
       <pre id="runtime-output" aria-live="polite"></pre>
     </section>
     <!-- PAGE_DOM_END -->
@@ -66,30 +184,29 @@
     <!-- SCRIPT_START -->
     <script>
       (function () {
-        var out = document.getElementById("runtime-output");
+        var out = document.getElementById('runtime-output');
         var lines = [];
         function emit(step, value) {
-          var display =
-            typeof value === "function" ? "function a() { return 4; }" : String(value);
-          var line = step + ": " + display;
+          var display = typeof value === 'function' ? 'function a() { return 4; }' : String(value);
+          var line = step + ': ' + display;
           console.log(line);
           lines.push(line);
-          if (out) out.textContent = lines.join("\n");
+          if (out) out.textContent = lines.join('\n');
         }
 
         // ============ 1. 声明阶段：后一个 function a 覆盖前一个，var a 不重置函数绑定 ============
-        emit("第 1 行 console.log(a)", a);
+        emit('第 1 行 console.log(a)', a);
         var a = 1;
         function a() {
           return 2;
         }
-        emit("var a = 1 后", a);
+        emit('var a = 1 后', a);
         var a = 3;
-        emit("var a = 3 后", a);
+        emit('var a = 3 后', a);
         function a() {
           return 4;
         }
-        emit("function a(){} 声明后（运行期不重新赋值）", a);
+        emit('function a(){} 声明后（运行期不重新赋值）', a);
       })();
     </script>
     <!-- SCRIPT_END -->
@@ -100,15 +217,17 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./04-var%E9%87%8D%E5%A4%8D%E5%A3%B0%E6%98%8E.html">相关 · var重复声明</a>
-        <a href="../../01-%E5%9F%BA%E7%A1%80/%E5%8F%98%E9%87%8F%E8%BF%9B%E9%98%B6.html">相关 · 01-基础/变量进阶</a>
+        <a href="../../01-%E5%9F%BA%E7%A1%80/%E5%8F%98%E9%87%8F%E8%BF%9B%E9%98%B6.html">
+          相关 · 01-基础/变量进阶
+        </a>
         <a href="./05-let-for%E5%BE%AA%E7%8E%AF%E9%97%AD%E5%8C%85.html">← let-for循环闭包</a>
         <a href="../../09-Canvas/%E5%8A%A8%E7%94%BB/firework.html">firework →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

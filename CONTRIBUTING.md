@@ -7,6 +7,7 @@
 ```bash
 npm run build:index    # manifest、侧边栏、首页数字、搜索索引、页脚导航
 npm run sync:readmes   # 同步各模块 README 清单表
+npm run format         # Prettier 统一 HTML / JS / CSS 格式（企业通用风格）
 npm run validate       # 全量校验（含 TS tsc、主题覆盖、冒烟、libs）
 ```
 

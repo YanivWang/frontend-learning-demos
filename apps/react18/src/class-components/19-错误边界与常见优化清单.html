@@ -32,30 +32,114 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Error Boundary 与常见优化清单</h1>
-      <p class="hint">请打开 DevTools Console；点击"触发渲染错误"观察 Error Boundary 降级 UI，点击"触发事件错误"验证事件 handler 中的错误不会被捕获；下方 #root 为 React 挂载/交互演示区。</p>
+      <p class="hint">
+        请打开 DevTools Console；点击"触发渲染错误"观察 Error Boundary 降级
+        UI，点击"触发事件错误"验证事件 handler 中的错误不会被捕获；下方 #root 为 React
+        挂载/交互演示区。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Error Boundary 是 React 渲染树的错误兜底机制。React 18 中错误边界仍通过 class 组件实现，使用 <code>static getDerivedStateFromError</code> 渲染降级 UI，并用 <code>componentDidCatch</code> 记录错误信息。</li>
-          <li>错误边界能捕获子组件在渲染、生命周期和构造函数中的错误；不能捕获事件处理函数、异步回调、服务端渲染错误，也不能捕获错误边界自身抛出的错误。</li>
-          <li>实际项目中不要只在根节点放一个边界。常见做法是在路由页、关键业务卡片、第三方组件区域分层放置，避免一个局部错误卸载整个应用，同时把错误上报到日志系统。</li>
-          <li>React 性能优化要先定位瓶颈，再选择手段。常见方向包括稳定 <code>key</code>、拆分组件和状态、避免不必要的 Context value 变化、<code>memo</code>、<code>useMemo</code>、<code>useCallback</code>、代码分割和虚拟列表。</li>
-          <li><code>memo</code> 和缓存 Hook 不是默认必加项。它们会增加比较和维护成本，只有当子组件渲染昂贵、props 引用可稳定、或 DevTools 证明重复渲染是瓶颈时才值得使用。</li>
+          <li>
+            Error Boundary 是 React 渲染树的错误兜底机制。React 18 中错误边界仍通过 class
+            组件实现，使用
+            <code>static getDerivedStateFromError</code>
+            渲染降级 UI，并用
+            <code>componentDidCatch</code>
+            记录错误信息。
+          </li>
+          <li>
+            错误边界能捕获子组件在渲染、生命周期和构造函数中的错误；不能捕获事件处理函数、异步回调、服务端渲染错误，也不能捕获错误边界自身抛出的错误。
+          </li>
+          <li>
+            实际项目中不要只在根节点放一个边界。常见做法是在路由页、关键业务卡片、第三方组件区域分层放置，避免一个局部错误卸载整个应用，同时把错误上报到日志系统。
+          </li>
+          <li>
+            React 性能优化要先定位瓶颈，再选择手段。常见方向包括稳定
+            <code>key</code>
+            、拆分组件和状态、避免不必要的 Context value 变化、
+            <code>memo</code>
+            、
+            <code>useMemo</code>
+            、
+            <code>useCallback</code>
+            、代码分割和虚拟列表。
+          </li>
+          <li>
+            <code>memo</code>
+            和缓存 Hook 不是默认必加项。它们会增加比较和维护成本，只有当子组件渲染昂贵、props
+            引用可稳定、或 DevTools 证明重复渲染是瓶颈时才值得使用。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Error Boundary 能捕获哪些错误，不能捕获哪些错误？</strong> 结论是能捕获子树渲染、生命周期和构造函数中的错误，不能捕获事件、异步、SSR 和自身错误。原因是它工作在 React 渲染提交流程里；事件和异步已经脱离这次渲染调用栈。</li>
-          <li><strong>为什么 React 18 仍然需要 class 组件实现错误边界？</strong> 结论是官方 API 仍要求错误边界使用 class 生命周期。原因是 <code>getDerivedStateFromError</code> 和 <code>componentDidCatch</code> 目前是 class API；函数组件通常通过第三方封装或外层 class 边界使用。</li>
-          <li><strong>getDerivedStateFromError 和 componentDidCatch 分别做什么？</strong> 前者返回 state 以渲染降级 UI，后者接收错误和组件栈，适合日志上报。项目里不要在 <code>getDerivedStateFromError</code> 做副作用。</li>
-          <li><strong>常见 React 性能优化为什么不能先上 memo？</strong> 结论是要先定位瓶颈。原因是 <code>memo</code> 也有比较成本，错误的缓存还会制造过期依赖问题；项目里先用 Profiler、日志和用户路径找出真正慢点。</li>
-          <li><strong>错误边界和性能优化在项目里如何分层落地？</strong> 结论是错误边界按路由页/业务卡片分层放置，性能优化按瓶颈分层：先拆 state 和组件，再稳定 key 和 Context，最后才加 memo/虚拟列表。原因是局部错误不应拖垮整站，性能手段也有维护成本，不应无证据地全局套用。</li>
+          <li>
+            <strong>Error Boundary 能捕获哪些错误，不能捕获哪些错误？</strong>
+            结论是能捕获子树渲染、生命周期和构造函数中的错误，不能捕获事件、异步、SSR
+            和自身错误。原因是它工作在 React 渲染提交流程里；事件和异步已经脱离这次渲染调用栈。
+          </li>
+          <li>
+            <strong>为什么 React 18 仍然需要 class 组件实现错误边界？</strong>
+            结论是官方 API 仍要求错误边界使用 class 生命周期。原因是
+            <code>getDerivedStateFromError</code>
+            和
+            <code>componentDidCatch</code>
+            目前是 class API；函数组件通常通过第三方封装或外层 class 边界使用。
+          </li>
+          <li>
+            <strong>getDerivedStateFromError 和 componentDidCatch 分别做什么？</strong>
+            前者返回 state 以渲染降级 UI，后者接收错误和组件栈，适合日志上报。项目里不要在
+            <code>getDerivedStateFromError</code>
+            做副作用。
+          </li>
+          <li>
+            <strong>常见 React 性能优化为什么不能先上 memo？</strong>
+            结论是要先定位瓶颈。原因是
+            <code>memo</code>
+            也有比较成本，错误的缓存还会制造过期依赖问题；项目里先用
+            Profiler、日志和用户路径找出真正慢点。
+          </li>
+          <li>
+            <strong>错误边界和性能优化在项目里如何分层落地？</strong>
+            结论是错误边界按路由页/业务卡片分层放置，性能优化按瓶颈分层：先拆 state 和组件，再稳定
+            key 和 Context，最后才加
+            memo/虚拟列表。原因是局部错误不应拖垮整站，性能手段也有维护成本，不应无证据地全局套用。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary" target="_blank" rel="noreferrer">react.dev: Catching rendering errors with an error boundary</a></li>
-          <li><a href="https://react.dev/reference/react/Component#static-getderivedstatefromerror" target="_blank" rel="noreferrer">react.dev: static getDerivedStateFromError</a></li>
-          <li><a href="https://react.dev/reference/react/Component#componentdidcatch" target="_blank" rel="noreferrer">react.dev: componentDidCatch</a></li>
-          <li><a href="https://react.dev/reference/react/memo" target="_blank" rel="noreferrer">react.dev: memo</a></li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Catching rendering errors with an error boundary
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#static-getderivedstatefromerror"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: static getDerivedStateFromError
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#componentdidcatch"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: componentDidCatch
+            </a>
+          </li>
+          <li>
+            <a href="https://react.dev/reference/react/memo" target="_blank" rel="noreferrer">
+              react.dev: memo
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -69,21 +153,21 @@
     <script type="text/babel">
       // ====== 1. Error Boundary：只能用 class 实现 ======
       class ErrorBoundary extends React.Component {
-        state = { hasError: false, message: "" };
+        state = { hasError: false, message: '' };
 
         static getDerivedStateFromError(error) {
-          console.log("getDerivedStateFromError:", error.message);
+          console.log('getDerivedStateFromError:', error.message);
           return { hasError: true, message: error.message };
         }
 
         componentDidCatch(error, info) {
-          console.log("componentDidCatch:", error.message, info.componentStack);
+          console.log('componentDidCatch:', error.message, info.componentStack);
         }
 
         render() {
           if (this.state.hasError) {
             return (
-              <div style={{ padding: 12, border: "1px solid #c00", background: "#fee" }}>
+              <div style={{ padding: 12, border: '1px solid #c00', background: '#fee' }}>
                 <h2>组件出错了（Error Boundary 降级 UI）</h2>
                 <p>{this.state.message}</p>
               </div>
@@ -97,7 +181,7 @@
       class BuggyCounter extends React.Component {
         render() {
           if (this.props.broken) {
-            throw new Error("BuggyCounter render error");
+            throw new Error('BuggyCounter render error');
           }
           return <p>组件正常渲染。</p>;
         }
@@ -109,10 +193,10 @@
         // ====== 3. 事件 handler 抛错 → Error Boundary 不能捕获 ======
         triggerEventError = () => {
           try {
-            throw new Error("事件 handler 中的错误");
+            throw new Error('事件 handler 中的错误');
           } catch (err) {
-            console.log("事件错误需 try/catch 自行处理，Error Boundary 不会捕获:", err.message);
-            alert("事件错误不会被 Error Boundary 捕获，见 Console");
+            console.log('事件错误需 try/catch 自行处理，Error Boundary 不会捕获:', err.message);
+            alert('事件错误不会被 Error Boundary 捕获，见 Console');
           }
         };
 
@@ -143,7 +227,7 @@
         }
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -152,17 +236,29 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html">相关 · 06-class-完整生命周期与API</a>
-        <a href="./08-class-PureComponent%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">相关 · 08-class-PureComponent性能优化</a>
-        <a href="./18-class-%E9%AB%98%E9%98%B6%E7%BB%84%E4%BB%B6HOC.html">相关 · 18-class-高阶组件HOC</a>
+        <a
+          href="./06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html"
+        >
+          相关 · 06-class-完整生命周期与API
+        </a>
+        <a href="./08-class-PureComponent%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">
+          相关 · 08-class-PureComponent性能优化
+        </a>
+        <a href="./18-class-%E9%AB%98%E9%98%B6%E7%BB%84%E4%BB%B6HOC.html">
+          相关 · 18-class-高阶组件HOC
+        </a>
         <a href="./18-class-%E9%AB%98%E9%98%B6%E7%BB%84%E4%BB%B6HOC.html">← class-高阶组件HOC</a>
-        <a href="../function-components/01-%E5%85%A5%E9%97%A8-%E5%85%83%E7%B4%A0%E4%B8%8E%E6%B8%B2%E6%9F%93.html">入门-元素与渲染 →</a>
+        <a
+          href="../function-components/01-%E5%85%A5%E9%97%A8-%E5%85%83%E7%B4%A0%E4%B8%8E%E6%B8%B2%E6%9F%93.html"
+        >
+          入门-元素与渲染 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

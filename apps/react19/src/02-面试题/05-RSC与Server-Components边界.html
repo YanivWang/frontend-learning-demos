@@ -23,11 +23,35 @@
     <script src="../../libs/react-dom.development.js"></script>
     <script src="../../libs/babel.min.js"></script>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 820px; line-height: 1.55; }
-      pre { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 8px; font-size: 0.82rem; overflow: auto; }
-      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-      .card { border: 1px solid #ddd; border-radius: 10px; padding: 1rem; }
-      @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 820px;
+        line-height: 1.55;
+      }
+      pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        overflow: auto;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+      .card {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1rem;
+      }
+      @media (max-width: 640px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -36,29 +60,112 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>RSC 与 Server Components 面试边界</h1>
-      <p class="hint">本页为<strong>概念向</strong>速记，下方 #root 展示 Server / Client 对照与代码示例；静态 HTML + UMD 无法真正运行 RSC 或 Server Functions，无需 Console 验证运行时。</p>
+      <p class="hint">
+        本页为
+        <strong>概念向</strong>
+        速记，下方 #root 展示 Server / Client 对照与代码示例；静态 HTML + UMD 无法真正运行 RSC 或
+        Server Functions，无需 Console 验证运行时。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Server Components 在服务端或构建阶段运行，渲染结果通过 RSC payload 传给客户端，默认不会把组件代码打进浏览器 bundle；适合数据读取、Markdown/模板拼装和减少客户端 JS。</li>
-          <li>Client Components 用文件顶部 <code>'use client'</code> 标记客户端入口，里面可以使用状态、Effects、事件处理和浏览器 API；该边界以下被纳入客户端 bundle。</li>
-          <li>RSC 边界要求传给客户端的 props 可序列化，不能直接传普通函数、数据库连接、DOM 节点等运行时对象；需要交互时通常把交互组件下沉到客户端边界。</li>
-          <li>React 19 稳定了 RSC 相关 API 给框架使用，但本仓库是静态 HTML + 本地 React 运行时，只能演示概念清单，<strong>不能</strong>真正执行 RSC、Server Functions 或流式 payload。</li>
-          <li>Server Actions 是服务端函数调用通道，客户端表单 Action 是浏览器中运行的函数提交模型；二者语法相近，但部署、序列化、安全校验和权限边界完全不同。</li>
+          <li>
+            Server Components 在服务端或构建阶段运行，渲染结果通过 RSC payload
+            传给客户端，默认不会把组件代码打进浏览器
+            bundle；适合数据读取、Markdown/模板拼装和减少客户端 JS。
+          </li>
+          <li>
+            Client Components 用文件顶部
+            <code>'use client'</code>
+            标记客户端入口，里面可以使用状态、Effects、事件处理和浏览器 API；该边界以下被纳入客户端
+            bundle。
+          </li>
+          <li>
+            RSC 边界要求传给客户端的 props 可序列化，不能直接传普通函数、数据库连接、DOM
+            节点等运行时对象；需要交互时通常把交互组件下沉到客户端边界。
+          </li>
+          <li>
+            React 19 稳定了 RSC 相关 API 给框架使用，但本仓库是静态 HTML + 本地 React
+            运行时，只能演示概念清单，
+            <strong>不能</strong>
+            真正执行 RSC、Server Functions 或流式 payload。
+          </li>
+          <li>
+            Server Actions 是服务端函数调用通道，客户端表单 Action
+            是浏览器中运行的函数提交模型；二者语法相近，但部署、序列化、安全校验和权限边界完全不同。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Server Component 和 Client Component 的职责边界是什么？</strong> 结论是数据读取和不需要交互的 UI 优先放 Server Component，状态、事件、Effects 和浏览器 API 放 Client Component。原因是 Server Component 默认不发送组件 JS，Client Component 才能在浏览器响应交互。项目里常把页面壳和数据列表放服务端，把按钮、弹窗、表单控件下沉到客户端。</li>
-          <li><strong>为什么 RSC 不能直接使用 <code>useState</code>、<code>useEffect</code> 或 <code>window</code>？</strong> 结论是 Server Component 不在浏览器交互生命周期里运行。原因是状态和 Effects 依赖客户端持久实例与浏览器环境，而 RSC 生成的是可序列化 UI 描述。需要这些能力时应添加 <code>'use client'</code> 边界。</li>
-          <li><strong>RSC 与传统 SSR 的区别是什么？</strong> 结论是 SSR 主要生成初始 HTML，RSC 还定义了服务端组件与客户端组件的模块边界和 payload 协议。原因是 RSC 可以让部分组件永远不进客户端 bundle，并在导航中复用服务端渲染结果。边界是它需要框架和打包器支持，不能靠单个静态 HTML 复现。</li>
-          <li><strong>Server Actions 和客户端 Action 的边界如何区分？</strong> 结论是 Server Actions 在服务端执行，客户端 Action 在浏览器执行。原因是 Server Actions 需要编译和服务端入口，必须重新校验权限与输入；客户端 Action 只能处理本地状态或调用公开 API。面试中要特别说明不要把服务端私有能力暴露给客户端。</li>
+          <li>
+            <strong>Server Component 和 Client Component 的职责边界是什么？</strong>
+            结论是数据读取和不需要交互的 UI 优先放 Server Component，状态、事件、Effects 和浏览器
+            API 放 Client Component。原因是 Server Component 默认不发送组件 JS，Client Component
+            才能在浏览器响应交互。项目里常把页面壳和数据列表放服务端，把按钮、弹窗、表单控件下沉到客户端。
+          </li>
+          <li>
+            <strong>
+              为什么 RSC 不能直接使用
+              <code>useState</code>
+              、
+              <code>useEffect</code>
+              或
+              <code>window</code>
+              ？
+            </strong>
+            结论是 Server Component 不在浏览器交互生命周期里运行。原因是状态和 Effects
+            依赖客户端持久实例与浏览器环境，而 RSC 生成的是可序列化 UI 描述。需要这些能力时应添加
+            <code>'use client'</code>
+            边界。
+          </li>
+          <li>
+            <strong>RSC 与传统 SSR 的区别是什么？</strong>
+            结论是 SSR 主要生成初始 HTML，RSC 还定义了服务端组件与客户端组件的模块边界和 payload
+            协议。原因是 RSC 可以让部分组件永远不进客户端
+            bundle，并在导航中复用服务端渲染结果。边界是它需要框架和打包器支持，不能靠单个静态 HTML
+            复现。
+          </li>
+          <li>
+            <strong>Server Actions 和客户端 Action 的边界如何区分？</strong>
+            结论是 Server Actions 在服务端执行，客户端 Action 在浏览器执行。原因是 Server Actions
+            需要编译和服务端入口，必须重新校验权限与输入；客户端 Action 只能处理本地状态或调用公开
+            API。面试中要特别说明不要把服务端私有能力暴露给客户端。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/rsc/server-components" target="_blank" rel="noreferrer">React Reference: Server Components</a></li>
-          <li><a href="https://react.dev/reference/rsc/use-client" target="_blank" rel="noreferrer">React Reference: 'use client'</a></li>
-          <li><a href="https://react.dev/reference/rsc/server-functions" target="_blank" rel="noreferrer">React Reference: Server Functions</a></li>
-          <li><a href="https://react.dev/blog/2024/12/05/react-19#react-server-components" target="_blank" rel="noreferrer">React 19 Blog: React Server Components</a></li>
+          <li>
+            <a
+              href="https://react.dev/reference/rsc/server-components"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React Reference: Server Components
+            </a>
+          </li>
+          <li>
+            <a href="https://react.dev/reference/rsc/use-client" target="_blank" rel="noreferrer">
+              React Reference: 'use client'
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/rsc/server-functions"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React Reference: Server Functions
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/blog/2024/12/05/react-19#react-server-components"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React 19 Blog: React Server Components
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -72,20 +179,20 @@
     <script type="text/babel">
       // ====== 1. 概念代码示例：Server vs Client Component 边界（非可运行 RSC） ======
       const codeSample = `// Server Component — 无 useState/useEffect
-async function Page() {
-  const data = await db.query();
-  return <List items={data} />;
-}
+      async function Page() {
+        const data = await db.query();
+        return <List items={data} />;
+      }
 
-// Client Component — 文件顶部 'use client'
-'use client';
-export function Counter() {
-  const [n, setN] = useState(0);
-  return <button onClick={() => setN(n + 1)}>{n}</button>;
-}`;
+      // Client Component — 文件顶部 'use client'
+      'use client';
+      export function Counter() {
+        const [n, setN] = useState(0);
+        return <button onClick={() => setN(n + 1)}>{n}</button>;
+      }`;
 
       function RSCGuide() {
-        console.log("[RSC 概念] 本页为静态 UMD demo，无法运行真实 RSC 运行时");
+        console.log('[RSC 概念] 本页为静态 UMD demo，无法运行真实 RSC 运行时');
 
         return (
           <section>
@@ -107,10 +214,14 @@ export function Counter() {
               <div className="card">
                 <h3>Client Component</h3>
                 <ul>
-                  <li>标记 <code>'use client'</code></li>
+                  <li>
+                    标记 <code>'use client'</code>
+                  </li>
                   <li>交互、订阅、Effects 放这里</li>
                   <li>可 import Server 组件为子节点（单向）</li>
-                  <li>本仓库 <code>useActionState</code> 表单 action 属客户端 Action</li>
+                  <li>
+                    本仓库 <code>useActionState</code> 表单 action 属客户端 Action
+                  </li>
                 </ul>
               </div>
             </div>
@@ -118,15 +229,19 @@ export function Counter() {
             {/* ====== 3. 与本仓库 demo 的关系 ====== */}
             <h2>与 React 19 本仓库 demo 的关系</h2>
             <p>
-              <code>useActionState</code> / 表单 <code>action</code> 是<strong>客户端 Actions</strong> 模式；
-              框架中的 Server Actions 会把函数序列化到服务端执行，面试需说明部署与序列化约束。
+              <code>useActionState</code> / 表单 <code>action</code> 是
+              <strong>客户端 Actions</strong> 模式； 框架中的 Server Actions
+              会把函数序列化到服务端执行，面试需说明部署与序列化约束。
             </p>
-            <p><strong>追问：</strong>为何 RSC 不能传普通函数给客户端？— 函数不可序列化，需 Server Actions 等约定通道。</p>
+            <p>
+              <strong>追问：</strong>为何 RSC 不能传普通函数给客户端？— 函数不可序列化，需 Server
+              Actions 等约定通道。
+            </p>
           </section>
         );
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<RSCGuide />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<RSCGuide />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -135,19 +250,22 @@ export function Counter() {
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./04-%E9%94%99%E8%AF%AF%E8%BE%B9%E7%95%8C%E4%B8%8E%E7%8A%B6%E6%80%81%E8%BE%B9%E7%95%8C.html">← 错误边界与状态边界</a>
+        <a
+          href="./04-%E9%94%99%E8%AF%AF%E8%BE%B9%E7%95%8C%E4%B8%8E%E7%8A%B6%E6%80%81%E8%BE%B9%E7%95%8C.html"
+        >
+          ← 错误边界与状态边界
+        </a>
         <a href="../../../demos/drag/01-drag-%E5%8E%9F%E7%94%9F.html">drag-原生 →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-  
-</body>
+  </body>
 </html>

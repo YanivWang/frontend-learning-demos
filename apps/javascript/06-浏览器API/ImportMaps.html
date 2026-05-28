@@ -3,13 +3,13 @@
   主题: Import Maps 浏览器原生模块映射
   难度: 进阶
   要点:
-    - <script type="importmap"> 在模块解析前把模块说明符映射到 URL
-    - imports 支持精确匹配和以 / 结尾的路径前缀映射，仍受模块 CORS 与 MIME 校验约束
-    - Import Maps 适合原型、文档站和渐进迁移；生产应用通常仍需要 bundler 处理优化和兼容
+    - <script type="importmap"> 将 bare specifier 映射到 URL
+    - 配合 <script type="module"> 在零构建环境使用 npm 风格 import
+    - 生产环境仍推荐 bundler；Import Maps 适合 demo / 渐进迁移
   面试:
-    - Import Maps 如何让浏览器识别 bare specifier？
-    - importmap 为什么必须在依赖它的 module 脚本前声明？
-    - Import Maps 与 bundler 在生产项目里如何分工？
+    - Import Maps 是什么？解决什么问题？
+    - importmap 与 type="module" 如何配合？
+    - 生产环境为什么仍推荐 bundler？
   相关: HTTP缓存, IntersectionObserver
 -->
 
@@ -20,16 +20,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Import Maps</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; }
-      #out, #runtime-output { margin-top: 1rem; padding: 12px; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; }
-      #env-banner { padding: 8px 10px; background: #fff8e6; border-left: 3px solid #f0ad4e; font-size: 0.875rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+      }
+      #out,
+      #runtime-output {
+        margin-top: 1rem;
+        padding: 12px;
+        background: #f6f8fa;
+        border-radius: 8px;
+        font-family: ui-monospace, monospace;
+      }
+      #env-banner {
+        padding: 8px 10px;
+        background: #fff8e6;
+        border-left: 3px solid #f0ad4e;
+        font-size: 0.875rem;
+      }
     </style>
     <script type="importmap">
-    {
-      "imports": {
-        "utils/": "./lib/importmap-utils/"
+      {
+        "imports": {
+          "utils/": "./lib/importmap-utils/"
+        }
       }
-    }
     </script>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -38,27 +53,42 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Import Maps 模块映射</h1>
-      <p class="hint">请阅读本复习区，并在下方演示区查看 import map 解析结果；需通过 HTTP(S) 或 localhost 静态服务打开，file:// 下 ESM 模块加载可能失败。</p>
+      <p class="hint">
+        请阅读本复习区，并在下方演示区查看 import map 解析结果；需通过 HTTP(S) 或 localhost
+        静态服务打开，file:// 下 ESM 模块加载可能失败。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>&lt;script type="importmap"&gt;</code> 提供一张模块说明符映射表，让浏览器把 <code>import "utils/greet.js"</code> 解析到真实 URL；本页用 <code>utils/</code> 前缀映射到本地目录。</li>
-          <li><code>imports</code> 既可以做精确映射，也可以用以 <code>/</code> 结尾的 key 做路径前缀映射；映射后的资源仍按 JavaScript module 加载，必须满足同源/CORS、正确 MIME 类型和模块语法要求。</li>
-          <li>import map 必须在依赖它的 <code>&lt;script type="module"&gt;</code> 执行前出现；已经解析过的模块不会因为后续 import map 变化而重新解析。</li>
-          <li>它不负责转译、tree-shaking、代码分割、压缩和旧浏览器兼容，因此大型生产应用通常仍用 bundler；Import Maps 更适合 demo、微前端依赖钉住、CDN 依赖别名和无构建渐进迁移。</li>
-          <li>常见坑是把 Import Maps 当作 Node 解析或 npm 安装替代品：浏览器只按 URL 加载文件，不会自动寻找 <code>package.json</code>、目录入口或扩展名。</li>
+          <li>
+            <code>&lt;script type="importmap"&gt;</code>
+            将 bare specifier 映射到 URL。
+          </li>
+          <li>
+            配合
+            <code>&lt;script type="module"&gt;</code>
+            在零构建环境使用 npm 风格
+            <code>import</code>
+            。
+          </li>
+          <li>生产环境仍推荐 bundler；Import Maps 适合 demo / 渐进迁移。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Import Maps 如何让浏览器识别 bare specifier？</strong> 结论是通过 <code>imports</code> 把非 URL 形式的模块说明符映射成绝对或相对 URL。原因是浏览器原生 ESM 不会像 Node 或 bundler 一样查找 npm 包入口，只能加载可解析的 URL。项目里可用它给 CDN 依赖、本地工具模块或微前端共享依赖做显式别名。</li>
-          <li><strong>importmap 为什么必须在 module 脚本前声明？</strong> 结论是依赖映射的模块解析前必须已经有 import map。原因是模块图在加载时就会解析说明符，迟到的映射无法回头修改已解析模块。实际页面里应把 import map 放在第一个相关 <code>type="module"</code> 脚本之前。</li>
-          <li><strong>Import Maps 与 bundler 在生产项目里如何分工？</strong> 结论是 Import Maps 解决运行时模块说明符到 URL 的映射，bundler 解决构建期优化和兼容。原因是 Import Maps 不做转译、压缩、tree-shaking 或代码分割。生产中可在现代浏览器、微前端或无构建页面里使用，但仍要评估浏览器支持、缓存策略和回退方案。</li>
-        </ul>
-        <h2>参考资料</h2>
-        <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script/type/importmap" target="_blank" rel="noreferrer">MDN: &lt;script type="importmap"&gt;</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules#importing_modules_using_import_maps" target="_blank" rel="noreferrer">MDN: Importing modules using import maps</a></li>
-          <li><a href="https://html.spec.whatwg.org/multipage/webappapis.html#import-maps" target="_blank" rel="noreferrer">WHATWG HTML: Import maps</a></li>
+          <li>
+            <strong>Import Maps 是什么？</strong>
+            浏览器原生模块映射，把
+            <code>import "pkg"</code>
+            解析到具体 URL，无需打包即可在 demo 中试用 npm 风格路径。
+          </li>
+          <li>
+            <strong>与 type="module" 如何配合？</strong>
+            先声明 importmap，再加载 module 脚本；映射须在模块执行前解析完成。
+          </li>
+          <li>
+            <strong>生产为何仍用 bundler？</strong>
+            兼容性、Tree-shaking、版本锁定与 CDN 策略；Import Maps 更适合渐进迁移或教学 demo。
+          </li>
         </ul>
       </div>
     </section>
@@ -67,7 +97,13 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block">
       <h2>Import Map 解析演示</h2>
-      <p class="tip">通过 import map 将 <code>utils/greet.js</code> 映射到本地 <code>lib/importmap-utils/greet.js</code>。</p>
+      <p class="tip">
+        通过 import map 将
+        <code>utils/greet.js</code>
+        映射到本地
+        <code>lib/importmap-utils/greet.js</code>
+        。
+      </p>
       <p id="env-banner"></p>
       <button type="button" id="reloadBtn">重新加载模块</button>
       <div id="out" aria-live="polite">加载中…</div>
@@ -78,36 +114,37 @@
     <!-- SCRIPT_START -->
     <script type="module">
       // ============ 0. 环境提示 ============
-      const envBanner = document.getElementById("env-banner");
+      const envBanner = document.getElementById('env-banner');
       envBanner.textContent =
-        "protocol=" + location.protocol +
-        " | ESM + import map 需 HTTP(S)/localhost；file:// 可能 CORS/MIME 失败";
+        'protocol=' +
+        location.protocol +
+        ' | ESM + import map 需 HTTP(S)/localhost；file:// 可能 CORS/MIME 失败';
 
-      const out = document.getElementById("out");
-      const runtimeOutput = document.getElementById("runtime-output");
+      const out = document.getElementById('out');
+      const runtimeOutput = document.getElementById('runtime-output');
 
       // ============ 1. 通过 import map 解析 bare specifier ============
       async function loadModule() {
-        out.textContent = "加载中…";
+        out.textContent = '加载中…';
         try {
-          const { greet } = await import("utils/greet.js");
-          out.textContent = greet("Import Maps");
+          const { greet } = await import('utils/greet.js');
+          out.textContent = greet('Import Maps');
           runtimeOutput.textContent = [
-            "import map: utils/ → ./lib/importmap-utils/",
-            "解析结果: utils/greet.js → lib/importmap-utils/greet.js",
-            "模块导出: " + greet("demo"),
-          ].join("\n");
+            'import map: utils/ → ./lib/importmap-utils/',
+            '解析结果: utils/greet.js → lib/importmap-utils/greet.js',
+            '模块导出: ' + greet('demo'),
+          ].join('\n');
         } catch (err) {
-          out.textContent = "模块加载失败";
-          runtimeOutput.textContent = err.name + ": " + err.message +
-            "\n\n请通过本地静态服务器打开本页（非 file://）。";
+          out.textContent = '模块加载失败';
+          runtimeOutput.textContent =
+            err.name + ': ' + err.message + '\n\n请通过本地静态服务器打开本页（非 file://）。';
         }
       }
 
       await loadModule();
 
       // ============ 2. 重新加载 ============
-      document.getElementById("reloadBtn").addEventListener("click", loadModule);
+      document.getElementById('reloadBtn').addEventListener('click', loadModule);
     </script>
     <!-- SCRIPT_END -->
 
@@ -123,9 +160,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

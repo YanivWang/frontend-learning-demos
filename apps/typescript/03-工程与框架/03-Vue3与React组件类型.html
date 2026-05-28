@@ -21,9 +21,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TypeScript · Vue3 与 React 组件类型</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 920px; line-height: 1.6; }
-      pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
-      #log { background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; white-space: pre-wrap; font-size: 0.85rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 920px;
+        line-height: 1.6;
+      }
+      pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 14px;
+        border-radius: 8px;
+        overflow: auto;
+        font-size: 0.86rem;
+      }
+      #log {
+        background: #f6f8fa;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 12px;
+        white-space: pre-wrap;
+        font-size: 0.85rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -32,46 +51,146 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vue3 / React 组件类型</h1>
-      <p class="hint">下方展示 Vue/React Props 类型片段；完整组件类型须在 Vue/React 工程中由 IDE/tsc 验证，本页用等价 JS 演示运行时形态。</p>
+      <p class="hint">
+        下方展示 Vue/React Props 类型片段；完整组件类型须在 Vue/React 工程中由 IDE/tsc
+        验证，本页用等价 JS 演示运行时形态。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue 3 的 <code>&lt;script setup lang="ts"&gt;</code> 常用 <code>defineProps&lt;T&gt;()</code> 和 <code>defineEmits&lt;T&gt;()</code> 描述组件输入输出，编译器会把宏调用转换为组件选项和类型信息。</li>
-          <li>React 函数组件可以直接给参数标注 <code>Props</code>，例如 <code>function Button(props: ButtonProps)</code>；<code>React.FC&lt;Props&gt;</code> 可用，但不是必须，团队应统一 children、default props 和泛型组件写法。</li>
-          <li>组件 Props 类型应表达业务约束，例如 <code>variant: "primary" | "danger"</code>、可选角色、事件参数类型，而不是把所有字段都写成宽泛的 <code>string</code> 或 <code>any</code>。</li>
-          <li>TypeScript 对组件边界的价值在调用方：父组件传错 props、事件回调参数用错、表单值类型不匹配时，IDE 和 <code>tsc</code> 能提前报错。</li>
-          <li>边界是框架类型主要保护编译期调用；服务端返回、用户输入、URL 参数和本地存储仍是不可信数据，需要运行时校验或解析后再传给组件。</li>
+          <li>
+            Vue 3 的
+            <code>&lt;script setup lang="ts"&gt;</code>
+            常用
+            <code>defineProps&lt;T&gt;()</code>
+            和
+            <code>defineEmits&lt;T&gt;()</code>
+            描述组件输入输出，编译器会把宏调用转换为组件选项和类型信息。
+          </li>
+          <li>
+            React 函数组件可以直接给参数标注
+            <code>Props</code>
+            ，例如
+            <code>function Button(props: ButtonProps)</code>
+            ；
+            <code>React.FC&lt;Props&gt;</code>
+            可用，但不是必须，团队应统一 children、default props 和泛型组件写法。
+          </li>
+          <li>
+            组件 Props 类型应表达业务约束，例如
+            <code>variant: "primary" | "danger"</code>
+            、可选角色、事件参数类型，而不是把所有字段都写成宽泛的
+            <code>string</code>
+            或
+            <code>any</code>
+            。
+          </li>
+          <li>
+            TypeScript 对组件边界的价值在调用方：父组件传错
+            props、事件回调参数用错、表单值类型不匹配时，IDE 和
+            <code>tsc</code>
+            能提前报错。
+          </li>
+          <li>
+            边界是框架类型主要保护编译期调用；服务端返回、用户输入、URL
+            参数和本地存储仍是不可信数据，需要运行时校验或解析后再传给组件。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue 3 defineProps&lt;T&gt; 和运行时 props 声明怎么选？</strong> 结论是纯 TS 项目常用类型参数声明，确实需要运行时校验或默认值时结合运行时声明、<code>withDefaults</code> 或校验逻辑。原因是类型参数主要服务编译期推导，运行时 props 选项还能参与校验和默认值。项目里要根据组件是否暴露给不可信调用方决定强度。</li>
-          <li><strong>React 组件为什么常直接标注函数参数 Props？</strong> 结论是直接标注更直观，也避免把 <code>React.FC</code> 当成必需模板。原因是 React 组件本质是函数，参数类型已经能约束 props；是否使用 <code>React.FC</code> 更多是团队风格问题。泛型组件、children 约束和默认值场景要按项目约定处理。</li>
-          <li><strong>Props 类型如何表达业务约束？</strong> 结论是尽量用字面量联合、可选字段、事件参数和精确对象类型表达真实边界。原因是宽泛的 <code>string</code> 或 <code>any</code> 只能说明“有这个字段”，不能防止传错业务值。示例里的 <code>variant</code> 只能是 <code>primary</code> 或 <code>danger</code>，比任意字符串更安全。</li>
-          <li><strong>组件类型不能替代什么？</strong> 结论是不能替代运行时数据校验。原因是接口响应、表单输入和 URL 参数进入应用时仍是普通 JS 值，类型标注不会自动验证。项目里应在边界层解析数据，再把可信类型传入 Vue 或 React 组件。</li>
+          <li>
+            <strong>Vue 3 defineProps&lt;T&gt; 和运行时 props 声明怎么选？</strong>
+            结论是纯 TS 项目常用类型参数声明，确实需要运行时校验或默认值时结合运行时声明、
+            <code>withDefaults</code>
+            或校验逻辑。原因是类型参数主要服务编译期推导，运行时 props
+            选项还能参与校验和默认值。项目里要根据组件是否暴露给不可信调用方决定强度。
+          </li>
+          <li>
+            <strong>React 组件为什么常直接标注函数参数 Props？</strong>
+            结论是直接标注更直观，也避免把
+            <code>React.FC</code>
+            当成必需模板。原因是 React 组件本质是函数，参数类型已经能约束 props；是否使用
+            <code>React.FC</code>
+            更多是团队风格问题。泛型组件、children 约束和默认值场景要按项目约定处理。
+          </li>
+          <li>
+            <strong>Props 类型如何表达业务约束？</strong>
+            结论是尽量用字面量联合、可选字段、事件参数和精确对象类型表达真实边界。原因是宽泛的
+            <code>string</code>
+            或
+            <code>any</code>
+            只能说明“有这个字段”，不能防止传错业务值。示例里的
+            <code>variant</code>
+            只能是
+            <code>primary</code>
+            或
+            <code>danger</code>
+            ，比任意字符串更安全。
+          </li>
+          <li>
+            <strong>组件类型不能替代什么？</strong>
+            结论是不能替代运行时数据校验。原因是接口响应、表单输入和 URL 参数进入应用时仍是普通 JS
+            值，类型标注不会自动验证。项目里应在边界层解析数据，再把可信类型传入 Vue 或 React 组件。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/guide/typescript/composition-api.html#typing-component-props" target="_blank" rel="noopener">Vue 3 Guide: Typing Component Props</a></li>
-          <li><a href="https://vuejs.org/guide/typescript/composition-api.html#typing-component-emits" target="_blank" rel="noopener">Vue 3 Guide: Typing Component Emits</a></li>
-          <li><a href="https://react.dev/learn/typescript#typescript-with-react-components" target="_blank" rel="noopener">React Docs: TypeScript with React Components</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#literal-types" target="_blank" rel="noopener">TypeScript Handbook: Literal Types</a></li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/typescript/composition-api.html#typing-component-props"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue 3 Guide: Typing Component Props
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/typescript/composition-api.html#typing-component-emits"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue 3 Guide: Typing Component Emits
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/typescript#typescript-with-react-components"
+              target="_blank"
+              rel="noopener"
+            >
+              React Docs: TypeScript with React Components
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#literal-types"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Literal Types
+            </a>
+          </li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>上方为 Vue/React 组件 Props 类型片段（须完整工程 + IDE/tsc 验证）；下方为等价 JS 运行时形态。</p>
-    <pre>// Vue3 &lt;script setup lang="ts"&gt;
-type UserCardProps = { id: number; name: string; role?: "admin" | "guest" };
-const props = defineProps&lt;UserCardProps&gt;();
-
-// React
-type ButtonProps = {
-  variant: "primary" | "danger";
-  onClick: (event: React.MouseEvent&lt;HTMLButtonElement&gt;) =&gt; void;
-};
-function Button(props: ButtonProps) { return &lt;button onClick={props.onClick} /&gt;; }</pre>
+    <p>
+      上方为 Vue/React 组件 Props 类型片段（须完整工程 + IDE/tsc 验证）；下方为等价 JS 运行时形态。
+    </p>
+    <pre>
+// Vue3 &lt;script setup lang="ts"&gt;
+      type UserCardProps = { id: number; name: string; role?: "admin" | "guest" };
+      const props = defineProps&lt;UserCardProps&gt;();
+      // React
+      type ButtonProps = {
+      variant: "primary" | "danger";
+      onClick: (event: React.MouseEvent&lt;HTMLButtonElement&gt;) =&gt; void;
+      };
+      function Button(props: ButtonProps) { return &lt;button onClick={props.onClick} /&gt;; }</pre
+    >
     <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
 
@@ -79,7 +198,7 @@ function Button(props: ButtonProps) { return &lt;button onClick={props.onClick} 
     <script>
       // ============ 1. Vue defineProps&lt;UserCardProps&gt; 等价逻辑 ============
       function renderUserCard(props) {
-        const role = props.role ?? "guest";
+        const role = props.role ?? 'guest';
         return `${props.name} (${role})`;
       }
 
@@ -89,22 +208,22 @@ function Button(props: ButtonProps) { return &lt;button onClick={props.onClick} 
       }
 
       const lines = [];
-      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+      const assert = (cond, msg) => lines.push((cond ? '✓ ' : '✗ ') + msg);
 
       assert(
-        renderUserCard({ id: 1, name: "Evan", role: "admin" }) === "Evan (admin)",
-        "Vue defineProps: role 字面量联合 admin | guest"
+        renderUserCard({ id: 1, name: 'Evan', role: 'admin' }) === 'Evan (admin)',
+        'Vue defineProps: role 字面量联合 admin | guest',
       );
       assert(
-        createButton({ variant: "primary", onClick: () => {} }) === "[primary] button",
-        "React ButtonProps: variant 字面量联合 primary | danger"
+        createButton({ variant: 'primary', onClick: () => {} }) === '[primary] button',
+        'React ButtonProps: variant 字面量联合 primary | danger',
       );
       assert(
-        typeof renderUserCard === "function",
-        "Props 类型在编译期检查；运行时 props 仍是普通对象（需 IDE/tsc 验证传参）"
+        typeof renderUserCard === 'function',
+        'Props 类型在编译期检查；运行时 props 仍是普通对象（需 IDE/tsc 验证传参）',
       );
 
-      document.getElementById("log").textContent = lines.join("\n");
+      document.getElementById('log').textContent = lines.join('\n');
     </script>
     <!-- SCRIPT_END -->
 
@@ -113,20 +232,28 @@ function Button(props: ButtonProps) { return &lt;button onClick={props.onClick} 
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="./02-%E7%B1%BB%E5%9E%8B%E5%A3%B0%E6%98%8E%E4%B8%8E%E6%A8%A1%E5%9D%97.html">相关 · 类型声明与模块</a>
-        <a href="./04-React%E8%A1%A8%E5%8D%95%E4%B8%8EVue-emits%E7%B1%BB%E5%9E%8B.html">相关 · React表单与Vue-emits类型</a>
-        <a href="./02-%E7%B1%BB%E5%9E%8B%E5%A3%B0%E6%98%8E%E4%B8%8E%E6%A8%A1%E5%9D%97.html">← 类型声明与模块</a>
-        <a href="./04-React%E8%A1%A8%E5%8D%95%E4%B8%8EVue-emits%E7%B1%BB%E5%9E%8B.html">React表单与Vue-emits类型 →</a>
+        <a href="./02-%E7%B1%BB%E5%9E%8B%E5%A3%B0%E6%98%8E%E4%B8%8E%E6%A8%A1%E5%9D%97.html">
+          相关 · 类型声明与模块
+        </a>
+        <a href="./04-React%E8%A1%A8%E5%8D%95%E4%B8%8EVue-emits%E7%B1%BB%E5%9E%8B.html">
+          相关 · React表单与Vue-emits类型
+        </a>
+        <a href="./02-%E7%B1%BB%E5%9E%8B%E5%A3%B0%E6%98%8E%E4%B8%8E%E6%A8%A1%E5%9D%97.html">
+          ← 类型声明与模块
+        </a>
+        <a href="./04-React%E8%A1%A8%E5%8D%95%E4%B8%8EVue-emits%E7%B1%BB%E5%9E%8B.html">
+          React表单与Vue-emits类型 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

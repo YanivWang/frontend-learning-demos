@@ -31,29 +31,119 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>函数组件事件处理与参数传递</h1>
-      <p class="hint">请打开 DevTools Console 查看事件日志；下方 #root 为 React 挂载/交互演示区，可点击按钮与删除项。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看事件日志；下方 #root 为 React
+        挂载/交互演示区，可点击按钮与删除项。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>函数组件没有实例 <code>this</code>，事件处理函数可以直接定义在组件内部或组件外部，不需要像 class 组件那样在 constructor 中 <code>bind</code>。</li>
-          <li><code>onClick={handleClick}</code> 传入的是函数引用，点击时由 React 调用；<code>onClick={handleClick()}</code> 会在渲染阶段立即执行，通常会造成意外更新或无限渲染。</li>
-          <li>需要传业务参数时，用箭头函数延迟调用：<code>onClick={() =&gt; onRemove(id)}</code>。需要同时拿事件对象时，可以写 <code>onClick={(event) =&gt; handle(event, id)}</code>，让参数含义清楚。</li>
-          <li>子组件不直接修改父组件列表，而是在事件里调用父级通过 props 传入的回调。本 demo 的 <code>TodoItem</code> 删除按钮把 <code>id</code> 交回父组件，由父组件更新数组 state。</li>
-          <li>React 事件处理器接收的是 React 合成事件对象，常用字段与 DOM 事件一致。涉及阻止默认行为、异步使用事件对象时，应按 react.dev 当前事件文档处理（详见 24-合成事件机制）。</li>
+          <li>
+            函数组件没有实例
+            <code>this</code>
+            ，事件处理函数可以直接定义在组件内部或组件外部，不需要像 class 组件那样在 constructor 中
+            <code>bind</code>
+            。
+          </li>
+          <li>
+            <code>onClick={handleClick}</code>
+            传入的是函数引用，点击时由 React 调用；
+            <code>onClick={handleClick()}</code>
+            会在渲染阶段立即执行，通常会造成意外更新或无限渲染。
+          </li>
+          <li>
+            需要传业务参数时，用箭头函数延迟调用：
+            <code>onClick={() =&gt; onRemove(id)}</code>
+            。需要同时拿事件对象时，可以写
+            <code>onClick={(event) =&gt; handle(event, id)}</code>
+            ，让参数含义清楚。
+          </li>
+          <li>
+            子组件不直接修改父组件列表，而是在事件里调用父级通过 props 传入的回调。本 demo 的
+            <code>TodoItem</code>
+            删除按钮把
+            <code>id</code>
+            交回父组件，由父组件更新数组 state。
+          </li>
+          <li>
+            React 事件处理器接收的是 React 合成事件对象，常用字段与 DOM
+            事件一致。涉及阻止默认行为、异步使用事件对象时，应按 react.dev 当前事件文档处理（详见
+            24-合成事件机制）。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>函数组件事件处理为什么不需要 <code>bind this</code>？</strong> 结论是函数组件没有实例 <code>this</code>。原因是组件函数每次渲染被调用，事件处理函数通过闭包访问当前 props/state；维护 class 组件时才需要关注方法 this 绑定。</li>
-          <li><strong><code>onClick={handle(id)}</code> 和 <code>onClick={() =&gt; handle(id)}</code> 有什么区别？</strong> 结论是前者渲染时立即执行，后者点击时执行。原因是 JSX attribute 需要函数引用；项目里传参、埋点、删除项等场景都应使用箭头包装或提前返回函数。</li>
-          <li><strong>同时需要事件对象和业务参数怎么写？</strong> 结论是显式写 <code>(event) =&gt; handle(event, id)</code> 或 <code>(event) =&gt; handle(id, event)</code>，团队保持一致即可。原因是这样不会丢失事件对象，也不会在 render 阶段执行业务逻辑。</li>
-          <li><strong>为什么子组件通过回调通知父组件？</strong> 结论是状态归谁所有，就由谁更新。原因是本例列表 state 在父组件，子组件只有 id 和回调；边界是深层组件传递回调太多时，可考虑 Context 或状态管理。</li>
-          <li><strong>React 事件和 DOM 原生事件有哪些边界？</strong> 结论是 React 使用合成事件统一跨浏览器行为，事件在 root 委托处理。原因是性能与一致性；边界是 <code>stopPropagation</code> 只影响 React 树、异步访问 <code>event</code> 需 <code>event.persist()</code>（legacy）或提前读取字段，详见 react.dev Responding to Events。</li>
+          <li>
+            <strong>
+              函数组件事件处理为什么不需要
+              <code>bind this</code>
+              ？
+            </strong>
+            结论是函数组件没有实例
+            <code>this</code>
+            。原因是组件函数每次渲染被调用，事件处理函数通过闭包访问当前 props/state；维护 class
+            组件时才需要关注方法 this 绑定。
+          </li>
+          <li>
+            <strong>
+              <code>onClick={handle(id)}</code>
+              和
+              <code>onClick={() =&gt; handle(id)}</code>
+              有什么区别？
+            </strong>
+            结论是前者渲染时立即执行，后者点击时执行。原因是 JSX attribute
+            需要函数引用；项目里传参、埋点、删除项等场景都应使用箭头包装或提前返回函数。
+          </li>
+          <li>
+            <strong>同时需要事件对象和业务参数怎么写？</strong>
+            结论是显式写
+            <code>(event) =&gt; handle(event, id)</code>
+            或
+            <code>(event) =&gt; handle(id, event)</code>
+            ，团队保持一致即可。原因是这样不会丢失事件对象，也不会在 render 阶段执行业务逻辑。
+          </li>
+          <li>
+            <strong>为什么子组件通过回调通知父组件？</strong>
+            结论是状态归谁所有，就由谁更新。原因是本例列表 state 在父组件，子组件只有 id
+            和回调；边界是深层组件传递回调太多时，可考虑 Context 或状态管理。
+          </li>
+          <li>
+            <strong>React 事件和 DOM 原生事件有哪些边界？</strong>
+            结论是 React 使用合成事件统一跨浏览器行为，事件在 root
+            委托处理。原因是性能与一致性；边界是
+            <code>stopPropagation</code>
+            只影响 React 树、异步访问
+            <code>event</code>
+            需
+            <code>event.persist()</code>
+            （legacy）或提前读取字段，详见 react.dev Responding to Events。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/learn/responding-to-events" target="_blank" rel="noreferrer">react.dev: Responding to Events</a></li>
-          <li><a href="https://react.dev/learn/updating-arrays-in-state" target="_blank" rel="noreferrer">react.dev: Updating Arrays in State</a></li>
-          <li><a href="https://react.dev/learn/passing-props-to-a-component" target="_blank" rel="noreferrer">react.dev: Passing Props to a Component</a></li>
+          <li>
+            <a href="https://react.dev/learn/responding-to-events" target="_blank" rel="noreferrer">
+              react.dev: Responding to Events
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/updating-arrays-in-state"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Updating Arrays in State
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/passing-props-to-a-component"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Passing Props to a Component
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -80,27 +170,27 @@
 
       function App() {
         const [items, setItems] = useState([
-          { id: 1, text: "学习 JSX" },
-          { id: 2, text: "学习 Hooks" },
+          { id: 1, text: '学习 JSX' },
+          { id: 2, text: '学习 Hooks' },
         ]);
-        const [lastEvent, setLastEvent] = useState("");
+        const [lastEvent, setLastEvent] = useState('');
 
         // 父组件拥有列表 state，子组件通过回调请求删除
         function handleRemove(id) {
-          console.log("handleRemove id:", id);
+          console.log('handleRemove id:', id);
           setItems((prev) => prev.filter((item) => item.id !== id));
         }
 
         // ====== 2. 直接绑定函数引用：React 点击时传入合成事件对象 ======
         function handleClick(event) {
-          console.log("handleClick event.type:", event.type, "target:", event.target.tagName);
-          setLastEvent("type=" + event.type + ", target=" + event.target.tagName);
+          console.log('handleClick event.type:', event.type, 'target:', event.target.tagName);
+          setLastEvent('type=' + event.type + ', target=' + event.target.tagName);
         }
 
         // ====== 3. 箭头包装：同时传事件对象与业务参数 ======
         function handleClickWithArg(event, label) {
-          console.log("handleClickWithArg:", label, event.type);
-          setLastEvent(label + " · " + event.type);
+          console.log('handleClickWithArg:', label, event.type);
+          setLastEvent(label + ' · ' + event.type);
         }
 
         return (
@@ -108,28 +198,21 @@
             <h1>函数组件事件处理</h1>
             <ul>
               {items.map((item) => (
-                <TodoItem
-                  key={item.id}
-                  id={item.id}
-                  text={item.text}
-                  onRemove={handleRemove}
-                />
+                <TodoItem key={item.id} id={item.id} text={item.text} onRemove={handleRemove} />
               ))}
             </ul>
             <button onClick={handleClick}>直接绑定函数引用</button>
-            <button onClick={(e) => handleClickWithArg(e, "带参按钮")}>
-              箭头包装传参
-            </button>
+            <button onClick={(e) => handleClickWithArg(e, '带参按钮')}>箭头包装传参</button>
             {/*
-              反面教材（勿取消注释）：
-              onClick={handleClick()} 会在 render 阶段立刻执行
-            */}
-            <p>最近一次事件: {lastEvent || "暂无"}</p>
+                反面教材（勿取消注释）：
+                onClick={handleClick()} 会在 render 阶段立刻执行
+                */}
+            <p>最近一次事件: {lastEvent || '暂无'}</p>
           </section>
         );
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -139,20 +222,26 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./05-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-props.html">相关 · 05-函数组件-props</a>
-        <a href="./07-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-state%E4%B8%8Eprops.html">相关 · 07-函数组件-state与props</a>
-        <a href="./24-%E5%90%88%E6%88%90%E4%BA%8B%E4%BB%B6%E6%9C%BA%E5%88%B6.html">相关 · 24-合成事件机制</a>
+        <a href="./07-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-state%E4%B8%8Eprops.html">
+          相关 · 07-函数组件-state与props
+        </a>
+        <a href="./24-%E5%90%88%E6%88%90%E4%BA%8B%E4%BB%B6%E6%9C%BA%E5%88%B6.html">
+          相关 · 24-合成事件机制
+        </a>
         <a href="./05-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-props.html">← 函数组件-props</a>
-        <a href="./07-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-state%E4%B8%8Eprops.html">函数组件-state与props →</a>
+        <a href="./07-%E5%87%BD%E6%95%B0%E7%BB%84%E4%BB%B6-state%E4%B8%8Eprops.html">
+          函数组件-state与props →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

@@ -21,15 +21,61 @@
     <title>Vue3 · Vitest 面试点</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; max-width: 780px; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; font-size: 0.82rem; }
-      button { padding: 8px 14px; cursor: pointer; margin: 8px 8px 8px 0; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; }
-      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
-      .callout { background: #fff8e1; border: 1px solid #f0d78c; border-radius: 8px; padding: 10px 12px; font-size: 14px; margin-bottom: 12px; }
-      #log { background: #f6f8fa; padding: 12px; border-radius: 8px; font-family: ui-monospace, monospace; white-space: pre-wrap; min-height: 4em; }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          'PingFang SC',
+          sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+        max-width: 780px;
+      }
+      code,
+      pre {
+        background: #f6f8fa;
+        border-radius: 6px;
+      }
+      code {
+        padding: 2px 5px;
+      }
+      pre {
+        padding: 12px;
+        overflow: auto;
+        font-size: 0.82rem;
+      }
+      button {
+        padding: 8px 14px;
+        cursor: pointer;
+        margin: 8px 8px 8px 0;
+      }
+      .box {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+      }
+      .box .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
+      .callout {
+        background: #fff8e1;
+        border: 1px solid #f0d78c;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 14px;
+        margin-bottom: 12px;
+      }
+      #log {
+        background: #f6f8fa;
+        padding: 12px;
+        border-radius: 8px;
+        font-family: ui-monospace, monospace;
+        white-space: pre-wrap;
+        min-height: 4em;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -38,29 +84,109 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vitest 单元测试面试边界</h1>
-      <p class="hint">本页为<strong>概念说明</strong> + 迷你 mock 演示；Router/Pinia 集成测见 <a href="./06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html">06-Router与Pinia可运行示例</a>（可 mock <code>router.push</code>）。</p>
+      <p class="hint">
+        本页为
+        <strong>概念说明</strong>
+        + 迷你 mock 演示；Router/Pinia 集成测见
+        <a href="./06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html">
+          06-Router与Pinia可运行示例
+        </a>
+        （可 mock
+        <code>router.push</code>
+        ）。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>本页点「运行 vi.fn 风格 mock 演示」，下方 <code>#log</code> 会追加调用记录；点「清空日志」重置。Vitest 是面向 Vite 生态的测试框架，复用 Vite 的模块转换、插件和路径别名，提供 <code>describe</code>、<code>it</code>、<code>expect</code>、<code>vi</code> 等常见测试 API；需在 Vite 工程中运行，本 HTML 只做概念演示。</li>
-          <li>Vue 组件测试通常搭配 Vue Test Utils，通过 <code>mount</code> 或 <code>shallowMount</code> 渲染组件；是否 shallow 取决于是否要覆盖子组件交互，而不是为了让测试“更容易过”。</li>
-          <li><code>vi.fn()</code> 记录函数调用，<code>vi.mock()</code> 替换模块依赖，<code>vi.useFakeTimers()</code> 控制定时器；使用后要恢复 mock/timer，避免测试之间互相污染。</li>
-          <li>测试边界应按风险划分：纯函数、composable、Pinia store 适合单测；组件事件和 DOM 输出适合组件测试；路由、登录、网络失败和浏览器兼容流程更适合 Playwright E2E。</li>
-          <li>控制台可配合观察；mock 演示仅模拟 <code>vi.fn</code> 参数记录，真实断言在 Vite 工程内运行。常见坑包括断言内部变量名、过度 snapshot、mock 掩盖真实集成问题、异步未等待、未清理 DOM 或 timer，以及把所有场景都塞进单元测试导致维护成本过高。</li>
+          <li>
+            本页点「运行 vi.fn 风格 mock 演示」，下方
+            <code>#log</code>
+            会追加调用记录；点「清空日志」重置。Vitest 是面向 Vite 生态的测试框架，复用 Vite
+            的模块转换、插件和路径别名，提供
+            <code>describe</code>
+            、
+            <code>it</code>
+            、
+            <code>expect</code>
+            、
+            <code>vi</code>
+            等常见测试 API；需在 Vite 工程中运行，本 HTML 只做概念演示。
+          </li>
+          <li>
+            Vue 组件测试通常搭配 Vue Test Utils，通过
+            <code>mount</code>
+            或
+            <code>shallowMount</code>
+            渲染组件；是否 shallow 取决于是否要覆盖子组件交互，而不是为了让测试“更容易过”。
+          </li>
+          <li>
+            <code>vi.fn()</code>
+            记录函数调用，
+            <code>vi.mock()</code>
+            替换模块依赖，
+            <code>vi.useFakeTimers()</code>
+            控制定时器；使用后要恢复 mock/timer，避免测试之间互相污染。
+          </li>
+          <li>
+            测试边界应按风险划分：纯函数、composable、Pinia store 适合单测；组件事件和 DOM
+            输出适合组件测试；路由、登录、网络失败和浏览器兼容流程更适合 Playwright E2E。
+          </li>
+          <li>
+            控制台可配合观察；mock 演示仅模拟
+            <code>vi.fn</code>
+            参数记录，真实断言在 Vite 工程内运行。常见坑包括断言内部变量名、过度 snapshot、mock
+            掩盖真实集成问题、异步未等待、未清理 DOM 或
+            timer，以及把所有场景都塞进单元测试导致维护成本过高。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vitest 和 Jest 怎么取舍？</strong> 结论是 Vite/Vue 3 项目通常优先 Vitest，已有 Jest 体系的大项目可以渐进迁移。原因是 Vitest 能复用 Vite 配置和转换链，启动与 watch 体验更贴近工程；边界是 Jest 生态成熟，遗留 mock、快照和 CI 配置不必一次性重写。</li>
-          <li><strong>Vue 组件测试为什么强调测行为不测实现？</strong> 结论是断言用户可见输出、事件和副作用比断言内部变量更稳定。原因是组件内部可能从 Options API 改到 Composition API，但外部行为不变；项目里应优先通过 DOM、props、emits 和可观察状态验证需求。</li>
-          <li><strong>mock、fake timers 和真实依赖如何选择？</strong> 结论是不可控、慢、昂贵或有副作用的依赖适合 mock，核心集成路径要保留真实依赖或更高层测试。原因是 mock 能稳定边界但也可能制造假信心；异步、定时器和网络失败路径要明确等待、恢复和错误断言。</li>
-          <li><strong>单元测试、组件测试和 E2E 测试边界是什么？</strong> 结论是单测覆盖小逻辑，组件测试覆盖 UI 单元行为，E2E 覆盖真实浏览器流程。原因是测试越接近用户越可信但越慢、越脆；项目里常用金字塔或奖杯模型组合，而不是只追求某一种测试数量。</li>
+          <li>
+            <strong>Vitest 和 Jest 怎么取舍？</strong>
+            结论是 Vite/Vue 3 项目通常优先 Vitest，已有 Jest 体系的大项目可以渐进迁移。原因是 Vitest
+            能复用 Vite 配置和转换链，启动与 watch 体验更贴近工程；边界是 Jest 生态成熟，遗留
+            mock、快照和 CI 配置不必一次性重写。
+          </li>
+          <li>
+            <strong>Vue 组件测试为什么强调测行为不测实现？</strong>
+            结论是断言用户可见输出、事件和副作用比断言内部变量更稳定。原因是组件内部可能从 Options
+            API 改到 Composition API，但外部行为不变；项目里应优先通过 DOM、props、emits
+            和可观察状态验证需求。
+          </li>
+          <li>
+            <strong>mock、fake timers 和真实依赖如何选择？</strong>
+            结论是不可控、慢、昂贵或有副作用的依赖适合
+            mock，核心集成路径要保留真实依赖或更高层测试。原因是 mock
+            能稳定边界但也可能制造假信心；异步、定时器和网络失败路径要明确等待、恢复和错误断言。
+          </li>
+          <li>
+            <strong>单元测试、组件测试和 E2E 测试边界是什么？</strong>
+            结论是单测覆盖小逻辑，组件测试覆盖 UI 单元行为，E2E
+            覆盖真实浏览器流程。原因是测试越接近用户越可信但越慢、越脆；项目里常用金字塔或奖杯模型组合，而不是只追求某一种测试数量。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vitest.dev/guide/" target="_blank" rel="noreferrer">Vitest 官方指南：Getting Started</a></li>
-          <li><a href="https://vitest.dev/api/vi.html" target="_blank" rel="noreferrer">Vitest 官方 API：vi</a></li>
-          <li><a href="https://test-utils.vuejs.org/guide/" target="_blank" rel="noreferrer">Vue Test Utils 官方指南</a></li>
-          <li><a href="./06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html">本系列：Router 与 Pinia 可运行示例</a></li>
+          <li>
+            <a href="https://vitest.dev/guide/" target="_blank" rel="noreferrer">
+              Vitest 官方指南：Getting Started
+            </a>
+          </li>
+          <li>
+            <a href="https://vitest.dev/api/vi.html" target="_blank" rel="noreferrer">
+              Vitest 官方 API：vi
+            </a>
+          </li>
+          <li>
+            <a href="https://test-utils.vuejs.org/guide/" target="_blank" rel="noreferrer">
+              Vue Test Utils 官方指南
+            </a>
+          </li>
+          <li>
+            <a href="./06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html">
+              本系列：Router 与 Pinia 可运行示例
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -70,9 +196,20 @@
     <div id="app">
       <h1>Vitest 单元测试（概念 + 迷你 mock 演示）</h1>
       <div class="box">
-        <p class="callout"><strong>概念说明：</strong> 下方配置片段需在 Vite 工程中执行；按钮演示 <code>vi.fn</code> 风格的调用记录。</p>
+        <p class="callout">
+          <strong>概念说明：</strong>
+          下方配置片段需在 Vite 工程中执行；按钮演示
+          <code>vi.fn</code>
+          风格的调用记录。
+        </p>
         <pre>{{ configSnippet }}</pre>
-        <p class="hint-inline">点击按钮模拟 <code>vi.fn()</code> 记录参数；真实 Vitest 还会提供 <code>toHaveBeenCalledWith</code> 等断言。</p>
+        <p class="hint-inline">
+          点击按钮模拟
+          <code>vi.fn()</code>
+          记录参数；真实 Vitest 还会提供
+          <code>toHaveBeenCalledWith</code>
+          等断言。
+        </p>
         <button type="button" @click="runMockDemo">运行 vi.fn 风格 mock 演示</button>
         <button type="button" @click="log = ''">清空日志</button>
         <div id="log">{{ log || "（点击按钮后显示 mock 调用记录）" }}</div>
@@ -87,19 +224,19 @@
       const app = createApp({
         setup() {
           // --- 演示状态 ---
-          const log = ref("");
+          const log = ref('');
           const configSnippet = [
-            "// vitest.config.ts（Vite 工程内）",
-            "export default defineConfig({",
+            '// vitest.config.ts（Vite 工程内）',
+            'export default defineConfig({',
             "  test: { environment: 'jsdom', globals: true },",
-            "})",
-            "",
+            '})',
+            '',
             "it('increment', () => {",
-            "  const fn = vi.fn()",
-            "  fn(1)",
-            "  expect(fn).toHaveBeenCalledWith(1)",
-            "})",
-          ].join("\n");
+            '  const fn = vi.fn()',
+            '  fn(1)',
+            '  expect(fn).toHaveBeenCalledWith(1)',
+            '})',
+          ].join('\n');
 
           // 迷你 mock：用数组记录调用参数，模拟 vi.fn 行为
           function runMockDemo() {
@@ -108,17 +245,16 @@
               calls.push(args);
             };
             fn(1);
-            fn(2, "x");
+            fn(2, 'x');
             log.value =
-              "mock 调用记录:\n" +
-              calls.map((a, i) => `#${i + 1} ${JSON.stringify(a)}`).join("\n") +
-              "\n\n面试：Vitest 适合单测 composable/store；路由+Pinia 集成可 mock router.push（见 06 可运行示例）";
+              'mock 调用记录:\n' +
+              calls.map((a, i) => `#${i + 1} ${JSON.stringify(a)}`).join('\n') +
+              '\n\n面试：Vitest 适合单测 composable/store；路由+Pinia 集成可 mock router.push（见 06 可运行示例）';
           }
 
-          
           // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
           onMounted(() => {
-            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+            console.log('[mounted] createApp 已接管 #app，DOM 已渲染');
           });
 
           return { configSnippet, log, runMockDemo };
@@ -126,9 +262,8 @@
       });
       // mount 须在 app.use / app.component / app.config 等配置之后调用
       // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
-      const rootInstance = app.mount("#app");
-      console.log("[mount] 根组件实例", rootInstance);
-
+      const rootInstance = app.mount('#app');
+      console.log('[mount] 根组件实例', rootInstance);
     </script>
     <!-- SCRIPT_END -->
 
@@ -137,18 +272,24 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html">← Router与Pinia可运行示例</a>
-        <a href="./08-%E8%B7%AF%E7%94%B1%E6%87%92%E5%8A%A0%E8%BD%BD%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html">路由懒加载可运行示例 →</a>
+        <a href="./06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html">
+          ← Router与Pinia可运行示例
+        </a>
+        <a
+          href="./08-%E8%B7%AF%E7%94%B1%E6%87%92%E5%8A%A0%E8%BD%BD%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html"
+        >
+          路由懒加载可运行示例 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

@@ -6,39 +6,39 @@
  * 运行：npm run validate:playwright
  */
 
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
-const BASE = process.env.DEMO_BASE_URL || "http://127.0.0.1:4173";
+const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
+const BASE = process.env.DEMO_BASE_URL || 'http://127.0.0.1:4173';
 const SAMPLE_SIZE = Number(process.env.PLAYWRIGHT_SAMPLE || 48);
 
 const PRIORITY_HREFS = [
-  "apps/javascript/01-基础/严格模式.html",
-  "apps/javascript/01-基础/变量.html",
-  "apps/javascript/06-浏览器API/HTTP缓存.html",
-  "apps/javascript/06-浏览器API/WebSocket.html",
-  "apps/javascript/06-浏览器API/Performance-API.html",
-  "apps/javascript/06-浏览器API/WebComponents.html",
-  "apps/javascript/06-浏览器API/ImportMaps.html",
-  "apps/javascript/07-进阶/无障碍-a11y.html",
-  "apps/vue3/src/07-路由状态工程化/06-Router与Pinia可运行示例.html",
-  "apps/react18/src/function-components/34-React19新特性概览.html",
-  "apps/react19/src/01-基础语法/03-Actions与useActionState.html",
-  "apps/typescript/mini-project/index.html",
-  "apps/demos/drag/01-drag-原生.html",
-  "apps/demos/todo/01-todo-本地状态.html",
-  "apps/demos/virtual-list/01-virtual-list-固定高度.html",
-  "apps/demos/form-wizard/01-form-wizard-分步表单.html",
-  "apps/demos/hash-router/01-hash-router-简易路由.html",
-  "apps/css/06-性能/01-重排重绘/index.html",
-  "apps/css/06-性能/02-合成层/index.html",
-  "apps/css/07-现代特性/07-content-visibility/index.html",
+  'apps/javascript/01-基础/严格模式.html',
+  'apps/javascript/01-基础/变量.html',
+  'apps/javascript/06-浏览器API/HTTP缓存.html',
+  'apps/javascript/06-浏览器API/WebSocket.html',
+  'apps/javascript/06-浏览器API/Performance-API.html',
+  'apps/javascript/06-浏览器API/WebComponents.html',
+  'apps/javascript/06-浏览器API/ImportMaps.html',
+  'apps/javascript/07-进阶/无障碍-a11y.html',
+  'apps/vue3/src/07-路由状态工程化/06-Router与Pinia可运行示例.html',
+  'apps/react18/src/function-components/34-React19新特性概览.html',
+  'apps/react19/src/01-基础语法/03-Actions与useActionState.html',
+  'apps/typescript/mini-project/index.html',
+  'apps/demos/drag/01-drag-原生.html',
+  'apps/demos/todo/01-todo-本地状态.html',
+  'apps/demos/virtual-list/01-virtual-list-固定高度.html',
+  'apps/demos/form-wizard/01-form-wizard-分步表单.html',
+  'apps/demos/hash-router/01-hash-router-简易路由.html',
+  'apps/css/06-性能/01-重排重绘/index.html',
+  'apps/css/06-性能/02-合成层/index.html',
+  'apps/css/07-现代特性/07-content-visibility/index.html',
 ];
 
 async function loadManifestPaths() {
-  const manifest = JSON.parse(await readFile(join(ROOT, "manifest.json"), "utf8"));
+  const manifest = JSON.parse(await readFile(join(ROOT, 'manifest.json'), 'utf8'));
   const all = [];
   for (const sec of manifest.sections) {
     for (const gr of sec.groups) {
@@ -62,9 +62,11 @@ function pickSample(all) {
 async function main() {
   let chromium;
   try {
-    ({ chromium } = await import("playwright"));
+    ({ chromium } = await import('playwright'));
   } catch {
-    console.log("[validate-browser-playwright] 跳过：未安装 playwright（npm i -D playwright && npx playwright install chromium）");
+    console.log(
+      '[validate-browser-playwright] 跳过：未安装 playwright（npm i -D playwright && npx playwright install chromium）',
+    );
     return;
   }
 
@@ -75,17 +77,17 @@ async function main() {
   const context = await browser.newContext();
 
   for (const path of sample) {
-    const url = `${BASE}/${path.split("/").map(encodeURIComponent).join("/")}`;
+    const url = `${BASE}/${path.split('/').map(encodeURIComponent).join('/')}`;
     const page = await context.newPage();
     const consoleErrors = [];
-    page.on("pageerror", (err) => consoleErrors.push(String(err)));
-    page.on("console", (msg) => {
-      if (msg.type() === "error") consoleErrors.push(msg.text());
+    page.on('pageerror', (err) => consoleErrors.push(String(err)));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
     try {
-      const res = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 15000 });
+      const res = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
       if (!res || !res.ok()) {
-        errors.push(`${path}: HTTP ${res?.status() ?? "failed"}`);
+        errors.push(`${path}: HTTP ${res?.status() ?? 'failed'}`);
       } else if (consoleErrors.length) {
         errors.push(`${path}: ${consoleErrors[0]}`);
       }
@@ -100,7 +102,7 @@ async function main() {
 
   if (errors.length) {
     console.error(`[validate-browser-playwright] 失败 ${errors.length} 项：\n`);
-    errors.forEach((e) => console.error("  •", e));
+    errors.forEach((e) => console.error('  •', e));
     process.exitCode = 1;
     return;
   }
@@ -108,6 +110,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error("[validate-browser-playwright] 异常：", err);
+  console.error('[validate-browser-playwright] 异常：', err);
   process.exitCode = 1;
 });

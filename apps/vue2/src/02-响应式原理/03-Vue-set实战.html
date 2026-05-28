@@ -28,31 +28,118 @@
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vue.$set 与 Object.assign 实战</h1>
       <p class="hint">
-        点击下方 <code>Click</code> 按钮：先用 <code>$set</code> 补 <code>age</code>，再用
-        <code>Object.assign</code> 整体替换 <code>person</code> 观察视图变化；打开 Console 可看
-        <code>deerObj.weight</code> 访问器日志；复习要点与面试答法见本区块。
+        点击下方
+        <code>Click</code>
+        按钮：先用
+        <code>$set</code>
+        补
+        <code>age</code>
+        ，再用
+        <code>Object.assign</code>
+        整体替换
+        <code>person</code>
+        观察视图变化；打开 Console 可看
+        <code>deerObj.weight</code>
+        访问器日志；复习要点与面试答法见本区块。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue2 只能在初始化时把已有字段转成 getter/setter，所以 <code>this.person.age = 18</code> 这种运行时新增属性不会自动触发视图更新。</li>
-          <li><code>this.$set(this.person, "age", 18)</code> 会给目标对象新增响应式属性并通知更新，适合只补一个明确字段的场景；全局写法是 <code>Vue.set(target, key, value)</code>。</li>
-          <li><code>Object.assign(this.person, source)</code> 是原地合并，新增 key 不会自动拥有 Vue2 的响应式 getter/setter；如果要批量补字段，推荐 <code>this.person = Object.assign({}, this.person, source)</code> 整体替换。</li>
-          <li>整体替换对象会让 Vue 观察新对象结构，但也会改变对象引用；如果外部代码持有旧引用，需要评估引用失效和状态同步问题。</li>
-          <li>本页的 <code>deerObj.weight</code> 访问器演示了 <code>defineProperty</code> 的读取/写入拦截；它帮助理解 Vue2 响应式边界，但普通业务新增字段不要手写访问器，优先使用 Vue API 或替换状态。</li>
+          <li>
+            Vue2 只能在初始化时把已有字段转成 getter/setter，所以
+            <code>this.person.age = 18</code>
+            这种运行时新增属性不会自动触发视图更新。
+          </li>
+          <li>
+            <code>this.$set(this.person, "age", 18)</code>
+            会给目标对象新增响应式属性并通知更新，适合只补一个明确字段的场景；全局写法是
+            <code>Vue.set(target, key, value)</code>
+            。
+          </li>
+          <li>
+            <code>Object.assign(this.person, source)</code>
+            是原地合并，新增 key 不会自动拥有 Vue2 的响应式 getter/setter；如果要批量补字段，推荐
+            <code>this.person = Object.assign({}, this.person, source)</code>
+            整体替换。
+          </li>
+          <li>
+            整体替换对象会让 Vue
+            观察新对象结构，但也会改变对象引用；如果外部代码持有旧引用，需要评估引用失效和状态同步问题。
+          </li>
+          <li>
+            本页的
+            <code>deerObj.weight</code>
+            访问器演示了
+            <code>defineProperty</code>
+            的读取/写入拦截；它帮助理解 Vue2 响应式边界，但普通业务新增字段不要手写访问器，优先使用
+            Vue API 或替换状态。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue2 给对象新增属性为什么页面不更新？</strong> 结论是新增属性没有在初始化时被转换成 getter/setter。Vue2 的依赖收集依赖 <code>Object.defineProperty</code>，它不能自动拦截后来出现的 key。项目里如果后端返回动态字段，要么预先声明默认结构，要么用 <code>Vue.set</code> 或整体替换对象。</li>
-          <li><strong>Vue.set 和整体替换对象分别适合什么场景？</strong> 结论是少量明确字段用 <code>Vue.set</code>，批量合并模型更适合整体替换。原因是 <code>Vue.set</code> 逐个 key 处理更清晰，整体替换能让 Vue 重新观察完整新对象。边界是整体替换会产生新引用，可能影响依赖旧对象引用的代码。</li>
-          <li><strong>Object.assign 原地合并为什么可能破坏响应式预期？</strong> 结论是原地给响应式对象新增字段并不会让这些字段自动响应。原因是 <code>Object.assign</code> 只是普通属性赋值，不会替 Vue 调用 <code>defineReactive</code>。项目里看到 <code>Object.assign(this.form, payload)</code> 时，要确认 payload 只更新已有 key 还是新增 key。</li>
-          <li><strong>数组索引赋值和对象新增属性的修复思路有什么相似点？</strong> 结论是二者都是 Vue2 defineProperty 模型的检测盲区。对象新增 key 用 <code>Vue.set</code> 或整体替换，数组索引用 <code>Vue.set(arr, index, value)</code> 或 <code>splice</code>。边界是 Vue3 Proxy 下这些限制减少，但 Vue2 老项目仍常见。</li>
+          <li>
+            <strong>Vue2 给对象新增属性为什么页面不更新？</strong>
+            结论是新增属性没有在初始化时被转换成 getter/setter。Vue2 的依赖收集依赖
+            <code>Object.defineProperty</code>
+            ，它不能自动拦截后来出现的 key。项目里如果后端返回动态字段，要么预先声明默认结构，要么用
+            <code>Vue.set</code>
+            或整体替换对象。
+          </li>
+          <li>
+            <strong>Vue.set 和整体替换对象分别适合什么场景？</strong>
+            结论是少量明确字段用
+            <code>Vue.set</code>
+            ，批量合并模型更适合整体替换。原因是
+            <code>Vue.set</code>
+            逐个 key 处理更清晰，整体替换能让 Vue
+            重新观察完整新对象。边界是整体替换会产生新引用，可能影响依赖旧对象引用的代码。
+          </li>
+          <li>
+            <strong>Object.assign 原地合并为什么可能破坏响应式预期？</strong>
+            结论是原地给响应式对象新增字段并不会让这些字段自动响应。原因是
+            <code>Object.assign</code>
+            只是普通属性赋值，不会替 Vue 调用
+            <code>defineReactive</code>
+            。项目里看到
+            <code>Object.assign(this.form, payload)</code>
+            时，要确认 payload 只更新已有 key 还是新增 key。
+          </li>
+          <li>
+            <strong>数组索引赋值和对象新增属性的修复思路有什么相似点？</strong>
+            结论是二者都是 Vue2 defineProperty 模型的检测盲区。对象新增 key 用
+            <code>Vue.set</code>
+            或整体替换，数组索引用
+            <code>Vue.set(arr, index, value)</code>
+            或
+            <code>splice</code>
+            。边界是 Vue3 Proxy 下这些限制减少，但 Vue2 老项目仍常见。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://v2.vuejs.org/v2/guide/reactivity.html" target="_blank" rel="noreferrer">Vue 2 官方文档：Change Detection Caveats</a></li>
-          <li><a href="https://v2.vuejs.org/v2/api/#Vue-set" target="_blank" rel="noreferrer">Vue 2 API：Vue.set</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign" target="_blank" rel="noreferrer">MDN：Object.assign()</a></li>
+          <li>
+            <a
+              href="https://v2.vuejs.org/v2/guide/reactivity.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 2 官方文档：Change Detection Caveats
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/api/#Vue-set" target="_blank" rel="noreferrer">
+              Vue 2 API：Vue.set
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN：Object.assign()
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -66,19 +153,11 @@
         <div>{{person.name}}</div>
         <div>{{person.age}}</div>
         <div>Extend attr:</div>
-        <div>
-          {{person.height}}
-        </div>
-        <div>
-          {{person.weight}}
-        </div>
+        <div>{{person.height}}</div>
+        <div>{{person.weight}}</div>
         <div v-if="person.address">
-          <div>
-            {{person.address.city}}
-          </div>
-          <div>
-            {{person.address.province}}
-          </div>
+          <div>{{person.address.city}}</div>
+          <div>{{person.address.province}}</div>
         </div>
       </div>
     </div>
@@ -95,11 +174,11 @@
         data: {
           msg: 'response',
           person: {
-            name: "wc"
+            name: 'wc',
           },
           dog: {
-            name: "laifu"
-          }
+            name: 'laifu',
+          },
         },
         mounted: function () {
           this._refreshPage();
@@ -107,16 +186,16 @@
         methods: {
           _refreshPage: function () {
             let deerObj = {
-              name: "deer"
+              name: 'deer',
             };
             //存储描述符: 一对set get 构成
-            Object.defineProperty(deerObj, "weight", {
+            Object.defineProperty(deerObj, 'weight', {
               set: function () {
-                console.log("set deerObj...");
+                console.log('set deerObj...');
               },
               get: function () {
-                console.log("get deerObj...");
-              }
+                console.log('get deerObj...');
+              },
             });
 
             console.log(deerObj.weight);
@@ -125,32 +204,33 @@
           },
 
           onClick: function () {
-            console.log("onClick...");
+            console.log('onClick...');
 
             //this.person.age = 18;
-            this.$set(this.person, "age", 18);
+            this.$set(this.person, 'age', 18);
 
             //Object.assign 方法只会从源对象中拷贝其自身的并且是可枚举的属性
             //Object.assign 拷贝不会跳过值为null或者undefined
             // 原地 Object.assign(this.person, source) 新增 key 不会转成 Vue2 响应式属性。
             // 批量补字段时，整体替换为新对象更符合 Vue2 响应式模型。
             this.person = Object.assign({}, this.person, {
-              "height": 172, "weight": "50kg", address: {
-                "city": "beijing",
-                "province": "hubei"
-              }
+              height: 172,
+              weight: '50kg',
+              address: {
+                city: 'beijing',
+                province: 'hubei',
+              },
             });
             console.log(JSON.stringify(this.person));
 
             //将需要添加属性的模型和新增的属性对象，一起合并成一个新的对象，并且返回这个对象
             this.dog = Object.assign({}, this.dog, {
-              "city": "beijing",
-              "province": "hubei"
-            })
-          }
-        }
+              city: 'beijing',
+              province: 'hubei',
+            });
+          },
+        },
       });
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -160,17 +240,19 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./02-defineProperty%E8%AE%BF%E9%97%AE%E5%99%A8.html">← defineProperty访问器</a>
-        <a href="./04-%E6%95%B0%E7%BB%84%E5%93%8D%E5%BA%94%E5%BC%8F%E9%99%90%E5%88%B6.html">数组响应式限制 →</a>
+        <a href="./04-%E6%95%B0%E7%BB%84%E5%93%8D%E5%BA%94%E5%BC%8F%E9%99%90%E5%88%B6.html">
+          数组响应式限制 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

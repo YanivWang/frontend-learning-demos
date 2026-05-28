@@ -23,14 +23,48 @@
     <title>Vue3 · effectScope 与副作用清理</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; padding: 6px 12px; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; max-height: 280px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; margin-bottom: 16px; }
-      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
-      .box button { margin-top: 4px; }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          'PingFang SC',
+          sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+      }
+      button {
+        margin-right: 8px;
+        padding: 6px 12px;
+      }
+      code,
+      pre {
+        background: #f6f8fa;
+        border-radius: 6px;
+      }
+      code {
+        padding: 2px 5px;
+      }
+      pre {
+        padding: 12px;
+        overflow: auto;
+        max-height: 280px;
+      }
+      .box {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 760px;
+        margin-bottom: 16px;
+      }
+      .box .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
+      .box button {
+        margin-top: 4px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -43,27 +77,124 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>watch()</code> 与 <code>watchEffect()</code> 都返回 <code>stop</code> 函数。本页“开启独立 watch”后改 count 会出现 <code>独立 watch</code> 日志；点“调用 watch 停止函数”后再改 count 不应再追加该前缀日志。</li>
-          <li><code>effectScope()</code> 在 <code>scope.run()</code> 内创建的 watcher 会被收集，<code>scope.stop()</code> 一次性停止整个作用域，无需逐个保存 stop。本页 scope 内同时有 watch 与 watchEffect，停止后两者都不再触发。</li>
-          <li>组件 <code>setup()</code> 同步创建的 watcher 会随组件卸载自动停止；组件外、插件内或“可开关模块”更适合显式 <code>effectScope</code> 或保存 stop 函数。</li>
-          <li><code>onScopeDispose()</code> 在 scope 停止或所属组件卸载时执行，适合清理 <code>setInterval</code> 等非响应式资源；本页 scope 内注册了定时器，停止 scope 后 tick 日志应消失。watcher 每轮清理见 <a href="./06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html">06-onWatcherCleanup与watch清理</a>（Vue 3.5+）。</li>
-          <li>重复点“开启”而不先停止会造成重复注册：本页在已开启时再次开启会 push 提示“已在运行”，避免演示日志爆炸。生产里应把启动/停止做成成对 API。</li>
-          <li>watch / watchEffect 选型与默认执行时机见 <a href="./02-computed-watch-watchEffect.html">02-computed-watch-watchEffect</a>；本页不重复讲解 lazy vs eager。</li>
+          <li>
+            <code>watch()</code>
+            与
+            <code>watchEffect()</code>
+            都返回
+            <code>stop</code>
+            函数。本页“开启独立 watch”后改 count 会出现
+            <code>独立 watch</code>
+            日志；点“调用 watch 停止函数”后再改 count 不应再追加该前缀日志。
+          </li>
+          <li>
+            <code>effectScope()</code>
+            在
+            <code>scope.run()</code>
+            内创建的 watcher 会被收集，
+            <code>scope.stop()</code>
+            一次性停止整个作用域，无需逐个保存 stop。本页 scope 内同时有 watch 与
+            watchEffect，停止后两者都不再触发。
+          </li>
+          <li>
+            组件
+            <code>setup()</code>
+            同步创建的 watcher 会随组件卸载自动停止；组件外、插件内或“可开关模块”更适合显式
+            <code>effectScope</code>
+            或保存 stop 函数。
+          </li>
+          <li>
+            <code>onScopeDispose()</code>
+            在 scope 停止或所属组件卸载时执行，适合清理
+            <code>setInterval</code>
+            等非响应式资源；本页 scope 内注册了定时器，停止 scope 后 tick 日志应消失。watcher
+            每轮清理见
+            <a href="./06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html">
+              06-onWatcherCleanup与watch清理
+            </a>
+            （Vue 3.5+）。
+          </li>
+          <li>
+            重复点“开启”而不先停止会造成重复注册：本页在已开启时再次开启会 push
+            提示“已在运行”，避免演示日志爆炸。生产里应把启动/停止做成成对 API。
+          </li>
+          <li>
+            watch / watchEffect 选型与默认执行时机见
+            <a href="./02-computed-watch-watchEffect.html">02-computed-watch-watchEffect</a>
+            ；本页不重复讲解 lazy vs eager。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>watch stop 和 effectScope.stop 有什么区别？</strong> 结论是 stop 只停一个 watcher，<code>scope.stop()</code> 停整个作用域内收集的响应式 effect。项目里单个监听用 stop，一组可开关逻辑用 scope。</li>
-          <li><strong>effectScope 适合解决什么问题？</strong> 结论是管理组件外、插件内或 composable 内部创建的一组响应式副作用。边界是不是通用资源管理器，定时器和请求仍要 <code>onScopeDispose</code> 或取消函数。</li>
-          <li><strong>组件卸载时哪些不会自动清理？</strong> 结论是 DOM 监听、定时器、WebSocket、未取消请求等外部副作用。Vue 会处理绑定到实例的同步 watcher，但不会替你 clearInterval。</li>
-          <li><strong>composable 如何设计释放？</strong> 结论是创建时同步设计释放路径：返回 <code>stop</code>、暴露 scope，或在 scope 内用 <code>onScopeDispose</code>。调用方应清楚何时结束。</li>
-          <li><strong>onScopeDispose 与 onUnmounted 如何配合？</strong> 结论是 scope 停止或组件卸载都会触发 scope dispose；组件级资源仍可用 <code>onUnmounted</code>。异步 watcher 每轮清理优先 <a href="./06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html">06 页</a>。</li>
+          <li>
+            <strong>watch stop 和 effectScope.stop 有什么区别？</strong>
+            结论是 stop 只停一个 watcher，
+            <code>scope.stop()</code>
+            停整个作用域内收集的响应式 effect。项目里单个监听用 stop，一组可开关逻辑用 scope。
+          </li>
+          <li>
+            <strong>effectScope 适合解决什么问题？</strong>
+            结论是管理组件外、插件内或 composable
+            内部创建的一组响应式副作用。边界是不是通用资源管理器，定时器和请求仍要
+            <code>onScopeDispose</code>
+            或取消函数。
+          </li>
+          <li>
+            <strong>组件卸载时哪些不会自动清理？</strong>
+            结论是 DOM 监听、定时器、WebSocket、未取消请求等外部副作用。Vue 会处理绑定到实例的同步
+            watcher，但不会替你 clearInterval。
+          </li>
+          <li>
+            <strong>composable 如何设计释放？</strong>
+            结论是创建时同步设计释放路径：返回
+            <code>stop</code>
+            、暴露 scope，或在 scope 内用
+            <code>onScopeDispose</code>
+            。调用方应清楚何时结束。
+          </li>
+          <li>
+            <strong>onScopeDispose 与 onUnmounted 如何配合？</strong>
+            结论是 scope 停止或组件卸载都会触发 scope dispose；组件级资源仍可用
+            <code>onUnmounted</code>
+            。异步 watcher 每轮清理优先
+            <a href="./06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html">06 页</a>
+            。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/api/reactivity-advanced.html#effectscope" target="_blank" rel="noreferrer">Vue 3 官方 API：effectScope()</a></li>
-          <li><a href="https://vuejs.org/api/reactivity-advanced.html#onscopedispose" target="_blank" rel="noreferrer">Vue 3 官方 API：onScopeDispose()</a></li>
-          <li><a href="https://vuejs.org/api/reactivity-core.html#watch" target="_blank" rel="noreferrer">Vue 3 官方 API：watch()</a></li>
-          <li><a href="./06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html">本系列：onWatcherCleanup 与 watch 清理</a></li>
+          <li>
+            <a
+              href="https://vuejs.org/api/reactivity-advanced.html#effectscope"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方 API：effectScope()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/api/reactivity-advanced.html#onscopedispose"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方 API：onScopeDispose()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/api/reactivity-core.html#watch"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方 API：watch()
+            </a>
+          </li>
+          <li>
+            <a href="./06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html">
+              本系列：onWatcherCleanup 与 watch 清理
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -76,7 +207,10 @@
         <h2>watch 返回停止函数</h2>
         <p>count：{{ count }}</p>
         <p>独立 watch：{{ watchActive ? "运行中" : "已停止" }}</p>
-        <p class="hint-inline">流程：开启 watch → count +1 看日志 → 停止 watch → 再 +1，应只剩 scope 相关日志（若 scope 已开）。</p>
+        <p class="hint-inline">
+          流程：开启 watch → count +1 看日志 → 停止 watch → 再 +1，应只剩 scope 相关日志（若 scope
+          已开）。
+        </p>
         <button type="button" @click="count++">count +1</button>
         <button type="button" @click="startWatch">开启独立 watch</button>
         <button type="button" @click="stopWatch">调用 watch 停止函数</button>
@@ -85,7 +219,10 @@
         <h2>effectScope 统一停止</h2>
         <p>scope：{{ scopeActive ? "运行中" : "已停止" }}</p>
         <p>scope 定时 tick：{{ scopeTick }}</p>
-        <p class="hint-inline">开启 scope 后会有 watchEffect 与每秒 tick；停止 scope 后改 count 不应再出现「scope 内」前缀，tick 也应停止。</p>
+        <p class="hint-inline">
+          开启 scope 后会有 watchEffect 与每秒 tick；停止 scope 后改 count 不应再出现「scope
+          内」前缀，tick 也应停止。
+        </p>
         <button type="button" @click="startScope">开启 effectScope</button>
         <button type="button" @click="stopScope">停止 effectScope</button>
       </div>
@@ -119,14 +256,14 @@
           // --- 独立 watch：需手动保存 stop ---
           function startWatch() {
             if (watchActive.value) {
-              pushLog("（独立 watch 已在运行，请先停止）");
+              pushLog('（独立 watch 已在运行，请先停止）');
               return;
             }
             stopWatchFn = watch(count, (value) => {
               pushLog(`独立 watch：count = ${value}`);
             });
             watchActive.value = true;
-            pushLog("已开启独立 watch");
+            pushLog('已开启独立 watch');
           }
 
           function stopWatch() {
@@ -134,13 +271,13 @@
             stopWatchFn();
             stopWatchFn = null;
             watchActive.value = false;
-            pushLog("已调用 watch 停止函数");
+            pushLog('已调用 watch 停止函数');
           }
 
           // --- effectScope：统一收集并停止 ---
           function startScope() {
             if (scope) {
-              pushLog("（effectScope 已在运行）");
+              pushLog('（effectScope 已在运行）');
               return;
             }
             scope = effectScope();
@@ -159,11 +296,11 @@
               }, 1200);
               onScopeDispose(() => {
                 clearInterval(timer);
-                pushLog("onScopeDispose：已清理 scope 定时器");
+                pushLog('onScopeDispose：已清理 scope 定时器');
               });
             });
             scopeActive.value = true;
-            pushLog("已开启 effectScope（含 watch / watchEffect / 定时器）");
+            pushLog('已开启 effectScope（含 watch / watchEffect / 定时器）');
           }
 
           function stopScope() {
@@ -171,13 +308,12 @@
             scope.stop();
             scope = null;
             scopeActive.value = false;
-            pushLog("已停止 effectScope");
+            pushLog('已停止 effectScope');
           }
 
-          
           // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
           onMounted(() => {
-            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+            console.log('[mounted] createApp 已接管 #app，DOM 已渲染');
           });
 
           return {
@@ -195,9 +331,8 @@
       });
       // mount 须在 app.use / app.component / app.config 等配置之后调用
       // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
-      const rootInstance = app.mount("#app");
-      console.log("[mount] 根组件实例", rootInstance);
-
+      const rootInstance = app.mount('#app');
+      console.log('[mount] 根组件实例', rootInstance);
     </script>
     <!-- SCRIPT_END -->
 
@@ -207,13 +342,15 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./04-readonly-shallow-markRaw.html">← readonly-shallow-markRaw</a>
-        <a href="./06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html">onWatcherCleanup与watch清理 →</a>
+        <a href="./06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html">
+          onWatcherCleanup与watch清理 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

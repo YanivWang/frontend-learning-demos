@@ -27,29 +27,166 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>手写 bind</h1>
-      <p class="hint">先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。</p>
+      <p class="hint">
+        先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>Function.prototype.bind()</code> 返回一个新的绑定函数，不会立即执行；这是它和 <code>call</code> / <code>apply</code> 最核心的区别。</li>
-          <li>绑定函数普通调用时，内部会用原函数配合绑定的 <code>thisArg</code> 执行，并把预置参数与调用时传入的参数拼接。</li>
-          <li>绑定函数也可以作为构造函数使用；当它被 <code>new</code> 调用时，<code>this</code> 必须指向新创建的实例，绑定的 <code>thisArg</code> 会被忽略。</li>
-          <li>为了让 <code>new BoundPerson()</code> 创建的实例仍能访问 <code>Person.prototype</code> 上的方法，手写实现需要让绑定函数的 <code>prototype</code> 继承原函数 <code>prototype</code>。</li>
-          <li>规范里的绑定函数还涉及 <code>length</code>、<code>name</code>、不可作为普通函数时的异常等细节；面试手写一般重点答 <code>this</code>、参数、<code>new</code> 和原型链。</li>
-          <li>真实项目不建议重写 <code>Function.prototype.bind</code>；需要固定回调上下文时直接用原生 <code>bind</code>，或在现代代码中用箭头函数捕获外层 <code>this</code>。</li>
+          <li>
+            <code>Function.prototype.bind()</code>
+            返回一个新的绑定函数，不会立即执行；这是它和
+            <code>call</code>
+            /
+            <code>apply</code>
+            最核心的区别。
+          </li>
+          <li>
+            绑定函数普通调用时，内部会用原函数配合绑定的
+            <code>thisArg</code>
+            执行，并把预置参数与调用时传入的参数拼接。
+          </li>
+          <li>
+            绑定函数也可以作为构造函数使用；当它被
+            <code>new</code>
+            调用时，
+            <code>this</code>
+            必须指向新创建的实例，绑定的
+            <code>thisArg</code>
+            会被忽略。
+          </li>
+          <li>
+            为了让
+            <code>new BoundPerson()</code>
+            创建的实例仍能访问
+            <code>Person.prototype</code>
+            上的方法，手写实现需要让绑定函数的
+            <code>prototype</code>
+            继承原函数
+            <code>prototype</code>
+            。
+          </li>
+          <li>
+            规范里的绑定函数还涉及
+            <code>length</code>
+            、
+            <code>name</code>
+            、不可作为普通函数时的异常等细节；面试手写一般重点答
+            <code>this</code>
+            、参数、
+            <code>new</code>
+            和原型链。
+          </li>
+          <li>
+            真实项目不建议重写
+            <code>Function.prototype.bind</code>
+            ；需要固定回调上下文时直接用原生
+            <code>bind</code>
+            ，或在现代代码中用箭头函数捕获外层
+            <code>this</code>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>bind</code> 和 <code>call/apply</code> 最大区别是什么？</strong> 结论：<code>bind</code> 返回新函数并延迟执行，<code>call/apply</code> 会立即执行。原因是 <code>bind</code> 的用途是预先固定 <code>this</code> 和部分参数，等待之后作为回调或构造函数调用。项目里事件回调、定时器、类方法传参常用 <code>bind</code> 或箭头函数解决上下文丢失。</li>
-          <li><strong>手写 <code>bind</code> 如何同时支持预置参数和后续参数？</strong> 结论：在外层保存 <code>presetArgs</code>，绑定函数执行时再和 <code>laterArgs</code> 拼接。原因是 <code>bind</code> 支持偏函数能力，先传的参数会排在后续实参之前。边界是参数拼接不改变原函数的形参数量，规范里的 <code>length</code> 调整面试实现通常不强求。</li>
-          <li><strong><code>new</code> 调用绑定函数时为什么要忽略绑定的 <code>thisArg</code>？</strong> 结论：构造调用的 <code>this</code> 必须是新创建的实例。原因是 <code>new</code> 的语义是创建对象、连接原型、以新对象作为 <code>this</code> 执行构造函数；如果仍使用绑定对象，实例属性会写错位置。边界是绑定参数仍然有效，只是绑定的 <code>thisArg</code> 被忽略。</li>
-          <li><strong>手写 <code>bind</code> 为什么要处理 <code>prototype</code>？</strong> 结论：为了让绑定函数作为构造函数时，实例仍然能继承原构造函数的原型方法。原因是 <code>instanceof</code> 和方法查找都依赖原型链。本 demo 用 <code>Object.create(fn.prototype)</code> 连接原型，避免直接共享并修改原函数的 <code>prototype</code> 对象。</li>
+          <li>
+            <strong>
+              <code>bind</code>
+              和
+              <code>call/apply</code>
+              最大区别是什么？
+            </strong>
+            结论：
+            <code>bind</code>
+            返回新函数并延迟执行，
+            <code>call/apply</code>
+            会立即执行。原因是
+            <code>bind</code>
+            的用途是预先固定
+            <code>this</code>
+            和部分参数，等待之后作为回调或构造函数调用。项目里事件回调、定时器、类方法传参常用
+            <code>bind</code>
+            或箭头函数解决上下文丢失。
+          </li>
+          <li>
+            <strong>
+              手写
+              <code>bind</code>
+              如何同时支持预置参数和后续参数？
+            </strong>
+            结论：在外层保存
+            <code>presetArgs</code>
+            ，绑定函数执行时再和
+            <code>laterArgs</code>
+            拼接。原因是
+            <code>bind</code>
+            支持偏函数能力，先传的参数会排在后续实参之前。边界是参数拼接不改变原函数的形参数量，规范里的
+            <code>length</code>
+            调整面试实现通常不强求。
+          </li>
+          <li>
+            <strong>
+              <code>new</code>
+              调用绑定函数时为什么要忽略绑定的
+              <code>thisArg</code>
+              ？
+            </strong>
+            结论：构造调用的
+            <code>this</code>
+            必须是新创建的实例。原因是
+            <code>new</code>
+            的语义是创建对象、连接原型、以新对象作为
+            <code>this</code>
+            执行构造函数；如果仍使用绑定对象，实例属性会写错位置。边界是绑定参数仍然有效，只是绑定的
+            <code>thisArg</code>
+            被忽略。
+          </li>
+          <li>
+            <strong>
+              手写
+              <code>bind</code>
+              为什么要处理
+              <code>prototype</code>
+              ？
+            </strong>
+            结论：为了让绑定函数作为构造函数时，实例仍然能继承原构造函数的原型方法。原因是
+            <code>instanceof</code>
+            和方法查找都依赖原型链。本 demo 用
+            <code>Object.create(fn.prototype)</code>
+            连接原型，避免直接共享并修改原函数的
+            <code>prototype</code>
+            对象。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind" target="_blank" rel="noreferrer">MDN: Function.prototype.bind()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new" target="_blank" rel="noreferrer">MDN: new operator</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create" target="_blank" rel="noreferrer">MDN: Object.create()</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Function.prototype.bind()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: new operator
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Object.create()
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -66,21 +203,21 @@
     <!-- SCRIPT_START -->
     <script>
       (function () {
-        var out = document.getElementById("runtime-output");
+        var out = document.getElementById('runtime-output');
         var lines = [];
         function emit(line) {
           console.log(line);
           lines.push(line);
-          if (out) out.textContent = lines.join("\n");
+          if (out) out.textContent = lines.join('\n');
         }
         function assertOk(ok, msg) {
-          emit((ok ? "✓ " : "✗ ") + msg);
+          emit((ok ? '✓ ' : '✗ ') + msg);
         }
 
         // ============ 1. 手写 myBind：返回新函数，支持预置参数 ============
         Function.prototype.myBind = function (thisArg, ...presetArgs) {
-          if (typeof this !== "function") {
-            throw new TypeError("myBind must be called on a function");
+          if (typeof this !== 'function') {
+            throw new TypeError('myBind must be called on a function');
           }
           const fn = this;
           function bound(...laterArgs) {
@@ -99,9 +236,9 @@
         function say(prefix, suffix) {
           return prefix + this.name + suffix;
         }
-        const user = { name: "Ada" };
-        const boundSay = say.myBind(user, "Hi, ");
-        assertOk(boundSay("!") === "Hi, Ada!", "boundSay('!') = " + boundSay("!"));
+        const user = { name: 'Ada' };
+        const boundSay = say.myBind(user, 'Hi, ');
+        assertOk(boundSay('!') === 'Hi, Ada!', "boundSay('!') = " + boundSay('!'));
 
         // ============ 3. 验证：new 调用忽略 bound thisArg，保留原型链 ============
         function Person(name) {
@@ -110,11 +247,11 @@
         Person.prototype.getName = function () {
           return this.name;
         };
-        const BoundPerson = Person.myBind({ name: "Ignored" });
-        const p = new BoundPerson("Grace");
-        assertOk(p.name === "Grace", "new BoundPerson('Grace').name = Grace");
-        assertOk(p instanceof Person, "p instanceof Person = true");
-        assertOk(p.getName() === "Grace", "p.getName() = " + p.getName());
+        const BoundPerson = Person.myBind({ name: 'Ignored' });
+        const p = new BoundPerson('Grace');
+        assertOk(p.name === 'Grace', "new BoundPerson('Grace').name = Grace");
+        assertOk(p instanceof Person, 'p instanceof Person = true');
+        assertOk(p.getName() === 'Grace', 'p.getName() = ' + p.getName());
       })();
     </script>
     <!-- SCRIPT_END -->
@@ -131,9 +268,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

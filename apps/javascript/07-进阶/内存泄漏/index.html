@@ -28,27 +28,84 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>全局大对象引用导致的内存占用</h1>
-      <p class="hint">打开 DevTools Memory 面板做 Heap snapshot，可观察本页顶层变量持有的大数组。<strong>需人工在浏览器验证</strong>：GC 时机与快照对比无法由 Console 自动证明。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>JavaScript 会自动分配和释放内存，但“能否释放”取决于对象是否仍可达；从全局对象、当前调用栈、闭包或 DOM 引用链能访问到的对象，都不会被当作垃圾回收。</li>
-          <li>本页用 <code>var arryVar</code>、<code>const arryConst</code> 和 <code>dependArray</code> 在脚本顶层创建并保留大数组。<code>var</code> 会挂到 <code>window</code>，<code>const</code> 不会成为 <code>window</code> 属性，但同样属于全局词法环境，页面未卸载前仍可能长期存活。</li>
-          <li>内存泄漏不是“占用大”本身，而是对象已经不再有业务价值却仍被引用。大型缓存、全局调试变量、单例状态、事件监听器闭包和定时器都可能把对象留在可达图上。</li>
-          <li>现代推荐写法是缩小变量作用域、按生命周期释放资源、为缓存设置上限或过期策略；只在确实需要打断引用链时把变量置为 <code>null</code>，并理解 GC 触发时机由引擎决定。</li>
-          <li>DevTools Memory 的 Heap snapshot 可以查看对象分布和 retainers，帮助确认数组、对象或 DOM 节点到底被哪条引用链保留；不要只凭 Task Manager 的瞬时内存值判断泄漏。</li>
+          <li>
+            JavaScript
+            会自动分配和释放内存，但“能否释放”取决于对象是否仍可达；从全局对象、当前调用栈、闭包或
+            DOM 引用链能访问到的对象，都不会被当作垃圾回收。
+          </li>
+          <li>
+            本页用
+            <code>var arryVar</code>
+            、
+            <code>const arryConst</code>
+            和
+            <code>dependArray</code>
+            在脚本顶层创建并保留大数组。
+            <code>var</code>
+            会挂到
+            <code>window</code>
+            ，
+            <code>const</code>
+            不会成为
+            <code>window</code>
+            属性，但同样属于全局词法环境，页面未卸载前仍可能长期存活。
+          </li>
+          <li>
+            内存泄漏不是“占用大”本身，而是对象已经不再有业务价值却仍被引用。大型缓存、全局调试变量、单例状态、事件监听器闭包和定时器都可能把对象留在可达图上。
+          </li>
+          <li>
+            现代推荐写法是缩小变量作用域、按生命周期释放资源、为缓存设置上限或过期策略；只在确实需要打断引用链时把变量置为
+            <code>null</code>
+            ，并理解 GC 触发时机由引擎决定。
+          </li>
+          <li>
+            DevTools Memory 的 Heap snapshot 可以查看对象分布和 retainers，帮助确认数组、对象或 DOM
+            节点到底被哪条引用链保留；不要只凭 Task Manager 的瞬时内存值判断泄漏。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>为什么全局变量引用的大对象不会被垃圾回收？</strong> 结论是只要大对象仍能从全局环境访问到，它就是可达对象，GC 不会回收。原因是现代垃圾回收主要依据可达性，而不是“开发者是否还想用它”。边界是把引用置空也不代表立刻释放内存，只是让对象在下一次 GC 时具备被回收的条件。</li>
-          <li><strong>顶层 var 和顶层 const 的内存风险有什么不同？</strong> 结论是 var 会成为 window 属性，const 不会，但二者在普通脚本顶层都可能随页面生命周期长期存在。原因是它们分别被全局对象或全局词法环境持有。项目中不要把大数据、临时结果或调试对象留在顶层，模块内也要注意单例缓存的生命周期。</li>
-          <li><strong>如何定位一个大对象为什么没有释放？</strong> 结论是用 Heap snapshot 看对象的 retainers，而不是只看内存曲线。原因是 retainers 能显示从根对象到目标对象的引用路径，帮助找到全局变量、闭包、事件监听或 DOM 引用。实际排查时通常先复现操作，再拍两次快照对比增长项。</li>
-          <li><strong>业务里如何避免全局引用变成泄漏？</strong> 结论是按生命周期管理引用：能局部就局部，能释放就释放，缓存要有容量和过期策略。原因是 SPA 页面长时间不刷新，全局状态和模块级变量会比单次函数调用活得久得多。</li>
+          <li>
+            <strong>为什么全局变量引用的大对象不会被垃圾回收？</strong>
+            结论是只要大对象仍能从全局环境访问到，它就是可达对象，GC
+            不会回收。原因是现代垃圾回收主要依据可达性，而不是“开发者是否还想用它”。边界是把引用置空也不代表立刻释放内存，只是让对象在下一次
+            GC 时具备被回收的条件。
+          </li>
+          <li>
+            <strong>顶层 var 和顶层 const 的内存风险有什么不同？</strong>
+            结论是 var 会成为 window 属性，const
+            不会，但二者在普通脚本顶层都可能随页面生命周期长期存在。原因是它们分别被全局对象或全局词法环境持有。项目中不要把大数据、临时结果或调试对象留在顶层，模块内也要注意单例缓存的生命周期。
+          </li>
+          <li>
+            <strong>如何定位一个大对象为什么没有释放？</strong>
+            结论是用 Heap snapshot 看对象的 retainers，而不是只看内存曲线。原因是 retainers
+            能显示从根对象到目标对象的引用路径，帮助找到全局变量、闭包、事件监听或 DOM
+            引用。实际排查时通常先复现操作，再拍两次快照对比增长项。
+          </li>
+          <li>
+            <strong>业务里如何避免全局引用变成泄漏？</strong>
+            结论是按生命周期管理引用：能局部就局部，能释放就释放，缓存要有容量和过期策略。原因是 SPA
+            页面长时间不刷新，全局状态和模块级变量会比单次函数调用活得久得多。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Memory_management">MDN: Memory management</a></li>
-          <li><a href="https://developer.chrome.com/docs/devtools/memory-problems">Chrome DevTools: Fix memory problems</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Memory_management"
+            >
+              MDN: Memory management
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.chrome.com/docs/devtools/memory-problems">
+              Chrome DevTools: Fix memory problems
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -57,27 +114,35 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block" aria-label="演示说明">
       <h2>全局大数组持有演示</h2>
-      <p class="tip">本页在脚本顶层创建约 100 万元素的大数组。打开 Memory → Heap snapshot，搜索 <code>Array</code> 或 <code>1111111</code> / <code>2222222</code> 查看 retainers。</p>
+      <p class="tip">
+        本页在脚本顶层创建约 100 万元素的大数组。打开 Memory → Heap snapshot，搜索
+        <code>Array</code>
+        或
+        <code>1111111</code>
+        /
+        <code>2222222</code>
+        查看 retainers。
+      </p>
     </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
       // ============ 1. 顶层 var：挂到 window，全局可达 ============
-      var arryVar = new Array(1000 * 1000).fill("1111111");
+      var arryVar = new Array(1000 * 1000).fill('1111111');
 
       // ============ 2. 顶层 const：不挂 window，但仍在全局词法环境 ============
-      const arryConst = new Array(1000 * 1000).fill("2222222");
+      const arryConst = new Array(1000 * 1000).fill('2222222');
 
       // ============ 3. 额外强引用：dependArray 与 arryConst 共享同一数组 ============
       const dependArray = arryConst;
 
       // ============ 4. Console 验证 var vs const 与 window 的关系 ============
-      console.log("window.arryVar 存在:", "arryVar" in window); // true
-      console.log("window.arryConst 存在:", "arryConst" in window); // false
-      console.log("dependArray === arryConst:", dependArray === arryConst); // true
-      console.log("arryVar.length:", arryVar.length);
-      console.log("→ 需人工在浏览器验证：DevTools Memory 拍快照查看 retainers");
+      console.log('window.arryVar 存在:', 'arryVar' in window); // true
+      console.log('window.arryConst 存在:', 'arryConst' in window); // false
+      console.log('dependArray === arryConst:', dependArray === arryConst); // true
+      console.log('arryVar.length:', arryVar.length);
+      console.log('→ 需人工在浏览器验证：DevTools Memory 拍快照查看 retainers');
     </script>
     <!-- SCRIPT_END -->
 
@@ -93,9 +158,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

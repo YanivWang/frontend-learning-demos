@@ -1,5 +1,5 @@
 <!--
-分类: css / 03-动画 / loading
+  分类: css / 03-动画 / loading
   主题: 5 条竖条交错弹跳的加载动画
   要点:
     - nth-child 为不同竖条设置递增 animation-delay，形成波浪式弹跳
@@ -20,9 +20,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>loading - 五条竖条弹跳</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
-      h2 { font-size: 1rem; margin-top: 0; }
-      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        color: #222;
+      }
+      h2 {
+        font-size: 1rem;
+        margin-top: 0;
+      }
+      .tip {
+        margin: 0.5rem 0 1rem;
+        color: #666;
+        font-size: 0.875rem;
+      }
       .loading {
         position: absolute;
         left: 50%;
@@ -48,7 +59,8 @@
         animation: 1s ease-in-out infinite alternate load;
       }
       @keyframes load {
-        0%, 100% {
+        0%,
+        100% {
           background: lightgreen;
           transform: scaleY(0.58);
         }
@@ -95,29 +107,107 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>5 条竖条交错弹跳的加载动画</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出 nth-child 对应 animation-delay 实测值。</p>
+      <p class="hint">
+        在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出 nth-child
+        对应 animation-delay 实测值。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>这个弹跳 loading 的核心不是写 5 套动画，而是让 5 个 <code>span</code> 复用同一个 <code>@keyframes load</code>。</li>
-          <li><code>:nth-child()</code> 为第 2 到第 5 个竖条设置递增 <code>animation-delay</code>，从而让同一周期内的缩放状态错开，形成波浪感。</li>
-          <li>本页用 <code>transform: scaleY()</code> 做竖向弹跳；相比动画 <code>height</code> 和 <code>margin</code>，它更适合持续循环的装饰性动效。</li>
-          <li>现代项目通常写标准 <code>animation</code>，兼容旧 WebKit 时由 Autoprefixer 等工具按 browserslist 产出前缀；只有无构建流程且明确要兼容旧设备时才手写前缀。</li>
-          <li>加载动画只说明“还在等待”，真实交互要补失败路径：请求失败、超时、用户取消和重复点击都需要明确反馈。</li>
+          <li>
+            这个弹跳 loading 的核心不是写 5 套动画，而是让 5 个
+            <code>span</code>
+            复用同一个
+            <code>@keyframes load</code>
+            。
+          </li>
+          <li>
+            <code>:nth-child()</code>
+            为第 2 到第 5 个竖条设置递增
+            <code>animation-delay</code>
+            ，从而让同一周期内的缩放状态错开，形成波浪感。
+          </li>
+          <li>
+            本页用
+            <code>transform: scaleY()</code>
+            做竖向弹跳；相比动画
+            <code>height</code>
+            和
+            <code>margin</code>
+            ，它更适合持续循环的装饰性动效。
+          </li>
+          <li>
+            现代项目通常写标准
+            <code>animation</code>
+            ，兼容旧 WebKit 时由 Autoprefixer 等工具按 browserslist
+            产出前缀；只有无构建流程且明确要兼容旧设备时才手写前缀。
+          </li>
+          <li>
+            加载动画只说明“还在等待”，真实交互要补失败路径：请求失败、超时、用户取消和重复点击都需要明确反馈。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>交错 loading 为什么常用 <code>:nth-child()</code> 加 delay？</strong> 结论是它可以让多个相同元素复用同一套关键帧，只改变播放起点。原因是视觉差异来自时间相位，而不是每个元素的动画逻辑不同。项目里元素数量固定时可直接写 nth-child，数量动态时更适合用 CSS 变量传入 delay。</li>
-          <li><strong>transform 弹跳和 height 弹跳怎么选？</strong> 结论是装饰性 loading 优先 <code>transform</code>。原因是 <code>height</code> 会改变盒子尺寸并影响布局流，而 <code>transform</code> 改变的是视觉变换。边界是如果页面需要真实撑开空间，就不能只用 transform，需要重新设计布局和动画范围。</li>
-          <li><strong>现在还需要手写 <code>-webkit-animation</code> 吗？</strong> 结论是大多数现代项目不手写，交给构建工具按兼容目标生成。原因是标准 <code>animation</code> 已广泛可用，手写前缀容易和标准声明不一致。边界是离线 demo、老旧 WebView 或无构建环境可以按目标设备补前缀，但要成对维护。</li>
-          <li><strong>loading 动效如何兼顾用户体验？</strong> 结论是动画只是反馈，必须配合状态管理。原因是异步操作可能失败、超时或被重复触发。项目里应禁用重复提交、给出错误与重试入口，并在 <code>prefers-reduced-motion</code> 下减少循环运动。</li>
+          <li>
+            <strong>
+              交错 loading 为什么常用
+              <code>:nth-child()</code>
+              加 delay？
+            </strong>
+            结论是它可以让多个相同元素复用同一套关键帧，只改变播放起点。原因是视觉差异来自时间相位，而不是每个元素的动画逻辑不同。项目里元素数量固定时可直接写
+            nth-child，数量动态时更适合用 CSS 变量传入 delay。
+          </li>
+          <li>
+            <strong>transform 弹跳和 height 弹跳怎么选？</strong>
+            结论是装饰性 loading 优先
+            <code>transform</code>
+            。原因是
+            <code>height</code>
+            会改变盒子尺寸并影响布局流，而
+            <code>transform</code>
+            改变的是视觉变换。边界是如果页面需要真实撑开空间，就不能只用
+            transform，需要重新设计布局和动画范围。
+          </li>
+          <li>
+            <strong>
+              现在还需要手写
+              <code>-webkit-animation</code>
+              吗？
+            </strong>
+            结论是大多数现代项目不手写，交给构建工具按兼容目标生成。原因是标准
+            <code>animation</code>
+            已广泛可用，手写前缀容易和标准声明不一致。边界是离线 demo、老旧 WebView
+            或无构建环境可以按目标设备补前缀，但要成对维护。
+          </li>
+          <li>
+            <strong>loading 动效如何兼顾用户体验？</strong>
+            结论是动画只是反馈，必须配合状态管理。原因是异步操作可能失败、超时或被重复触发。项目里应禁用重复提交、给出错误与重试入口，并在
+            <code>prefers-reduced-motion</code>
+            下减少循环运动。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes">MDN: @keyframes CSS at-rule</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/animation-delay">MDN: animation-delay</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transform">MDN: transform</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion">MDN: prefers-reduced-motion</a></li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes">
+              MDN: @keyframes CSS at-rule
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/animation-delay">
+              MDN: animation-delay
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transform">MDN: transform</a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion"
+            >
+              MDN: prefers-reduced-motion
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -125,7 +215,13 @@
 
     <!-- PAGE_DOM_START -->
     <h2>5 条竖条交错弹跳 loading</h2>
-    <p class="tip">观察 <code>:nth-child()</code> 为第 2～5 个竖条设置递增 delay，形成波浪式弹跳；同样用 <code>transform: scaleY()</code> 而非 height。</p>
+    <p class="tip">
+      观察
+      <code>:nth-child()</code>
+      为第 2～5 个竖条设置递增 delay，形成波浪式弹跳；同样用
+      <code>transform: scaleY()</code>
+      而非 height。
+    </p>
     <div class="loading">
       <div class="loadWrap" id="load-wrap">
         <span id="bar-1"></span>
@@ -141,7 +237,7 @@
     <!-- SCRIPT_START -->
     <script>
       (function () {
-        var barIds = ["bar-1", "bar-2", "bar-3", "bar-4", "bar-5"];
+        var barIds = ['bar-1', 'bar-2', 'bar-3', 'bar-4', 'bar-5'];
 
         /** 读取竖条 animation 计算值，对应 MDN animation-delay / :nth-child 错峰 */
         function getBarMetrics(id) {
@@ -157,23 +253,33 @@
 
         /** 输出各竖条 animation-delay 实测报告 */
         function renderMetrics() {
-          var lines = ["── 竖条弹跳 loading 实测 ──"];
+          var lines = ['── 竖条弹跳 loading 实测 ──'];
           barIds.forEach(function (id, i) {
             var m = getBarMetrics(id);
             lines.push(
-              "#" + m.id + " (nth-child " + (i + 1) + "): delay=" + m.delay +
-                ", duration=" + m.duration +
-                ", timing=" + m.timing +
-                ", transform=" + m.transform
+              '#' +
+                m.id +
+                ' (nth-child ' +
+                (i + 1) +
+                '): delay=' +
+                m.delay +
+                ', duration=' +
+                m.duration +
+                ', timing=' +
+                m.timing +
+                ', transform=' +
+                m.transform,
             );
           });
-          lines.push("");
-          lines.push("── prefers-reduced-motion ──");
+          lines.push('');
+          lines.push('── prefers-reduced-motion ──');
           lines.push(
             "matchMedia('(prefers-reduced-motion: reduce)'): " +
-              (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "匹配（动画已关闭）" : "未匹配")
+              (window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                ? '匹配（动画已关闭）'
+                : '未匹配'),
           );
-          document.getElementById("runtime-output").textContent = lines.join("\n");
+          document.getElementById('runtime-output').textContent = lines.join('\n');
         }
 
         renderMetrics();
@@ -191,13 +297,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

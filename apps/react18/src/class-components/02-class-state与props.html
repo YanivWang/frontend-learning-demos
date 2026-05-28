@@ -32,31 +32,142 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>class 组件的 state 与 props</h1>
-      <p class="hint">请打开 DevTools Console 查看 props/state 输出；点击下方按钮验证 setState、子调父回调与 this 绑定；下方 #root 为 React 挂载/交互演示区。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看 props/state 输出；点击下方按钮验证 setState、子调父回调与 this
+        绑定；下方 #root 为 React 挂载/交互演示区。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>props</code> 是父组件传给子组件的数据入口，子组件应把它当作只读值；示例中 <code>Root</code> 持有 <code>appId</code>，并把它作为 <code>id</code> 传给 <code>App</code>。</li>
-          <li><code>state</code> 是组件自己的可变状态。class 组件可以在 constructor 或类字段中初始化 state，但事件、生命周期等位置必须调用 <code>setState</code>，否则 React 不知道需要重新渲染。</li>
-          <li><code>setState</code> 进入 React 更新队列，调用后立刻读取 <code>this.state</code> 通常仍是本轮 render 的旧快照；UI 变化要等下一次 render 提交后才可见。</li>
-          <li>子组件不能直接修改 props；如果要影响父组件数据，应调用父组件传入的回调。示例中 <code>App</code> 点击按钮后调用 <code>changeAppidFn</code>，由 <code>Root</code> 更新自己的 state，再把新 props 传回来。</li>
-          <li>class 普通方法作为事件处理器传给 React 后，调用时不会自动绑定组件实例；示例在 constructor 中 <code>bind</code>，也可以用类字段箭头函数或在 JSX 中包一层箭头函数（详见 13 号 demo）。</li>
-          <li>react.dev 推荐新代码用函数组件 + Hooks 管理 state 与 props；class 组件主要用于维护旧代码和理解单向数据流。</li>
+          <li>
+            <code>props</code>
+            是父组件传给子组件的数据入口，子组件应把它当作只读值；示例中
+            <code>Root</code>
+            持有
+            <code>appId</code>
+            ，并把它作为
+            <code>id</code>
+            传给
+            <code>App</code>
+            。
+          </li>
+          <li>
+            <code>state</code>
+            是组件自己的可变状态。class 组件可以在 constructor 或类字段中初始化
+            state，但事件、生命周期等位置必须调用
+            <code>setState</code>
+            ，否则 React 不知道需要重新渲染。
+          </li>
+          <li>
+            <code>setState</code>
+            进入 React 更新队列，调用后立刻读取
+            <code>this.state</code>
+            通常仍是本轮 render 的旧快照；UI 变化要等下一次 render 提交后才可见。
+          </li>
+          <li>
+            子组件不能直接修改 props；如果要影响父组件数据，应调用父组件传入的回调。示例中
+            <code>App</code>
+            点击按钮后调用
+            <code>changeAppidFn</code>
+            ，由
+            <code>Root</code>
+            更新自己的 state，再把新 props 传回来。
+          </li>
+          <li>
+            class 普通方法作为事件处理器传给 React 后，调用时不会自动绑定组件实例；示例在
+            constructor 中
+            <code>bind</code>
+            ，也可以用类字段箭头函数或在 JSX 中包一层箭头函数（详见 13 号 demo）。
+          </li>
+          <li>
+            react.dev 推荐新代码用函数组件 + Hooks 管理 state 与 props；class
+            组件主要用于维护旧代码和理解单向数据流。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>class 组件中 state 和 props 的职责怎么区分？</strong> 结论是：props 负责父到子的输入，state 负责组件内部随交互变化的数据。原因是 React 的数据流是单向的，父组件重新渲染会把新 props 传给子组件；项目中可复用组件通常用 props 配置外部行为，用 state 管理局部 UI 状态。</li>
-          <li><strong>为什么不能直接修改 props 或 this.state？</strong> 结论是：props 应视为只读，constructor 之后更新 state 必须用 <code>setState</code>。原因是直接修改不会进入 React 的更新队列，也会破坏父子数据边界；边界是 constructor 初始化时可以直接给 <code>this.state</code> 赋初值。</li>
-          <li><strong>class 事件处理函数为什么经常需要绑定 this？</strong> 结论是：普通 class 方法不会自动绑定实例。原因是把 <code>this.handleBtnClick</code> 当函数引用传出后，调用方不会保留原来的接收者；维护老代码常见做法是在 constructor 中 bind，现代写法更多用函数组件事件闭包或类字段箭头函数。</li>
-          <li><strong>JSX 里 onClick={fn()} 和 onClick={fn} 有什么区别？</strong> 结论是：前者会在 render 时立即执行，后者才是在点击时执行。原因是 JSX 花括号里是 JavaScript 表达式；项目里需要传参时使用 <code>onClick={() =&gt; fn(id)}</code>，注意避免在大量列表中无意义创建复杂闭包。</li>
-          <li><strong>子组件如何通知父组件更新传入的 props？</strong> 结论是：调用父组件通过 props 传下来的回调。原因是 props 本身不属于子组件所有；示例中 <code>App</code> 调用 <code>changeAppidFn</code>，父组件 <code>Root</code> 再通过 <code>setState</code> 改变传给子组件的 <code>id</code>。</li>
+          <li>
+            <strong>class 组件中 state 和 props 的职责怎么区分？</strong>
+            结论是：props 负责父到子的输入，state 负责组件内部随交互变化的数据。原因是 React
+            的数据流是单向的，父组件重新渲染会把新 props 传给子组件；项目中可复用组件通常用 props
+            配置外部行为，用 state 管理局部 UI 状态。
+          </li>
+          <li>
+            <strong>为什么不能直接修改 props 或 this.state？</strong>
+            结论是：props 应视为只读，constructor 之后更新 state 必须用
+            <code>setState</code>
+            。原因是直接修改不会进入 React 的更新队列，也会破坏父子数据边界；边界是 constructor
+            初始化时可以直接给
+            <code>this.state</code>
+            赋初值。
+          </li>
+          <li>
+            <strong>class 事件处理函数为什么经常需要绑定 this？</strong>
+            结论是：普通 class 方法不会自动绑定实例。原因是把
+            <code>this.handleBtnClick</code>
+            当函数引用传出后，调用方不会保留原来的接收者；维护老代码常见做法是在 constructor 中
+            bind，现代写法更多用函数组件事件闭包或类字段箭头函数。
+          </li>
+          <li>
+            <strong>JSX 里 onClick={fn()} 和 onClick={fn} 有什么区别？</strong>
+            结论是：前者会在 render 时立即执行，后者才是在点击时执行。原因是 JSX 花括号里是
+            JavaScript 表达式；项目里需要传参时使用
+            <code>onClick={() =&gt; fn(id)}</code>
+            ，注意避免在大量列表中无意义创建复杂闭包。
+          </li>
+          <li>
+            <strong>子组件如何通知父组件更新传入的 props？</strong>
+            结论是：调用父组件通过 props 传下来的回调。原因是 props 本身不属于子组件所有；示例中
+            <code>App</code>
+            调用
+            <code>changeAppidFn</code>
+            ，父组件
+            <code>Root</code>
+            再通过
+            <code>setState</code>
+            改变传给子组件的
+            <code>id</code>
+            。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/Component#props" target="_blank" rel="noreferrer">react.dev: Component — props</a></li>
-          <li><a href="https://react.dev/reference/react/Component#state" target="_blank" rel="noreferrer">react.dev: Component — state</a></li>
-          <li><a href="https://react.dev/reference/react/Component#setstate" target="_blank" rel="noreferrer">react.dev: Component — setState()</a></li>
-          <li><a href="https://react.dev/learn/passing-props-to-a-component" target="_blank" rel="noreferrer">react.dev: Passing Props to a Component</a></li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#props"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Component — props
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#state"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Component — state
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#setstate"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Component — setState()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/passing-props-to-a-component"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Passing Props to a Component
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -69,32 +180,32 @@
     <!-- SCRIPT_START -->
     <script type="text/babel">
       /*
-        ====== 0. 现代替代写法（注释示意）======
-        react.dev 推荐新代码用函数组件 + Hooks 表达 props/state 数据流。
+      ====== 0. 现代替代写法（注释示意）======
+      react.dev 推荐新代码用函数组件 + Hooks 表达 props/state 数据流。
 
-        function App({ id, onChangeId }) {
-          const [appName, setAppName] = useState("我是 app 组件");
-          return (
-            <div>
-              <div>props：{id}</div>
-              <div>state：{appName}</div>
-              <button onClick={() => setAppName("爸爸")}>点击修改 state</button>
-              <button onClick={onChangeId}>通知父组件修改 props</button>
-            </div>
-          );
-        }
+      function App({ id, onChangeId }) {
+        const [appName, setAppName] = useState("我是 app 组件");
+        return (
+          <div>
+            <div>props：{id}</div>
+            <div>state：{appName}</div>
+            <button onClick={() => setAppName("爸爸")}>点击修改 state</button>
+            <button onClick={onChangeId}>通知父组件修改 props</button>
+          </div>
+      );
+      }
       */
 
       // ====== 1. props 只读：子组件通过 this.props 读取父传入的数据 ======
       class App extends React.Component {
         constructor(props) {
           super(props);
-          console.log("constructor props:", props);
+          console.log('constructor props:', props);
           // 预期: { id: 1001111, changeAppidFn: fn }
 
           // constructor 是唯一可直接赋值 this.state 的位置
           this.state = {
-            appName: "我是 app 组件",
+            appName: '我是 app 组件',
           };
 
           // 事件处理器需 bind，否则作为回调时 this 丢失（详见 13 号 demo）
@@ -103,7 +214,7 @@
 
         // 子组件通过 props 回调通知父组件，而不是直接改 props
         handleBtnClick() {
-          console.log("通知父组件修改 props");
+          console.log('通知父组件修改 props');
           this.props.changeAppidFn();
         }
 
@@ -118,9 +229,9 @@
               <button
                 type="button"
                 onClick={() => {
-                  this.setState({ appName: "爸爸" });
+                  this.setState({ appName: '爸爸' });
                   // setState 后立刻读 this.state 仍是旧快照
-                  console.log("setState 后 this.state.appName:", this.state.appName);
+                  console.log('setState 后 this.state.appName:', this.state.appName);
                   // 预期: 仍是 "我是 app 组件"，UI 在下一次 render 才变
                 }}
               >
@@ -128,7 +239,7 @@
               </button>
 
               {/* onClick={fn()} 会在 render 时立即执行；onClick={fn} 才是点击时执行 */}
-              <button type="button" onClick={() => console.log("render 时 this:", this)}>
+              <button type="button" onClick={() => console.log('render 时 this:', this)}>
                 点击打印 this
               </button>
 
@@ -147,20 +258,18 @@
         };
 
         changeAppid = () => {
-          this.setState({ appId: "appID 变化了" });
-          console.log("Root setState 后 appId:", this.state.appId);
+          this.setState({ appId: 'appID 变化了' });
+          console.log('Root setState 后 appId:', this.state.appId);
           // 预期: 仍是旧值；新 props 在下一次 render 传给 App
         };
 
         render() {
-          return (
-            <App id={this.state.appId} changeAppidFn={this.changeAppid} />
-          );
+          return <App id={this.state.appId} changeAppidFn={this.changeAppid} />;
         }
       }
 
       // ====== 3. React 18 挂载 ======
-      ReactDOM.createRoot(document.getElementById("root")).render(<Root />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<Root />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -170,16 +279,22 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./01-class-%E5%BF%85%E9%A1%BBsuper.html">相关 · 01-class-必须super</a>
-        <a href="./03-setState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6.html">相关 · 03-setState-异步合并</a>
-        <a href="./13-class-%E4%BA%8B%E4%BB%B6%E7%BB%91%E5%AE%9A%E4%B8%89%E7%A7%8D%E6%96%B9%E5%BC%8F.html">相关 · 13-class-事件绑定三种方式</a>
+        <a href="./03-setState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6.html">
+          相关 · 03-setState-异步合并
+        </a>
+        <a
+          href="./13-class-%E4%BA%8B%E4%BB%B6%E7%BB%91%E5%AE%9A%E4%B8%89%E7%A7%8D%E6%96%B9%E5%BC%8F.html"
+        >
+          相关 · 13-class-事件绑定三种方式
+        </a>
         <a href="./01-class-%E5%BF%85%E9%A1%BBsuper.html">← class-必须super</a>
         <a href="./03-setState-%E5%BC%82%E6%AD%A5%E5%90%88%E5%B9%B6.html">setState-异步合并 →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

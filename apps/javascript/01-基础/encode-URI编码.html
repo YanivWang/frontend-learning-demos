@@ -32,25 +32,116 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>encodeURI</code>：编码完整 URL，保留 <code>: / ? #</code> 等 URI 结构字符，只编码中文等特殊字符。</li>
-          <li><code>encodeURIComponent</code>：编码 URL 组件（query 值、path 段），会编码 <code>/ ? & =</code> 等。</li>
-          <li>解码用 <code>decodeURI</code> / <code>decodeURIComponent</code>；输入里存在非法百分号编码或不完整 UTF-8 序列时会抛 <code>URIError</code>。</li>
-          <li>拼接查询字符串时可写 <code>?q=${encodeURIComponent(keyword)}</code>，更推荐用 <code>URLSearchParams</code> 处理空格、重复 key 与自动转义。</li>
-          <li><code>escape</code> / <code>unescape</code> 已废弃，编码规则不是 WHATWG URL 使用的 UTF-8 百分号编码，不要用于新代码。</li>
+          <li>
+            <code>encodeURI</code>
+            ：编码完整 URL，保留
+            <code>: / ? #</code>
+            等 URI 结构字符，只编码中文等特殊字符。
+          </li>
+          <li>
+            <code>encodeURIComponent</code>
+            ：编码 URL 组件（query 值、path 段），会编码
+            <code>/ ? & =</code>
+            等。
+          </li>
+          <li>
+            解码用
+            <code>decodeURI</code>
+            /
+            <code>decodeURIComponent</code>
+            ；输入里存在非法百分号编码或不完整 UTF-8 序列时会抛
+            <code>URIError</code>
+            。
+          </li>
+          <li>
+            拼接查询字符串时可写
+            <code>?q=${encodeURIComponent(keyword)}</code>
+            ，更推荐用
+            <code>URLSearchParams</code>
+            处理空格、重复 key 与自动转义。
+          </li>
+          <li>
+            <code>escape</code>
+            /
+            <code>unescape</code>
+            已废弃，编码规则不是 WHATWG URL 使用的 UTF-8 百分号编码，不要用于新代码。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>encodeURI vs encodeURIComponent？</strong> 结论是完整地址用 <code>encodeURI</code>，单个组件用 <code>encodeURIComponent</code>。原因是前者保留 URI 分隔符，后者会把 <code>://</code>、<code>&amp;</code>、<code>=</code> 等也编码；边界是已经由 <code>URL</code> / <code>URLSearchParams</code> 管理的地址不要重复编码。</li>
-          <li><strong>查询参数为什么优先 URLSearchParams？</strong> 结论是它比手写拼接更稳。它会按标准序列化 key/value，减少漏编码 <code>&amp;</code>、空格、中文等字符的风险；项目里仍要注意服务端对 <code>+</code> 与 <code>%20</code> 的解析约定。</li>
-          <li><strong>decodeURIComponent 什么时候会抛错？</strong> 结论是遇到格式非法的百分号转义会抛 <code>URIError</code>。例如孤立 <code>%</code> 或非法 UTF-8 字节无法还原；边界是解码用户输入前通常要捕获异常，避免整页脚本中断。</li>
-          <li><strong>escape 为何废弃？</strong> 结论是它不是现代 URL 编码方案。它会产生 <code>%uXXXX</code> 这类历史格式，和 UTF-8 百分号编码、URL 标准不一致；新代码用 <code>encodeURIComponent</code> 或 <code>URLSearchParams</code>。</li>
+          <li>
+            <strong>encodeURI vs encodeURIComponent？</strong>
+            结论是完整地址用
+            <code>encodeURI</code>
+            ，单个组件用
+            <code>encodeURIComponent</code>
+            。原因是前者保留 URI 分隔符，后者会把
+            <code>://</code>
+            、
+            <code>&amp;</code>
+            、
+            <code>=</code>
+            等也编码；边界是已经由
+            <code>URL</code>
+            /
+            <code>URLSearchParams</code>
+            管理的地址不要重复编码。
+          </li>
+          <li>
+            <strong>查询参数为什么优先 URLSearchParams？</strong>
+            结论是它比手写拼接更稳。它会按标准序列化 key/value，减少漏编码
+            <code>&amp;</code>
+            、空格、中文等字符的风险；项目里仍要注意服务端对
+            <code>+</code>
+            与
+            <code>%20</code>
+            的解析约定。
+          </li>
+          <li>
+            <strong>decodeURIComponent 什么时候会抛错？</strong>
+            结论是遇到格式非法的百分号转义会抛
+            <code>URIError</code>
+            。例如孤立
+            <code>%</code>
+            或非法 UTF-8 字节无法还原；边界是解码用户输入前通常要捕获异常，避免整页脚本中断。
+          </li>
+          <li>
+            <strong>escape 为何废弃？</strong>
+            结论是它不是现代 URL 编码方案。它会产生
+            <code>%uXXXX</code>
+            这类历史格式，和 UTF-8 百分号编码、URL 标准不一致；新代码用
+            <code>encodeURIComponent</code>
+            或
+            <code>URLSearchParams</code>
+            。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURI">MDN：encodeURI()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent">MDN：encodeURIComponent()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams">MDN：URLSearchParams</a></li>
-          <li><a href="https://url.spec.whatwg.org/#application/x-www-form-urlencoded">WHATWG URL：application/x-www-form-urlencoded</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURI"
+            >
+              MDN：encodeURI()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent"
+            >
+              MDN：encodeURIComponent()
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams">
+              MDN：URLSearchParams
+            </a>
+          </li>
+          <li>
+            <a href="https://url.spec.whatwg.org/#application/x-www-form-urlencoded">
+              WHATWG URL：application/x-www-form-urlencoded
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -58,39 +149,39 @@
 
     <!-- SCRIPT_START -->
     <script>
-      const path = "https://example.com/搜索/文档.html";
-      const query = "name=王成&city=北京";
+      const path = 'https://example.com/搜索/文档.html';
+      const query = 'name=王成&city=北京';
 
       // ============ 1. encodeURI：编码完整 URI，保留结构字符 ============
       const encodedPath = encodeURI(path);
-      console.log("encodeURI:", encodedPath);
-      console.log("decodeURI:", decodeURI(encodedPath));
+      console.log('encodeURI:', encodedPath);
+      console.log('decodeURI:', decodeURI(encodedPath));
 
       // ============ 2. encodeURIComponent：编码 URI 组件 ============
       const encodedQuery = encodeURIComponent(query);
-      console.log("encodeURIComponent:", encodedQuery);
-      console.log("decodeURIComponent:", decodeURIComponent(encodedQuery));
+      console.log('encodeURIComponent:', encodedQuery);
+      console.log('decodeURIComponent:', decodeURIComponent(encodedQuery));
 
       // 对比：encodeURI 保留 & =，encodeURIComponent 会编码它们
-      console.log("encodeURI('&='):", encodeURI("&="));
-      console.log("encodeURIComponent('&='):", encodeURIComponent("&="));
+      console.log("encodeURI('&='):", encodeURI('&='));
+      console.log("encodeURIComponent('&='):", encodeURIComponent('&='));
 
       // ============ 3. URLSearchParams：推荐构造查询字符串 ============
       const params = new URLSearchParams();
-      params.set("q", "hello world");
-      params.set("lang", "中文");
-      params.append("tag", "js");
-      params.append("tag", "demo");
-      console.log("URLSearchParams:", params.toString());
+      params.set('q', 'hello world');
+      params.set('lang', '中文');
+      params.append('tag', 'js');
+      params.append('tag', 'demo');
+      console.log('URLSearchParams:', params.toString());
 
-      const base = "https://example.com/api";
-      console.log("拼接 URL:", `${base}?${params.toString()}`);
+      const base = 'https://example.com/api';
+      console.log('拼接 URL:', `${base}?${params.toString()}`);
 
       // ============ 4. decodeURIComponent 遇非法转义抛 URIError ============
       try {
-        decodeURIComponent("%");
+        decodeURIComponent('%');
       } catch (err) {
-        console.log("非法转义:", err.name, "-", err.message);
+        console.log('非法转义:', err.name, '-', err.message);
       }
     </script>
     <!-- SCRIPT_END -->
@@ -107,9 +198,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

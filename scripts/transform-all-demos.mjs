@@ -9,10 +9,10 @@
  * 运行：node scripts/transform-all-demos.mjs [--dry-run]
  */
 
-import { readdir, readFile, writeFile, stat } from "node:fs/promises";
-import { dirname, join, relative, sep } from "node:path";
-import { fileURLToPath } from "node:url";
-import { parseDemoMetaFromContent } from "./lib/parse-demo-meta.mjs";
+import { readdir, readFile, writeFile, stat } from 'node:fs/promises';
+import { dirname, join, relative, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { parseDemoMetaFromContent } from './lib/parse-demo-meta.mjs';
 import {
   relFromFile,
   buildDemoNotesSection,
@@ -22,30 +22,29 @@ import {
   hasConsoleDemo,
   isFrameworkDemo,
   isVisualCssDemo,
-} from "./lib/demo-notes-helpers.mjs";
+} from './lib/demo-notes-helpers.mjs';
 
-const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
-const DEMO_NOTES_CSS = join(ROOT, "packages/shared/demo-notes.css");
-const DEMO_LOG = join(ROOT, "packages/shared/demo-log.js");
-const SKIP_DIRS = new Set(["libs", "lib", "node_modules", ".git", "scripts"]);
-const SKIP_REL = new Set(["apps/index.html"]);
-const DONE_PREFIX = "apps/javascript/01-基础/";
-const dryRun = process.argv.includes("--dry-run");
-const force = process.argv.includes("--force");
+const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
+const DEMO_NOTES_CSS = join(ROOT, 'packages/shared/demo-notes.css');
+const DEMO_LOG = join(ROOT, 'packages/shared/demo-log.js');
+const SKIP_DIRS = new Set(['libs', 'lib', 'node_modules', '.git', 'scripts']);
+const SKIP_REL = new Set(['apps/index.html']);
+const DONE_PREFIX = 'apps/javascript/01-基础/';
+const dryRun = process.argv.includes('--dry-run');
+const force = process.argv.includes('--force');
 
 const SECTIONS = [
-  join("apps", "javascript"),
-  join("apps", "css"),
-  join("apps", "vue2"),
-  join("apps", "vue3"),
-  join("apps", "react18"),
-  join("apps", "react19"),
-  join("apps", "demos"),
-  join("apps", "typescript"),
+  join('apps', 'javascript'),
+  join('apps', 'css'),
+  join('apps', 'vue2'),
+  join('apps', 'vue3'),
+  join('apps', 'react18'),
+  join('apps', 'react19'),
+  join('apps', 'demos'),
+  join('apps', 'typescript'),
 ];
 
-const HINT_CONSOLE =
-  '  <p class="hint">请打开 DevTools Console 查看输出。</p>';
+const HINT_CONSOLE = '  <p class="hint">请打开 DevTools Console 查看输出。</p>';
 const HINT_VISUAL =
   '  <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>';
 const HINT_FRAMEWORK =
@@ -58,7 +57,7 @@ async function collectHtml(dirAbs, list) {
     if (ent.isDirectory()) {
       if (SKIP_DIRS.has(ent.name)) continue;
       await collectHtml(abs, list);
-    } else if (ent.isFile() && ent.name.toLowerCase().endsWith(".html")) {
+    } else if (ent.isFile() && ent.name.toLowerCase().endsWith('.html')) {
       list.push(abs);
     }
   }
@@ -91,7 +90,8 @@ function injectCssLink(content, cssHref) {
 function injectHintStyle(content) {
   if (/<style[^>]*>[\s\S]*\.hint/i.test(content)) return content;
   if (!content.includes('class="hint"')) return content;
-  const style = '    <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>';
+  const style =
+    '    <style>.hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; }</style>';
   if (/<\/head>/i.test(content)) {
     return content.replace(/<\/head>/i, `${style}\n  </head>`);
   }
@@ -120,9 +120,9 @@ function injectShell(content, abs, theme, rel) {
   if (blocks.length) {
     const mountRe = /(<body[^>]*>)\s*(<div[^>]+id\s*=\s*["'](?:app|root)["'])/i;
     if (mountRe.test(next)) {
-      next = next.replace(mountRe, `$1\n${blocks.join("\n")}\n  $2`);
+      next = next.replace(mountRe, `$1\n${blocks.join('\n')}\n  $2`);
     } else {
-      next = next.replace(/<body([^>]*)>/i, `<body$1>\n${blocks.join("\n")}`);
+      next = next.replace(/<body([^>]*)>/i, `<body$1>\n${blocks.join('\n')}`);
     }
   }
 
@@ -156,33 +156,29 @@ function injectNotes(content, notesHtml, rel) {
 
 function transformOne(content, abs, rel) {
   if (rel.startsWith(DONE_PREFIX)) {
-    return { content, changed: false, skip: "01-基础已完成" };
+    return { content, changed: false, skip: '01-基础已完成' };
   }
-  if (SKIP_REL.has(rel)) return { content, changed: false, skip: "skip" };
+  if (SKIP_REL.has(rel)) return { content, changed: false, skip: 'skip' };
 
   let next = content;
   if (force && /<section[^>]*class\s*=\s*["'][^"']*\bdemo-notes\b/i.test(next)) {
     next = next.replace(
       /<section[^>]*class\s*=\s*["'][^"']*\bdemo-notes\b[\s\S]*?<\/section>/i,
-      ""
+      '',
     );
     if (!force) {
       /* stripped for rebuild */
     }
   } else if (/class\s*=\s*["'][^"']*\bdemo-notes\b/i.test(content)) {
-    return { content, changed: false, skip: "已有 demo-notes" };
+    return { content, changed: false, skip: '已有 demo-notes' };
   }
   const meta = parseDemoMetaFromContent(next);
-  const theme = meta.theme || "Demo";
+  const theme = meta.theme || 'Demo';
 
   const legacy = extractLegacyInterviewSection(next);
   next = legacy.html;
 
-  const interviewHeader = deriveInterviewBullets(
-    meta.points,
-    theme,
-    meta.interviewPoints
-  );
+  const interviewHeader = deriveInterviewBullets(meta.points, theme, meta.interviewPoints);
   next = injectHeaderInterview(next, interviewHeader);
 
   const cssHref = relFromFile(dirname(abs), DEMO_NOTES_CSS);
@@ -192,7 +188,7 @@ function transformOne(content, abs, rel) {
 
   const notesHtml = buildDemoNotesSection(
     { ...meta, interviewPoints: interviewHeader },
-    legacy.bullets
+    legacy.bullets,
   );
   next = injectNotes(next, notesHtml, rel);
 
@@ -215,26 +211,26 @@ async function main() {
   let skipped = 0;
 
   for (const abs of files) {
-    const rel = relative(ROOT, abs).split(sep).join("/");
-    const before = await readFile(abs, "utf8");
+    const rel = relative(ROOT, abs).split(sep).join('/');
+    const before = await readFile(abs, 'utf8');
     const { content, changed, skip } = transformOne(before, abs, rel);
-    if (skip === "01-基础已完成" || skip === "skip" || skip === "已有 demo-notes") {
+    if (skip === '01-基础已完成' || skip === 'skip' || skip === '已有 demo-notes') {
       skipped++;
       continue;
     }
     if (changed) {
-      if (!dryRun) await writeFile(abs, content, "utf8");
+      if (!dryRun) await writeFile(abs, content, 'utf8');
       updated++;
-      console.log(`[transform-all-demos] ${dryRun ? "[dry] " : ""}${rel}`);
+      console.log(`[transform-all-demos] ${dryRun ? '[dry] ' : ''}${rel}`);
     }
   }
 
   console.log(
-    `[transform-all-demos] 完成：更新 ${updated}，跳过 ${skipped}，共扫描 ${files.length}`
+    `[transform-all-demos] 完成：更新 ${updated}，跳过 ${skipped}，共扫描 ${files.length}`,
   );
 }
 
 main().catch((err) => {
-  console.error("[transform-all-demos] 失败：", err);
+  console.error('[transform-all-demos] 失败：', err);
   process.exitCode = 1;
 });

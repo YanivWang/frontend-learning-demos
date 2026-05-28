@@ -1,5 +1,5 @@
 <!--
-分类: css / 03-动画 / loading
+  分类: css / 03-动画 / loading
   主题: 文字逐字淡出的 loading 动画
   要点:
     - 每个字符复用同一个颜色关键帧，用递增 animation-delay 做逐字淡出
@@ -20,15 +20,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>loading - 文字逐字淡出</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; }
-      h2 { font-size: 1rem; margin-top: 0; }
-      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        color: #222;
+      }
+      h2 {
+        font-size: 1rem;
+        margin-top: 0;
+      }
+      .tip {
+        margin: 0.5rem 0 1rem;
+        color: #666;
+        font-size: 0.875rem;
+      }
       #inTurnFadingTextG {
         width: 234px;
         margin: auto;
       }
       .inTurnFadingTextG {
-        color: #FF6A00;
+        color: #ff6a00;
         font-size: 18px;
         text-decoration: none;
         font-weight: normal;
@@ -71,7 +82,7 @@
       }
       @keyframes bounce_inTurnFadingTextG {
         0% {
-          color: #FF6A00;
+          color: #ff6a00;
         }
         100% {
           /* 半透明灰，形成淡出效果同时保持文字可见。 */
@@ -81,7 +92,7 @@
       @media (prefers-reduced-motion: reduce) {
         .inTurnFadingTextG {
           animation: none;
-          color: #FF6A00;
+          color: #ff6a00;
         }
       }
       #runtime-output {
@@ -103,28 +114,104 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>文字逐字淡出的 loading 动画</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出各字符 animation-delay 与 color 实测值。</p>
+      <p class="hint">
+        在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出各字符
+        animation-delay 与 color 实测值。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>这个 demo 把 “Loading...” 拆成多个字符元素，每个字符复用同一个 <code>@keyframes</code>，通过递增 <code>animation-delay</code> 做逐字淡出。</li>
-          <li>动画只改变 <code>color</code>，不会改变布局尺寸；如果需要更明显的淡入淡出，也可以动画 <code>opacity</code>，但要保证文字在任一时刻仍能被理解。</li>
-          <li><code>rgba()</code> 在规范和 MDN 中是 <code>rgb()</code> 的别名；现代 CSS 推荐 <code>rgb(120 120 120 / 35%)</code> 这种空格加斜杠的 alpha 写法。</li>
-          <li>示例改用 <code>inline-block</code> 横排字符，避免用 <code>float</code> 做纯视觉排版；真实项目中更常用 flex、inline 内容拆分或框架循环渲染。</li>
-          <li>文字 loading 不能只依赖颜色闪动传达状态，异步失败、超时和无障碍读屏文案都要单独处理。</li>
+          <li>
+            这个 demo 把 “Loading...” 拆成多个字符元素，每个字符复用同一个
+            <code>@keyframes</code>
+            ，通过递增
+            <code>animation-delay</code>
+            做逐字淡出。
+          </li>
+          <li>
+            动画只改变
+            <code>color</code>
+            ，不会改变布局尺寸；如果需要更明显的淡入淡出，也可以动画
+            <code>opacity</code>
+            ，但要保证文字在任一时刻仍能被理解。
+          </li>
+          <li>
+            <code>rgba()</code>
+            在规范和 MDN 中是
+            <code>rgb()</code>
+            的别名；现代 CSS 推荐
+            <code>rgb(120 120 120 / 35%)</code>
+            这种空格加斜杠的 alpha 写法。
+          </li>
+          <li>
+            示例改用
+            <code>inline-block</code>
+            横排字符，避免用
+            <code>float</code>
+            做纯视觉排版；真实项目中更常用 flex、inline 内容拆分或框架循环渲染。
+          </li>
+          <li>
+            文字 loading 不能只依赖颜色闪动传达状态，异步失败、超时和无障碍读屏文案都要单独处理。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>逐字 loading 怎样控制每个字符的节奏？</strong> 结论是所有字符复用同一个关键帧，只给每个字符不同的 <code>animation-delay</code>。原因是逐字效果本质是时间相位错开，而不是动画逻辑不同。项目里字符数量动态时可用循环生成元素和 delay，避免手写十几个 id。</li>
-          <li><strong><code>rgba()</code> 和 <code>rgb(... / alpha)</code> 有什么关系？</strong> 结论是 <code>rgba()</code> 是 <code>rgb()</code> 的别名，现代写法推荐在 <code>rgb()</code> 中用斜杠写 alpha。原因是 CSS Color 新语法统一了颜色函数的透明度表达。边界是老代码和浏览器序列化结果仍常见逗号形式，维护时要能识别两种写法等价。</li>
-          <li><strong>为什么 loading 文案不能只靠颜色动画？</strong> 结论是颜色变化只能作为视觉增强，状态含义要由文本、ARIA 或明确 UI 状态表达。原因是用户可能开启 reduced motion、看不到低对比颜色，或使用屏幕阅读器。项目里需要可读的 “Loading” 文案，并在失败或超时时替换为错误提示和重试入口。</li>
-          <li><strong>文字淡出动效有什么边界？</strong> 结论是要控制闪烁频率、对比度和循环时长。原因是持续闪烁可能干扰阅读，低透明度文字也可能达不到可读要求。项目里可在 <code>prefers-reduced-motion</code> 下停用动画，保留静态加载文案。</li>
+          <li>
+            <strong>逐字 loading 怎样控制每个字符的节奏？</strong>
+            结论是所有字符复用同一个关键帧，只给每个字符不同的
+            <code>animation-delay</code>
+            。原因是逐字效果本质是时间相位错开，而不是动画逻辑不同。项目里字符数量动态时可用循环生成元素和
+            delay，避免手写十几个 id。
+          </li>
+          <li>
+            <strong>
+              <code>rgba()</code>
+              和
+              <code>rgb(... / alpha)</code>
+              有什么关系？
+            </strong>
+            结论是
+            <code>rgba()</code>
+            是
+            <code>rgb()</code>
+            的别名，现代写法推荐在
+            <code>rgb()</code>
+            中用斜杠写 alpha。原因是 CSS Color
+            新语法统一了颜色函数的透明度表达。边界是老代码和浏览器序列化结果仍常见逗号形式，维护时要能识别两种写法等价。
+          </li>
+          <li>
+            <strong>为什么 loading 文案不能只靠颜色动画？</strong>
+            结论是颜色变化只能作为视觉增强，状态含义要由文本、ARIA 或明确 UI
+            状态表达。原因是用户可能开启 reduced
+            motion、看不到低对比颜色，或使用屏幕阅读器。项目里需要可读的 “Loading”
+            文案，并在失败或超时时替换为错误提示和重试入口。
+          </li>
+          <li>
+            <strong>文字淡出动效有什么边界？</strong>
+            结论是要控制闪烁频率、对比度和循环时长。原因是持续闪烁可能干扰阅读，低透明度文字也可能达不到可读要求。项目里可在
+            <code>prefers-reduced-motion</code>
+            下停用动画，保留静态加载文案。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/animation-delay">MDN: animation-delay</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/rgb">MDN: rgb() color function</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion">MDN: prefers-reduced-motion</a></li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/animation-delay">
+              MDN: animation-delay
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/rgb">
+              MDN: rgb() color function
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion"
+            >
+              MDN: prefers-reduced-motion
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -132,7 +219,13 @@
 
     <!-- PAGE_DOM_START -->
     <h2>文字逐字淡出 loading</h2>
-    <p class="tip">观察 "Loading..." 各字符复用同一关键帧，递增 <code>animation-delay</code> 形成逐字淡出；终点色为 <code>rgb(120 120 120 / 35%)</code>。</p>
+    <p class="tip">
+      观察 "Loading..." 各字符复用同一关键帧，递增
+      <code>animation-delay</code>
+      形成逐字淡出；终点色为
+      <code>rgb(120 120 120 / 35%)</code>
+      。
+    </p>
     <div id="inTurnFadingTextG">
       <div id="inTurnFadingTextG_1" class="inTurnFadingTextG">L</div>
       <div id="inTurnFadingTextG_2" class="inTurnFadingTextG">o</div>
@@ -152,10 +245,16 @@
     <script>
       (function () {
         var charIds = [
-          "inTurnFadingTextG_1", "inTurnFadingTextG_2", "inTurnFadingTextG_3",
-          "inTurnFadingTextG_4", "inTurnFadingTextG_5", "inTurnFadingTextG_6",
-          "inTurnFadingTextG_7", "inTurnFadingTextG_8", "inTurnFadingTextG_9",
-          "inTurnFadingTextG_10",
+          'inTurnFadingTextG_1',
+          'inTurnFadingTextG_2',
+          'inTurnFadingTextG_3',
+          'inTurnFadingTextG_4',
+          'inTurnFadingTextG_5',
+          'inTurnFadingTextG_6',
+          'inTurnFadingTextG_7',
+          'inTurnFadingTextG_8',
+          'inTurnFadingTextG_9',
+          'inTurnFadingTextG_10',
         ];
 
         /** 读取字符 animation 计算值，对应 MDN animation-delay / color */
@@ -173,22 +272,31 @@
 
         /** 输出各字符 animation-delay 与 color 实测报告 */
         function renderMetrics() {
-          var lines = ["── 文字淡出 loading 实测 ──"];
+          var lines = ['── 文字淡出 loading 实测 ──'];
           charIds.forEach(function (id) {
             var m = getCharMetrics(id);
             lines.push(
-              "#" + m.id + " ('" + m.text + "'): delay=" + m.delay +
-                ", duration=" + m.duration +
-                ", color=" + m.color
+              '#' +
+                m.id +
+                " ('" +
+                m.text +
+                "'): delay=" +
+                m.delay +
+                ', duration=' +
+                m.duration +
+                ', color=' +
+                m.color,
             );
           });
-          lines.push("");
-          lines.push("── prefers-reduced-motion ──");
+          lines.push('');
+          lines.push('── prefers-reduced-motion ──');
           lines.push(
             "matchMedia('(prefers-reduced-motion: reduce)'): " +
-              (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "匹配（动画已关闭）" : "未匹配")
+              (window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                ? '匹配（动画已关闭）'
+                : '未匹配'),
           );
-          document.getElementById("runtime-output").textContent = lines.join("\n");
+          document.getElementById('runtime-output').textContent = lines.join('\n');
         }
 
         renderMetrics();
@@ -206,13 +314,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

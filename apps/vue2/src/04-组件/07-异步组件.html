@@ -28,29 +28,93 @@
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>同步组件 vs 异步组件（工厂函数形式）</h1>
       <p class="hint">
-        刷新页面：同步组件立即可见；异步成功/失败组件约 1.2 秒后出现内容或错误提示，观察 loading 过渡。
+        刷新页面：同步组件立即可见；异步成功/失败组件约 1.2 秒后出现内容或错误提示，观察 loading
+        过渡。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>同步组件注册时直接传组件选项对象，模板编译后可以立即渲染；异步组件传工厂函数，只有组件第一次真正需要渲染时才触发解析。</li>
-          <li>基础工厂函数接收 <code>resolve</code> 与 <code>reject</code>：成功时把组件定义交给 <code>resolve</code>，失败时调用 <code>reject</code> 让 Vue 走失败处理。</li>
-          <li>Vue 2.3+ 支持高级异步组件对象，可配置 <code>component</code>、<code>loading</code>、<code>error</code>、<code>delay</code> 和 <code>timeout</code>。本页同时演示成功加载和失败兜底。</li>
-          <li>异步组件解析成功后会缓存组件定义，后续重新渲染同一个异步组件不会重复执行完整加载流程；这适合大组件、低频面板和路由级代码分割。</li>
-          <li>涉及异步加载必须补失败路径：网络失败、超时、重复点击和加载中空白都要处理。旧 Vue 2 项目常配合 webpack 动态导入；新项目应优先 Vue 3 与现代构建工具。</li>
+          <li>
+            同步组件注册时直接传组件选项对象，模板编译后可以立即渲染；异步组件传工厂函数，只有组件第一次真正需要渲染时才触发解析。
+          </li>
+          <li>
+            基础工厂函数接收
+            <code>resolve</code>
+            与
+            <code>reject</code>
+            ：成功时把组件定义交给
+            <code>resolve</code>
+            ，失败时调用
+            <code>reject</code>
+            让 Vue 走失败处理。
+          </li>
+          <li>
+            Vue 2.3+ 支持高级异步组件对象，可配置
+            <code>component</code>
+            、
+            <code>loading</code>
+            、
+            <code>error</code>
+            、
+            <code>delay</code>
+            和
+            <code>timeout</code>
+            。本页同时演示成功加载和失败兜底。
+          </li>
+          <li>
+            异步组件解析成功后会缓存组件定义，后续重新渲染同一个异步组件不会重复执行完整加载流程；这适合大组件、低频面板和路由级代码分割。
+          </li>
+          <li>
+            涉及异步加载必须补失败路径：网络失败、超时、重复点击和加载中空白都要处理。旧 Vue 2
+            项目常配合 webpack 动态导入；新项目应优先 Vue 3 与现代构建工具。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue 2 异步组件什么时候会触发加载？</strong> 结论：第一次渲染到该组件时才调用工厂函数。原因是异步组件的目标是按需拆分和延迟加载。边界是已经解析成功的结果会被缓存，再次渲染不会重新下载同一组件定义。</li>
-          <li><strong>resolve、reject、loadingComponent、errorComponent 各自负责什么？</strong> 结论：<code>resolve</code> 交付组件定义，<code>reject</code> 表示加载失败；高级配置中 loading/error 组件分别展示等待与失败 UI。原因是 Vue 需要根据异步结果决定渲染真实组件还是占位/错误组件。项目里不要只写成功路径，应给失败状态和重试入口。</li>
-          <li><strong>异步组件和路由懒加载是什么关系？</strong> 结论：路由懒加载通常就是把路由组件写成异步组件工厂或动态 import。原因是路由页天然是按访问路径拆分的代码块。边界是首屏关键组件不宜过度异步化，否则会增加等待和错误兜底成本。</li>
-          <li><strong>异步组件失败或超时时项目里应该怎么兜底？</strong> 结论：配置 error 组件、timeout 和用户可重试的入口。原因是真实网络加载会有等待、失败和超时。边界是简单 demo 可用工厂函数，生产项目更常用动态 import 与路由懒加载，并配合监控上报。</li>
+          <li>
+            <strong>Vue 2 异步组件什么时候会触发加载？</strong>
+            结论：第一次渲染到该组件时才调用工厂函数。原因是异步组件的目标是按需拆分和延迟加载。边界是已经解析成功的结果会被缓存，再次渲染不会重新下载同一组件定义。
+          </li>
+          <li>
+            <strong>resolve、reject、loadingComponent、errorComponent 各自负责什么？</strong>
+            结论：
+            <code>resolve</code>
+            交付组件定义，
+            <code>reject</code>
+            表示加载失败；高级配置中 loading/error 组件分别展示等待与失败 UI。原因是 Vue
+            需要根据异步结果决定渲染真实组件还是占位/错误组件。项目里不要只写成功路径，应给失败状态和重试入口。
+          </li>
+          <li>
+            <strong>异步组件和路由懒加载是什么关系？</strong>
+            结论：路由懒加载通常就是把路由组件写成异步组件工厂或动态
+            import。原因是路由页天然是按访问路径拆分的代码块。边界是首屏关键组件不宜过度异步化，否则会增加等待和错误兜底成本。
+          </li>
+          <li>
+            <strong>异步组件失败或超时时项目里应该怎么兜底？</strong>
+            结论：配置 error 组件、timeout
+            和用户可重试的入口。原因是真实网络加载会有等待、失败和超时。边界是简单 demo
+            可用工厂函数，生产项目更常用动态 import 与路由懒加载，并配合监控上报。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://v2.vuejs.org/v2/guide/components-dynamic-async.html" target="_blank" rel="noopener">Vue 2 Guide: Dynamic & Async Components</a></li>
-          <li><a href="https://v2.vuejs.org/v2/guide/components.html" target="_blank" rel="noopener">Vue 2 Guide: Components Basics</a></li>
-          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 2 EOL Notice</a></li>
+          <li>
+            <a
+              href="https://v2.vuejs.org/v2/guide/components-dynamic-async.html"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue 2 Guide: Dynamic & Async Components
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/guide/components.html" target="_blank" rel="noopener">
+              Vue 2 Guide: Components Basics
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 2 EOL Notice</a>
+          </li>
         </ul>
       </div>
     </section>
@@ -73,15 +137,15 @@
       // sync-com：同步组件（注册后立即可渲染）
       // ---------------------------------------------------------------------------
       Vue.component('sync-com', {
-        template: `<div>同步组件</div>`
+        template: `<div>同步组件</div>`,
       });
 
       Vue.component('loading-view', {
-        template: `<div>加载中...</div>`
+        template: `<div>加载中...</div>`,
       });
 
       Vue.component('error-view', {
-        template: `<div style="color:#c00;">异步组件加载失败，请稍后重试。</div>`
+        template: `<div style="color:#c00;">异步组件加载失败，请稍后重试。</div>`,
       });
 
       // ---------------------------------------------------------------------------
@@ -91,7 +155,7 @@
       Vue.component('async-success', function (resolve, reject) {
         setTimeout(function () {
           resolve({
-            template: `<div>I am async success!</div>`
+            template: `<div>I am async success!</div>`,
           });
         }, 1200);
       });
@@ -110,7 +174,7 @@
           loading: Vue.component('loading-view'),
           error: Vue.component('error-view'),
           delay: 200,
-          timeout: 2000
+          timeout: 2000,
         };
       });
 
@@ -118,7 +182,6 @@
       // #app：挂载同步与异步组件对比
       // ---------------------------------------------------------------------------
       new Vue({ el: '#app' });
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -132,13 +195,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

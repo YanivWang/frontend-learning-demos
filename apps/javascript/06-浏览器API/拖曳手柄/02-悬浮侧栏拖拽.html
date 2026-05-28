@@ -213,31 +213,137 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>悬浮侧栏拖拽 V2（带圆角与外边距）</h1>
-      <p class="hint">阅读本复习区后，拖拽带圆角与外边距的侧栏，注意主内容 margin-left = 侧栏宽度 + 16px。</p>
+      <p class="hint">
+        阅读本复习区后，拖拽带圆角与外边距的侧栏，注意主内容 margin-left = 侧栏宽度 + 16px。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>这个 V2 和贴边版的主要区别是侧栏有 <code>left: 16px</code>、圆角和页面内边距，因此主内容的 <code>margin-left</code> 要用“侧栏宽度 + 间距”一起计算。</li>
-          <li>拖拽时同时修改 <code>width</code> 和 <code>margin-left</code> 会影响布局阶段，浏览器需要重新计算相关盒子的尺寸和位置；<code>requestAnimationFrame</code> 只能减少提交频率，不能把这类更新变成纯合成。</li>
-          <li><code>will-change</code> 适合短时间提示浏览器某个属性即将变化，但它不是“GPU 加速开关”；对 <code>width</code>、<code>margin-left</code> 这类布局属性长期使用可能增加内存和图层管理成本。</li>
-          <li>拖拽交互要处理用户体验边界：按下时阻止默认选中文本，移动时限制宽度范围，结束时解绑监听，避免页面后续交互被残留监听影响。</li>
-          <li>现代实现可以考虑 Pointer Events 和 <code>setPointerCapture()</code>，统一鼠标、触摸、触控笔；本 demo 保留 Mouse Events，便于对照基础拖拽流程。</li>
-          <li><strong>运行环境：</strong> 与贴边版相同；<code>file://</code> 可加载 Vue3 本地脚本。改 <code>width</code>/<code>margin-left</code> 会触发布局，rAF 仅合并提交频率。</li>
+          <li>
+            这个 V2 和贴边版的主要区别是侧栏有
+            <code>left: 16px</code>
+            、圆角和页面内边距，因此主内容的
+            <code>margin-left</code>
+            要用“侧栏宽度 + 间距”一起计算。
+          </li>
+          <li>
+            拖拽时同时修改
+            <code>width</code>
+            和
+            <code>margin-left</code>
+            会影响布局阶段，浏览器需要重新计算相关盒子的尺寸和位置；
+            <code>requestAnimationFrame</code>
+            只能减少提交频率，不能把这类更新变成纯合成。
+          </li>
+          <li>
+            <code>will-change</code>
+            适合短时间提示浏览器某个属性即将变化，但它不是“GPU 加速开关”；对
+            <code>width</code>
+            、
+            <code>margin-left</code>
+            这类布局属性长期使用可能增加内存和图层管理成本。
+          </li>
+          <li>
+            拖拽交互要处理用户体验边界：按下时阻止默认选中文本，移动时限制宽度范围，结束时解绑监听，避免页面后续交互被残留监听影响。
+          </li>
+          <li>
+            现代实现可以考虑 Pointer Events 和
+            <code>setPointerCapture()</code>
+            ，统一鼠标、触摸、触控笔；本 demo 保留 Mouse Events，便于对照基础拖拽流程。
+          </li>
+          <li>
+            <strong>运行环境：</strong>
+            与贴边版相同；
+            <code>file://</code>
+            可加载 Vue3 本地脚本。改
+            <code>width</code>
+            /
+            <code>margin-left</code>
+            会触发布局，rAF 仅合并提交频率。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>带外边距的 fixed 侧栏为什么要额外补偿主内容位置？</strong> 结论是主内容需要同时避开侧栏宽度和页面间距。原因是 fixed 侧栏脱离普通文档流，不会自动占位；项目里如果只用宽度计算，内容会和侧栏边距或阴影发生重叠。</li>
-          <li><strong>拖拽中改 <code>width</code> 和 <code>margin-left</code> 会触发哪些渲染阶段？</strong> 结论是通常会触发布局，并可能继续触发绘制和合成。原因是几何尺寸和位置变化会影响布局树；如果动画可以改成 <code>transform</code>，才更可能降低到合成层更新。</li>
-          <li><strong><code>will-change</code> 应该如何谨慎使用？</strong> 结论是只在变化前短时间使用，变化结束后移除或避免长期声明。原因是浏览器可能提前分配资源，滥用会增加内存占用；对布局属性也不能承诺一定走 GPU 合成。</li>
-          <li><strong><code>requestAnimationFrame</code> 能否避免重排？</strong> 结论是不能消除由布局属性变化引起的重排，只能把更新安排到合适的帧。原因是 <code>width</code> 和 <code>margin-left</code> 的语义就是改变布局；它的价值在于合并高频事件、减少一帧内多次写入。</li>
-          <li><strong>可调整布局组件有哪些可访问性和移动端边界？</strong> 结论是不能只依赖鼠标拖拽。原因是触屏、键盘和辅助技术用户可能无法操作手柄；真实项目应提供键盘调整、重置按钮、持久化设置，并用 Pointer Events 覆盖更多输入设备。</li>
+          <li>
+            <strong>带外边距的 fixed 侧栏为什么要额外补偿主内容位置？</strong>
+            结论是主内容需要同时避开侧栏宽度和页面间距。原因是 fixed
+            侧栏脱离普通文档流，不会自动占位；项目里如果只用宽度计算，内容会和侧栏边距或阴影发生重叠。
+          </li>
+          <li>
+            <strong>
+              拖拽中改
+              <code>width</code>
+              和
+              <code>margin-left</code>
+              会触发哪些渲染阶段？
+            </strong>
+            结论是通常会触发布局，并可能继续触发绘制和合成。原因是几何尺寸和位置变化会影响布局树；如果动画可以改成
+            <code>transform</code>
+            ，才更可能降低到合成层更新。
+          </li>
+          <li>
+            <strong>
+              <code>will-change</code>
+              应该如何谨慎使用？
+            </strong>
+            结论是只在变化前短时间使用，变化结束后移除或避免长期声明。原因是浏览器可能提前分配资源，滥用会增加内存占用；对布局属性也不能承诺一定走
+            GPU 合成。
+          </li>
+          <li>
+            <strong>
+              <code>requestAnimationFrame</code>
+              能否避免重排？
+            </strong>
+            结论是不能消除由布局属性变化引起的重排，只能把更新安排到合适的帧。原因是
+            <code>width</code>
+            和
+            <code>margin-left</code>
+            的语义就是改变布局；它的价值在于合并高频事件、减少一帧内多次写入。
+          </li>
+          <li>
+            <strong>可调整布局组件有哪些可访问性和移动端边界？</strong>
+            结论是不能只依赖鼠标拖拽。原因是触屏、键盘和辅助技术用户可能无法操作手柄；真实项目应提供键盘调整、重置按钮、持久化设置，并用
+            Pointer Events 覆盖更多输入设备。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/position" target="_blank" rel="noreferrer">MDN: position</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/will-change" target="_blank" rel="noreferrer">MDN: will-change</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Animation_performance_and_frame_rate" target="_blank" rel="noreferrer">MDN: Animation performance and frame rate</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events" target="_blank" rel="noreferrer">MDN: Pointer events</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/CSS/position"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: position
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/CSS/will-change"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: will-change
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Animation_performance_and_frame_rate"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Animation performance and frame rate
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Pointer events
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -246,44 +352,41 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block" aria-label="悬浮侧栏拖拽演示">
       <h2 class="demo-block__label">运行示例</h2>
-    <div id="app">
-      <!-- 左侧导航栏 -->
-      <div
-        class="sidebar"
-        :class="{ 'no-transition': isResizing }"
-        :style="{ width: sidebarWidth + 'px' }"
-        ref="sidebar"
+      <div id="app">
+        <!-- 左侧导航栏 -->
+        <div
+          class="sidebar"
+          :class="{ 'no-transition': isResizing }"
+          :style="{ width: sidebarWidth + 'px' }"
+          ref="sidebar"
         >
-        <div class="sidebar-content">
-          <div class="logo">
-            <div class="logo-icon">📊</div>
-            <div class="logo-text">管理系统</div>
-          </div>
-          <div class="menu">
-            <div
-              v-for="(item, index) in menuItems"
-              :key="index"
-              class="menu-item"
-              :class="{ active: activeMenu === index }"
-              @click="activeMenu = index"
+          <div class="sidebar-content">
+            <div class="logo">
+              <div class="logo-icon">📊</div>
+              <div class="logo-text">管理系统</div>
+            </div>
+            <div class="menu">
+              <div
+                v-for="(item, index) in menuItems"
+                :key="index"
+                class="menu-item"
+                :class="{ active: activeMenu === index }"
+                @click="activeMenu = index"
               >
-              <div class="menu-icon">{{ item.icon }}</div>
-              <div class="menu-text">{{ item.text }}</div>
+                <div class="menu-icon">{{ item.icon }}</div>
+                <div class="menu-text">{{ item.text }}</div>
+              </div>
             </div>
           </div>
-        </div>
-        <!-- 拖拽手柄 -->
-        <div
-          class="resize-handle"
-          @mousedown="startResize"
-          ></div>
+          <!-- 拖拽手柄 -->
+          <div class="resize-handle" @mousedown="startResize"></div>
         </div>
         <!-- 主内容区域 -->
         <div
           class="main-content"
           :class="{ 'no-transition': isResizing }"
           :style="{ marginLeft: (sidebarWidth + 16) + 'px' }"
-          >
+        >
           <div class="content-header">
             <h1>可调整宽度的悬浮导航栏（修复版）</h1>
             <p class="description">
@@ -294,37 +397,38 @@
           <div class="features">
             <div class="feature-card">
               <h3 class="feature-title">
-                <span class="feature-icon">🔧</span> 拖拽修复
-                </h3>
-                <p class="feature-text">
-                  修复了拖拽功能无法正常工作的问题，确保用户可以流畅调整导航栏宽度。
-                  拖拽范围限制在178px到280px之间。
-                </p>
-              </div>
-              <div class="feature-card">
-                <h3 class="feature-title">
-                  <span class="feature-icon">⚡</span> 性能优化
-                  </h3>
-                  <p class="feature-text">
-                    使用requestAnimationFrame确保动画与屏幕刷新率同步，
-                    避免拖拽过程中的卡顿现象。
-                  </p>
-                </div>
-                <div class="feature-card">
-                  <h3 class="feature-title">
-                    <span class="feature-icon">🔄</span> 自动适配
-                    </h3>
-                    <p class="feature-text">
-                      主内容区域的左边距会自动跟随导航栏宽度变化，
-                      确保内容不会被导航栏遮挡。
-                    </p>
-                  </div>
-                </div>
-                <div class="footer">
-                  <p>可调整宽度的悬浮左侧导航栏 - Vue3实现 © 2023</p>
-                </div>
-              </div>
+                <span class="feature-icon">🔧</span>
+                拖拽修复
+              </h3>
+              <p class="feature-text">
+                修复了拖拽功能无法正常工作的问题，确保用户可以流畅调整导航栏宽度。
+                拖拽范围限制在178px到280px之间。
+              </p>
             </div>
+            <div class="feature-card">
+              <h3 class="feature-title">
+                <span class="feature-icon">⚡</span>
+                性能优化
+              </h3>
+              <p class="feature-text">
+                使用requestAnimationFrame确保动画与屏幕刷新率同步， 避免拖拽过程中的卡顿现象。
+              </p>
+            </div>
+            <div class="feature-card">
+              <h3 class="feature-title">
+                <span class="feature-icon">🔄</span>
+                自动适配
+              </h3>
+              <p class="feature-text">
+                主内容区域的左边距会自动跟随导航栏宽度变化， 确保内容不会被导航栏遮挡。
+              </p>
+            </div>
+          </div>
+          <div class="footer">
+            <p>可调整宽度的悬浮左侧导航栏 - Vue3实现 © 2023</p>
+          </div>
+        </div>
+      </div>
     </section>
     <!-- PAGE_DOM_END -->
 
@@ -340,13 +444,13 @@
 
           // 菜单项数据
           const menuItems = reactive([
-            { icon: "🏠", text: "首页概览" },
-            { icon: "📊", text: "数据分析" },
-            { icon: "📁", text: "文件管理" },
-            { icon: "⚙️", text: "系统设置" },
-            { icon: "👥", text: "用户管理" },
-            { icon: "📈", text: "统计报表" },
-            { icon: "🔒", text: "权限管理" }
+            { icon: '🏠', text: '首页概览' },
+            { icon: '📊', text: '数据分析' },
+            { icon: '📁', text: '文件管理' },
+            { icon: '⚙️', text: '系统设置' },
+            { icon: '👥', text: '用户管理' },
+            { icon: '📈', text: '统计报表' },
+            { icon: '🔒', text: '权限管理' },
           ]);
 
           // 当前激活的菜单项
@@ -422,11 +526,10 @@
             menuItems,
             activeMenu,
             isResizing,
-            startResize
+            startResize,
           };
-        }
+        },
       }).mount('#app');
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -435,15 +538,21 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./01-%E8%B4%B4%E8%BE%B9%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html">相关 · 贴边侧栏拖拽</a>
-        <a href="./01-%E8%B4%B4%E8%BE%B9%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html">← 贴边侧栏拖拽</a>
-        <a href="./03-%E5%8E%9F%E7%94%9F%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html">原生侧栏拖拽 →</a>
+        <a href="./01-%E8%B4%B4%E8%BE%B9%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html">
+          相关 · 贴边侧栏拖拽
+        </a>
+        <a href="./01-%E8%B4%B4%E8%BE%B9%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html">
+          ← 贴边侧栏拖拽
+        </a>
+        <a href="./03-%E5%8E%9F%E7%94%9F%E4%BE%A7%E6%A0%8F%E6%8B%96%E6%8B%BD.html">
+          原生侧栏拖拽 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

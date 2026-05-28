@@ -28,50 +28,138 @@
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>解构赋值（数组按位、对象按名）</h1>
       <p class="hint">
-        点「重新运行解构演示」查看下方列表：数组按位取值、对象按名匹配、<code>{ state: localState }</code>
-        重命名，以及 <code>missing = "默认值"</code> 仅在 undefined 时生效（<code>null</code> 不会触发默认值）。
+        点「重新运行解构演示」查看下方列表：数组按位取值、对象按名匹配、
+        <code>{ state: localState }</code>
+        重命名，以及
+        <code>missing = "默认值"</code>
+        仅在 undefined 时生效（
+        <code>null</code>
+        不会触发默认值）。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>数组解构按照可迭代对象的取值顺序匹配变量，<code>let [a, b] = [1, 2]</code> 中的 <code>a</code>、<code>b</code> 对应第 1、2 个元素。</li>
-          <li>对象解构按照属性名匹配，顺序不重要；如果本地变量名会冲突，可以写成 <code>const { state: localState } = obj</code>。</li>
-          <li>默认值只在匹配结果严格等于 <code>undefined</code> 时生效，属性值为 <code>null</code>、<code>0</code>、空字符串时都会保留原值。</li>
-          <li>Vue/Vuex 中常见写法是把 <code>actions(context)</code> 写成 <code>actions({ commit, state, dispatch })</code>，让函数参数直接暴露当前逻辑需要的能力。</li>
-          <li>注意 Vue 2 响应式对象被解构成普通局部变量后，变量本身不会再自动追踪原属性变化；需要保持响应式读取时，应继续通过对象属性访问。</li>
+          <li>
+            数组解构按照可迭代对象的取值顺序匹配变量，
+            <code>let [a, b] = [1, 2]</code>
+            中的
+            <code>a</code>
+            、
+            <code>b</code>
+            对应第 1、2 个元素。
+          </li>
+          <li>
+            对象解构按照属性名匹配，顺序不重要；如果本地变量名会冲突，可以写成
+            <code>const { state: localState } = obj</code>
+            。
+          </li>
+          <li>
+            默认值只在匹配结果严格等于
+            <code>undefined</code>
+            时生效，属性值为
+            <code>null</code>
+            、
+            <code>0</code>
+            、空字符串时都会保留原值。
+          </li>
+          <li>
+            Vue/Vuex 中常见写法是把
+            <code>actions(context)</code>
+            写成
+            <code>actions({ commit, state, dispatch })</code>
+            ，让函数参数直接暴露当前逻辑需要的能力。
+          </li>
+          <li>
+            注意 Vue 2
+            响应式对象被解构成普通局部变量后，变量本身不会再自动追踪原属性变化；需要保持响应式读取时，应继续通过对象属性访问。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>数组解构和对象解构的匹配规则有什么不同？</strong> 结论是数组看位置，对象看属性名。原因是数组解构消费的是迭代顺序，对象解构读取的是同名属性。项目中接口返回对象字段较多时，对象解构更适合取少数字段；元组或固定顺序结果才适合数组解构。</li>
-          <li><strong>解构默认值为什么遇到 null 不生效？</strong> 结论是默认值只在结果为 <code>undefined</code> 时使用。原因是规范把缺失或值为 <code>undefined</code> 视为需要默认值，<code>null</code> 是一个明确传入的值。接口字段可能返回 <code>null</code> 时，要额外用空值合并或业务判断处理。</li>
-          <li><strong>Vuex actions 为什么常写成 ({ commit, state })？</strong> 结论是为了把上下文对象中真正用到的能力直接声明出来。原因是 action 的第一个参数包含 <code>commit</code>、<code>dispatch</code>、<code>state</code>、<code>getters</code> 等属性，解构能减少重复的 <code>context.</code>。边界是参数过多时可读性会下降，应只解构当前函数需要的部分。</li>
-          <li><strong>解构会不会保留 Vue2 响应式对象的能力？</strong> 结论是解构出来的普通值不再等同于原对象属性访问。原因是 Vue 2 的响应式依赖收集发生在 getter 读取上，局部变量保存的是当时的值或引用。对象引用内部属性仍可能响应式，基础类型解构后则容易变成快照。</li>
-          <li><strong>解构重命名和普通赋值各适合什么场景？</strong> 结论是重命名适合属性名与本地变量冲突时（如 <code>{ state: localState }</code>），普通赋值适合简单取同名字段。原因是解构重命名在匹配属性名后映射到新变量名。项目里 Vuex action 解构 <code>commit</code> 用普通写法，与外层 <code>state</code> 冲突时用重命名。</li>
+          <li>
+            <strong>数组解构和对象解构的匹配规则有什么不同？</strong>
+            结论是数组看位置，对象看属性名。原因是数组解构消费的是迭代顺序，对象解构读取的是同名属性。项目中接口返回对象字段较多时，对象解构更适合取少数字段；元组或固定顺序结果才适合数组解构。
+          </li>
+          <li>
+            <strong>解构默认值为什么遇到 null 不生效？</strong>
+            结论是默认值只在结果为
+            <code>undefined</code>
+            时使用。原因是规范把缺失或值为
+            <code>undefined</code>
+            视为需要默认值，
+            <code>null</code>
+            是一个明确传入的值。接口字段可能返回
+            <code>null</code>
+            时，要额外用空值合并或业务判断处理。
+          </li>
+          <li>
+            <strong>Vuex actions 为什么常写成 ({ commit, state })？</strong>
+            结论是为了把上下文对象中真正用到的能力直接声明出来。原因是 action 的第一个参数包含
+            <code>commit</code>
+            、
+            <code>dispatch</code>
+            、
+            <code>state</code>
+            、
+            <code>getters</code>
+            等属性，解构能减少重复的
+            <code>context.</code>
+            。边界是参数过多时可读性会下降，应只解构当前函数需要的部分。
+          </li>
+          <li>
+            <strong>解构会不会保留 Vue2 响应式对象的能力？</strong>
+            结论是解构出来的普通值不再等同于原对象属性访问。原因是 Vue 2 的响应式依赖收集发生在
+            getter
+            读取上，局部变量保存的是当时的值或引用。对象引用内部属性仍可能响应式，基础类型解构后则容易变成快照。
+          </li>
+          <li>
+            <strong>解构重命名和普通赋值各适合什么场景？</strong>
+            结论是重命名适合属性名与本地变量冲突时（如
+            <code>{ state: localState }</code>
+            ），普通赋值适合简单取同名字段。原因是解构重命名在匹配属性名后映射到新变量名。项目里
+            Vuex action 解构
+            <code>commit</code>
+            用普通写法，与外层
+            <code>state</code>
+            冲突时用重命名。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment" target="_blank" rel="noopener">MDN：解构赋值</a></li>
-          <li><a href="https://javascript.info/destructuring-assignment" target="_blank" rel="noopener">JavaScript.info：Destructuring assignment</a></li>
-          <li><a href="https://vuex.vuejs.org/guide/actions.html" target="_blank" rel="noopener">Vuex 官方文档：Actions</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN：解构赋值
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://javascript.info/destructuring-assignment"
+              target="_blank"
+              rel="noopener"
+            >
+              JavaScript.info：Destructuring assignment
+            </a>
+          </li>
+          <li>
+            <a href="https://vuex.vuejs.org/guide/actions.html" target="_blank" rel="noopener">
+              Vuex 官方文档：Actions
+            </a>
+          </li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
-
-    <!-- PAGE_DOM_START -->
-    <section class="demo-block demo-block--run" aria-label="解构赋值演示">
-      <h2 class="demo-block__label">交互演示</h2>
-      <button type="button" id="btn-run">重新运行解构演示</button>
-      <ul id="destructure-results"></ul>
-    </section>
-    <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
       // ---------------------------------------------------------------------------
       // 解构演示：结果渲染到 #destructure-results，Console 同步输出
       // ---------------------------------------------------------------------------
-      var resultsEl = document.getElementById("destructure-results");
+      var resultsEl = document.getElementById('destructure-results');
 
       function renderResults(items) {
         if (!resultsEl) {
@@ -79,9 +167,9 @@
         }
         resultsEl.innerHTML = items
           .map(function (item) {
-            return "<li><code>" + item.label + "</code> → " + item.value + "</li>";
+            return '<li><code>' + item.label + '</code> → ' + item.value + '</li>';
           })
-          .join("");
+          .join('');
       }
 
       function runDestructuringDemo() {
@@ -90,33 +178,48 @@
         // 数组解构：按迭代顺序匹配变量
         var arry1 = [1, 2, 3];
         let [a, b] = arry1;
-        items.push({ label: "let [a, b] = [1, 2, 3]", value: "a=" + a + ", b=" + b });
-        console.log("数组解构 a=", a, "b=", b);
+        items.push({ label: 'let [a, b] = [1, 2, 3]', value: 'a=' + a + ', b=' + b });
+        console.log('数组解构 a=', a, 'b=', b);
 
         // 对象解构：按属性名匹配；重命名与默认值（仅 undefined 触发默认值）
         var obj1 = {
-          commit: "commit",
-          state: "state",
+          commit: 'commit',
+          state: 'state',
           nullable: null,
         };
 
         let { state, commit } = obj1;
-        let { state: localState, missing = "默认值" } = obj1;
-        let { nullable = "默认值" } = obj1;
+        let { state: localState, missing = '默认值' } = obj1;
+        let { nullable = '默认值' } = obj1;
 
-        items.push({ label: "let { commit, state } = obj1", value: "commit=" + commit + ", state=" + state });
-        items.push({ label: "let { state: localState } = obj1", value: "localState=" + localState });
-        items.push({ label: "let { missing = '默认值' } = obj1", value: "missing=" + missing });
+        items.push({
+          label: 'let { commit, state } = obj1',
+          value: 'commit=' + commit + ', state=' + state,
+        });
+        items.push({
+          label: 'let { state: localState } = obj1',
+          value: 'localState=' + localState,
+        });
+        items.push({ label: "let { missing = '默认值' } = obj1", value: 'missing=' + missing });
         items.push({
           label: "let { nullable = '默认值' } = obj1（null 不触发默认值）",
-          value: "nullable=" + nullable,
+          value: 'nullable=' + nullable,
         });
 
-        console.log("对象解构 commit=", commit, "localState=", localState, "missing=", missing, "nullable=", nullable);
+        console.log(
+          '对象解构 commit=',
+          commit,
+          'localState=',
+          localState,
+          'missing=',
+          missing,
+          'nullable=',
+          nullable,
+        );
         renderResults(items);
       }
 
-      document.getElementById("btn-run").addEventListener("click", runDestructuringDemo);
+      document.getElementById('btn-run').addEventListener('click', runDestructuringDemo);
       runDestructuringDemo();
     </script>
     <!-- SCRIPT_END -->
@@ -126,18 +229,24 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./11-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1%E6%B1%87%E6%80%BB.html">← 组件通信汇总</a>
-        <a href="../05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/01-%E5%8A%A8%E6%80%81%E8%B7%AF%E7%94%B1%E5%8F%82%E6%95%B0.html">动态路由参数 →</a>
+        <a href="./11-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1%E6%B1%87%E6%80%BB.html">
+          ← 组件通信汇总
+        </a>
+        <a
+          href="../05-%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%8A%B6%E6%80%81/01-%E5%8A%A8%E6%80%81%E8%B7%AF%E7%94%B1%E5%8F%82%E6%95%B0.html"
+        >
+          动态路由参数 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

@@ -21,10 +21,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TS mini-project</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 720px; line-height: 1.65; }
-      code { background: #f6f8fa; padding: 2px 6px; border-radius: 4px; }
-      pre { background: #f6f8fa; padding: 12px; border-radius: 8px; font-size: 0.875rem; }
-      #log { margin-top: 12px; white-space: pre-wrap; font-size: 0.85rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 720px;
+        line-height: 1.65;
+      }
+      code {
+        background: #f6f8fa;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      pre {
+        background: #f6f8fa;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 0.875rem;
+      }
+      #log {
+        margin-top: 12px;
+        white-space: pre-wrap;
+        font-size: 0.85rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -33,50 +51,187 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>TypeScript mini-project</h1>
-      <p class="hint">本页对应一个真实 TypeScript 小工程，重点不是浏览器交互，而是用 <code>tsc --noEmit</code> 验证源码和配置。</p>
+      <p class="hint">
+        本页对应一个真实 TypeScript 小工程，重点不是浏览器交互，而是用
+        <code>tsc --noEmit</code>
+        验证源码和配置。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>这个 mini-project 用真实文件演示 TypeScript 工程闭环：<code>src/user.ts</code> 定义领域类型和函数，<code>src/index.ts</code> 通过 <code>import type</code> 引入类型，通过普通 <code>import</code> 引入运行时代码，<code>tsconfig.json</code> 决定编译器如何检查。</li>
-          <li><code>tsc --noEmit -p tsconfig.json</code> 会读取项目配置并执行完整类型检查，但不会写入 <code>dist</code>。这适合放进 CI 或本仓库的 <code>npm run validate:tsc</code>，用来证明示例源码仍能在 strict 规则下通过。</li>
-          <li><code>strict</code> 是一组严格检查的总开关，本项目还显式打开 <code>noImplicitAny</code>、<code>strictNullChecks</code> 和 <code>noUnusedLocals</code>。它们分别帮助发现未标注的宽泛参数、可能为空的访问，以及重构后遗留的未使用变量。</li>
-          <li><code>moduleResolution: "bundler"</code> 面向现代打包器解析模型；示例里 <code>import type { User }</code> 表示只在类型层使用 <code>User</code>，避免读者误以为该导入一定会变成运行时代码。</li>
-          <li>常见坑是把类型检查当成运行时测试。<code>formatUser</code> 能保证传入值符合 <code>User</code> 的静态形状，但外部 JSON、接口返回、用户输入和构建产物仍需要运行时校验、单元测试或端到端验证补齐。</li>
+          <li>
+            这个 mini-project 用真实文件演示 TypeScript 工程闭环：
+            <code>src/user.ts</code>
+            定义领域类型和函数，
+            <code>src/index.ts</code>
+            通过
+            <code>import type</code>
+            引入类型，通过普通
+            <code>import</code>
+            引入运行时代码，
+            <code>tsconfig.json</code>
+            决定编译器如何检查。
+          </li>
+          <li>
+            <code>tsc --noEmit -p tsconfig.json</code>
+            会读取项目配置并执行完整类型检查，但不会写入
+            <code>dist</code>
+            。这适合放进 CI 或本仓库的
+            <code>npm run validate:tsc</code>
+            ，用来证明示例源码仍能在 strict 规则下通过。
+          </li>
+          <li>
+            <code>strict</code>
+            是一组严格检查的总开关，本项目还显式打开
+            <code>noImplicitAny</code>
+            、
+            <code>strictNullChecks</code>
+            和
+            <code>noUnusedLocals</code>
+            。它们分别帮助发现未标注的宽泛参数、可能为空的访问，以及重构后遗留的未使用变量。
+          </li>
+          <li>
+            <code>moduleResolution: "bundler"</code>
+            面向现代打包器解析模型；示例里
+            <code>import type { User }</code>
+            表示只在类型层使用
+            <code>User</code>
+            ，避免读者误以为该导入一定会变成运行时代码。
+          </li>
+          <li>
+            常见坑是把类型检查当成运行时测试。
+            <code>formatUser</code>
+            能保证传入值符合
+            <code>User</code>
+            的静态形状，但外部
+            JSON、接口返回、用户输入和构建产物仍需要运行时校验、单元测试或端到端验证补齐。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>tsc --noEmit</code> 在工程里解决什么问题？</strong> 结论是它把 TypeScript 当作类型检查器使用，不生成 JS 产物。原因是很多项目已经由 Vite、Webpack、Babel 或 swc 负责转译，仍需要独立命令保证类型没有退化。项目里通常把它放在 CI、提交前检查或发布前验证中。</li>
-          <li><strong>为什么推荐开启 <code>strict</code>？</strong> 结论是 strict 比零散类型注解更能建立工程级安全基线。原因是它会系统性收紧隐式 <code>any</code>、空值、函数参数等规则，让错误在改代码时暴露。边界是迁移老项目可以分阶段开启，但新项目应默认 strict。</li>
-          <li><strong><code>import type</code> 和普通 <code>import</code> 有什么区别？</strong> 结论是 <code>import type</code> 只服务类型系统，普通 <code>import</code> 表示运行时也需要这个模块值。原因是 TypeScript 会在 emit 阶段擦除类型导入，清晰区分后能减少循环依赖和副作用误判。项目里类型和函数来自同一文件时，也建议像本例一样分开写。</li>
-          <li><strong>类型检查通过是否等于程序没有 bug？</strong> 结论是否定的，类型检查只证明代码满足静态契约。原因是接口返回、用户输入、时间、网络失败和权限状态都发生在运行时。真实项目还要配合运行时 schema 校验、单元测试、集成测试和错误监控。</li>
+          <li>
+            <strong>
+              <code>tsc --noEmit</code>
+              在工程里解决什么问题？
+            </strong>
+            结论是它把 TypeScript 当作类型检查器使用，不生成 JS 产物。原因是很多项目已经由
+            Vite、Webpack、Babel 或 swc 负责转译，仍需要独立命令保证类型没有退化。项目里通常把它放在
+            CI、提交前检查或发布前验证中。
+          </li>
+          <li>
+            <strong>
+              为什么推荐开启
+              <code>strict</code>
+              ？
+            </strong>
+            结论是 strict 比零散类型注解更能建立工程级安全基线。原因是它会系统性收紧隐式
+            <code>any</code>
+            、空值、函数参数等规则，让错误在改代码时暴露。边界是迁移老项目可以分阶段开启，但新项目应默认
+            strict。
+          </li>
+          <li>
+            <strong>
+              <code>import type</code>
+              和普通
+              <code>import</code>
+              有什么区别？
+            </strong>
+            结论是
+            <code>import type</code>
+            只服务类型系统，普通
+            <code>import</code>
+            表示运行时也需要这个模块值。原因是 TypeScript 会在 emit
+            阶段擦除类型导入，清晰区分后能减少循环依赖和副作用误判。项目里类型和函数来自同一文件时，也建议像本例一样分开写。
+          </li>
+          <li>
+            <strong>类型检查通过是否等于程序没有 bug？</strong>
+            结论是否定的，类型检查只证明代码满足静态契约。原因是接口返回、用户输入、时间、网络失败和权限状态都发生在运行时。真实项目还要配合运行时
+            schema 校验、单元测试、集成测试和错误监控。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noopener">TypeScript Handbook：TypeScript 入门与类型检查定位</a></li>
-          <li><a href="https://www.typescriptlang.org/tsconfig/#noEmit" target="_blank" rel="noopener">TSConfig Reference：noEmit</a></li>
-          <li><a href="https://www.typescriptlang.org/tsconfig/#strict" target="_blank" rel="noopener">TSConfig Reference：strict</a></li>
-          <li><a href="https://www.typescriptlang.org/tsconfig/#moduleResolution" target="_blank" rel="noopener">TSConfig Reference：moduleResolution</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html" target="_blank" rel="noopener">TypeScript 3.8 Release Notes：type-only imports and exports</a></li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/intro.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook：TypeScript 入门与类型检查定位
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/tsconfig/#noEmit"
+              target="_blank"
+              rel="noopener"
+            >
+              TSConfig Reference：noEmit
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/tsconfig/#strict"
+              target="_blank"
+              rel="noopener"
+            >
+              TSConfig Reference：strict
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/tsconfig/#moduleResolution"
+              target="_blank"
+              rel="noopener"
+            >
+              TSConfig Reference：moduleResolution
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript 3.8 Release Notes：type-only imports and exports
+            </a>
+          </li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>目录 <code>apps/typescript/mini-project/</code> 包含可编译的 TypeScript 源码；类型检查须 CLI 验证。</p>
-    <pre>npm run validate:tsc
-# 等价于：
-npx --yes -p typescript@5.8.3 tsc --noEmit -p apps/typescript/mini-project/tsconfig.json</pre>
-    <p>源码：<code>src/user.ts</code>、<code>src/index.ts</code> · 配置：<code>tsconfig.json</code>（<code>strict: true</code>）</p>
-    <pre>// src/user.ts
-export type User = { id: number; name: string; email?: string };
-
-export function formatUser(u: User): string {
-  return u.email ? `${u.name} &lt;${u.email}&gt;` : u.name;
-}
-
-// 取消下面这行注释，validate:tsc 应报错：
-// const bad: User = { id: "x", name: 1 };</pre>
+    <p>
+      目录
+      <code>apps/typescript/mini-project/</code>
+      包含可编译的 TypeScript 源码；类型检查须 CLI 验证。
+    </p>
+    <pre>
+npm run validate:tsc
+      # 等价于：
+      npx --yes -p typescript@5.8.3 tsc --noEmit -p apps/typescript/mini-project/tsconfig.json</pre
+    >
+    <p>
+      源码：
+      <code>src/user.ts</code>
+      、
+      <code>src/index.ts</code>
+      · 配置：
+      <code>tsconfig.json</code>
+      （
+      <code>strict: true</code>
+      ）
+    </p>
+    <pre>
+// src/user.ts
+        export type User = { id: number; name: string; email?: string };
+        export function formatUser(u: User): string {
+        return u.email ? `${u.name} &lt;${u.email}&gt;` : u.name;
+        }
+        // 取消下面这行注释，validate:tsc 应报错：
+        // const bad: User = { id: "x", name: 1 };</pre
+    >
     <p><strong>运行时 JavaScript（本页执行，对照 src/user.ts）</strong></p>
     <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
@@ -91,19 +246,22 @@ export function formatUser(u: User): string {
       }
 
       // ============ 2. import type 边界说明 ============
-      const sample = { id: 1, name: "Ada", email: "ada@example.com" };
+      const sample = { id: 1, name: 'Ada', email: 'ada@example.com' };
 
       const lines = [];
-      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+      const assert = (cond, msg) => lines.push((cond ? '✓ ' : '✗ ') + msg);
 
-      assert(formatUser(sample) === "Ada <ada@example.com>", "formatUser(sample) 运行时等价逻辑");
-      assert(formatUser({ id: 2, name: "Bob" }) === "Bob", "email 可选分支：无 email 时只返回 name");
+      assert(formatUser(sample) === 'Ada <ada@example.com>', 'formatUser(sample) 运行时等价逻辑');
       assert(
-        typeof formatUser === "function",
-        "tsc --noEmit 负责 strict 类型检查；import type 在 emit 阶段擦除"
+        formatUser({ id: 2, name: 'Bob' }) === 'Bob',
+        'email 可选分支：无 email 时只返回 name',
+      );
+      assert(
+        typeof formatUser === 'function',
+        'tsc --noEmit 负责 strict 类型检查；import type 在 emit 阶段擦除',
       );
 
-      document.getElementById("log").textContent = lines.join("\n");
+      document.getElementById('log').textContent = lines.join('\n');
     </script>
     <!-- SCRIPT_END -->
 
@@ -112,18 +270,26 @@ export function formatUser(u: User): string {
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="../03-%E5%B7%A5%E7%A8%8B%E4%B8%8E%E6%A1%86%E6%9E%B6/04-React%E8%A1%A8%E5%8D%95%E4%B8%8EVue-emits%E7%B1%BB%E5%9E%8B.html">相关 · React表单与Vue-emits类型</a>
-        <a href="../03-%E5%B7%A5%E7%A8%8B%E4%B8%8E%E6%A1%86%E6%9E%B6/04-React%E8%A1%A8%E5%8D%95%E4%B8%8EVue-emits%E7%B1%BB%E5%9E%8B.html">← React表单与Vue-emits类型</a>
+        <a
+          href="../03-%E5%B7%A5%E7%A8%8B%E4%B8%8E%E6%A1%86%E6%9E%B6/04-React%E8%A1%A8%E5%8D%95%E4%B8%8EVue-emits%E7%B1%BB%E5%9E%8B.html"
+        >
+          相关 · React表单与Vue-emits类型
+        </a>
+        <a
+          href="../03-%E5%B7%A5%E7%A8%8B%E4%B8%8E%E6%A1%86%E6%9E%B6/04-React%E8%A1%A8%E5%8D%95%E4%B8%8EVue-emits%E7%B1%BB%E5%9E%8B.html"
+        >
+          ← React表单与Vue-emits类型
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

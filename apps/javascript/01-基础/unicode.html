@@ -29,24 +29,99 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>JS 内部 UTF-16；基本字符 1 个 code unit；增补平面字符（emoji）占 2 个 code unit（代理对）。</li>
-          <li><code>charCodeAt</code> 返回 16 位单元；<code>codePointAt</code> 返回完整 Unicode 码点。</li>
-          <li><code>str.length</code> 是 code unit 数，不是「字符」数；'😀'.length === 2。</li>
-          <li><code>for...of</code>、展开运算符 <code>[...str]</code> 按码点迭代；传统 for 按索引可能切半代理对。</li>
-          <li><code>String.fromCodePoint</code> / <code>fromCharCode</code> 由码点/单元建串。</li>
+          <li>
+            JS 内部 UTF-16；基本字符 1 个 code unit；增补平面字符（emoji）占 2 个 code
+            unit（代理对）。
+          </li>
+          <li>
+            <code>charCodeAt</code>
+            返回 16 位单元；
+            <code>codePointAt</code>
+            返回完整 Unicode 码点。
+          </li>
+          <li>
+            <code>str.length</code>
+            是 code unit 数，不是「字符」数；'😀'.length === 2。
+          </li>
+          <li>
+            <code>for...of</code>
+            、展开运算符
+            <code>[...str]</code>
+            按码点迭代；传统 for 按索引可能切半代理对。
+          </li>
+          <li>
+            <code>String.fromCodePoint</code>
+            /
+            <code>fromCharCode</code>
+            由码点/单元建串。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>emoji 长度为什么不是 1？</strong> 结论是 JS 字符串长度统计 UTF-16 code unit，不是用户感知字符。BMP 外字符通常由代理对组成，所以 <code>"😀".length</code> 是 2；项目里统计展示字符要考虑码点甚至 grapheme cluster。</li>
-          <li><strong>charCodeAt 和 codePointAt 区别是什么？</strong> <code>charCodeAt</code> 返回某个 UTF-16 单元，<code>codePointAt</code> 在高代理项位置能返回完整码点。处理 emoji、罕见汉字等增补平面字符时优先用 <code>codePointAt</code> 和 <code>fromCodePoint</code>。</li>
-          <li><strong>如何正确遍历含 emoji 的字符串？</strong> 使用 <code>for...of</code>、<code>Array.from(str)</code> 或带 <code>u</code> 标志的正则，避免普通索引把代理对切开。边界是国旗、肤色、组合符这类 grapheme cluster 仍可能由多个码点组成。</li>
+          <li>
+            <strong>emoji 长度为什么不是 1？</strong>
+            结论是 JS 字符串长度统计 UTF-16 code unit，不是用户感知字符。BMP
+            外字符通常由代理对组成，所以
+            <code>"😀".length</code>
+            是 2；项目里统计展示字符要考虑码点甚至 grapheme cluster。
+          </li>
+          <li>
+            <strong>charCodeAt 和 codePointAt 区别是什么？</strong>
+            <code>charCodeAt</code>
+            返回某个 UTF-16 单元，
+            <code>codePointAt</code>
+            在高代理项位置能返回完整码点。处理 emoji、罕见汉字等增补平面字符时优先用
+            <code>codePointAt</code>
+            和
+            <code>fromCodePoint</code>
+            。
+          </li>
+          <li>
+            <strong>如何正确遍历含 emoji 的字符串？</strong>
+            使用
+            <code>for...of</code>
+            、
+            <code>Array.from(str)</code>
+            或带
+            <code>u</code>
+            标志的正则，避免普通索引把代理对切开。边界是国旗、肤色、组合符这类 grapheme cluster
+            仍可能由多个码点组成。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/codePointAt" target="_blank" rel="noopener">MDN Web Docs：String.prototype.codePointAt()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/charCodeAt" target="_blank" rel="noopener">MDN Web Docs：String.prototype.charCodeAt()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/fromCodePoint" target="_blank" rel="noopener">MDN Web Docs：String.fromCodePoint()</a></li>
-          <li><a href="https://javascript.info/unicode" target="_blank" rel="noopener">JavaScript.info：Unicode, String internals</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/codePointAt"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN Web Docs：String.prototype.codePointAt()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/charCodeAt"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN Web Docs：String.prototype.charCodeAt()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/fromCodePoint"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN Web Docs：String.fromCodePoint()
+            </a>
+          </li>
+          <li>
+            <a href="https://javascript.info/unicode" target="_blank" rel="noopener">
+              JavaScript.info：Unicode, String internals
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -55,55 +130,56 @@
     <!-- SCRIPT_START -->
     <script>
       // ============ 1. 字符 → unicode 码点 ============
-      const str = "ABC";
-      console.log("A:", str.codePointAt(0)); // 65
-      console.log("B:", str.codePointAt(1)); // 66
-      console.log("C:", str.codePointAt(2)); // 67
-      console.log("A 16 进制:", str.codePointAt(0).toString(16)); // '41'
+      const str = 'ABC';
+      console.log('A:', str.codePointAt(0)); // 65
+      console.log('B:', str.codePointAt(1)); // 66
+      console.log('C:', str.codePointAt(2)); // 67
+      console.log('A 16 进制:', str.codePointAt(0).toString(16)); // '41'
 
       // ============ 2. unicode 码点 → 字符 ============
-      console.log(String.fromCharCode(65));        // 'A'
-      console.log(String.fromCodePoint(0x1F600));   // '😀'
+      console.log(String.fromCharCode(65)); // 'A'
+      console.log(String.fromCodePoint(0x1f600)); // '😀'
 
       // ============ 3. unicode 转义序列字符串 ↔ 字符 ============
       // \uXXXX 在源码中即被解析；通过 escape/unescape 也能转回（不推荐，已废弃）
-      const cn = "\u4e2d\u56fd";
-      console.log("\\u4e2d\\u56fd =", cn); // '中国'
+      const cn = '\u4e2d\u56fd';
+      console.log('\\u4e2d\\u56fd =', cn); // '中国'
 
       // 字符串 → "\\uXXXX\\uXXXX" 形式
       function charToUnicode(str) {
-        let r = "";
+        let r = '';
         for (const ch of str) {
           let hex = ch.codePointAt(0).toString(16);
-          while (hex.length < 4) hex = "0" + hex;
-          r += "\\u" + hex;
+          while (hex.length < 4) hex = '0' + hex;
+          r += '\\u' + hex;
         }
         return r;
       }
-      console.log("'中国' →", charToUnicode("中国"));
-      console.log("' ' →", charToUnicode(" "));
+      console.log("'中国' →", charToUnicode('中国'));
+      console.log("' ' →", charToUnicode(' '));
 
       // ============ 4. for...of 能正确遍历 emoji，for...in/length 不行 ============
-      const emoji = "a😀b";
-      console.log("length 错觉:", emoji.length); // 4 —— 😀 占 2 个 UTF-16 单元
-      console.log("for-of 正确:");
+      const emoji = 'a😀b';
+      console.log('length 错觉:', emoji.length); // 4 —— 😀 占 2 个 UTF-16 单元
+      console.log('for-of 正确:');
       for (const ch of emoji) console.log(ch);
-      console.log("[...emoji]:", [...emoji]);
+      console.log('[...emoji]:', [...emoji]);
 
       // ============ 5. for-in vs for-of vs hasOwnProperty ============
       // 在原型上挂一个方法
-      Object.prototype.printName = function () { console.log(this); };
-      const person = { name: "wc", age: 23 };
+      Object.prototype.printName = function () {
+        console.log(this);
+      };
+      const person = { name: 'wc', age: 23 };
 
-      console.log("for in（含原型）:");
+      console.log('for in（含原型）:');
       for (const key in person) {
-        console.log(key, "isOwn:", person.hasOwnProperty(key));
+        console.log(key, 'isOwn:', person.hasOwnProperty(key));
       }
-      console.log("Object.keys 只返回自身可枚举属性:", Object.keys(person));
+      console.log('Object.keys 只返回自身可枚举属性:', Object.keys(person));
 
       // 清理掉刚才挂的原型方法，避免污染
       delete Object.prototype.printName;
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -112,15 +188,23 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="./unicode-%E5%AD%97%E7%AC%A6%E7%AD%89%E4%BB%B7%E6%80%A7.html">相关 · unicode-字符等价性</a>
-        <a href="./unicode-%E5%AD%97%E7%AC%A6%E7%AD%89%E4%BB%B7%E6%80%A7.html">← unicode-字符等价性</a>
-        <a href="./%E6%AD%A3%E5%88%99/01-%E6%AD%A3%E5%88%99-URL%E8%B7%AF%E5%BE%84%E5%8C%B9%E9%85%8D.html">正则-URL路径匹配 →</a>
+        <a href="./unicode-%E5%AD%97%E7%AC%A6%E7%AD%89%E4%BB%B7%E6%80%A7.html">
+          相关 · unicode-字符等价性
+        </a>
+        <a href="./unicode-%E5%AD%97%E7%AC%A6%E7%AD%89%E4%BB%B7%E6%80%A7.html">
+          ← unicode-字符等价性
+        </a>
+        <a
+          href="./%E6%AD%A3%E5%88%99/01-%E6%AD%A3%E5%88%99-URL%E8%B7%AF%E5%BE%84%E5%8C%B9%E9%85%8D.html"
+        >
+          正则-URL路径匹配 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

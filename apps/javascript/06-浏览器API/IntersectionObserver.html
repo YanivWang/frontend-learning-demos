@@ -50,7 +50,7 @@
       h1 {
         font-size: 28px;
         margin-bottom: 8px;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
       }
       .subtitle {
         font-size: 16px;
@@ -75,7 +75,7 @@
         padding: 5px 10px;
         border-radius: 20px;
         font-weight: bold;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       }
       .settings {
         display: flex;
@@ -164,8 +164,12 @@
         margin-bottom: 10px;
       }
       @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
       }
       footer {
         text-align: center;
@@ -188,7 +192,7 @@
         align-items: center;
         font-weight: bold;
         font-size: 18px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
       }
       @media (max-width: 480px) {
         .controls {
@@ -208,28 +212,117 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>IntersectionObserver 图片懒加载</h1>
-      <p class="hint">请阅读本复习区，向下滚动下方演示区观察懒加载；图片 URL 依赖外网，加载失败会显示错误占位。DevTools Console 可查看触底日志。</p>
+      <p class="hint">
+        请阅读本复习区，向下滚动下方演示区观察懒加载；图片 URL
+        依赖外网，加载失败会显示错误占位。DevTools Console 可查看触底日志。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>IntersectionObserver</code> 让浏览器异步计算目标元素与视口或指定 <code>root</code> 的交叉状态，回调拿到的是本轮状态发生变化的 <code>IntersectionObserverEntry</code> 集合。</li>
-          <li><code>root</code> 默认为视口；<code>rootMargin</code> 可以扩大观察区域，本页设置底部 <code>100px</code> 提前加载；<code>threshold</code> 控制可见比例达到多少时触发。</li>
-          <li>图片懒加载的推荐流程是先渲染占位内容，把真实地址放到 <code>data-src</code>，进入观察区域后再赋给 <code>img.src</code>，加载成功后移除占位并停止观察。</li>
-          <li>常见坑是只处理成功路径：图片可能跨域失败、网络失败或被重置按钮重复初始化，所以需要 <code>onload</code>/<code>onerror</code>、<code>unobserve</code> 和旧 observer 的 <code>disconnect</code>。</li>
-          <li>它适合可见性驱动的图片懒加载、曝光统计和无限滚动哨兵；如果需要逐帧跟随滚动位置，仍应使用节流后的 <code>scroll</code> 或 <code>requestAnimationFrame</code>。</li>
+          <li>
+            <code>IntersectionObserver</code>
+            让浏览器异步计算目标元素与视口或指定
+            <code>root</code>
+            的交叉状态，回调拿到的是本轮状态发生变化的
+            <code>IntersectionObserverEntry</code>
+            集合。
+          </li>
+          <li>
+            <code>root</code>
+            默认为视口；
+            <code>rootMargin</code>
+            可以扩大观察区域，本页设置底部
+            <code>100px</code>
+            提前加载；
+            <code>threshold</code>
+            控制可见比例达到多少时触发。
+          </li>
+          <li>
+            图片懒加载的推荐流程是先渲染占位内容，把真实地址放到
+            <code>data-src</code>
+            ，进入观察区域后再赋给
+            <code>img.src</code>
+            ，加载成功后移除占位并停止观察。
+          </li>
+          <li>
+            常见坑是只处理成功路径：图片可能跨域失败、网络失败或被重置按钮重复初始化，所以需要
+            <code>onload</code>
+            /
+            <code>onerror</code>
+            、
+            <code>unobserve</code>
+            和旧 observer 的
+            <code>disconnect</code>
+            。
+          </li>
+          <li>
+            它适合可见性驱动的图片懒加载、曝光统计和无限滚动哨兵；如果需要逐帧跟随滚动位置，仍应使用节流后的
+            <code>scroll</code>
+            或
+            <code>requestAnimationFrame</code>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>IntersectionObserver 为什么比 scroll 事件更适合懒加载？</strong> 结论是它把可见性判断交给浏览器异步完成，通常比每次滚动手动计算元素位置更稳。原因是浏览器可以批量调度交叉状态变化，减少主线程上的频繁布局读取。项目里仍要为不支持的旧环境准备降级，或直接使用原生 <code>loading="lazy"</code> 满足简单图片场景。</li>
-          <li><strong>rootMargin 和 threshold 在图片预加载里分别控制什么？</strong> 结论是 <code>rootMargin</code> 控制观察区域边界，<code>threshold</code> 控制目标可见比例。原因是提前加载通常希望图片还没真正进入视口就触发，而不是等完全可见。移动端可根据网络、图片尺寸和首屏策略调大底部 <code>rootMargin</code>。</li>
-          <li><strong>懒加载图片进入视口后为什么要 unobserve？</strong> 结论是加载完成后应停止观察这个元素。原因是同一元素滚入滚出会继续产生回调，可能重复赋值、重复计数或浪费 observer 资源。列表重置、虚拟滚动销毁和组件卸载时还要对 observer 调用 <code>disconnect</code>。</li>
-          <li><strong>图片加载失败或重复重置时要补哪些边界处理？</strong> 结论是至少要处理 <code>onerror</code>、保持可访问的 <code>alt</code>、避免重复计数并清理旧 observer。原因是懒加载触发只代表开始请求，不代表图片真的加载成功。真实项目还会加入占位图、重试、错误样式和监控埋点。</li>
+          <li>
+            <strong>IntersectionObserver 为什么比 scroll 事件更适合懒加载？</strong>
+            结论是它把可见性判断交给浏览器异步完成，通常比每次滚动手动计算元素位置更稳。原因是浏览器可以批量调度交叉状态变化，减少主线程上的频繁布局读取。项目里仍要为不支持的旧环境准备降级，或直接使用原生
+            <code>loading="lazy"</code>
+            满足简单图片场景。
+          </li>
+          <li>
+            <strong>rootMargin 和 threshold 在图片预加载里分别控制什么？</strong>
+            结论是
+            <code>rootMargin</code>
+            控制观察区域边界，
+            <code>threshold</code>
+            控制目标可见比例。原因是提前加载通常希望图片还没真正进入视口就触发，而不是等完全可见。移动端可根据网络、图片尺寸和首屏策略调大底部
+            <code>rootMargin</code>
+            。
+          </li>
+          <li>
+            <strong>懒加载图片进入视口后为什么要 unobserve？</strong>
+            结论是加载完成后应停止观察这个元素。原因是同一元素滚入滚出会继续产生回调，可能重复赋值、重复计数或浪费
+            observer 资源。列表重置、虚拟滚动销毁和组件卸载时还要对 observer 调用
+            <code>disconnect</code>
+            。
+          </li>
+          <li>
+            <strong>图片加载失败或重复重置时要补哪些边界处理？</strong>
+            结论是至少要处理
+            <code>onerror</code>
+            、保持可访问的
+            <code>alt</code>
+            、避免重复计数并清理旧
+            observer。原因是懒加载触发只代表开始请求，不代表图片真的加载成功。真实项目还会加入占位图、重试、错误样式和监控埋点。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API" target="_blank" rel="noreferrer">MDN: Intersection Observer API</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/rootMargin" target="_blank" rel="noreferrer">MDN: IntersectionObserver.rootMargin</a></li>
-          <li><a href="https://www.w3.org/TR/intersection-observer/" target="_blank" rel="noreferrer">W3C: Intersection Observer</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Intersection Observer API
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/rootMargin"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: IntersectionObserver.rootMargin
+            </a>
+          </li>
+          <li>
+            <a href="https://www.w3.org/TR/intersection-observer/" target="_blank" rel="noreferrer">
+              W3C: Intersection Observer
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -237,45 +330,62 @@
 
     <!-- PAGE_DOM_START -->
     <section class="demo-block">
-    <h2>懒加载演示</h2>
-    <p class="tip">rootMargin 底部 +100px 预加载；进入视口后 unobserve 停止观察。需外网加载 Unsplash/imgix 图片。</p>
-    <div class="container">
-      <header>
-        <p class="subtitle">使用IntersectionObserver API实现</p>
-        <p>向下滚动查看延迟加载效果 →</p>
-      </header>
-      <div class="controls">
-        <div class="stats">
-          <span id="total">加载图片: 0</span>
-          <span id="loaded">已加载: 0</span>
-          <span id="unloaded">未加载: 0</span>
+      <h2>懒加载演示</h2>
+      <p class="tip">
+        rootMargin 底部 +100px 预加载；进入视口后 unobserve 停止观察。需外网加载 Unsplash/imgix
+        图片。
+      </p>
+      <div class="container">
+        <header>
+          <p class="subtitle">使用IntersectionObserver API实现</p>
+          <p>向下滚动查看延迟加载效果 →</p>
+        </header>
+        <div class="controls">
+          <div class="stats">
+            <span id="total">加载图片: 0</span>
+            <span id="loaded">已加载: 0</span>
+            <span id="unloaded">未加载: 0</span>
+          </div>
+          <div class="settings">
+            <button id="resetBtn">重置图片</button>
+          </div>
         </div>
-        <div class="settings">
-          <button id="resetBtn">重置图片</button>
+        <div class="content">
+          <div class="instructions">
+            <h3>工作原理说明</h3>
+            <p>• 所有图片初始状态仅显示占位符</p>
+            <p>• 当图片进入视口时，自动加载真实图片</p>
+            <p>• 底部标记显示懒加载触发过程</p>
+            <p>• 统计信息展示加载状态</p>
+          </div>
+          <div class="image-container">
+            <!-- 图片会通过JS动态添加 -->
+          </div>
+          <!-- 滚动底部标记 -->
+          <div
+            class="lazy-img"
+            style="height: 50px; margin-top: 50px; background: transparent"
+            id="sentinel"
+          >
+            <div
+              style="
+                background: #4e73df;
+                color: white;
+                padding: 10px;
+                border-radius: 5px;
+                font-weight: bold;
+              "
+            >
+              懒加载触发标记线
+            </div>
+          </div>
         </div>
+        <footer>
+          <p>仅当图片进入视口时才会加载真实图片</p>
+          <p>提高页面加载速度，优化移动端性能</p>
+        </footer>
       </div>
-      <div class="content">
-        <div class="instructions">
-          <h3>工作原理说明</h3>
-          <p>• 所有图片初始状态仅显示占位符</p>
-          <p>• 当图片进入视口时，自动加载真实图片</p>
-          <p>• 底部标记显示懒加载触发过程</p>
-          <p>• 统计信息展示加载状态</p>
-        </div>
-        <div class="image-container">
-          <!-- 图片会通过JS动态添加 -->
-        </div>
-        <!-- 滚动底部标记 -->
-        <div class="lazy-img" style="height: 50px; margin-top: 50px; background: transparent;" id="sentinel">
-          <div style="background: #4e73df; color: white; padding: 10px; border-radius: 5px; font-weight: bold;">懒加载触发标记线</div>
-        </div>
-      </div>
-      <footer>
-        <p>仅当图片进入视口时才会加载真实图片</p>
-        <p>提高页面加载速度，优化移动端性能</p>
-      </footer>
-    </div>
-    <div class="counter" id="counter">0</div>
+      <div class="counter" id="counter">0</div>
     </section>
     <!-- PAGE_DOM_END -->
 
@@ -283,14 +393,14 @@
     <script>
       // ============ 1. 图片源（依赖外网） ============
       const imageSources = [
-        "https://images.unsplash.com/photo-1682687219640-b3f11f4b7234?auto=format&fit=crop&q=80",
-        "https://ix-marketing.imgix.net/bg-remove_after.png?auto=format,compress&w=3524",
-        "https://ix-marketing.imgix.net/autocompress.png?auto=format,compress&w=3524",
-        "https://ix-marketing.imgix.net/focalpoint.png?auto=format,compress&w=3524",
-        "https://ix-marketing.imgix.net/autotagging.png?auto=format,compress&w=3524",
-        "https://ix-marketing.imgix.net/case-study_tile_swimply.png?auto=format,compress&w=3038",
-        "https://ix-marketing.imgix.net/case-study_tile_shinola.png?auto=format,compress&w=3038",
-        "https://ix-marketing.imgix.net/case-study_judge.me.png?auto=format,compress&w=3038",
+        'https://images.unsplash.com/photo-1682687219640-b3f11f4b7234?auto=format&fit=crop&q=80',
+        'https://ix-marketing.imgix.net/bg-remove_after.png?auto=format,compress&w=3524',
+        'https://ix-marketing.imgix.net/autocompress.png?auto=format,compress&w=3524',
+        'https://ix-marketing.imgix.net/focalpoint.png?auto=format,compress&w=3524',
+        'https://ix-marketing.imgix.net/autotagging.png?auto=format,compress&w=3524',
+        'https://ix-marketing.imgix.net/case-study_tile_swimply.png?auto=format,compress&w=3038',
+        'https://ix-marketing.imgix.net/case-study_tile_shinola.png?auto=format,compress&w=3038',
+        'https://ix-marketing.imgix.net/case-study_judge.me.png?auto=format,compress&w=3038',
       ];
 
       const imageContainer = document.querySelector('.image-container');
@@ -352,58 +462,60 @@
           sentinelObserver.disconnect();
         }
 
-        activeObserver = new IntersectionObserver((entries, observer) => {
-          counter.textContent = entries.length;
-          counter.animate([
-            { transform: 'scale(1.2)' },
-            { transform: 'scale(1)' }
-          ], { duration: 500 });
+        activeObserver = new IntersectionObserver(
+          (entries, observer) => {
+            counter.textContent = entries.length;
+            counter.animate([{ transform: 'scale(1.2)' }, { transform: 'scale(1)' }], {
+              duration: 500,
+            });
 
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              const imgElement = entry.target.querySelector('img');
-              if (!entry.target.classList.contains('loaded')) {
-                setTimeout(() => {
-                  if (!entry.target.isConnected) {
-                    return;
-                  }
-                  imgElement.onload = () => {
-                    entry.target.classList.add('loaded');
-                    loadedImages++;
-                    updateCounters();
-                    setTimeout(() => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                const imgElement = entry.target.querySelector('img');
+                if (!entry.target.classList.contains('loaded')) {
+                  setTimeout(() => {
+                    if (!entry.target.isConnected) {
+                      return;
+                    }
+                    imgElement.onload = () => {
+                      entry.target.classList.add('loaded');
+                      loadedImages++;
+                      updateCounters();
+                      setTimeout(() => {
+                        const placeholder = entry.target.querySelector('.placeholder');
+                        if (placeholder) {
+                          placeholder.remove();
+                        }
+                      }, 500);
+                    };
+                    imgElement.onerror = () => {
+                      entry.target.classList.add('error');
                       const placeholder = entry.target.querySelector('.placeholder');
                       if (placeholder) {
-                        placeholder.remove();
+                        placeholder.textContent = '图片加载失败，请稍后重试';
                       }
-                    }, 500);
-                  };
-                  imgElement.onerror = () => {
-                    entry.target.classList.add('error');
-                    const placeholder = entry.target.querySelector('.placeholder');
-                    if (placeholder) {
-                      placeholder.textContent = '图片加载失败，请稍后重试';
-                    }
-                  };
-                  imgElement.src = imgElement.dataset.src;
-                  observer.unobserve(entry.target); // 加载后停止观察
-                }, 300);
+                    };
+                    imgElement.src = imgElement.dataset.src;
+                    observer.unobserve(entry.target); // 加载后停止观察
+                  }, 300);
+                }
               }
-            }
-          });
-        }, {
-          root: null,
-          threshold: 0.1,
-          rootMargin: '0px 0px 100px 0px',
-        });
+            });
+          },
+          {
+            root: null,
+            threshold: 0.1,
+            rootMargin: '0px 0px 100px 0px',
+          },
+        );
 
-        document.querySelectorAll('.lazy-img:not(#sentinel)').forEach(img => {
+        document.querySelectorAll('.lazy-img:not(#sentinel)').forEach((img) => {
           activeObserver.observe(img);
         });
 
         const sentinel = document.getElementById('sentinel');
-        sentinelObserver = new IntersectionObserver(entries => {
-          entries.forEach(entry => {
+        sentinelObserver = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
             if (entry.isIntersecting) {
               console.log('触底 - 底部哨兵元素进入视口');
             }
@@ -439,9 +551,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

@@ -27,29 +27,142 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>面试简化版 Promise</h1>
-      <p class="hint">先看本复习区，再查看下方输出是否与标准答法一致；链式演示含约 20ms 延迟，细节可打开 DevTools Console。</p>
+      <p class="hint">
+        先看本复习区，再查看下方输出是否与标准答法一致；链式演示含约 20ms 延迟，细节可打开 DevTools
+        Console。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>Promise</code> 有 <code>pending</code>、<code>fulfilled</code>、<code>rejected</code> 三种状态；一旦从等待态落定，就不能再被后续 <code>resolve</code> 或 <code>reject</code> 改写。</li>
-          <li><code>then</code> 返回一个新的 <code>Promise</code>，新状态由回调返回值决定：返回普通值则 fulfilled，抛错则 rejected，返回另一个 Promise 则跟随它的最终状态。</li>
-          <li>Promise 回调应异步执行；本 demo 用 <code>queueMicrotask()</code> 演示微任务调度，让 <code>then</code> 回调晚于当前同步代码执行。</li>
-          <li><code>catch</code> 本质上是只传失败回调的 <code>then</code>，<code>finally</code> 适合释放资源或收尾，但不应吞掉原本的成功值或失败原因。</li>
-          <li>真实 Promise 还要处理 thenable 同化、自解析循环、宿主未处理拒绝追踪等细节；面试版可以先讲清状态机、回调队列、链式解析，再说明边界。</li>
-          <li>项目中优先使用原生 <code>Promise</code> 和 <code>async/await</code>；手写题用于理解异步模型，不应用自定义实现替换标准能力。</li>
+          <li>
+            <code>Promise</code>
+            有
+            <code>pending</code>
+            、
+            <code>fulfilled</code>
+            、
+            <code>rejected</code>
+            三种状态；一旦从等待态落定，就不能再被后续
+            <code>resolve</code>
+            或
+            <code>reject</code>
+            改写。
+          </li>
+          <li>
+            <code>then</code>
+            返回一个新的
+            <code>Promise</code>
+            ，新状态由回调返回值决定：返回普通值则 fulfilled，抛错则 rejected，返回另一个 Promise
+            则跟随它的最终状态。
+          </li>
+          <li>
+            Promise 回调应异步执行；本 demo 用
+            <code>queueMicrotask()</code>
+            演示微任务调度，让
+            <code>then</code>
+            回调晚于当前同步代码执行。
+          </li>
+          <li>
+            <code>catch</code>
+            本质上是只传失败回调的
+            <code>then</code>
+            ，
+            <code>finally</code>
+            适合释放资源或收尾，但不应吞掉原本的成功值或失败原因。
+          </li>
+          <li>
+            真实 Promise 还要处理 thenable
+            同化、自解析循环、宿主未处理拒绝追踪等细节；面试版可以先讲清状态机、回调队列、链式解析，再说明边界。
+          </li>
+          <li>
+            项目中优先使用原生
+            <code>Promise</code>
+            和
+            <code>async/await</code>
+            ；手写题用于理解异步模型，不应用自定义实现替换标准能力。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>Promise</code> 为什么状态一旦改变就不能再变？</strong> 结论：Promise 只能从 <code>pending</code> 变为 fulfilled 或 rejected，落定后不可逆。原因是异步结果必须有稳定的最终状态，否则多个回调链会看到互相矛盾的结果。边界是重复调用 <code>resolve</code>/<code>reject</code> 只应第一次生效，后续调用应被忽略。</li>
-          <li><strong><code>then</code> 为什么必须返回新的 <code>Promise</code>？</strong> 结论：为了让链式调用能表达“上一步处理后的下一个异步结果”。原因是每个 <code>then</code> 都可能返回值、抛异常或返回另一个 Promise，新 Promise 负责承接这些结果。项目里用 <code>return</code> 把异步结果传下去，否则后续链会拿到 <code>undefined</code>。</li>
-          <li><strong>回调为什么要异步执行而不是 <code>resolve</code> 后同步调用？</strong> 结论：Promise 反应任务要在当前同步调用栈结束后执行。原因是这能保证 <code>then</code> 注册顺序、同步代码顺序和异常传播语义稳定。边界是本 demo 用 <code>queueMicrotask</code> 近似演示，真实规范由宿主的 Promise Jobs / microtask 队列调度。</li>
-          <li><strong>手写 <code>Promise</code> 和原生 <code>Promise</code> 有哪些边界差异？</strong> 结论：面试手写版通常只覆盖状态机、回调队列和链式解析。原因是完整实现还要处理 thenable、循环引用、静态组合方法、未处理拒绝事件和跨 realm 行为。实际项目必须使用原生 Promise 或成熟运行时，不要引入自制 Promise 替换标准实现。</li>
+          <li>
+            <strong>
+              <code>Promise</code>
+              为什么状态一旦改变就不能再变？
+            </strong>
+            结论：Promise 只能从
+            <code>pending</code>
+            变为 fulfilled 或
+            rejected，落定后不可逆。原因是异步结果必须有稳定的最终状态，否则多个回调链会看到互相矛盾的结果。边界是重复调用
+            <code>resolve</code>
+            /
+            <code>reject</code>
+            只应第一次生效，后续调用应被忽略。
+          </li>
+          <li>
+            <strong>
+              <code>then</code>
+              为什么必须返回新的
+              <code>Promise</code>
+              ？
+            </strong>
+            结论：为了让链式调用能表达“上一步处理后的下一个异步结果”。原因是每个
+            <code>then</code>
+            都可能返回值、抛异常或返回另一个 Promise，新 Promise 负责承接这些结果。项目里用
+            <code>return</code>
+            把异步结果传下去，否则后续链会拿到
+            <code>undefined</code>
+            。
+          </li>
+          <li>
+            <strong>
+              回调为什么要异步执行而不是
+              <code>resolve</code>
+              后同步调用？
+            </strong>
+            结论：Promise 反应任务要在当前同步调用栈结束后执行。原因是这能保证
+            <code>then</code>
+            注册顺序、同步代码顺序和异常传播语义稳定。边界是本 demo 用
+            <code>queueMicrotask</code>
+            近似演示，真实规范由宿主的 Promise Jobs / microtask 队列调度。
+          </li>
+          <li>
+            <strong>
+              手写
+              <code>Promise</code>
+              和原生
+              <code>Promise</code>
+              有哪些边界差异？
+            </strong>
+            结论：面试手写版通常只覆盖状态机、回调队列和链式解析。原因是完整实现还要处理
+            thenable、循环引用、静态组合方法、未处理拒绝事件和跨 realm 行为。实际项目必须使用原生
+            Promise 或成熟运行时，不要引入自制 Promise 替换标准实现。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" target="_blank" rel="noreferrer">MDN: Promise</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide" target="_blank" rel="noreferrer">MDN: Using microtasks</a></li>
-          <li><a href="https://promisesaplus.com/" target="_blank" rel="noreferrer">Promises/A+ specification</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Promise
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Using microtasks
+            </a>
+          </li>
+          <li>
+            <a href="https://promisesaplus.com/" target="_blank" rel="noreferrer">
+              Promises/A+ specification
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -66,17 +179,17 @@
     <!-- SCRIPT_START -->
     <script>
       (function () {
-        var out = document.getElementById("runtime-output");
+        var out = document.getElementById('runtime-output');
         var lines = [];
         function emit(line) {
           console.log(line);
           lines.push(line);
-          if (out) out.textContent = lines.join("\n");
+          if (out) out.textContent = lines.join('\n');
         }
 
-        const PENDING = "pending";
-        const FULFILLED = "fulfilled";
-        const REJECTED = "rejected";
+        const PENDING = 'pending';
+        const FULFILLED = 'fulfilled';
+        const REJECTED = 'rejected';
 
         // ============ 1. 状态机 + queueMicrotask 异步回调 ============
         class MyPromise {
@@ -116,9 +229,9 @@
 
           then(onFulfilled, onRejected) {
             const realOnFulfilled =
-              typeof onFulfilled === "function" ? onFulfilled : (value) => value;
+              typeof onFulfilled === 'function' ? onFulfilled : (value) => value;
             const realOnRejected =
-              typeof onRejected === "function"
+              typeof onRejected === 'function'
                 ? onRejected
                 : (reason) => {
                     throw reason;
@@ -168,7 +281,7 @@
               (reason) =>
                 MyPromise.resolve(callback()).then(() => {
                   throw reason;
-                })
+                }),
             );
           }
 
@@ -194,30 +307,28 @@
         MyPromise.resolve(1)
           .then((value) => value + 1)
           .then((value) => {
-            emit("then 链中间值: " + value);
-            return new MyPromise((resolve) =>
-              setTimeout(() => resolve(value + 1), 20)
-            );
+            emit('then 链中间值: ' + value);
+            return new MyPromise((resolve) => setTimeout(() => resolve(value + 1), 20));
           })
           .then((value) => {
-            emit("then 链最终结果: " + value); // 预期: 3
+            emit('then 链最终结果: ' + value); // 预期: 3
           });
 
         // ============ 3. catch + finally ============
-        MyPromise.reject("fail")
+        MyPromise.reject('fail')
           .catch((reason) => {
-            emit("catch 收到: " + reason);
-            return "recovered";
+            emit('catch 收到: ' + reason);
+            return 'recovered';
           })
-          .finally(() => emit("finally 执行"))
-          .then((value) => emit("catch 恢复后: " + value));
+          .finally(() => emit('finally 执行'))
+          .then((value) => emit('catch 恢复后: ' + value));
 
         // ============ 4. 验证：状态落定后重复 resolve/reject 被忽略 ============
         new MyPromise((resolve, reject) => {
-          resolve("first");
-          resolve("ignored");
-          reject("also ignored");
-        }).then((value) => emit("重复 resolve 仅首次生效: " + value));
+          resolve('first');
+          resolve('ignored');
+          reject('also ignored');
+        }).then((value) => emit('重复 resolve 仅首次生效: ' + value));
       })();
     </script>
     <!-- SCRIPT_END -->
@@ -233,9 +344,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

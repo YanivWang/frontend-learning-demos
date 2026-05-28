@@ -6,11 +6,11 @@
 
 `01-基础 → 02-函数与作用域 → 03-对象与原型 → 04-ES6+ → 05-元编程 → 06-浏览器API → 07-进阶 → 08-面试题 → 09-Canvas`
 
-| 阶段 | 入口 demo |
-| --- | --- |
-| 入门 | [变量](/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E5%8F%98%E9%87%8F.html) · [严格模式](/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E4%B8%A5%E6%A0%BC%E6%A8%A1%E5%BC%8F.html) |
-| 浏览器 API | [HTTP 缓存](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/HTTP%E7%BC%93%E5%AD%98.html) · [WebSocket](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/WebSocket.html) |
-| 手写题 | [call/apply](/apps/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/01-call-apply.html) · [Promise](/apps/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/05-Promise.html) |
+| 阶段       | 入口 demo                                                                                                                                                                                           |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 入门       | [变量](/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E5%8F%98%E9%87%8F.html) · [严格模式](/apps/javascript/01-%E5%9F%BA%E7%A1%80/%E4%B8%A5%E6%A0%BC%E6%A8%A1%E5%BC%8F.html)                               |
+| 浏览器 API | [HTTP 缓存](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/HTTP%E7%BC%93%E5%AD%98.html) · [WebSocket](/apps/javascript/06-%E6%B5%8F%E8%A7%88%E5%99%A8API/WebSocket.html)                        |
+| 手写题     | [call/apply](/apps/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/01-call-apply.html) · [Promise](/apps/javascript/08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/05-Promise.html) |
 
 ## TypeScript
 
@@ -42,10 +42,10 @@
 
 ## 综合 Demo
 
-| 项目 | 链接 |
-| --- | --- |
-| 拖拽 | [原生 drag](/apps/demos/drag/01-drag-%E5%8E%9F%E7%94%9F.html) |
-| Todo | [本地状态](/apps/demos/todo/01-todo-%E6%9C%AC%E5%9C%B0%E7%8A%B6%E6%80%81.html) |
-| 虚拟列表 | [固定行高](/apps/demos/virtual-list/01-virtual-list-%E5%9B%BA%E5%AE%9A%E9%AB%98%E5%BA%A6.html) |
-| 分步表单 | [form-wizard](/apps/demos/form-wizard/01-form-wizard-%E5%88%86%E6%AD%A5%E8%A1%A8%E5%8D%95.html) |
-| Hash 路由 | [简易 SPA](/apps/demos/hash-router/01-hash-router-%E7%AE%80%E6%98%93%E8%B7%AF%E7%94%B1.html) |
+| 项目      | 链接                                                                                            |
+| --------- | ----------------------------------------------------------------------------------------------- |
+| 拖拽      | [原生 drag](/apps/demos/drag/01-drag-%E5%8E%9F%E7%94%9F.html)                                   |
+| Todo      | [本地状态](/apps/demos/todo/01-todo-%E6%9C%AC%E5%9C%B0%E7%8A%B6%E6%80%81.html)                  |
+| 虚拟列表  | [固定行高](/apps/demos/virtual-list/01-virtual-list-%E5%9B%BA%E5%AE%9A%E9%AB%98%E5%BA%A6.html)  |
+| 分步表单  | [form-wizard](/apps/demos/form-wizard/01-form-wizard-%E5%88%86%E6%AD%A5%E8%A1%A8%E5%8D%95.html) |
+| Hash 路由 | [简易 SPA](/apps/demos/hash-router/01-hash-router-%E7%AE%80%E6%98%93%E8%B7%AF%E7%94%B1.html)    |

@@ -4,15 +4,15 @@ Vue 2.7 时代的 demo（`libs/vue.js` 为 **2.7.16**，Vue 2 最终版）。`ap
 
 ## 推荐顺序
 
-| 顺序 | 目录 | 知识点 |
-|---|---|---|
-| 01 | `src/01-基础语法/` | 模板语法、`v-if`/`v-show`、`v-model` 原理、`computed`、`watch`、`nextTick`、事件修饰符、`ref`、`key`、自定义指令 / 过滤器 / `mixin` / 插件 |
-| 02 | `src/02-响应式原理/` | `Object.defineProperty` 响应式、手写 Observer/Dep/Watcher、`Vue.set` 实战、数组响应式限制、实例与 `_data`、timeline |
-| 03 | `src/03-生命周期/` | 八个生命周期钩子速记 |
-| 04 | `src/04-组件/` | `props` / `$emit`、组件通信、插槽、动态/异步组件、`keep-alive`、`v-model` / `.sync` |
-| 05 | `src/05-路由与状态/` | `vue-router` 与 Vuex 全套 demo |
-| 06 | `src/06-原理与性能/` | 虚拟 DOM / diff / `key`、模板编译到 `render`、常见性能优化 |
-| 07 | `src/07-源码简读/` | Vue 源码阅读笔记（`01-源码阅读前置-Symbol.html`）；`vue.js` 为第三方副本 |
+| 顺序 | 目录                 | 知识点                                                                                                                                     |
+| ---- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 01   | `src/01-基础语法/`   | 模板语法、`v-if`/`v-show`、`v-model` 原理、`computed`、`watch`、`nextTick`、事件修饰符、`ref`、`key`、自定义指令 / 过滤器 / `mixin` / 插件 |
+| 02   | `src/02-响应式原理/` | `Object.defineProperty` 响应式、手写 Observer/Dep/Watcher、`Vue.set` 实战、数组响应式限制、实例与 `_data`、timeline                        |
+| 03   | `src/03-生命周期/`   | 八个生命周期钩子速记                                                                                                                       |
+| 04   | `src/04-组件/`       | `props` / `$emit`、组件通信、插槽、动态/异步组件、`keep-alive`、`v-model` / `.sync`                                                        |
+| 05   | `src/05-路由与状态/` | `vue-router` 与 Vuex 全套 demo                                                                                                             |
+| 06   | `src/06-原理与性能/` | 虚拟 DOM / diff / `key`、模板编译到 `render`、常见性能优化                                                                                 |
+| 07   | `src/07-源码简读/`   | Vue 源码阅读笔记（`01-源码阅读前置-Symbol.html`）；`vue.js` 为第三方副本                                                                   |
 
 ## Vue2 面试覆盖
 

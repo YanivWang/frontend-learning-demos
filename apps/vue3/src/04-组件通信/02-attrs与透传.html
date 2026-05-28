@@ -23,15 +23,58 @@
     <title>Vue3 · attrs 与透传</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { padding: 6px 12px; margin-right: 8px; margin-top: 4px; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; max-height: 200px; }
-      .primary { color: #fff; background: #1a73e8; border: 0; border-radius: 6px; }
-      .ghost { color: #1a73e8; background: #fff; border: 1px solid #1a73e8; border-radius: 6px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; margin-bottom: 16px; }
-      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          'PingFang SC',
+          sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+      }
+      button {
+        padding: 6px 12px;
+        margin-right: 8px;
+        margin-top: 4px;
+      }
+      code,
+      pre {
+        background: #f6f8fa;
+        border-radius: 6px;
+      }
+      code {
+        padding: 2px 5px;
+      }
+      pre {
+        padding: 12px;
+        overflow: auto;
+        max-height: 200px;
+      }
+      .primary {
+        color: #fff;
+        background: #1a73e8;
+        border: 0;
+        border-radius: 6px;
+      }
+      .ghost {
+        color: #1a73e8;
+        background: #fff;
+        border: 1px solid #1a73e8;
+        border-radius: 6px;
+      }
+      .box {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 760px;
+        margin-bottom: 16px;
+      }
+      .box .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -44,26 +87,151 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue 3 把传给组件但未被 <code>props</code> 或 <code>emits</code> 声明接收的内容称为 fallthrough attributes，可通过 <code>$attrs</code> 访问，包括 <code>class</code>、<code>style</code>、普通属性和未声明事件监听器。</li>
-          <li>单根组件会默认把 <code>$attrs</code> 透传到根元素。本页 <code>DefaultButton</code> 没有显式写 <code>v-bind="$attrs"</code>，但 <code>class="primary"</code>、<code>data-id="save"</code> 和 <code>@click</code> 仍会落到内部 <code>button</code>；点「保存」后 message 与 attrs 快照区会更新。</li>
-          <li><code>inheritAttrs: false</code> 可以关闭自动透传，让封装组件决定属性落点。本页 <code>BaseButton</code> 手动把 <code>$attrs</code> 绑定到内部 <code>button</code>，这是按钮、输入框、表单项等基础组件常用写法。</li>
-          <li>多根组件没有唯一根元素，Vue 不会自动判断 attrs 应该落到哪里，必须显式 <code>v-bind="$attrs"</code>，否则容易出现运行时警告或属性没有生效。本页第三块 <code>MultiRootButton</code> 演示显式绑定到可点击按钮。</li>
-          <li>Vue 3 中监听器也属于 attrs 的一部分；声明 <code>emits</code> 可以告诉 Vue 哪些是组件自定义事件，避免它们被误透传到 DOM 根元素。props / emit 基础见 <a href="./01-props%E4%B8%8Eemit.html">01-props与emit</a>。</li>
-          <li>点「打印 $attrs 快照」可在 pre 区看到当前透传属性键名（不含已声明 props）。封装组件库时应文档化哪些 attrs 会落到哪个 DOM 节点。</li>
+          <li>
+            Vue 3 把传给组件但未被
+            <code>props</code>
+            或
+            <code>emits</code>
+            声明接收的内容称为 fallthrough attributes，可通过
+            <code>$attrs</code>
+            访问，包括
+            <code>class</code>
+            、
+            <code>style</code>
+            、普通属性和未声明事件监听器。
+          </li>
+          <li>
+            单根组件会默认把
+            <code>$attrs</code>
+            透传到根元素。本页
+            <code>DefaultButton</code>
+            没有显式写
+            <code>v-bind="$attrs"</code>
+            ，但
+            <code>class="primary"</code>
+            、
+            <code>data-id="save"</code>
+            和
+            <code>@click</code>
+            仍会落到内部
+            <code>button</code>
+            ；点「保存」后 message 与 attrs 快照区会更新。
+          </li>
+          <li>
+            <code>inheritAttrs: false</code>
+            可以关闭自动透传，让封装组件决定属性落点。本页
+            <code>BaseButton</code>
+            手动把
+            <code>$attrs</code>
+            绑定到内部
+            <code>button</code>
+            ，这是按钮、输入框、表单项等基础组件常用写法。
+          </li>
+          <li>
+            多根组件没有唯一根元素，Vue 不会自动判断 attrs 应该落到哪里，必须显式
+            <code>v-bind="$attrs"</code>
+            ，否则容易出现运行时警告或属性没有生效。本页第三块
+            <code>MultiRootButton</code>
+            演示显式绑定到可点击按钮。
+          </li>
+          <li>
+            Vue 3 中监听器也属于 attrs 的一部分；声明
+            <code>emits</code>
+            可以告诉 Vue 哪些是组件自定义事件，避免它们被误透传到 DOM 根元素。props / emit 基础见
+            <a href="./01-props%E4%B8%8Eemit.html">01-props与emit</a>
+            。
+          </li>
+          <li>
+            点「打印 $attrs 快照」可在 pre 区看到当前透传属性键名（不含已声明
+            props）。封装组件库时应文档化哪些 attrs 会落到哪个 DOM 节点。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>哪些内容会进入 <code>$attrs</code>？</strong> 结论是未被 props 或 emits 消费的属性和监听器会进入 <code>$attrs</code>。原因是 Vue 要把调用方传来的额外信息透传给组件内部 DOM。项目里常见的是 <code>class</code>、<code>style</code>、<code>aria-*</code>、<code>data-*</code> 和原生事件监听。</li>
-          <li><strong>单根和多根组件透传有什么差异？</strong> 结论是单根组件会自动透传到根元素，多根组件需要显式选择目标。本页第一、二块对比默认透传与 <code>inheritAttrs: false</code>，第三块演示多根显式绑定。</li>
-          <li><strong><code>inheritAttrs: false</code> 解决什么问题？</strong> 结论是解决「调用方属性不应该落在组件根 wrapper 上」这一类封装问题。原因是基础组件常有外层 wrapper，真正的可点击元素在内部。项目里按钮、输入框、弹窗触发器常用它控制属性落点。</li>
-          <li><strong><code>emits</code> 和 attrs 有什么关系？</strong> 结论是声明过的自定义事件不会作为 fallthrough listener 继续透传。原因是 Vue 3 需要区分组件事件和原生 DOM 监听。组件库若不声明 emits，可能导致监听器落到根 DOM 上，产生重复触发或语义混乱。</li>
-          <li><strong><code>v-bind="$attrs"</code> 与单独绑定 class 会冲突吗？</strong> 结论是 Vue 会智能合并 <code>class</code> / <code>style</code>，其他属性后者覆盖前者。实践中 wrapper 上保留布局 class，把调用方 attrs 绑定到交互元素是常见模式；本页 BaseButton 即此写法。</li>
+          <li>
+            <strong>
+              哪些内容会进入
+              <code>$attrs</code>
+              ？
+            </strong>
+            结论是未被 props 或 emits 消费的属性和监听器会进入
+            <code>$attrs</code>
+            。原因是 Vue 要把调用方传来的额外信息透传给组件内部 DOM。项目里常见的是
+            <code>class</code>
+            、
+            <code>style</code>
+            、
+            <code>aria-*</code>
+            、
+            <code>data-*</code>
+            和原生事件监听。
+          </li>
+          <li>
+            <strong>单根和多根组件透传有什么差异？</strong>
+            结论是单根组件会自动透传到根元素，多根组件需要显式选择目标。本页第一、二块对比默认透传与
+            <code>inheritAttrs: false</code>
+            ，第三块演示多根显式绑定。
+          </li>
+          <li>
+            <strong>
+              <code>inheritAttrs: false</code>
+              解决什么问题？
+            </strong>
+            结论是解决「调用方属性不应该落在组件根 wrapper
+            上」这一类封装问题。原因是基础组件常有外层
+            wrapper，真正的可点击元素在内部。项目里按钮、输入框、弹窗触发器常用它控制属性落点。
+          </li>
+          <li>
+            <strong>
+              <code>emits</code>
+              和 attrs 有什么关系？
+            </strong>
+            结论是声明过的自定义事件不会作为 fallthrough listener 继续透传。原因是 Vue 3
+            需要区分组件事件和原生 DOM 监听。组件库若不声明 emits，可能导致监听器落到根 DOM
+            上，产生重复触发或语义混乱。
+          </li>
+          <li>
+            <strong>
+              <code>v-bind="$attrs"</code>
+              与单独绑定 class 会冲突吗？
+            </strong>
+            结论是 Vue 会智能合并
+            <code>class</code>
+            /
+            <code>style</code>
+            ，其他属性后者覆盖前者。实践中 wrapper 上保留布局 class，把调用方 attrs
+            绑定到交互元素是常见模式；本页 BaseButton 即此写法。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/guide/components/attrs.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Fallthrough Attributes</a></li>
-          <li><a href="https://vuejs.org/api/options-misc.html#inheritattrs" target="_blank" rel="noreferrer">Vue 3 官方 API：inheritAttrs</a></li>
-          <li><a href="https://vuejs.org/guide/components/events.html#declaring-emitted-events" target="_blank" rel="noreferrer">Vue 3 官方文档：Declaring Emitted Events</a></li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/components/attrs.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方文档：Fallthrough Attributes
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/api/options-misc.html#inheritattrs"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方 API：inheritAttrs
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/components/events.html#declaring-emitted-events"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方文档：Declaring Emitted Events
+            </a>
+          </li>
           <li><a href="./01-props%E4%B8%8Eemit.html">本系列：props 与 emit</a></li>
         </ul>
       </div>
@@ -76,16 +244,22 @@
       <div class="box">
         <h2>默认透传（单根自动落到根元素）</h2>
         <p class="hint-inline">未声明的 class、data-id、@click 自动落到内部 button。</p>
-        <default-button class="primary" data-id="save" @click="onClick('默认透传：已点击保存')">保存</default-button>
+        <default-button class="primary" data-id="save" @click="onClick('默认透传：已点击保存')">
+          保存
+        </default-button>
       </div>
       <div class="box">
         <h2>inheritAttrs: false + 手动 v-bind="$attrs"</h2>
         <p class="hint-inline">外层 wrapper 不接收 attrs，内部 button 绑定 $attrs。</p>
-        <base-button class="ghost" data-id="cancel" @click="onClick('手动透传：已点击取消')">取消</base-button>
+        <base-button class="ghost" data-id="cancel" @click="onClick('手动透传：已点击取消')">
+          取消
+        </base-button>
       </div>
       <div class="box">
         <h2>多根组件（必须显式 v-bind="$attrs"）</h2>
-        <multi-root-button data-id="multi" @click="onClick('多根显式透传：已点击')">多根按钮</multi-root-button>
+        <multi-root-button data-id="multi" @click="onClick('多根显式透传：已点击')">
+          多根按钮
+        </multi-root-button>
       </div>
       <p>{{ message }}</p>
       <button type="button" @click="dumpAttrs">打印 $attrs 快照说明</button>
@@ -128,27 +302,26 @@
         components: { DefaultButton, BaseButton, MultiRootButton },
         setup() {
           // --- 演示状态 ---
-          const message = ref("等待点击");
-          const attrsHint = ref("");
+          const message = ref('等待点击');
+          const attrsHint = ref('');
 
           function onClick(text) {
             message.value = text;
-            console.log("[attrs]", text);
+            console.log('[attrs]', text);
           }
 
           function dumpAttrs() {
             attrsHint.value = [
-              "Fallthrough attrs 包含未声明的 class / style / 普通属性 / 未声明监听器。",
-              "已声明为 props 的字段不会出现在 $attrs。",
-              "inheritAttrs: false 时需在目标元素写 v-bind=\"$attrs\"。",
-              "多根组件必须显式选择 attrs 落点，否则控制台可能警告。",
-            ].join("\n");
+              'Fallthrough attrs 包含未声明的 class / style / 普通属性 / 未声明监听器。',
+              '已声明为 props 的字段不会出现在 $attrs。',
+              'inheritAttrs: false 时需在目标元素写 v-bind="$attrs"。',
+              '多根组件必须显式选择 attrs 落点，否则控制台可能警告。',
+            ].join('\n');
           }
 
-          
           // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
           onMounted(() => {
-            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+            console.log('[mounted] createApp 已接管 #app，DOM 已渲染');
           });
 
           return { message, attrsHint, onClick, dumpAttrs };
@@ -156,9 +329,8 @@
       });
       // mount 须在 app.use / app.component / app.config 等配置之后调用
       // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
-      const rootInstance = app.mount("#app");
-      console.log("[mount] 根组件实例", rootInstance);
-
+      const rootInstance = app.mount('#app');
+      console.log('[mount] 根组件实例', rootInstance);
     </script>
     <!-- SCRIPT_END -->
 
@@ -172,13 +344,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

@@ -34,25 +34,133 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>Proxy</code> 会在目标对象外包一层代理，<code>handler</code> 里的 trap 可以拦截读取、写入、<code>in</code>、删除、枚举、函数调用等基本对象操作。</li>
-          <li><strong>trap 默认值</strong>：handler 中未定义的 trap 会按规范默认转发到目标对象，行为等价于调用对应的 <code>Reflect</code> 方法（如未定义 <code>get</code> 则等同 <code>Reflect.get(target, prop, receiver)</code>）。空 handler <code>{}</code> 即“透明代理”，但仍无法解决内建对象内部槽位问题（见 <a href="./%E4%BB%A3%E7%90%86%E7%9A%84%E7%BC%BA%E7%82%B9.html">代理的缺点</a>）。</li>
-          <li><code>get(target, property, receiver)</code> 用于读取属性；<code>set(target, property, value, receiver)</code> 用于写属性，并且必须返回布尔值表示写入是否成功。</li>
-          <li>在 trap 内优先用 <code>Reflect.get</code>、<code>Reflect.set</code> 做默认转发，能减少手写 <code>target[property]</code> 带来的继承、访问器 <code>this</code> 和返回值问题。</li>
-          <li><strong>性能代价</strong>：每次属性读/写都经过 trap 分发，比直接访问慢；Vue 3 响应式只在依赖收集路径使用 Proxy，且对常见操作做了优化。旧环境无法完整 polyfill，兼容性要求高时要保留 <code>defineProperty</code> 方案。</li>
+          <li>
+            <code>Proxy</code>
+            会在目标对象外包一层代理，
+            <code>handler</code>
+            里的 trap 可以拦截读取、写入、
+            <code>in</code>
+            、删除、枚举、函数调用等基本对象操作。
+          </li>
+          <li>
+            <strong>trap 默认值</strong>
+            ：handler 中未定义的 trap 会按规范默认转发到目标对象，行为等价于调用对应的
+            <code>Reflect</code>
+            方法（如未定义
+            <code>get</code>
+            则等同
+            <code>Reflect.get(target, prop, receiver)</code>
+            ）。空 handler
+            <code>{}</code>
+            即“透明代理”，但仍无法解决内建对象内部槽位问题（见
+            <a href="./%E4%BB%A3%E7%90%86%E7%9A%84%E7%BC%BA%E7%82%B9.html">代理的缺点</a>
+            ）。
+          </li>
+          <li>
+            <code>get(target, property, receiver)</code>
+            用于读取属性；
+            <code>set(target, property, value, receiver)</code>
+            用于写属性，并且必须返回布尔值表示写入是否成功。
+          </li>
+          <li>
+            在 trap 内优先用
+            <code>Reflect.get</code>
+            、
+            <code>Reflect.set</code>
+            做默认转发，能减少手写
+            <code>target[property]</code>
+            带来的继承、访问器
+            <code>this</code>
+            和返回值问题。
+          </li>
+          <li>
+            <strong>性能代价</strong>
+            ：每次属性读/写都经过 trap 分发，比直接访问慢；Vue 3 响应式只在依赖收集路径使用
+            Proxy，且对常见操作做了优化。旧环境无法完整 polyfill，兼容性要求高时要保留
+            <code>defineProperty</code>
+            方案。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Proxy 的 get/set trap 分别能拦截什么，参数含义是什么？</strong> 结论是 <code>get</code> 拦截属性读取，<code>set</code> 拦截属性写入。原因是它们分别对应对象内部的取值和赋值操作，参数里的 <code>target</code> 是原对象，<code>property</code> 是属性键，<code>receiver</code> 是本次访问的接收者，<code>set</code> 还多一个新值。项目里常用它们做响应式依赖收集、校验、日志和权限边界。</li>
-          <li><strong>未定义 trap 时 Proxy 的默认行为是什么？</strong> 结论是按规范转发到目标对象，与 <code>Reflect</code> 同名方法一致。原因是 Proxy 的设计是“可选拦截 + 默认语义保持”。空 handler 的代理在普通对象上行为接近原对象，但对 Date 等内建类型仍会失败。</li>
-          <li><strong>为什么 set trap 必须返回 true 或 Reflect.set 的结果？</strong> 结论是 <code>set</code> trap 的返回值表示写入是否成功。原因是规范会把返回值转成布尔值，严格模式下返回 <code>false</code> 会抛出 <code>TypeError</code>。实际写法通常直接 <code>return Reflect.set(target, property, value, receiver)</code>，避免遗漏。</li>
-          <li><strong>Proxy 与 Object.defineProperty 在响应式实现上有什么区别？</strong> 结论是 <code>defineProperty</code> 针对具体属性且需逐个改写，<code>Proxy</code> 针对整个对象的元操作且能感知新增/删除。边界是 <code>Proxy</code> 有运行时开销、无法完整降级，也不能透明代理所有内建对象。</li>
+          <li>
+            <strong>Proxy 的 get/set trap 分别能拦截什么，参数含义是什么？</strong>
+            结论是
+            <code>get</code>
+            拦截属性读取，
+            <code>set</code>
+            拦截属性写入。原因是它们分别对应对象内部的取值和赋值操作，参数里的
+            <code>target</code>
+            是原对象，
+            <code>property</code>
+            是属性键，
+            <code>receiver</code>
+            是本次访问的接收者，
+            <code>set</code>
+            还多一个新值。项目里常用它们做响应式依赖收集、校验、日志和权限边界。
+          </li>
+          <li>
+            <strong>未定义 trap 时 Proxy 的默认行为是什么？</strong>
+            结论是按规范转发到目标对象，与
+            <code>Reflect</code>
+            同名方法一致。原因是 Proxy 的设计是“可选拦截 + 默认语义保持”。空 handler
+            的代理在普通对象上行为接近原对象，但对 Date 等内建类型仍会失败。
+          </li>
+          <li>
+            <strong>为什么 set trap 必须返回 true 或 Reflect.set 的结果？</strong>
+            结论是
+            <code>set</code>
+            trap 的返回值表示写入是否成功。原因是规范会把返回值转成布尔值，严格模式下返回
+            <code>false</code>
+            会抛出
+            <code>TypeError</code>
+            。实际写法通常直接
+            <code>return Reflect.set(target, property, value, receiver)</code>
+            ，避免遗漏。
+          </li>
+          <li>
+            <strong>Proxy 与 Object.defineProperty 在响应式实现上有什么区别？</strong>
+            结论是
+            <code>defineProperty</code>
+            针对具体属性且需逐个改写，
+            <code>Proxy</code>
+            针对整个对象的元操作且能感知新增/删除。边界是
+            <code>Proxy</code>
+            有运行时开销、无法完整降级，也不能透明代理所有内建对象。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">MDN: Proxy</a>：handler trap 与默认转发行为。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/Proxy/get">MDN: handler.get()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/Proxy/set">MDN: handler.set()</a>：返回值与严格模式 TypeError。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect">MDN: Reflect</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy"
+            >
+              MDN: Proxy
+            </a>
+            ：handler trap 与默认转发行为。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/Proxy/get"
+            >
+              MDN: handler.get()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/Proxy/set"
+            >
+              MDN: handler.set()
+            </a>
+            ：返回值与严格模式 TypeError。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect"
+            >
+              MDN: Reflect
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -61,25 +169,25 @@
     <!-- SCRIPT_START -->
     <script>
       const person = {
-        name: "wangcheng",
+        name: 'wangcheng',
         sayHello() {
-          console.log("我是", this.name);
+          console.log('我是', this.name);
         },
       };
 
       // ============ 1. 空 handler：trap 默认转发，行为接近原对象 ============
       const transparent = new Proxy(person, {});
-      console.log("空 handler 读取 name:", transparent.name); // "wangcheng"
-      transparent.name = "透明代理";
-      console.log("空 handler 写入后 person.name:", person.name); // "透明代理"
-      person.name = "wangcheng"; // 恢复
+      console.log('空 handler 读取 name:', transparent.name); // "wangcheng"
+      transparent.name = '透明代理';
+      console.log('空 handler 写入后 person.name:', person.name); // "透明代理"
+      person.name = 'wangcheng'; // 恢复
 
       // ============ 2. 自定义 get/set trap + Reflect 默认转发 ============
       const handler = {
         get(targetObj, property, receiver) {
           console.log(`get trap: ${String(property)}`);
-          console.log("  target === person:", targetObj === person);
-          console.log("  receiver === proxy:", receiver === proxy);
+          console.log('  target === person:', targetObj === person);
+          console.log('  receiver === proxy:', receiver === proxy);
           return Reflect.get(targetObj, property, receiver);
         },
         set(targetObj, property, newValue, receiver) {
@@ -92,51 +200,54 @@
       };
 
       const proxy = new Proxy(person, handler);
-      console.log("proxy.name:", proxy.name);
-      proxy.name = "我是高杰";
-      console.log("写入后 proxy/person:", proxy.name, person.name);
+      console.log('proxy.name:', proxy.name);
+      proxy.name = '我是高杰';
+      console.log('写入后 proxy/person:', proxy.name, person.name);
 
       // ============ 3. set trap 返回 false：严格模式抛 TypeError ============
       (function strictSetTrapDemo() {
-        "use strict";
-        const reject = new Proxy({}, {
-          set() {
-            return false; // 表示写入失败
+        'use strict';
+        const reject = new Proxy(
+          {},
+          {
+            set() {
+              return false; // 表示写入失败
+            },
           },
-        });
+        );
         try {
           reject.x = 1;
         } catch (err) {
-          console.log("set trap 返回 false:", err.name, "-", err.message);
+          console.log('set trap 返回 false:', err.name, '-', err.message);
         }
       })();
 
       // ============ 4. has / deleteProperty trap 拦截元操作 ============
       const metaHandler = {
         has(target, prop) {
-          console.log("has trap:", String(prop));
+          console.log('has trap:', String(prop));
           return Reflect.has(target, prop);
         },
         deleteProperty(target, prop) {
-          console.log("deleteProperty trap:", String(prop));
+          console.log('deleteProperty trap:', String(prop));
           return Reflect.deleteProperty(target, prop);
         },
       };
       const metaProxy = new Proxy({ a: 1, b: 2 }, metaHandler);
-      console.log("'a' in metaProxy:", "a" in metaProxy);
+      console.log("'a' in metaProxy:", 'a' in metaProxy);
       delete metaProxy.b;
-      console.log("删除 b 后 keys:", Object.keys(metaProxy));
+      console.log('删除 b 后 keys:', Object.keys(metaProxy));
 
       // ============ 5. Proxy 不能用 instanceof Proxy 判断 ============
       try {
-        console.log("proxy instanceof Proxy:", proxy instanceof Proxy);
+        console.log('proxy instanceof Proxy:', proxy instanceof Proxy);
       } catch (err) {
-        console.log("instanceof Proxy 报错:", err.name, "-", err.message);
+        console.log('instanceof Proxy 报错:', err.name, '-', err.message);
       }
 
       // ============ 6. Reflect 是与 trap 同名的默认转发 API ============
-      console.log("Reflect 类型:", typeof Reflect); // "object"
-      console.log("Reflect.get(proxy, 'name'):", Reflect.get(proxy, "name"));
+      console.log('Reflect 类型:', typeof Reflect); // "object"
+      console.log("Reflect.get(proxy, 'name'):", Reflect.get(proxy, 'name'));
     </script>
     <!-- SCRIPT_END -->
 
@@ -147,14 +258,16 @@
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
         <a href="./defineProperty.html">相关 · defineProperty</a>
         <a href="./%E4%BB%A3%E7%90%86%E7%9A%84%E7%BC%BA%E7%82%B9.html">相关 · 代理的缺点</a>
-        <a href="./defineProperty%E8%AE%BF%E9%97%AE%E5%99%A8%E5%B1%9E%E6%80%A7.html">← defineProperty访问器属性</a>
+        <a href="./defineProperty%E8%AE%BF%E9%97%AE%E5%99%A8%E5%B1%9E%E6%80%A7.html">
+          ← defineProperty访问器属性
+        </a>
         <a href="../06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%89%AA%E8%B4%B4%E6%9D%BF.html">剪贴板 →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

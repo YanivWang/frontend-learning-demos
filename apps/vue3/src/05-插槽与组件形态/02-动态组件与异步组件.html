@@ -23,14 +23,49 @@
     <title>Vue3 · 动态组件与异步组件</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; margin-top: 4px; padding: 6px 12px; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; max-height: 220px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
-      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
-      .panel-area { min-height: 48px; padding: 8px 0; }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          'PingFang SC',
+          sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+      }
+      button {
+        margin-right: 8px;
+        margin-top: 4px;
+        padding: 6px 12px;
+      }
+      code,
+      pre {
+        background: #f6f8fa;
+        border-radius: 6px;
+      }
+      code {
+        padding: 2px 5px;
+      }
+      pre {
+        padding: 12px;
+        overflow: auto;
+        max-height: 220px;
+      }
+      .box {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 760px;
+      }
+      .box .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
+      .panel-area {
+        min-height: 48px;
+        padding: 8px 0;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -43,27 +78,130 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>&lt;component :is="current"&gt;</code> 会根据字符串组件名或组件对象渲染当前组件，适合 tab、步骤面板、运行时可配置区域，比多段 <code>v-if</code> 更集中。本页四个按钮切换四种面板组件。</li>
-          <li>动态组件默认切走会卸载实例；本页包上 <code>&lt;keep-alive&gt;</code> 后，资料面板的 visits 和设置面板的 theme 在 tab 间切换后保留。先在资料面板 +1 再切到设置，切回 visits 不会归零。</li>
-          <li><code>defineAsyncComponent</code> 接收 loader，把异步加载结果包装成普通组件；真实项目常配合 <code>import()</code> 做代码分割，本页用 Promise + <code>setTimeout(800ms)</code> 模拟 chunk 加载。点「异步面板」先见 loading，再见加载时间。</li>
-          <li>点「失败面板」会触发 loader reject，展示 <code>errorComponent</code> 而非白屏；<code>asyncStatus</code> 区记录当前异步状态。生产环境还应配置 <code>timeout</code>、<code>onError</code> 重试与上报。</li>
-          <li>动态切换时要确认组件名、缓存策略和 <code>key</code> 是否符合预期；缓存太多占内存，不缓存则丢本地表单/滚动状态。KeepAlive 生命周期见 <a href="../03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E7%BB%84%E5%90%88%E5%BC%8F/04-%E5%85%A8%E9%87%8F%E9%92%A9%E5%AD%90%E4%B8%8EKeepAlive.html">03-全量钩子与KeepAlive</a>。</li>
-          <li>多个异步依赖要统一 loading 边界时可引入 <code>Suspense</code>；单组件懒加载用 <code>defineAsyncComponent</code> 的 loading/error 选项通常足够。插槽组合见 <a href="./01-%E9%BB%98%E8%AE%A4%E5%85%B7%E5%90%8D%E4%BD%9C%E7%94%A8%E5%9F%9F%E6%8F%92%E6%A7%BD.html">01-默认具名作用域插槽</a>。</li>
+          <li>
+            <code>&lt;component :is="current"&gt;</code>
+            会根据字符串组件名或组件对象渲染当前组件，适合 tab、步骤面板、运行时可配置区域，比多段
+            <code>v-if</code>
+            更集中。本页四个按钮切换四种面板组件。
+          </li>
+          <li>
+            动态组件默认切走会卸载实例；本页包上
+            <code>&lt;keep-alive&gt;</code>
+            后，资料面板的 visits 和设置面板的 theme 在 tab 间切换后保留。先在资料面板 +1
+            再切到设置，切回 visits 不会归零。
+          </li>
+          <li>
+            <code>defineAsyncComponent</code>
+            接收 loader，把异步加载结果包装成普通组件；真实项目常配合
+            <code>import()</code>
+            做代码分割，本页用 Promise +
+            <code>setTimeout(800ms)</code>
+            模拟 chunk 加载。点「异步面板」先见 loading，再见加载时间。
+          </li>
+          <li>
+            点「失败面板」会触发 loader reject，展示
+            <code>errorComponent</code>
+            而非白屏；
+            <code>asyncStatus</code>
+            区记录当前异步状态。生产环境还应配置
+            <code>timeout</code>
+            、
+            <code>onError</code>
+            重试与上报。
+          </li>
+          <li>
+            动态切换时要确认组件名、缓存策略和
+            <code>key</code>
+            是否符合预期；缓存太多占内存，不缓存则丢本地表单/滚动状态。KeepAlive 生命周期见
+            <a
+              href="../03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E7%BB%84%E5%90%88%E5%BC%8F/04-%E5%85%A8%E9%87%8F%E9%92%A9%E5%AD%90%E4%B8%8EKeepAlive.html"
+            >
+              03-全量钩子与KeepAlive
+            </a>
+            。
+          </li>
+          <li>
+            多个异步依赖要统一 loading 边界时可引入
+            <code>Suspense</code>
+            ；单组件懒加载用
+            <code>defineAsyncComponent</code>
+            的 loading/error 选项通常足够。插槽组合见
+            <a
+              href="./01-%E9%BB%98%E8%AE%A4%E5%85%B7%E5%90%8D%E4%BD%9C%E7%94%A8%E5%9F%9F%E6%8F%92%E6%A7%BD.html"
+            >
+              01-默认具名作用域插槽
+            </a>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>component :is 和 v-if 切换组件有什么区别？</strong> 结论是两者都能切换 UI，但 <code>component :is</code> 更适合把「当前组件类型」建模成状态。组件名可来自配置或 tab 列表。简单两三段条件用 <code>v-if</code> 更直观。</li>
-          <li><strong>为什么 KeepAlive 常配合动态组件？</strong> 因为动态组件切换会触发卸载和重建，本地状态会丢失。本页 visits / theme 在 KeepAlive 下保留即证明。边界是用 include/exclude/max 控制缓存范围。</li>
-          <li><strong>defineAsyncComponent 要处理哪些失败边界？</strong> 结论是加载中、加载失败、超时、重试和重复切换。本页「失败面板」演示 errorComponent；「异步面板」演示 loading → 成功。真实 chunk 可能因网络或版本不一致失败。</li>
-          <li><strong>异步组件和 Suspense 怎么配合？</strong> 异步组件定义加载器和错误策略，Suspense 协调组件树异步依赖和 fallback。局部懒加载只需 defineAsyncComponent；多异步依赖统一 loading 时再引入 Suspense。</li>
-          <li><strong>动态切换时 key 有什么影响？</strong> 结论是改 key 会强制销毁重建实例，即使包在 KeepAlive 内也会按新实例处理。需要保留状态时不要随意改 key；需要强制刷新表单时应改 key 或不用 KeepAlive。</li>
+          <li>
+            <strong>component :is 和 v-if 切换组件有什么区别？</strong>
+            结论是两者都能切换 UI，但
+            <code>component :is</code>
+            更适合把「当前组件类型」建模成状态。组件名可来自配置或 tab 列表。简单两三段条件用
+            <code>v-if</code>
+            更直观。
+          </li>
+          <li>
+            <strong>为什么 KeepAlive 常配合动态组件？</strong>
+            因为动态组件切换会触发卸载和重建，本地状态会丢失。本页 visits / theme 在 KeepAlive
+            下保留即证明。边界是用 include/exclude/max 控制缓存范围。
+          </li>
+          <li>
+            <strong>defineAsyncComponent 要处理哪些失败边界？</strong>
+            结论是加载中、加载失败、超时、重试和重复切换。本页「失败面板」演示
+            errorComponent；「异步面板」演示 loading → 成功。真实 chunk 可能因网络或版本不一致失败。
+          </li>
+          <li>
+            <strong>异步组件和 Suspense 怎么配合？</strong>
+            异步组件定义加载器和错误策略，Suspense 协调组件树异步依赖和 fallback。局部懒加载只需
+            defineAsyncComponent；多异步依赖统一 loading 时再引入 Suspense。
+          </li>
+          <li>
+            <strong>动态切换时 key 有什么影响？</strong>
+            结论是改 key 会强制销毁重建实例，即使包在 KeepAlive
+            内也会按新实例处理。需要保留状态时不要随意改 key；需要强制刷新表单时应改 key 或不用
+            KeepAlive。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/guide/essentials/component-basics.html#dynamic-components" target="_blank" rel="noreferrer">Vue 3 官方文档：Dynamic Components</a></li>
-          <li><a href="https://vuejs.org/guide/components/async.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Async Components</a></li>
-          <li><a href="https://vuejs.org/guide/built-ins/keep-alive.html" target="_blank" rel="noreferrer">Vue 3 官方文档：KeepAlive</a></li>
-          <li><a href="../03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E7%BB%84%E5%90%88%E5%BC%8F/04-%E5%85%A8%E9%87%8F%E9%92%A9%E5%AD%90%E4%B8%8EKeepAlive.html">本系列：全量钩子与 KeepAlive</a></li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/essentials/component-basics.html#dynamic-components"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方文档：Dynamic Components
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/components/async.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方文档：Async Components
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/built-ins/keep-alive.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方文档：KeepAlive
+            </a>
+          </li>
+          <li>
+            <a
+              href="../03-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E7%BB%84%E5%90%88%E5%BC%8F/04-%E5%85%A8%E9%87%8F%E9%92%A9%E5%AD%90%E4%B8%8EKeepAlive.html"
+            >
+              本系列：全量钩子与 KeepAlive
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -73,11 +211,34 @@
     <div id="app">
       <h1>动态组件与异步组件</h1>
       <div class="box">
-        <button type="button" @click="switchTo('ProfilePanel')" :disabled="current === 'ProfilePanel'">资料</button>
-        <button type="button" @click="switchTo('SettingPanel')" :disabled="current === 'SettingPanel'">设置</button>
-        <button type="button" @click="switchTo('AsyncPanel')" :disabled="current === 'AsyncPanel'">异步面板</button>
-        <button type="button" @click="switchTo('BrokenAsyncPanel')" :disabled="current === 'BrokenAsyncPanel'">失败面板</button>
-        <p class="hint-inline">当前：{{ current }}；异步状态：{{ asyncStatus }}。先在资料面板 +1，切到其他 tab 再切回，验证 KeepAlive 保留 visits。</p>
+        <button
+          type="button"
+          @click="switchTo('ProfilePanel')"
+          :disabled="current === 'ProfilePanel'"
+        >
+          资料
+        </button>
+        <button
+          type="button"
+          @click="switchTo('SettingPanel')"
+          :disabled="current === 'SettingPanel'"
+        >
+          设置
+        </button>
+        <button type="button" @click="switchTo('AsyncPanel')" :disabled="current === 'AsyncPanel'">
+          异步面板
+        </button>
+        <button
+          type="button"
+          @click="switchTo('BrokenAsyncPanel')"
+          :disabled="current === 'BrokenAsyncPanel'"
+        >
+          失败面板
+        </button>
+        <p class="hint-inline">
+          当前：{{ current }}；异步状态：{{ asyncStatus }}。先在资料面板 +1，切到其他 tab
+          再切回，验证 KeepAlive 保留 visits。
+        </p>
         <div class="panel-area">
           <keep-alive>
             <component :is="current"></component>
@@ -109,7 +270,7 @@
 
       const SettingPanel = {
         setup() {
-          const theme = ref("light");
+          const theme = ref('light');
           return { theme };
         },
         template: `
@@ -142,35 +303,41 @@
       const BrokenAsyncPanel = defineAsyncComponent({
         loader: () =>
           new Promise((_resolve, reject) => {
-            setTimeout(() => reject(new Error("模拟 chunk 加载失败")), 500);
+            setTimeout(() => reject(new Error('模拟 chunk 加载失败')), 500);
           }),
         loadingComponent: { template: `<p>失败面板加载中…</p>` },
-        errorComponent: { template: `<p>加载失败：已展示 errorComponent。</p>` },
+        errorComponent: {
+          template: `<p>加载失败：已展示 errorComponent。</p>`,
+        },
         delay: 0,
       });
       const app = createApp({
-        components: { ProfilePanel, SettingPanel, AsyncPanel, BrokenAsyncPanel },
+        components: {
+          ProfilePanel,
+          SettingPanel,
+          AsyncPanel,
+          BrokenAsyncPanel,
+        },
         setup() {
-          const current = ref("ProfilePanel");
-          const asyncStatus = ref("就绪");
+          const current = ref('ProfilePanel');
+          const asyncStatus = ref('就绪');
           const asyncSnippet =
             "const AsyncComp = defineAsyncComponent(() => import('./HeavyComp.vue'))";
 
           function switchTo(name) {
             current.value = name;
-            console.log("[dynamic] 切换到", name);
+            console.log('[dynamic] 切换到', name);
           }
 
           watch(current, (value) => {
-            if (value === "AsyncPanel") asyncStatus.value = "loading → 成功（800ms）";
-            else if (value === "BrokenAsyncPanel") asyncStatus.value = "loading → 失败（500ms）";
-            else asyncStatus.value = "同步组件，KeepAlive 缓存中";
+            if (value === 'AsyncPanel') asyncStatus.value = 'loading → 成功（800ms）';
+            else if (value === 'BrokenAsyncPanel') asyncStatus.value = 'loading → 失败（500ms）';
+            else asyncStatus.value = '同步组件，KeepAlive 缓存中';
           });
 
-          
           // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
           onMounted(() => {
-            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+            console.log('[mounted] createApp 已接管 #app，DOM 已渲染');
           });
 
           return { current, asyncStatus, asyncSnippet, switchTo };
@@ -178,9 +345,8 @@
       });
       // mount 须在 app.use / app.component / app.config 等配置之后调用
       // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
-      const rootInstance = app.mount("#app");
-      console.log("[mount] 根组件实例", rootInstance);
-
+      const rootInstance = app.mount('#app');
+      console.log('[mount] 根组件实例', rootInstance);
     </script>
     <!-- SCRIPT_END -->
 
@@ -189,18 +355,26 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./01-%E9%BB%98%E8%AE%A4%E5%85%B7%E5%90%8D%E4%BD%9C%E7%94%A8%E5%9F%9F%E6%8F%92%E6%A7%BD.html">← 默认具名作用域插槽</a>
-        <a href="../06-%E5%86%85%E7%BD%AE%E7%BB%84%E4%BB%B6/01-KeepAlive.html">KeepAlive →</a>
+        <a
+          href="./01-%E9%BB%98%E8%AE%A4%E5%85%B7%E5%90%8D%E4%BD%9C%E7%94%A8%E5%9F%9F%E6%8F%92%E6%A7%BD.html"
+        >
+          ← 默认具名作用域插槽
+        </a>
+        <a
+          href="./02-%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6%E4%B8%8E%E5%BC%82%E6%AD%A5%E7%BB%84%E4%BB%B6.html.tmpfmt.html"
+        >
+          动态组件与异步组件.html.tmpfmt →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

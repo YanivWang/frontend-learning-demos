@@ -32,29 +32,123 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>setState 异步合并（对象式连续更新只加 1）</h1>
-      <p class="hint">请打开 DevTools Console 查看循环内 this.state.count 与 2s 后的最终值；下方 #root 展示页面最终 count（预期为 1）。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看循环内 this.state.count 与 2s 后的最终值；下方 #root
+        展示页面最终 count（预期为 1）。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>setState</code> 不是同步赋值，而是把更新请求交给 React；调用后立刻读取 <code>this.state</code>，通常仍会看到本轮渲染时的旧值。</li>
-          <li>对象式 <code>setState({ count: this.state.count + 1 })</code> 会先用当前 <code>this.state.count</code> 算出对象，再把对象放进更新队列；示例循环 10 次时，10 个对象都近似是 <code>{ count: 1 }</code>。</li>
-          <li>React 会批处理同一批次内的多个更新以减少渲染次数，并把传入对象浅合并到 state；更新同一个字段时，后面的对象会覆盖前面对象对该字段的结果。</li>
-          <li>只要下一个 state 依赖上一个 state，就应使用函数式 <code>setState((prevState, props) =&gt; nextState)</code>；这是计数器、分页、队列等场景最常见的正确写法（见 04 号 demo）。</li>
-          <li>React 18 使用 <code>createRoot</code> 开启新的根，自动批处理覆盖事件、定时器、Promise 等更多异步来源；需要同步刷新 DOM 时才考虑 <code>flushSync</code>，不要把它当常规状态更新手段。</li>
+          <li>
+            <code>setState</code>
+            不是同步赋值，而是把更新请求交给 React；调用后立刻读取
+            <code>this.state</code>
+            ，通常仍会看到本轮渲染时的旧值。
+          </li>
+          <li>
+            对象式
+            <code>setState({ count: this.state.count + 1 })</code>
+            会先用当前
+            <code>this.state.count</code>
+            算出对象，再把对象放进更新队列；示例循环 10 次时，10 个对象都近似是
+            <code>{ count: 1 }</code>
+            。
+          </li>
+          <li>
+            React 会批处理同一批次内的多个更新以减少渲染次数，并把传入对象浅合并到
+            state；更新同一个字段时，后面的对象会覆盖前面对象对该字段的结果。
+          </li>
+          <li>
+            只要下一个 state 依赖上一个 state，就应使用函数式
+            <code>setState((prevState, props) =&gt; nextState)</code>
+            ；这是计数器、分页、队列等场景最常见的正确写法（见 04 号 demo）。
+          </li>
+          <li>
+            React 18 使用
+            <code>createRoot</code>
+            开启新的根，自动批处理覆盖事件、定时器、Promise 等更多异步来源；需要同步刷新 DOM
+            时才考虑
+            <code>flushSync</code>
+            ，不要把它当常规状态更新手段。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>为什么连续调用 10 次对象式 setState 只加 1？</strong> 结论是：因为 10 次更新都基于同一个旧 <code>this.state.count</code> 算出 <code>count: 1</code>。原因是 <code>setState</code> 进入队列后由 React 批处理，对象式更新不会自动串联读取前一次更新结果；计数器这类依赖旧值的场景要改用函数式更新。</li>
-          <li><strong>setState 是不是 Promise，能不能 await？</strong> 结论是：class 的 <code>setState</code> 不是 Promise，不能依赖 <code>await this.setState(...)</code> 得到最新值。原因是 React 没有把它设计成返回更新完成的 Promise；需要在提交后执行逻辑时，用 <code>setState(updater, callback)</code> 或生命周期方法。</li>
-          <li><strong>对象式 setState 和函数式 setState 怎么选？</strong> 结论是：新值不依赖旧 state 时对象式足够，依赖旧 state 或 props 时用函数式。原因是函数式 updater 会按队列顺序拿到最新的 <code>prevState</code>；边界是返回对象仍然是浅合并，不要直接改嵌套对象。</li>
-          <li><strong>React 18 自动批处理对 class setState 有什么影响？</strong> 结论是：React 18 在 <code>createRoot</code> 下会把更多来源的更新合并成一次渲染。原因是自动批处理不再局限于 React 事件处理器；迁移老代码时，异步回调里立刻读取 <code>this.state</code> 的逻辑更容易暴露问题。</li>
-          <li><strong>什么时候需要在更新后读取最新 DOM 或 state？</strong> 结论是：优先把读取逻辑放在提交之后的回调或生命周期中。原因是 render 前读取到的是旧快照；只有极少数必须立刻同步 DOM 的场景才使用 <code>ReactDOM.flushSync</code>，否则会损失并发与批处理收益。</li>
+          <li>
+            <strong>为什么连续调用 10 次对象式 setState 只加 1？</strong>
+            结论是：因为 10 次更新都基于同一个旧
+            <code>this.state.count</code>
+            算出
+            <code>count: 1</code>
+            。原因是
+            <code>setState</code>
+            进入队列后由 React
+            批处理，对象式更新不会自动串联读取前一次更新结果；计数器这类依赖旧值的场景要改用函数式更新。
+          </li>
+          <li>
+            <strong>setState 是不是 Promise，能不能 await？</strong>
+            结论是：class 的
+            <code>setState</code>
+            不是 Promise，不能依赖
+            <code>await this.setState(...)</code>
+            得到最新值。原因是 React 没有把它设计成返回更新完成的
+            Promise；需要在提交后执行逻辑时，用
+            <code>setState(updater, callback)</code>
+            或生命周期方法。
+          </li>
+          <li>
+            <strong>对象式 setState 和函数式 setState 怎么选？</strong>
+            结论是：新值不依赖旧 state 时对象式足够，依赖旧 state 或 props 时用函数式。原因是函数式
+            updater 会按队列顺序拿到最新的
+            <code>prevState</code>
+            ；边界是返回对象仍然是浅合并，不要直接改嵌套对象。
+          </li>
+          <li>
+            <strong>React 18 自动批处理对 class setState 有什么影响？</strong>
+            结论是：React 18 在
+            <code>createRoot</code>
+            下会把更多来源的更新合并成一次渲染。原因是自动批处理不再局限于 React
+            事件处理器；迁移老代码时，异步回调里立刻读取
+            <code>this.state</code>
+            的逻辑更容易暴露问题。
+          </li>
+          <li>
+            <strong>什么时候需要在更新后读取最新 DOM 或 state？</strong>
+            结论是：优先把读取逻辑放在提交之后的回调或生命周期中。原因是 render
+            前读取到的是旧快照；只有极少数必须立刻同步 DOM 的场景才使用
+            <code>ReactDOM.flushSync</code>
+            ，否则会损失并发与批处理收益。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/Component#setstate" target="_blank" rel="noreferrer">react.dev: Component — setState()</a></li>
-          <li><a href="https://react.dev/learn/queueing-a-series-of-state-updates" target="_blank" rel="noreferrer">react.dev: Queueing a Series of State Updates</a></li>
-          <li><a href="https://react.dev/reference/react-dom/flushSync" target="_blank" rel="noreferrer">react.dev: flushSync</a></li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#setstate"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Component — setState()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/queueing-a-series-of-state-updates"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Queueing a Series of State Updates
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react-dom/flushSync"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: flushSync
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -75,7 +169,7 @@
         }
 
         componentDidMount() {
-          console.log("===== 对象式 setState：循环 10 次 count + 1 =====");
+          console.log('===== 对象式 setState：循环 10 次 count + 1 =====');
 
           for (let i = 0; i < 10; i++) {
             // 每次都用当前 this.state.count（始终为 0）算出 { count: 1 }
@@ -85,7 +179,7 @@
           }
 
           setTimeout(() => {
-            console.log("2s 后 this.state.count:", this.state.count);
+            console.log('2s 后 this.state.count:', this.state.count);
             // 预期: 1（10 个 { count: 1 } 被批处理合并，最终只 +1）
           }, 2000);
         }
@@ -94,14 +188,16 @@
           return (
             <div>
               <p>对象式连续 setState 10 次，页面 count：</p>
-              <p><strong>{this.state.count}</strong>（预期 1）</p>
+              <p>
+                <strong>{this.state.count}</strong>（预期 1）
+              </p>
             </div>
           );
         }
       }
 
       // ====== 2. React 18 挂载 ======
-      ReactDOM.createRoot(document.getElementById("root")).render(<Counter />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<Counter />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -111,16 +207,22 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./02-class-state%E4%B8%8Eprops.html">相关 · 02-class-state与props</a>
-        <a href="./04-setState-%E5%87%BD%E6%95%B0%E5%BC%8F%E6%9B%B4%E6%96%B0.html">相关 · 04-setState-函数式更新</a>
-        <a href="./05-Clock-setState-%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html">相关 · 05-Clock-setState-批处理对比</a>
+        <a href="./04-setState-%E5%87%BD%E6%95%B0%E5%BC%8F%E6%9B%B4%E6%96%B0.html">
+          相关 · 04-setState-函数式更新
+        </a>
+        <a href="./05-Clock-setState-%E6%89%B9%E5%A4%84%E7%90%86%E5%AF%B9%E6%AF%94.html">
+          相关 · 05-Clock-setState-批处理对比
+        </a>
         <a href="./02-class-state%E4%B8%8Eprops.html">← class-state与props</a>
-        <a href="./04-setState-%E5%87%BD%E6%95%B0%E5%BC%8F%E6%9B%B4%E6%96%B0.html">setState-函数式更新 →</a>
+        <a href="./04-setState-%E5%87%BD%E6%95%B0%E5%BC%8F%E6%9B%B4%E6%96%B0.html">
+          setState-函数式更新 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

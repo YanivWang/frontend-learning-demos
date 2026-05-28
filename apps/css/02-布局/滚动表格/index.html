@@ -1,5 +1,5 @@
 <!--
-分类: css / 02-布局 / 滚动表格
+  分类: css / 02-布局 / 滚动表格
   主题: 表头固定 + 表体滚动
   要点:
     - 推荐方案是在滚动容器内保留原生 table 结构，让 th 使用 position: sticky 固定在顶部
@@ -18,20 +18,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>表头固定 · tbody 滚动</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 1.5rem; }
-      h1 { margin-bottom: 1rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 1.5rem;
+      }
+      h1 {
+        margin-bottom: 1rem;
+      }
       /* ============ position: sticky 固定表头 ============
       天然保留 table 的列宽对齐 */
-      .wrap-b { max-height: 200px; overflow: auto; border: 1px solid #ddd; }
-      .table-b { border-collapse: collapse; width: 100%; }
+      .wrap-b {
+        max-height: 200px;
+        overflow: auto;
+        border: 1px solid #ddd;
+      }
+      .table-b {
+        border-collapse: collapse;
+        width: 100%;
+      }
       .table-b th {
-        position: sticky; top: 0;
-        background: #f0f0f0; z-index: 1;
+        position: sticky;
+        top: 0;
+        background: #f0f0f0;
+        z-index: 1;
       }
-      .table-b th, .table-b td {
-        border: 1px solid #ddd; padding: 6px 10px; text-align: left;
+      .table-b th,
+      .table-b td {
+        border: 1px solid #ddd;
+        padding: 6px 10px;
+        text-align: left;
       }
-      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      .tip {
+        margin: 0.5rem 0 1rem;
+        color: #666;
+        font-size: 0.875rem;
+      }
       #runtime-output {
         margin: 0.75rem 0 0;
         padding: 0.75rem 1rem;
@@ -51,27 +72,86 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>表头固定 + 表体滚动</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出 sticky 表头状态。</p>
+      <p class="hint">
+        在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出 sticky
+        表头状态。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>固定表头优先让表格外层成为滚动容器，并给 <code>thead th</code> 设置 <code>position: sticky; top: 0</code>，这样能保留原生 table 的列宽计算和语义结构。</li>
-          <li><code>sticky</code> 必须有阈值（如 <code>top:0</code>），并依附最近的滚动祖先；本页的 <code>.wrap-b { max-height; overflow:auto }</code> 就是表头吸附的滚动边界。</li>
-          <li>固定表头要给 <code>th</code> 设置不透明背景和合适 <code>z-index</code>，否则滚动内容会从表头下方透出；边框折叠、阴影和多行表头时还要单独检查层叠效果。</li>
-          <li>真实数据表还常见横向滚动、固定首列、排序筛选和几千行性能问题；CSS sticky 解决的是表头视觉固定，不替代虚拟滚动、列宽测量或无障碍表格标注。</li>
+          <li>
+            固定表头优先让表格外层成为滚动容器，并给
+            <code>thead th</code>
+            设置
+            <code>position: sticky; top: 0</code>
+            ，这样能保留原生 table 的列宽计算和语义结构。
+          </li>
+          <li>
+            <code>sticky</code>
+            必须有阈值（如
+            <code>top:0</code>
+            ），并依附最近的滚动祖先；本页的
+            <code>.wrap-b { max-height; overflow:auto }</code>
+            就是表头吸附的滚动边界。
+          </li>
+          <li>
+            固定表头要给
+            <code>th</code>
+            设置不透明背景和合适
+            <code>z-index</code>
+            ，否则滚动内容会从表头下方透出；边框折叠、阴影和多行表头时还要单独检查层叠效果。
+          </li>
+          <li>
+            真实数据表还常见横向滚动、固定首列、排序筛选和几千行性能问题；CSS sticky
+            解决的是表头视觉固定，不替代虚拟滚动、列宽测量或无障碍表格标注。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>表头固定为什么优先用 <code>position: sticky</code>？</strong> 结论是 sticky 能在保留原生表格布局的同时固定表头。原因是列宽仍由 table 算法统一计算，不需要把表头和表体拆开。边界是 sticky 依赖滚动容器和阈值，复杂多级表头仍要测试层叠和边框。</li>
-          <li><strong>sticky 表头失效通常检查什么？</strong> 结论是先查 <code>top</code> 是否设置、滚动祖先是否正确、祖先是否有影响显示的 overflow/transform、以及表头是否被其他层覆盖。原因是 sticky 是相对滚动容器的定位模型。项目里外层滚动容器变化后，吸附边界也会变化。</li>
-          <li><strong>大数据表格只靠 CSS 固定表头够不够？</strong> 结论是不够。原因是 CSS sticky 只解决视觉固定，不减少 DOM 数量。上千行数据还需要分页、虚拟滚动、懒渲染或专门的数据表组件，同时保留表头、单元格关联和键盘可访问性。</li>
+          <li>
+            <strong>
+              表头固定为什么优先用
+              <code>position: sticky</code>
+              ？
+            </strong>
+            结论是 sticky 能在保留原生表格布局的同时固定表头。原因是列宽仍由 table
+            算法统一计算，不需要把表头和表体拆开。边界是 sticky
+            依赖滚动容器和阈值，复杂多级表头仍要测试层叠和边框。
+          </li>
+          <li>
+            <strong>sticky 表头失效通常检查什么？</strong>
+            结论是先查
+            <code>top</code>
+            是否设置、滚动祖先是否正确、祖先是否有影响显示的
+            overflow/transform、以及表头是否被其他层覆盖。原因是 sticky
+            是相对滚动容器的定位模型。项目里外层滚动容器变化后，吸附边界也会变化。
+          </li>
+          <li>
+            <strong>大数据表格只靠 CSS 固定表头够不够？</strong>
+            结论是不够。原因是 CSS sticky 只解决视觉固定，不减少 DOM
+            数量。上千行数据还需要分页、虚拟滚动、懒渲染或专门的数据表组件，同时保留表头、单元格关联和键盘可访问性。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/position">MDN: position</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout">MDN: table-layout</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/table">MDN: The Table element</a></li>
-          <li><a href="https://www.w3.org/TR/css-position-3/#sticky-pos">W3C: CSS Positioned Layout - Sticky positioning</a></li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/position">MDN: position</a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout">
+              MDN: table-layout
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/table">
+              MDN: The Table element
+            </a>
+          </li>
+          <li>
+            <a href="https://www.w3.org/TR/css-position-3/#sticky-pos">
+              W3C: CSS Positioned Layout - Sticky positioning
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -79,23 +159,93 @@
 
     <!-- PAGE_DOM_START -->
     <h2>position: sticky 固定表头</h2>
-    <p class="tip">向下滚动表格，表头应吸附在 <code>.wrap-b</code> 容器顶部；观察 th 背景与 z-index 防止内容穿透。</p>
+    <p class="tip">
+      向下滚动表格，表头应吸附在
+      <code>.wrap-b</code>
+      容器顶部；观察 th 背景与 z-index 防止内容穿透。
+    </p>
     <div class="wrap-b" id="table-wrap">
       <table class="table-b" id="sticky-table">
         <thead>
-          <tr><th>姓名</th><th>年龄</th><th>出生</th><th>电话</th><th>单位</th></tr>
+          <tr>
+            <th>姓名</th>
+            <th>年龄</th>
+            <th>出生</th>
+            <th>电话</th>
+            <th>单位</th>
+          </tr>
         </thead>
         <tbody>
-          <tr><td>张三</td><td>18</td><td>1990-9-9</td><td>136****0090</td><td>阿里巴巴</td></tr>
-          <tr><td>张三封</td><td>18</td><td>1990-9-9</td><td>136****0090</td><td>阿里巴巴</td></tr>
-          <tr><td>张小三</td><td>18</td><td>1990-9-9</td><td>136****0090</td><td>腾讯科技</td></tr>
-          <tr><td>张三</td><td>18</td><td>1990-9-9</td><td>136****0090</td><td>浏阳河</td></tr>
-          <tr><td>张三疯子</td><td>18</td><td>1990-9-9</td><td>136****0090</td><td>阿里巴巴</td></tr>
-          <tr><td>张三</td><td>18</td><td>1990-9-9</td><td>136****0090</td><td>阿里巴巴</td></tr>
-          <tr><td>张大三</td><td>18</td><td>1990-9-9</td><td>136****0090</td><td>阿里巴巴</td></tr>
-          <tr><td>张三五</td><td>18</td><td>1990-9-9</td><td>136****0090</td><td>阿里巴巴</td></tr>
-          <tr><td>张刘三</td><td>18</td><td>1990-9-9</td><td>136****0090</td><td>阿里巴巴</td></tr>
-          <tr><td>张三</td><td>18</td><td>1990-9-9</td><td>136****0090</td><td>阿里巴巴</td></tr>
+          <tr>
+            <td>张三</td>
+            <td>18</td>
+            <td>1990-9-9</td>
+            <td>136****0090</td>
+            <td>阿里巴巴</td>
+          </tr>
+          <tr>
+            <td>张三封</td>
+            <td>18</td>
+            <td>1990-9-9</td>
+            <td>136****0090</td>
+            <td>阿里巴巴</td>
+          </tr>
+          <tr>
+            <td>张小三</td>
+            <td>18</td>
+            <td>1990-9-9</td>
+            <td>136****0090</td>
+            <td>腾讯科技</td>
+          </tr>
+          <tr>
+            <td>张三</td>
+            <td>18</td>
+            <td>1990-9-9</td>
+            <td>136****0090</td>
+            <td>浏阳河</td>
+          </tr>
+          <tr>
+            <td>张三疯子</td>
+            <td>18</td>
+            <td>1990-9-9</td>
+            <td>136****0090</td>
+            <td>阿里巴巴</td>
+          </tr>
+          <tr>
+            <td>张三</td>
+            <td>18</td>
+            <td>1990-9-9</td>
+            <td>136****0090</td>
+            <td>阿里巴巴</td>
+          </tr>
+          <tr>
+            <td>张大三</td>
+            <td>18</td>
+            <td>1990-9-9</td>
+            <td>136****0090</td>
+            <td>阿里巴巴</td>
+          </tr>
+          <tr>
+            <td>张三五</td>
+            <td>18</td>
+            <td>1990-9-9</td>
+            <td>136****0090</td>
+            <td>阿里巴巴</td>
+          </tr>
+          <tr>
+            <td>张刘三</td>
+            <td>18</td>
+            <td>1990-9-9</td>
+            <td>136****0090</td>
+            <td>阿里巴巴</td>
+          </tr>
+          <tr>
+            <td>张三</td>
+            <td>18</td>
+            <td>1990-9-9</td>
+            <td>136****0090</td>
+            <td>阿里巴巴</td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -106,21 +256,21 @@
     <script>
       (function () {
         function renderStickyTableMetrics() {
-          var wrap = document.getElementById("table-wrap");
-          var th = document.querySelector("#sticky-table thead th");
+          var wrap = document.getElementById('table-wrap');
+          var th = document.querySelector('#sticky-table thead th');
           var s = getComputedStyle(th);
-          var rows = document.querySelectorAll("#sticky-table tbody tr");
+          var rows = document.querySelectorAll('#sticky-table tbody tr');
 
-          document.getElementById("runtime-output").textContent = [
-            "── sticky 表头实测 ──",
-            "th position: " + s.position,
-            "th top: " + s.top,
-            "th z-index: " + s.zIndex,
-            "滚动容器 max-height: " + getComputedStyle(wrap).maxHeight,
-            "tbody 行数: " + rows.length,
-            "",
-            "提示: 向下滚动 #table-wrap，表头应保持在容器顶部。",
-          ].join("\n");
+          document.getElementById('runtime-output').textContent = [
+            '── sticky 表头实测 ──',
+            'th position: ' + s.position,
+            'th top: ' + s.top,
+            'th z-index: ' + s.zIndex,
+            '滚动容器 max-height: ' + getComputedStyle(wrap).maxHeight,
+            'tbody 行数: ' + rows.length,
+            '',
+            '提示: 向下滚动 #table-wrap，表头应保持在容器顶部。',
+          ].join('\n');
         }
 
         renderStickyTableMetrics();
@@ -133,18 +283,22 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="../%E5%AE%9A%E4%BD%8D%E4%B8%8E%E5%B1%82%E5%8F%A0%E4%B8%8A%E4%B8%8B%E6%96%87/index.html">← index</a>
+        <a
+          href="../%E5%AE%9A%E4%BD%8D%E4%B8%8E%E5%B1%82%E5%8F%A0%E4%B8%8A%E4%B8%8B%E6%96%87/index.html"
+        >
+          ← index
+        </a>
         <a href="../%E7%80%91%E5%B8%83%E6%B5%81/index.html">index →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

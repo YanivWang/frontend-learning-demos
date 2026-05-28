@@ -4,40 +4,88 @@
  * 运行：node scripts/validate-topic-coverage.mjs
  */
 
-import { readFile, stat } from "node:fs/promises";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { readFile, stat } from 'node:fs/promises';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
+const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
 const errors = [];
 
 const REQUIRED = [
   // JavaScript
-  { file: "apps/javascript/06-浏览器API/HTTP缓存.html", keywords: ["Cache-Control", "ETag", "强缓存"] },
-  { file: "apps/javascript/07-进阶/安全/XSS与CSRF.html", keywords: ["XSS", "CSRF", "Content-Security-Policy"] },
-  { file: "apps/javascript/08-面试题/手写/07-LRU缓存.html", keywords: ["LRU", "Map", "get"] },
-  { file: "apps/javascript/06-浏览器API/事件模型/03-Node与浏览器事件循环对比.html", keywords: ["Node.js", "process.nextTick", "微任务"] },
+  {
+    file: 'apps/javascript/06-浏览器API/HTTP缓存.html',
+    keywords: ['Cache-Control', 'ETag', '强缓存'],
+  },
+  {
+    file: 'apps/javascript/07-进阶/安全/XSS与CSRF.html',
+    keywords: ['XSS', 'CSRF', 'Content-Security-Policy'],
+  },
+  { file: 'apps/javascript/08-面试题/手写/07-LRU缓存.html', keywords: ['LRU', 'Map', 'get'] },
+  {
+    file: 'apps/javascript/06-浏览器API/事件模型/03-Node与浏览器事件循环对比.html',
+    keywords: ['Node.js', 'process.nextTick', '微任务'],
+  },
   // CSS
-  { file: "apps/css/07-现代特性/04-is-where选择器/index.html", keywords: [":is(", ":where(", "特异性"] },
-  { file: "apps/css/07-现代特性/05-view-transitions/index.html", keywords: ["view-transition", "过渡"] },
-  { file: "apps/css/07-现代特性/06-subgrid/index.html", keywords: ["subgrid", "grid"] },
-  { file: "apps/css/06-性能/01-重排重绘/index.html", keywords: ["重排", "重绘", "transform"] },
-  { file: "apps/css/06-性能/02-合成层/index.html", keywords: ["合成层", "will-change", "GPU"] },
-  { file: "apps/css/07-现代特性/07-content-visibility/index.html", keywords: ["content-visibility", "contain-intrinsic-size"] },
-  { file: "apps/javascript/06-浏览器API/WebSocket.html", keywords: ["WebSocket", "readyState", "OPEN"] },
-  { file: "apps/javascript/06-浏览器API/Performance-API.html", keywords: ["performance.now", "mark", "measure"] },
-  { file: "apps/javascript/07-进阶/无障碍-a11y.html", keywords: ["aria-expanded", "aria-live", "focus"] },
-  { file: "apps/demos/todo/01-todo-本地状态.html", keywords: ["Todo", "render", "done"] },
+  {
+    file: 'apps/css/07-现代特性/04-is-where选择器/index.html',
+    keywords: [':is(', ':where(', '特异性'],
+  },
+  {
+    file: 'apps/css/07-现代特性/05-view-transitions/index.html',
+    keywords: ['view-transition', '过渡'],
+  },
+  { file: 'apps/css/07-现代特性/06-subgrid/index.html', keywords: ['subgrid', 'grid'] },
+  { file: 'apps/css/06-性能/01-重排重绘/index.html', keywords: ['重排', '重绘', 'transform'] },
+  { file: 'apps/css/06-性能/02-合成层/index.html', keywords: ['合成层', 'will-change', 'GPU'] },
+  {
+    file: 'apps/css/07-现代特性/07-content-visibility/index.html',
+    keywords: ['content-visibility', 'contain-intrinsic-size'],
+  },
+  {
+    file: 'apps/javascript/06-浏览器API/WebSocket.html',
+    keywords: ['WebSocket', 'readyState', 'OPEN'],
+  },
+  {
+    file: 'apps/javascript/06-浏览器API/Performance-API.html',
+    keywords: ['performance.now', 'mark', 'measure'],
+  },
+  {
+    file: 'apps/javascript/07-进阶/无障碍-a11y.html',
+    keywords: ['aria-expanded', 'aria-live', 'focus'],
+  },
+  { file: 'apps/demos/todo/01-todo-本地状态.html', keywords: ['Todo', 'render', 'done'] },
   // Vue3
-  { file: "apps/vue3/src/07-路由状态工程化/06-Router与Pinia可运行示例.html", keywords: ["createRouter", "defineStore", "vue-router"] },
-  { file: "apps/vue3/src/07-路由状态工程化/07-Vitest单元测试面试点.html", keywords: ["Vitest", "单元测试", "mock"] },
+  {
+    file: 'apps/vue3/src/07-路由状态工程化/06-Router与Pinia可运行示例.html',
+    keywords: ['createRouter', 'defineStore', 'vue-router'],
+  },
+  {
+    file: 'apps/vue3/src/07-路由状态工程化/07-Vitest单元测试面试点.html',
+    keywords: ['Vitest', '单元测试', 'mock'],
+  },
   // React
-  { file: "apps/react18/src/function-components/34-React19新特性概览.html", keywords: ["React 19", "use", "Action"] },
-  { file: "apps/react19/src/01-基础语法/03-Actions与useActionState.html", keywords: ["useActionState", "action", "isPending"] },
-  { file: "apps/react19/src/01-基础语法/05-use读取Promise与Context.html", keywords: ["use(", "Suspense", "Context"] },
+  {
+    file: 'apps/react18/src/function-components/34-React19新特性概览.html',
+    keywords: ['React 19', 'use', 'Action'],
+  },
+  {
+    file: 'apps/react19/src/01-基础语法/03-Actions与useActionState.html',
+    keywords: ['useActionState', 'action', 'isPending'],
+  },
+  {
+    file: 'apps/react19/src/01-基础语法/05-use读取Promise与Context.html',
+    keywords: ['use(', 'Suspense', 'Context'],
+  },
   // TypeScript 扩展
-  { file: "apps/typescript/02-进阶/06-手写Utility-Types练习.html", keywords: ["Partial", "Pick", "Omit"] },
-  { file: "apps/typescript/03-工程与框架/04-React表单与Vue-emits类型.html", keywords: ["ChangeEvent", "defineEmits", "表单"] },
+  {
+    file: 'apps/typescript/02-进阶/06-手写Utility-Types练习.html',
+    keywords: ['Partial', 'Pick', 'Omit'],
+  },
+  {
+    file: 'apps/typescript/03-工程与框架/04-React表单与Vue-emits类型.html',
+    keywords: ['ChangeEvent', 'defineEmits', '表单'],
+  },
 ];
 
 async function main() {
@@ -49,7 +97,7 @@ async function main() {
       errors.push(`${item.file}: 缺少必备 demo`);
       continue;
     }
-    const content = await readFile(abs, "utf8");
+    const content = await readFile(abs, 'utf8');
     for (const kw of item.keywords) {
       if (!content.includes(kw)) {
         errors.push(`${item.file}: 缺少关键词「${kw}」`);
@@ -57,23 +105,25 @@ async function main() {
     }
   }
 
-  const miniTs = join(ROOT, "apps/typescript/mini-project/tsconfig.json");
+  const miniTs = join(ROOT, 'apps/typescript/mini-project/tsconfig.json');
   try {
     await stat(miniTs);
   } catch {
-    errors.push("apps/typescript/mini-project/tsconfig.json: 缺少 TS mini-project");
+    errors.push('apps/typescript/mini-project/tsconfig.json: 缺少 TS mini-project');
   }
 
   if (errors.length) {
     console.error(`[validate-topic-coverage] 失败，共 ${errors.length} 项：\n`);
-    errors.forEach((e) => console.error("  •", e));
+    errors.forEach((e) => console.error('  •', e));
     process.exitCode = 1;
     return;
   }
-  console.log(`[validate-topic-coverage] 通过：${REQUIRED.length} 个扩展主题 + TS mini-project 已覆盖`);
+  console.log(
+    `[validate-topic-coverage] 通过：${REQUIRED.length} 个扩展主题 + TS mini-project 已覆盖`,
+  );
 }
 
 main().catch((err) => {
-  console.error("[validate-topic-coverage] 异常：", err);
+  console.error('[validate-topic-coverage] 异常：', err);
   process.exitCode = 1;
 });

@@ -33,25 +33,115 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><strong>调用位置决定 this：</strong><code>obj.fn()</code> 是「通过对象属性引用调用」，所以 <code>this</code> 指向 <code>obj</code>。</li>
-          <li><strong>方法脱离：</strong><code>const fn = obj.fn; fn()</code> 只保留函数值，不保留原来的 base object，因此会按普通函数调用规则绑定 <code>this</code>。</li>
-          <li><strong>常见场景：</strong>把方法传给 <code>setTimeout</code>、事件监听、Promise 回调、数组方法，或从对象中解构方法，都可能让 <code>this</code> 脱离原对象。</li>
-          <li><strong>修复方式：</strong><code>bind(obj)</code> 适合提前固定回调；<code>() =&gt; obj.fn()</code> 适合保留最新对象引用；也可以把方法改成接收参数，减少对 <code>this</code> 的依赖。</li>
-          <li><strong>严格模式边界：</strong>非严格普通函数脱离后 <code>this</code> 可能是全局对象，严格模式下是 <code>undefined</code>，所以错误表现不完全一样。</li>
+          <li>
+            <strong>调用位置决定 this：</strong>
+            <code>obj.fn()</code>
+            是「通过对象属性引用调用」，所以
+            <code>this</code>
+            指向
+            <code>obj</code>
+            。
+          </li>
+          <li>
+            <strong>方法脱离：</strong>
+            <code>const fn = obj.fn; fn()</code>
+            只保留函数值，不保留原来的 base object，因此会按普通函数调用规则绑定
+            <code>this</code>
+            。
+          </li>
+          <li>
+            <strong>常见场景：</strong>
+            把方法传给
+            <code>setTimeout</code>
+            、事件监听、Promise 回调、数组方法，或从对象中解构方法，都可能让
+            <code>this</code>
+            脱离原对象。
+          </li>
+          <li>
+            <strong>修复方式：</strong>
+            <code>bind(obj)</code>
+            适合提前固定回调；
+            <code>() =&gt; obj.fn()</code>
+            适合保留最新对象引用；也可以把方法改成接收参数，减少对
+            <code>this</code>
+            的依赖。
+          </li>
+          <li>
+            <strong>严格模式边界：</strong>
+            非严格普通函数脱离后
+            <code>this</code>
+            可能是全局对象，严格模式下是
+            <code>undefined</code>
+            ，所以错误表现不完全一样。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>为什么 obj.fn() 有 this，而 const fn = obj.fn; fn() 会丢 this？</strong> 结论是 <code>this</code> 不是函数定义时固定的，而是普通函数调用时由调用表达式决定。<code>obj.fn()</code> 有对象作为 base，赋值后只剩函数值，原对象信息丢失。</li>
-          <li><strong>哪些真实场景容易发生 this 脱离？</strong> 事件回调、定时器、Promise 回调、数组迭代回调、解构方法和把类方法传给子组件都常见。边界是箭头函数没有自己的 <code>this</code>，它会捕获外层词法 <code>this</code>。</li>
-          <li><strong>bind 和箭头函数解决 this 脱离有什么区别？</strong> <code>bind</code> 创建一个固定 <code>this</code> 的新函数，适合稳定回调；箭头包装 <code>() =&gt; obj.fn()</code> 每次执行时重新读取 <code>obj.fn</code>。项目里要看是想固定当前函数，还是想保留对象的最新方法。</li>
-          <li><strong>解构对象方法时为什么要警惕 this？</strong> <code>const { fn } = obj</code> 和赋值给变量一样，会丢掉对象调用上下文。若方法内部读 <code>this</code>，解构后直接调用可能报错或读到错误对象。</li>
-          <li><strong>如何从设计上减少 this 依赖？</strong> 优先把依赖作为参数传入，或使用闭包保存状态；类组件/面向对象代码中再用 <code>bind</code>、类字段箭头函数或构造器绑定。这样回调传递时更不容易出错。</li>
+          <li>
+            <strong>为什么 obj.fn() 有 this，而 const fn = obj.fn; fn() 会丢 this？</strong>
+            结论是
+            <code>this</code>
+            不是函数定义时固定的，而是普通函数调用时由调用表达式决定。
+            <code>obj.fn()</code>
+            有对象作为 base，赋值后只剩函数值，原对象信息丢失。
+          </li>
+          <li>
+            <strong>哪些真实场景容易发生 this 脱离？</strong>
+            事件回调、定时器、Promise
+            回调、数组迭代回调、解构方法和把类方法传给子组件都常见。边界是箭头函数没有自己的
+            <code>this</code>
+            ，它会捕获外层词法
+            <code>this</code>
+            。
+          </li>
+          <li>
+            <strong>bind 和箭头函数解决 this 脱离有什么区别？</strong>
+            <code>bind</code>
+            创建一个固定
+            <code>this</code>
+            的新函数，适合稳定回调；箭头包装
+            <code>() =&gt; obj.fn()</code>
+            每次执行时重新读取
+            <code>obj.fn</code>
+            。项目里要看是想固定当前函数，还是想保留对象的最新方法。
+          </li>
+          <li>
+            <strong>解构对象方法时为什么要警惕 this？</strong>
+            <code>const { fn } = obj</code>
+            和赋值给变量一样，会丢掉对象调用上下文。若方法内部读
+            <code>this</code>
+            ，解构后直接调用可能报错或读到错误对象。
+          </li>
+          <li>
+            <strong>如何从设计上减少 this 依赖？</strong>
+            优先把依赖作为参数传入，或使用闭包保存状态；类组件/面向对象代码中再用
+            <code>bind</code>
+            、类字段箭头函数或构造器绑定。这样回调传递时更不容易出错。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this">MDN: this</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind">MDN: Function.prototype.bind()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions">MDN: Arrow function expressions</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this"
+            >
+              MDN: this
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind"
+            >
+              MDN: Function.prototype.bind()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions"
+            >
+              MDN: Arrow function expressions
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -61,10 +151,10 @@
     <script>
       // ============ 1. 正常方法调用 vs 赋值脱离 ======
       var obj = {
-        user1: "wc",
+        user1: 'wc',
         fn: function () {
-          console.log("this:", this);
-          console.log("user:", this.user1);
+          console.log('this:', this);
+          console.log('user:', this.user1);
         },
       };
 
@@ -109,17 +199,20 @@
         },
         sumFixed() {
           var self = this;
-          return this.items.reduce(function (acc, n) {
-            return acc + n;
-          }.bind(this), 0);
+          return this.items.reduce(
+            function (acc, n) {
+              return acc + n;
+            }.bind(this),
+            0,
+          );
         },
         sumArrow() {
           return this.items.reduce((acc, n) => acc + n, 0); // 箭头函数捕获外层 this
         },
       };
-      console.log("reduce 脱离:", list.sum()); // 仍能工作（不依赖 this）
-      console.log("reduce bind:", list.sumFixed()); // 6
-      console.log("reduce 箭头:", list.sumArrow()); // 6
+      console.log('reduce 脱离:', list.sum()); // 仍能工作（不依赖 this）
+      console.log('reduce bind:', list.sumFixed()); // 6
+      console.log('reduce 箭头:', list.sumArrow()); // 6
     </script>
     <!-- SCRIPT_END -->
 
@@ -131,13 +224,17 @@
         <a href="./01-this-%E5%8A%A8%E6%80%81%E7%BB%91%E5%AE%9A.html">相关 · this-动态绑定</a>
         <a href="./02-this-call-apply-bind.html">相关 · this-call-apply-bind</a>
         <a href="./03-this-new%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0.html">← this-new构造函数</a>
-        <a href="../../03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%88%9B%E5%BB%BA%E5%AF%B9%E8%B1%A1.html">创建对象 →</a>
+        <a
+          href="../../03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%88%9B%E5%BB%BA%E5%AF%B9%E8%B1%A1.html"
+        >
+          创建对象 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

@@ -21,14 +21,53 @@
     <title>Vue3 · script setup 编译宏</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; max-width: 760px; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; font-size: 0.85rem; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 14px; margin: 12px 0; }
-      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
-      .callout { background: #fff8e1; border: 1px solid #f0d78c; border-radius: 8px; padding: 10px 12px; font-size: 14px; margin-bottom: 12px; }
-      input { padding: 6px 8px; margin-left: 8px; }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          'PingFang SC',
+          sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+        max-width: 760px;
+      }
+      code,
+      pre {
+        background: #f6f8fa;
+        border-radius: 6px;
+      }
+      code {
+        padding: 2px 5px;
+      }
+      pre {
+        padding: 12px;
+        overflow: auto;
+        font-size: 0.85rem;
+      }
+      .box {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 14px;
+        margin: 12px 0;
+      }
+      .box .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
+      .callout {
+        background: #fff8e1;
+        border: 1px solid #f0d78c;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 14px;
+        margin-bottom: 12px;
+      }
+      input {
+        padding: 6px 8px;
+        margin-left: 8px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -41,25 +80,134 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><strong>概念说明 vs 可运行部分：</strong> 上方 <code>pre</code> 展示 SFC 中的编译宏写法（需 <code>.vue</code> + Vite/Vue 编译器）；下方子组件用运行时 <code>props</code>/<code>emits</code> 演示 <code>defineModel</code> 的<strong>等价行为</strong>（Vue 3.4+ 宏在 CDN HTML 中不可直接运行）。</li>
-          <li><code>&lt;script setup&gt;</code> 是 SFC 编译期语法糖，会被编译为组件的 <code>setup()</code>；顶层变量、函数和导入可直接在模板中使用，不需要手动 <code>return</code>。</li>
-          <li><code>defineProps</code>、<code>defineEmits</code>、<code>defineExpose</code>、<code>withDefaults</code> 都是编译宏，无需导入，且必须在 <code>&lt;script setup&gt;</code> 顶层使用；它们不是浏览器全局函数。</li>
-          <li><code>defineModel</code> 在 <strong>Vue 3.4+</strong> 可声明组件的 <code>v-model</code> 绑定，默认对应 <code>modelValue</code> 与 <code>update:modelValue</code>；Vue 3.5+ 还支持响应式 props 解构并可直接写默认值。</li>
-          <li>常见坑是把宏写进条件分支、函数内部或普通 <code>&lt;script&gt;</code>，以及在非 SFC 的 CDN HTML 中直接调用宏；真实工程必须交给 Vue SFC 编译器处理。v-model 协议变更见 <a href="../08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/04-Vue2%E4%B8%8EVue3%E5%B7%AE%E5%BC%82.html">08-Vue2与Vue3差异</a>。</li>
+          <li>
+            <strong>概念说明 vs 可运行部分：</strong>
+            上方
+            <code>pre</code>
+            展示 SFC 中的编译宏写法（需
+            <code>.vue</code>
+            + Vite/Vue 编译器）；下方子组件用运行时
+            <code>props</code>
+            /
+            <code>emits</code>
+            演示
+            <code>defineModel</code>
+            的
+            <strong>等价行为</strong>
+            （Vue 3.4+ 宏在 CDN HTML 中不可直接运行）。
+          </li>
+          <li>
+            <code>&lt;script setup&gt;</code>
+            是 SFC 编译期语法糖，会被编译为组件的
+            <code>setup()</code>
+            ；顶层变量、函数和导入可直接在模板中使用，不需要手动
+            <code>return</code>
+            。
+          </li>
+          <li>
+            <code>defineProps</code>
+            、
+            <code>defineEmits</code>
+            、
+            <code>defineExpose</code>
+            、
+            <code>withDefaults</code>
+            都是编译宏，无需导入，且必须在
+            <code>&lt;script setup&gt;</code>
+            顶层使用；它们不是浏览器全局函数。
+          </li>
+          <li>
+            <code>defineModel</code>
+            在
+            <strong>Vue 3.4+</strong>
+            可声明组件的
+            <code>v-model</code>
+            绑定，默认对应
+            <code>modelValue</code>
+            与
+            <code>update:modelValue</code>
+            ；Vue 3.5+ 还支持响应式 props 解构并可直接写默认值。
+          </li>
+          <li>
+            常见坑是把宏写进条件分支、函数内部或普通
+            <code>&lt;script&gt;</code>
+            ，以及在非 SFC 的 CDN HTML 中直接调用宏；真实工程必须交给 Vue SFC 编译器处理。v-model
+            协议变更见
+            <a
+              href="../08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/04-Vue2%E4%B8%8EVue3%E5%B7%AE%E5%BC%82.html"
+            >
+              08-Vue2与Vue3差异
+            </a>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>script setup 和普通 setup 有什么差异？</strong> 结论是运行语义仍是组件 setup，但 <code>&lt;script setup&gt;</code> 在编译期减少样板代码并自动暴露顶层绑定给模板。原因是 SFC 编译器会改写这段代码；边界是它只存在于 <code>.vue</code> SFC 编译流程，不能在普通 HTML script 中直接运行。</li>
-          <li><strong>defineProps/defineEmits 为什么不能随便调用？</strong> 结论是它们是编译宏，不是运行时 API。原因是编译器需要静态分析 props、emits 和类型声明，所以要求位于顶层且不能依赖运行时条件；项目里如果需要动态逻辑，应在声明后用普通 JS 处理。</li>
-          <li><strong>defineModel 适合替代哪些样板代码？</strong> 结论是 Vue 3.4+ 中可用它替代手写 <code>modelValue</code> prop 与 <code>update:modelValue</code> emit。原因是组件 v-model 的协议固定，编译宏能生成等价声明；边界是低于 3.4 的项目仍要手写 props/emits，复杂校验仍需清楚声明模型名称、类型和默认值。</li>
-          <li><strong>withDefaults 与响应式 props 解构怎么说明版本边界？</strong> 结论是 Vue 3.4 及更早版本的 TS props 默认值常用 <code>withDefaults</code>，Vue 3.5+ 的响应式 props 解构可直接写默认值。原因是 3.5 编译器会把同一 <code>&lt;script setup&gt;</code> 内的解构访问改写为 <code>props.xxx</code>；边界是跨版本教程和库代码要标明最低 Vue 版本。</li>
+          <li>
+            <strong>script setup 和普通 setup 有什么差异？</strong>
+            结论是运行语义仍是组件 setup，但
+            <code>&lt;script setup&gt;</code>
+            在编译期减少样板代码并自动暴露顶层绑定给模板。原因是 SFC
+            编译器会改写这段代码；边界是它只存在于
+            <code>.vue</code>
+            SFC 编译流程，不能在普通 HTML script 中直接运行。
+          </li>
+          <li>
+            <strong>defineProps/defineEmits 为什么不能随便调用？</strong>
+            结论是它们是编译宏，不是运行时 API。原因是编译器需要静态分析 props、emits
+            和类型声明，所以要求位于顶层且不能依赖运行时条件；项目里如果需要动态逻辑，应在声明后用普通
+            JS 处理。
+          </li>
+          <li>
+            <strong>defineModel 适合替代哪些样板代码？</strong>
+            结论是 Vue 3.4+ 中可用它替代手写
+            <code>modelValue</code>
+            prop 与
+            <code>update:modelValue</code>
+            emit。原因是组件 v-model 的协议固定，编译宏能生成等价声明；边界是低于 3.4 的项目仍要手写
+            props/emits，复杂校验仍需清楚声明模型名称、类型和默认值。
+          </li>
+          <li>
+            <strong>withDefaults 与响应式 props 解构怎么说明版本边界？</strong>
+            结论是 Vue 3.4 及更早版本的 TS props 默认值常用
+            <code>withDefaults</code>
+            ，Vue 3.5+ 的响应式 props 解构可直接写默认值。原因是 3.5 编译器会把同一
+            <code>&lt;script setup&gt;</code>
+            内的解构访问改写为
+            <code>props.xxx</code>
+            ；边界是跨版本教程和库代码要标明最低 Vue 版本。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/api/sfc-script-setup.html" target="_blank" rel="noreferrer">Vue 官方 API：script setup</a></li>
-          <li><a href="https://vuejs.org/api/sfc-script-setup.html#definemodel" target="_blank" rel="noreferrer">Vue 官方 API：defineModel（3.4+）</a></li>
-          <li><a href="https://vuejs.org/guide/components/props.html#reactive-props-destructure" target="_blank" rel="noreferrer">Vue 官方指南：Reactive Props Destructure（3.5+）</a></li>
-          <li><a href="./04-Vite%E5%B7%A5%E7%A8%8B%E5%8C%96%E9%9D%A2%E8%AF%95%E7%82%B9.html">本系列：Vite 工程化面试点</a></li>
+          <li>
+            <a href="https://vuejs.org/api/sfc-script-setup.html" target="_blank" rel="noreferrer">
+              Vue 官方 API：script setup
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/api/sfc-script-setup.html#definemodel"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 官方 API：defineModel（3.4+）
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/components/props.html#reactive-props-destructure"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 官方指南：Reactive Props Destructure（3.5+）
+            </a>
+          </li>
+          <li>
+            <a href="./04-Vite%E5%B7%A5%E7%A8%8B%E5%8C%96%E9%9D%A2%E8%AF%95%E7%82%B9.html">
+              本系列：Vite 工程化面试点
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -69,19 +217,39 @@
     <div id="app">
       <h1>script setup 编译宏（概念 + 运行时等价）</h1>
       <div class="box">
-        <p class="callout"><strong>概念说明（SFC 编译期，非本页可执行）：</strong> 以下宏只能在 <code>.vue</code> 的 <code>&lt;script setup&gt;</code> 中使用。</p>
-        <pre>&lt;script setup&gt;
-const props = defineProps({ title: String })
-const emit = defineEmits(['save'])
-const model = defineModel()  // Vue 3.4+
-defineExpose({ focus: () => inputRef.value?.focus() })
-&lt;/script&gt;</pre>
+        <p class="callout">
+          <strong>概念说明（SFC 编译期，非本页可执行）：</strong>
+          以下宏只能在
+          <code>.vue</code>
+          的
+          <code>&lt;script setup&gt;</code>
+          中使用。
+        </p>
+        <pre>
+&lt;script setup&gt;
+          const props = defineProps({ title: String })
+          const emit = defineEmits(['save'])
+          const model = defineModel()  // Vue 3.4+
+          defineExpose({ focus: () => inputRef.value?.focus() })
+          &lt;/script&gt;</pre
+        >
       </div>
       <div class="box">
         <h2>defineModel 等价行为（可运行）</h2>
-        <p class="hint-inline">子组件用手写 <code>modelValue</code> + <code>update:modelValue</code> 模拟 defineModel；在子输入框修改应同步父组件 <code>keyword</code>。</p>
+        <p class="hint-inline">
+          子组件用手写
+          <code>modelValue</code>
+          +
+          <code>update:modelValue</code>
+          模拟 defineModel；在子输入框修改应同步父组件
+          <code>keyword</code>
+          。
+        </p>
         <child-input v-model="keyword"></child-input>
-        <p>父组件 keyword：<code>{{ keyword }}</code></p>
+        <p>
+          父组件 keyword：
+          <code>{{ keyword }}</code>
+        </p>
       </div>
     </div>
     <!-- PAGE_DOM_END -->
@@ -94,26 +262,26 @@ defineExpose({ focus: () => inputRef.value?.focus() })
       // 运行时等价于 defineModel()：modelValue prop + update:modelValue emit
       const ChildInput = {
         props: { modelValue: String },
-        emits: ["update:modelValue"],
+        emits: ['update:modelValue'],
         template: `
-          <label>
-            子组件输入（v-model 双向）：
-            <input
-              :value="modelValue"
-              @input="$emit('update:modelValue', $event.target.value)"
-            />
-          </label>
+        <label>
+          子组件输入（v-model 双向）：
+          <input
+          :value="modelValue"
+          @input="$emit('update:modelValue', $event.target.value)"
+          />
+        </label>
         `,
       };
       const app = createApp({
         components: { ChildInput },
         setup() {
           // --- 演示状态 ---
-          const keyword = ref("hello");
-          
+          const keyword = ref('hello');
+
           // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
           onMounted(() => {
-            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+            console.log('[mounted] createApp 已接管 #app，DOM 已渲染');
           });
 
           return { keyword };
@@ -121,9 +289,8 @@ defineExpose({ focus: () => inputRef.value?.focus() })
       });
       // mount 须在 app.use / app.component / app.config 等配置之后调用
       // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
-      const rootInstance = app.mount("#app");
-      console.log("[mount] 根组件实例", rootInstance);
-
+      const rootInstance = app.mount('#app');
+      console.log('[mount] 根组件实例', rootInstance);
     </script>
     <!-- SCRIPT_END -->
 
@@ -132,18 +299,22 @@ defineExpose({ focus: () => inputRef.value?.focus() })
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./04-Vite%E5%B7%A5%E7%A8%8B%E5%8C%96%E9%9D%A2%E8%AF%95%E7%82%B9.html">← Vite工程化面试点</a>
-        <a href="./06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html">Router与Pinia可运行示例 →</a>
+        <a href="./04-Vite%E5%B7%A5%E7%A8%8B%E5%8C%96%E9%9D%A2%E8%AF%95%E7%82%B9.html">
+          ← Vite工程化面试点
+        </a>
+        <a href="./06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html">
+          Router与Pinia可运行示例 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

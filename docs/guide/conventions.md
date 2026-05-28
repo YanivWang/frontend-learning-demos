@@ -4,16 +4,16 @@
 
 ## 目录结构
 
-| 目录 | 用途 |
-| --- | --- |
-| `apps/javascript/` | 纯 JavaScript，01–09 编号 |
-| `apps/css/` | CSS 布局 / 动画 / 响应式等 |
+| 目录                      | 用途                         |
+| ------------------------- | ---------------------------- |
+| `apps/javascript/`        | 纯 JavaScript，01–09 编号    |
+| `apps/css/`               | CSS 布局 / 动画 / 响应式等   |
 | `apps/vue2/` `apps/vue3/` | Vue demo（`libs/` + `src/`） |
-| `apps/react18/` | React 18 demo |
-| `apps/react19/` | React 19 新特性与面试 demo |
-| `apps/typescript/` | TypeScript |
-| `apps/demos/` | 综合小项目 |
-| `docs/` | VitePress 文档站（唯一入口） |
+| `apps/react18/`           | React 18 demo                |
+| `apps/react19/`           | React 19 新特性与面试 demo   |
+| `apps/typescript/`        | TypeScript                   |
+| `apps/demos/`             | 综合小项目                   |
+| `docs/`                   | VitePress 文档站（唯一入口） |
 
 ## 文件命名
 

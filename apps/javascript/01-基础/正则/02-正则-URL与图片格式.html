@@ -30,22 +30,89 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>URL 匹配通常分：协议 <code>https?</code>、主机、路径、query；复杂 URL 用 <code>URL</code> API 更可靠。</li>
-          <li>图片扩展名：<code>\.(jpg|jpeg|png|gif|webp)(?=\?|$)</code>；<code>i</code> 标志忽略大小写。</li>
-          <li>贪婪 <code>.*</code> 匹配长 query 时可能大量回溯；改用 <code>[^?#]+</code> 或非贪婪 <code>.*?</code>。</li>
-          <li>生产环境 URL 解析优先 <code>new URL(str)</code>，正则仅做轻量格式提示。</li>
+          <li>
+            URL 匹配通常分：协议
+            <code>https?</code>
+            、主机、路径、query；复杂 URL 用
+            <code>URL</code>
+            API 更可靠。
+          </li>
+          <li>
+            图片扩展名：
+            <code>\.(jpg|jpeg|png|gif|webp)(?=\?|$)</code>
+            ；
+            <code>i</code>
+            标志忽略大小写。
+          </li>
+          <li>
+            贪婪
+            <code>.*</code>
+            匹配长 query 时可能大量回溯；改用
+            <code>[^?#]+</code>
+            或非贪婪
+            <code>.*?</code>
+            。
+          </li>
+          <li>
+            生产环境 URL 解析优先
+            <code>new URL(str)</code>
+            ，正则仅做轻量格式提示。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>如何写 URL 校验正则？</strong> 结论是可以写基础格式提示，但不应把复杂 URL 合法性完全交给正则。原因是协议、IPv6、国际化域名、编码和 query 都很复杂；项目里优先用 <code>new URL()</code> 解析，再用白名单限制协议和域名。</li>
-          <li><strong>贪婪量词有什么风险？</strong> <code>.*</code> 或嵌套量词在长字符串上可能导致大量回溯。边界是简单后缀匹配应收紧为 <code>\.(jpg|png)(?=\?|$)</code> 这类规则，而不是整串贪婪吞掉再回退。</li>
-          <li><strong>正则校验 URL 的局限是什么？</strong> 正则只能说明“看起来像”，不能说明资源可信或可访问。安全场景必须配合 URL API、协议白名单、域名白名单和服务端校验，不能只靠前端正则。</li>
+          <li>
+            <strong>如何写 URL 校验正则？</strong>
+            结论是可以写基础格式提示，但不应把复杂 URL
+            合法性完全交给正则。原因是协议、IPv6、国际化域名、编码和 query 都很复杂；项目里优先用
+            <code>new URL()</code>
+            解析，再用白名单限制协议和域名。
+          </li>
+          <li>
+            <strong>贪婪量词有什么风险？</strong>
+            <code>.*</code>
+            或嵌套量词在长字符串上可能导致大量回溯。边界是简单后缀匹配应收紧为
+            <code>\.(jpg|png)(?=\?|$)</code>
+            这类规则，而不是整串贪婪吞掉再回退。
+          </li>
+          <li>
+            <strong>正则校验 URL 的局限是什么？</strong>
+            正则只能说明“看起来像”，不能说明资源可信或可访问。安全场景必须配合 URL
+            API、协议白名单、域名白名单和服务端校验，不能只靠前端正则。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/URL" target="_blank" rel="noopener">MDN: URL</a>：标准 URL 解析与 pathname/search 拆分。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions" target="_blank" rel="noopener">MDN: Regular expressions guide</a>：量词与字符类。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/lastIndex" target="_blank" rel="noopener">MDN: RegExp.lastIndex</a>：全局匹配游标。</li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/URL"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN: URL
+            </a>
+            ：标准 URL 解析与 pathname/search 拆分。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN: Regular expressions guide
+            </a>
+            ：量词与字符类。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/lastIndex"
+              target="_blank"
+              rel="noopener"
+            >
+              MDN: RegExp.lastIndex
+            </a>
+            ：全局匹配游标。
+          </li>
         </ul>
       </div>
     </section>
@@ -54,60 +121,54 @@
     <!-- SCRIPT_START -->
     <script>
       const src =
-        "https://preview.redd.it/auxxzvikl0p31.jpg?width=640&crop=smart&auto=webp&s=dfd4acbecca8da105f7adcaa4a3f540454aa2d17";
+        'https://preview.redd.it/auxxzvikl0p31.jpg?width=640&crop=smart&auto=webp&s=dfd4acbecca8da105f7adcaa4a3f540454aa2d17';
 
       // ============ 1. 基础 URL 格式正则 ============
       // 协议 + 主机（至少一个 .）+ 可选路径/query；仅作「看起来像 URL」的提示
-      const regUrl =
-        /https?:\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-.@?^=%&:/~+#]*[\w\-@?^=%&/~+#])?/;
-      console.log("URL 正则 test:", regUrl.test(src)); // true
+      const regUrl = /https?:\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-.@?^=%&:/~+#]*[\w\-@?^=%&/~+#])?/;
+      console.log('URL 正则 test:', regUrl.test(src)); // true
 
       // ============ 2. 图片扩展名：i 标志 vs toUpperCase 技巧 ============
       // 推荐：i 标志 + 后缀边界 (?=\?|$)，避免把 query 里的 .webp 误判为扩展名
       const regImgModern = /\.(bmp|jpe?g|png|gif|webp)(?=\?|$)/i;
-      console.log("现代写法 i 标志:", regImgModern.test(src)); // true
+      console.log('现代写法 i 标志:', regImgModern.test(src)); // true
 
       // 旧技巧：整串 toUpperCase 后用大写扩展名 + 贪婪 .*（见 §3 风险）
       const regImgLegacy = /.*(\.(BMP|JPG|JPEG|PNG|GIF)).*/;
       console.log(
-        "legacy toUpperCase 写法:",
-        regUrl.test(src) && regImgLegacy.test(src.toUpperCase())
+        'legacy toUpperCase 写法:',
+        regUrl.test(src) && regImgLegacy.test(src.toUpperCase()),
       ); // true
 
       // ============ 3. 贪婪量词回溯风险 ============
       // 贪婪 .* 会尽量多吃字符再回退；长 query 时性能差
       const greedySuffix = /.*\.jpg/;
       const safeSuffix = /[^?#]+\.jpg(?=\?|$)/;
-      const longQuery = src + "&x=".repeat(200);
-      console.time("贪婪 .* 后缀");
+      const longQuery = src + '&x='.repeat(200);
+      console.time('贪婪 .* 后缀');
       greedySuffix.test(longQuery);
-      console.timeEnd("贪婪 .* 后缀");
-      console.time("安全 [^?#]+ 后缀");
+      console.timeEnd('贪婪 .* 后缀');
+      console.time('安全 [^?#]+ 后缀');
       safeSuffix.test(longQuery);
-      console.timeEnd("安全 [^?#]+ 后缀");
-      console.log("两种写法结果一致:", greedySuffix.test(src), safeSuffix.test(src)); // true true
+      console.timeEnd('安全 [^?#]+ 后缀');
+      console.log('两种写法结果一致:', greedySuffix.test(src), safeSuffix.test(src)); // true true
 
       // ============ 4. URL API：生产环境优先 ============
       // MDN：new URL() 能正确拆分 protocol、hostname、pathname、search
       try {
         const parsed = new URL(src);
-        console.log("URL API protocol:", parsed.protocol); // "https:"
-        console.log("URL API pathname:", parsed.pathname); // "/auxxzvikl0p31.jpg"
-        console.log("URL API search 长度:", parsed.search.length); // query 字符串
-        console.log(
-          "pathname 匹配图片后缀:",
-          regImgModern.test(parsed.pathname)
-        ); // true（比整串正则更稳）
+        console.log('URL API protocol:', parsed.protocol); // "https:"
+        console.log('URL API pathname:', parsed.pathname); // "/auxxzvikl0p31.jpg"
+        console.log('URL API search 长度:', parsed.search.length); // query 字符串
+        console.log('pathname 匹配图片后缀:', regImgModern.test(parsed.pathname)); // true（比整串正则更稳）
       } catch (err) {
-        console.log("URL 解析失败:", err.name, "-", err.message);
+        console.log('URL 解析失败:', err.name, '-', err.message);
       }
 
       // ============ 5. 正则局限：不能替代安全校验 ============
-      const fakeUrl = "https://evil.example/fake.jpg.exe?redirect=ok";
-      console.log("假图片 URL 仍匹配后缀正则:", regImgModern.test(fakeUrl)); // false（.exe 在后）
-      console.log(
-        "仅靠正则无法判断资源可信；需白名单域名 + 服务端校验"
-      );
+      const fakeUrl = 'https://evil.example/fake.jpg.exe?redirect=ok';
+      console.log('假图片 URL 仍匹配后缀正则:', regImgModern.test(fakeUrl)); // false（.exe 在后）
+      console.log('仅靠正则无法判断资源可信；需白名单域名 + 服务端校验');
     </script>
     <!-- SCRIPT_END -->
 
@@ -117,15 +178,19 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="../encode-URI%E7%BC%96%E7%A0%81.html">相关 · encode-URI编码</a>
-        <a href="./01-%E6%AD%A3%E5%88%99-URL%E8%B7%AF%E5%BE%84%E5%8C%B9%E9%85%8D.html">相关 · 正则-URL路径匹配</a>
-        <a href="./01-%E6%AD%A3%E5%88%99-URL%E8%B7%AF%E5%BE%84%E5%8C%B9%E9%85%8D.html">← 正则-URL路径匹配</a>
+        <a href="./01-%E6%AD%A3%E5%88%99-URL%E8%B7%AF%E5%BE%84%E5%8C%B9%E9%85%8D.html">
+          相关 · 正则-URL路径匹配
+        </a>
+        <a href="./01-%E6%AD%A3%E5%88%99-URL%E8%B7%AF%E5%BE%84%E5%8C%B9%E9%85%8D.html">
+          ← 正则-URL路径匹配
+        </a>
         <a href="./03-%E6%AD%A3%E5%88%99-%E5%85%A8%E7%89%B9%E6%80%A7.html">正则-全特性 →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

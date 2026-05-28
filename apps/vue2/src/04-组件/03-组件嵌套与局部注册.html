@@ -21,7 +21,11 @@
     <title>全局 / 局部组件与子组件嵌套</title>
     <script src="../../libs/vue.js"></script>
     <style>
-      section { border: 1px solid #ddd; padding: 8px; margin-bottom: 12px; }
+      section {
+        border: 1px solid #ddd;
+        padding: 8px;
+        margin-bottom: 12px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -31,31 +35,100 @@
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>全局组件 vs 局部组件 + 子组件嵌套使用</h1>
       <p class="hint">
-        对比两节演示：第一节 <code>load-page-b</code> 内嵌全局 <code>load-page-a</code>；第二节
-        <code>load-page-d</code> 在自身 <code>components</code> 中声明后才可使用局部
-        <code>load-page-c</code>。
+        对比两节演示：第一节
+        <code>load-page-b</code>
+        内嵌全局
+        <code>load-page-a</code>
+        ；第二节
+        <code>load-page-d</code>
+        在自身
+        <code>components</code>
+        中声明后才可使用局部
+        <code>load-page-c</code>
+        。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>Vue.component</code> 是全局注册。本页的 <code>load-page-a</code> 与 <code>load-page-b</code> 在根实例创建前注册，所以 <code>load-page-b</code> 的模板里可以直接使用 <code>load-page-a</code>。</li>
-          <li>局部注册写在某个组件或根实例的 <code>components</code> 选项里，只对当前模板可见。本页根实例注册了 <code>load-page-d</code>，因此根模板能用它。</li>
-          <li>局部组件不会自动向子组件树透传。<code>loadPageD</code> 想在自己的模板中使用 <code>load-page-c</code>，必须在 <code>loadPageD.components</code> 中声明。</li>
-          <li>全局注册必须早于模板编译，否则 Vue 在解析自定义标签时找不到组件定义。实际项目里基础按钮、图标可全局注册，业务组件建议就近局部注册。</li>
-          <li>Vue 2 的 DOM 模板会受 HTML 大小写规则影响，组件名推荐 kebab-case；在构建型 SFC 中也要保持命名清晰，避免注册名和使用名不一致。</li>
+          <li>
+            <code>Vue.component</code>
+            是全局注册。本页的
+            <code>load-page-a</code>
+            与
+            <code>load-page-b</code>
+            在根实例创建前注册，所以
+            <code>load-page-b</code>
+            的模板里可以直接使用
+            <code>load-page-a</code>
+            。
+          </li>
+          <li>
+            局部注册写在某个组件或根实例的
+            <code>components</code>
+            选项里，只对当前模板可见。本页根实例注册了
+            <code>load-page-d</code>
+            ，因此根模板能用它。
+          </li>
+          <li>
+            局部组件不会自动向子组件树透传。
+            <code>loadPageD</code>
+            想在自己的模板中使用
+            <code>load-page-c</code>
+            ，必须在
+            <code>loadPageD.components</code>
+            中声明。
+          </li>
+          <li>
+            全局注册必须早于模板编译，否则 Vue
+            在解析自定义标签时找不到组件定义。实际项目里基础按钮、图标可全局注册，业务组件建议就近局部注册。
+          </li>
+          <li>
+            Vue 2 的 DOM 模板会受 HTML 大小写规则影响，组件名推荐 kebab-case；在构建型 SFC
+            中也要保持命名清晰，避免注册名和使用名不一致。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>全局注册和局部注册的可见范围有什么区别？</strong> 结论：全局注册对之后创建的根实例和子组件树可见，局部注册只对声明它的当前组件模板可见。原因是两者进入不同注册表。项目里全局注册适合基础组件，局部注册适合业务组件。</li>
-          <li><strong>为什么局部组件不会自动透传给子组件树？</strong> 结论：局部注册不是依赖注入，只声明当前模板可解析哪些标签。原因是每个组件有自己的编译上下文。嵌套使用时应在真正使用该标签的组件里注册。</li>
-          <li><strong>组件嵌套时在哪里注册被嵌套组件？</strong> 结论：在使用它的组件的 <code>components</code> 选项中声明。原因是 Vue 只有在编译当前模板时能查到注册名才会当组件解析。边界是 DOM 模板建议使用 kebab-case，避免大小写被浏览器改写。</li>
-          <li><strong>大型项目里为什么不建议把所有业务组件都全局注册？</strong> 结论：会让依赖关系隐式化。原因是任意模板都能用全局组件，读代码时难判断来源，也不利于按需拆分。旧 Vue 2 项目可保留基础组件全局注册，新代码应偏向显式局部依赖。</li>
+          <li>
+            <strong>全局注册和局部注册的可见范围有什么区别？</strong>
+            结论：全局注册对之后创建的根实例和子组件树可见，局部注册只对声明它的当前组件模板可见。原因是两者进入不同注册表。项目里全局注册适合基础组件，局部注册适合业务组件。
+          </li>
+          <li>
+            <strong>为什么局部组件不会自动透传给子组件树？</strong>
+            结论：局部注册不是依赖注入，只声明当前模板可解析哪些标签。原因是每个组件有自己的编译上下文。嵌套使用时应在真正使用该标签的组件里注册。
+          </li>
+          <li>
+            <strong>组件嵌套时在哪里注册被嵌套组件？</strong>
+            结论：在使用它的组件的
+            <code>components</code>
+            选项中声明。原因是 Vue 只有在编译当前模板时能查到注册名才会当组件解析。边界是 DOM
+            模板建议使用 kebab-case，避免大小写被浏览器改写。
+          </li>
+          <li>
+            <strong>大型项目里为什么不建议把所有业务组件都全局注册？</strong>
+            结论：会让依赖关系隐式化。原因是任意模板都能用全局组件，读代码时难判断来源，也不利于按需拆分。旧
+            Vue 2 项目可保留基础组件全局注册，新代码应偏向显式局部依赖。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://v2.vuejs.org/v2/guide/components-registration.html" target="_blank" rel="noopener">Vue 2 Guide: Component Registration</a></li>
-          <li><a href="https://v2.vuejs.org/v2/guide/components.html" target="_blank" rel="noopener">Vue 2 Guide: Components Basics</a></li>
-          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 2 EOL Notice</a></li>
+          <li>
+            <a
+              href="https://v2.vuejs.org/v2/guide/components-registration.html"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue 2 Guide: Component Registration
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/guide/components.html" target="_blank" rel="noopener">
+              Vue 2 Guide: Components Basics
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 2 EOL Notice</a>
+          </li>
         </ul>
       </div>
     </section>
@@ -90,7 +163,7 @@
         <div>AAA（全局组件）</div>
         <div>{{post.title}}</div>
         <div>{{post.content}}</div>
-      </div>`
+      </div>`,
       });
 
       //传入组件名称和一个对象，组件名就是该组件的名称，对象是该组件的实体
@@ -101,7 +174,7 @@
         <div>{{post.title}}</div>
         <div>{{post.content}}</div>
         <load-page-a v-bind:post="post"></load-page-a>
-      </div>`
+      </div>`,
       });
 
       // ---------------------------------------------------------------------------
@@ -113,7 +186,7 @@
         template: `<div style="margin-left:16px;border-left:2px solid #67c23a;padding-left:8px;">
         <div>CCC（局部组件 C）</div>
         <div>{{post.title}} — {{post.content}}</div>
-      </div>`
+      </div>`,
       };
 
       //3.如果想让loadPageD中可以使用loadPageC，则需要，在 loadPageD 的 components 里再次声明
@@ -124,27 +197,26 @@
         <div>{{post.title}}</div>
         <load-page-c v-bind:post="post"></load-page-c>
       </div>`,
-      components: {
-        'load-page-c': loadPageC
-      }
+        components: {
+          'load-page-c': loadPageC,
+        },
       };
 
       // ---------------------------------------------------------------------------
       // #app 根实例：局部注册 load-page-d
       // ---------------------------------------------------------------------------
       var vm = new Vue({
-        el: "#app",
+        el: '#app',
         data: {
           postList: [
-            {"title": '标题1', "content": '我是内容1'},
-            {"title": '标题2', "content": '我是内容2'}
-          ]
+            { title: '标题1', content: '我是内容1' },
+            { title: '标题2', content: '我是内容2' },
+          ],
         },
         components: {
-          'load-page-d': loadPageD
-        }
+          'load-page-d': loadPageD,
+        },
       });
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -153,18 +225,20 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./02-%E7%88%B6%E5%AD%90%E9%80%9A%E4%BF%A1-props%E4%B8%8Eemit.html">← 父子通信-props与emit</a>
+        <a href="./02-%E7%88%B6%E5%AD%90%E9%80%9A%E4%BF%A1-props%E4%B8%8Eemit.html">
+          ← 父子通信-props与emit
+        </a>
         <a href="./04-props%E4%B8%8E%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6.html">props与动态组件 →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

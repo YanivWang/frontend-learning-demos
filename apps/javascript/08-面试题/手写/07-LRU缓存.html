@@ -23,37 +23,140 @@
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
     <style>
-      pre.code { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 8px; font-size: 0.85rem; overflow-x: auto; }
-      button { padding: 6px 12px; margin: 4px 4px 4px 0; cursor: pointer; }
-      #runtime-output { font-family: ui-monospace, monospace; background: #f6f8fa; padding: 12px; border-radius: 8px; white-space: pre-wrap; }
+      pre.code {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        overflow-x: auto;
+      }
+      button {
+        padding: 6px 12px;
+        margin: 4px 4px 4px 0;
+        cursor: pointer;
+      }
+      #runtime-output {
+        font-family: ui-monospace, monospace;
+        background: #f6f8fa;
+        padding: 12px;
+        border-radius: 8px;
+        white-space: pre-wrap;
+      }
     </style>
   </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>LRU Cache（Map 简化版）</h1>
-      <p class="hint">先看本复习区，再点击「运行演示」查看下方操作日志是否与标准答法一致。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>LRU（Least Recently Used）按“最近使用”维护缓存顺序：越久没有被访问的项越靠前，容量超限时优先淘汰最旧项。</li>
-          <li>ES <code>Map</code> 会按插入顺序迭代键；命中 <code>get</code> 后先 <code>delete</code> 再 <code>set</code>，可以把该键移动到顺序末尾，表示最近使用。</li>
-          <li><code>put</code> 已存在的键时也要刷新顺序；插入后如果 <code>map.size &gt; capacity</code>，通过 <code>map.keys().next().value</code> 取到第一个键并删除。</li>
-          <li>严格算法题常要求 <code>get</code> / <code>put</code> 都是 <code>O(1)</code>，典型实现是哈希表定位节点、双向链表维护新旧顺序；本页 Map 版更短，适合解释思路。</li>
-          <li>容量必须是正整数，非法容量要明确抛错；真实缓存还要考虑过期时间、内存上限、并发读写、缓存击穿和数据一致性。</li>
-          <li>本 demo 用 <code>textContent</code> 输出操作日志，不把日志拼成 HTML；带用户输入或服务端数据的缓存可视化也应避免把内容直接写入 <code>innerHTML</code>。</li>
+          <li>
+            LRU（Least Recently
+            Used）按“最近使用”维护缓存顺序：越久没有被访问的项越靠前，容量超限时优先淘汰最旧项。
+          </li>
+          <li>
+            ES
+            <code>Map</code>
+            会按插入顺序迭代键；命中
+            <code>get</code>
+            后先
+            <code>delete</code>
+            再
+            <code>set</code>
+            ，可以把该键移动到顺序末尾，表示最近使用。
+          </li>
+          <li>
+            <code>put</code>
+            已存在的键时也要刷新顺序；插入后如果
+            <code>map.size &gt; capacity</code>
+            ，通过
+            <code>map.keys().next().value</code>
+            取到第一个键并删除。
+          </li>
+          <li>
+            严格算法题常要求
+            <code>get</code>
+            /
+            <code>put</code>
+            都是
+            <code>O(1)</code>
+            ，典型实现是哈希表定位节点、双向链表维护新旧顺序；本页 Map 版更短，适合解释思路。
+          </li>
+          <li>
+            容量必须是正整数，非法容量要明确抛错；真实缓存还要考虑过期时间、内存上限、并发读写、缓存击穿和数据一致性。
+          </li>
+          <li>
+            本 demo 用
+            <code>textContent</code>
+            输出操作日志，不把日志拼成
+            HTML；带用户输入或服务端数据的缓存可视化也应避免把内容直接写入
+            <code>innerHTML</code>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>LRU 为什么命中 <code>get</code> 后也要刷新顺序？</strong> 结论：因为“使用”不仅包括写入，也包括读取。原因是 LRU 淘汰的是最近最少使用项，如果读取命中后不刷新，该热点数据仍可能被误判为旧数据而淘汰。项目里接口响应缓存、图片缓存、计算结果缓存都需要在命中时刷新热度。</li>
-          <li><strong><code>Map</code> 版 LRU 为什么能删除最旧 <code>key</code>？</strong> 结论：因为 <code>Map</code> 按插入顺序迭代键，第一个键就是当前最旧项。原因是每次命中或更新都会删除再插入，把最近使用项移动到末尾。边界是这依赖 ECMAScript 对 <code>Map</code> 迭代顺序的定义，不适用于普通对象属性顺序来做严谨 LRU。</li>
-          <li><strong><code>Map</code> 简化版和哈希表 + 双向链表版有什么差异？</strong> 结论：Map 版代码短，双向链表版更贴近严格算法题。原因是双向链表能显式把任意节点移到头部或尾部，哈希表负责 O(1) 定位；Map 版利用语言内置顺序，适合前端面试讲解和小型缓存。边界是大规模缓存还要考虑内存、淘汰策略和过期策略。</li>
-          <li><strong>LRU 缓存适合哪些项目场景，容量边界怎么处理？</strong> 结论：适合缓存最近访问更可能再次访问的数据，比如接口结果、编译产物、图片缩略图。原因是它用有限容量换取热点数据命中率。边界是容量应按内存和业务命中率评估，非法容量要拒绝，缓存数据过期或权限变化时还要主动失效。</li>
+          <li>
+            <strong>
+              LRU 为什么命中
+              <code>get</code>
+              后也要刷新顺序？
+            </strong>
+            结论：因为“使用”不仅包括写入，也包括读取。原因是 LRU
+            淘汰的是最近最少使用项，如果读取命中后不刷新，该热点数据仍可能被误判为旧数据而淘汰。项目里接口响应缓存、图片缓存、计算结果缓存都需要在命中时刷新热度。
+          </li>
+          <li>
+            <strong>
+              <code>Map</code>
+              版 LRU 为什么能删除最旧
+              <code>key</code>
+              ？
+            </strong>
+            结论：因为
+            <code>Map</code>
+            按插入顺序迭代键，第一个键就是当前最旧项。原因是每次命中或更新都会删除再插入，把最近使用项移动到末尾。边界是这依赖
+            ECMAScript 对
+            <code>Map</code>
+            迭代顺序的定义，不适用于普通对象属性顺序来做严谨 LRU。
+          </li>
+          <li>
+            <strong>
+              <code>Map</code>
+              简化版和哈希表 + 双向链表版有什么差异？
+            </strong>
+            结论：Map
+            版代码短，双向链表版更贴近严格算法题。原因是双向链表能显式把任意节点移到头部或尾部，哈希表负责
+            O(1) 定位；Map
+            版利用语言内置顺序，适合前端面试讲解和小型缓存。边界是大规模缓存还要考虑内存、淘汰策略和过期策略。
+          </li>
+          <li>
+            <strong>LRU 缓存适合哪些项目场景，容量边界怎么处理？</strong>
+            结论：适合缓存最近访问更可能再次访问的数据，比如接口结果、编译产物、图片缩略图。原因是它用有限容量换取热点数据命中率。边界是容量应按内存和业务命中率评估，非法容量要拒绝，缓存数据过期或权限变化时还要主动失效。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map" target="_blank" rel="noreferrer">MDN: Map</a></li>
-          <li><a href="https://tc39.es/ecma262/multipage/keyed-collections.html#sec-map-objects" target="_blank" rel="noreferrer">ECMA-262: Map Objects</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Map
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://tc39.es/ecma262/multipage/keyed-collections.html#sec-map-objects"
+              target="_blank"
+              rel="noreferrer"
+            >
+              ECMA-262: Map Objects
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -63,10 +166,12 @@
     <section class="demo-block">
       <h2>LRU 实现与演示</h2>
       <p class="tip">容量 = 2，依次 put/get；get(2) 应返回 -1，最终 keys 为 [3, 4]。</p>
-      <pre class="code">class LRU {
-  get(key) { /* 命中后 delete + set 刷新顺序 */ }
-  put(key, value) { /* 超容量删 map.keys().next().value */ }
-}</pre>
+      <pre class="code">
+class LRU {
+        get(key) { /* 命中后 delete + set 刷新顺序 */ }
+        put(key, value) { /* 超容量删 map.keys().next().value */ }
+        }</pre
+      >
       <button type="button" id="run">运行演示</button>
       <pre id="runtime-output" aria-live="polite">点击「运行演示」查看操作日志</pre>
     </section>
@@ -78,7 +183,7 @@
       class LRU {
         constructor(capacity) {
           if (!Number.isInteger(capacity) || capacity <= 0) {
-            throw new RangeError("capacity must be a positive integer");
+            throw new RangeError('capacity must be a positive integer');
           }
           this.capacity = capacity;
           this.map = new Map();
@@ -104,46 +209,39 @@
       }
 
       // ============ 2. 演示：容量 2 的标准 LRU 操作流程 ============
-      document.getElementById("run").onclick = () => {
+      document.getElementById('run').onclick = () => {
         const log = [];
         const lru = new LRU(2);
         const steps = [
           () => {
             lru.put(1, 1);
-            log.push("put(1,1) → keys: " + lru.keys());
+            log.push('put(1,1) → keys: ' + lru.keys());
           },
           () => {
             lru.put(2, 2);
-            log.push("put(2,2) → keys: " + lru.keys());
+            log.push('put(2,2) → keys: ' + lru.keys());
           },
           () => {
-            log.push("get(1) = " + lru.get(1) + " → keys: " + lru.keys());
+            log.push('get(1) = ' + lru.get(1) + ' → keys: ' + lru.keys());
           },
           () => {
             lru.put(3, 3);
-            log.push("put(3,3) 淘汰 key=2 → keys: " + lru.keys());
+            log.push('put(3,3) 淘汰 key=2 → keys: ' + lru.keys());
           },
           () => {
-            log.push("get(2) = " + lru.get(2));
+            log.push('get(2) = ' + lru.get(2));
           },
           () => {
             lru.put(4, 4);
-            log.push("put(4,4) 淘汰 key=1 → keys: " + lru.keys());
+            log.push('put(4,4) 淘汰 key=1 → keys: ' + lru.keys());
           },
           () => {
-            log.push(
-              "get(1)=" +
-                lru.get(1) +
-                ", get(3)=" +
-                lru.get(3) +
-                ", get(4)=" +
-                lru.get(4)
-            );
+            log.push('get(1)=' + lru.get(1) + ', get(3)=' + lru.get(3) + ', get(4)=' + lru.get(4));
           },
         ];
         steps.forEach((fn) => fn());
-        const text = log.join("\n");
-        document.getElementById("runtime-output").textContent = text;
+        const text = log.join('\n');
+        document.getElementById('runtime-output').textContent = text;
         console.log(text);
       };
     </script>
@@ -155,15 +253,23 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./06-EventEmitter.html">相关 · EventEmitter</a>
-        <a href="../%E4%BD%9C%E7%94%A8%E5%9F%9F/01-this%E6%8C%87%E5%90%91%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE.html">相关 · this指向与作用域链</a>
+        <a
+          href="../%E4%BD%9C%E7%94%A8%E5%9F%9F/01-this%E6%8C%87%E5%90%91%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE.html"
+        >
+          相关 · this指向与作用域链
+        </a>
         <a href="./06-EventEmitter.html">← EventEmitter</a>
-        <a href="../%E4%BD%9C%E7%94%A8%E5%9F%9F/01-this%E6%8C%87%E5%90%91%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE.html">this指向与作用域链 →</a>
+        <a
+          href="../%E4%BD%9C%E7%94%A8%E5%9F%9F/01-this%E6%8C%87%E5%90%91%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE.html"
+        >
+          this指向与作用域链 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

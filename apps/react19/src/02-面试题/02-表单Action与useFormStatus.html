@@ -23,8 +23,19 @@
     <script src="../../libs/react-dom.development.js"></script>
     <script src="../../libs/babel.min.js"></script>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 640px; line-height: 1.6; }
-      .meta { font-family: ui-monospace, monospace; font-size: 0.85rem; background: #f6f8fa; padding: 0.75rem; border-radius: 8px; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 640px;
+        line-height: 1.6;
+      }
+      .meta {
+        font-family: ui-monospace, monospace;
+        font-size: 0.85rem;
+        background: #f6f8fa;
+        padding: 0.75rem;
+        border-radius: 8px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -33,28 +44,134 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>表单 Action 与 useFormStatus</h1>
-      <p class="hint">下方 #root 为评论表单演示区：输入评论并点击「发布评论」，观察 SubmitButton 通过 useFormStatus 自动禁用与 loading 文案；空评论提交可见业务错误。请打开 DevTools Console 查看 Action 日志。</p>
+      <p class="hint">
+        下方 #root 为评论表单演示区：输入评论并点击「发布评论」，观察 SubmitButton 通过
+        useFormStatus 自动禁用与 loading 文案；空评论提交可见业务错误。请打开 DevTools Console 查看
+        Action 日志。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>React 19 扩展了表单的 <code>action</code>：函数 Action 会收到 <code>FormData</code>，可直接由提交触发异步逻辑；React 18 项目通常需要自己写 <code>onSubmit</code>、阻止默认行为并维护 pending。</li>
-          <li><code>useFormStatus</code> 从 <code>react-dom</code> 导出，读取最近父级 <code>&lt;form&gt;</code> 的 <code>pending</code>、<code>data</code>、<code>method</code>、<code>action</code>；本页的 <code>SubmitButton</code> 不需要 props 下钻就能禁用按钮。</li>
-          <li>常见坑是调用位置：<code>useFormStatus</code> 只能在表单内部的<strong>子组件</strong>里读到状态，在渲染 <code>&lt;form&gt;</code> 的同一个组件中调用只会读到外层表单或空状态。</li>
-          <li><code>useActionState</code> 更适合保存提交后的业务结果，<code>useFormStatus</code> 更适合做局部提交反馈；两者组合时要同时处理空输入、重复点击、异步失败和用户可读错误。</li>
-          <li>本页演示的是静态 HTML 中的客户端 Action；真正的 Server Action 属于 React 19 生态中的框架能力，需要构建器、服务端环境和可序列化参数约束。</li>
+          <li>
+            React 19 扩展了表单的
+            <code>action</code>
+            ：函数 Action 会收到
+            <code>FormData</code>
+            ，可直接由提交触发异步逻辑；React 18 项目通常需要自己写
+            <code>onSubmit</code>
+            、阻止默认行为并维护 pending。
+          </li>
+          <li>
+            <code>useFormStatus</code>
+            从
+            <code>react-dom</code>
+            导出，读取最近父级
+            <code>&lt;form&gt;</code>
+            的
+            <code>pending</code>
+            、
+            <code>data</code>
+            、
+            <code>method</code>
+            、
+            <code>action</code>
+            ；本页的
+            <code>SubmitButton</code>
+            不需要 props 下钻就能禁用按钮。
+          </li>
+          <li>
+            常见坑是调用位置：
+            <code>useFormStatus</code>
+            只能在表单内部的
+            <strong>子组件</strong>
+            里读到状态，在渲染
+            <code>&lt;form&gt;</code>
+            的同一个组件中调用只会读到外层表单或空状态。
+          </li>
+          <li>
+            <code>useActionState</code>
+            更适合保存提交后的业务结果，
+            <code>useFormStatus</code>
+            更适合做局部提交反馈；两者组合时要同时处理空输入、重复点击、异步失败和用户可读错误。
+          </li>
+          <li>
+            本页演示的是静态 HTML 中的客户端 Action；真正的 Server Action 属于 React 19
+            生态中的框架能力，需要构建器、服务端环境和可序列化参数约束。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>React 19 表单 Action 相比 React 18 表单提交解决了什么问题？</strong> 结论是把「提交触发异步逻辑、pending、结果状态」收进 React 的表单模型里。原因是 <code>action</code> 函数天然接收 <code>FormData</code>，并能和 <code>useActionState</code>、<code>useFormStatus</code> 联动。边界是它不是替代表单校验和错误建模，服务端 Action 还需要框架运行时支持。</li>
-          <li><strong><code>useFormStatus</code> 为什么通常要封装成 <code>SubmitButton</code> 子组件？</strong> 结论是它读取的是最近父级表单状态，子组件位置正好在表单上下文内部。原因是 Hook 的状态来自 DOM 表单提交上下文，而不是当前组件自己创建的某个变量。项目里常把按钮、loading 文案和重复提交禁用放到独立组件中。</li>
-          <li><strong><code>useFormStatus</code> 与 <code>useActionState</code> 的 pending 分别适合放在哪里？</strong> 结论是 <code>useFormStatus</code> 适合表单内部局部控件，<code>useActionState</code> 适合拥有 Action 的组件统一展示结果。原因是前者跟随最近表单，后者返回 action 的最新 state 和 pending。复杂表单可用前者禁用按钮，用后者渲染成功或失败提示。</li>
-          <li><strong>表单 Action 失败时为什么要返回可展示状态而不是只抛异常？</strong> 结论是业务失败应进入页面状态，异常边界更适合兜底未知错误。原因是「评论不能为空」「库存不足」这类失败需要展示在表单旁并允许用户修正。项目中还要考虑网络失败、重复提交、服务端校验和可访问性提示。</li>
+          <li>
+            <strong>React 19 表单 Action 相比 React 18 表单提交解决了什么问题？</strong>
+            结论是把「提交触发异步逻辑、pending、结果状态」收进 React 的表单模型里。原因是
+            <code>action</code>
+            函数天然接收
+            <code>FormData</code>
+            ，并能和
+            <code>useActionState</code>
+            、
+            <code>useFormStatus</code>
+            联动。边界是它不是替代表单校验和错误建模，服务端 Action 还需要框架运行时支持。
+          </li>
+          <li>
+            <strong>
+              <code>useFormStatus</code>
+              为什么通常要封装成
+              <code>SubmitButton</code>
+              子组件？
+            </strong>
+            结论是它读取的是最近父级表单状态，子组件位置正好在表单上下文内部。原因是 Hook 的状态来自
+            DOM 表单提交上下文，而不是当前组件自己创建的某个变量。项目里常把按钮、loading
+            文案和重复提交禁用放到独立组件中。
+          </li>
+          <li>
+            <strong>
+              <code>useFormStatus</code>
+              与
+              <code>useActionState</code>
+              的 pending 分别适合放在哪里？
+            </strong>
+            结论是
+            <code>useFormStatus</code>
+            适合表单内部局部控件，
+            <code>useActionState</code>
+            适合拥有 Action 的组件统一展示结果。原因是前者跟随最近表单，后者返回 action 的最新 state
+            和 pending。复杂表单可用前者禁用按钮，用后者渲染成功或失败提示。
+          </li>
+          <li>
+            <strong>表单 Action 失败时为什么要返回可展示状态而不是只抛异常？</strong>
+            结论是业务失败应进入页面状态，异常边界更适合兜底未知错误。原因是「评论不能为空」「库存不足」这类失败需要展示在表单旁并允许用户修正。项目中还要考虑网络失败、重复提交、服务端校验和可访问性提示。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react-dom/hooks/useFormStatus" target="_blank" rel="noreferrer">React DOM Reference: useFormStatus</a></li>
-          <li><a href="https://react.dev/reference/react/useActionState" target="_blank" rel="noreferrer">React Reference: useActionState</a></li>
-          <li><a href="https://react.dev/reference/react-dom/components/form" target="_blank" rel="noreferrer">React DOM Reference: &lt;form&gt;</a></li>
+          <li>
+            <a
+              href="https://react.dev/reference/react-dom/hooks/useFormStatus"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React DOM Reference: useFormStatus
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/useActionState"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React Reference: useActionState
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react-dom/components/form"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React DOM Reference: &lt;form&gt;
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -71,21 +188,21 @@
 
       // ====== 1. Action：接收 FormData，返回业务结果 state ======
       async function submitComment(prev, formData) {
-        const text = String(formData.get("comment") || "").trim();
-        console.log("[Action] submitComment，text=", text);
+        const text = String(formData.get('comment') || '').trim();
+        console.log('[Action] submitComment，text=', text);
         await new Promise((r) => setTimeout(r, 800));
-        return text ? { ok: true, text } : { ok: false, error: "评论不能为空" };
+        return text ? { ok: true, text } : { ok: false, error: '评论不能为空' };
       }
 
       // ====== 2. useFormStatus：必须在 form 内部子组件调用 ======
       // 若在 CommentForm 本体调用，读不到当前 form 的 pending
       function SubmitButton() {
         const { pending, data } = useFormStatus();
-        console.log("[useFormStatus] pending=", pending);
+        console.log('[useFormStatus] pending=', pending);
         return (
           <button type="submit" disabled={pending}>
-            {pending ? "发布中…" : "发布评论"}
-            {data && !pending ? "（含 FormData）" : ""}
+            {pending ? '发布中…' : '发布评论'}
+            {data && !pending ? '（含 FormData）' : ''}
           </button>
         );
       }
@@ -97,8 +214,8 @@
         return (
           <form action={formAction}>
             <h2>useFormStatus 面试 demo</h2>
-            <textarea name="comment" rows={3} placeholder="写点什么" style={{ width: "100%" }} />
-            <div style={{ marginTop: "0.75rem" }}>
+            <textarea name="comment" rows={3} placeholder="写点什么" style={{ width: '100%' }} />
+            <div style={{ marginTop: '0.75rem' }}>
               <SubmitButton />
             </div>
             <p className="meta">
@@ -110,11 +227,11 @@
         );
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<CommentForm />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<CommentForm />);
 
       /*
-        反面教材：在 CommentForm 内直接调用 useFormStatus() 读不到本 form 状态，
-        因为 Hook 读取的是「最近父级 form」，定义 form 的组件本身不在 form 上下文内部。
+      反面教材：在 CommentForm 内直接调用 useFormStatus() 读不到本 form 状态，
+      因为 Hook 读取的是「最近父级 form」，定义 form 的组件本身不在 form 上下文内部。
       */
     </script>
     <!-- SCRIPT_END -->
@@ -124,19 +241,24 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./01-React19%E7%9B%B8%E5%AF%B918%E5%8F%98%E5%8C%96%E9%80%9F%E8%AE%B0.html">← React19相对18变化速记</a>
-        <a href="./03-%E5%B9%B6%E5%8F%91%E6%B8%B2%E6%9F%93%E4%B8%8ETransitions%E9%9D%A2%E8%AF%95.html">并发渲染与Transitions面试 →</a>
+        <a href="./01-React19%E7%9B%B8%E5%AF%B918%E5%8F%98%E5%8C%96%E9%80%9F%E8%AE%B0.html">
+          ← React19相对18变化速记
+        </a>
+        <a
+          href="./03-%E5%B9%B6%E5%8F%91%E6%B8%B2%E6%9F%93%E4%B8%8ETransitions%E9%9D%A2%E8%AF%95.html"
+        >
+          并发渲染与Transitions面试 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-  
-</body>
+  </body>
 </html>

@@ -22,9 +22,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Performance API</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 720px; }
-      button { padding: 8px 12px; cursor: pointer; margin: 4px 6px 4px 0; }
-      #log { margin-top: 1rem; padding: 12px; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; min-height: 4rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 720px;
+      }
+      button {
+        padding: 8px 12px;
+        cursor: pointer;
+        margin: 4px 6px 4px 0;
+      }
+      #log {
+        margin-top: 1rem;
+        padding: 12px;
+        background: #f6f8fa;
+        border-radius: 8px;
+        font-family: ui-monospace, monospace;
+        font-size: 0.8125rem;
+        white-space: pre-wrap;
+        min-height: 4rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -33,29 +50,113 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Performance API</h1>
-      <p class="hint">请阅读本复习区，并在下方演示区点击按钮运行计时示例；Navigation Timing 数据因页面加载时机而异。</p>
+      <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>performance.now()</code> 返回相对 <code>performance.timeOrigin</code> 的高精度时间戳，并且是单调递增时钟；它适合测量一段代码耗时，不适合展示真实日期时间。</li>
-          <li><code>performance.mark()</code> 与 <code>performance.measure()</code> 属于 User Timing API：先给关键阶段打标记，再用 measure 生成可查询的 <code>PerformanceMeasure</code> 记录。</li>
-          <li><code>performance.getEntriesByType("navigation")</code> 返回 Navigation Timing 2 的导航记录，可读取 DNS、连接、请求响应、DOM 解析、load 事件等页面加载阶段数据。</li>
-          <li>旧的 <code>performance.timing</code> 已不推荐用于新代码；现代项目优先读取 <code>PerformanceNavigationTiming</code>，并用 <code>PerformanceObserver</code> 监听后续性能条目。</li>
-          <li>常见坑是重复打同名 mark/measure 导致条目堆积，或者把本地调试指标当作线上真实体验；上报前要清理无用条目，并结合采样、网络状态、设备分层和隐私限制分析。</li>
+          <li>
+            <code>performance.now()</code>
+            返回相对
+            <code>performance.timeOrigin</code>
+            的高精度时间戳，并且是单调递增时钟；它适合测量一段代码耗时，不适合展示真实日期时间。
+          </li>
+          <li>
+            <code>performance.mark()</code>
+            与
+            <code>performance.measure()</code>
+            属于 User Timing API：先给关键阶段打标记，再用 measure 生成可查询的
+            <code>PerformanceMeasure</code>
+            记录。
+          </li>
+          <li>
+            <code>performance.getEntriesByType("navigation")</code>
+            返回 Navigation Timing 2 的导航记录，可读取 DNS、连接、请求响应、DOM 解析、load
+            事件等页面加载阶段数据。
+          </li>
+          <li>
+            旧的
+            <code>performance.timing</code>
+            已不推荐用于新代码；现代项目优先读取
+            <code>PerformanceNavigationTiming</code>
+            ，并用
+            <code>PerformanceObserver</code>
+            监听后续性能条目。
+          </li>
+          <li>
+            常见坑是重复打同名 mark/measure
+            导致条目堆积，或者把本地调试指标当作线上真实体验；上报前要清理无用条目，并结合采样、网络状态、设备分层和隐私限制分析。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>performance.now() 为什么比 Date.now() 更适合测耗时？</strong> 结论是 <code>performance.now()</code> 更适合做耗时测量。原因是它基于单调时钟，精度更高，并且不受系统时间被用户或 NTP 调整的影响。项目里用它算 duration，用 <code>Date</code> 或服务端时间处理业务时间。</li>
-          <li><strong>mark / measure 在业务性能埋点里如何使用？</strong> 结论是用 mark 标记开始和结束节点，再用 measure 生成可查询的耗时记录。原因是 Performance API 会把这些记录纳入统一的性能条目模型，便于调试和上报。真实项目要统一命名、清理旧条目，并避免给高频路径打过多标记。</li>
-          <li><strong>navigation entry 与旧 performance.timing 有什么区别？</strong> 结论是新代码应优先使用 <code>PerformanceNavigationTiming</code>。原因是它以 PerformanceEntry 的形式暴露导航指标，和资源、mark、measure 等条目模型一致，而旧 <code>performance.timing</code> 已进入历史兼容语境。兼容旧浏览器时才考虑兜底读取旧字段。</li>
-          <li><strong>Performance API 指标上报有哪些隐私和兼容边界？</strong> 结论是指标会受浏览器精度限制、跨源资源 Timing-Allow-Origin、缓存和页面生命周期影响。原因是高精度时间可能被滥用于侧信道，跨源资源也不会默认暴露完整细节。线上监控要做采样、分桶和异常过滤，不能只看单次本地结果。</li>
+          <li>
+            <strong>performance.now() 为什么比 Date.now() 更适合测耗时？</strong>
+            结论是
+            <code>performance.now()</code>
+            更适合做耗时测量。原因是它基于单调时钟，精度更高，并且不受系统时间被用户或 NTP
+            调整的影响。项目里用它算 duration，用
+            <code>Date</code>
+            或服务端时间处理业务时间。
+          </li>
+          <li>
+            <strong>mark / measure 在业务性能埋点里如何使用？</strong>
+            结论是用 mark 标记开始和结束节点，再用 measure 生成可查询的耗时记录。原因是 Performance
+            API
+            会把这些记录纳入统一的性能条目模型，便于调试和上报。真实项目要统一命名、清理旧条目，并避免给高频路径打过多标记。
+          </li>
+          <li>
+            <strong>navigation entry 与旧 performance.timing 有什么区别？</strong>
+            结论是新代码应优先使用
+            <code>PerformanceNavigationTiming</code>
+            。原因是它以 PerformanceEntry 的形式暴露导航指标，和资源、mark、measure
+            等条目模型一致，而旧
+            <code>performance.timing</code>
+            已进入历史兼容语境。兼容旧浏览器时才考虑兜底读取旧字段。
+          </li>
+          <li>
+            <strong>Performance API 指标上报有哪些隐私和兼容边界？</strong>
+            结论是指标会受浏览器精度限制、跨源资源
+            Timing-Allow-Origin、缓存和页面生命周期影响。原因是高精度时间可能被滥用于侧信道，跨源资源也不会默认暴露完整细节。线上监控要做采样、分桶和异常过滤，不能只看单次本地结果。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Performance_API" target="_blank" rel="noreferrer">MDN: Performance API</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Performance/now" target="_blank" rel="noreferrer">MDN: Performance.now()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Performance_API/User_timing" target="_blank" rel="noreferrer">MDN: User Timing API</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/PerformanceNavigationTiming" target="_blank" rel="noreferrer">MDN: PerformanceNavigationTiming</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Performance_API"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Performance API
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Performance/now"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Performance.now()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Performance_API/User_timing"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: User Timing API
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/PerformanceNavigationTiming"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: PerformanceNavigationTiming
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -74,68 +175,72 @@
 
     <!-- SCRIPT_START -->
     <script>
-      const log = document.getElementById("log");
+      const log = document.getElementById('log');
       const lines = [];
 
       function append(text) {
         lines.push(text);
-        log.textContent = lines.join("\n");
+        log.textContent = lines.join('\n');
       }
 
       // ============ 1. 页面加载时的 Navigation Timing ============
-      const nav = performance.getEntriesByType("navigation")[0];
+      const nav = performance.getEntriesByType('navigation')[0];
       if (nav) {
-        append("DOMContentLoaded: " + Math.round(nav.domContentLoadedEventEnd) + " ms");
-        append("Load event: " + Math.round(nav.loadEventEnd) + " ms");
+        append('DOMContentLoaded: ' + Math.round(nav.domContentLoadedEventEnd) + ' ms');
+        append('Load event: ' + Math.round(nav.loadEventEnd) + ' ms');
       } else {
-        append("Navigation Timing 不可用（等待点击「读取 Navigation Timing」）");
+        append('Navigation Timing 不可用（等待点击「读取 Navigation Timing」）');
       }
 
       // ============ 2. mark / measure ============
-      document.getElementById("run").onclick = async () => {
-        performance.clearMarks("task-start");
-        performance.clearMarks("task-end");
-        performance.clearMeasures("task");
+      document.getElementById('run').onclick = async () => {
+        performance.clearMarks('task-start');
+        performance.clearMarks('task-end');
+        performance.clearMeasures('task');
 
-        performance.mark("task-start");
+        performance.mark('task-start');
         const t0 = performance.now();
         await new Promise((r) => setTimeout(r, 120));
-        performance.mark("task-end");
-        performance.measure("task", "task-start", "task-end");
+        performance.mark('task-end');
+        performance.measure('task', 'task-start', 'task-end');
 
-        const m = performance.getEntriesByName("task").pop();
-        append("measure task: " + Math.round(m.duration) + " ms");
-        append("performance.now 差值: " + Math.round(performance.now() - t0) + " ms");
+        const m = performance.getEntriesByName('task').pop();
+        append('measure task: ' + Math.round(m.duration) + ' ms');
+        append('performance.now 差值: ' + Math.round(performance.now() - t0) + ' ms');
       };
 
       // ============ 3. performance.now vs Date.now ============
-      document.getElementById("compareBtn").onclick = () => {
+      document.getElementById('compareBtn').onclick = () => {
         const p0 = performance.now();
         const d0 = Date.now();
         let sum = 0;
         for (let i = 0; i < 1e5; i++) sum += i;
-        append("performance.now 耗时: " + (performance.now() - p0).toFixed(3) + " ms（单调、高精度）");
-        append("Date.now 差值: " + (Date.now() - d0) + " ms（可能为 0，精度仅毫秒）");
-        append("timeOrigin: " + performance.timeOrigin);
+        append(
+          'performance.now 耗时: ' + (performance.now() - p0).toFixed(3) + ' ms（单调、高精度）',
+        );
+        append('Date.now 差值: ' + (Date.now() - d0) + ' ms（可能为 0，精度仅毫秒）');
+        append('timeOrigin: ' + performance.timeOrigin);
       };
 
       // ============ 4. Navigation Timing 详情 ============
-      document.getElementById("navBtn").onclick = () => {
-        const entry = performance.getEntriesByType("navigation")[0];
+      document.getElementById('navBtn').onclick = () => {
+        const entry = performance.getEntriesByType('navigation')[0];
         if (!entry) {
-          append("无 navigation entry");
+          append('无 navigation entry');
           return;
         }
-        append("type: " + entry.type);
-        append("domInteractive: " + Math.round(entry.domInteractive) + " ms");
-        append("domComplete: " + Math.round(entry.domComplete) + " ms");
-        append("transferSize: " + entry.transferSize + " bytes");
+        append('type: ' + entry.type);
+        append('domInteractive: ' + Math.round(entry.domInteractive) + ' ms');
+        append('domComplete: ' + Math.round(entry.domComplete) + ' ms');
+        append('transferSize: ' + entry.transferSize + ' bytes');
       };
 
       // ============ 5. 旧 performance.timing 已不推荐（MDN 历史兼容）============
       // 新代码应读 PerformanceNavigationTiming；timing 字段仍可能存在但勿用于新埋点
-      if ("timing" in performance) {
-        console.log("performance.timing 仍存在（历史 API），新代码用 getEntriesByType('navigation')");
+      if ('timing' in performance) {
+        console.log(
+          "performance.timing 仍存在（历史 API），新代码用 getEntriesByType('navigation')",
+        );
       }
     </script>
     <!-- SCRIPT_END -->
@@ -146,15 +251,17 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
         <a href="./requestAnimation.html">相关 · requestAnimation</a>
-        <a href="./%E6%B5%8F%E8%A7%88%E5%99%A8%E6%B8%B2%E6%9F%93%E4%B8%8E%E6%80%A7%E8%83%BD.html">相关 · 浏览器渲染与性能</a>
+        <a href="./%E6%B5%8F%E8%A7%88%E5%99%A8%E6%B8%B2%E6%9F%93%E4%B8%8E%E6%80%A7%E8%83%BD.html">
+          相关 · 浏览器渲染与性能
+        </a>
         <a href="./Notification.html">← Notification</a>
         <a href="./requestAnimation.html">requestAnimation →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

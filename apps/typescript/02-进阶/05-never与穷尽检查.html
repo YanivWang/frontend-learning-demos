@@ -21,9 +21,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TypeScript · never 与穷尽检查</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 860px; line-height: 1.6; }
-      pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
-      #log { background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; white-space: pre-wrap; font-size: 0.85rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 860px;
+        line-height: 1.6;
+      }
+      pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 14px;
+        border-radius: 8px;
+        overflow: auto;
+        font-size: 0.86rem;
+      }
+      #log {
+        background: #f6f8fa;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 12px;
+        white-space: pre-wrap;
+        font-size: 0.85rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -36,24 +55,119 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>never</code> 表示不可能正常出现的值，常见于总是抛错的函数、无限循环函数，以及联合类型被所有分支处理完后的剩余类型。</li>
-          <li>可辨识联合配合 <code>switch</code> 能做穷尽检查：当每个 <code>type</code> 都有对应 <code>case</code>，<code>default</code> 分支里的 action 应被收窄成 <code>never</code>。</li>
-          <li><code>assertNever(x: never): never</code> 的价值是让“新增 action 但漏写 case”从运行时隐藏 bug 变成编译期错误，本页 reducer 就演示了这个结构。</li>
-          <li><code>void</code> 表示函数返回值不会被使用或没有有意义返回值；<code>never</code> 表示函数不会正常返回，两者不能混成“都没有返回值”。</li>
-          <li>常见坑是在 <code>default</code> 分支直接返回原状态或空值，这会掩盖新增联合成员；业务 reducer、状态机和消息处理器更适合显式调用 <code>assertNever</code>。</li>
+          <li>
+            <code>never</code>
+            表示不可能正常出现的值，常见于总是抛错的函数、无限循环函数，以及联合类型被所有分支处理完后的剩余类型。
+          </li>
+          <li>
+            可辨识联合配合
+            <code>switch</code>
+            能做穷尽检查：当每个
+            <code>type</code>
+            都有对应
+            <code>case</code>
+            ，
+            <code>default</code>
+            分支里的 action 应被收窄成
+            <code>never</code>
+            。
+          </li>
+          <li>
+            <code>assertNever(x: never): never</code>
+            的价值是让“新增 action 但漏写 case”从运行时隐藏 bug 变成编译期错误，本页 reducer
+            就演示了这个结构。
+          </li>
+          <li>
+            <code>void</code>
+            表示函数返回值不会被使用或没有有意义返回值；
+            <code>never</code>
+            表示函数不会正常返回，两者不能混成“都没有返回值”。
+          </li>
+          <li>
+            常见坑是在
+            <code>default</code>
+            分支直接返回原状态或空值，这会掩盖新增联合成员；业务
+            reducer、状态机和消息处理器更适合显式调用
+            <code>assertNever</code>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>never 和 void 有什么区别？</strong> 结论是 <code>void</code> 是没有有意义的返回值，<code>never</code> 是不会正常返回。原因是 <code>void</code> 函数可以执行完，<code>never</code> 函数只能抛错、死循环或进入不可能分支。项目里错误抛出函数和穷尽检查辅助函数通常返回 <code>never</code>。</li>
-          <li><strong>assertNever 为什么能发现漏处理分支？</strong> 结论是它要求参数类型必须已经被收窄为 <code>never</code>。原因是所有联合成员都处理完后，默认分支不应再有实际成员；新增成员但漏写 <code>case</code> 时，传入的就不再是 <code>never</code>，编译器会报错。这个错误比线上遇到未知 action 更早。</li>
-          <li><strong>reducer 里如何落地穷尽检查？</strong> 结论是用字面量 <code>type</code> 建模 action，并在 <code>switch</code> 的 <code>default</code> 调用 <code>assertNever(action)</code>。原因是 reducer 往往随着业务迭代新增 action，最容易漏改某个分支。边界是运行时仍可能收到非法外部数据，需要在进入 reducer 前校验。</li>
-          <li><strong>default 分支直接 return 原状态可以吗？</strong> 结论是公共 reducer 有时为了兼容外部未知 action 会这么做，但应用内部强类型 action 不推荐。原因是它会让漏处理的新 action 静默通过。项目里可在边界层兼容未知输入，在内部状态机里保持穷尽检查。</li>
+          <li>
+            <strong>never 和 void 有什么区别？</strong>
+            结论是
+            <code>void</code>
+            是没有有意义的返回值，
+            <code>never</code>
+            是不会正常返回。原因是
+            <code>void</code>
+            函数可以执行完，
+            <code>never</code>
+            函数只能抛错、死循环或进入不可能分支。项目里错误抛出函数和穷尽检查辅助函数通常返回
+            <code>never</code>
+            。
+          </li>
+          <li>
+            <strong>assertNever 为什么能发现漏处理分支？</strong>
+            结论是它要求参数类型必须已经被收窄为
+            <code>never</code>
+            。原因是所有联合成员都处理完后，默认分支不应再有实际成员；新增成员但漏写
+            <code>case</code>
+            时，传入的就不再是
+            <code>never</code>
+            ，编译器会报错。这个错误比线上遇到未知 action 更早。
+          </li>
+          <li>
+            <strong>reducer 里如何落地穷尽检查？</strong>
+            结论是用字面量
+            <code>type</code>
+            建模 action，并在
+            <code>switch</code>
+            的
+            <code>default</code>
+            调用
+            <code>assertNever(action)</code>
+            。原因是 reducer 往往随着业务迭代新增
+            action，最容易漏改某个分支。边界是运行时仍可能收到非法外部数据，需要在进入 reducer
+            前校验。
+          </li>
+          <li>
+            <strong>default 分支直接 return 原状态可以吗？</strong>
+            结论是公共 reducer 有时为了兼容外部未知 action 会这么做，但应用内部强类型 action
+            不推荐。原因是它会让漏处理的新 action
+            静默通过。项目里可在边界层兼容未知输入，在内部状态机里保持穷尽检查。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html#exhaustiveness-checking" target="_blank" rel="noopener">TypeScript Handbook: Exhaustiveness checking</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/functions.html#void" target="_blank" rel="noopener">TypeScript Handbook: void</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html#the-never-type" target="_blank" rel="noopener">TypeScript Handbook: The never type</a></li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html#exhaustiveness-checking"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Exhaustiveness checking
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/functions.html#void"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: void
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html#the-never-type"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: The never type
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -62,21 +176,21 @@
     <!-- PAGE_DOM_START -->
     <p>上方为 TypeScript 源码（在 .ts / IDE 中检查），下方为等价的可运行 JavaScript + 断言输出。</p>
     <p class="ts"><strong>TypeScript</strong></p>
-    <pre>type Action =
-  | { type: "increment"; payload: number }
-  | { type: "reset" };
-
-function assertNever(x: never): never {
-  throw new Error(`Unhandled action: ${JSON.stringify(x)}`);
-}
-
-function reducer(state: number, action: Action): number {
-  switch (action.type) {
-    case "increment": return state + action.payload;
-    case "reset": return 0;
-    default: return assertNever(action);  // action 应已被收窄为 never
-  }
-}</pre>
+    <pre>
+type Action =
+      | { type: "increment"; payload: number }
+      | { type: "reset" };
+      function assertNever(x: never): never {
+      throw new Error(`Unhandled action: ${JSON.stringify(x)}`);
+      }
+      function reducer(state: number, action: Action): number {
+      switch (action.type) {
+      case "increment": return state + action.payload;
+      case "reset": return 0;
+      default: return assertNever(action);  // action 应已被收窄为 never
+      }
+      }</pre
+    >
     <p><strong>运行时 JavaScript（本页执行）</strong></p>
     <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
@@ -91,9 +205,9 @@ function reducer(state: number, action: Action): number {
       // ============ 2. reducer + 可辨识联合穷尽检查 ============
       function reducer(state, action) {
         switch (action.type) {
-          case "increment":
+          case 'increment':
             return state + action.payload;
-          case "reset":
+          case 'reset':
             return 0;
           default:
             return assertNever(action);
@@ -101,18 +215,24 @@ function reducer(state: number, action: Action): number {
       }
 
       const lines = [];
-      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+      const assert = (cond, msg) => lines.push((cond ? '✓ ' : '✗ ') + msg);
 
-      assert(reducer(1, { type: "increment", payload: 2 }) === 3, "increment: state 1 + payload 2 = 3");
-      assert(reducer(3, { type: "reset" }) === 0, "reset: state → 0");
+      assert(
+        reducer(1, { type: 'increment', payload: 2 }) === 3,
+        'increment: state 1 + payload 2 = 3',
+      );
+      assert(reducer(3, { type: 'reset' }) === 0, 'reset: state → 0');
       try {
-        reducer(0, { type: "unknown" });
-        assert(false, "未知 action 应触发 assertNever 抛错");
+        reducer(0, { type: 'unknown' });
+        assert(false, '未知 action 应触发 assertNever 抛错');
       } catch (e) {
-        assert(e.message.includes("Unhandled action"), "default 分支 assertNever 运行时兜底抛错（TS 编译期应更早拦截）");
+        assert(
+          e.message.includes('Unhandled action'),
+          'default 分支 assertNever 运行时兜底抛错（TS 编译期应更早拦截）',
+        );
       }
 
-      document.getElementById("log").textContent = lines.join("\n");
+      document.getElementById('log').textContent = lines.join('\n');
     </script>
     <!-- SCRIPT_END -->
 
@@ -121,20 +241,32 @@ function reducer(state: number, action: Action): number {
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="./04-%E6%98%A0%E5%B0%84%E7%B1%BB%E5%9E%8B%E4%B8%8E%E6%A8%A1%E6%9D%BF%E5%AD%97%E9%9D%A2%E9%87%8F.html">相关 · 映射类型与模板字面量</a>
-        <a href="./06-%E6%89%8B%E5%86%99Utility-Types%E7%BB%83%E4%B9%A0.html">相关 · 手写Utility-Types练习</a>
-        <a href="./04-%E6%98%A0%E5%B0%84%E7%B1%BB%E5%9E%8B%E4%B8%8E%E6%A8%A1%E6%9D%BF%E5%AD%97%E9%9D%A2%E9%87%8F.html">← 映射类型与模板字面量</a>
-        <a href="./06-%E6%89%8B%E5%86%99Utility-Types%E7%BB%83%E4%B9%A0.html">手写Utility-Types练习 →</a>
+        <a
+          href="./04-%E6%98%A0%E5%B0%84%E7%B1%BB%E5%9E%8B%E4%B8%8E%E6%A8%A1%E6%9D%BF%E5%AD%97%E9%9D%A2%E9%87%8F.html"
+        >
+          相关 · 映射类型与模板字面量
+        </a>
+        <a href="./06-%E6%89%8B%E5%86%99Utility-Types%E7%BB%83%E4%B9%A0.html">
+          相关 · 手写Utility-Types练习
+        </a>
+        <a
+          href="./04-%E6%98%A0%E5%B0%84%E7%B1%BB%E5%9E%8B%E4%B8%8E%E6%A8%A1%E6%9D%BF%E5%AD%97%E9%9D%A2%E9%87%8F.html"
+        >
+          ← 映射类型与模板字面量
+        </a>
+        <a href="./06-%E6%89%8B%E5%86%99Utility-Types%E7%BB%83%E4%B9%A0.html">
+          手写Utility-Types练习 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

@@ -21,13 +21,45 @@
     <title>Vue3 · Proxy 响应式原理</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; padding: 6px 12px; margin-top: 4px; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; max-height: 260px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 860px; }
-      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          'PingFang SC',
+          sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+      }
+      button {
+        margin-right: 8px;
+        padding: 6px 12px;
+        margin-top: 4px;
+      }
+      code,
+      pre {
+        background: #f6f8fa;
+        border-radius: 6px;
+      }
+      code {
+        padding: 2px 5px;
+      }
+      pre {
+        padding: 12px;
+        overflow: auto;
+        max-height: 260px;
+      }
+      .box {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 860px;
+      }
+      .box .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -40,25 +72,134 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>本页点「count +1」「新增属性」等按钮，下方 <code>pre</code> 会追加 <code>watchEffect</code> 日志。 <code>reactive()</code> 返回的是原对象的 <code>Proxy</code> 代理。组件渲染、<code>watchEffect()</code> 或计算属性读取代理属性时会被收集为依赖，后续写入同一属性时再触发对应更新。</li>
-          <li><code>Proxy</code> 能拦截属性读取、写入、删除、<code>in</code>、枚举和数组索引等操作，因此 Vue3 不需要像 Vue2 那样依赖 <code>Vue.set</code> 才能让新增属性进入响应式。</li>
-          <li>常见坑是“脱离代理访问”：直接解构 <code>reactive</code> 对象的基础类型属性后，后续读写不再经过代理；需要保留 <code>state.count</code> 访问，或用 <code>toRef()</code> / <code>toRefs()</code> 暴露属性（见 <a href="../02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/01-ref-reactive%E4%B8%8E%E8%A7%A3%E6%9E%84.html">02-ref-reactive与解构</a>）。</li>
-          <li>代理对象与原始对象不是同一个引用，做严格相等比较、Map key、第三方实例缓存时要明确存的是代理还是原对象；不希望被深度代理的大对象可用 <code>markRaw()</code> 或 <code>shallowRef()</code>（见 <a href="./05-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">05-性能优化</a>）。</li>
-          <li>打开控制台可见 effect 同步重跑；示例中的新增 <code>extra</code>、修改数组索引和 <code>push</code> 都会让 <code>watchEffect()</code> 重新执行，说明这些操作都能被 Vue3 的响应式系统追踪。</li>
+          <li>
+            本页点「count +1」「新增属性」等按钮，下方
+            <code>pre</code>
+            会追加
+            <code>watchEffect</code>
+            日志。
+            <code>reactive()</code>
+            返回的是原对象的
+            <code>Proxy</code>
+            代理。组件渲染、
+            <code>watchEffect()</code>
+            或计算属性读取代理属性时会被收集为依赖，后续写入同一属性时再触发对应更新。
+          </li>
+          <li>
+            <code>Proxy</code>
+            能拦截属性读取、写入、删除、
+            <code>in</code>
+            、枚举和数组索引等操作，因此 Vue3 不需要像 Vue2 那样依赖
+            <code>Vue.set</code>
+            才能让新增属性进入响应式。
+          </li>
+          <li>
+            常见坑是“脱离代理访问”：直接解构
+            <code>reactive</code>
+            对象的基础类型属性后，后续读写不再经过代理；需要保留
+            <code>state.count</code>
+            访问，或用
+            <code>toRef()</code>
+            /
+            <code>toRefs()</code>
+            暴露属性（见
+            <a
+              href="../02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/01-ref-reactive%E4%B8%8E%E8%A7%A3%E6%9E%84.html"
+            >
+              02-ref-reactive与解构
+            </a>
+            ）。
+          </li>
+          <li>
+            代理对象与原始对象不是同一个引用，做严格相等比较、Map
+            key、第三方实例缓存时要明确存的是代理还是原对象；不希望被深度代理的大对象可用
+            <code>markRaw()</code>
+            或
+            <code>shallowRef()</code>
+            （见
+            <a href="./05-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">05-性能优化</a>
+            ）。
+          </li>
+          <li>
+            打开控制台可见 effect 同步重跑；示例中的新增
+            <code>extra</code>
+            、修改数组索引和
+            <code>push</code>
+            都会让
+            <code>watchEffect()</code>
+            重新执行，说明这些操作都能被 Vue3 的响应式系统追踪。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue3 的 reactive 为什么能监听新增属性和数组索引？</strong> 结论是因为 <code>reactive()</code> 基于 <code>Proxy</code> 代理对象级别的操作，而不是逐个属性改写 getter/setter。新增属性、删除属性和数组索引写入都会经过代理陷阱，所以能触发依赖更新。边界是只有通过代理对象操作才有效，绕过代理直接改原始对象不会通知视图。</li>
-          <li><strong>track 与 trigger 分别发生在什么时候？</strong> 结论是读取响应式属性时 track，写入或删除相关属性时 trigger。Vue 用这种“读时收集、写时通知”的模型把组件渲染和状态字段关联起来。项目里排查“为什么没更新”时，先看读取是否发生在响应式 effect 中，再看修改是否经过代理。</li>
-          <li><strong>reactive 对象为什么不建议直接解构后使用？</strong> 结论是解构出的基础类型值不再经过代理访问，后续变化无法继续被追踪。原因是响应式依赖建立在属性访问上，而不是变量名本身。组合式函数返回多个字段时，通常用 <code>toRefs()</code>、单独的 <code>ref()</code>，或让调用方保持对象访问。</li>
-          <li><strong>Vue3 Proxy 响应式相比 Vue2 defineProperty 改进了什么，仍有哪些边界？</strong> 结论是它改进了新增/删除属性、数组索引和集合类型的追踪，降低了很多 Vue2 时代的显式补丁成本。原因是 Proxy 能拦截对象操作本身。边界是代理身份与原对象不同，且不是所有外部实例都适合深度代理；对比见 <a href="./04-Vue2%E4%B8%8EVue3%E5%B7%AE%E5%BC%82.html">04-Vue2与Vue3差异</a>。</li>
+          <li>
+            <strong>Vue3 的 reactive 为什么能监听新增属性和数组索引？</strong>
+            结论是因为
+            <code>reactive()</code>
+            基于
+            <code>Proxy</code>
+            代理对象级别的操作，而不是逐个属性改写
+            getter/setter。新增属性、删除属性和数组索引写入都会经过代理陷阱，所以能触发依赖更新。边界是只有通过代理对象操作才有效，绕过代理直接改原始对象不会通知视图。
+          </li>
+          <li>
+            <strong>track 与 trigger 分别发生在什么时候？</strong>
+            结论是读取响应式属性时 track，写入或删除相关属性时 trigger。Vue
+            用这种“读时收集、写时通知”的模型把组件渲染和状态字段关联起来。项目里排查“为什么没更新”时，先看读取是否发生在响应式
+            effect 中，再看修改是否经过代理。
+          </li>
+          <li>
+            <strong>reactive 对象为什么不建议直接解构后使用？</strong>
+            结论是解构出的基础类型值不再经过代理访问，后续变化无法继续被追踪。原因是响应式依赖建立在属性访问上，而不是变量名本身。组合式函数返回多个字段时，通常用
+            <code>toRefs()</code>
+            、单独的
+            <code>ref()</code>
+            ，或让调用方保持对象访问。
+          </li>
+          <li>
+            <strong>Vue3 Proxy 响应式相比 Vue2 defineProperty 改进了什么，仍有哪些边界？</strong>
+            结论是它改进了新增/删除属性、数组索引和集合类型的追踪，降低了很多 Vue2
+            时代的显式补丁成本。原因是 Proxy
+            能拦截对象操作本身。边界是代理身份与原对象不同，且不是所有外部实例都适合深度代理；对比见
+            <a href="./04-Vue2%E4%B8%8EVue3%E5%B7%AE%E5%BC%82.html">04-Vue2与Vue3差异</a>
+            。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/guide/extras/reactivity-in-depth.html" target="_blank" rel="noreferrer">Vue 官方文档：Reactivity in Depth</a></li>
-          <li><a href="https://vuejs.org/api/reactivity-core.html#reactive" target="_blank" rel="noreferrer">Vue 官方 API：reactive()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy" target="_blank" rel="noreferrer">MDN：Proxy</a></li>
-          <li><a href="../02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/01-ref-reactive%E4%B8%8E%E8%A7%A3%E6%9E%84.html">本系列：ref-reactive与解构</a></li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/extras/reactivity-in-depth.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 官方文档：Reactivity in Depth
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/api/reactivity-core.html#reactive"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 官方 API：reactive()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN：Proxy
+            </a>
+          </li>
+          <li>
+            <a
+              href="../02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/01-ref-reactive%E4%B8%8E%E8%A7%A3%E6%9E%84.html"
+            >
+              本系列：ref-reactive与解构
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -68,12 +209,18 @@
     <div id="app">
       <h1>Proxy 响应式原理</h1>
       <div class="box">
-        <p class="hint-inline">每次操作后下方 <code>watchEffect</code> 日志会追加一行；观察新增属性、数组索引与 push 是否都能触发。</p>
+        <p class="hint-inline">
+          每次操作后下方
+          <code>watchEffect</code>
+          日志会追加一行；观察新增属性、数组索引与 push 是否都能触发。
+        </p>
         <p>count：{{ state.count }}，extra：{{ state.extra || "无" }}</p>
         <p>数组：{{ state.list.join(", ") }}</p>
         <button type="button" @click="state.count++">count +1</button>
         <button type="button" @click="state.extra = '新增属性也能触发'">新增属性</button>
-        <button type="button" @click="state.list[0] = state.list[0] + 10">改数组索引 list[0]</button>
+        <button type="button" @click="state.list[0] = state.list[0] + 10">
+          改数组索引 list[0]
+        </button>
         <button type="button" @click="state.list.push(state.list.length + 1)">push 新元素</button>
         <pre>{{ logs.length ? logs.join("\n") : "（点击按钮后出现 effect 日志）" }}</pre>
       </div>
@@ -95,16 +242,15 @@
 
           // watchEffect 自动收集 state 上同步读取的依赖
           watchEffect(() => {
-            const line = `effect 重新执行：count=${state.count} extra=${state.extra || ""} list=${state.list.join(",")}`;
+            const line = `effect 重新执行：count=${state.count} extra=${state.extra || ''} list=${state.list.join(',')}`;
             rawLogs.push(line);
             logs.value = rawLogs.slice(-8);
-            console.log("[effect]", line);
+            console.log('[effect]', line);
           });
 
-          
           // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
           onMounted(() => {
-            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+            console.log('[mounted] createApp 已接管 #app，DOM 已渲染');
           });
 
           return { state, logs };
@@ -112,9 +258,8 @@
       });
       // mount 须在 app.use / app.component / app.config 等配置之后调用
       // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
-      const rootInstance = app.mount("#app");
-      console.log("[mount] 根组件实例", rootInstance);
-
+      const rootInstance = app.mount('#app');
+      console.log('[mount] 根组件实例', rootInstance);
     </script>
     <!-- SCRIPT_END -->
 
@@ -123,18 +268,22 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="../07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/08-%E8%B7%AF%E7%94%B1%E6%87%92%E5%8A%A0%E8%BD%BD%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html">← 路由懒加载可运行示例</a>
+        <a
+          href="../07-%E8%B7%AF%E7%94%B1%E7%8A%B6%E6%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96/08-%E8%B7%AF%E7%94%B1%E6%87%92%E5%8A%A0%E8%BD%BD%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html"
+        >
+          ← 路由懒加载可运行示例
+        </a>
         <a href="./02-%E8%99%9A%E6%8B%9FDOM-diff-key.html">虚拟DOM-diff-key →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

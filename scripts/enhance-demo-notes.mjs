@@ -9,54 +9,56 @@
  * 运行：node scripts/enhance-demo-notes.mjs
  */
 
-import { readdir, readFile, writeFile, stat } from "node:fs/promises";
-import { dirname, join, relative, sep } from "node:path";
-import { fileURLToPath } from "node:url";
-import { parseDemoMetaFromContent } from "./lib/parse-demo-meta.mjs";
+import { readdir, readFile, writeFile, stat } from 'node:fs/promises';
+import { dirname, join, relative, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { parseDemoMetaFromContent } from './lib/parse-demo-meta.mjs';
 
-const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
+const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
 const TARGET_DIRS = [
-  join("apps", "javascript"),
-  join("apps", "css"),
-  join("apps", "vue2"),
-  join("apps", "vue3"),
-  join("apps", "react18"),
-  join("apps", "react19"),
-  join("apps", "demos"),
-  join("apps", "typescript"),
+  join('apps', 'javascript'),
+  join('apps', 'css'),
+  join('apps', 'vue2'),
+  join('apps', 'vue3'),
+  join('apps', 'react18'),
+  join('apps', 'react19'),
+  join('apps', 'demos'),
+  join('apps', 'typescript'),
 ];
-const SKIP_DIRS = new Set(["libs", "lib", "node_modules"]);
-const DEMO_NOTES_CSS = join(ROOT, "packages/shared/demo-notes.css");
+const SKIP_DIRS = new Set(['libs', 'lib', 'node_modules']);
+const DEMO_NOTES_CSS = join(ROOT, 'packages/shared/demo-notes.css');
 
 function toPosix(p) {
-  return p.split(sep).join("/");
+  return p.split(sep).join('/');
 }
 
 function relDemoNotesCss(fromAbs) {
   let rel = relative(dirname(fromAbs), DEMO_NOTES_CSS);
   rel = toPosix(rel);
-  if (!rel.startsWith(".")) rel = `./${rel}`;
-  return rel.split("/").map(encodeURIComponent).join("/");
+  if (!rel.startsWith('.')) rel = `./${rel}`;
+  return rel.split('/').map(encodeURIComponent).join('/');
 }
 
 function escapeHtml(text) {
   return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 function buildNotesSection(points, interviewPoints) {
   const kp = points.length
-    ? points.map((p) => `    <li>${escapeHtml(p)}</li>`).join("\n")
-    : "    <li><!-- 待补充 --></li>";
+    ? points.map((p) => `    <li>${escapeHtml(p)}</li>`).join('\n')
+    : '    <li><!-- 待补充 --></li>';
   const iv = interviewPoints.length
-    ? interviewPoints.map((p) => {
-        const q = p.endsWith("？") || p.endsWith("?") ? p : `${p}？`;
-        return `    <li><strong>${escapeHtml(q)}</strong> <!-- 待补充答法 --></li>`;
-      }).join("\n")
-    : "    <li><!-- 待补充 --></li>";
+    ? interviewPoints
+        .map((p) => {
+          const q = p.endsWith('？') || p.endsWith('?') ? p : `${p}？`;
+          return `    <li><strong>${escapeHtml(q)}</strong> <!-- 待补充答法 --></li>`;
+        })
+        .join('\n')
+    : '    <li><!-- 待补充 --></li>';
   return `<section class="demo-notes" aria-label="复习与面试要点">
   <h2>知识点要点</h2>
   <ul>
@@ -99,7 +101,7 @@ async function collectHtml(dirAbs, list) {
     const abs = join(dirAbs, ent.name);
     if (ent.isDirectory()) {
       await collectHtml(abs, list);
-    } else if (ent.isFile() && ent.name.toLowerCase().endsWith(".html")) {
+    } else if (ent.isFile() && ent.name.toLowerCase().endsWith('.html')) {
       list.push(abs);
     }
   }
@@ -112,7 +114,7 @@ async function walk(dirAbs, files) {
     if (ent.isDirectory()) {
       if (SKIP_DIRS.has(ent.name)) continue;
       await walk(abs, files);
-    } else if (ent.isFile() && ent.name.toLowerCase().endsWith(".html")) {
+    } else if (ent.isFile() && ent.name.toLowerCase().endsWith('.html')) {
       files.push(abs);
     }
   }
@@ -132,8 +134,8 @@ async function main() {
   let updated = 0;
 
   for (const abs of files) {
-    const rel = relative(ROOT, abs).split(sep).join("/");
-    const content = await readFile(abs, "utf8");
+    const rel = relative(ROOT, abs).split(sep).join('/');
+    const content = await readFile(abs, 'utf8');
     if (/class\s*=\s*["'][^"']*\bdemo-notes\b/i.test(content)) continue;
 
     const meta = parseDemoMetaFromContent(content);
@@ -141,9 +143,9 @@ async function main() {
     const notesHtml = buildNotesSection(meta.points, meta.interviewPoints);
     const next = injectNotes(content, cssHref, notesHtml);
     if (next !== content) {
-      await writeFile(abs, next, "utf8");
+      await writeFile(abs, next, 'utf8');
       updated++;
-      console.log("[enhance-demo-notes] 已补齐:", rel);
+      console.log('[enhance-demo-notes] 已补齐:', rel);
     }
   }
 
@@ -151,6 +153,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error("[enhance-demo-notes] 失败：", err);
+  console.error('[enhance-demo-notes] 失败：', err);
   process.exitCode = 1;
 });

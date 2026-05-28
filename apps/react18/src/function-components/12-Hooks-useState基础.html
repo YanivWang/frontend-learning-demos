@@ -30,28 +30,100 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>useState 基础与函数式更新</h1>
-      <p class="hint">请打开 DevTools Console 查看快照式/函数式更新与不可变更新对比；下方 #root 为 React 挂载/交互演示区。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看快照式/函数式更新与不可变更新对比；下方 #root 为 React
+        挂载/交互演示区。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>useState</code> 返回当前渲染的状态快照和一个 set 函数；调用 set 函数不会改写本次 render 里的变量，而是让 React 安排下一次渲染。</li>
-          <li>同一次事件处理中，<code>count</code> 始终是这次渲染捕获到的值，所以连续三次 <code>setCount(count + 1)</code> 通常只把同一个下一状态入队三次。</li>
-          <li>当下一次状态依赖上一次状态时，使用函数式更新 <code>setCount(prev =&gt; prev + 1)</code>，React 会按队列顺序把每个 updater 应用到最新中间值。</li>
-          <li>state 适合驱动 UI；不会影响渲染的可变值放到 <code>useRef</code>。如果状态字段多且转移规则集中，再考虑 <code>useReducer</code>。</li>
-          <li>对象和数组状态要创建新引用，不能原地修改后再传回同一个对象；否则 React 可能认为状态没有变化，UI 也难以追踪。</li>
+          <li>
+            <code>useState</code>
+            返回当前渲染的状态快照和一个 set 函数；调用 set 函数不会改写本次 render 里的变量，而是让
+            React 安排下一次渲染。
+          </li>
+          <li>
+            同一次事件处理中，
+            <code>count</code>
+            始终是这次渲染捕获到的值，所以连续三次
+            <code>setCount(count + 1)</code>
+            通常只把同一个下一状态入队三次。
+          </li>
+          <li>
+            当下一次状态依赖上一次状态时，使用函数式更新
+            <code>setCount(prev =&gt; prev + 1)</code>
+            ，React 会按队列顺序把每个 updater 应用到最新中间值。
+          </li>
+          <li>
+            state 适合驱动 UI；不会影响渲染的可变值放到
+            <code>useRef</code>
+            。如果状态字段多且转移规则集中，再考虑
+            <code>useReducer</code>
+            。
+          </li>
+          <li>
+            对象和数组状态要创建新引用，不能原地修改后再传回同一个对象；否则 React
+            可能认为状态没有变化，UI 也难以追踪。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>为什么连续三次 <code>setCount(count + 1)</code> 通常只加 1？</strong> 结论是三次读取的都是同一次渲染中的 <code>count</code> 快照。原因是 React 在事件处理结束后再处理状态队列，普通写法会把相同的下一值入队。边界是如果下一状态只和事件参数有关，这样写可以；如果依赖旧状态，就要改成函数式更新。</li>
-          <li><strong>什么时候必须使用函数式更新？</strong> 结论是“下一值依赖上一值”时优先使用 updater 函数。原因是 updater 会在 React 处理队列时拿到最新中间状态，能正确表达连续加减、切换、队列式追加和定时器回调。</li>
-          <li><strong>setState 后为什么立刻读不到新状态？</strong> 结论是本次函数调用里的 state 不会被即时替换。原因是函数组件渲染产生的是快照，set 函数请求下一次渲染，新值会在下一次 render 中体现。</li>
-          <li><strong><code>useState</code> 和 <code>useReducer</code> 怎么选？</strong> 结论是简单独立状态用 <code>useState</code>，复杂状态转移用 <code>useReducer</code>。原因是 reducer 能把 action 和转移规则集中管理。</li>
+          <li>
+            <strong>
+              为什么连续三次
+              <code>setCount(count + 1)</code>
+              通常只加 1？
+            </strong>
+            结论是三次读取的都是同一次渲染中的
+            <code>count</code>
+            快照。原因是 React
+            在事件处理结束后再处理状态队列，普通写法会把相同的下一值入队。边界是如果下一状态只和事件参数有关，这样写可以；如果依赖旧状态，就要改成函数式更新。
+          </li>
+          <li>
+            <strong>什么时候必须使用函数式更新？</strong>
+            结论是“下一值依赖上一值”时优先使用 updater 函数。原因是 updater 会在 React
+            处理队列时拿到最新中间状态，能正确表达连续加减、切换、队列式追加和定时器回调。
+          </li>
+          <li>
+            <strong>setState 后为什么立刻读不到新状态？</strong>
+            结论是本次函数调用里的 state 不会被即时替换。原因是函数组件渲染产生的是快照，set
+            函数请求下一次渲染，新值会在下一次 render 中体现。
+          </li>
+          <li>
+            <strong>
+              <code>useState</code>
+              和
+              <code>useReducer</code>
+              怎么选？
+            </strong>
+            结论是简单独立状态用
+            <code>useState</code>
+            ，复杂状态转移用
+            <code>useReducer</code>
+            。原因是 reducer 能把 action 和转移规则集中管理。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/useState" target="_blank" rel="noreferrer">react.dev: useState</a></li>
-          <li><a href="https://react.dev/learn/state-as-a-snapshot" target="_blank" rel="noreferrer">react.dev: State as a Snapshot</a></li>
-          <li><a href="https://react.dev/learn/queueing-a-series-of-state-updates" target="_blank" rel="noreferrer">react.dev: Queueing a Series of State Updates</a></li>
+          <li>
+            <a href="https://react.dev/reference/react/useState" target="_blank" rel="noreferrer">
+              react.dev: useState
+            </a>
+          </li>
+          <li>
+            <a href="https://react.dev/learn/state-as-a-snapshot" target="_blank" rel="noreferrer">
+              react.dev: State as a Snapshot
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/queueing-a-series-of-state-updates"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Queueing a Series of State Updates
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -69,8 +141,8 @@
       function Counter() {
         // count 是当前渲染快照中的值；setCount 会请求 React 安排下一次渲染
         const [count, setCount] = useState(0);
-        const [name, setName] = useState("React");
-        const [user, setUser] = useState({ label: "React" });
+        const [name, setName] = useState('React');
+        const [user, setUser] = useState({ label: 'React' });
 
         // ====== 2. 同次事件：快照式 vs 函数式连续更新 ======
         function addWrongWay() {
@@ -78,29 +150,29 @@
           setCount(count + 1);
           setCount(count + 1);
           setCount(count + 1);
-          console.log("快照式 +3: 事件内读到的仍是旧 count =", count);
+          console.log('快照式 +3: 事件内读到的仍是旧 count =', count);
         }
 
         function addRightWay() {
           // 每次都基于 React 队列中的最新值，最终 +3
-          setCount(prevCount => prevCount + 1);
-          setCount(prevCount => prevCount + 1);
-          setCount(prevCount => prevCount + 1);
-          console.log("函数式 +3: 事件内读到的仍是旧 count =", count, "；渲染后才会 +3");
+          setCount((prevCount) => prevCount + 1);
+          setCount((prevCount) => prevCount + 1);
+          setCount((prevCount) => prevCount + 1);
+          console.log('函数式 +3: 事件内读到的仍是旧 count =', count, '；渲染后才会 +3');
         }
 
         // ====== 3. 不可变更新：对象 state 不能原地修改 ======
         function mutateWrongWay() {
           // 反面教材：原地改属性再 set 同一引用，React 可能认为无变化
-          user.label = "Mutated";
+          user.label = 'Mutated';
           setUser(user);
-          console.log("不可变 wrong way: 同一对象引用", user, "；UI 可能不更新");
+          console.log('不可变 wrong way: 同一对象引用', user, '；UI 可能不更新');
         }
 
         function mutateRightWay() {
           // 正确：创建新对象，把新引用交给 React
-          setUser(prev => ({ ...prev, label: prev.label === "React" ? "Hooks" : "React" }));
-          console.log("不可变 right way: 新对象引用，React 会重新渲染");
+          setUser((prev) => ({ ...prev, label: prev.label === 'React' ? 'Hooks' : 'React' }));
+          console.log('不可变 right way: 新对象引用，React 会重新渲染');
         }
 
         return (
@@ -113,9 +185,7 @@
             <button onClick={() => setCount(count + 1)}>普通 +1</button>
             <button onClick={addWrongWay}>连续快照式 +3（实际多为 +1）</button>
             <button onClick={addRightWay}>连续函数式 +3</button>
-            <button onClick={() => setName(name === "React" ? "Hooks" : "React")}>
-              切换名称
-            </button>
+            <button onClick={() => setName(name === 'React' ? 'Hooks' : 'React')}>切换名称</button>
             <button onClick={mutateWrongWay}>对象原地修改（wrong）</button>
             <button onClick={mutateRightWay}>对象不可变更新（right）</button>
           </section>
@@ -123,7 +193,7 @@
       }
 
       // ====== 4. createRoot 挂载 ======
-      ReactDOM.createRoot(document.getElementById("root")).render(<Counter />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<Counter />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -132,20 +202,26 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./11-useEffect-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%AF%B9%E7%85%A7.html">相关 · 11-useEffect-生命周期对照</a>
-        <a href="./13-Hooks-useEffect%E5%89%AF%E4%BD%9C%E7%94%A8.html">相关 · 13-Hooks-useEffect副作用</a>
-        <a href="./11-useEffect-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%AF%B9%E7%85%A7.html">← useEffect-生命周期对照</a>
+        <a href="./11-useEffect-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%AF%B9%E7%85%A7.html">
+          相关 · 11-useEffect-生命周期对照
+        </a>
+        <a href="./13-Hooks-useEffect%E5%89%AF%E4%BD%9C%E7%94%A8.html">
+          相关 · 13-Hooks-useEffect副作用
+        </a>
+        <a href="./11-useEffect-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%AF%B9%E7%85%A7.html">
+          ← useEffect-生命周期对照
+        </a>
         <a href="./13-Hooks-useEffect%E5%89%AF%E4%BD%9C%E7%94%A8.html">Hooks-useEffect副作用 →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

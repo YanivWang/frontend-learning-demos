@@ -21,9 +21,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TypeScript · 泛型基础</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 760px; line-height: 1.6; }
-      pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; font-size: 0.85rem; overflow: auto; }
-      #log { background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; white-space: pre-wrap; font-size: 0.85rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 760px;
+        line-height: 1.6;
+      }
+      pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 14px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        overflow: auto;
+      }
+      #log {
+        background: #f6f8fa;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 12px;
+        white-space: pre-wrap;
+        font-size: 0.85rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -36,24 +55,110 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>泛型把类型作为参数传入函数、接口或类，用来表达“输入是什么类型，输出仍和它有关”；本页的 <code>first&lt;T&gt;</code> 能保留数组元素类型。</li>
-          <li><code>extends</code> 在泛型里表示类型约束，不等同于 class 继承；它要求类型参数至少满足某种结构，编译器才允许安全访问相关属性。</li>
-          <li><code>keyof T</code> 取对象键名联合，<code>T[K]</code> 取对应属性类型；<code>pluck&lt;T, K extends keyof T&gt;</code> 因此能限制 key 必须存在，并返回精确字段类型。</li>
-          <li>泛型默认值、多个类型参数和约束组合常用于组件 props、API 响应、表格列配置等场景；类型参数太多会降低可读性，应优先让编译器从参数推断。</li>
-          <li>泛型在编译后会被擦除，运行时没有 <code>T</code> 这个值；需要运行时分支时必须传入真实值、构造函数、标签字段或校验函数。</li>
+          <li>
+            泛型把类型作为参数传入函数、接口或类，用来表达“输入是什么类型，输出仍和它有关”；本页的
+            <code>first&lt;T&gt;</code>
+            能保留数组元素类型。
+          </li>
+          <li>
+            <code>extends</code>
+            在泛型里表示类型约束，不等同于 class
+            继承；它要求类型参数至少满足某种结构，编译器才允许安全访问相关属性。
+          </li>
+          <li>
+            <code>keyof T</code>
+            取对象键名联合，
+            <code>T[K]</code>
+            取对应属性类型；
+            <code>pluck&lt;T, K extends keyof T&gt;</code>
+            因此能限制 key 必须存在，并返回精确字段类型。
+          </li>
+          <li>
+            泛型默认值、多个类型参数和约束组合常用于组件 props、API
+            响应、表格列配置等场景；类型参数太多会降低可读性，应优先让编译器从参数推断。
+          </li>
+          <li>
+            泛型在编译后会被擦除，运行时没有
+            <code>T</code>
+            这个值；需要运行时分支时必须传入真实值、构造函数、标签字段或校验函数。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>泛型解决的核心问题是什么？</strong> 结论是泛型让类型关系可复用，而不是把参数都写成 <code>any</code>。原因是它能保留输入和输出之间的关联，例如数组元素类型、接口响应数据类型。项目中封装请求、表格、表单和工具函数时非常常见。</li>
-          <li><strong><code>extends</code> 约束和继承有什么区别？</strong> 结论是泛型约束只发生在类型检查阶段，class 继承会产生运行时原型关系。原因是 <code>T extends { id: number }</code> 只是要求传入类型具备 <code>id</code>。边界是它不会给对象自动添加字段，也不会改变运行时代码。</li>
-          <li><strong><code>keyof</code> 与 <code>T[K]</code> 为什么能保证 <code>pluck</code> 的返回类型？</strong> 结论是 <code>K extends keyof T</code> 限定 key 必须来自对象，<code>T[K]</code> 精确取出该 key 对应的值类型。原因是 TypeScript 在类型层面建立了 key 与 value 的映射。项目中读取配置、表格列字段和表单字段时常用这种写法。</li>
-          <li><strong>泛型在运行时是否存在，为什么不能根据 <code>T</code> 做判断？</strong> 结论是不存在，泛型会被编译擦除。原因是 TypeScript 不携带运行时类型元数据。需要运行时判断时应显式传入类型标签、构造函数或解析器，而不是写不存在的 <code>if (T === ...)</code>。</li>
+          <li>
+            <strong>泛型解决的核心问题是什么？</strong>
+            结论是泛型让类型关系可复用，而不是把参数都写成
+            <code>any</code>
+            。原因是它能保留输入和输出之间的关联，例如数组元素类型、接口响应数据类型。项目中封装请求、表格、表单和工具函数时非常常见。
+          </li>
+          <li>
+            <strong>
+              <code>extends</code>
+              约束和继承有什么区别？
+            </strong>
+            结论是泛型约束只发生在类型检查阶段，class 继承会产生运行时原型关系。原因是
+            <code>T extends { id: number }</code>
+            只是要求传入类型具备
+            <code>id</code>
+            。边界是它不会给对象自动添加字段，也不会改变运行时代码。
+          </li>
+          <li>
+            <strong>
+              <code>keyof</code>
+              与
+              <code>T[K]</code>
+              为什么能保证
+              <code>pluck</code>
+              的返回类型？
+            </strong>
+            结论是
+            <code>K extends keyof T</code>
+            限定 key 必须来自对象，
+            <code>T[K]</code>
+            精确取出该 key 对应的值类型。原因是 TypeScript 在类型层面建立了 key 与 value
+            的映射。项目中读取配置、表格列字段和表单字段时常用这种写法。
+          </li>
+          <li>
+            <strong>
+              泛型在运行时是否存在，为什么不能根据
+              <code>T</code>
+              做判断？
+            </strong>
+            结论是不存在，泛型会被编译擦除。原因是 TypeScript
+            不携带运行时类型元数据。需要运行时判断时应显式传入类型标签、构造函数或解析器，而不是写不存在的
+            <code>if (T === ...)</code>
+            。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/generics.html" target="_blank" rel="noopener">TypeScript Handbook: Generics</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/keyof-types.html" target="_blank" rel="noopener">TypeScript Handbook: keyof Type Operator</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/indexed-access-types.html" target="_blank" rel="noopener">TypeScript Handbook: Indexed Access Types</a></li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/generics.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Generics
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/keyof-types.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: keyof Type Operator
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/indexed-access-types.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Indexed Access Types
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -62,16 +167,17 @@
     <!-- PAGE_DOM_START -->
     <p>上方为 TypeScript 源码（在 .ts / IDE 中检查），下方为等价的可运行 JavaScript + 断言输出。</p>
     <p class="ts"><strong>TypeScript</strong></p>
-    <pre>// —— 泛型函数保留输入输出关系 ——
-function first&lt;T&gt;(arr: T[]): T | undefined {
-  return arr[0];
-}
-
-// —— extends 约束 + keyof 索引访问 ——
-function pluck&lt;T, K extends keyof T&gt;(obj: T, key: K): T[K] {
-  return obj[key];
-}
-// pluck(user, "age");  // ❌ 编译错误：age 不在 keyof User 中</pre>
+    <pre>
+// —— 泛型函数保留输入输出关系 ——
+      function first&lt;T&gt;(arr: T[]): T | undefined {
+      return arr[0];
+      }
+      // —— extends 约束 + keyof 索引访问 ——
+      function pluck&lt;T, K extends keyof T&gt;(obj: T, key: K): T[K] {
+      return obj[key];
+      }
+      // pluck(user, "age");  // ❌ 编译错误：age 不在 keyof User 中</pre
+    >
     <p><strong>运行时 JavaScript（本页执行）</strong></p>
     <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
@@ -94,26 +200,26 @@ function pluck&lt;T, K extends keyof T&gt;(obj: T, key: K): T[K] {
       }
 
       const nums = [10, 20, 30];
-      const user = { id: 1, name: "Bob" };
+      const user = { id: 1, name: 'Bob' };
 
       const lines = [];
-      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+      const assert = (cond, msg) => lines.push((cond ? '✓ ' : '✗ ') + msg);
 
-      assert(first(nums) === 10, "first&lt;number&gt;(nums) 保留 number 元素关系");
-      assert(first(["a", "b"]) === "a", "first&lt;string&gt;(['a','b']) 保留 string 元素关系");
-      assert(first([]) === undefined, "空数组 first 返回 undefined");
-      assert(pluck(user, "name") === "Bob", "pluck&lt;User, 'name'&gt; 返回 T[K] = string");
-      assert(pluck(user, "id") === 1, "pluck&lt;User, 'id'&gt; 返回 T[K] = number");
+      assert(first(nums) === 10, 'first&lt;number&gt;(nums) 保留 number 元素关系');
+      assert(first(['a', 'b']) === 'a', "first&lt;string&gt;(['a','b']) 保留 string 元素关系");
+      assert(first([]) === undefined, '空数组 first 返回 undefined');
+      assert(pluck(user, 'name') === 'Bob', "pluck&lt;User, 'name'&gt; 返回 T[K] = string");
+      assert(pluck(user, 'id') === 1, "pluck&lt;User, 'id'&gt; 返回 T[K] = number");
       assert(
-        pluck(user, "age") === undefined,
-        "JS 运行时 pluck(user, 'age') 返回 undefined — TS 编译期可拦截非法 key"
+        pluck(user, 'age') === undefined,
+        "JS 运行时 pluck(user, 'age') 返回 undefined — TS 编译期可拦截非法 key",
       );
       assert(
-        typeof pluck === "function",
-        "泛型 T/K 编译后擦除，运行时无法 if (T === 'string')（TS 可拦、JS 无 T）"
+        typeof pluck === 'function',
+        "泛型 T/K 编译后擦除，运行时无法 if (T === 'string')（TS 可拦、JS 无 T）",
       );
 
-      document.getElementById("log").textContent = lines.join("\n");
+      document.getElementById('log').textContent = lines.join('\n');
     </script>
     <!-- SCRIPT_END -->
 
@@ -123,19 +229,23 @@ function pluck&lt;T, K extends keyof T&gt;(obj: T, key: K): T[K] {
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
         <a href="./02-interface%E4%B8%8Etype.html">相关 · interface与type</a>
-        <a href="./04-%E5%87%BD%E6%95%B0%E7%B1%BB%E5%9E%8B%E4%B8%8E%E9%87%8D%E8%BD%BD.html">相关 · 函数类型与重载</a>
+        <a href="./04-%E5%87%BD%E6%95%B0%E7%B1%BB%E5%9E%8B%E4%B8%8E%E9%87%8D%E8%BD%BD.html">
+          相关 · 函数类型与重载
+        </a>
         <a href="./02-interface%E4%B8%8Etype.html">← interface与type</a>
-        <a href="./04-%E5%87%BD%E6%95%B0%E7%B1%BB%E5%9E%8B%E4%B8%8E%E9%87%8D%E8%BD%BD.html">函数类型与重载 →</a>
+        <a href="./04-%E5%87%BD%E6%95%B0%E7%B1%BB%E5%9E%8B%E4%B8%8E%E9%87%8D%E8%BD%BD.html">
+          函数类型与重载 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

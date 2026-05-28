@@ -26,11 +26,28 @@
     <script src="../../libs/react-dom.development.js"></script>
     <script src="../../libs/babel.min.js"></script>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 640px; line-height: 1.6; }
-      .box { border: 1px solid #ddd; border-radius: 10px; padding: 1rem 1.25rem; margin: 1rem 0; }
-      .err { color: #cf222e; }
-      .ok { color: #1a7f37; }
-      input { padding: 0.4rem 0.6rem; margin-right: 0.5rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 640px;
+        line-height: 1.6;
+      }
+      .box {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        margin: 1rem 0;
+      }
+      .err {
+        color: #cf222e;
+      }
+      .ok {
+        color: #1a7f37;
+      }
+      input {
+        padding: 0.4rem 0.6rem;
+        margin-right: 0.5rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -39,29 +56,140 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Actions 与 useActionState</h1>
-      <p class="hint">下方 #root 为交互演示区：输入合法名称（≥2 字）提交可见绿色成功提示；留空或单字可见错误。观察 isPending 禁用态；请打开 DevTools Console 查看 Action 返回的 state 对象。</p>
+      <p class="hint">
+        下方 #root 为交互演示区：输入合法名称（≥2 字）提交可见绿色成功提示；留空或单字可见错误。观察
+        isPending 禁用态；请打开 DevTools Console 查看 Action 返回的 state 对象。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>React 19 的 <strong>Action</strong> 是用于处理异步提交的函数，可绑定到表单 <code>action</code>，也可和 transition 体系配合，让提交状态进入 React 的调度模型；不同于普通 <code>onSubmit</code> 需手动 <code>preventDefault</code> 和维护 loading。</li>
-          <li><code>useActionState(action, initialState)</code> 返回 <code>[state, formAction, isPending]</code>；本页把 <code>formAction</code> 传给 <code>&lt;form action&gt;</code>，由浏览器提交事件触发 Action。</li>
-          <li>Action 函数接收 <code>previousState</code> 和 <code>formData</code>，返回下一次 state 或 Promise；这让失败信息、成功结果和服务端返回值都能成为显式状态。</li>
-          <li><code>isPending</code> 表示当前提交未完成，可用于禁用输入和按钮，避免重复提交；失败路径要返回可展示的错误，而不是只在控制台打印。</li>
-          <li>本页 Action 返回对象 <code>{ error, savedName }</code>：失败时写 <code>error</code>，成功时写 <code>savedName</code> 并在 UI 展示「已保存：xxx」；与手写 <code>useState</code> pending 相比，Action 把「提交中 + 结果状态」标准化。</li>
+          <li>
+            React 19 的
+            <strong>Action</strong>
+            是用于处理异步提交的函数，可绑定到表单
+            <code>action</code>
+            ，也可和 transition 体系配合，让提交状态进入 React 的调度模型；不同于普通
+            <code>onSubmit</code>
+            需手动
+            <code>preventDefault</code>
+            和维护 loading。
+          </li>
+          <li>
+            <code>useActionState(action, initialState)</code>
+            返回
+            <code>[state, formAction, isPending]</code>
+            ；本页把
+            <code>formAction</code>
+            传给
+            <code>&lt;form action&gt;</code>
+            ，由浏览器提交事件触发 Action。
+          </li>
+          <li>
+            Action 函数接收
+            <code>previousState</code>
+            和
+            <code>formData</code>
+            ，返回下一次 state 或 Promise；这让失败信息、成功结果和服务端返回值都能成为显式状态。
+          </li>
+          <li>
+            <code>isPending</code>
+            表示当前提交未完成，可用于禁用输入和按钮，避免重复提交；失败路径要返回可展示的错误，而不是只在控制台打印。
+          </li>
+          <li>
+            本页 Action 返回对象
+            <code>{ error, savedName }</code>
+            ：失败时写
+            <code>error</code>
+            ，成功时写
+            <code>savedName</code>
+            并在 UI 展示「已保存：xxx」；与手写
+            <code>useState</code>
+            pending 相比，Action 把「提交中 + 结果状态」标准化。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>React 19 Action 与普通 submit handler 有什么区别？</strong> 结论是 Action 把异步提交结果纳入 React 的状态模型，可直接绑定 <code>form action</code>。原因是 <code>useActionState</code> 能直接返回下一次 state 和 pending 状态，减少手写 loading / error 样板。边界是高度定制的表单库仍可能保留自己的提交管线。</li>
-          <li><strong><code>previousState</code> 参数有什么价值？</strong> 结论是它让下一次提交能基于上一次结果计算。原因是表单提交常需要保留错误、计数、服务端返回 ID 或局部状态。本页返回 <code>{ error, savedName }</code>，成功与失败都进入同一 state 模型。</li>
-          <li><strong><code>isPending</code> 为什么适合处理重复提交和加载态？</strong> 结论是用它禁用按钮、展示「提交中」，并防止重复提交。原因是异步 Action 期间用户可能连续点击或修改输入。边界是禁用输入会影响用户修正内容，实际产品要根据提交耗时和可取消性设计交互。</li>
-          <li><strong>表单校验失败时 Action 应该返回什么状态？</strong> 结论是校验失败应作为 Action 返回 state 展示给用户。原因是表单失败是正常业务结果，不应只靠异常或控制台。本页空名称返回「请输入名称」，长度不足返回「名称至少 2 个字符」。</li>
-          <li><strong><code>useActionState</code> 与 <code>useState</code> 手写 pending 如何选？</strong> 结论是表单提交场景优先 <code>useActionState</code>，非表单或高度定制流程可继续手写。原因是 Action 与 <code>form action</code>、<code>FormData</code>、pending 天然集成；简单本地状态或第三方表单库不一定需要 Action 模型。</li>
+          <li>
+            <strong>React 19 Action 与普通 submit handler 有什么区别？</strong>
+            结论是 Action 把异步提交结果纳入 React 的状态模型，可直接绑定
+            <code>form action</code>
+            。原因是
+            <code>useActionState</code>
+            能直接返回下一次 state 和 pending 状态，减少手写 loading / error
+            样板。边界是高度定制的表单库仍可能保留自己的提交管线。
+          </li>
+          <li>
+            <strong>
+              <code>previousState</code>
+              参数有什么价值？
+            </strong>
+            结论是它让下一次提交能基于上一次结果计算。原因是表单提交常需要保留错误、计数、服务端返回
+            ID 或局部状态。本页返回
+            <code>{ error, savedName }</code>
+            ，成功与失败都进入同一 state 模型。
+          </li>
+          <li>
+            <strong>
+              <code>isPending</code>
+              为什么适合处理重复提交和加载态？
+            </strong>
+            结论是用它禁用按钮、展示「提交中」，并防止重复提交。原因是异步 Action
+            期间用户可能连续点击或修改输入。边界是禁用输入会影响用户修正内容，实际产品要根据提交耗时和可取消性设计交互。
+          </li>
+          <li>
+            <strong>表单校验失败时 Action 应该返回什么状态？</strong>
+            结论是校验失败应作为 Action 返回 state
+            展示给用户。原因是表单失败是正常业务结果，不应只靠异常或控制台。本页空名称返回「请输入名称」，长度不足返回「名称至少
+            2 个字符」。
+          </li>
+          <li>
+            <strong>
+              <code>useActionState</code>
+              与
+              <code>useState</code>
+              手写 pending 如何选？
+            </strong>
+            结论是表单提交场景优先
+            <code>useActionState</code>
+            ，非表单或高度定制流程可继续手写。原因是 Action 与
+            <code>form action</code>
+            、
+            <code>FormData</code>
+            、pending 天然集成；简单本地状态或第三方表单库不一定需要 Action 模型。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/useActionState" target="_blank" rel="noreferrer">React Docs: <code>useActionState</code></a></li>
-          <li><a href="https://react.dev/reference/react-dom/components/form" target="_blank" rel="noreferrer">React DOM Docs: <code>&lt;form&gt;</code> action</a></li>
-          <li><a href="https://react.dev/blog/2024/12/05/react-19#actions" target="_blank" rel="noreferrer">React 19 Blog: Actions</a></li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/useActionState"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React Docs:
+              <code>useActionState</code>
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react-dom/components/form"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React DOM Docs:
+              <code>&lt;form&gt;</code>
+              action
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/blog/2024/12/05/react-19#actions"
+              target="_blank"
+              rel="noreferrer"
+            >
+              React 19 Blog: Actions
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -80,17 +208,17 @@
       const initialFormState = { error: null, savedName: null };
 
       async function saveName(previousState, formData) {
-        const name = String(formData.get("name") || "").trim();
-        console.log("[Action] saveName 调用，previousState=", previousState, "name=", name);
+        const name = String(formData.get('name') || '').trim();
+        console.log('[Action] saveName 调用，previousState=', previousState, 'name=', name);
         await new Promise((r) => setTimeout(r, 700));
         if (!name) {
-          return { error: "请输入名称", savedName: null };
+          return { error: '请输入名称', savedName: null };
         }
         if (name.length < 2) {
-          return { error: "名称至少 2 个字符", savedName: null };
+          return { error: '名称至少 2 个字符', savedName: null };
         }
         const next = { error: null, savedName: name };
-        console.log("[Action] 校验通过，返回 state:", next);
+        console.log('[Action] 校验通过，返回 state:', next);
         return next;
       }
 
@@ -106,7 +234,7 @@
               <input name="name" placeholder="例如：小明" disabled={isPending} />
             </label>
             <button type="submit" disabled={isPending}>
-              {isPending ? "保存中…" : "保存"}
+              {isPending ? '保存中…' : '保存'}
             </button>
             {formState.error ? (
               <p className="err">{formState.error}</p>
@@ -120,17 +248,17 @@
       }
 
       // ====== 3. React 19 挂载：createRoot + render 一次 ======
-      ReactDOM.createRoot(document.getElementById("root")).render(<NameForm />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<NameForm />);
 
       /*
-        对比手写 useState pending（本页未启用，仅供理解边界）：
-        const [pending, setPending] = useState(false);
-        const onSubmit = async (e) => {
-          e.preventDefault();
-          setPending(true);
-          try { ... } finally { setPending(false); }
-        };
-        Action 模型把 pending 和结果 state 标准化，并与 form action 集成。
+      对比手写 useState pending（本页未启用，仅供理解边界）：
+      const [pending, setPending] = useState(false);
+      const onSubmit = async (e) => {
+        e.preventDefault();
+        setPending(true);
+        try { ... } finally { setPending(false); }
+      };
+      Action 模型把 pending 和结果 state 标准化，并与 form action 集成。
       */
     </script>
     <!-- SCRIPT_END -->
@@ -140,19 +268,24 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./02-JSX%E8%A1%A8%E8%BE%BE%E5%BC%8F%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%89%B9%E5%A4%84%E7%90%86.html">← JSX表达式与自动批处理</a>
-        <a href="./04-useOptimistic%E4%B9%90%E8%A7%82%E6%9B%B4%E6%96%B0.html">useOptimistic乐观更新 →</a>
+        <a
+          href="./02-JSX%E8%A1%A8%E8%BE%BE%E5%BC%8F%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%89%B9%E5%A4%84%E7%90%86.html"
+        >
+          ← JSX表达式与自动批处理
+        </a>
+        <a href="./04-useOptimistic%E4%B9%90%E8%A7%82%E6%9B%B4%E6%96%B0.html">
+          useOptimistic乐观更新 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-  
-</body>
+  </body>
 </html>

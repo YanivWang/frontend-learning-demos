@@ -21,9 +21,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TypeScript · 映射类型与模板字面量</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 900px; line-height: 1.6; }
-      pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
-      #log { background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; white-space: pre-wrap; font-size: 0.85rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 900px;
+        line-height: 1.6;
+      }
+      pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 14px;
+        border-radius: 8px;
+        overflow: auto;
+        font-size: 0.86rem;
+      }
+      #log {
+        background: #f6f8fa;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 12px;
+        white-space: pre-wrap;
+        font-size: 0.85rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -36,25 +55,125 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>映射类型通过 <code>[K in keyof T]</code> 遍历对象键，能批量改变属性的可选、只读和值类型，是 <code>Partial</code>、<code>Readonly</code>、<code>Pick</code> 等工具类型的基础。</li>
-          <li>索引访问类型 <code>T[K]</code> 根据键取得对应值类型，本页的 <code>FieldGetter</code> 保证 <code>getName</code> 返回 <code>User["name"]</code>，不会和字段类型脱节。</li>
-          <li>模板字面量类型可以把字符串字面量组合成新类型，例如 <code>${keyof User &amp; string}Changed</code> 生成字段变化事件名。</li>
-          <li>TypeScript 4.1 起映射类型支持 <code>as</code> 键名重映射，配合 <code>Capitalize</code> 等内置字符串工具类型，可以从数据模型派生 getter、setter 或事件 API。</li>
-          <li>常见坑是模板字面量类型过度嵌套后难以阅读，或让类型层 API 和真实运行时对象不一致；示例中运行时 <code>getters</code> 和 <code>events</code> 仍需要手动实现或由代码生成保证同步。</li>
+          <li>
+            映射类型通过
+            <code>[K in keyof T]</code>
+            遍历对象键，能批量改变属性的可选、只读和值类型，是
+            <code>Partial</code>
+            、
+            <code>Readonly</code>
+            、
+            <code>Pick</code>
+            等工具类型的基础。
+          </li>
+          <li>
+            索引访问类型
+            <code>T[K]</code>
+            根据键取得对应值类型，本页的
+            <code>FieldGetter</code>
+            保证
+            <code>getName</code>
+            返回
+            <code>User["name"]</code>
+            ，不会和字段类型脱节。
+          </li>
+          <li>
+            模板字面量类型可以把字符串字面量组合成新类型，例如
+            <code>${keyof User &amp; string}Changed</code>
+            生成字段变化事件名。
+          </li>
+          <li>
+            TypeScript 4.1 起映射类型支持
+            <code>as</code>
+            键名重映射，配合
+            <code>Capitalize</code>
+            等内置字符串工具类型，可以从数据模型派生 getter、setter 或事件 API。
+          </li>
+          <li>
+            常见坑是模板字面量类型过度嵌套后难以阅读，或让类型层 API
+            和真实运行时对象不一致；示例中运行时
+            <code>getters</code>
+            和
+            <code>events</code>
+            仍需要手动实现或由代码生成保证同步。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>映射类型为什么重要？</strong> 结论是它能把“逐字段重复声明”变成“按键批量变换”。原因是 <code>keyof</code> 提供键集合，<code>in</code> 遍历键，<code>T[K]</code> 保留每个字段原本的值类型。项目里它适合派生表单补丁、只读模型和接口 DTO。</li>
-          <li><strong>keyof、T[K] 和模板字面量类型如何配合？</strong> 结论是 <code>keyof</code> 取字段名，<code>T[K]</code> 取字段值类型，模板字面量类型生成受字段名约束的新字符串。原因是这样能把事件名、getter 名和原模型绑定起来。示例里的 <code>idChanged</code>、<code>nameChanged</code> 就来自 <code>User</code> 的键。</li>
-          <li><strong>as 键名重映射适合什么场景？</strong> 结论是适合从已有模型派生一套有规则的新 API。原因是它能在映射时重命名、过滤或格式化键名。边界是重映射只改变类型，运行时对象仍要按同样规则创建，否则类型和实现会脱节。</li>
-          <li><strong>复杂模板字面量类型有什么风险？</strong> 结论是过度组合会降低可读性并拖慢类型检查。原因是多个联合字符串会产生笛卡尔积式组合。项目里只应把它用于稳定、规则清晰的命名体系，例如事件名、路由名和设计系统 token。</li>
+          <li>
+            <strong>映射类型为什么重要？</strong>
+            结论是它能把“逐字段重复声明”变成“按键批量变换”。原因是
+            <code>keyof</code>
+            提供键集合，
+            <code>in</code>
+            遍历键，
+            <code>T[K]</code>
+            保留每个字段原本的值类型。项目里它适合派生表单补丁、只读模型和接口 DTO。
+          </li>
+          <li>
+            <strong>keyof、T[K] 和模板字面量类型如何配合？</strong>
+            结论是
+            <code>keyof</code>
+            取字段名，
+            <code>T[K]</code>
+            取字段值类型，模板字面量类型生成受字段名约束的新字符串。原因是这样能把事件名、getter
+            名和原模型绑定起来。示例里的
+            <code>idChanged</code>
+            、
+            <code>nameChanged</code>
+            就来自
+            <code>User</code>
+            的键。
+          </li>
+          <li>
+            <strong>as 键名重映射适合什么场景？</strong>
+            结论是适合从已有模型派生一套有规则的新
+            API。原因是它能在映射时重命名、过滤或格式化键名。边界是重映射只改变类型，运行时对象仍要按同样规则创建，否则类型和实现会脱节。
+          </li>
+          <li>
+            <strong>复杂模板字面量类型有什么风险？</strong>
+            结论是过度组合会降低可读性并拖慢类型检查。原因是多个联合字符串会产生笛卡尔积式组合。项目里只应把它用于稳定、规则清晰的命名体系，例如事件名、路由名和设计系统
+            token。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/mapped-types.html" target="_blank" rel="noopener">TypeScript Handbook: Mapped Types</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/indexed-access-types.html" target="_blank" rel="noopener">TypeScript Handbook: Indexed Access Types</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html" target="_blank" rel="noopener">TypeScript Handbook: Template Literal Types</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-1.html" target="_blank" rel="noopener">TypeScript 4.1 Release Notes</a></li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/mapped-types.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Mapped Types
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/indexed-access-types.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Indexed Access Types
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Template Literal Types
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-1.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript 4.1 Release Notes
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -63,16 +182,16 @@
     <!-- PAGE_DOM_START -->
     <p>上方为 TypeScript 源码（在 .ts / IDE 中检查），下方为等价的可运行 JavaScript + 断言输出。</p>
     <p class="ts"><strong>TypeScript</strong></p>
-    <pre>type User = { id: number; name: string; active: boolean };
-
-// —— 映射类型 + as 键名重映射 ——
-type FieldGetter&lt;T&gt; = {
-  [K in keyof T as `get${Capitalize&lt;string & K&gt;}`]: () =&gt; T[K]
-};
-
-// —— 模板字面量类型 + 索引访问 ——
-type UserEvent = `${keyof User & string}Changed`;
-type NameType = User["name"];  // string</pre>
+    <pre>
+type User = { id: number; name: string; active: boolean };
+      // —— 映射类型 + as 键名重映射 ——
+      type FieldGetter&lt;T&gt; = {
+      [K in keyof T as `get${Capitalize&lt;string & K&gt;}`]: () =&gt; T[K]
+      };
+      // —— 模板字面量类型 + 索引访问 ——
+      type UserEvent = `${keyof User & string}Changed`;
+      type NameType = User["name"];  // string</pre
+    >
     <p><strong>运行时 JavaScript（本页执行）</strong></p>
     <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
@@ -80,7 +199,7 @@ type NameType = User["name"];  // string</pre>
     <!-- SCRIPT_START -->
     <script>
       // ============ 1. 映射类型 FieldGetter 对应的运行时 getters ============
-      const user = { id: 1, name: "Lin", active: true };
+      const user = { id: 1, name: 'Lin', active: true };
       const getters = {
         getId: () => user.id,
         getName: () => user.name,
@@ -88,16 +207,19 @@ type NameType = User["name"];  // string</pre>
       };
 
       // ============ 2. 模板字面量类型 UserEvent 对应的事件名 ============
-      const events = ["idChanged", "nameChanged", "activeChanged"];
+      const events = ['idChanged', 'nameChanged', 'activeChanged'];
 
       const lines = [];
-      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+      const assert = (cond, msg) => lines.push((cond ? '✓ ' : '✗ ') + msg);
 
-      assert(getters.getName() === "Lin", "映射类型 FieldGetter: getName() = User['name']");
-      assert(typeof user.name === "string", "索引访问 User['name'] 运行时 typeof 为 string");
-      assert(events.join(",") === "idChanged,nameChanged,activeChanged", "模板字面量 `${keyof User}Changed` 约束事件名");
+      assert(getters.getName() === 'Lin', "映射类型 FieldGetter: getName() = User['name']");
+      assert(typeof user.name === 'string', "索引访问 User['name'] 运行时 typeof 为 string");
+      assert(
+        events.join(',') === 'idChanged,nameChanged,activeChanged',
+        '模板字面量 `${keyof User}Changed` 约束事件名',
+      );
 
-      document.getElementById("log").textContent = lines.join("\n");
+      document.getElementById('log').textContent = lines.join('\n');
     </script>
     <!-- SCRIPT_END -->
 
@@ -106,20 +228,24 @@ type NameType = User["name"];  // string</pre>
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="./03-%E6%9D%A1%E4%BB%B6%E7%B1%BB%E5%9E%8B%E4%B8%8Einfer.html">相关 · 条件类型与infer</a>
-        <a href="./05-never%E4%B8%8E%E7%A9%B7%E5%B0%BD%E6%A3%80%E6%9F%A5.html">相关 · never与穷尽检查</a>
+        <a href="./03-%E6%9D%A1%E4%BB%B6%E7%B1%BB%E5%9E%8B%E4%B8%8Einfer.html">
+          相关 · 条件类型与infer
+        </a>
+        <a href="./05-never%E4%B8%8E%E7%A9%B7%E5%B0%BD%E6%A3%80%E6%9F%A5.html">
+          相关 · never与穷尽检查
+        </a>
         <a href="./03-%E6%9D%A1%E4%BB%B6%E7%B1%BB%E5%9E%8B%E4%B8%8Einfer.html">← 条件类型与infer</a>
         <a href="./05-never%E4%B8%8E%E7%A9%B7%E5%B0%BD%E6%A3%80%E6%9F%A5.html">never与穷尽检查 →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

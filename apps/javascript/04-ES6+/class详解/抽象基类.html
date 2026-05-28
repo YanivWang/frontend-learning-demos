@@ -31,23 +31,130 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>JavaScript 没有原生 <code>abstract class</code> 关键字；这里的“抽象基类”是运行时约束，用构造器里的 <code>new.target</code> 阻止直接实例化。</li>
-          <li>在 class 构造器中，<code>new.target</code> 指向被 <code>new</code> 直接调用的构造器：<code>new Animal()</code> 时是 <code>Animal</code>，<code>new Dog()</code> 且 <code>Dog extends Animal</code> 时在 <code>Animal</code> 构造器里仍是 <code>Dog</code>。</li>
-          <li><code>if (new.target === Animal) throw</code> 只能防止直接创建基类实例，不能在语法层面强制子类实现某个方法；需要在基类方法里抛错、在测试中覆盖，或用 TypeScript 的 <code>abstract</code> 做编译期约束。</li>
-          <li>派生类如果写 constructor，必须先调用 <code>super()</code>，父类构造器执行完之后才能访问 <code>this</code> 并设置子类字段。</li>
-          <li>运行时检查适合发布到纯 JS 环境的库；内部 TypeScript 项目更常用 <code>abstract class</code> 或接口表达约束，再辅以必要的运行时错误提示。</li>
+          <li>
+            JavaScript 没有原生
+            <code>abstract class</code>
+            关键字；这里的“抽象基类”是运行时约束，用构造器里的
+            <code>new.target</code>
+            阻止直接实例化。
+          </li>
+          <li>
+            在 class 构造器中，
+            <code>new.target</code>
+            指向被
+            <code>new</code>
+            直接调用的构造器：
+            <code>new Animal()</code>
+            时是
+            <code>Animal</code>
+            ，
+            <code>new Dog()</code>
+            且
+            <code>Dog extends Animal</code>
+            时在
+            <code>Animal</code>
+            构造器里仍是
+            <code>Dog</code>
+            。
+          </li>
+          <li>
+            <code>if (new.target === Animal) throw</code>
+            只能防止直接创建基类实例，不能在语法层面强制子类实现某个方法；需要在基类方法里抛错、在测试中覆盖，或用
+            TypeScript 的
+            <code>abstract</code>
+            做编译期约束。
+          </li>
+          <li>
+            派生类如果写 constructor，必须先调用
+            <code>super()</code>
+            ，父类构造器执行完之后才能访问
+            <code>this</code>
+            并设置子类字段。
+          </li>
+          <li>
+            运行时检查适合发布到纯 JS 环境的库；内部 TypeScript 项目更常用
+            <code>abstract class</code>
+            或接口表达约束，再辅以必要的运行时错误提示。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>new.target</code> 在基类构造器里为什么能识别直接实例化？</strong> 结论是它保存“这次 <code>new</code> 直接调用的构造器”。原因是子类通过 <code>super()</code> 进入父类构造器时，<code>new.target</code> 仍是子类；所以只有直接 <code>new Animal()</code> 时才等于 <code>Animal</code>。</li>
-          <li><strong>用 <code>new.target</code> 模拟抽象基类有什么限制？</strong> 它能在运行时阻止直接实例化基类，但不能像 TypeScript 那样在编译期要求子类实现抽象方法。项目中如果要保证接口完整性，应结合类型系统、单元测试或基类默认方法抛错。</li>
-          <li><strong>运行时抽象基类和 TypeScript <code>abstract</code> 如何分工？</strong> TypeScript 负责开发期约束，编译到 JS 后抽象标记不存在；<code>new.target</code> 负责运行时保护。发布给纯 JS 用户的库，如果不希望基类被直接实例化，通常需要保留运行时检查。</li>
-          <li><strong>派生类里 <code>super()</code> 和 <code>new.target</code> 有什么关系？</strong> 派生类 constructor 必须先调用 <code>super()</code> 才能拿到 <code>this</code>；父类构造器内部的 <code>new.target</code> 仍指向子类。这个机制让父类能区分“直接被 new”还是“作为父类被子类调用”。</li>
+          <li>
+            <strong>
+              <code>new.target</code>
+              在基类构造器里为什么能识别直接实例化？
+            </strong>
+            结论是它保存“这次
+            <code>new</code>
+            直接调用的构造器”。原因是子类通过
+            <code>super()</code>
+            进入父类构造器时，
+            <code>new.target</code>
+            仍是子类；所以只有直接
+            <code>new Animal()</code>
+            时才等于
+            <code>Animal</code>
+            。
+          </li>
+          <li>
+            <strong>
+              用
+              <code>new.target</code>
+              模拟抽象基类有什么限制？
+            </strong>
+            它能在运行时阻止直接实例化基类，但不能像 TypeScript
+            那样在编译期要求子类实现抽象方法。项目中如果要保证接口完整性，应结合类型系统、单元测试或基类默认方法抛错。
+          </li>
+          <li>
+            <strong>
+              运行时抽象基类和 TypeScript
+              <code>abstract</code>
+              如何分工？
+            </strong>
+            TypeScript 负责开发期约束，编译到 JS 后抽象标记不存在；
+            <code>new.target</code>
+            负责运行时保护。发布给纯 JS
+            用户的库，如果不希望基类被直接实例化，通常需要保留运行时检查。
+          </li>
+          <li>
+            <strong>
+              派生类里
+              <code>super()</code>
+              和
+              <code>new.target</code>
+              有什么关系？
+            </strong>
+            派生类 constructor 必须先调用
+            <code>super()</code>
+            才能拿到
+            <code>this</code>
+            ；父类构造器内部的
+            <code>new.target</code>
+            仍指向子类。这个机制让父类能区分“直接被 new”还是“作为父类被子类调用”。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new.target" target="_blank" rel="noreferrer">MDN: new.target</a>：构造器中指向被 new 的构造器。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/extends" target="_blank" rel="noreferrer">MDN: extends</a>：派生类 super() 规则。</li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new.target"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: new.target
+            </a>
+            ：构造器中指向被 new 的构造器。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/extends"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: extends
+            </a>
+            ：派生类 super() 规则。
+          </li>
         </ul>
       </div>
     </section>
@@ -59,21 +166,21 @@
       // MDN：new.target 在构造器内指向被 new 直接调用的函数/class
       class Animal {
         constructor() {
-          console.log("Animal ctor, new.target === Animal:", new.target === Animal);
+          console.log('Animal ctor, new.target === Animal:', new.target === Animal);
           if (new.target === Animal) {
-            throw new Error("Animal 是抽象基类，不能被直接实例化");
+            throw new Error('Animal 是抽象基类，不能被直接实例化');
           }
         }
 
         speak() {
-          throw new Error("子类必须实现 speak()");
+          throw new Error('子类必须实现 speak()');
         }
       }
 
       try {
         new Animal();
       } catch (err) {
-        console.log("直接 new Animal:", err.message);
+        console.log('直接 new Animal:', err.message);
       }
 
       // ============ 2. 子类实例化：new.target 指向子类 ============
@@ -88,8 +195,8 @@
         }
       }
 
-      const d1 = new Dog("旺财");
-      console.log("d1.speak():", d1.speak());
+      const d1 = new Dog('旺财');
+      console.log('d1.speak():', d1.speak());
 
       // ============ 3. 基类默认方法抛错：运行时“抽象方法”约束 ============
       class Cat extends Animal {
@@ -100,11 +207,11 @@
         // 未实现 speak()
       }
 
-      const cat = new Cat("Mimi");
+      const cat = new Cat('Mimi');
       try {
         cat.speak();
       } catch (err) {
-        console.log("未实现 speak:", err.message);
+        console.log('未实现 speak:', err.message);
       }
     </script>
     <!-- SCRIPT_END -->
@@ -116,14 +223,18 @@
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./extends.html">相关 · extends</a>
         <a href="./%E7%B1%BB%E4%B8%8E%E5%8E%9F%E5%9E%8B.html">相关 · 类与原型</a>
-        <a href="../%E5%BC%82%E6%AD%A5/Promise/05-Promise-%E4%B8%B2%E8%A1%8C%E4%B8%89%E7%A7%8D%E5%86%99%E6%B3%95.html">← Promise-串行三种写法</a>
+        <a
+          href="../%E5%BC%82%E6%AD%A5/Promise/05-Promise-%E4%B8%B2%E8%A1%8C%E4%B8%89%E7%A7%8D%E5%86%99%E6%B3%95.html"
+        >
+          ← Promise-串行三种写法
+        </a>
         <a href="./%E7%B1%BB%E4%B8%8E%E5%8E%9F%E5%9E%8B.html">类与原型 →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

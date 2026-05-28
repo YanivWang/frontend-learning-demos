@@ -29,29 +29,97 @@
       <h1>keep-alive 与 activated / deactivated</h1>
       <p class="hint">
         切换 TabA / TabB，观察下方生命周期日志；在某 tab 输入框输入文字后再切换，验证
-        <code>keep-alive</code> 是否保留内容与 <code>activated/deactivated</code> 触发顺序。
+        <code>keep-alive</code>
+        是否保留内容与
+        <code>activated/deactivated</code>
+        触发顺序。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>&lt;keep-alive&gt;</code> 是 Vue 2 的抽象组件，用来缓存包裹的动态组件实例；切走时实例不会销毁，所以本页输入框内容可以保留。</li>
-          <li>首次渲染某个 tab 时会走 <code>created</code>、<code>mounted</code> 和 <code>activated</code>；之后在 tab 间切换时主要观察 <code>activated</code> 与 <code>deactivated</code>。</li>
-          <li><code>activated</code> 表示缓存组件重新进入激活状态，适合恢复轮询、刷新可见数据；<code>deactivated</code> 表示离开但未销毁，适合暂停定时器或取消可见区监听。</li>
-          <li>常见场景是 tab、列表返回详情、表单步骤缓存。风险是缓存过多会占用内存，且隐藏组件中的副作用如果不暂停，仍可能造成重复请求或性能问题。</li>
-          <li>生产项目应结合组件 <code>name</code> 与 <code>include</code>、<code>exclude</code>、<code>max</code> 控制缓存边界；Vue 2 已 EOL，维护项目更要明确缓存策略。</li>
+          <li>
+            <code>&lt;keep-alive&gt;</code>
+            是 Vue 2
+            的抽象组件，用来缓存包裹的动态组件实例；切走时实例不会销毁，所以本页输入框内容可以保留。
+          </li>
+          <li>
+            首次渲染某个 tab 时会走
+            <code>created</code>
+            、
+            <code>mounted</code>
+            和
+            <code>activated</code>
+            ；之后在 tab 间切换时主要观察
+            <code>activated</code>
+            与
+            <code>deactivated</code>
+            。
+          </li>
+          <li>
+            <code>activated</code>
+            表示缓存组件重新进入激活状态，适合恢复轮询、刷新可见数据；
+            <code>deactivated</code>
+            表示离开但未销毁，适合暂停定时器或取消可见区监听。
+          </li>
+          <li>
+            常见场景是
+            tab、列表返回详情、表单步骤缓存。风险是缓存过多会占用内存，且隐藏组件中的副作用如果不暂停，仍可能造成重复请求或性能问题。
+          </li>
+          <li>
+            生产项目应结合组件
+            <code>name</code>
+            与
+            <code>include</code>
+            、
+            <code>exclude</code>
+            、
+            <code>max</code>
+            控制缓存边界；Vue 2 已 EOL，维护项目更要明确缓存策略。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>keep-alive 缓存的是什么？</strong> 结论：缓存的是组件实例。原因是它让被切走的动态组件不进入销毁流程，再次显示时复用原实例。边界是缓存会占内存，不能无脑包所有页面。</li>
-          <li><strong>activated/deactivated 和 mounted/destroyed 有什么区别？</strong> 结论：mounted/destroyed 对应真实挂载和销毁，activated/deactivated 对应缓存组件进入和离开活跃状态。原因是 keep-alive 下组件离开时并未销毁。项目里恢复或暂停副作用应放在 activated/deactivated。</li>
-          <li><strong>keep-alive 常用于哪些页面场景，风险是什么？</strong> 结论：适合 tab、列表返回详情、表单步骤等需保留状态的互斥视图。原因是用户期望输入、滚动不被重置。风险是缓存过多占内存，隐藏组件中的副作用若不暂停可能造成重复请求或性能问题。</li>
-          <li><strong>include/exclude/max 为什么重要？</strong> 结论：它们控制缓存范围和数量。原因是缓存实例越多，内存和副作用管理成本越高。项目里应给需要缓存的组件明确 <code>name</code>，再配置白名单或最大缓存数。</li>
+          <li>
+            <strong>keep-alive 缓存的是什么？</strong>
+            结论：缓存的是组件实例。原因是它让被切走的动态组件不进入销毁流程，再次显示时复用原实例。边界是缓存会占内存，不能无脑包所有页面。
+          </li>
+          <li>
+            <strong>activated/deactivated 和 mounted/destroyed 有什么区别？</strong>
+            结论：mounted/destroyed 对应真实挂载和销毁，activated/deactivated
+            对应缓存组件进入和离开活跃状态。原因是 keep-alive
+            下组件离开时并未销毁。项目里恢复或暂停副作用应放在 activated/deactivated。
+          </li>
+          <li>
+            <strong>keep-alive 常用于哪些页面场景，风险是什么？</strong>
+            结论：适合
+            tab、列表返回详情、表单步骤等需保留状态的互斥视图。原因是用户期望输入、滚动不被重置。风险是缓存过多占内存，隐藏组件中的副作用若不暂停可能造成重复请求或性能问题。
+          </li>
+          <li>
+            <strong>include/exclude/max 为什么重要？</strong>
+            结论：它们控制缓存范围和数量。原因是缓存实例越多，内存和副作用管理成本越高。项目里应给需要缓存的组件明确
+            <code>name</code>
+            ，再配置白名单或最大缓存数。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://v2.vuejs.org/v2/api/#keep-alive" target="_blank" rel="noopener">Vue 2 API: keep-alive</a></li>
-          <li><a href="https://v2.vuejs.org/v2/guide/components-dynamic-async.html" target="_blank" rel="noopener">Vue 2 Guide: Dynamic & Async Components</a></li>
-          <li><a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 2 EOL Notice</a></li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/api/#keep-alive" target="_blank" rel="noopener">
+              Vue 2 API: keep-alive
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://v2.vuejs.org/v2/guide/components-dynamic-async.html"
+              target="_blank"
+              rel="noopener"
+            >
+              Vue 2 Guide: Dynamic & Async Components
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/eol/" target="_blank" rel="noopener">Vue 2 EOL Notice</a>
+          </li>
         </ul>
       </div>
     </section>
@@ -83,39 +151,38 @@
           </div>
           `,
           created() {
-            this.$root.logs.push(name + " created");
+            this.$root.logs.push(name + ' created');
           },
           mounted() {
-            this.$root.logs.push(name + " mounted");
+            this.$root.logs.push(name + ' mounted');
           },
           activated() {
-            this.$root.logs.push(name + " activated");
+            this.$root.logs.push(name + ' activated');
           },
           deactivated() {
-            this.$root.logs.push(name + " deactivated");
+            this.$root.logs.push(name + ' deactivated');
           },
           beforeDestroy() {
-            this.$root.logs.push(name + " beforeDestroy");
-          }
+            this.$root.logs.push(name + ' beforeDestroy');
+          },
         };
       };
 
-      Vue.component("TabA", makeTab("TabA"));
-      Vue.component("TabB", makeTab("TabB"));
+      Vue.component('TabA', makeTab('TabA'));
+      Vue.component('TabB', makeTab('TabB'));
 
       // ---------------------------------------------------------------------------
       // #app：keep-alive 包裹动态组件 + 日志面板
       // ---------------------------------------------------------------------------
       new Vue({
-        el: "#app",
+        el: '#app',
         data() {
           return {
-            current: "TabA",
-            logs: []
+            current: 'TabA',
+            logs: [],
           };
-        }
+        },
       });
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -125,17 +192,19 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./07-%E5%BC%82%E6%AD%A5%E7%BB%84%E4%BB%B6.html">← 异步组件</a>
-        <a href="./09-%E8%87%AA%E5%AE%9A%E4%B9%89v-model%E4%B8%8Esync.html">自定义v-model与sync →</a>
+        <a href="./09-%E8%87%AA%E5%AE%9A%E4%B9%89v-model%E4%B8%8Esync.html">
+          自定义v-model与sync →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

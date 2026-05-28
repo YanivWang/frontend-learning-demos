@@ -23,14 +23,49 @@
     <title>Vue3 · ref/reactive 与解构</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      input, button { padding: 6px 10px; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; max-height: 220px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; margin-bottom: 16px; }
-      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
-      .box button { margin-right: 8px; margin-top: 4px; }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          'PingFang SC',
+          sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+      }
+      input,
+      button {
+        padding: 6px 10px;
+      }
+      code,
+      pre {
+        background: #f6f8fa;
+        border-radius: 6px;
+      }
+      code {
+        padding: 2px 5px;
+      }
+      pre {
+        padding: 12px;
+        overflow: auto;
+        max-height: 220px;
+      }
+      .box {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 760px;
+        margin-bottom: 16px;
+      }
+      .box .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
+      .box button {
+        margin-right: 8px;
+        margin-top: 4px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -43,28 +78,176 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>ref()</code> 用 <code>.value</code> 保存响应式值，适合基本类型，也可包装对象；模板顶层会自动解包，本页 <code>{{ count }}</code> 无需写 <code>.value</code>。点“count +1”时 count 与下方派生文案同步更新，控制台会打印 <code>[ref] count</code>。</li>
-          <li><code>reactive()</code> 返回对象 Proxy，只能接收对象类型；读写属性走代理 getter/setter，本页 <code>user.name</code> 会随按钮更新。应保持同一个代理引用，不要用新普通对象整体替换 <code>user</code> 变量本身。</li>
-          <li>直接解构 <code>const { name: nameSnapshot } = user</code> 会得到当前值的普通变量快照；之后改 <code>user.name</code> 时 <code>nameSnapshot</code> 不变，本页“错误解构”一行就是验证入口。</li>
-          <li><code>toRefs(user)</code> 把已有属性转成与源对象联动的 ref；本页 <code>name</code>（来自 toRefs）会跟着 <code>user.name</code> 变化。批量转换细节见同章 <a href="./03-toRef-toRefs.html">03-toRef-toRefs</a>。</li>
-          <li><code>ref({ ... })</code> 整体替换 <code>.value</code> 会触发更新，适合“整块数据换新”的场景；<code>reactive</code> 对象应改属性或属性引用，而不是给变量赋一个全新的非代理对象。三种 API 对比见 <a href="./07-ref-reactive-shallowRef%E5%AF%B9%E6%AF%94.html">07-ref-reactive-shallowRef对比</a>。</li>
-          <li>组合式函数若返回 <code>reactive</code> 对象，调用方常见会解构；应返回 <code>...toRefs(state)</code> 或多个独立 <code>ref</code>，避免调用方拿到非响应式快照。</li>
-          <li>本页“操作日志”记录每次按钮触发的状态；打开控制台可同时看到 <code>[ref]</code> / <code>[reactive]</code> 分组日志，便于对照模板显示与 JS 读写方式。</li>
+          <li>
+            <code>ref()</code>
+            用
+            <code>.value</code>
+            保存响应式值，适合基本类型，也可包装对象；模板顶层会自动解包，本页
+            <code>{{ count }}</code>
+            无需写
+            <code>.value</code>
+            。点“count +1”时 count 与下方派生文案同步更新，控制台会打印
+            <code>[ref] count</code>
+            。
+          </li>
+          <li>
+            <code>reactive()</code>
+            返回对象 Proxy，只能接收对象类型；读写属性走代理 getter/setter，本页
+            <code>user.name</code>
+            会随按钮更新。应保持同一个代理引用，不要用新普通对象整体替换
+            <code>user</code>
+            变量本身。
+          </li>
+          <li>
+            直接解构
+            <code>const { name: nameSnapshot } = user</code>
+            会得到当前值的普通变量快照；之后改
+            <code>user.name</code>
+            时
+            <code>nameSnapshot</code>
+            不变，本页“错误解构”一行就是验证入口。
+          </li>
+          <li>
+            <code>toRefs(user)</code>
+            把已有属性转成与源对象联动的 ref；本页
+            <code>name</code>
+            （来自 toRefs）会跟着
+            <code>user.name</code>
+            变化。批量转换细节见同章
+            <a href="./03-toRef-toRefs.html">03-toRef-toRefs</a>
+            。
+          </li>
+          <li>
+            <code>ref({ ... })</code>
+            整体替换
+            <code>.value</code>
+            会触发更新，适合“整块数据换新”的场景；
+            <code>reactive</code>
+            对象应改属性或属性引用，而不是给变量赋一个全新的非代理对象。三种 API 对比见
+            <a href="./07-ref-reactive-shallowRef%E5%AF%B9%E6%AF%94.html">
+              07-ref-reactive-shallowRef对比
+            </a>
+            。
+          </li>
+          <li>
+            组合式函数若返回
+            <code>reactive</code>
+            对象，调用方常见会解构；应返回
+            <code>...toRefs(state)</code>
+            或多个独立
+            <code>ref</code>
+            ，避免调用方拿到非响应式快照。
+          </li>
+          <li>
+            本页“操作日志”记录每次按钮触发的状态；打开控制台可同时看到
+            <code>[ref]</code>
+            /
+            <code>[reactive]</code>
+            分组日志，便于对照模板显示与 JS 读写方式。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>ref 和 reactive 如何选型？</strong> 结论是基本类型、需要整体替换的值优先 <code>ref</code>，成组对象状态可用 <code>reactive</code>。原因是 <code>ref</code> 通过 <code>.value</code> 替换清晰，<code>reactive</code> 通过 Proxy 拦截属性。项目里表单对象常用 <code>reactive</code>，计数、开关、当前 id 常用 <code>ref</code>。</li>
-          <li><strong>reactive 直接解构为什么会丢响应？</strong> 先结论：解构取出的是当前值，后续读写不再经过原代理。原因是依赖收集发生在代理 getter 上。需要解构时用 <code>toRefs</code>，见 <a href="./03-toRef-toRefs.html">03-toRef-toRefs</a>。</li>
-          <li><strong>为什么不要整体替换 reactive 变量本身？</strong> 结论是替换变量会断开已有引用。原因是其他地方持有的是旧代理，重新赋值只改变局部变量指向。应改代理属性，或一开始用 <code>ref({})</code> 承载可整体替换的数据。</li>
-          <li><strong>composable 返回对象时如何避免解构丢响应？</strong> 结论是返回多个 <code>ref</code>，或对 <code>reactive</code> 使用 <code>toRefs</code> 后返回。原因是调用方常会对象解构。边界是也可返回整个 <code>reactive</code> 并文档化不要解构。</li>
-          <li><strong>ref 包裹对象与 reactive 在整体替换上有什么差异？</strong> 结论是 <code>ref</code> 换 <code>.value</code> 会触发更新，<code>reactive</code> 变量本身不应被赋为新普通对象。原因是 <code>ref</code> 追踪的是容器 <code>.value</code> 的替换，<code>reactive</code> 追踪的是固定代理上的属性访问。</li>
+          <li>
+            <strong>ref 和 reactive 如何选型？</strong>
+            结论是基本类型、需要整体替换的值优先
+            <code>ref</code>
+            ，成组对象状态可用
+            <code>reactive</code>
+            。原因是
+            <code>ref</code>
+            通过
+            <code>.value</code>
+            替换清晰，
+            <code>reactive</code>
+            通过 Proxy 拦截属性。项目里表单对象常用
+            <code>reactive</code>
+            ，计数、开关、当前 id 常用
+            <code>ref</code>
+            。
+          </li>
+          <li>
+            <strong>reactive 直接解构为什么会丢响应？</strong>
+            先结论：解构取出的是当前值，后续读写不再经过原代理。原因是依赖收集发生在代理 getter
+            上。需要解构时用
+            <code>toRefs</code>
+            ，见
+            <a href="./03-toRef-toRefs.html">03-toRef-toRefs</a>
+            。
+          </li>
+          <li>
+            <strong>为什么不要整体替换 reactive 变量本身？</strong>
+            结论是替换变量会断开已有引用。原因是其他地方持有的是旧代理，重新赋值只改变局部变量指向。应改代理属性，或一开始用
+            <code>ref({})</code>
+            承载可整体替换的数据。
+          </li>
+          <li>
+            <strong>composable 返回对象时如何避免解构丢响应？</strong>
+            结论是返回多个
+            <code>ref</code>
+            ，或对
+            <code>reactive</code>
+            使用
+            <code>toRefs</code>
+            后返回。原因是调用方常会对象解构。边界是也可返回整个
+            <code>reactive</code>
+            并文档化不要解构。
+          </li>
+          <li>
+            <strong>ref 包裹对象与 reactive 在整体替换上有什么差异？</strong>
+            结论是
+            <code>ref</code>
+            换
+            <code>.value</code>
+            会触发更新，
+            <code>reactive</code>
+            变量本身不应被赋为新普通对象。原因是
+            <code>ref</code>
+            追踪的是容器
+            <code>.value</code>
+            的替换，
+            <code>reactive</code>
+            追踪的是固定代理上的属性访问。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/guide/essentials/reactivity-fundamentals.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Reactivity Fundamentals</a></li>
-          <li><a href="https://vuejs.org/api/reactivity-core.html#ref" target="_blank" rel="noreferrer">Vue 3 官方 API：ref()</a></li>
-          <li><a href="https://vuejs.org/api/reactivity-core.html#reactive" target="_blank" rel="noreferrer">Vue 3 官方 API：reactive()</a></li>
-          <li><a href="https://vuejs.org/api/reactivity-utilities.html#torefs" target="_blank" rel="noreferrer">Vue 3 官方 API：toRefs()</a></li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/essentials/reactivity-fundamentals.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方文档：Reactivity Fundamentals
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/api/reactivity-core.html#ref"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方 API：ref()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/api/reactivity-core.html#reactive"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方 API：reactive()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/api/reactivity-utilities.html#torefs"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 3 官方 API：toRefs()
+            </a>
+          </li>
           <li><a href="./03-toRef-toRefs.html">本系列：toRef / toRefs</a></li>
         </ul>
       </div>
@@ -78,7 +261,13 @@
         <h2>ref 与 reactive 源状态</h2>
         <p>ref count：{{ count }}</p>
         <p>reactive user.name：{{ user.name }}（age：{{ user.age }}）</p>
-        <p class="hint-inline">模板里 ref 自动解包；脚本里读写 count 必须用 <code>count.value</code>，改 user 用 <code>user.name = ...</code>。</p>
+        <p class="hint-inline">
+          模板里 ref 自动解包；脚本里读写 count 必须用
+          <code>count.value</code>
+          ，改 user 用
+          <code>user.name = ...</code>
+          。
+        </p>
         <button type="button" @click="bumpCount">count +1</button>
         <button type="button" @click="renameUser">改 user.name（+控制台）</button>
       </div>
@@ -86,7 +275,9 @@
         <h2>解构对比：快照 vs toRefs</h2>
         <p>错误解构 nameSnapshot：{{ nameSnapshot }}</p>
         <p>toRefs name：{{ name }}</p>
-        <p class="hint-inline">先点“改 user.name”，观察 nameSnapshot 是否仍停在旧值，而 name 会同步更新。</p>
+        <p class="hint-inline">
+          先点“改 user.name”，观察 nameSnapshot 是否仍停在旧值，而 name 会同步更新。
+        </p>
         <button type="button" @click="renameUser">改 user.name</button>
         <button type="button" @click="resetDemo">重置演示</button>
       </div>
@@ -108,7 +299,7 @@
           const count = ref(0);
 
           // --- reactive：对象代理，保持同一引用 ---
-          const user = reactive({ name: "Ada", age: 18 });
+          const user = reactive({ name: 'Ada', age: 18 });
 
           // --- 错误解构：拿到的是 setup 执行时的值快照 ---
           const { name: nameSnapshot } = user;
@@ -127,17 +318,17 @@
           // 只改 ref，验证模板与 .value 同步
           function bumpCount() {
             count.value++;
-            console.log("[ref] count =", count.value);
+            console.log('[ref] count =', count.value);
             pushLog(`ref：count -> ${count.value}`);
           }
 
           // 改 reactive 属性，对比 nameSnapshot 与 toRefs 的 name
           function renameUser() {
-            user.name = user.name === "Ada" ? `Ada ${count.value}` : "Ada";
+            user.name = user.name === 'Ada' ? `Ada ${count.value}` : 'Ada';
             user.age++;
-            console.log("[reactive] user =", { name: user.name, age: user.age });
-            console.log("[解构] nameSnapshot =", nameSnapshot, "（应仍为初始快照）");
-            console.log("[toRefs] name.value =", name.value);
+            console.log('[reactive] user =', { name: user.name, age: user.age });
+            console.log('[解构] nameSnapshot =', nameSnapshot, '（应仍为初始快照）');
+            console.log('[toRefs] name.value =', name.value);
             pushLog(
               `reactive：user.name=${user.name}；快照 nameSnapshot=${nameSnapshot}；toRefs name=${name.value}`,
             );
@@ -145,16 +336,15 @@
 
           function resetDemo() {
             count.value = 0;
-            user.name = "Ada";
+            user.name = 'Ada';
             user.age = 18;
             logs.value = [];
-            pushLog("已重置 count 与 user");
+            pushLog('已重置 count 与 user');
           }
 
-          
           // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
           onMounted(() => {
-            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+            console.log('[mounted] createApp 已接管 #app，DOM 已渲染');
           });
 
           return {
@@ -171,9 +361,8 @@
       });
       // mount 须在 app.use / app.component / app.config 等配置之后调用
       // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
-      const rootInstance = app.mount("#app");
-      console.log("[mount] 根组件实例", rootInstance);
-
+      const rootInstance = app.mount('#app');
+      console.log('[mount] 根组件实例', rootInstance);
     </script>
     <!-- SCRIPT_END -->
 
@@ -182,14 +371,18 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="../01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/06-useTemplateRef%E6%A8%A1%E6%9D%BFref.html">← useTemplateRef模板ref</a>
+        <a
+          href="../01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/06-useTemplateRef%E6%A8%A1%E6%9D%BFref.html"
+        >
+          ← useTemplateRef模板ref
+        </a>
         <a href="./02-computed-watch-watchEffect.html">computed-watch-watchEffect →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

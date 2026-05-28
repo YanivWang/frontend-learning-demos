@@ -30,23 +30,107 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>new Promise(executor)</code> 创建 Promise 时会立刻同步调用 executor；executor 不是等到 <code>then</code> 注册后才执行。</li>
-          <li>Promise 状态机只有三种状态：<code>pending</code>、<code>fulfilled</code>、<code>rejected</code>。<code>resolve</code> 和 <code>reject</code> 只能把 <code>pending</code> 推到终态。</li>
-          <li>状态一旦 settled 就不可逆，后续再次 <code>resolve</code> 或 <code>reject</code> 会被忽略；这保证同一个异步结果不会被消费多次或前后矛盾。</li>
-          <li>executor 内同步抛错会等价于 <code>reject(error)</code>；但 <code>setTimeout</code> 等异步回调里的异常不会被 Promise 构造器自动捕获，应在回调里显式 <code>try...catch</code> 后 <code>reject</code>。</li>
-          <li>只有在把回调型 API 转成 Promise 时才手写 <code>new Promise</code>；如果已有 Promise，直接 return 或组合它，避免 Promise constructor antipattern。</li>
+          <li>
+            <code>new Promise(executor)</code>
+            创建 Promise 时会立刻同步调用 executor；executor 不是等到
+            <code>then</code>
+            注册后才执行。
+          </li>
+          <li>
+            Promise 状态机只有三种状态：
+            <code>pending</code>
+            、
+            <code>fulfilled</code>
+            、
+            <code>rejected</code>
+            。
+            <code>resolve</code>
+            和
+            <code>reject</code>
+            只能把
+            <code>pending</code>
+            推到终态。
+          </li>
+          <li>
+            状态一旦 settled 就不可逆，后续再次
+            <code>resolve</code>
+            或
+            <code>reject</code>
+            会被忽略；这保证同一个异步结果不会被消费多次或前后矛盾。
+          </li>
+          <li>
+            executor 内同步抛错会等价于
+            <code>reject(error)</code>
+            ；但
+            <code>setTimeout</code>
+            等异步回调里的异常不会被 Promise 构造器自动捕获，应在回调里显式
+            <code>try...catch</code>
+            后
+            <code>reject</code>
+            。
+          </li>
+          <li>
+            只有在把回调型 API 转成 Promise 时才手写
+            <code>new Promise</code>
+            ；如果已有 Promise，直接 return 或组合它，避免 Promise constructor antipattern。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Promise executor 什么时候执行，then 回调什么时候执行？</strong> executor 在构造 Promise 的当下同步执行，<code>then</code>/<code>catch</code> 回调在状态 settled 后作为微任务执行。项目里不要把 executor 当懒执行函数；想懒执行应封装成“返回 Promise 的函数”。</li>
-          <li><strong>Promise 状态为什么一旦 settled 就不能再改变？</strong> 结论是 fulfilled 或 rejected 后不可逆，后续决议会被忽略。原因是 Promise 表示一次异步结果，消费者需要稳定的一致状态；否则多个回调可能看到互相冲突的结果。</li>
-          <li><strong>executor 里同步 throw 和异步回调 throw 有什么区别？</strong> executor 同步 throw 会被 Promise 构造器捕获并转成 rejection；异步回调已经脱离 executor 调用栈，throw 不会自动变成当前 Promise 的 rejection。实际包装回调 API 时，应在异步回调内部捕获异常并调用 <code>reject</code>。</li>
-          <li><strong>什么时候应该手写 <code>new Promise</code>？</strong> 当你要把事件、计时器、Node 风格回调等非 Promise API 包成 Promise 时才手写。已有 Promise 的场景直接返回、链式组合或使用 <code>async</code>/<code>await</code>，否则容易多包一层并制造错误处理盲区。</li>
+          <li>
+            <strong>Promise executor 什么时候执行，then 回调什么时候执行？</strong>
+            executor 在构造 Promise 的当下同步执行，
+            <code>then</code>
+            /
+            <code>catch</code>
+            回调在状态 settled 后作为微任务执行。项目里不要把 executor
+            当懒执行函数；想懒执行应封装成“返回 Promise 的函数”。
+          </li>
+          <li>
+            <strong>Promise 状态为什么一旦 settled 就不能再改变？</strong>
+            结论是 fulfilled 或 rejected 后不可逆，后续决议会被忽略。原因是 Promise
+            表示一次异步结果，消费者需要稳定的一致状态；否则多个回调可能看到互相冲突的结果。
+          </li>
+          <li>
+            <strong>executor 里同步 throw 和异步回调 throw 有什么区别？</strong>
+            executor 同步 throw 会被 Promise 构造器捕获并转成 rejection；异步回调已经脱离 executor
+            调用栈，throw 不会自动变成当前 Promise 的 rejection。实际包装回调 API
+            时，应在异步回调内部捕获异常并调用
+            <code>reject</code>
+            。
+          </li>
+          <li>
+            <strong>
+              什么时候应该手写
+              <code>new Promise</code>
+              ？
+            </strong>
+            当你要把事件、计时器、Node 风格回调等非 Promise API 包成 Promise 时才手写。已有 Promise
+            的场景直接返回、链式组合或使用
+            <code>async</code>
+            /
+            <code>await</code>
+            ，否则容易多包一层并制造错误处理盲区。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">MDN: Promise</a>：pending/fulfilled/rejected 三态，settled 后不可逆。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/Promise">MDN: Promise() constructor</a>：executor 同步执行，同步 throw 等价 reject。</li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise"
+            >
+              MDN: Promise
+            </a>
+            ：pending/fulfilled/rejected 三态，settled 后不可逆。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/Promise"
+            >
+              MDN: Promise() constructor
+            </a>
+            ：executor 同步执行，同步 throw 等价 reject。
+          </li>
         </ul>
       </div>
     </section>
@@ -55,42 +139,42 @@
     <!-- SCRIPT_START -->
     <script>
       // ============ 1. executor 在构造时同步执行，then 回调在 settled 后作为微任务 ============
-      console.log("--- executor 同步执行 ---");
+      console.log('--- executor 同步执行 ---');
       const pSync = new Promise(function (resolve) {
-        console.log("executor 同步执行"); // 立刻输出
-        resolve("sync-done");
+        console.log('executor 同步执行'); // 立刻输出
+        resolve('sync-done');
       });
-      console.log("构造器返回后，then 尚未执行");
-      pSync.then((v) => console.log("then 微任务:", v)); // "sync-done"
+      console.log('构造器返回后，then 尚未执行');
+      pSync.then((v) => console.log('then 微任务:', v)); // "sync-done"
 
       // ============ 2. 状态 settled 后不可逆，后续 resolve/reject 被忽略 ============
       const pSettled = new Promise(function (resolve, reject) {
-        resolve("first");
-        reject(new Error("ignored after resolve"));
-        resolve("also ignored");
+        resolve('first');
+        reject(new Error('ignored after resolve'));
+        resolve('also ignored');
       });
       pSettled
-        .then((v) => console.log("settled 值:", v)) // "first"
-        .catch((err) => console.error("不会走到:", err.message));
+        .then((v) => console.log('settled 值:', v)) // "first"
+        .catch((err) => console.error('不会走到:', err.message));
 
       // ============ 3. executor 内同步 throw 等价于 reject ============
       new Promise(function () {
-        throw new Error("executor 同步 throw");
+        throw new Error('executor 同步 throw');
       }).catch((err) => {
-        console.log("同步 throw → reject:", err.message);
+        console.log('同步 throw → reject:', err.message);
       });
 
       // ============ 4. 异步回调里的 throw 须手动 reject（构造器无法捕获） ============
       new Promise(function (resolve, reject) {
         setTimeout(function () {
           try {
-            throw new Error("异步回调 throw");
+            throw new Error('异步回调 throw');
           } catch (error) {
             reject(error);
           }
         }, 100);
       }).catch((err) => {
-        console.log("异步 reject:", err.message);
+        console.log('异步 reject:', err.message);
       });
 
       // ============ 5. 异步 executor：随机 resolve/reject，演示 then/catch ============
@@ -99,16 +183,16 @@
           const ret = Math.random() * 10;
           if (ret > 5) {
             resolve(ret);
-            reject("ignored after resolve"); // settled 后忽略
+            reject('ignored after resolve'); // settled 后忽略
           } else {
-            reject(new Error("随机数不大于 5"));
+            reject(new Error('随机数不大于 5'));
           }
         }, 500);
       }
 
       new Promise(randomExecutor)
-        .then((value) => console.log("随机 resolve:", value))
-        .catch((err) => console.error("随机 reject:", err.message));
+        .then((value) => console.log('随机 resolve:', value))
+        .catch((err) => console.error('随机 reject:', err.message));
     </script>
     <!-- SCRIPT_END -->
 
@@ -117,14 +201,18 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../../index.html">目录</a>
-        <a href="./03-Promise-%E5%8C%85%E8%A3%85%E5%9B%BE%E7%89%87%E9%A2%84%E5%8A%A0%E8%BD%BD.html">← Promise-包装图片预加载</a>
-        <a href="./05-Promise-%E4%B8%B2%E8%A1%8C%E4%B8%89%E7%A7%8D%E5%86%99%E6%B3%95.html">Promise-串行三种写法 →</a>
+        <a href="./03-Promise-%E5%8C%85%E8%A3%85%E5%9B%BE%E7%89%87%E9%A2%84%E5%8A%A0%E8%BD%BD.html">
+          ← Promise-包装图片预加载
+        </a>
+        <a href="./05-Promise-%E4%B8%B2%E8%A1%8C%E4%B8%89%E7%A7%8D%E5%86%99%E6%B3%95.html">
+          Promise-串行三种写法 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

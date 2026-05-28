@@ -21,13 +21,44 @@
     <title>Vue3 · 调度器与 nextTick</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; padding: 6px 12px; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; max-height: 220px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
-      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          'PingFang SC',
+          sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+      }
+      button {
+        margin-right: 8px;
+        padding: 6px 12px;
+      }
+      code,
+      pre {
+        background: #f6f8fa;
+        border-radius: 6px;
+      }
+      code {
+        padding: 2px 5px;
+      }
+      pre {
+        padding: 12px;
+        overflow: auto;
+        max-height: 220px;
+      }
+      .box {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 760px;
+      }
+      .box .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -40,24 +71,103 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue 的状态变更不会每次都同步 patch DOM，而是交给调度器排队。连续多次修改同一个响应式状态时，组件更新会被去重并合并到同一轮刷新中。</li>
-          <li>因此在同一个同步函数里，刚改完状态就读取模板对应 DOM，常会读到旧文本；等待 <code>await nextTick()</code> 后，才能读到本轮 Vue DOM 更新后的结果。</li>
-          <li><code>nextTick()</code> 可以接收回调，也可以返回 Promise，组合式 API 中更推荐 <code>await nextTick()</code>，让“改状态 → 等 DOM → 读尺寸/聚焦/滚动”的流程更清晰。</li>
-          <li>不要把 <code>nextTick</code> 当成通用延时器。它只等待 Vue 刷新队列完成，不保证网络请求完成、图片解码完成，也不等价于浏览器下一帧绘制；动画测量可能还需要 <code>requestAnimationFrame</code>。</li>
-          <li>模板 <code>ref</code> 与 DOM 时序的入门演示见 <a href="../01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/05-%E6%A8%A1%E6%9D%BFref%E4%B8%8EnextTick.html">01-模板ref与nextTick</a>；本页侧重调度器批处理机制。</li>
+          <li>
+            Vue 的状态变更不会每次都同步 patch
+            DOM，而是交给调度器排队。连续多次修改同一个响应式状态时，组件更新会被去重并合并到同一轮刷新中。
+          </li>
+          <li>
+            因此在同一个同步函数里，刚改完状态就读取模板对应 DOM，常会读到旧文本；等待
+            <code>await nextTick()</code>
+            后，才能读到本轮 Vue DOM 更新后的结果。
+          </li>
+          <li>
+            <code>nextTick()</code>
+            可以接收回调，也可以返回 Promise，组合式 API 中更推荐
+            <code>await nextTick()</code>
+            ，让“改状态 → 等 DOM → 读尺寸/聚焦/滚动”的流程更清晰。
+          </li>
+          <li>
+            不要把
+            <code>nextTick</code>
+            当成通用延时器。它只等待 Vue
+            刷新队列完成，不保证网络请求完成、图片解码完成，也不等价于浏览器下一帧绘制；动画测量可能还需要
+            <code>requestAnimationFrame</code>
+            。
+          </li>
+          <li>
+            模板
+            <code>ref</code>
+            与 DOM 时序的入门演示见
+            <a
+              href="../01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/05-%E6%A8%A1%E6%9D%BFref%E4%B8%8EnextTick.html"
+            >
+              01-模板ref与nextTick
+            </a>
+            ；本页侧重调度器批处理机制。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue 为什么连续修改三次状态通常只触发一次 DOM 更新？</strong> 结论是 Vue 会通过调度器批量合并同一轮同步更新，并对组件更新任务去重。原因是立即逐次 patch DOM 成本高，也会产生中间态 DOM。边界是不同异步任务之间会进入不同刷新轮次，不能简单理解为“所有更新永远合并一次”。</li>
-          <li><strong>nextTick 解决的是哪个时序问题？</strong> 结论是它用于等待 Vue 当前状态变更对应的 DOM 更新完成。原因是状态写入是同步的，但 DOM patch 被延后到刷新队列。项目里修改数据后要读取 DOM 尺寸、滚动到底部或聚焦新出现的输入框，才需要 <code>await nextTick()</code>。</li>
-          <li><strong>nextTick 和 setTimeout、requestAnimationFrame 有什么边界差异？</strong> 结论是 <code>nextTick</code> 等 Vue 的更新队列，<code>setTimeout</code> 等宏任务，<code>requestAnimationFrame</code> 更接近下一帧绘制前的回调。原因是它们服务的调度层不同。需要读 Vue 更新后的 DOM 用 <code>nextTick</code>，需要配合视觉帧或动画测量时再考虑 <code>requestAnimationFrame</code>。</li>
-          <li><strong>项目里哪些场景不应该滥用 nextTick？</strong> 结论是普通业务状态流转不需要每次更新后都写 <code>nextTick</code>。原因是 Vue 模板会自动响应状态变化，过度等待会让逻辑变慢且掩盖状态设计问题。只有后续逻辑真的依赖“已 patch 的 DOM”时，才把它作为明确的时序边界。</li>
+          <li>
+            <strong>Vue 为什么连续修改三次状态通常只触发一次 DOM 更新？</strong>
+            结论是 Vue 会通过调度器批量合并同一轮同步更新，并对组件更新任务去重。原因是立即逐次
+            patch DOM 成本高，也会产生中间态
+            DOM。边界是不同异步任务之间会进入不同刷新轮次，不能简单理解为“所有更新永远合并一次”。
+          </li>
+          <li>
+            <strong>nextTick 解决的是哪个时序问题？</strong>
+            结论是它用于等待 Vue 当前状态变更对应的 DOM 更新完成。原因是状态写入是同步的，但 DOM
+            patch 被延后到刷新队列。项目里修改数据后要读取 DOM
+            尺寸、滚动到底部或聚焦新出现的输入框，才需要
+            <code>await nextTick()</code>
+            。
+          </li>
+          <li>
+            <strong>nextTick 和 setTimeout、requestAnimationFrame 有什么边界差异？</strong>
+            结论是
+            <code>nextTick</code>
+            等 Vue 的更新队列，
+            <code>setTimeout</code>
+            等宏任务，
+            <code>requestAnimationFrame</code>
+            更接近下一帧绘制前的回调。原因是它们服务的调度层不同。需要读 Vue 更新后的 DOM 用
+            <code>nextTick</code>
+            ，需要配合视觉帧或动画测量时再考虑
+            <code>requestAnimationFrame</code>
+            。
+          </li>
+          <li>
+            <strong>项目里哪些场景不应该滥用 nextTick？</strong>
+            结论是普通业务状态流转不需要每次更新后都写
+            <code>nextTick</code>
+            。原因是 Vue
+            模板会自动响应状态变化，过度等待会让逻辑变慢且掩盖状态设计问题。只有后续逻辑真的依赖“已
+            patch 的 DOM”时，才把它作为明确的时序边界。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/api/general.html#nexttick" target="_blank" rel="noreferrer">Vue 官方 API：nextTick()</a></li>
-          <li><a href="https://vuejs.org/guide/essentials/reactivity-fundamentals.html#dom-update-timing" target="_blank" rel="noreferrer">Vue 官方文档：DOM Update Timing</a></li>
-          <li><a href="../01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/05-%E6%A8%A1%E6%9D%BFref%E4%B8%8EnextTick.html">本系列：模板 ref 与 nextTick</a></li>
+          <li>
+            <a href="https://vuejs.org/api/general.html#nexttick" target="_blank" rel="noreferrer">
+              Vue 官方 API：nextTick()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/essentials/reactivity-fundamentals.html#dom-update-timing"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 官方文档：DOM Update Timing
+            </a>
+          </li>
+          <li>
+            <a
+              href="../01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/05-%E6%A8%A1%E6%9D%BFref%E4%B8%8EnextTick.html"
+            >
+              本系列：模板 ref 与 nextTick
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -68,7 +178,17 @@
       <h1>调度器与 nextTick</h1>
       <div class="box">
         <p ref="countEl">count：{{ count }}</p>
-        <p class="hint-inline">点「连续改 3 次」：同步阶段 DOM 文本仍是旧值，<code>nextTick</code> 后才显示 3。与 <a href="../01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/05-%E6%A8%A1%E6%9D%BFref%E4%B8%8EnextTick.html">01-模板ref与nextTick</a> 对照学习。</p>
+        <p class="hint-inline">
+          点「连续改 3 次」：同步阶段 DOM 文本仍是旧值，
+          <code>nextTick</code>
+          后才显示 3。与
+          <a
+            href="../01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/05-%E6%A8%A1%E6%9D%BFref%E4%B8%8EnextTick.html"
+          >
+            01-模板ref与nextTick
+          </a>
+          对照学习。
+        </p>
         <button type="button" @click="batchUpdate">连续改 3 次</button>
         <button type="button" @click="logs = []">清空日志</button>
         <pre>{{ logs.length ? logs.join("\n") : "（点击按钮后出现对比日志）" }}</pre>
@@ -98,10 +218,9 @@
             logs.value.push(`nextTick 后 DOM：${countEl.value.textContent}`);
           }
 
-          
           // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
           onMounted(() => {
-            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+            console.log('[mounted] createApp 已接管 #app，DOM 已渲染');
           });
 
           return { count, countEl, logs, batchUpdate };
@@ -109,9 +228,8 @@
       });
       // mount 须在 app.use / app.component / app.config 等配置之后调用
       // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
-      const rootInstance = app.mount("#app");
-      console.log("[mount] 根组件实例", rootInstance);
-
+      const rootInstance = app.mount('#app');
+      console.log('[mount] 根组件实例', rootInstance);
     </script>
     <!-- SCRIPT_END -->
 
@@ -125,13 +243,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

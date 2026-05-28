@@ -28,30 +28,128 @@
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vue2 数组响应式限制</h1>
       <p class="hint">
-        依次点击五个按钮，对比「索引赋值 / 改 length」与 <code>Vue.set</code>、<code>splice</code> 正确写法下
-        <code>items</code> 与下方日志是否同步更新；复习要点与面试答法见本区块。
+        依次点击五个按钮，对比「索引赋值 / 改 length」与
+        <code>Vue.set</code>
+        、
+        <code>splice</code>
+        正确写法下
+        <code>items</code>
+        与下方日志是否同步更新；复习要点与面试答法见本区块。
       </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue2 无法用 <code>Object.defineProperty</code> 可靠拦截数组索引和 <code>length</code> 变化，因此改写了 7 个会改变原数组的方法：<code>push</code>、<code>pop</code>、<code>shift</code>、<code>unshift</code>、<code>splice</code>、<code>sort</code>、<code>reverse</code>。</li>
-          <li><code>this.items[1] = "B"</code> 会改变数组本身，但不会触发 Vue2 的依赖通知；页面可能要等下一次其他响应式更新才“顺带”显示新值。</li>
-          <li><code>this.items.length = 1</code> 同样不会触发视图更新。要删除或截断数组，使用 <code>splice</code>，例如 <code>this.items.splice(1)</code>。</li>
-          <li>修复索引替换有两种常用写法：<code>Vue.set(this.items, index, value)</code> 表意明确，<code>this.items.splice(index, 1, value)</code> 更贴近数组变更方法。</li>
-          <li>大数组更新还要考虑性能：批量更新时减少多次响应式通知，必要时先在普通数组中整理数据，再一次性替换响应式数组；列表渲染还要配合稳定 <code>key</code>。</li>
+          <li>
+            Vue2 无法用
+            <code>Object.defineProperty</code>
+            可靠拦截数组索引和
+            <code>length</code>
+            变化，因此改写了 7 个会改变原数组的方法：
+            <code>push</code>
+            、
+            <code>pop</code>
+            、
+            <code>shift</code>
+            、
+            <code>unshift</code>
+            、
+            <code>splice</code>
+            、
+            <code>sort</code>
+            、
+            <code>reverse</code>
+            。
+          </li>
+          <li>
+            <code>this.items[1] = "B"</code>
+            会改变数组本身，但不会触发 Vue2
+            的依赖通知；页面可能要等下一次其他响应式更新才“顺带”显示新值。
+          </li>
+          <li>
+            <code>this.items.length = 1</code>
+            同样不会触发视图更新。要删除或截断数组，使用
+            <code>splice</code>
+            ，例如
+            <code>this.items.splice(1)</code>
+            。
+          </li>
+          <li>
+            修复索引替换有两种常用写法：
+            <code>Vue.set(this.items, index, value)</code>
+            表意明确，
+            <code>this.items.splice(index, 1, value)</code>
+            更贴近数组变更方法。
+          </li>
+          <li>
+            大数组更新还要考虑性能：批量更新时减少多次响应式通知，必要时先在普通数组中整理数据，再一次性替换响应式数组；列表渲染还要配合稳定
+            <code>key</code>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue2 为什么能监听 push 却不能监听索引赋值？</strong> 结论是 Vue2 对数组方法做了包装，但没有为每个可能的索引都建立拦截。原因是 <code>Object.defineProperty</code> 的逐属性模型不适合动态数组索引和 length。项目里用变更方法或 <code>Vue.set</code>，不要直接写 <code>arr[i] = value</code> 后期待页面刷新。</li>
-          <li><strong>Vue.set(arr, index, value) 和 splice 替换怎么选？</strong> 结论是二者都能触发更新，单点替换时 <code>Vue.set</code> 语义直观，涉及插入、删除、截断时用 <code>splice</code>。原因是 <code>splice</code> 属于 Vue2 包装过的数组变更方法。边界是索引必须有效，越界或负数索引要先明确业务含义。</li>
-          <li><strong>直接修改 length 为什么不可靠？</strong> 结论是它会改变数组长度但不会通知 Vue2 视图更新。原因是 length 不是 Vue2 包装的变更方法调用。项目里清空数组可用 <code>this.items = []</code> 或 <code>this.items.splice(0)</code>，截断可用 <code>splice(newLength)</code>。</li>
-          <li><strong>大列表数组更新在 Vue2 中要注意什么性能边界？</strong> 结论是减少高频逐项响应式写入。原因是每次变更都可能触发依赖通知和后续渲染调度。项目里可先构造普通数组再整体赋值，并配合分页、虚拟列表和稳定 key 控制渲染成本。</li>
+          <li>
+            <strong>Vue2 为什么能监听 push 却不能监听索引赋值？</strong>
+            结论是 Vue2 对数组方法做了包装，但没有为每个可能的索引都建立拦截。原因是
+            <code>Object.defineProperty</code>
+            的逐属性模型不适合动态数组索引和 length。项目里用变更方法或
+            <code>Vue.set</code>
+            ，不要直接写
+            <code>arr[i] = value</code>
+            后期待页面刷新。
+          </li>
+          <li>
+            <strong>Vue.set(arr, index, value) 和 splice 替换怎么选？</strong>
+            结论是二者都能触发更新，单点替换时
+            <code>Vue.set</code>
+            语义直观，涉及插入、删除、截断时用
+            <code>splice</code>
+            。原因是
+            <code>splice</code>
+            属于 Vue2 包装过的数组变更方法。边界是索引必须有效，越界或负数索引要先明确业务含义。
+          </li>
+          <li>
+            <strong>直接修改 length 为什么不可靠？</strong>
+            结论是它会改变数组长度但不会通知 Vue2 视图更新。原因是 length 不是 Vue2
+            包装的变更方法调用。项目里清空数组可用
+            <code>this.items = []</code>
+            或
+            <code>this.items.splice(0)</code>
+            ，截断可用
+            <code>splice(newLength)</code>
+            。
+          </li>
+          <li>
+            <strong>大列表数组更新在 Vue2 中要注意什么性能边界？</strong>
+            结论是减少高频逐项响应式写入。原因是每次变更都可能触发依赖通知和后续渲染调度。项目里可先构造普通数组再整体赋值，并配合分页、虚拟列表和稳定
+            key 控制渲染成本。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://v2.vuejs.org/v2/guide/reactivity.html#For-Arrays" target="_blank" rel="noreferrer">Vue 2 官方文档：数组变更检测注意事项</a></li>
-          <li><a href="https://v2.vuejs.org/v2/api/#Vue-set" target="_blank" rel="noreferrer">Vue 2 API：Vue.set</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice" target="_blank" rel="noreferrer">MDN：Array.prototype.splice()</a></li>
+          <li>
+            <a
+              href="https://v2.vuejs.org/v2/guide/reactivity.html#For-Arrays"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 2 官方文档：数组变更检测注意事项
+            </a>
+          </li>
+          <li>
+            <a href="https://v2.vuejs.org/v2/api/#Vue-set" target="_blank" rel="noreferrer">
+              Vue 2 API：Vue.set
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN：Array.prototype.splice()
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -75,37 +173,36 @@
       // 数组响应式限制：对比错误索引/length 写法与 Vue.set、splice 正确写法
       // ---------------------------------------------------------------------------
       new Vue({
-        el: "#app",
+        el: '#app',
         data() {
           return {
-            items: ["a", "b", "c"],
-            logs: []
+            items: ['a', 'b', 'c'],
+            logs: [],
           };
         },
         methods: {
           badSet() {
-            this.items[1] = "B";
+            this.items[1] = 'B';
             this.logs.push("items[1] = 'B' 数据变了，但视图通常不会刷新");
           },
           goodSetByVueSet() {
-            Vue.set(this.items, 1, "B");
-            this.logs.push("Vue.set 会触发响应式更新");
+            Vue.set(this.items, 1, 'B');
+            this.logs.push('Vue.set 会触发响应式更新');
           },
           goodSetBySplice() {
-            this.items.splice(1, 1, "BB");
-            this.logs.push("splice 是 Vue2 拦截过的数组方法，会触发更新");
+            this.items.splice(1, 1, 'BB');
+            this.logs.push('splice 是 Vue2 拦截过的数组方法，会触发更新');
           },
           badLength() {
             this.items.length = 1;
-            this.logs.push("直接改 length 不会触发响应式更新");
+            this.logs.push('直接改 length 不会触发响应式更新');
           },
           goodLength() {
             this.items.splice(1);
-            this.logs.push("用 splice 截断数组会触发更新");
-          }
-        }
+            this.logs.push('用 splice 截断数组会触发更新');
+          },
+        },
       });
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -119,13 +216,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

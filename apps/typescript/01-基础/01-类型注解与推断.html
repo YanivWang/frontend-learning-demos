@@ -23,13 +23,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TypeScript · 类型注解与推断</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; max-width: 760px; line-height: 1.6; }
-      h1 { font-size: 1.25rem; }
-      pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.85rem; }
-      .ts { margin-bottom: 0.5rem; }
-      .ok { color: #1a7f37; }
-      .err { color: #cf222e; }
-      code { background: #f6f8fa; padding: 2px 6px; border-radius: 4px; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        color: #222;
+        max-width: 760px;
+        line-height: 1.6;
+      }
+      h1 {
+        font-size: 1.25rem;
+      }
+      pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 14px;
+        border-radius: 8px;
+        overflow: auto;
+        font-size: 0.85rem;
+      }
+      .ts {
+        margin-bottom: 0.5rem;
+      }
+      .ok {
+        color: #1a7f37;
+      }
+      .err {
+        color: #cf222e;
+      }
+      code {
+        background: #f6f8fa;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -42,27 +67,176 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>TypeScript 是 JavaScript 的静态类型层：IDE 和 <code>tsc</code> 在编译期发现类型问题，但浏览器执行的仍是擦除类型后的 JavaScript；本页故意展示 <code>add("1", 2)</code> 在 JS 中会拼接。</li>
-          <li>现代写法是让简单局部变量依赖推断，给函数参数、公共返回值、对象边界和难推断泛型补显式注解；过度注解会增加噪声，缺少边界注解会让 API 变得不稳定。</li>
-          <li>常用原始类型是 <code>string</code>、<code>number</code>、<code>boolean</code>；另有 <code>null</code>、<code>undefined</code>，以及较少见的 <code>bigint</code>、<code>symbol</code>（Handbook 称 Less Common Primitives）。</li>
-          <li><code>strictNullChecks</code> <strong>默认关闭</strong>时，<code>null</code> 和 <code>undefined</code> 可赋给任意类型；<strong>开启后</strong>它们只属于各自类型，可空字段须写成 <code>string | null</code>、<code>string | undefined</code> 等联合类型，并在使用前判空。</li>
-          <li><code>any</code> 会关闭后续类型检查，适合极少数迁移逃生口；<code>unknown</code> 表示“目前不知道”，使用前必须通过 <code>typeof</code>、判空、用户自定义类型守卫等方式收窄。</li>
-          <li>常见坑是把 TypeScript 当运行时校验：外部接口、表单输入和本地存储读出的数据仍需要运行时验证，否则类型声明只能让调用处“看起来安全”。</li>
+          <li>
+            TypeScript 是 JavaScript 的静态类型层：IDE 和
+            <code>tsc</code>
+            在编译期发现类型问题，但浏览器执行的仍是擦除类型后的 JavaScript；本页故意展示
+            <code>add("1", 2)</code>
+            在 JS 中会拼接。
+          </li>
+          <li>
+            现代写法是让简单局部变量依赖推断，给函数参数、公共返回值、对象边界和难推断泛型补显式注解；过度注解会增加噪声，缺少边界注解会让
+            API 变得不稳定。
+          </li>
+          <li>
+            常用原始类型是
+            <code>string</code>
+            、
+            <code>number</code>
+            、
+            <code>boolean</code>
+            ；另有
+            <code>null</code>
+            、
+            <code>undefined</code>
+            ，以及较少见的
+            <code>bigint</code>
+            、
+            <code>symbol</code>
+            （Handbook 称 Less Common Primitives）。
+          </li>
+          <li>
+            <code>strictNullChecks</code>
+            <strong>默认关闭</strong>
+            时，
+            <code>null</code>
+            和
+            <code>undefined</code>
+            可赋给任意类型；
+            <strong>开启后</strong>
+            它们只属于各自类型，可空字段须写成
+            <code>string | null</code>
+            、
+            <code>string | undefined</code>
+            等联合类型，并在使用前判空。
+          </li>
+          <li>
+            <code>any</code>
+            会关闭后续类型检查，适合极少数迁移逃生口；
+            <code>unknown</code>
+            表示“目前不知道”，使用前必须通过
+            <code>typeof</code>
+            、判空、用户自定义类型守卫等方式收窄。
+          </li>
+          <li>
+            常见坑是把 TypeScript
+            当运行时校验：外部接口、表单输入和本地存储读出的数据仍需要运行时验证，否则类型声明只能让调用处“看起来安全”。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>类型注解和类型推断应该如何取舍？</strong> 结论是局部简单值依赖推断，函数参数、公共 API 和复杂对象边界显式注解。原因是推断能减少重复，边界注解能稳定契约。项目中导出的函数、组件 props、接口返回值通常要写清，临时变量不必处处标注。</li>
-          <li><strong>TypeScript 的类型检查为什么不能改变 JavaScript 运行时？</strong> 结论是 TypeScript 类型在编译后会被擦除。原因是 TS 设计目标是给 JS 加静态检查，而不是改变 JS 语义；所以本页的 <code>add("1", 2)</code> 运行时仍按 JS 拼接。边界是外部数据必须做运行时校验。</li>
-          <li><strong><code>any</code> 和 <code>unknown</code> 的核心区别是什么？</strong> 结论是 <code>any</code> 放弃检查，<code>unknown</code> 保留检查。原因是 <code>any</code> 可以任意访问属性和调用方法，<code>unknown</code> 必须先收窄。迁移旧代码可短期用 <code>any</code>，新边界更推荐 <code>unknown</code> 加解析逻辑。</li>
-          <li><strong><code>strictNullChecks</code> 打开后 <code>null</code> 和 <code>undefined</code> 有什么影响？</strong> 结论是它们不再默认可赋给 <code>string</code>、<code>number</code> 等普通类型，须用联合类型显式声明可空。默认关闭时 TS 与 JS 一样宽松；开启后能把空值风险提前到编译期。项目里推荐开启，接口可空字段写成 <code>T | null</code> 或 <code>T | undefined</code> 并在使用前判空。</li>
-          <li><strong><code>null</code> 和 <code>undefined</code> 在 TypeScript 里有什么区别？</strong> 结论是在类型系统中它们是两个独立类型，语义不同：<code>undefined</code> 多表示缺省/未赋值，<code>null</code> 多表示刻意空值；开启 <code>strictNullChecks</code> 后不能混用。运行时 <code>null == undefined</code> 为 true，<code>===</code> 为 false。</li>
+          <li>
+            <strong>类型注解和类型推断应该如何取舍？</strong>
+            结论是局部简单值依赖推断，函数参数、公共 API
+            和复杂对象边界显式注解。原因是推断能减少重复，边界注解能稳定契约。项目中导出的函数、组件
+            props、接口返回值通常要写清，临时变量不必处处标注。
+          </li>
+          <li>
+            <strong>TypeScript 的类型检查为什么不能改变 JavaScript 运行时？</strong>
+            结论是 TypeScript 类型在编译后会被擦除。原因是 TS 设计目标是给 JS 加静态检查，而不是改变
+            JS 语义；所以本页的
+            <code>add("1", 2)</code>
+            运行时仍按 JS 拼接。边界是外部数据必须做运行时校验。
+          </li>
+          <li>
+            <strong>
+              <code>any</code>
+              和
+              <code>unknown</code>
+              的核心区别是什么？
+            </strong>
+            结论是
+            <code>any</code>
+            放弃检查，
+            <code>unknown</code>
+            保留检查。原因是
+            <code>any</code>
+            可以任意访问属性和调用方法，
+            <code>unknown</code>
+            必须先收窄。迁移旧代码可短期用
+            <code>any</code>
+            ，新边界更推荐
+            <code>unknown</code>
+            加解析逻辑。
+          </li>
+          <li>
+            <strong>
+              <code>strictNullChecks</code>
+              打开后
+              <code>null</code>
+              和
+              <code>undefined</code>
+              有什么影响？
+            </strong>
+            结论是它们不再默认可赋给
+            <code>string</code>
+            、
+            <code>number</code>
+            等普通类型，须用联合类型显式声明可空。默认关闭时 TS 与 JS
+            一样宽松；开启后能把空值风险提前到编译期。项目里推荐开启，接口可空字段写成
+            <code>T | null</code>
+            或
+            <code>T | undefined</code>
+            并在使用前判空。
+          </li>
+          <li>
+            <strong>
+              <code>null</code>
+              和
+              <code>undefined</code>
+              在 TypeScript 里有什么区别？
+            </strong>
+            结论是在类型系统中它们是两个独立类型，语义不同：
+            <code>undefined</code>
+            多表示缺省/未赋值，
+            <code>null</code>
+            多表示刻意空值；开启
+            <code>strictNullChecks</code>
+            后不能混用。运行时
+            <code>null == undefined</code>
+            为 true，
+            <code>===</code>
+            为 false。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html" target="_blank" rel="noopener">TypeScript Handbook: Everyday Types</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/2/basic-types.html" target="_blank" rel="noopener">TypeScript Handbook: The Basics</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-0.html" target="_blank" rel="noopener">TypeScript 3.0: unknown top type</a></li>
-          <li><a href="https://www.typescriptlang.org/tsconfig/#strictNullChecks" target="_blank" rel="noopener">TSConfig Reference: strictNullChecks</a></li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Everyday Types
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/2/basic-types.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: The Basics
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-0.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript 3.0: unknown top type
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/tsconfig/#strictNullChecks"
+              target="_blank"
+              rel="noopener"
+            >
+              TSConfig Reference: strictNullChecks
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -71,35 +245,33 @@
     <!-- PAGE_DOM_START -->
     <p>上方为 TypeScript 源码（在 .ts / IDE 中检查），下方为等价的可运行 JavaScript + 断言输出。</p>
     <p class="ts"><strong>TypeScript</strong></p>
-    <pre>// —— 显式注解 vs 类型推断 ——
-let count: number = 0;
-let title = "demo";              // 推断为 string
-
-// —— strictNullChecks：可空须写联合类型 ——
-let flag: boolean | null = null;
-let missing: string | undefined = undefined;
-// strictNullChecks 关闭时下面能通过；开启后须改成 string | null | undefined：
-// let onlyString: string = null;
-// let onlyString: string = undefined;
-
-// —— 较少见的原始类型 ——
-let big: bigint = 100n;
-let key: symbol = Symbol("demo");
-
-// —— any / unknown ——
-let loose: any = JSON.parse('{"name":"Ada"}');
-let input: unknown = "TypeScript";
-if (typeof input === "string") {
-  input.toUpperCase();           // unknown 必须先收窄
-}
-// input.toUpperCase();         // ❌ 编译错误：unknown 上不能直接调用方法
-
-// —— 函数参数与返回值注解 ——
-function add(a: number, b: number): number {
-  return a + b;
-}
-// add("1", 2);                  // ❌ 编译错误：参数类型不匹配
-// count = "x";                  // ❌ 编译错误：不能赋 string 给 number</pre>
+    <pre>
+// —— 显式注解 vs 类型推断 ——
+      let count: number = 0;
+      let title = "demo";              // 推断为 string
+      // —— strictNullChecks：可空须写联合类型 ——
+      let flag: boolean | null = null;
+      let missing: string | undefined = undefined;
+      // strictNullChecks 关闭时下面能通过；开启后须改成 string | null | undefined：
+      // let onlyString: string = null;
+      // let onlyString: string = undefined;
+      // —— 较少见的原始类型 ——
+      let big: bigint = 100n;
+      let key: symbol = Symbol("demo");
+      // —— any / unknown ——
+      let loose: any = JSON.parse('{"name":"Ada"}');
+      let input: unknown = "TypeScript";
+      if (typeof input === "string") {
+      input.toUpperCase();           // unknown 必须先收窄
+      }
+      // input.toUpperCase();         // ❌ 编译错误：unknown 上不能直接调用方法
+      // —— 函数参数与返回值注解 ——
+      function add(a: number, b: number): number {
+      return a + b;
+      }
+      // add("1", 2);                  // ❌ 编译错误：参数类型不匹配
+      // count = "x";                  // ❌ 编译错误：不能赋 string 给 number</pre
+    >
     <p><strong>运行时 JavaScript（本页执行）</strong></p>
     <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
@@ -110,18 +282,18 @@ function add(a: number, b: number): number {
       // TS 编译后类型注解会被擦除；浏览器里只剩纯 JavaScript。
       // count 在 TS 里写了 :number，title 依赖推断为 string，运行时二者都是普通变量。
       let count = 0;
-      let title = "demo";
+      let title = 'demo';
 
       // ============ 2. strictNullChecks 与 null / undefined ============
       // TS 默认 strictNullChecks: false → let s: string = null 能通过类型检查。
       // 开启 strictNullChecks: true → 必须写成 string | null | undefined 等联合类型。
       let flag = null; // TS 侧：boolean | null
       let missing = undefined; // TS 侧：string | undefined
-      let label = "ok"; // 普通 string，不可直接赋 null/undefined（strict 下）
+      let label = 'ok'; // 普通 string，不可直接赋 null/undefined（strict 下）
 
       // ============ 3. 较少见的原始类型 bigint / symbol ============
       let big = 100n;
-      let key = Symbol("demo");
+      let key = Symbol('demo');
 
       // ============ 4. any：关闭后续类型检查 ============
       // any 允许任意访问属性；适合迁移旧代码的逃生口，新代码应优先 unknown。
@@ -131,7 +303,7 @@ function add(a: number, b: number): number {
       // ============ 5. unknown：使用前必须收窄 ============
       // unknown 不能直接调用方法；须 typeof / 判空 / 类型守卫后再用。
       /** @type {unknown} */
-      let input = "TypeScript";
+      let input = 'TypeScript';
 
       // ============ 6. 函数类型注解（JSDoc 仅表达意图） ============
       // 浏览器不会执行 JSDoc 检查；真正拦截 add("1", 2) 仍依赖 tsc / IDE。
@@ -141,35 +313,41 @@ function add(a: number, b: number): number {
       }
 
       const lines = [];
-      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+      const assert = (cond, msg) => lines.push((cond ? '✓ ' : '✗ ') + msg);
 
       // —— 基本类型与推断 ——
-      assert(typeof count === "number", "count 是 number（显式注解）");
-      assert(typeof title === "string", "title 推断/运行为 string");
+      assert(typeof count === 'number', 'count 是 number（显式注解）');
+      assert(typeof title === 'string', 'title 推断/运行为 string');
 
       // —— strictNullChecks 相关：运行时 null / undefined 行为 ——
-      assert(flag === null, "flag 为 null；strictNullChecks 下须写 boolean | null");
-      assert(missing === undefined, "missing 为 undefined；strictNullChecks 下须写 string | undefined");
-      assert(typeof label === "string" && label !== null, "label 是普通 string，strict 下不能直接赋 null/undefined");
-      assert(flag !== missing, "null 与 undefined 是两个不同值（=== 不相等）");
-      assert(flag == missing, "null == undefined 为 true（JS 抽象相等）");
+      assert(flag === null, 'flag 为 null；strictNullChecks 下须写 boolean | null');
+      assert(
+        missing === undefined,
+        'missing 为 undefined；strictNullChecks 下须写 string | undefined',
+      );
+      assert(
+        typeof label === 'string' && label !== null,
+        'label 是普通 string，strict 下不能直接赋 null/undefined',
+      );
+      assert(flag !== missing, 'null 与 undefined 是两个不同值（=== 不相等）');
+      assert(flag == missing, 'null == undefined 为 true（JS 抽象相等）');
 
       // —— bigint / symbol ——
-      assert(typeof big === "bigint" && big === 100n, "bigint 运行时 typeof 为 'bigint'");
-      assert(typeof key === "symbol", "symbol 运行时 typeof 为 'symbol'");
+      assert(typeof big === 'bigint' && big === 100n, "bigint 运行时 typeof 为 'bigint'");
+      assert(typeof key === 'symbol', "symbol 运行时 typeof 为 'symbol'");
 
       // —— any / unknown ——
-      assert(loose.name === "Ada", "any 可直接访问 loose.name，但放弃后续类型保护");
+      assert(loose.name === 'Ada', 'any 可直接访问 loose.name，但放弃后续类型保护');
       assert(
-        typeof input === "string" && input.toUpperCase() === "TYPESCRIPT",
-        "unknown 先 typeof 收窄，再安全调用字符串方法"
+        typeof input === 'string' && input.toUpperCase() === 'TYPESCRIPT',
+        'unknown 先 typeof 收窄，再安全调用字符串方法',
       );
 
       // —— 编译期 vs 运行时：TS 能拦、JS 仍会执行 ——
-      assert(add(1, 2) === 3, "add(1, 2) === 3（类型正确）");
-      assert(add("1", 2) === "12", "JS 运行时 add('1', 2) 会拼接 — TS 可在编译期拦截");
+      assert(add(1, 2) === 3, 'add(1, 2) === 3（类型正确）');
+      assert(add('1', 2) === '12', "JS 运行时 add('1', 2) 会拼接 — TS 可在编译期拦截");
 
-      document.getElementById("log").textContent = lines.join("\n");
+      document.getElementById('log').textContent = lines.join('\n');
     </script>
     <!-- SCRIPT_END -->
 
@@ -179,18 +357,22 @@ function add(a: number, b: number): number {
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
         <a href="./02-interface%E4%B8%8Etype.html">相关 · interface与type</a>
-        <a href="../../demos/virtual-list/01-virtual-list-%E5%9B%BA%E5%AE%9A%E9%AB%98%E5%BA%A6.html">← virtual-list-固定高度</a>
+        <a
+          href="../../demos/virtual-list/01-virtual-list-%E5%9B%BA%E5%AE%9A%E9%AB%98%E5%BA%A6.html"
+        >
+          ← virtual-list-固定高度
+        </a>
         <a href="./02-interface%E4%B8%8Etype.html">interface与type →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

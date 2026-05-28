@@ -4,14 +4,14 @@
 
 ## 推荐学习顺序
 
-| 顺序 | Demo | 难度 | 前置 |
-|---|---|---|---|
-| 1 | [todo 本地状态](todo/01-todo-本地状态.html) | 入门 | JS 基础、DOM API |
-| 2 | [drag 原生 API](drag/01-drag-原生.html) | 入门 | 事件模型 |
-| 3 | [drag 拖放复制](drag/02-drag-HTML5拖放复制.html) | 入门 | 上一页 |
-| 4 | [form-wizard 分步表单](form-wizard/01-form-wizard-分步表单.html) | 进阶 | 表单校验 |
-| 5 | [hash-router 简易路由](hash-router/01-hash-router-简易路由.html) | 进阶 | URL、事件 |
-| 6 | [virtual-list 固定高度](virtual-list/01-virtual-list-固定高度.html) | 进阶 | scroll 事件 |
+| 顺序 | Demo                                                                | 难度 | 前置             |
+| ---- | ------------------------------------------------------------------- | ---- | ---------------- |
+| 1    | [todo 本地状态](todo/01-todo-本地状态.html)                         | 入门 | JS 基础、DOM API |
+| 2    | [drag 原生 API](drag/01-drag-原生.html)                             | 入门 | 事件模型         |
+| 3    | [drag 拖放复制](drag/02-drag-HTML5拖放复制.html)                    | 入门 | 上一页           |
+| 4    | [form-wizard 分步表单](form-wizard/01-form-wizard-分步表单.html)    | 进阶 | 表单校验         |
+| 5    | [hash-router 简易路由](hash-router/01-hash-router-简易路由.html)    | 进阶 | URL、事件        |
+| 6    | [virtual-list 固定高度](virtual-list/01-virtual-list-固定高度.html) | 进阶 | scroll 事件      |
 
 与 `apps/javascript/06-浏览器API/拖曳手柄/`（Pointer Events 手写拖拽）互补，不重复。
 

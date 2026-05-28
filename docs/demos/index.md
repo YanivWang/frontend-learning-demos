@@ -2,7 +2,7 @@
 
 # Demo 索引
 
-共 **365** 个可运行 demo。点击链接打开对应 HTML 页面。
+共 **366** 个可运行 demo。点击链接打开对应 HTML 页面。
 
 ## JavaScript
 
@@ -529,6 +529,7 @@
 
 - [默认具名作用域插槽](/apps/vue3/src/05-%E6%8F%92%E6%A7%BD%E4%B8%8E%E7%BB%84%E4%BB%B6%E5%BD%A2%E6%80%81/01-%E9%BB%98%E8%AE%A4%E5%85%B7%E5%90%8D%E4%BD%9C%E7%94%A8%E5%9F%9F%E6%8F%92%E6%A7%BD.html) — 默认插槽 / 具名插槽 / 作用域插槽
 - [动态组件与异步组件](/apps/vue3/src/05-%E6%8F%92%E6%A7%BD%E4%B8%8E%E7%BB%84%E4%BB%B6%E5%BD%A2%E6%80%81/02-%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6%E4%B8%8E%E5%BC%82%E6%AD%A5%E7%BB%84%E4%BB%B6.html) — 动态组件 / 异步组件
+- [动态组件与异步组件.html.tmpfmt](/apps/vue3/src/05-%E6%8F%92%E6%A7%BD%E4%B8%8E%E7%BB%84%E4%BB%B6%E5%BD%A2%E6%80%81/02-%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6%E4%B8%8E%E5%BC%82%E6%AD%A5%E7%BB%84%E4%BB%B6.html.tmpfmt.html) — 动态组件 / 异步组件
 
 ### 06-内置组件
 

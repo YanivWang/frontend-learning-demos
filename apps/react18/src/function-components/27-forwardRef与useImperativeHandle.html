@@ -30,28 +30,105 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>forwardRef 与 useImperativeHandle</h1>
-      <p class="hint">请打开 DevTools Console 查看命令式 ref 调用日志；下方 #root 为 React 挂载/交互演示区。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看命令式 ref 调用日志；下方 #root 为 React 挂载/交互演示区。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>在 React 18 中，普通函数组件不会自动接收 <code>ref</code>；需要用 <code>forwardRef</code> 把父组件传入的 ref 转发到内部 DOM 或自定义句柄。</li>
-          <li><code>useImperativeHandle(ref, createHandle, deps)</code> 可以隐藏真实 DOM 节点，只暴露父组件需要的少量方法，例如本 demo 的 <code>focus()</code> 与 <code>clear()</code>。</li>
-          <li>依赖数组应覆盖暴露方法读取的 props、state 或函数引用；如果句柄只调用稳定的 DOM ref 与 state setter，空依赖通常可接受。</li>
-          <li>命令式 ref API 适合聚焦、滚动、文本选择、媒体播放、第三方组件实例桥接；业务数据流仍优先通过 props、state、Context 或事件回调声明式表达。</li>
-          <li>版本边界：React 19 开始支持把 <code>ref</code> 作为 prop 传给函数组件；本仓库 React 18 demo 仍应使用 <code>forwardRef</code>。</li>
+          <li>
+            在 React 18 中，普通函数组件不会自动接收
+            <code>ref</code>
+            ；需要用
+            <code>forwardRef</code>
+            把父组件传入的 ref 转发到内部 DOM 或自定义句柄。
+          </li>
+          <li>
+            <code>useImperativeHandle(ref, createHandle, deps)</code>
+            可以隐藏真实 DOM 节点，只暴露父组件需要的少量方法，例如本 demo 的
+            <code>focus()</code>
+            与
+            <code>clear()</code>
+            。
+          </li>
+          <li>
+            依赖数组应覆盖暴露方法读取的 props、state 或函数引用；如果句柄只调用稳定的 DOM ref 与
+            state setter，空依赖通常可接受。
+          </li>
+          <li>
+            命令式 ref API
+            适合聚焦、滚动、文本选择、媒体播放、第三方组件实例桥接；业务数据流仍优先通过
+            props、state、Context 或事件回调声明式表达。
+          </li>
+          <li>
+            版本边界：React 19 开始支持把
+            <code>ref</code>
+            作为 prop 传给函数组件；本仓库 React 18 demo 仍应使用
+            <code>forwardRef</code>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>React 18 函数组件为什么不能像 DOM 节点一样直接拿 ref？</strong> 结论是 React 18 中 <code>ref</code> 不是普通 prop，函数组件没有实例可挂。原因是函数组件只是渲染函数。需要让父级操作内部 DOM 时，用 <code>forwardRef</code> 明确声明这个组件支持 ref 转发。</li>
-          <li><strong>useImperativeHandle 相比直接暴露 DOM 节点有什么价值？</strong> 结论是它把内部实现封装成稳定、受控的命令式接口。原因是父组件只拿到 <code>focus</code>、<code>clear</code> 这类方法，不能随意改内部 DOM。项目里封装输入框、播放器、弹窗实例时更容易维护边界。</li>
-          <li><strong>命令式 ref API 适合哪些场景？</strong> 适合 DOM 能力或第三方实例能力，例如聚焦、滚动、选中文本、播放暂停。原因是这些行为本身不是纯 UI 状态。边界是业务开关、表单值、权限状态应优先走声明式数据流，否则父子组件会强耦合。</li>
-          <li><strong>React 19 的 ref as prop 与 React 18 有什么边界？</strong> React 19 中函数组件可把 <code>ref</code> 当 prop 接收，减少 <code>forwardRef</code> 包装。React 18 当前推荐仍是 <code>forwardRef</code>；面试回答要明确版本，不能把 React 19 能力写成 React 18 现状。</li>
+          <li>
+            <strong>React 18 函数组件为什么不能像 DOM 节点一样直接拿 ref？</strong>
+            结论是 React 18 中
+            <code>ref</code>
+            不是普通 prop，函数组件没有实例可挂。原因是函数组件只是渲染函数。需要让父级操作内部 DOM
+            时，用
+            <code>forwardRef</code>
+            明确声明这个组件支持 ref 转发。
+          </li>
+          <li>
+            <strong>useImperativeHandle 相比直接暴露 DOM 节点有什么价值？</strong>
+            结论是它把内部实现封装成稳定、受控的命令式接口。原因是父组件只拿到
+            <code>focus</code>
+            、
+            <code>clear</code>
+            这类方法，不能随意改内部 DOM。项目里封装输入框、播放器、弹窗实例时更容易维护边界。
+          </li>
+          <li>
+            <strong>命令式 ref API 适合哪些场景？</strong>
+            适合 DOM
+            能力或第三方实例能力，例如聚焦、滚动、选中文本、播放暂停。原因是这些行为本身不是纯 UI
+            状态。边界是业务开关、表单值、权限状态应优先走声明式数据流，否则父子组件会强耦合。
+          </li>
+          <li>
+            <strong>React 19 的 ref as prop 与 React 18 有什么边界？</strong>
+            React 19 中函数组件可把
+            <code>ref</code>
+            当 prop 接收，减少
+            <code>forwardRef</code>
+            包装。React 18 当前推荐仍是
+            <code>forwardRef</code>
+            ；面试回答要明确版本，不能把 React 19 能力写成 React 18 现状。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/forwardRef" target="_blank" rel="noreferrer">react.dev: forwardRef</a></li>
-          <li><a href="https://react.dev/reference/react/useImperativeHandle" target="_blank" rel="noreferrer">react.dev: useImperativeHandle</a></li>
-          <li><a href="https://react.dev/learn/manipulating-the-dom-with-refs" target="_blank" rel="noreferrer">react.dev: Manipulating the DOM with Refs</a></li>
+          <li>
+            <a href="https://react.dev/reference/react/forwardRef" target="_blank" rel="noreferrer">
+              react.dev: forwardRef
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/useImperativeHandle"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: useImperativeHandle
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/manipulating-the-dom-with-refs"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Manipulating the DOM with Refs
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -69,27 +146,27 @@
       // 对应 react.dev forwardRef；ref 不是普通 props
       const SearchInput = forwardRef(function SearchInput(props, ref) {
         const inputRef = useRef(null);
-        const [value, setValue] = useState("");
+        const [value, setValue] = useState('');
 
         // ====== 2. useImperativeHandle：暴露受控命令式 API ======
         // 父组件只拿到 focus/clear，而非原始 DOM 节点
         useImperativeHandle(ref, () => ({
           focus() {
             inputRef.current.focus();
-            console.log("SearchInput.focus() 已调用"); // 预期: 点击「聚焦」按钮时打印
+            console.log('SearchInput.focus() 已调用'); // 预期: 点击「聚焦」按钮时打印
           },
           clear() {
-            setValue("");
+            setValue('');
             inputRef.current.focus();
-            console.log("SearchInput.clear() 已调用，value 已清空"); // 预期: 点击「清空」按钮时打印
-          }
+            console.log('SearchInput.clear() 已调用，value 已清空'); // 预期: 点击「清空」按钮时打印
+          },
         }));
 
         return (
           <input
             ref={inputRef}
             value={value}
-            onChange={e => setValue(e.target.value)}
+            onChange={(e) => setValue(e.target.value)}
             placeholder="输入关键词"
           />
         );
@@ -111,7 +188,7 @@
       }
 
       // ====== 4. createRoot 挂载 App ======
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -121,19 +198,23 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./26-Fragment-Portal-StrictMode.html">相关 · 26-Fragment-Portal-StrictMode</a>
-        <a href="./28-lazy-Suspense%E4%BB%A3%E7%A0%81%E5%88%86%E5%89%B2.html">相关 · 28-lazy-Suspense代码分割</a>
+        <a href="./28-lazy-Suspense%E4%BB%A3%E7%A0%81%E5%88%86%E5%89%B2.html">
+          相关 · 28-lazy-Suspense代码分割
+        </a>
         <a href="./26-Fragment-Portal-StrictMode.html">← Fragment-Portal-StrictMode</a>
-        <a href="./28-lazy-Suspense%E4%BB%A3%E7%A0%81%E5%88%86%E5%89%B2.html">lazy-Suspense代码分割 →</a>
+        <a href="./28-lazy-Suspense%E4%BB%A3%E7%A0%81%E5%88%86%E5%89%B2.html">
+          lazy-Suspense代码分割 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

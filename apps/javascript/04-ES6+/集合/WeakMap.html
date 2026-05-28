@@ -31,22 +31,82 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>WeakMap</code> 是键值映射，但键必须是可被垃圾回收的对象或非注册 Symbol；它不会因为键存在于 WeakMap 中就阻止键对象被回收。</li>
-          <li><code>WeakMap</code> 不提供 <code>keys</code>、<code>values</code>、<code>entries</code>、<code>forEach</code> 或 <code>size</code>，因为可枚举性会暴露垃圾回收时机并引入不确定性。</li>
-          <li>典型场景是把元数据挂到已有对象外部：类私有数据、DOM 节点状态、对象输入的缓存结果，都能随键对象生命周期自动清理。</li>
-          <li>如果业务需要列出所有键、统计数量、导出调试快照或序列化，应使用 <code>Map</code>，不要使用 <code>WeakMap</code>。</li>
+          <li>
+            <code>WeakMap</code>
+            是键值映射，但键必须是可被垃圾回收的对象或非注册 Symbol；它不会因为键存在于 WeakMap
+            中就阻止键对象被回收。
+          </li>
+          <li>
+            <code>WeakMap</code>
+            不提供
+            <code>keys</code>
+            、
+            <code>values</code>
+            、
+            <code>entries</code>
+            、
+            <code>forEach</code>
+            或
+            <code>size</code>
+            ，因为可枚举性会暴露垃圾回收时机并引入不确定性。
+          </li>
+          <li>
+            典型场景是把元数据挂到已有对象外部：类私有数据、DOM
+            节点状态、对象输入的缓存结果，都能随键对象生命周期自动清理。
+          </li>
+          <li>
+            如果业务需要列出所有键、统计数量、导出调试快照或序列化，应使用
+            <code>Map</code>
+            ，不要使用
+            <code>WeakMap</code>
+            。
+          </li>
           <li>弱引用不等于立刻回收，也不能预测回收时间；代码不应依赖“多久后键值对消失”。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>WeakMap 为什么不能枚举键？</strong> 因为键是弱引用，某个键是否仍存在取决于垃圾回收状态；如果允许枚举，就等于让程序观察 GC 时机。规范因此不提供 <code>keys</code>、<code>entries</code>、<code>size</code> 等 API。</li>
-          <li><strong>WeakMap 和 Map 的核心区别是什么？</strong> <code>Map</code> 强引用键、可枚举、有 size；<code>WeakMap</code> 不强引用键、不可枚举、键类型受限。需要缓存对象派生数据且不想造成内存泄漏时选 WeakMap，需要完整遍历时选 Map。</li>
-          <li><strong>WeakMap 如何用于私有数据或 DOM 元数据？</strong> 把实例或 DOM 节点作为键，把内部状态作为值；外部没有 WeakMap 引用就拿不到数据，节点或实例释放后元数据也可回收。项目里常用于不污染对象本身的附加状态。</li>
-          <li><strong>弱引用是否意味着可以预测 GC 时间？</strong> 不能。弱引用只表示不阻止回收，具体何时回收由引擎决定。业务逻辑不能依赖某个 WeakMap 条目在固定时间内消失。</li>
+          <li>
+            <strong>WeakMap 为什么不能枚举键？</strong>
+            因为键是弱引用，某个键是否仍存在取决于垃圾回收状态；如果允许枚举，就等于让程序观察 GC
+            时机。规范因此不提供
+            <code>keys</code>
+            、
+            <code>entries</code>
+            、
+            <code>size</code>
+            等 API。
+          </li>
+          <li>
+            <strong>WeakMap 和 Map 的核心区别是什么？</strong>
+            <code>Map</code>
+            强引用键、可枚举、有 size；
+            <code>WeakMap</code>
+            不强引用键、不可枚举、键类型受限。需要缓存对象派生数据且不想造成内存泄漏时选
+            WeakMap，需要完整遍历时选 Map。
+          </li>
+          <li>
+            <strong>WeakMap 如何用于私有数据或 DOM 元数据？</strong>
+            把实例或 DOM 节点作为键，把内部状态作为值；外部没有 WeakMap
+            引用就拿不到数据，节点或实例释放后元数据也可回收。项目里常用于不污染对象本身的附加状态。
+          </li>
+          <li>
+            <strong>弱引用是否意味着可以预测 GC 时间？</strong>
+            不能。弱引用只表示不阻止回收，具体何时回收由引擎决定。业务逻辑不能依赖某个 WeakMap
+            条目在固定时间内消失。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap" target="_blank" rel="noreferrer">MDN: WeakMap</a>：弱引用键、可用 API 与典型场景。</li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: WeakMap
+            </a>
+            ：弱引用键、可用 API 与典型场景。
+          </li>
         </ul>
       </div>
     </section>
@@ -66,37 +126,37 @@
       // MDN：键必须是 Object 或非注册 Symbol
       const wm = new WeakMap();
       const keyObj = {};
-      wm.set(keyObj, { address: "北京" });
-      console.log("get:", wm.get(keyObj)); // { address: "北京" }
-      console.log("has:", wm.has(keyObj)); // true
+      wm.set(keyObj, { address: '北京' });
+      console.log('get:', wm.get(keyObj)); // { address: "北京" }
+      console.log('has:', wm.has(keyObj)); // true
 
       // ============ 2. 原始类型不能作为键 ============
       try {
         wm.set(1, 123);
       } catch (err) {
         // TypeError: Invalid value used as weak map key
-        console.log("set primitive key:", err.name, "-", err.message);
+        console.log('set primitive key:', err.name, '-', err.message);
       }
 
       try {
-        wm.set("str", {});
+        wm.set('str', {});
       } catch (err) {
-        console.log("set string key:", err.name, "-", err.message);
+        console.log('set string key:', err.name, '-', err.message);
       }
 
       // ============ 3. 无迭代/size 方法 ============
-      console.log("WeakMap 无 size:", wm.size); // undefined
-      console.log("WeakMap 无 entries:", typeof wm.entries); // "undefined"
+      console.log('WeakMap 无 size:', wm.size); // undefined
+      console.log('WeakMap 无 entries:', typeof wm.entries); // "undefined"
 
       // 不同引用取不到值
-      console.log("get({}):", wm.get({})); // undefined
+      console.log('get({}):', wm.get({})); // undefined
 
       // ============ 4. 场景：类私有数据（WeakMap 闭包模式） ============
       const privateData = new WeakMap();
 
       class MyClass {
         constructor() {
-          privateData.set(this, { secret: "这是私有数据" });
+          privateData.set(this, { secret: '这是私有数据' });
         }
         getSecret() {
           return privateData.get(this).secret;
@@ -104,12 +164,12 @@
       }
 
       const instance = new MyClass();
-      console.log("私有数据:", instance.getSecret()); // "这是私有数据"
-      console.log("外部 get({}):", privateData.get({})); // undefined
+      console.log('私有数据:', instance.getSecret()); // "这是私有数据"
+      console.log('外部 get({}):', privateData.get({})); // undefined
 
       // ============ 5. 场景：DOM 节点元数据 ============
       const elementStates = new WeakMap();
-      const button = document.getElementById("myButton");
+      const button = document.getElementById('myButton');
 
       elementStates.set(button, { clickCount: 0 });
 
@@ -119,11 +179,11 @@
         console.log(`按钮被点击了 ${state.clickCount} 次`);
       }
 
-      button.addEventListener("click", handleClick);
+      button.addEventListener('click', handleClick);
 
       // 页面卸载时清理监听器（WeakMap 条目会随 DOM 节点回收）
-      window.addEventListener("pagehide", function cleanup() {
-        button.removeEventListener("click", handleClick);
+      window.addEventListener('pagehide', function cleanup() {
+        button.removeEventListener('click', handleClick);
       });
     </script>
     <!-- SCRIPT_END -->
@@ -140,9 +200,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

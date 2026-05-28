@@ -1,5 +1,5 @@
 <!--
-分类: css / 06-性能 / 02-合成层
+  分类: css / 06-性能 / 02-合成层
   主题: 合成层、合成动画与 will-change 使用边界
   难度: 进阶
   前置: 01-重排重绘
@@ -23,24 +23,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CSS 合成层与 GPU 加速</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; color: #222; max-width: 720px; }
-      h1 { font-size: 1.3rem; }
-      .track { width: 360px; padding: 12px; border: 1px solid #ddd; background: #f8f8f8; margin: 1rem 0; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        color: #222;
+        max-width: 720px;
+      }
+      h1 {
+        font-size: 1.3rem;
+      }
+      .track {
+        width: 360px;
+        padding: 12px;
+        border: 1px solid #ddd;
+        background: #f8f8f8;
+        margin: 1rem 0;
+      }
       .ball {
-        width: 48px; height: 48px; border-radius: 50%; background: #2f80ed;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #2f80ed;
         animation: move 1.6s ease-in-out infinite alternate;
       }
       @keyframes move {
-        from { transform: translateX(0); opacity: 0.7; }
-        to { transform: translateX(280px); opacity: 1; }
+        from {
+          transform: translateX(0);
+          opacity: 0.7;
+        }
+        to {
+          transform: translateX(280px);
+          opacity: 1;
+        }
       }
       .will-card {
-        width: 180px; padding: 16px; border-radius: 8px; color: #fff; background: #27ae60;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        width: 180px;
+        padding: 16px;
+        border-radius: 8px;
+        color: #fff;
+        background: #27ae60;
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
       }
-      .will-card:hover { will-change: transform; transform: translateY(-6px) scale(1.03); box-shadow: 0 8px 20px rgba(39,174,96,.35); }
-      .note { font-size: 0.875rem; color: #666; }
-      .tip { margin: 0.5rem 0 1rem; color: #666; font-size: 0.875rem; }
+      .will-card:hover {
+        will-change: transform;
+        transform: translateY(-6px) scale(1.03);
+        box-shadow: 0 8px 20px rgba(39, 174, 96, 0.35);
+      }
+      .note {
+        font-size: 0.875rem;
+        color: #666;
+      }
+      .tip {
+        margin: 0.5rem 0 1rem;
+        color: #666;
+        font-size: 0.875rem;
+      }
       #runtime-output {
         margin: 0.75rem 0 0;
         padding: 0.75rem 1rem;
@@ -60,29 +99,90 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>合成层与 GPU 加速</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出合成友好属性的 computed 值。可配合 DevTools Layers 面板观察。</p>
+      <p class="hint">
+        在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见本复习区，脚本会输出合成友好属性的
+        computed 值。可配合 DevTools Layers 面板观察。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>浏览器会把页面拆成若干可绘制区域，再在合成阶段把这些内容合并成最终画面。某些元素被提升为独立合成层后，后续 <code>transform</code> 或 <code>opacity</code> 变化通常可以只更新合成，不重新布局整棵文档。</li>
-          <li>“GPU 加速”是实现层面的优化结果，不是 CSS 规范保证的固定行为。不同浏览器、设备、元素大小、滤镜和混合效果都会影响图层策略，所以面试里应说“通常更容易合成友好”，不要说“一定走 GPU”。</li>
-          <li><code>will-change: transform</code> 用于提前告知浏览器元素即将变化，让浏览器有机会准备图层或缓存。它应靠近交互发生的时间点使用，例如 hover 前后、进入视口前后，而不是全站常驻。</li>
-          <li>图层过多会增加内存/显存占用、纹理上传和合成开销，低端移动设备尤其明显。优化目标不是把所有元素提升为层，而是让真正高频变化的少量元素稳定渲染。</li>
-          <li>排查时不要只看代码猜测，应结合 DevTools 的 Layers、Rendering、Performance 面板，观察是否出现长任务、频繁 Layout/Paint、图层爆炸或帧率下降。</li>
+          <li>
+            浏览器会把页面拆成若干可绘制区域，再在合成阶段把这些内容合并成最终画面。某些元素被提升为独立合成层后，后续
+            <code>transform</code>
+            或
+            <code>opacity</code>
+            变化通常可以只更新合成，不重新布局整棵文档。
+          </li>
+          <li>
+            “GPU 加速”是实现层面的优化结果，不是 CSS
+            规范保证的固定行为。不同浏览器、设备、元素大小、滤镜和混合效果都会影响图层策略，所以面试里应说“通常更容易合成友好”，不要说“一定走
+            GPU”。
+          </li>
+          <li>
+            <code>will-change: transform</code>
+            用于提前告知浏览器元素即将变化，让浏览器有机会准备图层或缓存。它应靠近交互发生的时间点使用，例如
+            hover 前后、进入视口前后，而不是全站常驻。
+          </li>
+          <li>
+            图层过多会增加内存/显存占用、纹理上传和合成开销，低端移动设备尤其明显。优化目标不是把所有元素提升为层，而是让真正高频变化的少量元素稳定渲染。
+          </li>
+          <li>
+            排查时不要只看代码猜测，应结合 DevTools 的 Layers、Rendering、Performance
+            面板，观察是否出现长任务、频繁 Layout/Paint、图层爆炸或帧率下降。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>合成层和 GPU 加速是什么关系，为什么不能简单等同？</strong> 结论是合成层是浏览器渲染管线中的分层合成策略，GPU 加速是常见实现手段之一。原因是浏览器可能把某些层交给 GPU 处理，但是否提升、如何合成由实现和设备决定。项目里应通过 DevTools 验证，而不是用 <code>translateZ(0)</code> 这类技巧盲目强推。</li>
-          <li><strong>transform / opacity 动画为什么通常比 left/top 更稳？</strong> 结论是它们通常不改变文档流几何，能减少布局和绘制压力。原因是 <code>left/top</code> 会影响定位盒的位置计算，可能带来布局失效；<code>transform</code> 更像在合成阶段移动已绘制内容。边界是大面积元素、复杂阴影或滤镜仍可能导致合成成本上升。</li>
-          <li><strong>will-change 应该何时添加和移除？</strong> 结论是只在元素即将发生高成本变化前添加，变化结束后移除。原因是 <code>will-change</code> 会让浏览器提前准备资源，长期保留会浪费内存或显存。项目里可以在 hover、拖拽开始、轮播切换前短期设置，也可以用类名或 JS 在 transitionend 后清理。</li>
-          <li><strong>图层过多会带来哪些性能风险？</strong> 结论是图层过多会增加内存/显存、纹理上传和合成管理成本。原因是每个层都需要浏览器维护绘制结果和合成顺序，低端设备更容易掉帧或白屏。项目里要优先定位真正的瓶颈，只提升少量高频动画元素。</li>
+          <li>
+            <strong>合成层和 GPU 加速是什么关系，为什么不能简单等同？</strong>
+            结论是合成层是浏览器渲染管线中的分层合成策略，GPU
+            加速是常见实现手段之一。原因是浏览器可能把某些层交给 GPU
+            处理，但是否提升、如何合成由实现和设备决定。项目里应通过 DevTools 验证，而不是用
+            <code>translateZ(0)</code>
+            这类技巧盲目强推。
+          </li>
+          <li>
+            <strong>transform / opacity 动画为什么通常比 left/top 更稳？</strong>
+            结论是它们通常不改变文档流几何，能减少布局和绘制压力。原因是
+            <code>left/top</code>
+            会影响定位盒的位置计算，可能带来布局失效；
+            <code>transform</code>
+            更像在合成阶段移动已绘制内容。边界是大面积元素、复杂阴影或滤镜仍可能导致合成成本上升。
+          </li>
+          <li>
+            <strong>will-change 应该何时添加和移除？</strong>
+            结论是只在元素即将发生高成本变化前添加，变化结束后移除。原因是
+            <code>will-change</code>
+            会让浏览器提前准备资源，长期保留会浪费内存或显存。项目里可以在
+            hover、拖拽开始、轮播切换前短期设置，也可以用类名或 JS 在 transitionend 后清理。
+          </li>
+          <li>
+            <strong>图层过多会带来哪些性能风险？</strong>
+            结论是图层过多会增加内存/显存、纹理上传和合成管理成本。原因是每个层都需要浏览器维护绘制结果和合成顺序，低端设备更容易掉帧或白屏。项目里要优先定位真正的瓶颈，只提升少量高频动画元素。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Animation_performance_and_frame_rate">MDN: Animation performance and frame rate</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/will-change">MDN: will-change</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transform">MDN: transform</a></li>
-          <li><a href="https://developer.chrome.com/docs/devtools/layers/">Chrome DevTools: Layers panel</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Animation_performance_and_frame_rate"
+            >
+              MDN: Animation performance and frame rate
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/will-change">
+              MDN: will-change
+            </a>
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transform">MDN: transform</a>
+          </li>
+          <li>
+            <a href="https://developer.chrome.com/docs/devtools/layers/">
+              Chrome DevTools: Layers panel
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -90,10 +190,24 @@
 
     <!-- PAGE_DOM_START -->
     <h2>合成层与 transform 动画</h2>
-    <p class="tip">在 DevTools → Layers 面板观察 <code>#composite-ball</code> 是否被提升；<code>transform</code>/<code>opacity</code> 动画通常可在合成阶段更新。</p>
+    <p class="tip">
+      在 DevTools → Layers 面板观察
+      <code>#composite-ball</code>
+      是否被提升；
+      <code>transform</code>
+      /
+      <code>opacity</code>
+      动画通常可在合成阶段更新。
+    </p>
     <div class="track"><div class="ball" id="composite-ball"></div></div>
     <h2>will-change 短期提示</h2>
-    <p class="tip">悬停 <code>#will-card</code> 观察 :hover 时 <code>will-change: transform</code> 的声明时机。</p>
+    <p class="tip">
+      悬停
+      <code>#will-card</code>
+      观察 :hover 时
+      <code>will-change: transform</code>
+      的声明时机。
+    </p>
     <div class="will-card" id="will-card">悬停我</div>
     <p class="note">只在即将动画前声明 will-change，动画结束后移除。</p>
     <pre id="runtime-output" aria-live="polite"></pre>
@@ -104,32 +218,37 @@
       (function () {
         /** 输出合成友好动画元素的 computed 属性（MDN transform / will-change） */
         function renderCompositeMetrics() {
-          var ball = document.getElementById("composite-ball");
-          var card = document.getElementById("will-card");
-          var output = document.getElementById("runtime-output");
+          var ball = document.getElementById('composite-ball');
+          var card = document.getElementById('will-card');
+          var output = document.getElementById('runtime-output');
           if (!output) return;
 
           var ballStyle = ball ? getComputedStyle(ball) : null;
           var cardStyle = card ? getComputedStyle(card) : null;
 
           output.textContent = [
-            "── 合成层友好属性实测 ──",
-            ballStyle ? "#composite-ball transform: " + ballStyle.transform : "",
-            ballStyle ? "#composite-ball opacity: " + ballStyle.opacity : "",
-            ballStyle ? "#composite-ball animation: " + ballStyle.animationName + " " + ballStyle.animationDuration : "",
-            cardStyle
-              ? "#will-card will-change: " + (cardStyle.willChange || "auto")
-              : "",
-            "",
-            "说明: 「GPU 加速」是实现细节，非规范保证；是否提升为合成层需 DevTools Layers 实测",
-          ].filter(Boolean).join("\n");
+            '── 合成层友好属性实测 ──',
+            ballStyle ? '#composite-ball transform: ' + ballStyle.transform : '',
+            ballStyle ? '#composite-ball opacity: ' + ballStyle.opacity : '',
+            ballStyle
+              ? '#composite-ball animation: ' +
+                ballStyle.animationName +
+                ' ' +
+                ballStyle.animationDuration
+              : '',
+            cardStyle ? '#will-card will-change: ' + (cardStyle.willChange || 'auto') : '',
+            '',
+            '说明: 「GPU 加速」是实现细节，非规范保证；是否提升为合成层需 DevTools Layers 实测',
+          ]
+            .filter(Boolean)
+            .join('\n');
         }
 
         renderCompositeMetrics();
-        var card = document.getElementById("will-card");
+        var card = document.getElementById('will-card');
         if (card) {
-          card.addEventListener("mouseenter", renderCompositeMetrics);
-          card.addEventListener("mouseleave", renderCompositeMetrics);
+          card.addEventListener('mouseenter', renderCompositeMetrics);
+          card.addEventListener('mouseleave', renderCompositeMetrics);
         }
       })();
     </script>
@@ -141,17 +260,21 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="../01-%E9%87%8D%E6%8E%92%E9%87%8D%E7%BB%98/index.html">← index</a>
-        <a href="../../07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/01-has%E9%80%89%E6%8B%A9%E5%99%A8/index.html">index →</a>
+        <a
+          href="../../07-%E7%8E%B0%E4%BB%A3%E7%89%B9%E6%80%A7/01-has%E9%80%89%E6%8B%A9%E5%99%A8/index.html"
+        >
+          index →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

@@ -32,30 +32,127 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>PureComponent 与 shouldComponentUpdate 浅比较</h1>
-      <p class="hint">请打开 DevTools Console 观察各 Row 的 render 日志；点击下方"切换无关 state"和"Alice +1"对比三种组件的渲染次数；下方 #root 为 React 挂载/交互演示区。</p>
+      <p class="hint">
+        请打开 DevTools Console 观察各 Row 的 render 日志；点击下方"切换无关 state"和"Alice
+        +1"对比三种组件的渲染次数；下方 #root 为 React 挂载/交互演示区。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><strong>基本机制：</strong><code>React.PureComponent</code> 继承自 <code>Component</code>，但内置了基于浅比较的 <code>shouldComponentUpdate</code>；当新旧 props 和 state 的浅层值都相等时，React 会跳过该组件的 render。</li>
-          <li><strong>浅比较边界：</strong>原始值按值比较，对象、数组、函数按引用比较。示例中切换 <code>theme</code> 不改变每个 <code>user</code> 对象引用，所以 <code>PureRow</code> 和 <code>ManualRow</code> 可以跳过无关渲染。</li>
-          <li><strong>不可变更新前提：</strong>如果原地修改 <code>user.score</code> 再复用旧对象引用，浅比较会认为 props 没变，PureComponent 可能不重新渲染；因此配套写法是用 <code>map</code>、展开语法或不可变数据结构创建变化路径上的新引用。</li>
-          <li><strong>与手写 SCU 的区别：</strong>PureComponent 适合"渲染只依赖浅层 props/state"的组件；手写 <code>shouldComponentUpdate</code> 可以只比较特定字段，但更容易漏比较、写错比较逻辑或和新增 props 不同步。</li>
-          <li><strong>现代替代：</strong>函数组件里的相近能力是 <code>React.memo</code>；在 React 18 新代码中通常先保证组件纯渲染和状态局部化，再用 Profiler 或实际性能证据决定是否加 memo/PureComponent。</li>
+          <li>
+            <strong>基本机制：</strong>
+            <code>React.PureComponent</code>
+            继承自
+            <code>Component</code>
+            ，但内置了基于浅比较的
+            <code>shouldComponentUpdate</code>
+            ；当新旧 props 和 state 的浅层值都相等时，React 会跳过该组件的 render。
+          </li>
+          <li>
+            <strong>浅比较边界：</strong>
+            原始值按值比较，对象、数组、函数按引用比较。示例中切换
+            <code>theme</code>
+            不改变每个
+            <code>user</code>
+            对象引用，所以
+            <code>PureRow</code>
+            和
+            <code>ManualRow</code>
+            可以跳过无关渲染。
+          </li>
+          <li>
+            <strong>不可变更新前提：</strong>
+            如果原地修改
+            <code>user.score</code>
+            再复用旧对象引用，浅比较会认为 props 没变，PureComponent
+            可能不重新渲染；因此配套写法是用
+            <code>map</code>
+            、展开语法或不可变数据结构创建变化路径上的新引用。
+          </li>
+          <li>
+            <strong>与手写 SCU 的区别：</strong>
+            PureComponent 适合"渲染只依赖浅层 props/state"的组件；手写
+            <code>shouldComponentUpdate</code>
+            可以只比较特定字段，但更容易漏比较、写错比较逻辑或和新增 props 不同步。
+          </li>
+          <li>
+            <strong>现代替代：</strong>
+            函数组件里的相近能力是
+            <code>React.memo</code>
+            ；在 React 18 新代码中通常先保证组件纯渲染和状态局部化，再用 Profiler
+            或实际性能证据决定是否加 memo/PureComponent。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>PureComponent 到底比较了什么，为什么能跳过 render？</strong> 结论是它浅比较新旧 props 和 state。原因是如果组件渲染结果只由这些浅层输入决定，输入没变就没有必要重新计算 UI。边界是它不做深比较，嵌套对象内部变化必须通过新引用表达出来。</li>
-          <li><strong>PureComponent 为什么要求不可变更新？</strong> 结论是浅比较依赖引用变化识别对象和数组是否变了。因为原地修改会保留旧引用，PureComponent 可能误判"没变化"并跳过 render；不可变更新让被修改对象和沿途容器都产生新引用。项目里列表项、表格行、树节点这类优化尤其依赖这一点。</li>
-          <li><strong>PureComponent 和手写 shouldComponentUpdate 怎么选？</strong> 结论是简单浅层依赖用 PureComponent，复杂比较才手写。原因是 PureComponent 减少样板代码，但无法表达"只比较某几个字段"或特殊业务判断；手写逻辑更灵活，也更容易遗漏字段。维护时如果 props 结构变化频繁，手写比较要配套测试或谨慎复核。</li>
-          <li><strong>PureComponent 与 React.memo 的关系是什么？</strong> 结论是二者都是基于输入相等性跳过渲染的性能优化，PureComponent 用于 class，<code>React.memo</code> 用于函数组件。React 18 新代码通常优先函数组件加 <code>memo</code>，旧 class 维护可继续用 PureComponent。二者都不应替代正确的数据流设计。</li>
-          <li><strong>什么时候不应该为了性能到处使用 PureComponent？</strong> 结论是 props 经常变化、渲染本身很轻、或浅比较成本高于 render 成本时不应滥用。原因是 PureComponent 每次更新都要做浅比较，如果 props 几乎每次都变，比较就是纯开销；项目里应先局部化 state、拆分组件，有 Profiler 证据再加优化。</li>
+          <li>
+            <strong>PureComponent 到底比较了什么，为什么能跳过 render？</strong>
+            结论是它浅比较新旧 props 和
+            state。原因是如果组件渲染结果只由这些浅层输入决定，输入没变就没有必要重新计算
+            UI。边界是它不做深比较，嵌套对象内部变化必须通过新引用表达出来。
+          </li>
+          <li>
+            <strong>PureComponent 为什么要求不可变更新？</strong>
+            结论是浅比较依赖引用变化识别对象和数组是否变了。因为原地修改会保留旧引用，PureComponent
+            可能误判"没变化"并跳过
+            render；不可变更新让被修改对象和沿途容器都产生新引用。项目里列表项、表格行、树节点这类优化尤其依赖这一点。
+          </li>
+          <li>
+            <strong>PureComponent 和手写 shouldComponentUpdate 怎么选？</strong>
+            结论是简单浅层依赖用 PureComponent，复杂比较才手写。原因是 PureComponent
+            减少样板代码，但无法表达"只比较某几个字段"或特殊业务判断；手写逻辑更灵活，也更容易遗漏字段。维护时如果
+            props 结构变化频繁，手写比较要配套测试或谨慎复核。
+          </li>
+          <li>
+            <strong>PureComponent 与 React.memo 的关系是什么？</strong>
+            结论是二者都是基于输入相等性跳过渲染的性能优化，PureComponent 用于 class，
+            <code>React.memo</code>
+            用于函数组件。React 18 新代码通常优先函数组件加
+            <code>memo</code>
+            ，旧 class 维护可继续用 PureComponent。二者都不应替代正确的数据流设计。
+          </li>
+          <li>
+            <strong>什么时候不应该为了性能到处使用 PureComponent？</strong>
+            结论是 props 经常变化、渲染本身很轻、或浅比较成本高于 render 成本时不应滥用。原因是
+            PureComponent 每次更新都要做浅比较，如果 props
+            几乎每次都变，比较就是纯开销；项目里应先局部化 state、拆分组件，有 Profiler
+            证据再加优化。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/reference/react/PureComponent" target="_blank" rel="noreferrer">react.dev: PureComponent</a></li>
-          <li><a href="https://react.dev/reference/react/Component#shouldcomponentupdate" target="_blank" rel="noreferrer">react.dev: shouldComponentUpdate()</a></li>
-          <li><a href="https://react.dev/reference/react/memo" target="_blank" rel="noreferrer">react.dev: memo（函数组件替代）</a></li>
-          <li><a href="https://react.dev/learn/updating-objects-in-state" target="_blank" rel="noreferrer">react.dev: Updating Objects in State</a></li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/PureComponent"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: PureComponent
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/reference/react/Component#shouldcomponentupdate"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: shouldComponentUpdate()
+            </a>
+          </li>
+          <li>
+            <a href="https://react.dev/reference/react/memo" target="_blank" rel="noreferrer">
+              react.dev: memo（函数组件替代）
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://react.dev/learn/updating-objects-in-state"
+              target="_blank"
+              rel="noreferrer"
+            >
+              react.dev: Updating Objects in State
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -70,16 +167,24 @@
       // ====== 1. 普通 Component：父 state 变就 render ======
       class NormalRow extends React.Component {
         render() {
-          console.log("NormalRow render:", this.props.user.name);
-          return <li>{this.props.user.name} - {this.props.user.score}</li>;
+          console.log('NormalRow render:', this.props.user.name);
+          return (
+            <li>
+              {this.props.user.name} - {this.props.user.score}
+            </li>
+          );
         }
       }
 
       // ====== 2. PureComponent：props/state 浅相等则跳过 render ======
       class PureRow extends React.PureComponent {
         render() {
-          console.log("PureRow render:", this.props.user.name);
-          return <li>{this.props.user.name} - {this.props.user.score}</li>;
+          console.log('PureRow render:', this.props.user.name);
+          return (
+            <li>
+              {this.props.user.name} - {this.props.user.score}
+            </li>
+          );
         }
       }
 
@@ -87,23 +192,27 @@
       class ManualRow extends React.Component {
         shouldComponentUpdate(nextProps) {
           const shouldUpdate = nextProps.user !== this.props.user;
-          console.log("ManualRow shouldComponentUpdate:", shouldUpdate);
+          console.log('ManualRow shouldComponentUpdate:', shouldUpdate);
           return shouldUpdate;
         }
 
         render() {
-          console.log("ManualRow render:", this.props.user.name);
-          return <li>{this.props.user.name} - {this.props.user.score}</li>;
+          console.log('ManualRow render:', this.props.user.name);
+          return (
+            <li>
+              {this.props.user.name} - {this.props.user.score}
+            </li>
+          );
         }
       }
 
       class App extends React.Component {
         state = {
           users: [
-            { id: 1, name: "Alice", score: 80 },
-            { id: 2, name: "Bob", score: 90 },
+            { id: 1, name: 'Alice', score: 80 },
+            { id: 2, name: 'Bob', score: 90 },
           ],
-          theme: "light",
+          theme: 'light',
         };
 
         // 不可变更新：变化路径上创建新 user 对象，PureComponent 才能检测到
@@ -118,33 +227,49 @@
 
         // 切换 theme 不改变 user 引用 → PureRow/ManualRow 应跳过 render
         toggleTheme = () => {
-          this.setState({ theme: this.state.theme === "light" ? "dark" : "light" });
-          console.log("切换 theme，观察 PureRow/ManualRow 是否跳过 render");
+          this.setState({ theme: this.state.theme === 'light' ? 'dark' : 'light' });
+          console.log('切换 theme，观察 PureRow/ManualRow 是否跳过 render');
         };
 
         render() {
           return (
             <section>
-              <p>当前 theme：<strong>{this.state.theme}</strong></p>
-              <button type="button" onClick={this.toggleTheme}>切换无关 state</button>
+              <p>
+                当前 theme：<strong>{this.state.theme}</strong>
+              </p>
+              <button type="button" onClick={this.toggleTheme}>
+                切换无关 state
+              </button>
               <button type="button" onClick={() => this.addScore(1)} style={{ marginLeft: 8 }}>
                 Alice +1（不可变更新）
               </button>
 
               <h2>普通 Component（父 state 变就 render）</h2>
-              <ul>{this.state.users.map((u) => <NormalRow key={u.id} user={u} />)}</ul>
+              <ul>
+                {this.state.users.map((u) => (
+                  <NormalRow key={u.id} user={u} />
+                ))}
+              </ul>
 
               <h2>PureComponent（props 浅相等则跳过）</h2>
-              <ul>{this.state.users.map((u) => <PureRow key={u.id} user={u} />)}</ul>
+              <ul>
+                {this.state.users.map((u) => (
+                  <PureRow key={u.id} user={u} />
+                ))}
+              </ul>
 
               <h2>手写 shouldComponentUpdate</h2>
-              <ul>{this.state.users.map((u) => <ManualRow key={u.id} user={u} />)}</ul>
+              <ul>
+                {this.state.users.map((u) => (
+                  <ManualRow key={u.id} user={u} />
+                ))}
+              </ul>
             </section>
           );
         }
       }
 
-      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
     <!-- SCRIPT_END -->
 
@@ -153,17 +278,27 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html">相关 · 06-class-完整生命周期与API</a>
-        <a href="./09-class-getDerivedStateFromProps%E4%B8%8EgetSnapshotBeforeUpdate.html">相关 · 09-class-getDerivedStateFromProps与getSnapshotBeforeUpdate</a>
-        <a href="./14-class-%E5%88%97%E8%A1%A8key%E4%B8%8Ediff.html">相关 · 14-class-列表key与diff</a>
+        <a
+          href="./06-class-%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8EAPI.html"
+        >
+          相关 · 06-class-完整生命周期与API
+        </a>
+        <a href="./09-class-getDerivedStateFromProps%E4%B8%8EgetSnapshotBeforeUpdate.html">
+          相关 · 09-class-getDerivedStateFromProps与getSnapshotBeforeUpdate
+        </a>
+        <a href="./14-class-%E5%88%97%E8%A1%A8key%E4%B8%8Ediff.html">
+          相关 · 14-class-列表key与diff
+        </a>
         <a href="./07-class-refs%E4%B8%8EDOM.html">← class-refs与DOM</a>
-        <a href="./09-class-getDerivedStateFromProps%E4%B8%8EgetSnapshotBeforeUpdate.html">class-getDerivedStateFromProps与getSnapshotBeforeUpdate →</a>
+        <a href="./09-class-getDerivedStateFromProps%E4%B8%8EgetSnapshotBeforeUpdate.html">
+          class-getDerivedStateFromProps与getSnapshotBeforeUpdate →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

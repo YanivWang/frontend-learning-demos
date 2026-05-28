@@ -33,24 +33,82 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>Promise.all(iterable)</code> 接收一个可迭代对象，返回聚合 Promise；所有输入 fulfilled 后，聚合 Promise fulfilled 为结果数组。</li>
-          <li>结果数组按输入顺序写入，而不是按完成顺序写入，所以手写时必须记录每个任务的原始索引：第 3 个先完成也要写到结果数组第 3 位。</li>
-          <li>任一输入 rejected 时，聚合 Promise 立即以第一个拒绝原因 rejected；这叫 fail-fast。其他任务不会被自动取消，它们可能仍在继续执行，只是聚合结果已经失败。</li>
-          <li>边界处理很重要：空 iterable 应得到 <code>[]</code>；普通值和 thenable 需要通过 <code>Promise.resolve</code> 归一化；非 iterable 输入会让返回的 Promise rejected 为 <code>TypeError</code>。</li>
-          <li>不要用 <code>retArray.length</code> 判断完成数量，因为数组按索引赋值会形成稀疏数组，<code>length</code> 只是最大索引加 1；应使用独立 <code>doneCount</code> 统计 fulfilled 的输入数量。</li>
+          <li>
+            <code>Promise.all(iterable)</code>
+            接收一个可迭代对象，返回聚合 Promise；所有输入 fulfilled 后，聚合 Promise fulfilled
+            为结果数组。
+          </li>
+          <li>
+            结果数组按输入顺序写入，而不是按完成顺序写入，所以手写时必须记录每个任务的原始索引：第 3
+            个先完成也要写到结果数组第 3 位。
+          </li>
+          <li>
+            任一输入 rejected 时，聚合 Promise 立即以第一个拒绝原因 rejected；这叫
+            fail-fast。其他任务不会被自动取消，它们可能仍在继续执行，只是聚合结果已经失败。
+          </li>
+          <li>
+            边界处理很重要：空 iterable 应得到
+            <code>[]</code>
+            ；普通值和 thenable 需要通过
+            <code>Promise.resolve</code>
+            归一化；非 iterable 输入会让返回的 Promise rejected 为
+            <code>TypeError</code>
+            。
+          </li>
+          <li>
+            不要用
+            <code>retArray.length</code>
+            判断完成数量，因为数组按索引赋值会形成稀疏数组，
+            <code>length</code>
+            只是最大索引加 1；应使用独立
+            <code>doneCount</code>
+            统计 fulfilled 的输入数量。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Promise.all 为什么按输入顺序返回结果？</strong> 结论是规范要求 fulfillment values 按 iterable 迭代出的顺序组成数组。原因是调用方需要稳定地把结果映射回输入任务，而异步完成顺序不可预测。项目中并发请求用户、订单、权限时，结果顺序稳定能避免额外排序和配对错误。</li>
-          <li><strong>手写时为什么要用独立完成计数器？</strong> 结论是计数器表示真正 fulfilled 的元素数，数组 length 不能表示完成数。原因是先写入高索引会把 length 拉大，导致稀疏数组误判全部完成。边界是空 iterable 要单独处理，否则计数器永远不会触发 resolve。</li>
-          <li><strong>Promise.all 和 allSettled 怎么选？</strong> 结论是任务互相依赖、任一失败就无法继续时用 all；需要拿到每个任务最终状态时用 allSettled。原因是 all fail-fast，allSettled 等全部 settled。项目中首屏必要数据可用 all，批量上报或多接口容错更适合 allSettled。</li>
-          <li><strong>普通值、thenable 和非 iterable 输入怎么处理？</strong> 结论是普通值和 thenable 都应通过 Promise.resolve 归一化，非 iterable 会让聚合 Promise rejected。原因是原生 Promise.all 面向 iterable，并对每个元素执行 Promise 解析过程。</li>
+          <li>
+            <strong>Promise.all 为什么按输入顺序返回结果？</strong>
+            结论是规范要求 fulfillment values 按 iterable
+            迭代出的顺序组成数组。原因是调用方需要稳定地把结果映射回输入任务，而异步完成顺序不可预测。项目中并发请求用户、订单、权限时，结果顺序稳定能避免额外排序和配对错误。
+          </li>
+          <li>
+            <strong>手写时为什么要用独立完成计数器？</strong>
+            结论是计数器表示真正 fulfilled 的元素数，数组 length
+            不能表示完成数。原因是先写入高索引会把 length 拉大，导致稀疏数组误判全部完成。边界是空
+            iterable 要单独处理，否则计数器永远不会触发 resolve。
+          </li>
+          <li>
+            <strong>Promise.all 和 allSettled 怎么选？</strong>
+            结论是任务互相依赖、任一失败就无法继续时用 all；需要拿到每个任务最终状态时用
+            allSettled。原因是 all fail-fast，allSettled 等全部 settled。项目中首屏必要数据可用
+            all，批量上报或多接口容错更适合 allSettled。
+          </li>
+          <li>
+            <strong>普通值、thenable 和非 iterable 输入怎么处理？</strong>
+            结论是普通值和 thenable 都应通过 Promise.resolve 归一化，非 iterable 会让聚合 Promise
+            rejected。原因是原生 Promise.all 面向 iterable，并对每个元素执行 Promise 解析过程。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all">MDN: Promise.all()</a></li>
-          <li><a href="https://tc39.es/ecma262/#sec-promise.all">ECMAScript 规范: Promise.all</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled">MDN: Promise.allSettled()</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all"
+            >
+              MDN: Promise.all()
+            </a>
+          </li>
+          <li>
+            <a href="https://tc39.es/ecma262/#sec-promise.all">ECMAScript 规范: Promise.all</a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled"
+            >
+              MDN: Promise.allSettled()
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -93,47 +151,47 @@
       };
 
       // ============ 2. 并发演示：结果按输入顺序，不按完成顺序 ============
-      const p1 = new Promise((resolve) => setTimeout(() => resolve("p1 ok!"), 1500));
-      const p2 = new Promise((resolve) => setTimeout(() => resolve("p2 ok!"), 500));
-      const p3 = new Promise((resolve) => setTimeout(() => resolve("p3 ok!"), 1000));
+      const p1 = new Promise((resolve) => setTimeout(() => resolve('p1 ok!'), 1500));
+      const p2 = new Promise((resolve) => setTimeout(() => resolve('p2 ok!'), 500));
+      const p3 = new Promise((resolve) => setTimeout(() => resolve('p3 ok!'), 1000));
 
       Promise.myAll([p1, p2, p3]).then((res) => {
-        console.log("全部 resolved（按输入顺序）:", res);
+        console.log('全部 resolved（按输入顺序）:', res);
         // 预期: ["p1 ok!", "p2 ok!", "p3 ok!"]，尽管 p2 最先完成
       });
 
       // ============ 3. 边界：空数组 ============
       Promise.myAll([]).then((res) => {
-        console.log("空数组:", res); // []
+        console.log('空数组:', res); // []
       });
 
       // ============ 4. 边界：普通值与 thenable ============
-      Promise.myAll([42, Promise.resolve("thenable")]).then((res) => {
-        console.log("普通值 + thenable:", res); // [42, "thenable"]
+      Promise.myAll([42, Promise.resolve('thenable')]).then((res) => {
+        console.log('普通值 + thenable:', res); // [42, "thenable"]
       });
 
       // ============ 5. fail-fast：任一 reject 即整体 reject ============
       Promise.myAll([
-        Promise.resolve("ok"),
-        Promise.reject(new Error("first reject")),
-        new Promise((resolve) => setTimeout(() => resolve("late"), 100)),
+        Promise.resolve('ok'),
+        Promise.reject(new Error('first reject')),
+        new Promise((resolve) => setTimeout(() => resolve('late'), 100)),
       ]).catch((err) => {
-        console.log("fail-fast:", err.message); // "first reject"
+        console.log('fail-fast:', err.message); // "first reject"
       });
 
       // ============ 6. 非 iterable 输入：TypeError ============
       Promise.myAll(null).catch((err) => {
-        console.log("非 iterable:", err.name); // TypeError
+        console.log('非 iterable:', err.name); // TypeError
       });
 
       // ============ 7. 稀疏数组陷阱：不能用 retArray.length 判断完成数 ============
       const sparseDemo = [];
-      sparseDemo[99] = "done";
-      console.log("稀疏数组 length 误导:", sparseDemo.length); // 100，但只有 1 个元素
+      sparseDemo[99] = 'done';
+      console.log('稀疏数组 length 误导:', sparseDemo.length); // 100，但只有 1 个元素
 
       // ============ 8. 与原生 Promise.all 行为对照 ============
-      Promise.all([Promise.resolve("native")]).then((res) => {
-        console.log("原生 Promise.all:", res); // ["native"]
+      Promise.all([Promise.resolve('native')]).then((res) => {
+        console.log('原生 Promise.all:', res); // ["native"]
       });
     </script>
     <!-- SCRIPT_END -->
@@ -143,15 +201,17 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="../%E8%B5%84%E6%BA%90%E9%A2%84%E5%8A%A0%E8%BD%BD/index.html">相关 · 资源预加载/index</a>
+        <a href="../%E8%B5%84%E6%BA%90%E9%A2%84%E5%8A%A0%E8%BD%BD/index.html">
+          相关 · 资源预加载/index
+        </a>
         <a href="../%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/timeline.html">← timeline</a>
         <a href="../%E8%B5%84%E6%BA%90%E9%A2%84%E5%8A%A0%E8%BD%BD/index.html">index →</a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

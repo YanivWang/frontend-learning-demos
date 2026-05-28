@@ -32,25 +32,118 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>柯里化是把 <code>fn(a, b, c)</code> 变成 <code>fn(a)(b)(c)</code> 或分批传参的形式。示例中的 <code>curried</code> 每次返回新函数，直到收集的参数数达到 <code>sum3.length</code>。</li>
-          <li>闭包保存已传入的 <code>args</code>，下一次调用再用展开语法拼接 <code>rest</code>。这说明柯里化不是语法特性，而是函数、闭包和参数列表组合出的模式。</li>
-          <li><code>Array.prototype.slice.call(arguments, 1)</code> 是把类数组 <code>arguments</code> 转成真数组并跳过第一个参数的旧写法；现代函数更推荐 <code>function fn(first, ...rest)</code>。</li>
-          <li>柯里化常用于固定上下文参数、构造可复用校验器、组合中间件或函数式工具。普通业务代码如果只是少传几个参数，用默认参数、对象参数或简单包装函数通常更直观。</li>
-          <li>通用 <code>curry</code> 依赖 <code>fn.length</code> 判断参数是否收齐；默认参数、剩余参数和可选参数会影响 <code>length</code>，实际库通常需要更完整的占位符和 arity 设计。</li>
+          <li>
+            柯里化是把
+            <code>fn(a, b, c)</code>
+            变成
+            <code>fn(a)(b)(c)</code>
+            或分批传参的形式。示例中的
+            <code>curried</code>
+            每次返回新函数，直到收集的参数数达到
+            <code>sum3.length</code>
+            。
+          </li>
+          <li>
+            闭包保存已传入的
+            <code>args</code>
+            ，下一次调用再用展开语法拼接
+            <code>rest</code>
+            。这说明柯里化不是语法特性，而是函数、闭包和参数列表组合出的模式。
+          </li>
+          <li>
+            <code>Array.prototype.slice.call(arguments, 1)</code>
+            是把类数组
+            <code>arguments</code>
+            转成真数组并跳过第一个参数的旧写法；现代函数更推荐
+            <code>function fn(first, ...rest)</code>
+            。
+          </li>
+          <li>
+            柯里化常用于固定上下文参数、构造可复用校验器、组合中间件或函数式工具。普通业务代码如果只是少传几个参数，用默认参数、对象参数或简单包装函数通常更直观。
+          </li>
+          <li>
+            通用
+            <code>curry</code>
+            依赖
+            <code>fn.length</code>
+            判断参数是否收齐；默认参数、剩余参数和可选参数会影响
+            <code>length</code>
+            ，实际库通常需要更完整的占位符和 arity 设计。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>柯里化和偏函数应用有什么区别？</strong> 先结论：柯里化强调把多参函数拆成连续的一元或分批调用，偏函数应用强调先固定一部分参数。原因是二者都依赖闭包保存参数，但抽象目标不同。项目中固定接口前缀、日志上下文这类场景更像偏函数，构建函数组合流水线更像柯里化。</li>
-          <li><strong>通用 curry 为什么依赖 <code>fn.length</code>，边界是什么？</strong> 先结论：示例用 <code>fn.length</code> 表示原函数声明的形参数量，参数够了就执行。原因是函数对象的 <code>length</code> 记录第一个带默认值参数前的形参数量。边界是默认参数、rest 参数和运行时可选参数会让这个判断不可靠。</li>
-          <li><strong><code>arguments</code> 为什么要借用 <code>Array.prototype.slice</code>？</strong> 先结论：因为 <code>arguments</code> 是类数组，不是真数组。原因是它有索引和 <code>length</code>，但没有数组方法；<code>slice.call</code> 可按数组切片算法读取它。现代项目里优先用 rest 参数，类型更清楚，也避免箭头函数没有自己的 <code>arguments</code>。</li>
-          <li><strong>项目里什么时候适合使用柯里化？</strong> 先结论：当函数需要复用固定参数或参与组合时适合。原因是闭包能把配置前置，调用点只关心剩余业务参数。边界是过度柯里化会增加阅读成本，团队不熟悉函数式风格时应优先选择对象参数或明确命名的包装函数。</li>
+          <li>
+            <strong>柯里化和偏函数应用有什么区别？</strong>
+            先结论：柯里化强调把多参函数拆成连续的一元或分批调用，偏函数应用强调先固定一部分参数。原因是二者都依赖闭包保存参数，但抽象目标不同。项目中固定接口前缀、日志上下文这类场景更像偏函数，构建函数组合流水线更像柯里化。
+          </li>
+          <li>
+            <strong>
+              通用 curry 为什么依赖
+              <code>fn.length</code>
+              ，边界是什么？
+            </strong>
+            先结论：示例用
+            <code>fn.length</code>
+            表示原函数声明的形参数量，参数够了就执行。原因是函数对象的
+            <code>length</code>
+            记录第一个带默认值参数前的形参数量。边界是默认参数、rest
+            参数和运行时可选参数会让这个判断不可靠。
+          </li>
+          <li>
+            <strong>
+              <code>arguments</code>
+              为什么要借用
+              <code>Array.prototype.slice</code>
+              ？
+            </strong>
+            先结论：因为
+            <code>arguments</code>
+            是类数组，不是真数组。原因是它有索引和
+            <code>length</code>
+            ，但没有数组方法；
+            <code>slice.call</code>
+            可按数组切片算法读取它。现代项目里优先用 rest 参数，类型更清楚，也避免箭头函数没有自己的
+            <code>arguments</code>
+            。
+          </li>
+          <li>
+            <strong>项目里什么时候适合使用柯里化？</strong>
+            先结论：当函数需要复用固定参数或参与组合时适合。原因是闭包能把配置前置，调用点只关心剩余业务参数。边界是过度柯里化会增加阅读成本，团队不熟悉函数式风格时应优先选择对象参数或明确命名的包装函数。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments">MDN: arguments object</a>：类数组结构与 slice 借用场景。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/rest_parameters">MDN: Rest parameters</a>：现代替代 arguments 的写法。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/length">MDN: Function.length</a>：形参计数与默认值边界。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures">MDN: Closures</a>：柯里化依赖闭包保存参数。</li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments"
+            >
+              MDN: arguments object
+            </a>
+            ：类数组结构与 slice 借用场景。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/rest_parameters"
+            >
+              MDN: Rest parameters
+            </a>
+            ：现代替代 arguments 的写法。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/length"
+            >
+              MDN: Function.length
+            </a>
+            ：形参计数与默认值边界。
+          </li>
+          <li>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures">
+              MDN: Closures
+            </a>
+            ：柯里化依赖闭包保存参数。
+          </li>
         </ul>
       </div>
     </section>
@@ -62,13 +155,13 @@
       // arguments 有 length 和索引，但不是真数组；slice.call 按数组算法读取
       function add(x, y, z) {
         const restArgs = Array.prototype.slice.call(arguments, 1);
-        console.log("slice.call(arguments,1):", restArgs); // [2, 3]
+        console.log('slice.call(arguments,1):', restArgs); // [2, 3]
       }
       add(1, 2, 3);
 
       // 现代写法：rest 参数直接得到真数组
       function addModern(first, ...rest) {
-        console.log("rest 参数:", rest); // [2, 3]
+        console.log('rest 参数:', rest); // [2, 3]
       }
       addModern(1, 2, 3);
 
@@ -84,19 +177,19 @@
 
       const sum3 = (a, b, c) => a + b + c;
       const curried = curry(sum3);
-      console.log("curried(1)(2)(3):", curried(1)(2)(3)); // 6
-      console.log("curried(1,2)(3):", curried(1, 2)(3)); // 6
-      console.log("curried(1,2,3):", curried(1, 2, 3)); // 6
+      console.log('curried(1)(2)(3):', curried(1)(2)(3)); // 6
+      console.log('curried(1,2)(3):', curried(1, 2)(3)); // 6
+      console.log('curried(1,2,3):', curried(1, 2, 3)); // 6
 
       // ============ 3. fn.length 边界：默认参数会缩短 length ============
       function withDefault(a, b = 0, c) {
         return a + b + c;
       }
-      console.log("withDefault.length:", withDefault.length); // 1（b 有默认值，c 不计入）
+      console.log('withDefault.length:', withDefault.length); // 1（b 有默认值，c 不计入）
 
       const curriedDefault = curry(withDefault);
       // 只传 1 个参数时 curry 认为够了（length=1），b/c 为 undefined
-      console.log("curry+默认参数:", curriedDefault(10)); // NaN（10+undefined+undefined）
+      console.log('curry+默认参数:', curriedDefault(10)); // NaN（10+undefined+undefined）
 
       // ============ 4. 偏函数应用 vs 柯里化 ============
       // 偏函数：一次性固定部分参数，返回「还差几个参数」的函数
@@ -104,11 +197,11 @@
         return (...rest) => fn(...fixed, ...rest);
       }
       const add10 = partial(sum3, 10);
-      console.log("偏函数 add10(20,30):", add10(20, 30)); // 60
+      console.log('偏函数 add10(20,30):', add10(20, 30)); // 60
 
       // 柯里化：强调逐次传参，每次返回新函数
       const curriedAdd = curry(sum3);
-      console.log("柯里化 curriedAdd(10)(20)(30):", curriedAdd(10)(20)(30)); // 60
+      console.log('柯里化 curriedAdd(10)(20)(30):', curriedAdd(10)(20)(30)); // 60
     </script>
     <!-- SCRIPT_END -->
 
@@ -117,16 +210,26 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="./%E9%97%AD%E5%8C%85/01-%E9%97%AD%E5%8C%85-%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE%E4%B8%8E%E5%8F%98%E9%87%8F%E6%8F%90%E5%8D%87.html">相关 · 闭包-作用域链与变量提升</a>
-        <a href="../08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/02-bind.html">相关 · 08-面试题/手写/02-bind</a>
+        <a
+          href="./%E9%97%AD%E5%8C%85/01-%E9%97%AD%E5%8C%85-%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE%E4%B8%8E%E5%8F%98%E9%87%8F%E6%8F%90%E5%8D%87.html"
+        >
+          相关 · 闭包-作用域链与变量提升
+        </a>
+        <a href="../08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/02-bind.html">
+          相关 · 08-面试题/手写/02-bind
+        </a>
         <a href="./01-%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE.html">← 作用域链</a>
-        <a href="./%E9%97%AD%E5%8C%85/01-%E9%97%AD%E5%8C%85-%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE%E4%B8%8E%E5%8F%98%E9%87%8F%E6%8F%90%E5%8D%87.html">闭包-作用域链与变量提升 →</a>
+        <a
+          href="./%E9%97%AD%E5%8C%85/01-%E9%97%AD%E5%8C%85-%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE%E4%B8%8E%E5%8F%98%E9%87%8F%E6%8F%90%E5%8D%87.html"
+        >
+          闭包-作用域链与变量提升 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

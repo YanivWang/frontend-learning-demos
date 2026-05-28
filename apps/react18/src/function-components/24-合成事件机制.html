@@ -30,29 +30,110 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>React 合成事件机制</h1>
-      <p class="hint">请打开 DevTools Console 查看 SyntheticEvent 与冒泡日志；下方 #root 为 React 挂载/交互演示区。</p>
+      <p class="hint">
+        请打开 DevTools Console 查看 SyntheticEvent 与冒泡日志；下方 #root 为 React
+        挂载/交互演示区。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>React DOM 事件名使用小驼峰，例如 <code>onClick</code>、<code>onChange</code>；处理函数接收的是 <code>SyntheticEvent</code>，不是直接暴露的浏览器事件对象。</li>
-          <li><code>SyntheticEvent</code> 提供与原生事件相似的一致接口，仍可通过 <code>event.nativeEvent</code> 访问底层事件；React 17 起事件对象不再池化，异步读取事件属性不需要 <code>persist()</code>。</li>
-          <li>表单提交、链接跳转这类默认行为必须显式调用 <code>event.preventDefault()</code>；React 不支持用 <code>return false</code> 同时阻止默认行为和冒泡。</li>
-          <li>冒泡控制使用 <code>event.stopPropagation()</code>。当 React 事件和原生 <code>addEventListener</code> 混用时，要分清监听器注册位置与捕获/冒泡阶段，避免误以为所有监听都会被拦截。</li>
-          <li>React 17+ 将事件委托从 <code>document</code> 调整到 root 容器附近，多个 React root 或逐步升级旧页面时，事件隔离比旧版本更清晰。</li>
+          <li>
+            React DOM 事件名使用小驼峰，例如
+            <code>onClick</code>
+            、
+            <code>onChange</code>
+            ；处理函数接收的是
+            <code>SyntheticEvent</code>
+            ，不是直接暴露的浏览器事件对象。
+          </li>
+          <li>
+            <code>SyntheticEvent</code>
+            提供与原生事件相似的一致接口，仍可通过
+            <code>event.nativeEvent</code>
+            访问底层事件；React 17 起事件对象不再池化，异步读取事件属性不需要
+            <code>persist()</code>
+            。
+          </li>
+          <li>
+            表单提交、链接跳转这类默认行为必须显式调用
+            <code>event.preventDefault()</code>
+            ；React 不支持用
+            <code>return false</code>
+            同时阻止默认行为和冒泡。
+          </li>
+          <li>
+            冒泡控制使用
+            <code>event.stopPropagation()</code>
+            。当 React 事件和原生
+            <code>addEventListener</code>
+            混用时，要分清监听器注册位置与捕获/冒泡阶段，避免误以为所有监听都会被拦截。
+          </li>
+          <li>
+            React 17+ 将事件委托从
+            <code>document</code>
+            调整到 root 容器附近，多个 React root 或逐步升级旧页面时，事件隔离比旧版本更清晰。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>SyntheticEvent 和浏览器原生事件是什么关系？</strong> 结论是 React 给处理器传入合成事件，它封装了原生事件并提供一致接口。原因是 React 需要统一不同浏览器行为并接入自己的调度与事件系统。需要原生细节时读取 <code>nativeEvent</code>，但不要依赖未声明的映射细节。</li>
-          <li><strong>React 中为什么 return false 不能阻止默认提交？</strong> 结论是必须调用 <code>preventDefault()</code>。原因是 React 事件处理器不会把返回值当作取消信号。本 demo 的表单提交调用 <code>event.preventDefault()</code> 后，页面不会刷新，失败路径是忘记调用时浏览器会执行默认提交。</li>
-          <li><strong>stopPropagation 有什么边界？</strong> 它能阻止当前 React 事件继续冒泡到上层 React 处理器。边界是原生捕获监听、不同 root 或已经触发的监听器不一定按直觉被拦截；复杂页面里应明确监听阶段和挂载位置。</li>
-          <li><strong>React 17+ 事件委托位置变化有什么意义？</strong> 结论是事件委托从全局 <code>document</code> 更靠近 root 容器。原因是这样更利于多版本 React、微前端和逐步迁移。项目里如果混用多个 root，要测试跨 root 点击、弹窗和全局快捷键行为。</li>
+          <li>
+            <strong>SyntheticEvent 和浏览器原生事件是什么关系？</strong>
+            结论是 React 给处理器传入合成事件，它封装了原生事件并提供一致接口。原因是 React
+            需要统一不同浏览器行为并接入自己的调度与事件系统。需要原生细节时读取
+            <code>nativeEvent</code>
+            ，但不要依赖未声明的映射细节。
+          </li>
+          <li>
+            <strong>React 中为什么 return false 不能阻止默认提交？</strong>
+            结论是必须调用
+            <code>preventDefault()</code>
+            。原因是 React 事件处理器不会把返回值当作取消信号。本 demo 的表单提交调用
+            <code>event.preventDefault()</code>
+            后，页面不会刷新，失败路径是忘记调用时浏览器会执行默认提交。
+          </li>
+          <li>
+            <strong>stopPropagation 有什么边界？</strong>
+            它能阻止当前 React 事件继续冒泡到上层 React 处理器。边界是原生捕获监听、不同 root
+            或已经触发的监听器不一定按直觉被拦截；复杂页面里应明确监听阶段和挂载位置。
+          </li>
+          <li>
+            <strong>React 17+ 事件委托位置变化有什么意义？</strong>
+            结论是事件委托从全局
+            <code>document</code>
+            更靠近 root 容器。原因是这样更利于多版本 React、微前端和逐步迁移。项目里如果混用多个
+            root，要测试跨 root 点击、弹窗和全局快捷键行为。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://react.dev/learn/responding-to-events" target="_blank" rel="noreferrer">react.dev: Responding to Events</a></li>
-          <li><a href="https://legacy.reactjs.org/docs/events.html" target="_blank" rel="noreferrer">Legacy React Docs: SyntheticEvent</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault" target="_blank" rel="noreferrer">MDN: Event.preventDefault()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation" target="_blank" rel="noreferrer">MDN: Event.stopPropagation()</a></li>
+          <li>
+            <a href="https://react.dev/learn/responding-to-events" target="_blank" rel="noreferrer">
+              react.dev: Responding to Events
+            </a>
+          </li>
+          <li>
+            <a href="https://legacy.reactjs.org/docs/events.html" target="_blank" rel="noreferrer">
+              Legacy React Docs: SyntheticEvent
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Event.preventDefault()
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Event.stopPropagation()
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -65,7 +146,7 @@
     <!-- SCRIPT_START -->
     <script type="text/babel">
       // ====== 1. createRoot 挂载 React 18 根 ======
-      const container = document.getElementById("root");
+      const container = document.getElementById('root');
       const root = ReactDOM.createRoot(container);
 
       // ====== 2. preventDefault：SyntheticEvent 与 nativeEvent ======
@@ -73,19 +154,19 @@
       function App() {
         function handleSubmit(event) {
           event.preventDefault();
-          console.log("SyntheticEvent:", event); // 预期: React 合成事件对象
-          console.log("nativeEvent:", event.nativeEvent); // 预期: 底层浏览器 SubmitEvent
-          alert("已阻止表单默认提交，请看控制台");
+          console.log('SyntheticEvent:', event); // 预期: React 合成事件对象
+          console.log('nativeEvent:', event.nativeEvent); // 预期: 底层浏览器 SubmitEvent
+          alert('已阻止表单默认提交，请看控制台');
         }
 
         // ====== 3. stopPropagation：阻止 React 事件继续冒泡 ======
         function handleParentClick() {
-          console.log("父元素 onClick"); // 预期: 点击父区域时出现；点击子按钮且 stopPropagation 时不出现
+          console.log('父元素 onClick'); // 预期: 点击父区域时出现；点击子按钮且 stopPropagation 时不出现
         }
 
         function handleChildClick(event) {
           event.stopPropagation();
-          console.log("子元素 onClick，已 stopPropagation"); // 预期: 只打印本条，不触发父级 onClick
+          console.log('子元素 onClick，已 stopPropagation'); // 预期: 只打印本条，不触发父级 onClick
         }
 
         return (
@@ -95,7 +176,10 @@
             <form onSubmit={handleSubmit}>
               <button type="submit">提交表单</button>
             </form>
-            <div onClick={handleParentClick} style={{ border: "1px solid #ccc", padding: 16, marginTop: 12 }}>
+            <div
+              onClick={handleParentClick}
+              style={{ border: '1px solid #ccc', padding: 16, marginTop: 12 }}
+            >
               父元素
               <button onClick={handleChildClick}>子按钮</button>
             </div>
@@ -113,20 +197,26 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./23-Reactmemo%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">相关 · 23-Reactmemo性能优化</a>
-        <a href="./25-%E8%99%9A%E6%8B%9FDOM-Fiber-%E6%89%B9%E5%A4%84%E7%90%86.html">相关 · 25-虚拟DOM-Fiber-批处理</a>
+        <a href="./23-Reactmemo%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">
+          相关 · 23-Reactmemo性能优化
+        </a>
+        <a href="./25-%E8%99%9A%E6%8B%9FDOM-Fiber-%E6%89%B9%E5%A4%84%E7%90%86.html">
+          相关 · 25-虚拟DOM-Fiber-批处理
+        </a>
         <a href="./23-Reactmemo%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">← Reactmemo性能优化</a>
-        <a href="./25-%E8%99%9A%E6%8B%9FDOM-Fiber-%E6%89%B9%E5%A4%84%E7%90%86.html">虚拟DOM-Fiber-批处理 →</a>
+        <a href="./25-%E8%99%9A%E6%8B%9FDOM-Fiber-%E6%89%B9%E5%A4%84%E7%90%86.html">
+          虚拟DOM-Fiber-批处理 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

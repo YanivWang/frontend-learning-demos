@@ -27,29 +27,206 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>经典题 - this 指向与作用域链</h1>
-      <p class="hint">先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。</p>
+      <p class="hint">
+        先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>这题运行在普通 <code>&lt;script&gt;</code> 且未开启严格模式：<code>bar()</code> 是独立函数调用，普通函数的 <code>this</code> 会默认绑定到全局对象 <code>window</code>。</li>
-          <li>顶层 <code>var val = 1</code> 在浏览器普通脚本中会创建 <code>window.val</code>，所以 <code>console.log(window.val)</code> 输出 <code>1</code>；如果改成 <code>let</code> / <code>const</code>，不会生成 <code>window</code> 属性。</li>
-          <li><code>bar</code> 内部的 <code>var val = 2</code> 是局部变量，只影响标识符 <code>val</code> 的词法查找，不会改变 <code>this.val</code>。</li>
-          <li><code>test()</code> 在全局作用域定义，它的外层词法环境是全局环境；即使在 <code>bar()</code> 里调用，变量 <code>val</code> 仍沿定义时作用域链找到全局 <code>val</code>。</li>
-          <li><code>this</code> 绑定和作用域链是两套规则：变量名由词法环境决定，<code>this</code> 由调用方式决定；箭头函数没有自己的 <code>this</code>，会捕获外层 <code>this</code>。</li>
-          <li>如果开启严格模式，独立调用普通函数时 <code>this</code> 是 <code>undefined</code>，访问 <code>this.val</code> 会抛错；如果放到 <code>type="module"</code> 中，顶层 <code>var</code> 也不会挂到 <code>window</code>。</li>
+          <li>
+            这题运行在普通
+            <code>&lt;script&gt;</code>
+            且未开启严格模式：
+            <code>bar()</code>
+            是独立函数调用，普通函数的
+            <code>this</code>
+            会默认绑定到全局对象
+            <code>window</code>
+            。
+          </li>
+          <li>
+            顶层
+            <code>var val = 1</code>
+            在浏览器普通脚本中会创建
+            <code>window.val</code>
+            ，所以
+            <code>console.log(window.val)</code>
+            输出
+            <code>1</code>
+            ；如果改成
+            <code>let</code>
+            /
+            <code>const</code>
+            ，不会生成
+            <code>window</code>
+            属性。
+          </li>
+          <li>
+            <code>bar</code>
+            内部的
+            <code>var val = 2</code>
+            是局部变量，只影响标识符
+            <code>val</code>
+            的词法查找，不会改变
+            <code>this.val</code>
+            。
+          </li>
+          <li>
+            <code>test()</code>
+            在全局作用域定义，它的外层词法环境是全局环境；即使在
+            <code>bar()</code>
+            里调用，变量
+            <code>val</code>
+            仍沿定义时作用域链找到全局
+            <code>val</code>
+            。
+          </li>
+          <li>
+            <code>this</code>
+            绑定和作用域链是两套规则：变量名由词法环境决定，
+            <code>this</code>
+            由调用方式决定；箭头函数没有自己的
+            <code>this</code>
+            ，会捕获外层
+            <code>this</code>
+            。
+          </li>
+          <li>
+            如果开启严格模式，独立调用普通函数时
+            <code>this</code>
+            是
+            <code>undefined</code>
+            ，访问
+            <code>this.val</code>
+            会抛错；如果放到
+            <code>type="module"</code>
+            中，顶层
+            <code>var</code>
+            也不会挂到
+            <code>window</code>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>为什么 <code>bar()</code> 中 <code>this.val</code> 输出 <code>1</code> 而不是局部变量 <code>2</code>？</strong> 结论：因为 <code>this.val</code> 读的是 <code>window.val</code>。原因是 <code>bar()</code> 作为普通函数独立调用，非严格模式下 <code>this</code> 默认指向 <code>window</code>，而顶层 <code>var val = 1</code> 又创建了 <code>window.val</code>。边界是严格模式下 <code>this</code> 为 <code>undefined</code>，这行会抛错。</li>
-          <li><strong><code>test()</code> 为什么读取全局 <code>val</code>，不是 <code>bar()</code> 里的 <code>val</code>？</strong> 结论：普通变量查找按函数定义时的词法作用域链，不按调用栈动态查找。原因是 <code>test</code> 在全局定义，外层环境就是全局环境，<code>bar</code> 的局部环境不是它的外层词法环境。项目里排查闭包和回调变量时，要先看函数在哪里定义，再看它在哪里调用。</li>
-          <li><strong>严格模式、<code>let</code> / <code>const</code> 或模块化会怎样改变结果？</strong> 结论：这些都会改变全局绑定或 <code>this</code> 默认值。原因是严格模式下独立调用的 <code>this</code> 不再装箱到全局对象，<code>let</code> / <code>const</code> 不创建 <code>window</code> 属性，ES module 顶层作用域也不是传统脚本全局对象。面试答题要先说明运行环境，否则同一段代码可能结果不同。</li>
-          <li><strong>如何区分作用域链和 <code>this</code> 绑定？</strong> 结论：标识符变量看“定义在哪里”，<code>this</code> 看“怎么调用”。原因是词法作用域在函数创建时确定，<code>this</code> 是调用表达式的一部分。边界是箭头函数没有自己的 <code>this</code>，<code>call/apply/bind</code> 可以显式指定普通函数的 <code>this</code>。</li>
+          <li>
+            <strong>
+              为什么
+              <code>bar()</code>
+              中
+              <code>this.val</code>
+              输出
+              <code>1</code>
+              而不是局部变量
+              <code>2</code>
+              ？
+            </strong>
+            结论：因为
+            <code>this.val</code>
+            读的是
+            <code>window.val</code>
+            。原因是
+            <code>bar()</code>
+            作为普通函数独立调用，非严格模式下
+            <code>this</code>
+            默认指向
+            <code>window</code>
+            ，而顶层
+            <code>var val = 1</code>
+            又创建了
+            <code>window.val</code>
+            。边界是严格模式下
+            <code>this</code>
+            为
+            <code>undefined</code>
+            ，这行会抛错。
+          </li>
+          <li>
+            <strong>
+              <code>test()</code>
+              为什么读取全局
+              <code>val</code>
+              ，不是
+              <code>bar()</code>
+              里的
+              <code>val</code>
+              ？
+            </strong>
+            结论：普通变量查找按函数定义时的词法作用域链，不按调用栈动态查找。原因是
+            <code>test</code>
+            在全局定义，外层环境就是全局环境，
+            <code>bar</code>
+            的局部环境不是它的外层词法环境。项目里排查闭包和回调变量时，要先看函数在哪里定义，再看它在哪里调用。
+          </li>
+          <li>
+            <strong>
+              严格模式、
+              <code>let</code>
+              /
+              <code>const</code>
+              或模块化会怎样改变结果？
+            </strong>
+            结论：这些都会改变全局绑定或
+            <code>this</code>
+            默认值。原因是严格模式下独立调用的
+            <code>this</code>
+            不再装箱到全局对象，
+            <code>let</code>
+            /
+            <code>const</code>
+            不创建
+            <code>window</code>
+            属性，ES module
+            顶层作用域也不是传统脚本全局对象。面试答题要先说明运行环境，否则同一段代码可能结果不同。
+          </li>
+          <li>
+            <strong>
+              如何区分作用域链和
+              <code>this</code>
+              绑定？
+            </strong>
+            结论：标识符变量看“定义在哪里”，
+            <code>this</code>
+            看“怎么调用”。原因是词法作用域在函数创建时确定，
+            <code>this</code>
+            是调用表达式的一部分。边界是箭头函数没有自己的
+            <code>this</code>
+            ，
+            <code>call/apply/bind</code>
+            可以显式指定普通函数的
+            <code>this</code>
+            。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this" target="_blank" rel="noreferrer">MDN: this</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/var" target="_blank" rel="noreferrer">MDN: var</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures" target="_blank" rel="noreferrer">MDN: Closures</a></li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: this
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/var"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: var
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Closures
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -58,7 +235,15 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block">
       <h2>运行结果</h2>
-      <p class="tip">标准答法：依次输出 <code>1</code>、<code>1</code>、<code>1</code>（window.val → bar 中 this.val → test 中 val）。</p>
+      <p class="tip">
+        标准答法：依次输出
+        <code>1</code>
+        、
+        <code>1</code>
+        、
+        <code>1</code>
+        （window.val → bar 中 this.val → test 中 val）。
+      </p>
       <pre id="runtime-output" aria-live="polite"></pre>
     </section>
     <!-- PAGE_DOM_END -->
@@ -66,38 +251,38 @@
     <!-- SCRIPT_START -->
     <script>
       (function () {
-        var out = document.getElementById("runtime-output");
+        var out = document.getElementById('runtime-output');
         var lines = [];
         function emit(label, value) {
-          var line = label + ": " + value;
+          var line = label + ': ' + value;
           console.log(line);
           lines.push(line);
-          if (out) out.textContent = lines.join("\n");
+          if (out) out.textContent = lines.join('\n');
         }
 
         // ============ 1. 顶层 var 创建 window.val ============
         var val = 1;
         function test() {
-          emit("test() 中 val", val); // 预期: 1（沿定义时词法链找到全局 val）
+          emit('test() 中 val', val); // 预期: 1（沿定义时词法链找到全局 val）
         }
         function bar() {
           var val = 2; // 局部 val 不影响 this.val 和 test()
-          emit("bar() 中 this.val", this.val); // 预期: 1（非严格独立调用，this → window）
+          emit('bar() 中 this.val', this.val); // 预期: 1（非严格独立调用，this → window）
           test();
         }
 
         // ============ 2. 执行并输出 ============
-        emit("window.val", window.val); // 预期: 1
+        emit('window.val', window.val); // 预期: 1
         bar();
 
         // ============ 3. 对比：严格模式下独立调用 this 为 undefined ============
         (function () {
-          "use strict";
+          'use strict';
           function strictBar() {
             try {
-              emit("严格模式 this.val", this.val);
+              emit('严格模式 this.val', this.val);
             } catch (e) {
-              emit("严格模式 this.val", e.name + "（this 为 undefined）");
+              emit('严格模式 this.val', e.name + '（this 为 undefined）');
             }
           }
           strictBar();
@@ -111,15 +296,23 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="./02-%E5%B5%8C%E5%A5%97%E4%BD%9C%E7%94%A8%E5%9F%9F-%E8%BF%94%E5%9B%9E%E5%80%BC.html">相关 · 嵌套作用域-返回值</a>
+        <a
+          href="./02-%E5%B5%8C%E5%A5%97%E4%BD%9C%E7%94%A8%E5%9F%9F-%E8%BF%94%E5%9B%9E%E5%80%BC.html"
+        >
+          相关 · 嵌套作用域-返回值
+        </a>
         <a href="../%E6%89%8B%E5%86%99/07-LRU%E7%BC%93%E5%AD%98.html">← LRU缓存</a>
-        <a href="./02-%E5%B5%8C%E5%A5%97%E4%BD%9C%E7%94%A8%E5%9F%9F-%E8%BF%94%E5%9B%9E%E5%80%BC.html">嵌套作用域-返回值 →</a>
+        <a
+          href="./02-%E5%B5%8C%E5%A5%97%E4%BD%9C%E7%94%A8%E5%9F%9F-%E8%BF%94%E5%9B%9E%E5%80%BC.html"
+        >
+          嵌套作用域-返回值 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>

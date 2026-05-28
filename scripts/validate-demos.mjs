@@ -9,26 +9,26 @@
  * CI 与本地改 demo 后均应通过。
  */
 
-import { readdir, readFile, stat, writeFile, mkdtemp, rm } from "node:fs/promises";
-import { join, relative, sep } from "node:path";
-import { fileURLToPath } from "node:url";
-import { execFileSync, spawnSync } from "node:child_process";
-import { tmpdir } from "node:os";
-import { parseDemoMetaFromContent } from "./lib/parse-demo-meta.mjs";
+import { readdir, readFile, stat, writeFile, mkdtemp, rm } from 'node:fs/promises';
+import { join, relative, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import { parseDemoMetaFromContent } from './lib/parse-demo-meta.mjs';
 
-const ROOT = join(fileURLToPath(import.meta.url), "..", "..");
+const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
 
 const SECTIONS = [
-  join("apps", "javascript"),
-  join("apps", "css"),
-  join("apps", "vue2"),
-  join("apps", "vue3"),
-  join("apps", "react18"),
-  join("apps", "react19"),
-  join("apps", "demos"),
-  join("apps", "typescript"),
+  join('apps', 'javascript'),
+  join('apps', 'css'),
+  join('apps', 'vue2'),
+  join('apps', 'vue3'),
+  join('apps', 'react18'),
+  join('apps', 'react19'),
+  join('apps', 'demos'),
+  join('apps', 'typescript'),
 ];
-const SKIP_DIRS = new Set(["libs", "lib", "node_modules", ".git", "scripts"]);
+const SKIP_DIRS = new Set(['libs', 'lib', 'node_modules', '.git', 'scripts']);
 
 const errors = [];
 
@@ -39,9 +39,9 @@ async function collectHtml(dirAbs, list) {
     if (ent.isDirectory()) {
       if (SKIP_DIRS.has(ent.name)) continue;
       await collectHtml(abs, list);
-    } else if (ent.isFile() && ent.name.toLowerCase().endsWith(".html")) {
+    } else if (ent.isFile() && ent.name.toLowerCase().endsWith('.html')) {
       const rel = relative(ROOT, abs);
-      if (rel === "index.html") continue;
+      if (rel === 'index.html') continue;
       list.push(abs);
     }
   }
@@ -55,7 +55,7 @@ function validateHeader(content, fileRel) {
     return;
   }
   const block = comment[1];
-  for (const key of ["分类", "主题", "要点"]) {
+  for (const key of ['分类', '主题', '要点']) {
     if (!block.includes(`${key}:`)) {
       errors.push(`${fileRel}: 头注释缺少「${key}:」`);
     }
@@ -63,7 +63,7 @@ function validateHeader(content, fileRel) {
 }
 
 function validateFilename(name, fileRel) {
-  if (name === "index.html") return;
+  if (name === 'index.html') return;
   if (/[_]/.test(name)) {
     errors.push(`${fileRel}: 文件名含下划线，应使用连字符（见 CONVENTIONS.md §3）`);
   }
@@ -86,7 +86,7 @@ const DEMO_NOTES_SECTIONS = [
 function validateDemoNotes(content, fileRel) {
   if (!DEMO_NOTES_SECTIONS.some((re) => re.test(fileRel))) return;
   const meta = parseDemoMetaFromContent(content);
-  if (!content.includes("面试:")) {
+  if (!content.includes('面试:')) {
     errors.push(`${fileRel}: demo 头注释缺少「面试:」（见 CONVENTIONS.md §4.2）`);
   } else if (meta.interviewPoints.length < 3) {
     errors.push(`${fileRel}: demo「面试:」至少 3 条 bullet`);
@@ -124,17 +124,21 @@ function validateVisibleLearningSurface(content, fileRel) {
     /<!--\s*SCRIPT_START\s*-->/.test(content);
   if (!hasOutput) {
     errors.push(
-      `${fileRel}: 含 console 输出的 JavaScript demo 须有运行输出区或 SCRIPT 区块（见 字符串方法.html）`
+      `${fileRel}: 含 console 输出的 JavaScript demo 须有运行输出区或 SCRIPT 区块（见 字符串方法.html）`,
     );
   }
 }
 
 function validatePageMeta(content, fileRel) {
   if (!/<html[^>]*\blang\s*=\s*["']zh-CN["']/i.test(content)) {
-    errors.push(`${fileRel}: 缺少 lang="zh-CN"（运行 node scripts/inject-demo-nav.mjs 可自动补齐）`);
+    errors.push(
+      `${fileRel}: 缺少 lang="zh-CN"（运行 node scripts/inject-demo-nav.mjs 可自动补齐）`,
+    );
   }
   if (!/<meta[^>]*name\s*=\s*["']viewport["']/i.test(content)) {
-    errors.push(`${fileRel}: 缺少 viewport meta（运行 node scripts/inject-demo-nav.mjs 可自动补齐）`);
+    errors.push(
+      `${fileRel}: 缺少 viewport meta（运行 node scripts/inject-demo-nav.mjs 可自动补齐）`,
+    );
   }
   if (!/<!--\s*(?:DEMO_)?NAV_START\s*-->/.test(content)) {
     errors.push(`${fileRel}: 缺少页脚导航（运行 node scripts/inject-demo-nav.mjs）`);
@@ -148,7 +152,7 @@ function validatePageMeta(content, fileRel) {
 }
 
 function stripHtmlComments(html) {
-  return html.replace(/<!--[\s\S]*?-->/g, "");
+  return html.replace(/<!--[\s\S]*?-->/g, '');
 }
 
 function extractPlainScripts(html) {
@@ -166,15 +170,15 @@ function extractPlainScripts(html) {
 async function checkScripts(html, fileRel) {
   const scripts = extractPlainScripts(html);
   if (!scripts.length) return;
-  const dir = await mkdtemp(join(tmpdir(), "validate-demos-"));
+  const dir = await mkdtemp(join(tmpdir(), 'validate-demos-'));
   try {
     for (let i = 0; i < scripts.length; i++) {
       const file = join(dir, `snippet-${i}.js`);
-      await writeFile(file, scripts[i], "utf8");
+      await writeFile(file, scripts[i], 'utf8');
       try {
-        execFileSync(process.execPath, ["--check", file], { stdio: "pipe" });
+        execFileSync(process.execPath, ['--check', file], { stdio: 'pipe' });
       } catch (e) {
-        const msg = e.stderr?.toString().trim().split("\n")[0] || e.message;
+        const msg = e.stderr?.toString().trim().split('\n')[0] || e.message;
         errors.push(`${fileRel}: 内联 <script> #${i + 1} 语法错误 — ${msg}`);
       }
     }
@@ -196,8 +200,8 @@ async function main() {
   }
 
   for (const abs of files) {
-    const rel = relative(ROOT, abs).split(sep).join("/");
-    const content = await readFile(abs, "utf8");
+    const rel = relative(ROOT, abs).split(sep).join('/');
+    const content = await readFile(abs, 'utf8');
     validateHeader(content, rel);
     validateFilename(abs.split(sep).pop(), rel);
     validatePageMeta(content, rel);
@@ -207,18 +211,18 @@ async function main() {
   }
 
   // build-index 只检查，不写入，避免校验过程污染工作区。
-  const build = spawnSync(process.execPath, [join(ROOT, "scripts/build-index.mjs"), "--check"], {
+  const build = spawnSync(process.execPath, [join(ROOT, 'scripts/build-index.mjs'), '--check'], {
     cwd: ROOT,
-    encoding: "utf8",
+    encoding: 'utf8',
   });
   if (build.status !== 0) {
     errors.push(`build-index.mjs 失败:\n${build.stderr || build.stdout}`);
   }
 
-  const manifest = JSON.parse(await readFile(join(ROOT, "manifest.json"), "utf8"));
+  const manifest = JSON.parse(await readFile(join(ROOT, 'manifest.json'), 'utf8'));
   const indexed = manifest.sections.reduce(
     (s, sec) => s + sec.groups.reduce((g, gr) => g + gr.items.length, 0),
-    0
+    0,
   );
   if (indexed !== files.length) {
     errors.push(`manifest 索引 ${indexed} 个 demo，磁盘扫描 ${files.length} 个 — 数量不一致`);
@@ -238,7 +242,7 @@ async function main() {
 
   if (errors.length) {
     console.error(`[validate-demos] 失败，共 ${errors.length} 项：\n`);
-    errors.forEach((e) => console.error("  •", e));
+    errors.forEach((e) => console.error('  •', e));
     process.exitCode = 1;
     return;
   }
@@ -247,6 +251,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error("[validate-demos] 异常：", err);
+  console.error('[validate-demos] 异常：', err);
   process.exitCode = 1;
 });

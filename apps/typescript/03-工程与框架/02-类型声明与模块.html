@@ -21,9 +21,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TypeScript · 类型声明与模块</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 900px; line-height: 1.6; }
-      pre { background: #1e1e1e; color: #d4d4d4; padding: 14px; border-radius: 8px; overflow: auto; font-size: 0.86rem; }
-      #log { background: #f6f8fa; padding: 12px; border-radius: 8px; margin-top: 12px; white-space: pre-wrap; font-size: 0.85rem; }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        max-width: 900px;
+        line-height: 1.6;
+      }
+      pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 14px;
+        border-radius: 8px;
+        overflow: auto;
+        font-size: 0.86rem;
+      }
+      #log {
+        background: #f6f8fa;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 12px;
+        white-space: pre-wrap;
+        font-size: 0.85rem;
+      }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -32,46 +51,138 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>类型声明与模块声明</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；声明文件本身须在 IDE/tsc 中验证，下方 JS 演示「声明 vs 实现」边界。</p>
+      <p class="hint">
+        在浏览器中打开本页，结合下方演示区观察效果；声明文件本身须在 IDE/tsc 中验证，下方 JS
+        演示「声明 vs 实现」边界。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>.d.ts</code> 是声明文件，只描述已有 JavaScript 或全局对象的类型形状，不应该放业务实现；它会参与类型检查，但不会生成运行时代码。</li>
-          <li><code>declare module "legacy-chart"</code> 可为没有类型的第三方包补充模块声明，也可用于声明 <code>*.svg</code>、<code>*.css</code> 这类非 TS 资源模块。</li>
-          <li><code>declare global</code> 可扩展 <code>Window</code>、<code>ImportMetaEnv</code> 等全局类型；在模块文件里通常需要配合 <code>export {}</code>，避免声明被当成脚本级全局污染。</li>
-          <li>声明文件只让编译器知道“这里应该有什么”，不会创建真实包、函数或属性；本页脚本里仍手动提供 <code>renderChart</code> 和 <code>window.appVersion</code> 的运行时实现。</li>
-          <li>常见坑是用宽泛的 <code>any</code> 声明掩盖第三方库风险，或把声明文件纳入错误的 <code>include</code>/<code>typeRoots</code> 范围导致 IDE 找不到类型。</li>
+          <li>
+            <code>.d.ts</code>
+            是声明文件，只描述已有 JavaScript
+            或全局对象的类型形状，不应该放业务实现；它会参与类型检查，但不会生成运行时代码。
+          </li>
+          <li>
+            <code>declare module "legacy-chart"</code>
+            可为没有类型的第三方包补充模块声明，也可用于声明
+            <code>*.svg</code>
+            、
+            <code>*.css</code>
+            这类非 TS 资源模块。
+          </li>
+          <li>
+            <code>declare global</code>
+            可扩展
+            <code>Window</code>
+            、
+            <code>ImportMetaEnv</code>
+            等全局类型；在模块文件里通常需要配合
+            <code>export {}</code>
+            ，避免声明被当成脚本级全局污染。
+          </li>
+          <li>
+            声明文件只让编译器知道“这里应该有什么”，不会创建真实包、函数或属性；本页脚本里仍手动提供
+            <code>renderChart</code>
+            和
+            <code>window.appVersion</code>
+            的运行时实现。
+          </li>
+          <li>
+            常见坑是用宽泛的
+            <code>any</code>
+            声明掩盖第三方库风险，或把声明文件纳入错误的
+            <code>include</code>
+            /
+            <code>typeRoots</code>
+            范围导致 IDE 找不到类型。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>.d.ts 和普通 .ts 文件有什么区别？</strong> 结论是 <code>.d.ts</code> 只声明类型契约，普通 <code>.ts</code> 可以包含实现。原因是声明文件描述已经存在的运行时能力，不负责创建它。项目里给 JS 库、全局变量和资源模块补类型时才写声明文件。</li>
-          <li><strong>declare module 能解决什么问题？</strong> 结论是它能让 TS 认识缺少类型的模块。原因是编译器需要知道模块导出的函数、对象和类型结构，才能检查调用方。边界是声明越粗糙，类型保护越弱；能安装官方类型或 <code>@types</code> 时优先使用维护好的声明。</li>
-          <li><strong>declare global 扩展 Window 要注意什么？</strong> 结论是要确保声明在正确的模块上下文中，并且运行时真的写入了对应属性。原因是全局扩展会影响整个项目，声明和实现不一致会让代码通过编译但运行时报错。团队项目里应把全局扩展集中放在专门的 <code>env.d.ts</code> 或 <code>global.d.ts</code>。</li>
-          <li><strong>声明文件为什么不能替代真实实现？</strong> 结论是声明文件只影响编译器，不影响浏览器或 Node 的运行时。原因是类型会被擦除，模块加载仍需要真实 JS 文件或包。接入遗留库时既要补声明，也要确认依赖安装、打包解析和全局脚本加载路径都正确。</li>
+          <li>
+            <strong>.d.ts 和普通 .ts 文件有什么区别？</strong>
+            结论是
+            <code>.d.ts</code>
+            只声明类型契约，普通
+            <code>.ts</code>
+            可以包含实现。原因是声明文件描述已经存在的运行时能力，不负责创建它。项目里给 JS
+            库、全局变量和资源模块补类型时才写声明文件。
+          </li>
+          <li>
+            <strong>declare module 能解决什么问题？</strong>
+            结论是它能让 TS
+            认识缺少类型的模块。原因是编译器需要知道模块导出的函数、对象和类型结构，才能检查调用方。边界是声明越粗糙，类型保护越弱；能安装官方类型或
+            <code>@types</code>
+            时优先使用维护好的声明。
+          </li>
+          <li>
+            <strong>declare global 扩展 Window 要注意什么？</strong>
+            结论是要确保声明在正确的模块上下文中，并且运行时真的写入了对应属性。原因是全局扩展会影响整个项目，声明和实现不一致会让代码通过编译但运行时报错。团队项目里应把全局扩展集中放在专门的
+            <code>env.d.ts</code>
+            或
+            <code>global.d.ts</code>
+            。
+          </li>
+          <li>
+            <strong>声明文件为什么不能替代真实实现？</strong>
+            结论是声明文件只影响编译器，不影响浏览器或 Node
+            的运行时。原因是类型会被擦除，模块加载仍需要真实 JS
+            文件或包。接入遗留库时既要补声明，也要确认依赖安装、打包解析和全局脚本加载路径都正确。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html" target="_blank" rel="noopener">TypeScript Handbook: Declaration Files</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/declaration-files/by-example.html" target="_blank" rel="noopener">TypeScript Handbook: Declaration Files by Example</a></li>
-          <li><a href="https://www.typescriptlang.org/docs/handbook/declaration-merging.html" target="_blank" rel="noopener">TypeScript Handbook: Declaration Merging</a></li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Declaration Files
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/declaration-files/by-example.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Declaration Files by Example
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.typescriptlang.org/docs/handbook/declaration-merging.html"
+              target="_blank"
+              rel="noopener"
+            >
+              TypeScript Handbook: Declaration Merging
+            </a>
+          </li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>上方为 <code>.d.ts</code> 声明片段（须 IDE/tsc 验证）；下方 JS 演示声明与实现的运行时边界。</p>
-    <pre>// src/types/vendor.d.ts
-declare module "legacy-chart" {
-  export interface ChartOptions { el: string; data: number[]; }
-  export function renderChart(options: ChartOptions): void;
-}
-
-// src/types/env.d.ts
-declare global {
-  interface Window { appVersion: string; }
-}
-export {};</pre>
+    <p>
+      上方为
+      <code>.d.ts</code>
+      声明片段（须 IDE/tsc 验证）；下方 JS 演示声明与实现的运行时边界。
+    </p>
+    <pre>
+// src/types/vendor.d.ts
+      declare module "legacy-chart" {
+      export interface ChartOptions { el: string; data: number[]; }
+      export function renderChart(options: ChartOptions): void;
+      }
+      // src/types/env.d.ts
+      declare global {
+      interface Window { appVersion: string; }
+      }
+      export {};</pre
+    >
     <pre id="log"></pre>
     <!-- PAGE_DOM_END -->
 
@@ -79,7 +190,7 @@ export {};</pre>
     <script>
       // ============ 1. declare global 扩展 Window ============
       // 声明文件只告诉 TS “这个全局字段存在”，真实运行时仍要由 JS 代码赋值。
-      window.appVersion = "1.0.0";
+      window.appVersion = '1.0.0';
 
       // ============ 2. declare module 对应的运行时实现 ============
       // .d.ts 只描述模块类型，不会创建模块实现；本页用同名函数模拟第三方库。
@@ -88,19 +199,19 @@ export {};</pre>
       }
 
       const lines = [];
-      const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
+      const assert = (cond, msg) => lines.push((cond ? '✓ ' : '✗ ') + msg);
 
       assert(
-        renderChart({ el: "#chart", data: [1, 2, 3] }) === "render 3 points into #chart",
-        "declare module 描述类型，JS 提供真实 renderChart 实现"
+        renderChart({ el: '#chart', data: [1, 2, 3] }) === 'render 3 points into #chart',
+        'declare module 描述类型，JS 提供真实 renderChart 实现',
       );
-      assert(window.appVersion === "1.0.0", "declare global 扩展 Window.appVersion");
+      assert(window.appVersion === '1.0.0', 'declare global 扩展 Window.appVersion');
       assert(
-        typeof renderChart === "function",
-        "声明文件不会生成运行时代码（TS 可拦类型错误、JS 仍需真实包）"
+        typeof renderChart === 'function',
+        '声明文件不会生成运行时代码（TS 可拦类型错误、JS 仍需真实包）',
       );
 
-      document.getElementById("log").textContent = lines.join("\n");
+      document.getElementById('log').textContent = lines.join('\n');
     </script>
     <!-- SCRIPT_END -->
 
@@ -110,19 +221,23 @@ export {};</pre>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
         <a href="./01-tsconfig-strict%E9%85%8D%E7%BD%AE.html">相关 · tsconfig-strict配置</a>
-        <a href="./03-Vue3%E4%B8%8EReact%E7%BB%84%E4%BB%B6%E7%B1%BB%E5%9E%8B.html">相关 · Vue3与React组件类型</a>
+        <a href="./03-Vue3%E4%B8%8EReact%E7%BB%84%E4%BB%B6%E7%B1%BB%E5%9E%8B.html">
+          相关 · Vue3与React组件类型
+        </a>
         <a href="./01-tsconfig-strict%E9%85%8D%E7%BD%AE.html">← tsconfig-strict配置</a>
-        <a href="./03-Vue3%E4%B8%8EReact%E7%BB%84%E4%BB%B6%E7%B1%BB%E5%9E%8B.html">Vue3与React组件类型 →</a>
+        <a href="./03-Vue3%E4%B8%8EReact%E7%BB%84%E4%BB%B6%E7%B1%BB%E5%9E%8B.html">
+          Vue3与React组件类型 →
+        </a>
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

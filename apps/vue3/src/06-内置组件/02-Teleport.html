@@ -22,13 +22,49 @@
     <title>Vue3 · Teleport</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { padding: 6px 12px; }
-      code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
-      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
-      .modal { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.25); }
-      .dialog { background: #fff; border-radius: 8px; padding: 20px; min-width: 260px; box-shadow: 0 8px 30px rgba(0,0,0,.18); }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          'PingFang SC',
+          sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+      }
+      button {
+        padding: 6px 12px;
+      }
+      code {
+        background: #f6f8fa;
+        padding: 2px 5px;
+        border-radius: 6px;
+      }
+      .box {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 760px;
+      }
+      .box .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
+      .modal {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: rgba(0, 0, 0, 0.25);
+      }
+      .dialog {
+        background: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        min-width: 260px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -41,24 +77,98 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>Teleport</code> 可以把组件模板的一部分移动到指定 DOM 容器渲染；本页弹窗逻辑写在 <code>#app</code> 内，但实际 DOM 被挂到 <code>body</code> 下。</li>
-          <li>它只改变真实 DOM 插入位置，不改变 Vue 组件逻辑层级，所以弹窗仍能读取当前组件的 <code>open</code> 状态并触发原组件中的关闭逻辑。</li>
-          <li>弹窗、抽屉、通知、全局浮层常用 Teleport，因为它们容易受父级 <code>overflow</code>、<code>transform</code>、层叠上下文和定位规则影响。</li>
-          <li><code>to</code> 指向的目标容器必须存在；多个 Teleport 指向同一容器时会按挂载顺序追加，需要额外管理 z-index、焦点、滚动锁定和关闭交互。</li>
-          <li>本页是最小交互示例，真实弹窗还应处理 Esc 关闭、焦点陷阱、背景不可滚动、ARIA 角色以及点击遮罩的边界；Vue2→Vue3 能力对比见 <a href="../08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/04-Vue2%E4%B8%8EVue3%E5%B7%AE%E5%BC%82.html">08-Vue2与Vue3差异</a>。</li>
+          <li>
+            <code>Teleport</code>
+            可以把组件模板的一部分移动到指定 DOM 容器渲染；本页弹窗逻辑写在
+            <code>#app</code>
+            内，但实际 DOM 被挂到
+            <code>body</code>
+            下。
+          </li>
+          <li>
+            它只改变真实 DOM 插入位置，不改变 Vue 组件逻辑层级，所以弹窗仍能读取当前组件的
+            <code>open</code>
+            状态并触发原组件中的关闭逻辑。
+          </li>
+          <li>
+            弹窗、抽屉、通知、全局浮层常用 Teleport，因为它们容易受父级
+            <code>overflow</code>
+            、
+            <code>transform</code>
+            、层叠上下文和定位规则影响。
+          </li>
+          <li>
+            <code>to</code>
+            指向的目标容器必须存在；多个 Teleport 指向同一容器时会按挂载顺序追加，需要额外管理
+            z-index、焦点、滚动锁定和关闭交互。
+          </li>
+          <li>
+            本页是最小交互示例，真实弹窗还应处理 Esc 关闭、焦点陷阱、背景不可滚动、ARIA
+            角色以及点击遮罩的边界；Vue2→Vue3 能力对比见
+            <a
+              href="../08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/04-Vue2%E4%B8%8EVue3%E5%B7%AE%E5%BC%82.html"
+            >
+              08-Vue2与Vue3差异
+            </a>
+            。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Teleport 改变的是 DOM 位置还是组件父子关系？</strong> 结论是只改变 DOM 位置，组件父子关系和响应式上下文不变。原因是 Vue 仍在原组件树中管理这段模板，只是在渲染阶段把节点插入目标容器。边界是 CSS 选择器、布局和事件冒泡会按真实 DOM 位置表现。</li>
-          <li><strong>为什么弹窗常 Teleport 到 body？</strong> 因为弹窗需要脱离局部容器的 overflow、定位和层叠上下文限制。挂到 body 后更容易统一处理遮罩、z-index 和全局浮层栈。项目里仍要补充滚动锁定、焦点管理和可访问性，不能只靠 Teleport。</li>
-          <li><strong>Teleport 的 to 目标不存在怎么办？</strong> 结论是目标容器必须在挂载时可用，否则渲染会失败或产生警告。真实项目通常准备固定的 <code>#modal-root</code>，或在目标未就绪时延迟渲染。SSR 场景还要保证服务端和客户端结构可匹配。</li>
-          <li><strong>Teleport 和 CSS fixed / z-index 的区别是什么？</strong> CSS 只能尝试在当前位置调整视觉层级，Teleport 直接改变节点所在容器。遇到父级 transform、overflow hidden 或复杂 stacking context 时，Teleport 更可靠。但它不替代浮层状态管理和交互细节。</li>
+          <li>
+            <strong>Teleport 改变的是 DOM 位置还是组件父子关系？</strong>
+            结论是只改变 DOM 位置，组件父子关系和响应式上下文不变。原因是 Vue
+            仍在原组件树中管理这段模板，只是在渲染阶段把节点插入目标容器。边界是 CSS
+            选择器、布局和事件冒泡会按真实 DOM 位置表现。
+          </li>
+          <li>
+            <strong>为什么弹窗常 Teleport 到 body？</strong>
+            因为弹窗需要脱离局部容器的 overflow、定位和层叠上下文限制。挂到 body
+            后更容易统一处理遮罩、z-index
+            和全局浮层栈。项目里仍要补充滚动锁定、焦点管理和可访问性，不能只靠 Teleport。
+          </li>
+          <li>
+            <strong>Teleport 的 to 目标不存在怎么办？</strong>
+            结论是目标容器必须在挂载时可用，否则渲染会失败或产生警告。真实项目通常准备固定的
+            <code>#modal-root</code>
+            ，或在目标未就绪时延迟渲染。SSR 场景还要保证服务端和客户端结构可匹配。
+          </li>
+          <li>
+            <strong>Teleport 和 CSS fixed / z-index 的区别是什么？</strong>
+            CSS 只能尝试在当前位置调整视觉层级，Teleport 直接改变节点所在容器。遇到父级
+            transform、overflow hidden 或复杂 stacking context 时，Teleport
+            更可靠。但它不替代浮层状态管理和交互细节。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/guide/built-ins/teleport.html" target="_blank" rel="noreferrer">Vue 官方指南：Teleport</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_positioned_layout/Understanding_z-index/Stacking_context" target="_blank" rel="noreferrer">MDN：Stacking context</a></li>
-          <li><a href="https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/" target="_blank" rel="noreferrer">WAI-ARIA APG：Modal Dialog Pattern</a></li>
+          <li>
+            <a
+              href="https://vuejs.org/guide/built-ins/teleport.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Vue 官方指南：Teleport
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_positioned_layout/Understanding_z-index/Stacking_context"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN：Stacking context
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              WAI-ARIA APG：Modal Dialog Pattern
+            </a>
+          </li>
         </ul>
       </div>
     </section>
@@ -68,14 +178,27 @@
     <div id="app">
       <h1>Teleport</h1>
       <div class="box">
-        <p class="hint-inline">打开弹窗后，在开发者工具 Elements 中可看到遮罩层挂在 <code>body</code> 下，而不是 <code>#app</code> 内。</p>
+        <p class="hint-inline">
+          打开弹窗后，在开发者工具 Elements 中可看到遮罩层挂在
+          <code>body</code>
+          下，而不是
+          <code>#app</code>
+          内。
+        </p>
         <button type="button" @click="openModal">打开弹窗</button>
-        <p>弹窗状态（仍在当前组件）：<code>{{ open ? "已打开" : "已关闭" }}</code></p>
+        <p>
+          弹窗状态（仍在当前组件）：
+          <code>{{ open ? "已打开" : "已关闭" }}</code>
+        </p>
         <teleport to="body">
           <div v-if="open" class="modal" @click.self="closeModal">
             <div class="dialog">
               <h2>弹窗内容</h2>
-              <p>这块 DOM 被渲染到了 body 下；控制台可见 <code>[teleport]</code> 日志。</p>
+              <p>
+                这块 DOM 被渲染到了 body 下；控制台可见
+                <code>[teleport]</code>
+                日志。
+              </p>
               <button type="button" @click="closeModal">关闭</button>
             </div>
           </div>
@@ -96,16 +219,16 @@
 
           function openModal() {
             open.value = true;
-            console.log("[teleport] modal 已挂载到 body");
+            console.log('[teleport] modal 已挂载到 body');
           }
 
           function closeModal() {
             open.value = false;
-            console.log("[teleport] modal 已卸载");
+            console.log('[teleport] modal 已卸载');
           }
 
           onMounted(() => {
-            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+            console.log('[mounted] createApp 已接管 #app，DOM 已渲染');
           });
 
           return { open, openModal, closeModal };
@@ -113,9 +236,8 @@
       });
       // mount 须在 app.use / app.component / app.config 等配置之后调用
       // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
-      const rootInstance = app.mount("#app");
-      console.log("[mount] 根组件实例", rootInstance);
-
+      const rootInstance = app.mount('#app');
+      console.log('[mount] 根组件实例', rootInstance);
     </script>
     <!-- SCRIPT_END -->
 
@@ -129,13 +251,13 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

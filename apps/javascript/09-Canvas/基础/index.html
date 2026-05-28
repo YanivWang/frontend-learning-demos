@@ -23,36 +23,167 @@
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
     <style>
-      canvas { border: 1px solid #ddd; display: block; margin-top: 0.5rem; }
+      canvas {
+        border: 1px solid #ddd;
+        display: block;
+        margin-top: 0.5rem;
+      }
     </style>
   </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Canvas 2D 基础</h1>
-      <p class="hint">先看本复习区，再观察下方 canvas 中的矩形、路径、圆弧、文字与渐变；可打开 DevTools Console 查看缓冲区与 CSS 尺寸对比。</p>
+      <p class="hint">
+        先看本复习区，再观察下方 canvas 中的矩形、路径、圆弧、文字与渐变；可打开 DevTools Console
+        查看缓冲区与 CSS 尺寸对比。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>&lt;canvas&gt;</code> 本身只是一个位图绘制区域，真正绘图要通过 <code>getContext("2d")</code> 拿到 <code>CanvasRenderingContext2D</code>，再调用矩形、路径、文字、渐变等 API。</li>
-          <li>基础流程是先设置绘图状态，例如 <code>fillStyle</code>、<code>strokeStyle</code>、<code>font</code>，再创建形状或路径，最后调用 <code>fill()</code> 或 <code>stroke()</code> 把当前状态绘制到位图上。</li>
-          <li>路径是有状态的：<code>moveTo()</code>、<code>lineTo()</code>、<code>arc()</code>、<code>arcTo()</code> 会加入当前路径；绘制互不相关的形状前要调用 <code>beginPath()</code>，否则后续 <code>fill()</code>/<code>stroke()</code> 可能影响旧路径。</li>
-          <li>Canvas 绘制后不保留 DOM 节点语义，浏览器无法像操作 SVG/HTML 那样单独选择某个圆或文字；如果需要事件命中、无障碍文本或结构化导出，要自己维护模型，或改用 SVG/HTML。</li>
-          <li>常见坑包括忘记处理 <code>getContext()</code> 失败、只改 CSS 尺寸导致画面拉伸、未按 <code>devicePixelRatio</code> 缩放导致高 DPI 屏模糊，以及重新绘制时忘记清屏或恢复绘图状态。本页 Console 会打印缓冲区与 CSS 尺寸对比；按 DPR 缩放缓冲区、resize 后重绘等完整流程<strong>需人工在浏览器验证</strong>（改 CSS 宽高或 DevTools 设备模拟观察是否模糊/拉伸）。</li>
+          <li>
+            <code>&lt;canvas&gt;</code>
+            本身只是一个位图绘制区域，真正绘图要通过
+            <code>getContext("2d")</code>
+            拿到
+            <code>CanvasRenderingContext2D</code>
+            ，再调用矩形、路径、文字、渐变等 API。
+          </li>
+          <li>
+            基础流程是先设置绘图状态，例如
+            <code>fillStyle</code>
+            、
+            <code>strokeStyle</code>
+            、
+            <code>font</code>
+            ，再创建形状或路径，最后调用
+            <code>fill()</code>
+            或
+            <code>stroke()</code>
+            把当前状态绘制到位图上。
+          </li>
+          <li>
+            路径是有状态的：
+            <code>moveTo()</code>
+            、
+            <code>lineTo()</code>
+            、
+            <code>arc()</code>
+            、
+            <code>arcTo()</code>
+            会加入当前路径；绘制互不相关的形状前要调用
+            <code>beginPath()</code>
+            ，否则后续
+            <code>fill()</code>
+            /
+            <code>stroke()</code>
+            可能影响旧路径。
+          </li>
+          <li>
+            Canvas 绘制后不保留 DOM 节点语义，浏览器无法像操作 SVG/HTML
+            那样单独选择某个圆或文字；如果需要事件命中、无障碍文本或结构化导出，要自己维护模型，或改用
+            SVG/HTML。
+          </li>
+          <li>
+            常见坑包括忘记处理
+            <code>getContext()</code>
+            失败、只改 CSS 尺寸导致画面拉伸、未按
+            <code>devicePixelRatio</code>
+            缩放导致高 DPI 屏模糊，以及重新绘制时忘记清屏或恢复绘图状态。本页 Console 会打印缓冲区与
+            CSS 尺寸对比；按 DPR 缩放缓冲区、resize 后重绘等完整流程
+            <strong>需人工在浏览器验证</strong>
+            （改 CSS 宽高或 DevTools 设备模拟观察是否模糊/拉伸）。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Canvas 2D 绘图的基本调用顺序是什么？</strong> 结论是获取 canvas、拿 2D 上下文、设置绘图状态、构建路径或形状，最后调用 <code>fill()</code> 或 <code>stroke()</code>。原因是 Canvas 是命令式位图 API，每次绘制都会把当前上下文状态写入像素。项目里通常会把数据模型和绘制函数分开，状态变化后清屏并重绘，而不是期待浏览器帮你维护图形节点。</li>
-          <li><strong>beginPath、fill 和 stroke 分别解决什么问题？</strong> 结论是 <code>beginPath()</code> 开始一条新路径，<code>fill()</code> 填充当前路径内部，<code>stroke()</code> 描边当前路径边界。原因是路径命令会累积在上下文里，不隔离路径会让多个图形被同一次填充或描边影响。边界是 <code>fillRect()</code>/<code>strokeRect()</code> 这类矩形快捷 API 会直接绘制，不需要先手写路径。</li>
-          <li><strong>Canvas 和 SVG 在图表或可视化项目里如何选型？</strong> 结论是大量点、频繁动画、像素处理优先 Canvas，少量结构化图形、需要 CSS/DOM 事件和无障碍语义优先 SVG。原因是 Canvas 绘制结果是位图，重绘成本由你控制；SVG 是保留模式图形，每个图形都是节点。项目里折中方案常见于图表库：主图层用 Canvas 提性能，tooltip、坐标轴或交互层用 HTML/SVG。</li>
-          <li><strong>Canvas 基础绘图有哪些尺寸、清晰度和可访问性边界？</strong> 结论是 Canvas 不应只看页面上显示的 CSS 尺寸。原因是 <code>canvas.width</code>/<code>height</code> 决定绘图缓冲区，CSS 宽高只决定显示尺寸，两者不一致会缩放像素；高 DPI 屏还要考虑 <code>devicePixelRatio</code>。此外 canvas 内文字不是可选择文本，重要信息要提供旁路 DOM 文本或 ARIA 说明。</li>
+          <li>
+            <strong>Canvas 2D 绘图的基本调用顺序是什么？</strong>
+            结论是获取 canvas、拿 2D 上下文、设置绘图状态、构建路径或形状，最后调用
+            <code>fill()</code>
+            或
+            <code>stroke()</code>
+            。原因是 Canvas 是命令式位图
+            API，每次绘制都会把当前上下文状态写入像素。项目里通常会把数据模型和绘制函数分开，状态变化后清屏并重绘，而不是期待浏览器帮你维护图形节点。
+          </li>
+          <li>
+            <strong>beginPath、fill 和 stroke 分别解决什么问题？</strong>
+            结论是
+            <code>beginPath()</code>
+            开始一条新路径，
+            <code>fill()</code>
+            填充当前路径内部，
+            <code>stroke()</code>
+            描边当前路径边界。原因是路径命令会累积在上下文里，不隔离路径会让多个图形被同一次填充或描边影响。边界是
+            <code>fillRect()</code>
+            /
+            <code>strokeRect()</code>
+            这类矩形快捷 API 会直接绘制，不需要先手写路径。
+          </li>
+          <li>
+            <strong>Canvas 和 SVG 在图表或可视化项目里如何选型？</strong>
+            结论是大量点、频繁动画、像素处理优先 Canvas，少量结构化图形、需要 CSS/DOM
+            事件和无障碍语义优先 SVG。原因是 Canvas 绘制结果是位图，重绘成本由你控制；SVG
+            是保留模式图形，每个图形都是节点。项目里折中方案常见于图表库：主图层用 Canvas
+            提性能，tooltip、坐标轴或交互层用 HTML/SVG。
+          </li>
+          <li>
+            <strong>Canvas 基础绘图有哪些尺寸、清晰度和可访问性边界？</strong>
+            结论是 Canvas 不应只看页面上显示的 CSS 尺寸。原因是
+            <code>canvas.width</code>
+            /
+            <code>height</code>
+            决定绘图缓冲区，CSS 宽高只决定显示尺寸，两者不一致会缩放像素；高 DPI 屏还要考虑
+            <code>devicePixelRatio</code>
+            。此外 canvas 内文字不是可选择文本，重要信息要提供旁路 DOM 文本或 ARIA 说明。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial" target="_blank" rel="noreferrer">MDN: Canvas tutorial</a>：2D 绘图总览与基本流程。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/beginPath" target="_blank" rel="noreferrer">MDN: beginPath()</a>：开始新路径、清空当前 sub-path 列表。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillRect" target="_blank" rel="noreferrer">MDN: fillRect()</a>：矩形快捷绘制，无需手写路径。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement" target="_blank" rel="noreferrer">MDN: HTMLCanvasElement</a>：<code>width</code>/<code>height</code> 属性与绘图缓冲区。</li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: Canvas tutorial
+            </a>
+            ：2D 绘图总览与基本流程。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/beginPath"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: beginPath()
+            </a>
+            ：开始新路径、清空当前 sub-path 列表。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillRect"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: fillRect()
+            </a>
+            ：矩形快捷绘制，无需手写路径。
+          </li>
+          <li>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MDN: HTMLCanvasElement
+            </a>
+            ：
+            <code>width</code>
+            /
+            <code>height</code>
+            属性与绘图缓冲区。
+          </li>
         </ul>
       </div>
     </section>
@@ -62,9 +193,7 @@
     <section class="demo-block">
       <h2>Canvas 2D 基础绘图演示</h2>
       <p class="tip">获取上下文 → 设置样式 → 绘制路径 / 图形 → fill / stroke</p>
-      <canvas id="canvasId" width="480" height="280">
-        当前浏览器不支持 Canvas
-      </canvas>
+      <canvas id="canvasId" width="480" height="280">当前浏览器不支持 Canvas</canvas>
     </section>
     <!-- PAGE_DOM_END -->
 
@@ -72,24 +201,24 @@
     <script>
       // ============ 1. 获取 canvas 与 2D 上下文（MDN: getContext） ============
       // getContext("2d") 返回 CanvasRenderingContext2D；浏览器不支持时返回 null
-      const canvas = document.getElementById("canvasId");
-      const ctx = canvas.getContext("2d");
+      const canvas = document.getElementById('canvasId');
+      const ctx = canvas.getContext('2d');
 
       // ============ 2. 缓冲区尺寸 vs CSS 显示尺寸（MDN: HTMLCanvasElement） ============
       // canvas.width/height 决定位图缓冲区像素；CSS 宽高只影响页面显示，不一致会拉伸
-      console.log("缓冲区像素:", canvas.width, "x", canvas.height);
-      console.log("CSS 显示尺寸:", canvas.clientWidth, "x", canvas.clientHeight);
-      console.log("devicePixelRatio:", window.devicePixelRatio);
+      console.log('缓冲区像素:', canvas.width, 'x', canvas.height);
+      console.log('CSS 显示尺寸:', canvas.clientWidth, 'x', canvas.clientHeight);
+      console.log('devicePixelRatio:', window.devicePixelRatio);
       // 高 DPI 屏通常需 buffer = cssSize * DPR 再 ctx.scale(dpr, dpr)，需人工改 CSS 或设备模拟验证
 
       if (!ctx) {
-        console.error("Canvas 2D 上下文不可用");
+        console.error('Canvas 2D 上下文不可用');
       } else {
         // ============ 3. 矩形快捷 API：fillRect / strokeRect ============
         // fillRect/strokeRect 直接绘制矩形，不累积到当前路径（MDN: fillRect）
-        ctx.fillStyle = "#667eea";
+        ctx.fillStyle = '#667eea';
         ctx.fillRect(20, 20, 100, 60);
-        ctx.strokeStyle = "#333";
+        ctx.strokeStyle = '#333';
         ctx.strokeRect(20, 20, 100, 60);
 
         // ============ 4. 路径 API：beginPath + moveTo/lineTo + fill/stroke ============
@@ -99,28 +228,28 @@
         ctx.lineTo(280, 50);
         ctx.lineTo(220, 100);
         ctx.closePath(); // 闭合路径，连接首尾
-        ctx.fillStyle = "rgba(240, 147, 251, 0.8)";
+        ctx.fillStyle = 'rgba(240, 147, 251, 0.8)';
         ctx.fill(); // 填充当前路径内部
         ctx.stroke(); // 描边当前路径边界
 
         // ============ 5. 圆弧 arc：角度单位为弧度 ============
         ctx.beginPath();
         ctx.arc(360, 70, 40, 0, Math.PI * 2); // 0 ~ 2π 为整圆
-        ctx.fillStyle = "#43e97b";
+        ctx.fillStyle = '#43e97b';
         ctx.fill();
-        ctx.strokeStyle = "#2d8a5e";
+        ctx.strokeStyle = '#2d8a5e';
         ctx.stroke();
 
         // ============ 6. 文字 fillText ============
         // font 须先于 fillText 设置；canvas 内文字不可选中，无障碍需旁路 DOM
-        ctx.font = "16px system-ui, sans-serif";
-        ctx.fillStyle = "#333";
-        ctx.fillText("Hello Canvas", 20, 140);
+        ctx.font = '16px system-ui, sans-serif';
+        ctx.fillStyle = '#333';
+        ctx.fillText('Hello Canvas', 20, 140);
 
         // ============ 7. 线性渐变 createLinearGradient ============
         const gradient = ctx.createLinearGradient(20, 170, 200, 250);
-        gradient.addColorStop(0, "#4facfe");
-        gradient.addColorStop(1, "#00f2fe");
+        gradient.addColorStop(0, '#4facfe');
+        gradient.addColorStop(1, '#00f2fe');
         ctx.fillStyle = gradient; // 渐变对象可赋给 fillStyle
         ctx.fillRect(20, 170, 180, 80);
 
@@ -135,7 +264,7 @@
           ctx.closePath();
         }
         roundRect(240, 170, 160, 80, 12);
-        ctx.fillStyle = "#fa709a";
+        ctx.fillStyle = '#fa709a';
         ctx.fill();
       }
     </script>
@@ -152,9 +281,9 @@
       </nav>
       <script>
         (function () {
-          var a = document.querySelector("[data-demo-catalog]");
-          if (a && location.protocol === "file:" && a.dataset.fileCatalog) {
-            a.setAttribute("href", a.dataset.fileCatalog);
+          var a = document.querySelector('[data-demo-catalog]');
+          if (a && location.protocol === 'file:' && a.dataset.fileCatalog) {
+            a.setAttribute('href', a.dataset.fileCatalog);
           }
         })();
       </script>
