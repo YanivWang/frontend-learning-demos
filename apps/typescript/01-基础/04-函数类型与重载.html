@@ -3,11 +3,14 @@
   主题: 函数类型、可选参数、剩余参数与函数重载
   要点:
     - 函数类型同时描述参数、返回值和 this/调用签名，是 API 契约的核心
-    - 可选参数类型包含 undefined；默认参数提供运行时兜底但不等于外部参数可随意省略
+    - 函数类型可用 type、interface 调用签名或内联注解表达，适合工具函数、回调和组件 props
+    - 可选参数类型包含 undefined；默认参数提供运行时兜底，通常适合放在参数列表末尾
     - 剩余参数用数组或元组类型表达，可保留变长参数的元素约束
     - 函数重载暴露多组调用签名，实现签名必须兼容所有重载分支
+    - 返回类型不随参数变化时优先用联合类型；参数形态决定返回类型时重载更清楚
   面试:
     - 函数类型为什么既要看参数也要看返回值？
+    - type、interface 调用签名和内联函数类型有什么区别？
     - 可选参数和默认参数有什么区别？
     - 剩余参数为什么通常写成数组或元组类型？
     - 什么时候用函数重载，什么时候用联合类型？
@@ -35,18 +38,21 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>函数类型是 API 契约：参数决定调用者能传什么，返回值决定调用者能拿到什么；类型别名、接口调用签名和内联注解都能描述函数。</li>
-          <li>可选参数 <code>unit?: string</code> 在类型上等价于可能为 <code>undefined</code>，函数体必须处理缺省；默认参数 <code>unit = "CNY"</code> 是运行时兜底，能让调用者省略参数。</li>
-          <li>剩余参数用数组类型表达，如 <code>...nums: number[]</code>；如果每个位置含义不同，可以用元组 rest 来保留更精确的调用签名。</li>
-          <li>函数重载用于一个函数名对应多组外部调用方式，调用者只看到重载签名；实现签名必须覆盖所有分支，并在函数体内做运行时收窄。</li>
-          <li>常见坑是重载过度：如果返回类型不随参数形态明显变化，联合类型或泛型往往更简单；如果分支语义不同且返回类型不同，重载可读性更好。</li>
+          <li>函数类型是 API 契约：参数决定调用者能传什么，返回值决定调用者能拿到什么；本页展示了 <code>type</code> 别名、<code>interface</code> 调用签名和内联函数类型三种常用写法。</li>
+          <li><code>this</code> 参数是 TypeScript 里的“假参数”，用于约束函数被调用时的 <code>this</code> 类型，编译后不会生成真实参数；适合对象方法、事件回调和需要禁止错误绑定的函数。</li>
+          <li>可选参数 <code>unit?: string</code> 在类型上等价于可能为 <code>undefined</code>，函数体必须处理缺省；默认参数 <code>unit = "CNY"</code> 是运行时兜底，通常放在参数列表末尾，调用者才容易省略。</li>
+          <li>剩余参数用数组类型表达，如 <code>...nums: number[]</code>；如果每个位置含义不同，可以用元组 rest，例如 <code>...args: [level: "info" | "warn", message: string]</code> 保留位置语义。</li>
+          <li>函数重载用于一个函数名对应多组外部调用方式，调用者只能按重载签名调用；实现签名必须覆盖所有分支，并在函数体内通过 <code>typeof</code>、<code>Array.isArray</code> 等方式运行时收窄。</li>
+          <li>常见坑是重载过度：如果返回类型不随参数形态明显变化，联合类型或泛型往往更简单；如果参数形态会决定返回类型，例如 <code>string</code> 返回 <code>string[]</code>、<code>number</code> 返回 <code>number[]</code>，重载可读性更好。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
           <li><strong>函数类型为什么既要看参数也要看返回值？</strong> 结论是函数类型描述的是完整调用契约。原因是参数约束调用者输入，返回值约束调用者后续使用；只写一边都会让类型信息断裂。项目中工具函数、回调 props、事件处理器都依赖这个契约。</li>
+          <li><strong><code>type</code>、<code>interface</code> 调用签名和内联函数类型有什么区别？</strong> 结论是三者都能描述函数，区别主要在复用方式和扩展能力。<code>type</code> 简洁，适合函数别名和联合类型组合；<code>interface</code> 适合可扩展的对象/函数形态；内联注解适合只用一次的短回调。项目里公共 API 优先抽成名字清楚的类型，局部回调再内联。</li>
           <li><strong>可选参数和默认参数有什么区别？</strong> 结论是可选参数是类型层面的“可能缺失”，默认参数是运行时给缺失值兜底。原因是 <code>unit?: string</code> 需要处理 <code>undefined</code>，<code>unit = "CNY"</code> 会在未传时赋默认值。实际项目中经常二者配合使用，但不能把默认参数当作外部校验。</li>
           <li><strong>剩余参数为什么通常写成数组或元组类型？</strong> 结论是 rest 参数在运行时就是数组，类型上也应表达每个元素或每个位置的约束。原因是 <code>number[]</code> 适合任意数量同类参数，元组 rest 适合固定前缀或位置含义。日志、事件总线和命令式 API 常用这类签名。</li>
           <li><strong>什么时候用函数重载，什么时候用联合类型？</strong> 结论是参数形态决定返回类型时用重载更清楚，简单分支用联合类型即可。原因是重载能给调用者暴露多组精确签名，但实现更复杂。项目中解析函数、DOM 包装函数可用重载；普通入参兼容通常用联合加收窄。</li>
+          <li><strong>重载实现签名能不能被外部直接调用？</strong> 结论是不能，外部调用只匹配重载签名。原因是实现签名只是函数体内部为了覆盖所有分支而写的兼容类型，不是公开 API。面试里常用这个点考察“重载签名”和“实现签名”的边界。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -59,41 +65,102 @@
 
     <!-- PAGE_DOM_START -->
     <pre>type Formatter = (value: number, unit?: string) =&gt; string;
-      const formatPrice: Formatter = (value, unit = "CNY") =&gt; `${unit} ${value.toFixed(2)}`;
-      function sum(...nums: number[]): number {
-      return nums.reduce((total, n) =&gt; total + n, 0);
-      }
-      function toArray(value: string): string[];
-      function toArray(value: number): number[];
-      function toArray(value: string | number): string[] | number[] {
-      return typeof value === "string" ? value.split("") : [value];
-      }</pre>
+
+interface Parser {
+  (source: string): string[];
+}
+
+const formatPrice: Formatter = (value, unit = "CNY") =&gt; `${unit} ${value.toFixed(2)}`;
+const parseWords: Parser = (source) =&gt; source.trim().split(/\s+/);
+const keepPositive = [1, -2, 3].filter((n: number): boolean =&gt; n &gt; 0);
+
+function describeUser(this: { name: string }, prefix: string): string {
+  return `${prefix}: ${this.name}`;
+}
+
+function sum(...nums: number[]): number {
+  return nums.reduce((total, n) =&gt; total + n, 0);
+}
+
+function logEvent(...args: [level: "info" | "warn", message: string]): string {
+  const [level, message] = args;
+  return `[${level}] ${message}`;
+}
+
+function normalizeId(value: string | number): string {
+  return String(value);
+}
+
+function toArray(value: string): string[];
+function toArray(value: number): number[];
+function toArray(value: string | number): string[] | number[] {
+  return typeof value === "string" ? value.split("") : [value];
+}</pre>
       <pre id="out"></pre>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // 浏览器不能直接执行 TypeScript，这里用等价 JavaScript + JSDoc 表达类型意图。
+      // 对照上方 <pre> 中的 Formatter：第二个参数缺省时，由默认参数提供运行时兜底。
       /** @param {number} value @param {string=} unit */
       function formatPrice(value, unit = "CNY") {
         return `${unit} ${value.toFixed(2)}`;
       }
 
+      // 对照 interface Parser 的调用签名：(source: string) => string[]。
+      /** @param {string} source */
+      function parseWords(source) {
+        return source.trim().split(/\s+/);
+      }
+
+      // 对照内联函数类型：回调只在 filter 这里使用一次，适合直接写在参数位置。
+      const keepPositive = [1, -2, 3].filter((n) => n > 0);
+
+      // 对照 TypeScript 的 this 参数：它只约束调用方式，运行时仍要通过 call/apply/bind 传入 this。
+      /** @this {{ name: string }} @param {string} prefix */
+      function describeUser(prefix) {
+        return `${prefix}: ${this.name}`;
+      }
+
+      // rest 参数在运行时就是数组；TypeScript 中用 number[] 限制每一项都必须是数字。
       /** @param {...number} nums */
       function sum(...nums) {
         return nums.reduce((total, n) => total + n, 0);
       }
 
+      // 元组 rest 适合“位置有语义”的参数：第 1 位是级别，第 2 位是消息。
+      /** @param {"info"|"warn"} level @param {string} message */
+      function logEvent(level, message) {
+        return `[${level}] ${message}`;
+      }
+
+      // 返回类型不随入参形态变化时，联合类型通常比函数重载更简单。
+      /** @param {string|number} value */
+      function normalizeId(value) {
+        return String(value);
+      }
+
+      // 重载的价值在类型层：string 入参推断 string[]，number 入参推断 number[]。
+      // 运行时实现仍需要自己做 typeof 收窄。
       /** @param {string|number} value */
       function toArray(value) {
         return typeof value === "string" ? value.split("") : [value];
       }
 
+      // 把每个语法点的运行结果集中写入 #out，方便和上方 TypeScript 示例逐行对照。
       const lines = [
+        `type 函数别名：${formatPrice(12)}`,
+        `interface 调用签名：parseWords("hello ts") = ${JSON.stringify(parseWords("hello ts"))}`,
+        `内联回调类型：keepPositive = ${JSON.stringify(keepPositive)}`,
+        `this 参数约束：${describeUser.call({ name: "Ada" }, "用户")}`,
         `可选参数 + 默认参数：${formatPrice(12)}`,
         `剩余参数：sum(1, 2, 3) = ${sum(1, 2, 3)}`,
+        `元组 rest 参数：${logEvent("warn", "余额不足")}`,
+        `联合类型适合简单兼容：normalizeId(7) = ${normalizeId(7)}`,
         `函数重载 string 分支：${JSON.stringify(toArray("ts"))}`,
         `函数重载 number 分支：${JSON.stringify(toArray(9))}`,
-        "面试重点：重载签名给调用者看，实现签名要覆盖所有分支。",
+        "面试重点：重载签名给调用者看，实现签名只服务函数体内部，不能当作外部公开签名。",
       ];
       document.getElementById("out").textContent = lines.join("\n");
 

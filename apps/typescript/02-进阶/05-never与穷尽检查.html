@@ -1,5 +1,5 @@
 <!--
-分类: typescript / 02-进阶
+  分类: typescript / 02-进阶
   主题: never、穷尽检查与 assertNever
   要点:
     - never 表示不可能正常出现的值，常见于抛错、死循环和完全收窄后的分支
@@ -77,10 +77,13 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // 对照 assertNever(x: never): never。
+      // TS 中 default 分支如果还能拿到某个 Action，说明 switch 没有穷尽；JS 中这里负责兜底抛错。
       function assertNever(action) {
         throw new Error(`Unhandled action: ${JSON.stringify(action)}`);
       }
 
+      // 对照 reducer(state, action)：action.type 是判别字段，每个 case 处理一个联合分支。
       function reducer(state, action) {
         switch (action.type) {
           case "increment":
@@ -92,6 +95,7 @@
         }
       }
 
+      // 输出展示已覆盖分支；面试重点是新增 action 时 default + assertNever 会暴露遗漏。
       document.getElementById("out").textContent = [
         `increment: ${reducer(1, { type: "increment", payload: 2 })}`,
         `reset: ${reducer(3, { type: "reset" })}`,

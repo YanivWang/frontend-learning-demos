@@ -1,5 +1,5 @@
 <!--
-分类: typescript / 02-进阶
+  分类: typescript / 02-进阶
   主题: 手写 Utility Types 练习
   要点:
     - MyPartial 通过映射类型给每个属性加 ?，是浅层可选
@@ -69,17 +69,21 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // 对照 MyPick<T, K extends keyof T>：TS 在类型层限制 keys 必须属于对象键名。
+      // JS 运行时需要自己遍历 keys 并复制字段。
       function myPick(obj, keys) {
         return keys.reduce((acc, k) => {
           if (k in obj) acc[k] = obj[k];
           return acc;
         }, {});
       }
+      // 对照 MyOmit<T, K>：类型层用 Exclude<keyof T, K> 排除键，运行时用 Set 过滤真实对象条目。
       function myOmit(obj, keys) {
         const omit = new Set(keys);
         return Object.fromEntries(Object.entries(obj).filter(([k]) => !omit.has(k)));
       }
 
+      // 点击后输出 Pick/Omit 的运行结果，便于和上方手写 Utility Types 的类型变换逐行对照。
       document.getElementById("run").onclick = () => {
         const user = { id: 1, name: "Ada", email: "a@ex.com", role: "admin" };
         const picked = myPick(user, ["id", "name"]);

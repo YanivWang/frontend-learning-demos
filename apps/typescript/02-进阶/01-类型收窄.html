@@ -1,5 +1,5 @@
 <!--
-分类: typescript / 02-进阶
+  分类: typescript / 02-进阶
   主题: 类型收窄与 discriminated union
   要点:
     - typeof、instanceof、in 和相等性判断都能让控制流分析缩窄联合类型
@@ -75,8 +75,11 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // 对照上方 discriminated union：kind 是判别字段，决定当前对象能安全读取哪些属性。
       /** @typedef {{ kind: 'circle', radius: number } | { kind: 'rect', width: number, height: number }} Shape */
 
+      // TypeScript 在 switch (s.kind) 的每个 case 中自动收窄 s 的具体分支。
+      // JS 运行时仍需要同样的分支逻辑，否则无法知道该读 radius 还是 width/height。
       /** @param {Shape} s */
       function area(s) {
         switch (s.kind) {
@@ -90,6 +93,7 @@
       }
 
       const log = document.getElementById("log");
+      // 两个按钮分别构造 Shape 的不同分支，输出能和上方 circle/rect case 对照。
       document.getElementById("btn-circle").onclick = () => {
         const result = area({ kind: "circle", radius: 3 });
         log.textContent = `circle r=3 → area ≈ ${result.toFixed(2)}`;

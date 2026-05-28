@@ -1,5 +1,5 @@
 <!--
-分类: typescript / 03-工程与框架
+  分类: typescript / 03-工程与框架
   主题: React 表单事件与 Vue defineEmits 类型
   要点:
     - React 表单事件应按元素写成 ChangeEvent<HTMLInputElement> 与 FormEvent<HTMLFormElement>
@@ -89,18 +89,22 @@ emit("submit", email.value);</pre>
 
     <!-- SCRIPT_START -->
     <script>
+      // 对照 React.FormEvent<HTMLFormElement>：提交事件绑定在 form 上，处理器先 preventDefault。
       const form = document.getElementById("demo-form");
+      // 对照 React.ChangeEvent<HTMLInputElement>：具体到 HTMLInputElement 后才能安全读取 value/checkValidity。
       const emailInput = document.getElementById("email");
       const log = document.getElementById("log");
 
       form.addEventListener("submit", (event) => {
         event.preventDefault();
+        // 对照“类型安全不等于运行时校验”：邮箱格式仍要交给浏览器约束验证或业务校验处理。
         if (!emailInput.checkValidity()) {
           emailInput.reportValidity();
           log.textContent = "邮箱格式未通过浏览器约束验证，submit payload 不会发出。";
           return;
         }
 
+        // 对照 Vue defineEmits<{ submit: [email: string] }>()：校验后只把 string payload 发给父组件。
         const email = emailInput.value.trim();
         log.textContent =
           `emit("submit", ${JSON.stringify(email)}) - payload 类型为 string，输出使用 textContent。`;

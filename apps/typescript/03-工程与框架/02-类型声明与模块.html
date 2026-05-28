@@ -1,5 +1,5 @@
 <!--
-分类: typescript / 03-工程与框架
+  分类: typescript / 03-工程与框架
   主题: .d.ts、declare module 与第三方库类型声明
   要点:
     - .d.ts 声明文件只描述类型形状，不提供运行时实现
@@ -78,11 +78,16 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // 对照 declare global { interface Window { appVersion: string } }。
+      // 声明文件只告诉 TS “这个全局字段存在”，真实运行时仍要由 JS 代码赋值。
       window.appVersion = "1.0.0";
+      // 对照 declare module "legacy-chart"：.d.ts 只描述模块类型，不会创建模块实现。
+      // 本页用同名函数模拟第三方库真实存在时的运行时代码。
       function renderChart(options) {
         return `render ${options.data.length} points into ${options.el}`;
       }
 
+      // 输出分别对应 declare module 和 declare global，强调“声明”和“实现”不能混为一谈。
       document.getElementById("out").textContent = [
         `.d.ts 描述类型，本页 JS 提供真实实现: ${renderChart({ el: "#chart", data: [1, 2, 3] })}`,
         `declare global 扩展 Window: appVersion = ${window.appVersion}`,

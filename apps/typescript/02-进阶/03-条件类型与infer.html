@@ -1,5 +1,5 @@
 <!--
-分类: typescript / 02-进阶
+  分类: typescript / 02-进阶
   主题: 条件类型、infer、ReturnType 与 Awaited
   要点:
     - 条件类型用 T extends U ? X : Y 在类型层做分支判断
@@ -64,6 +64,10 @@
       T extends (...args: any[]) =&gt; infer R ? R : never;
       type MyAwaited&lt;T&gt; =
       T extends Promise&lt;infer R&gt; ? MyAwaited&lt;R&gt; : T;
+      type MyParameters&lt;T&gt; =
+      T extends (...args: infer P) =&gt; unknown ? P : never;
+      type Distributed = IsString&lt;"a" | 1&gt;;       // true | false
+      type NotDistributed = ["a" | 1] extends [string] ? true : false;
       type A = ReturnType&lt;() =&gt; number&gt;;  // number
       type B = MyAwaited&lt;Promise&lt;Promise&lt;string&gt;&gt;&gt;;  // string</pre>
       <pre id="out"></pre>
@@ -71,19 +75,23 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // 对照 ReturnType：TS 可从函数类型中 infer 出返回值类型；JS 运行时只是正常调用函数。
       function getUser() {
         return { id: 1, name: "Grace" };
       }
 
+      // 对照 Awaited：TS 会递归拆 Promise 的最终值类型；运行时 await 负责真正等待 Promise 完成。
       async function loadName() {
         const user = await Promise.resolve(getUser());
         return user.name;
       }
 
       loadName().then((name) => {
+        // infer 是类型层“占位推断”，输出展示它对应的运行时结果，而不是说 infer 会出现在浏览器里。
         document.getElementById("out").textContent = [
           `运行时 getUser().name = ${getUser().name}`,
           `Awaited<Promise<string>> 对应运行结果: ${name}`,
+          "Parameters<typeof fn> 和分发式条件类型都只在 TS 类型层计算，运行时没有额外代码。",
           "面试重点：infer 是类型层面的“占位推断”，不会出现在运行时 JS 中。",
         ].join("\n");
       });

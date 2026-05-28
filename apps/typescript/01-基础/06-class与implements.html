@@ -60,7 +60,8 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <pre>interface Repository&lt;T&gt; {
+    <pre>type User = { id: number; name: string };
+      interface Repository&lt;T&gt; {
       findById(id: number): T | undefined;
       }
       abstract class BaseService {
@@ -77,6 +78,7 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // 对照 abstract class BaseService：JS 没有 TS 的 abstract 关键字，这里用抛错方法模拟“子类必须实现”。
       class BaseService {
         constructor() {
           this.prefix = "service";
@@ -86,6 +88,8 @@
         }
       }
 
+      // 对照 class UserService extends BaseService implements Repository<User>。
+      // implements 只在类型层检查 findById 形状；运行时真正存在的是 extends 继承和类字段。
       class UserService extends BaseService {
         #users;
         constructor(users) {
@@ -102,6 +106,7 @@
 
       const service = new UserService([{ id: 1, name: "Ada" }]);
       const user = service.findById(1);
+      // 输出分别对应 implements、abstract class、private/protected 三个核心语法点。
       document.getElementById("out").textContent = [
         `implements Repository<User>: findById(1) -> ${user.name}`,
         `abstract class 公共实现: ${service.label()}`,

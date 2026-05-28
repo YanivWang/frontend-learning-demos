@@ -1,5 +1,5 @@
 <!--
-分类: typescript / mini-project
+  分类: typescript / mini-project
   主题: TypeScript mini-project 与 tsc --noEmit
   要点:
     - 本目录用真实 .ts、tsconfig.json 和 npm 脚本演示可落地的类型检查闭环
@@ -75,7 +75,30 @@ export function formatUser(u: User): string {
 
 // 取消下面这行注释，validate:tsc 应报错：
 // const bad: User = { id: "x", name: 1 };</pre>
+    <pre id="out"></pre>
     <!-- PAGE_DOM_END -->
+
+    <!-- SCRIPT_START -->
+    <script>
+      // mini-project 的核心验证发生在 tsc --noEmit，本页浏览器脚本只演示源码里的运行时等价逻辑。
+      // 对照 src/user.ts 的 User 类型：JSDoc 表达对象形状，TypeScript 工程中由 type User 负责静态约束。
+      /** @typedef {{ id: number, name: string, email?: string }} User */
+
+      // 对照 formatUser(u: User): string：email 可选，所以函数体必须处理缺省分支。
+      /** @param {User} user @returns {string} */
+      function formatUser(user) {
+        return user.email ? `${user.name} <${user.email}>` : user.name;
+      }
+
+      // 对照 import type：浏览器脚本没有类型导入；工程里 import type 会在 emit 阶段擦除。
+      const sample = { id: 1, name: "Ada", email: "ada@example.com" };
+      document.getElementById("out").textContent = [
+        `formatUser(sample) = ${formatUser(sample)}`,
+        "tsc --noEmit 负责检查 User/formatUser/import type 是否符合 tsconfig strict 规则。",
+        "面试重点：类型检查是工程质量门禁，但外部 JSON 和用户输入仍需要运行时校验。",
+      ].join("\n");
+    </script>
+    <!-- SCRIPT_END -->
 
     <!-- NAV_START -->
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">

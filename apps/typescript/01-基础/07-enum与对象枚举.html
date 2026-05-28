@@ -1,5 +1,5 @@
 <!--
-分类: typescript / 01-基础
+  分类: typescript / 01-基础
   主题: enum、const enum 与对象枚举
   要点:
     - enum 会生成运行时代码，数字 enum 还会生成反向映射
@@ -78,20 +78,24 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // 对照 enum OrderStatus：普通 enum 会生成运行时对象；这里用冻结对象模拟可读取的状态表。
       const OrderStatus = Object.freeze({
         Pending: "pending",
         Paid: "paid",
         Canceled: "canceled",
       });
+      // 对照 const UserRole = { ... } as const：对象枚举保留运行时值，TS 再用 typeof/keyof 推出联合类型。
       const UserRole = Object.freeze({
         Admin: "admin",
         Guest: "guest",
       });
 
+      // role 在 TS 中可写成 UserRole 联合类型，调用者传错字符串会在编译期被拦住。
       function canEdit(role) {
         return role === UserRole.Admin;
       }
 
+      // const enum 通常会被内联，浏览器脚本里看不到独立对象；因此本页只演示普通 enum 与对象枚举的运行时形态。
       document.getElementById("out").textContent = [
         `字符串 enum 运行时值: ${OrderStatus.Paid}`,
         `对象枚举 UserRole.Admin: ${UserRole.Admin}`,

@@ -1,5 +1,5 @@
 <!--
-分类: typescript / 02-进阶
+  分类: typescript / 02-进阶
   主题: Utility Types：Partial、Pick、Omit、Record、Readonly、Required
   要点:
     - Utility Types 是内置泛型类型工具，主要复用和变换已有对象类型
@@ -67,6 +67,8 @@
       }
       type UserPatch = Partial&lt;Pick&lt;User, "name" | "email"&gt;&gt;;
       type PublicUser = Omit&lt;User, "email"&gt;;
+      type CompleteUser = Required&lt;User&gt;;
+      type FrozenUser = Readonly&lt;User&gt;;
       type RoleLabels = Record&lt;User["role"], string&gt;;
       const roleLabels: RoleLabels = { admin: "管理员", guest: "访客" };</pre>
       <pre id="out"></pre>
@@ -74,14 +76,24 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // Utility Types 只存在于 TypeScript 类型层；下面用普通对象模拟它们约束出的运行时数据。
       const user = { id: 1, name: "Ada", email: "ada@example.com", role: "admin" };
+      // 对照 Partial<Pick<User, "name" | "email">>：更新入参只允许出现 name/email，且字段可选。
       const patch = { name: "Ada Lovelace" };
+      // 对照 Record<User["role"], string>：每个角色字面量都必须配置文案。
       const roleLabels = { admin: "管理员", guest: "访客" };
+      // 对照 Omit<User, "email">：对外展示时去掉敏感 email 字段。
       const publicUser = { id: user.id, name: patch.name ?? user.name, role: user.role };
+      // 对照 Required<User> 与 Readonly<User>：它们改变类型层修饰符，运行时是否补字段或冻结要自己处理。
+      const completeUser = { ...user, email: user.email ?? "missing@example.com" };
+      const frozenUser = Object.freeze({ ...user });
 
+      // 输出按 Partial/Pick、Omit、Required/Readonly、Record 的顺序和上方 TS 示例逐行对应。
       document.getElementById("out").textContent = [
         `Partial<Pick<User, ...>> 更新入参: ${JSON.stringify(patch)}`,
         `Omit<User, "email"> 对外展示: ${JSON.stringify(publicUser)}`,
+        `Required<User> 补齐 email: ${completeUser.email}`,
+        `Readonly<User> 运行时冻结需 Object.freeze: ${Object.isFrozen(frozenUser)}`,
         `Record<User["role"], string> 角色文案: ${roleLabels[user.role]}`,
         "面试重点：能说用途，也要知道这些工具底层多基于 keyof、映射类型和条件类型。",
       ].join("\n");

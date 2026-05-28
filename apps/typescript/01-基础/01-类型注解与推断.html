@@ -68,6 +68,11 @@
     <pre>let count: number = 0;
       let title = "demo";        // 推断为 string
       let flag: boolean | null = null;
+      let loose: any = JSON.parse('{"name":"Ada"}');
+      let input: unknown = "TypeScript";
+      if (typeof input === "string") {
+      input.toUpperCase();       // unknown 必须先收窄
+      }
       function add(a: number, b: number): number {
       return a + b;
       }
@@ -79,10 +84,21 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // 浏览器执行的是 JavaScript；上方 TypeScript 里的 number/string/boolean 注解在运行前会被擦除。
+      // 这里保留同名变量，方便对照“显式注解”和“局部类型推断”的运行时结果。
       let count = 0;
       let title = "demo";
       let flag = null;
+      // 对照 any：它允许任意访问，类型系统不会继续保护，真实项目只适合作为迁移逃生口。
+      /** @type {any} */
+      let loose = JSON.parse('{"name":"Ada"}');
+      // 对照 unknown：先把外部输入当作未知值，再通过 typeof 收窄后使用。
+      /** @type {unknown} */
+      let input = "TypeScript";
 
+      // 对照上方 add(a: number, b: number): number。
+      // JSDoc 表达类型意图，但真正阻止错误调用仍需要 TypeScript/IDE/tsc 在编译期检查。
+      /** @param {number} a @param {number} b @returns {number} */
       function add(a, b) {
         return a + b;
       }
@@ -90,8 +106,12 @@
       const lines = [];
       const assert = (cond, msg) => lines.push((cond ? "✓ " : "✗ ") + msg);
 
+      // 下面每一行都对应上方 TypeScript 示例：类型正确时结果符合预期，类型错误时 JS 仍按运行时规则执行。
       assert(typeof count === "number", "count 是 number");
       assert(typeof title === "string", "title 推断/运行为 string");
+      assert(flag === null, "flag 初始值为 null；strictNullChecks 下需要显式写 boolean | null");
+      assert(loose.name === "Ada", "any 可以直接访问 loose.name，但会放弃后续类型保护");
+      assert(typeof input === "string" && input.toUpperCase() === "TYPESCRIPT", "unknown 先 typeof 收窄，再安全调用字符串方法");
       assert(add(1, 2) === 3, "add(1,2) === 3");
       assert(add("1", 2) === "12", "JS 运行时 add('1',2) 会拼接 — TS 可在编译期拦截");
 

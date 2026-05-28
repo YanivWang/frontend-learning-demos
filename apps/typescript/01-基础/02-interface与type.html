@@ -63,6 +63,9 @@
       id: number;
       name: string;
       }
+      interface User {
+      email?: string; // 同名 interface 会声明合并
+      }
       type Role = "admin" | "guest";
       type UserWithRole = User & { role: Role };
       type ApiResult&lt;T&gt; =
@@ -73,11 +76,16 @@
 
     <!-- SCRIPT_START -->
     <script>
-      /** @typedef {{ id: number, name: string, role: string }} UserWithRole */
+      // 浏览器不能直接执行 interface/type；这里用 JSDoc typedef 表达 UserWithRole 的对象形状。
+      // 对照上方：interface User + type Role + 交叉类型 User & { role: Role }。
+      /** @typedef {{ id: number, name: string, email?: string, role: string }} UserWithRole */
 
+      // 对照 interface 适合描述对象 API：User 的第二段声明会合并出可选 email 字段。
       /** @type {UserWithRole} */
-      const user = { id: 1, name: "Alice", role: "admin" };
+      const user = { id: 1, name: "Alice", email: "alice@example.com", role: "admin" };
 
+      // 对照 type ApiResult<T> 联合类型：成功分支有 data，失败分支有 error。
+      // 运行时通过 result.ok 收窄；TypeScript 中这个判定能让 IDE 知道当前分支有哪些字段。
       /** @type {{ ok: true, data: UserWithRole } | { ok: false, error: string }} */
       function fetchUser() {
         return user.id > 0
@@ -87,8 +95,9 @@
 
       const result = fetchUser();
       const el = document.getElementById("app");
+      // 对照 ApiResult<T> 的 discriminated union：ok 为 true 时读取 data，false 时读取 error。
       el.innerHTML = result.ok
-      ? `<p>✓ 成功：${result.data.name}（${result.data.role}）</p>`
+      ? `<p>✓ 成功：${result.data.name}（${result.data.role}，${result.data.email}）</p>`
       : `<p>✗ ${result.error}</p>`;
 
     </script>

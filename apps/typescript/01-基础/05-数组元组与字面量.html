@@ -60,7 +60,8 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <pre>type Point = readonly [number, number];
+    <pre>const scores: number[] = [95, 88, 100];
+      type Point = readonly [number, number];
       type Status = "idle" | "loading" | "success" | "error";
       const routes = {
       home: "/",
@@ -74,19 +75,27 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // 对照 number[]：数组适合变长同类集合，元素数量可以增加，但每项都应是同一种类型。
+      const scores = [95, 88, 100];
+
+      // 对照上方 readonly [number, number]：运行时仍是数组，TS 负责禁止把 point 当普通可变数组乱改。
       /** @param {readonly [number, number]} point */
       function distance(point) {
         const [x, y] = point;
         return Math.hypot(x, y);
       }
 
+      // 对照 as const + satisfies：Object.freeze 模拟“运行时不可改”，TS 中 as const 负责收窄字面量类型。
       const routes = Object.freeze({
         home: "/",
         user: "/user/:id",
       });
 
+      // 对照 type Status = "idle" | "loading" | "success" | "error"。
+      // 字面量联合让业务状态只允许这些字符串，避免任意 string 混入状态机。
       const statusList = ["idle", "loading", "success", "error"];
       const lines = [
+        `数组 number[]: scores.length = ${scores.length}`,
         `readonly 元组 Point: distance([3, 4]) = ${distance([3, 4])}`,
         `字面量联合 Status: ${statusList.join(" | ")}`,
         `as const + satisfies 适合配置表: routes.user = ${routes.user}`,

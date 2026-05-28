@@ -69,11 +69,15 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // 浏览器运行的是泛型擦除后的 JavaScript；JSDoc @template 用来表达“输入元素类型和输出有关”。
+      // 对照上方 first<T>(arr: T[]): T | undefined，数组为空时返回 undefined。
       /** @template T @param {T[]} arr @returns {T|undefined} */
       function first(arr) {
         return arr[0];
       }
 
+      // 对照 pluck<T, K extends keyof T>(obj, key): T[K]。
+      // keyof 约束在 TS 中会阻止传入不存在的 key；JS 运行时仍只是普通属性读取。
       /** @template T @template {keyof T} K @param {T} obj @param {K} key */
       function pluck(obj, key) {
         return obj[key];
@@ -82,6 +86,7 @@
       const nums = [10, 20, 30];
       const user = { id: 1, name: "Bob" };
 
+      // 每个输出都和上方 TS 泛型示例逐行对应：first 保留元素关系，pluck 保留 key/value 关系。
       const lines = [
         `first(nums) = ${first(nums)}`,
         `first(['a','b']) = ${first(["a", "b"])}`,
