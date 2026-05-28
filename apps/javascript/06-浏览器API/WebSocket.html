@@ -32,7 +32,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>WebSocket 连接与消息</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">请阅读本复习区，并在下方演示区连接公共 echo 服务；需人工验证：WebSocket 依赖外网，部分网络环境可能拦截 wss://。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -61,11 +61,15 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>使用公共 echo 服务演示连接、发送、接收与关闭。</p>
-    <button type="button" id="connect">连接</button>
+    <section class="demo-block">
+      <h2>WebSocket 连接演示</h2>
+      <p class="tip">使用 wss://echo.websocket.events；发送前须确认 readyState 为 OPEN。</p>
+      <p id="env-banner" class="tip"></p>
+      <button type="button" id="connect">连接</button>
     <button type="button" id="send" disabled>发送 ping</button>
     <button type="button" id="close" disabled>关闭</button>
     <div id="log" aria-live="polite"></div>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
@@ -79,6 +83,10 @@
       const sendButton = document.getElementById("send");
       const closeButton = document.getElementById("close");
 
+      // ====== 0. 环境提示 ======
+      document.getElementById("env-banner").textContent =
+        "protocol=" + location.protocol + " | WebSocket 需外网可达 echo 服务";
+
       function resetConnectionState() {
         clearInterval(heartbeat);
         clearTimeout(connectTimer);
@@ -88,6 +96,7 @@
         closeButton.disabled = true;
       }
 
+      // ====== 1. 建立连接 ======
       document.getElementById("connect").onclick = () => {
         if (ws && ws.readyState <= 1) return append("已有连接");
         ws = new WebSocket(URL);
@@ -100,7 +109,7 @@
         }, 8000);
         ws.onopen = () => {
           clearTimeout(connectTimer);
-          append("OPEN");
+          append("OPEN — readyState=" + ws.readyState);
           sendButton.disabled = false;
           closeButton.disabled = false;
           heartbeat = setInterval(() => {
@@ -116,22 +125,26 @@
           resetConnectionState();
         };
       };
+
+      // ====== 2. 发送前检查 readyState ======
       sendButton.onclick = () => {
         if (ws?.readyState === WebSocket.OPEN) {
           ws.send("ping-" + Date.now());
           append("→ ping");
           return;
         }
-        append("连接未打开，不能发送");
+        append("连接未打开（readyState=" + (ws?.readyState ?? "null") + "），不能发送");
       };
+
+      // ====== 3. 主动关闭 ======
       closeButton.onclick = () => ws?.close(1000, "demo closed");
 
+      // ====== 4. 页面卸载清理 ======
       window.addEventListener("beforeunload", () => {
         if (ws?.readyState === WebSocket.OPEN) {
           ws.close(1000, "page unloading");
         }
       });
-
     </script>
     <!-- SCRIPT_END -->
 

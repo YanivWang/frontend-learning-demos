@@ -6,11 +6,13 @@
     - 长期闭包会保留其可达的外层对象，包含大数组或 DOM 时风险更高
     - 释放引用、清理 timer、removeEventListener 和避免意外全局是常见修复
     - 现代浏览器可回收不可达循环引用，但可达监听器链仍会保留内存
+    - 非严格模式下未声明赋值会创建全局属性，延长对象生命周期
   面试:
     - 闭包一定会导致内存泄漏吗？
     - 为什么把闭包变量置为 null 能帮助释放内存？
     - 定时器和事件监听为什么容易和闭包一起造成泄漏？
     - 前端项目里如何定位和修复闭包相关内存问题？
+  相关: 闭包-作用域链与变量提升, 07-进阶/内存泄漏
 -->
 
 <!doctype html>
@@ -26,7 +28,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>闭包导致的内存泄漏与修复手段</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">请阅读本复习区，并在下方演示区点击按钮观察 Console 输出；4 秒后事件监听会自动解绑。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -34,7 +36,7 @@
           <li>示例中 <code>outer</code> 返回的 <code>inner</code> 引用了大数组 <code>arr</code>；把 <code>inner = null</code> 后，如果没有其他引用，闭包链和数组就可以等待垃圾回收。</li>
           <li>非严格模式下未声明变量赋值会创建全局属性，导致对象生命周期被拉长；使用严格模式、ES modules 或构建工具默认严格环境能减少这类问题。</li>
           <li>定时器和事件监听器经常持有回调，回调又持有组件状态、DOM 或大对象。页面切换、组件卸载、弹窗销毁时要 <code>clearInterval</code>、<code>removeEventListener</code> 或使用框架生命周期清理。</li>
-          <li>现代垃圾回收能处理不可达的循环引用；真正需要关注的是“从根对象仍然可达”的引用链。排查时可用浏览器 Memory 面板查看 Retainers。</li>
+          <li>现代垃圾回收能处理不可达的循环引用；真正需要关注的是「从根对象仍然可达」的引用链。排查时可用浏览器 Memory 面板查看 Retainers。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
@@ -45,69 +47,67 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Memory_management">MDN：Memory management</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures">MDN：Closures</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener">MDN：removeEventListener()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/clearInterval">MDN：clearInterval()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Memory_management">MDN: Memory management</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures">MDN: Closures</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener">MDN: removeEventListener()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/clearInterval">MDN: clearInterval()</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <button id="myBtn">click me</button>
+    <section class="demo-block" aria-label="演示区">
+      <h2>DOM 监听与闭包引用</h2>
+      <p class="tip">点击按钮触发 <code>handleClick</code>，观察 Console 中闭包引用的 DOM 与大数组；4 秒后监听自动解绑。</p>
+      <button id="myBtn" type="button">click me</button>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // 问题：闭包会引起内存泄漏，闭包引用的外层变量在外层函数调用完毕之后不会立即销毁
-      // 修复：
-      //   1) 让闭包执行完，断开后续引用
-      //   2) 手动将闭包引用赋值为 null
-      function outer(){
-        let arr = new Array(10000).fill("data");
-
-        return function inner(){
-          console.log(arr.length);
+      // ====== 1. 闭包引用大数组：置 null 断开可达链 ======
+      function outer() {
+        var arr = new Array(10000).fill("data");
+        return function inner() {
+          console.log("闭包 arr.length:", arr.length); // 10000
         };
       }
 
-      // 易错点：使用 const 后无法再赋 null；要释放引用需用 let
-      let inner = outer();
-      console.log(inner);
+      var inner = outer();
+      inner(); // 闭包仍引用 arr
 
-      inner = null; // 释放引用，允许 GC 回收闭包链上的 arr
+      inner = null; // 断开引用，arr 与闭包环境变为不可达（若无其他引用）
 
-      // 2.意外的全局变量会导致内存泄漏
-      //   未声明的变量直接赋值会被挂到全局对象上，函数结束也不会回收
-      //   解决：开启 "use strict"，意外赋值会抛 ReferenceError
-      function memoryLeak(){
-        // leakArra = new Array(10000).fill("11111"); // 非严格模式下会变成全局变量
+      // ====== 2. 意外全局变量（非严格模式）======
+      function memoryLeakDemo() {
+        // leakArr = new Array(10000).fill("11111"); // 非严格 → 挂到 window，演示后勿启用
       }
+      memoryLeakDemo();
 
-      // 3.未清除的定时器
-      const timer = setInterval(()=>{
-        // 长期运行的定时器若组件卸载/页面切换未 clearInterval，也会持续持有闭包
+      // ====== 3. 未清除的定时器 ======
+      var timer = setInterval(function () {
+        // 长期运行的定时器若组件卸载/页面切换未 clearInterval，会持续持有闭包
       }, 3000);
-      // 框架中的清理：react 的 useEffect 返回清理函数；vue 在 beforeUnmount 中清理
+      // 演示完毕立即清理，避免本页持续占用
+      clearInterval(timer);
 
-      // 4.DOM 元素被移除，但事件监听未解绑（监听内又引用了 DOM 自身）
-      const arrTest = new Array(300).fill(0);
-      const myBtnEle = document.getElementById("myBtn");
+      // ====== 4. DOM 监听 + 闭包循环引用 ======
+      var arrTest = new Array(300).fill(0);
+      var myBtnEle = document.getElementById("myBtn");
 
-      // 正向引用：DOM 元素持有其事件监听函数的引用
-      myBtnEle.addEventListener("click", handleClick, false);
-      // 反向引用：handleClick 内部又引用了 DOM 元素本身，形成循环引用
-      function handleClick(){
-        console.log(myBtnEle.id);
-        console.log(arrTest);
+      function handleClick() {
+        // 闭包引用 DOM（myBtnEle）和大数组（arrTest）
+        console.log("click:", myBtnEle.id, "arrTest.length:", arrTest.length);
       }
 
-      // 解决：及时 removeEventListener
-      setTimeout(()=>{
-        myBtnEle.removeEventListener("click", handleClick);
-      }, 4000);
+      myBtnEle.addEventListener("click", handleClick, false);
 
+      // 4 秒后解绑，释放 DOM ↔ 回调 的引用链
+      setTimeout(function () {
+        myBtnEle.removeEventListener("click", handleClick);
+        console.log("已 removeEventListener，闭包引用链断开");
+      }, 4000);
     </script>
     <!-- SCRIPT_END -->
 
@@ -129,5 +129,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

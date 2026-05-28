@@ -11,6 +11,7 @@
     - 静态私有字段为什么能隐藏构造许可标志？
     - 工厂方法模拟私有构造时如何避免异常后状态泄漏？
     - 这种模式适合哪些场景，什么时候不值得使用？
+  相关: 类与原型, class类声明
 -->
 
 <!doctype html>
@@ -33,7 +34,7 @@
           <li>JavaScript class 没有 TypeScript 那种 <code>private constructor</code> 语法；这里用静态私有字段和静态工厂方法做运行时模拟。</li>
           <li>静态私有字段 <code>#isInternalConstructing</code> 只能在类体内部访问，类外既不能读取也不能改写，因此适合作为构造许可标志。</li>
           <li>工厂方法先把许可标志设为 <code>true</code>，再调用 <code>new PrivateConstructor()</code>；constructor 校验通过后必须立刻复位，避免后续直接 <code>new</code> 被误放行。</li>
-          <li>如果构造过程可能抛错，工厂方法应使用 <code>try...finally</code> 复位标志；本页示例在 constructor 内复位，适合演示基本机制，但真实项目还要覆盖失败路径。</li>
+          <li>如果构造过程可能抛错，工厂方法应使用 <code>try...finally</code> 复位标志；本页示例在 factory 的 finally 中复位，覆盖失败路径。</li>
           <li>这种模式常用于单例、受控工厂、不可直接创建的值对象；如果只是想限制模块外创建，更简单的做法是不要导出 class，只导出创建函数。</li>
         </ul>
         <h2>面试考点</h2>
@@ -45,8 +46,8 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements" target="_blank" rel="noreferrer">MDN Web Docs：Private elements</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/static" target="_blank" rel="noreferrer">MDN Web Docs：static</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements" target="_blank" rel="noreferrer">MDN: Private elements</a>：静态私有字段。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/static" target="_blank" rel="noreferrer">MDN: static</a>：静态方法与静态字段。</li>
         </ul>
       </div>
     </section>
@@ -54,6 +55,7 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ====== 1. 静态私有标志位 + 工厂方法 ======
       class PrivateConstructor {
         static #isInternalConstructing = false;
 
@@ -61,34 +63,38 @@
           if (!PrivateConstructor.#isInternalConstructing) {
             throw new TypeError("PrivateConstructor is not constructable");
           }
+          // constructor 内也复位，防止标志残留
           PrivateConstructor.#isInternalConstructing = false;
-          // 这里继续做实例初始化
-
-          console.log("使用内部构造器，构造成功!");
+          console.log("内部构造器：实例创建成功");
         }
 
-        // 工厂方法：唯一的合法构造入口
         static create() {
           PrivateConstructor.#isInternalConstructing = true;
           try {
             const instance = new PrivateConstructor();
-            console.log("使用工厂方法构造成功!");
+            console.log("工厂方法：构造成功");
             return instance;
           } finally {
+            // 无论成功或失败都复位，避免状态泄漏
             PrivateConstructor.#isInternalConstructing = false;
           }
         }
       }
 
-      // 合法：走工厂方法
-      PrivateConstructor.create();
+      // ====== 2. 合法路径：工厂方法 ======
+      const instance = PrivateConstructor.create();
+      console.log("instance:", instance instanceof PrivateConstructor); // true
 
-      // 反面教材 / 易错点：直接 new 会抛 TypeError，这里注释掉避免页面报错中断后续脚本
-      // new PrivateConstructor();
+      // ====== 3. 非法路径：直接 new ======
+      try {
+        new PrivateConstructor();
+      } catch (err) {
+        console.log("直接 new:", err.name, "-", err.message);
+      }
 
-      // 类外部不能访问私有静态字段
-      // console.log(PrivateConstructor.#isInternalConstructing);
-
+      // ====== 4. 类外部无法访问静态私有字段 ======
+      // PrivateConstructor.#isInternalConstructing // SyntaxError
+      console.log("外部无法伪造标志位（# 语法级私有）");
     </script>
     <!-- SCRIPT_END -->
 
@@ -110,5 +116,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

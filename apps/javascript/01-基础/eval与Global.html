@@ -58,44 +58,51 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // ============ 1. window 上的全局工具 ============
-      console.log(window.Math.random());
-      console.log(window.Object === Object);  // true
+      // ====== 1. globalThis / window：跨环境统一入口 ======
+      console.log("globalThis === window:", globalThis === window); // true（浏览器）
+      console.log("window.Object === Object:", window.Object === Object); // true
 
-      // 数组的 Object.keys 返回下标字符串
-      const arr = ["name", "age", "address"];
-      console.log(Object.keys(arr)); // ['0', '1', '2']
+      // ====== 2. 顶层 var vs let/const 与 window ======
+      var topVar = "from-var";
+      let topLet = "from-let";
+      console.log("window.topVar:", window.topVar); // "from-var"
+      console.log("window.topLet:", window.topLet); // undefined
 
-      // ============ 2. eval：把字符串当 JS 代码执行 ============
-      var a = 1, b = 2;
-      const c = eval("a + b");
-      console.log("eval('a+b') =", c); // 3
+      // ====== 3. eval：把字符串当 JS 执行 ======
+      var a = 1,
+        b = 2;
+      console.log("eval('a+b'):", eval("a + b")); // 3
 
-      // eval 共享调用处的作用域链 —— 非严格模式下可以创建局部变量
-      eval("var p = { name: 'eval-created', age: 19 }");
-      console.log("eval 创建的 p:", p);
+      // 非严格模式下 eval 可创建外层可见的 var
+      eval("var evalCreated = { name: 'eval-var' }");
+      console.log("eval 创建的 evalCreated:", evalCreated);
 
-      window.fromIndirectEval = "global value";
+      // 直接 eval 共享调用处作用域；间接 eval 在全局执行
+      globalThis.fromIndirectEval = "global value";
       (function () {
         const fromIndirectEval = "local value";
-        console.log("直接 eval:", eval("fromIndirectEval"));
-        console.log("间接 eval:", (0, eval)("fromIndirectEval"));
+        console.log("直接 eval:", eval("fromIndirectEval")); // "local value"
+        console.log("间接 eval:", (0, eval)("fromIndirectEval")); // "global value"
       })();
 
-      // ⚠️ 严格模式下，eval 中创建的变量外部访问不到
+      // 严格模式下 eval 内 var 不泄漏到外层
       (function () {
         "use strict";
-        eval("var inner = 42");
+        eval("var innerStrict = 42");
         try {
-          console.log(inner); // ReferenceError
-        } catch (e) {
-          console.log("严格模式下 eval 内变量隔离:", e.message);
+          console.log(innerStrict);
+        } catch (err) {
+          console.log("严格 eval 隔离:", err.name, "-", err.message);
         }
       })();
 
-      // ⚠️ 性能与安全：现代代码应避免 eval / new Function(...)
-      //    XSS 风险高、可能被 CSP 禁止、JIT 优化受影响
+      // ====== 4. 风险说明 ======
+      // eval / new Function 有 XSS、CSP unsafe-eval、优化受阻等风险；优先 JSON.parse、映射表
 
+      // 演示完毕，清理 global 污染
+      delete window.topVar;
+      delete window.evalCreated;
+      delete globalThis.fromIndirectEval;
     </script>
     <!-- SCRIPT_END -->
 

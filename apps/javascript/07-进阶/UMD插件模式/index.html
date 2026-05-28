@@ -1,6 +1,8 @@
 <!--
-分类: javascript / 07-进阶 / UMD插件模式
+  分类: javascript / 07-进阶 / UMD插件模式
   主题: UMD 插件模式与多模块环境兼容
+  难度: 进阶
+  相关: 资源预加载/index, CommonJS-vs-ESM
   要点:
     - UMD 是兼容 AMD、CommonJS 与浏览器全局变量的库包装模式
     - 包装函数先探测运行环境，再把 factory 返回值导出到对应模块系统
@@ -27,28 +29,27 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>UMD 插件模式与多模块环境兼容</h1>
-      <p class="hint">请打开 DevTools Console 查看 <code>Record</code> 插件在浏览器全局模式下的导出与调用。</p>
+      <p class="hint">请打开 DevTools Console 查看 Record 插件在浏览器全局模式下的导出与调用。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
           <li>UMD（Universal Module Definition）不是 ECMAScript 标准语法，而是一种库发布包装模式：外层立即执行函数接收 <code>root</code> 和 <code>factory</code>，按环境把 <code>factory()</code> 的返回值交给 AMD、CommonJS 或浏览器全局变量。</li>
           <li>本页的 <code>plugin.js</code> 在普通 <code>&lt;script&gt;</code> 中会走浏览器全局分支，把插件暴露为 <code>Record</code>；如果运行在 AMD 加载器中会调用 <code>define(factory)</code>，在 CommonJS 环境中会写入 <code>module.exports</code>。</li>
           <li>UMD 的价值是兼容老式加载器和直接 script 引入；现代新项目优先使用 ESM 的 <code>import</code> / <code>export</code>，库通常通过 <code>exports</code> 字段同时提供 ESM、CJS 或 UMD 构建产物。</li>
-          <li>常见坑是环境探测过宽：页面上如果存在 AMD loader，UMD 会优先进入 AMD 分支；在严格模式、ESM 或 worker 场景里 <code>this</code> 未必是 <code>window</code>，更稳妥的模板会使用 <code>globalThis</code> 或由打包器生成。</li>
+          <li><strong>工程局限</strong>：环境探测过宽时，页面上存在 AMD loader 会优先进入 AMD 分支；严格模式、ESM 或 worker 场景里 <code>this</code> 未必是 <code>window</code>，更稳妥的模板应使用 <code>globalThis</code> 或由打包器生成。UMD 无法获得 ESM 的静态分析、tree-shaking 和异步模块图能力。</li>
           <li>浏览器全局分支会占用全局命名空间，真实项目应使用明确命名、版本化构建和无副作用初始化，避免覆盖已有变量或在加载脚本时立即执行重逻辑。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>UMD 为什么能让同一份插件支持多种模块系统？</strong> 结论是 UMD 把业务代码放进 <code>factory</code>，再由外层包装根据当前环境选择导出方式。原因是 AMD 使用 <code>define</code>，CommonJS 使用 <code>module.exports</code>，普通浏览器脚本只能挂到全局对象。边界是它只能兼容加载方式，不能让代码自动获得 ESM 的静态分析、tree-shaking 和异步模块图能力。</li>
+          <li><strong>UMD 为什么能让同一份插件支持多种模块系统？</strong> 结论是 UMD 把业务代码放进 factory，再由外层包装根据当前环境选择导出方式。原因是 AMD 使用 define，CommonJS 使用 module.exports，普通浏览器脚本只能挂到全局对象。边界是它只能兼容加载方式，不能让代码自动获得 ESM 的静态分析、tree-shaking 和异步模块图能力。</li>
           <li><strong>UMD 与 ESM、CommonJS 怎么选？</strong> 新业务代码和现代库入口优先选 ESM，因为语法标准化、可静态分析，也更利于构建优化。CommonJS 主要用于 Node.js 旧生态或兼容包；UMD 适合需要 CDN script 标签、AMD 加载器或老项目同时消费的发布产物。项目里通常源码写 ESM，再由构建工具输出多格式。</li>
-          <li><strong>为什么常见 UMD 模板先判断 <code>define.amd</code>？</strong> 结论是为了在存在 AMD 加载器的浏览器页面中走异步模块注册，而不是误判成全局变量模式。原因是 AMD 的 <code>define</code> 是显式加载器协议，CommonJS 分支通常面向 Node 或打包环境。边界是不同模板检测顺序可能不同，库作者必须测试目标运行环境。</li>
+          <li><strong>为什么常见 UMD 模板先判断 define.amd？</strong> 结论是为了在存在 AMD 加载器的浏览器页面中走异步模块注册，而不是误判成全局变量模式。原因是 AMD 的 define 是显式加载器协议，CommonJS 分支通常面向 Node 或打包环境。边界是不同模板检测顺序可能不同，库作者必须测试目标运行环境。</li>
           <li><strong>浏览器全局模式有哪些风险？</strong> 结论是全局导出最容易发生命名冲突和加载顺序问题。原因是所有 script 共享同一个全局命名空间，后加载脚本可能覆盖前面的对象。项目中应给全局变量取稳定前缀、避免加载时副作用，并在文档中明确 UMD 包只面向兼容场景。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules">MDN Web Docs: JavaScript modules</a></li>
-          <li><a href="https://nodejs.org/api/modules.html">Node.js Documentation: Modules - CommonJS modules</a></li>
-          <li><a href="https://github.com/amdjs/amdjs-api/blob/master/AMD.md">AMD API: Asynchronous Module Definition</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules">MDN: JavaScript modules</a></li>
+          <li><a href="https://nodejs.org/api/modules.html">Node.js: CommonJS modules</a></li>
           <li><a href="https://github.com/umdjs/umd">UMD templates: Universal Module Definition patterns</a></li>
         </ul>
       </div>
@@ -56,30 +57,35 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>同一份代码自动适配 AMD / CommonJS / 浏览器全局三种模块系统，是早期 jQuery、lodash 等老牌库的标配。</p>
-    <p>查看控制台输出。</p>
+    <section class="demo-block" aria-label="演示说明">
+      <h2>UMD 浏览器全局模式演示</h2>
+      <p class="tip">plugin.js 通过 UMD 包装暴露全局 <code>Record</code> 对象；具体调用日志见 Console。</p>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // 1) 默认配置
+      // ====== 1. 验证 UMD 在浏览器全局模式下的导出 ======
+      console.log("typeof Record:", typeof Record); // "object"
+      console.log("Record 挂到 window:", "Record" in window); // true
+
+      // ====== 2. 默认配置 ======
       console.log("默认 settings:", JSON.stringify(Record.settings));
 
-      // 2) 链式调用：configure → start
+      // ====== 3. 链式调用：configure → start ======
       Record.configure({ min: 999, max: 999, speed: 999 }).start();
-      console.log("新 settings:", JSON.stringify(Record.settings));
+      console.log("configure 后 settings:", JSON.stringify(Record.settings));
 
-      // 3) 异步停止
-      setTimeout(() => Record.stop(), 1500);
+      // ====== 4. 异步 stop ======
+      setTimeout(() => {
+        Record.stop();
+        console.log("Record.stop() 已调用");
+      }, 1500);
 
-      // ===== 顺带演示一个常见陷阱：a = b = {...} =====
-      // 等价于 a = (b = {...})，b、a 引用同一个对象
-      let a, b;
-      a = b = { speed: 50, time: 10 };
-      a.speed = 30;
-      console.log("a 和 b 是同一个对象:", a === b);
-      console.log("b.speed 也变了:", b.speed); // 30
-
+      // ====== 5. UMD 环境探测顺序（本页走 else 分支）======
+      console.log("define.amd 存在?", typeof define !== "undefined" && define.amd);
+      console.log("module.exports 存在?", typeof module !== "undefined" && typeof exports === "object");
+      console.log("→ 普通 script 标签走 root.Record = factory() 分支");
     </script>
     <!-- SCRIPT_END -->
 
@@ -88,7 +94,7 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
-        <a href="../%E8%B5%84%E6%BA%90%E9%A2%84%E5%8A%A0%E8%BD%BD/index.html">← index</a>
+        <a href="../%E8%B5%84%E6%BA%90%E9%A2%84%E5%8A%A0%E8%BD%BD/index.html">← 资源预加载</a>
         <a href="../../08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E9%98%B2%E6%8A%96%E8%8A%82%E6%B5%81.html">防抖节流 →</a>
       </nav>
       <script>
@@ -101,5 +107,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

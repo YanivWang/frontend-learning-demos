@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 08-面试题 / 手写
+  分类: javascript / 08-面试题 / 手写
   主题: 手写 bind
   要点:
     - bind 返回绑定函数，不会立即执行；call/apply 会立即执行
@@ -11,6 +11,7 @@
     - 手写 bind 如何同时支持预置参数和后续参数？
     - new 调用绑定函数时为什么要忽略绑定的 thisArg？
     - 手写 bind 为什么要处理 prototype 原型链？
+  相关: call-apply, new, 02-函数与作用域/this-call-apply-bind
 -->
 
 <!doctype html>
@@ -26,7 +27,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>手写 bind</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -48,7 +49,6 @@
         <ul>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind" target="_blank" rel="noreferrer">MDN: Function.prototype.bind()</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new" target="_blank" rel="noreferrer">MDN: new operator</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this" target="_blank" rel="noreferrer">MDN: this</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create" target="_blank" rel="noreferrer">MDN: Object.create()</a></li>
         </ul>
       </div>
@@ -56,55 +56,66 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>打开控制台查看断言结果。</p>
+    <section class="demo-block">
+      <h2>手写实现验证</h2>
+      <p class="tip">下方输出应与复习区标准答法一致；断言细节可同时在 DevTools Console 查看。</p>
+      <pre id="runtime-output" aria-live="polite"></pre>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      Function.prototype.myBind = function (thisArg, ...presetArgs) {
-        if (typeof this !== "function") {
-          throw new TypeError("myBind must be called on a function");
+      (function () {
+        var out = document.getElementById("runtime-output");
+        var lines = [];
+        function emit(line) {
+          console.log(line);
+          lines.push(line);
+          if (out) out.textContent = lines.join("\n");
+        }
+        function assertOk(ok, msg) {
+          emit((ok ? "✓ " : "✗ ") + msg);
         }
 
-        const fn = this;
-        function bound(...laterArgs) {
-          const isNewCall = this instanceof bound;
-          const context = isNewCall ? this : thisArg;
-          return fn.apply(context, presetArgs.concat(laterArgs));
+        // ====== 1. 手写 myBind：返回新函数，支持预置参数 ======
+        Function.prototype.myBind = function (thisArg, ...presetArgs) {
+          if (typeof this !== "function") {
+            throw new TypeError("myBind must be called on a function");
+          }
+          const fn = this;
+          function bound(...laterArgs) {
+            const isNewCall = this instanceof bound;
+            const context = isNewCall ? this : thisArg;
+            return fn.apply(context, presetArgs.concat(laterArgs));
+          }
+          if (fn.prototype) {
+            bound.prototype = Object.create(fn.prototype);
+            bound.prototype.constructor = bound;
+          }
+          return bound;
+        };
+
+        // ====== 2. 验证：普通调用固定 this + 预置参数 ======
+        function say(prefix, suffix) {
+          return prefix + this.name + suffix;
         }
+        const user = { name: "Ada" };
+        const boundSay = say.myBind(user, "Hi, ");
+        assertOk(boundSay("!") === "Hi, Ada!", "boundSay('!') = " + boundSay("!"));
 
-        // new bound() 创建的实例应能访问原函数 prototype 上的方法。
-        if (fn.prototype) {
-          bound.prototype = Object.create(fn.prototype);
-          bound.prototype.constructor = bound;
+        // ====== 3. 验证：new 调用忽略 bound thisArg，保留原型链 ======
+        function Person(name) {
+          this.name = name;
         }
-
-        return bound;
-      };
-
-      function say(prefix, suffix) {
-        return prefix + this.name + suffix;
-      }
-      const user = { name: "Ada" };
-      const boundSay = say.myBind(user, "Hi, ");
-      console.assert(boundSay("!") === "Hi, Ada!", "normal bind call");
-
-      function Person(name) {
-        this.name = name;
-      }
-      Person.prototype.getName = function () {
-        return this.name;
-      };
-
-      const BoundPerson = Person.myBind({ name: "Ignored" });
-      const p = new BoundPerson("Grace");
-      console.assert(p.name === "Grace", "new call ignores bound thisArg");
-      console.assert(p instanceof Person, "instance keeps original prototype chain");
-      console.assert(p.getName() === "Grace", "prototype method works");
-
-      console.log("boundSay:", boundSay("!"));
-      console.log("new BoundPerson:", p.getName(), p instanceof Person);
-
+        Person.prototype.getName = function () {
+          return this.name;
+        };
+        const BoundPerson = Person.myBind({ name: "Ignored" });
+        const p = new BoundPerson("Grace");
+        assertOk(p.name === "Grace", "new BoundPerson('Grace').name = Grace");
+        assertOk(p instanceof Person, "p instanceof Person = true");
+        assertOk(p.getName() === "Grace", "p.getName() = " + p.getName());
+      })();
     </script>
     <!-- SCRIPT_END -->
 
@@ -126,5 +137,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

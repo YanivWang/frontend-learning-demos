@@ -38,7 +38,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>浏览器渲染与性能</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">请阅读本复习区，并在下方演示区点击按钮对比插入性能与 transform 动画；同时打开 DevTools Performance 面板可进一步验证。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -70,6 +70,9 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
+    <section class="demo-block">
+    <h2>渲染路径与性能对比</h2>
+    <p class="tip">「逐个插入」故意读写交错触发 layout thrashing；「批量插入」用 DocumentFragment 减少中间布局。</p>
     <div class="stage">
       <span>HTML</span>
       <span>DOM</span>
@@ -85,6 +88,7 @@
     <p id="result">等待操作...</p>
     <div id="list"></div>
     <div id="box" class="box"></div>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
@@ -100,16 +104,18 @@
         return div;
       }
 
+      // ====== 1. layout thrashing ======
       document.getElementById("badBtn").addEventListener("click", () => {
         list.innerHTML = "";
         const start = performance.now();
         for (let i = 0; i < 100; i++) {
           list.appendChild(createItem(i));
-          list.offsetHeight;
+          list.offsetHeight; // 强制同步布局
         }
         result.textContent = "逐个插入耗时：" + (performance.now() - start).toFixed(2) + "ms";
       });
 
+      // ====== 2. DocumentFragment 批量插入 ======
       document.getElementById("goodBtn").addEventListener("click", () => {
         list.innerHTML = "";
         const start = performance.now();
@@ -121,13 +127,11 @@
         result.textContent = "批量插入耗时：" + (performance.now() - start).toFixed(2) + "ms";
       });
 
+      // ====== 3. transform/opacity 动画 ======
       document.getElementById("animateBtn").addEventListener("click", () => {
         box.classList.toggle("move");
         result.textContent = "transform/opacity 通常走合成阶段，比频繁改 left/top 更适合动画。";
       });
-
-      console.log("动画节流可以继续看 requestAnimation.html。");
-
     </script>
     <!-- SCRIPT_END -->
 

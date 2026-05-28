@@ -11,6 +11,7 @@
     - Shadow DOM 的样式隔离和普通组件 CSS 作用域有什么区别？
     - observedAttributes 为什么只监听属性而不是属性对象？
     - Web Components 与 React/Vue 组件如何选型和集成？
+  相关: ServiceWorker, DOM操作
 -->
 
 <!doctype html>
@@ -21,6 +22,8 @@
     <title>Web Components</title>
     <style>
       body { font-family: system-ui, sans-serif; margin: 2rem; }
+      button { margin: 4px 8px 4px 0; padding: 6px 12px; }
+      #runtime-output { margin-top: 12px; padding: 10px; background: #f6f8fa; border-radius: 6px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -29,7 +32,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Web Components 自定义元素</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">请阅读本复习区，并在下方演示区查看自定义元素；点击按钮修改 attribute 观察 attributeChangedCallback 触发。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -58,14 +61,32 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <user-card name="Alice" role="Engineer"></user-card>
-    <user-card name="Bob" role="Designer"></user-card>
+    <section class="demo-block">
+      <h2>Custom Elements 演示</h2>
+      <p class="tip">Shadow DOM 内样式与外部隔离；修改 attribute 会触发 observedAttributes 回调。</p>
+      <user-card id="card-a" name="Alice" role="Engineer"></user-card>
+      <user-card id="card-b" name="Bob" role="Designer"></user-card>
+      <button type="button" id="changeRoleBtn">修改 Alice 的 role</button>
+      <button type="button" id="changeNameBtn">修改 Bob 的 name</button>
+      <pre id="runtime-output" aria-live="polite">等待 attribute 变化…</pre>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      const runtimeOutput = document.getElementById("runtime-output");
+
+      function log(msg) {
+        runtimeOutput.textContent = "[" + new Date().toLocaleTimeString() + "] " + msg;
+        console.log(msg);
+      }
+
+      // ====== 1. 定义 Custom Element + Shadow DOM ======
       class UserCard extends HTMLElement {
-        static get observedAttributes() { return ["name", "role"]; }
+        static get observedAttributes() {
+          return ["name", "role"];
+        }
+
         constructor() {
           super();
           const root = this.attachShadow({ mode: "open" });
@@ -83,22 +104,37 @@
           this._roleEl.className = "role";
           card.append(this._nameEl, this._roleEl);
           root.append(style, card);
-          }
-          connectedCallback() { this._render(); }
-          attributeChangedCallback() { this._render(); }
-          _render() {
-            this._nameEl.textContent = this.getAttribute("name") || "—";
-            this._roleEl.textContent = this.getAttribute("role") || "—";
-          }
         }
+
+        connectedCallback() {
+          this._render();
+          log("connectedCallback: " + this.getAttribute("name"));
+        }
+
+        attributeChangedCallback(name, oldValue, newValue) {
+          log("attributeChangedCallback: " + name + " " + oldValue + " → " + newValue);
+          this._render();
+        }
+
+        _render() {
+          this._nameEl.textContent = this.getAttribute("name") || "—";
+          this._roleEl.textContent = this.getAttribute("role") || "—";
+        }
+      }
+
+      // ====== 2. 注册自定义元素（名称须含连字符）======
       if (!customElements.get("user-card")) {
         customElements.define("user-card", UserCard);
       }
 
-      setTimeout(() => {
-        document.querySelector("user-card")?.setAttribute("role", "Frontend Engineer");
-      }, 1200);
+      // ====== 3. 交互：修改 attribute ======
+      document.getElementById("changeRoleBtn").addEventListener("click", () => {
+        document.getElementById("card-a").setAttribute("role", "Frontend Engineer");
+      });
 
+      document.getElementById("changeNameBtn").addEventListener("click", () => {
+        document.getElementById("card-b").setAttribute("name", "Bob (Updated)");
+      });
     </script>
     <!-- SCRIPT_END -->
 
@@ -120,5 +156,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

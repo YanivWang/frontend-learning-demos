@@ -5,12 +5,14 @@
     - 柯里化把多参数函数拆成可逐步接收参数的函数链
     - 闭包负责保存已经收集到的参数，参数够 fn.length 后执行原函数
     - Array.prototype.slice.call(arguments) 是把类数组 arguments 转成数组的旧写法
-    - 现代代码更常用 rest 参数与展开语法，柯里化常用于复用配置或函数组合
+    - fn.length 只统计默认值前的形参，默认参数/rest 会影响通用 curry 判断
+    - 柯里化强调分批调用，偏函数应用强调先固定部分参数
   面试:
     - 柯里化和偏函数应用有什么区别？
     - 通用 curry 为什么依赖 fn.length，边界是什么？
     - arguments 为什么要借用 Array.prototype.slice？
     - 项目里什么时候适合使用柯里化？
+  相关: 闭包-作用域链与变量提升, 08-面试题/手写/02-bind
 -->
 
 <!doctype html>
@@ -45,10 +47,10 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://javascript.info/currying-partials">JavaScript.info：Currying</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments">MDN：arguments object</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/rest_parameters">MDN：Rest parameters</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/length">MDN：Function.length</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments">MDN: arguments object</a>：类数组结构与 slice 借用场景。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/rest_parameters">MDN: Rest parameters</a>：现代替代 arguments 的写法。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/length">MDN: Function.length</a>：形参计数与默认值边界。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures">MDN: Closures</a>：柯里化依赖闭包保存参数。</li>
         </ul>
       </div>
     </section>
@@ -56,14 +58,21 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // 取 arguments 除第一个外的剩余参数（class 时代更推荐 ...rest）
+      // ====== 1. arguments 类数组与 slice 借用 ======
+      // arguments 有 length 和索引，但不是真数组；slice.call 按数组算法读取
       function add(x, y, z) {
-        const args = Array.prototype.slice.call(arguments, 1);
-        console.log(args);
+        const restArgs = Array.prototype.slice.call(arguments, 1);
+        console.log("slice.call(arguments,1):", restArgs); // [2, 3]
       }
       add(1, 2, 3);
 
-      // 通用柯里化：接收一个 fn，返回逐步累计参数的函数
+      // 现代写法：rest 参数直接得到真数组
+      function addModern(first, ...rest) {
+        console.log("rest 参数:", rest); // [2, 3]
+      }
+      addModern(1, 2, 3);
+
+      // ====== 2. 通用 curry：闭包累计参数，够 fn.length 后执行 ======
       function curry(fn) {
         return function curried(...args) {
           if (args.length >= fn.length) {
@@ -72,12 +81,34 @@
           return (...rest) => curried(...args, ...rest);
         };
       }
+
       const sum3 = (a, b, c) => a + b + c;
       const curried = curry(sum3);
-      console.log(curried(1)(2)(3)); // 6
-      console.log(curried(1, 2)(3)); // 6
-      console.log(curried(1, 2, 3)); // 6
+      console.log("curried(1)(2)(3):", curried(1)(2)(3)); // 6
+      console.log("curried(1,2)(3):", curried(1, 2)(3)); // 6
+      console.log("curried(1,2,3):", curried(1, 2, 3)); // 6
 
+      // ====== 3. fn.length 边界：默认参数会缩短 length ======
+      function withDefault(a, b = 0, c) {
+        return a + b + c;
+      }
+      console.log("withDefault.length:", withDefault.length); // 1（b 有默认值，c 不计入）
+
+      const curriedDefault = curry(withDefault);
+      // 只传 1 个参数时 curry 认为够了（length=1），b/c 为 undefined
+      console.log("curry+默认参数:", curriedDefault(10)); // NaN（10+undefined+undefined）
+
+      // ====== 4. 偏函数应用 vs 柯里化 ======
+      // 偏函数：一次性固定部分参数，返回「还差几个参数」的函数
+      function partial(fn, ...fixed) {
+        return (...rest) => fn(...fixed, ...rest);
+      }
+      const add10 = partial(sum3, 10);
+      console.log("偏函数 add10(20,30):", add10(20, 30)); // 60
+
+      // 柯里化：强调逐次传参，每次返回新函数
+      const curriedAdd = curry(sum3);
+      console.log("柯里化 curriedAdd(10)(20)(30):", curriedAdd(10)(20)(30)); // 60
     </script>
     <!-- SCRIPT_END -->
 
@@ -99,5 +130,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

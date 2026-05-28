@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 08-面试题 / 手写
+  分类: javascript / 08-面试题 / 手写
   主题: 手写 new
   要点:
     - new 会创建新对象，并把新对象的原型链接到构造函数 prototype
@@ -11,6 +11,7 @@
     - 构造函数显式 return 对 new 结果有什么影响？
     - Object.create(Constructor.prototype) 在手写 new 中解决了什么？
     - 手写 new 和 Reflect.construct 有什么边界差异？
+  相关: bind, instanceof, 03-对象与原型/构造函数
 -->
 
 <!doctype html>
@@ -26,7 +27,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>手写 new</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -48,7 +49,6 @@
         <ul>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new" target="_blank" rel="noreferrer">MDN: new operator</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create" target="_blank" rel="noreferrer">MDN: Object.create()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof" target="_blank" rel="noreferrer">MDN: instanceof</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect/construct" target="_blank" rel="noreferrer">MDN: Reflect.construct()</a></li>
         </ul>
       </div>
@@ -56,48 +56,66 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>打开控制台查看断言结果。</p>
+    <section class="demo-block">
+      <h2>手写实现验证</h2>
+      <p class="tip">下方输出应与复习区标准答法一致；断言细节可同时在 DevTools Console 查看。</p>
+      <pre id="runtime-output" aria-live="polite"></pre>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      function myNew(Constructor, ...args) {
-        if (typeof Constructor !== "function") {
-          throw new TypeError("Constructor must be a function");
+      (function () {
+        var out = document.getElementById("runtime-output");
+        var lines = [];
+        function emit(line) {
+          console.log(line);
+          lines.push(line);
+          if (out) out.textContent = lines.join("\n");
+        }
+        function assertOk(ok, msg) {
+          emit((ok ? "✓ " : "✗ ") + msg);
         }
 
-        const prototype = Constructor.prototype;
-        const instancePrototype =
-          prototype !== null && (typeof prototype === "object" || typeof prototype === "function")
-            ? prototype
-            : Object.prototype;
-        const instance = Object.create(instancePrototype);
-        const result = Constructor.apply(instance, args);
-        const isObject = result !== null && (typeof result === "object" || typeof result === "function");
-        return isObject ? result : instance;
-      }
+        // ====== 1. 手写 myNew：创建对象 → 连原型 → apply 执行 → 处理返回值 ======
+        function myNew(Constructor, ...args) {
+          if (typeof Constructor !== "function") {
+            throw new TypeError("Constructor must be a function");
+          }
+          const prototype = Constructor.prototype;
+          const instancePrototype =
+            prototype !== null &&
+            (typeof prototype === "object" || typeof prototype === "function")
+              ? prototype
+              : Object.prototype;
+          const instance = Object.create(instancePrototype);
+          const result = Constructor.apply(instance, args);
+          const isObject =
+            result !== null &&
+            (typeof result === "object" || typeof result === "function");
+          return isObject ? result : instance;
+        }
 
-      function Person(name) {
-        this.name = name;
-      }
-      Person.prototype.say = function () {
-        return "I am " + this.name;
-      };
+        // ====== 2. 验证：实例属性 + 原型方法 + instanceof ======
+        function Person(name) {
+          this.name = name;
+        }
+        Person.prototype.say = function () {
+          return "I am " + this.name;
+        };
+        const p = myNew(Person, "Ada");
+        assertOk(p.name === "Ada", "p.name = Ada");
+        assertOk(p instanceof Person, "p instanceof Person");
+        assertOk(p.say() === "I am Ada", "p.say() = " + p.say());
 
-      const p = myNew(Person, "Ada");
-      console.assert(p.name === "Ada", "assigns instance fields");
-      console.assert(p instanceof Person, "links prototype");
-      console.assert(p.say() === "I am Ada", "can access prototype methods");
-
-      function Factory() {
-        this.name = "inner";
-        return { name: "returned object" };
-      }
-      console.assert(myNew(Factory).name === "returned object", "constructor object return wins");
-
-      console.log("myNew Person:", p.say());
-      console.log("myNew Factory:", myNew(Factory));
-
+        // ====== 3. 验证：构造函数显式 return 对象覆盖默认实例 ======
+        function Factory() {
+          this.name = "inner";
+          return { name: "returned object" };
+        }
+        const f = myNew(Factory);
+        assertOk(f.name === "returned object", "Factory return 对象 → " + f.name);
+      })();
     </script>
     <!-- SCRIPT_END -->
 
@@ -119,5 +137,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

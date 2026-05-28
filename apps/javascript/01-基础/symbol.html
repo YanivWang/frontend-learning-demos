@@ -54,43 +54,51 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // 易错点：Symbol 不是构造函数
+      // ====== 1. Symbol 基础：原始类型，不能 new ======
       // const sym1 = new Symbol(); // TypeError: Symbol is not a constructor
-
-      // 只能作为普通函数调用来创建 Symbol 实例
       const sym2 = Symbol();
-      console.log("typeof Symbol>>>", typeof Symbol); // function
+      console.log("typeof sym2:", typeof sym2); // "symbol"
+      console.log("sym2.description:", sym2.description);
 
-      // 与对象/数组/类实例 typeof 为 'object' 不同，Symbol 是原始类型 → 'symbol'
-      console.log("typeof sym2>>>", typeof sym2);
-
-      console.log("sym2.description", sym2.description);
-      console.log("sym2.toString", sym2.toString());
-      console.log("sym2.valueOf", sym2.valueOf());
-
-      // description 仅用于调试，标识 Symbol 是谁，不参与「相等性」
       const sym3 = Symbol("AddressId");
-      console.log("sym3.description", sym3.description);
-      console.log("sym3.toString", sym3.toString());
-      console.log("sym3.valueOf", sym3.valueOf());
+      console.log("sym3.description:", sym3.description);
+      console.log("sym3 === Symbol('AddressId'):", sym3 === Symbol("AddressId")); // false，每次唯一
 
-      // 场景 1：把 Symbol 当对象属性键，避免与其他键冲突
-      const privateProp = Symbol("privateProp");
-      let dog = {
-        [privateProp]: "我是私有属性",
+      // ====== 2. Symbol.for / Symbol.keyFor：全局注册表复用 ======
+      const globalA = Symbol.for("app.id");
+      const globalB = Symbol.for("app.id");
+      console.log("Symbol.for 复用:", globalA === globalB); // true
+      console.log("Symbol.keyFor:", Symbol.keyFor(globalA)); // "app.id"
+
+      // ====== 3. 作对象键：不会被 for...in / Object.keys 枚举 ======
+      const privateKey = Symbol("private");
+      const dog = {
+        name: "旺财",
+        [privateKey]: "隐藏属性",
       };
-      console.log(dog[privateProp]);
+      console.log("dog[privateKey]:", dog[privateKey]);
+      console.log("Object.keys:", Object.keys(dog)); // ["name"]
+      console.log("getOwnPropertySymbols:", Object.getOwnPropertySymbols(dog)); // [Symbol(private)]
+      console.log("Reflect.ownKeys:", Reflect.ownKeys(dog)); // ["name", Symbol(private)]
 
-      // 场景 2：用 Symbol 模拟 TypeScript 枚举（每个值唯一不可仿造）
-      const Direction = {
-        UP: Symbol(),
-        DOWN: Symbol(),
-        LEFT: Symbol(),
-        RIGHT: Symbol(),
+      // ====== 4. Well-known Symbol：Symbol.iterator 定义迭代协议 ======
+      const iterable = {
+        data: [10, 20, 30],
+        [Symbol.iterator]() {
+          let i = 0;
+          const arr = this.data;
+          return {
+            next() {
+              return i < arr.length ? { value: arr[i++], done: false } : { done: true };
+            },
+          };
+        },
       };
-      console.log(Direction);
-      console.log(Direction.UP);
+      console.log("[...iterable]:", [...iterable]); // [10, 20, 30]
 
+      // ====== 5. JSON.stringify 忽略 Symbol 属性 ======
+      const withSymbol = { a: 1, [Symbol("s")]: "ignored" };
+      console.log("JSON.stringify:", JSON.stringify(withSymbol)); // '{"a":1}'
     </script>
     <!-- SCRIPT_END -->
 

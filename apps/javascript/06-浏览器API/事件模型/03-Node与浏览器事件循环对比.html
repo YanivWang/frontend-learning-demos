@@ -33,7 +33,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Node.js vs 浏览器事件循环</h1>
-      <p class="hint">在浏览器中操作下方按钮观察任务与微任务顺序；Node.js 专有 API 请结合下方对照代码在终端理解。</p>
+      <p class="hint">阅读本复习区后，在浏览器中点击按钮观察宏/微任务顺序；Node 专有 API 需在终端手动运行下方对照代码。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -43,6 +43,7 @@
           <li><code>setImmediate</code> 与 <code>setTimeout(fn, 0)</code> 的先后不能脱离上下文硬背：在主模块中顺序可能受调度和版本影响，在 I/O 回调内部通常 <code>setImmediate</code> 更早执行。</li>
           <li>Node 20 起随 libuv 1.45 调整，timers 只在 poll 之后运行；涉及精确顺序的面试题要说明 Node 版本、代码位置和是否在 I/O 回调内。</li>
           <li>递归追加 <code>process.nextTick</code> 或微任务会让事件循环迟迟无法进入 timers/poll/check，实际服务端项目中可能造成 I/O 饥饿、请求延迟或监控误判。</li>
+          <li><strong>运行环境：</strong> 浏览器部分在 <code>file://</code> 与 <code>http(s)://</code> 均可运行；<code>process.nextTick</code>、<code>setImmediate</code> 仅 Node 环境可用，<strong>需人工在终端验证</strong>，不能在本 HTML 页面内直接执行。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
@@ -64,8 +65,11 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
+    <section class="demo-block" aria-label="浏览器事件循环演示">
+      <h2 class="demo-block__label">运行示例</h2>
+      <p class="tip">点击按钮观察浏览器中的同步 → 微任务 → 宏任务顺序。</p>
     <button type="button" id="run">运行顺序演示</button>
-    <div id="browser-log">点击按钮查看浏览器中的宏/微任务顺序</div>
+    <pre id="browser-log" aria-live="polite">点击按钮查看浏览器中的宏/微任务顺序</pre>
     <section aria-label="Node.js 对照代码">
       <h2>Node.js 对照代码</h2>
       <pre><code>console.log("sync start");
@@ -76,23 +80,46 @@ process.nextTick(() => console.log("nextTick"));
 console.log("sync end");</code></pre>
       <p>在 Node 中通常先看到同步日志，再看到 <code>nextTick</code>、Promise 微任务；<code>timer</code> 与 <code>immediate</code> 的相对顺序要结合代码位置和 Node 版本判断。</p>
     </section>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      document.getElementById("run").onclick = () => {
-        const log = [];
-        const push = (m) => log.push(m);
-        push("sync start");
-        setTimeout(() => push("macrotask setTimeout"), 0);
-        Promise.resolve().then(() => push("microtask Promise"));
-        queueMicrotask(() => push("microtask queueMicrotask"));
-        push("sync end");
-        setTimeout(() => {
-          document.getElementById("browser-log").textContent = log.join("\n");
-        }, 10);
-      };
+      (function () {
+        var logEl = document.getElementById("browser-log");
 
+        function render(lines) {
+          var text = lines.join("\n");
+          logEl.textContent = text;
+          console.log(text);
+        }
+
+        document.getElementById("run").onclick = function () {
+          var log = [];
+
+          // ====== 1. 同步代码 ======
+          log.push("sync start");
+
+          // ====== 2. 宏任务：setTimeout ======
+          setTimeout(function () {
+            log.push("macrotask setTimeout");
+            render(log);
+          }, 0);
+
+          // ====== 3. 微任务：Promise 与 queueMicrotask ======
+          Promise.resolve().then(function () {
+            log.push("microtask Promise");
+            render(log);
+          });
+          queueMicrotask(function () {
+            log.push("microtask queueMicrotask");
+            render(log);
+          });
+
+          log.push("sync end");
+          render(log);
+        };
+      })();
     </script>
     <!-- SCRIPT_END -->
 

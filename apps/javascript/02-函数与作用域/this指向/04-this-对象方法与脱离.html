@@ -1,17 +1,19 @@
 <!--
-分类: javascript / 02-函数与作用域 / this指向
+  分类: javascript / 02-函数与作用域 / this指向
   主题: 方法被「赋值出去」后 this 的脱离
   要点:
     - this 由调用位置决定，obj.fn() 的调用者是 obj
     - 把 obj.fn 赋给变量后，引用值不再携带原对象，直接调用会丢失 this
     - setTimeout、事件回调、解构方法都可能触发 this 脱离
     - 解决方式包括 bind 固定 this、包装成箭头函数或改为显式传入依赖
+    - 非严格模式脱离后 this 可能是全局对象，严格模式下是 undefined
   面试:
     - 为什么 obj.fn() 有 this，而 const fn = obj.fn; fn() 会丢 this？
     - 哪些真实场景容易发生 this 脱离？
     - bind 和箭头函数解决 this 脱离有什么区别？
     - 解构对象方法时为什么要警惕 this？
     - 如何从设计上减少 this 依赖？
+  相关: this-动态绑定, this-call-apply-bind
 -->
 
 <!doctype html>
@@ -31,7 +33,7 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><strong>调用位置决定 this：</strong><code>obj.fn()</code> 是“通过对象属性引用调用”，所以 <code>this</code> 指向 <code>obj</code>。</li>
+          <li><strong>调用位置决定 this：</strong><code>obj.fn()</code> 是「通过对象属性引用调用」，所以 <code>this</code> 指向 <code>obj</code>。</li>
           <li><strong>方法脱离：</strong><code>const fn = obj.fn; fn()</code> 只保留函数值，不保留原来的 base object，因此会按普通函数调用规则绑定 <code>this</code>。</li>
           <li><strong>常见场景：</strong>把方法传给 <code>setTimeout</code>、事件监听、Promise 回调、数组方法，或从对象中解构方法，都可能让 <code>this</code> 脱离原对象。</li>
           <li><strong>修复方式：</strong><code>bind(obj)</code> 适合提前固定回调；<code>() =&gt; obj.fn()</code> 适合保留最新对象引用；也可以把方法改成接收参数，减少对 <code>this</code> 的依赖。</li>
@@ -47,9 +49,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this" target="_blank" rel="noopener">MDN Web Docs：this</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind" target="_blank" rel="noopener">MDN Web Docs：Function.prototype.bind()</a></li>
-          <li><a href="https://javascript.info/object-methods" target="_blank" rel="noopener">JavaScript.info：Object methods, this</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this">MDN: this</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind">MDN: Function.prototype.bind()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions">MDN: Arrow function expressions</a></li>
         </ul>
       </div>
     </section>
@@ -57,30 +59,67 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ====== 1. 正常方法调用 vs 赋值脱离 ======
       var obj = {
         user1: "wc",
         fn: function () {
-          console.log("this: " + this);
-          console.log("user: " + this.user1);
+          console.log("this:", this);
+          console.log("user:", this.user1);
         },
-        user2: {
-          "a": 30,
-        }
       };
 
-      // 正常对象方法调用：this 指向 obj
-      obj.fn();
+      obj.fn(); // this 是 obj
 
-      // 脱离后：this 不再是 obj，user1 取不到（变成 undefined）
-      let funA = obj.fn;
-      funA();
+      var funA = obj.fn;
+      funA(); // 脱离：非严格模式 this → window，user1 为 undefined
 
-      // 保留 this 的两种现代写法
-      const funBound = obj.fn.bind(obj);
-      funBound();
-      const funArrow = () => obj.fn();
-      funArrow();
+      // ====== 2. bind 与箭头包装修复 ======
+      var funBound = obj.fn.bind(obj);
+      funBound(); // this 固定为 obj
 
+      var funArrow = function () {
+        return obj.fn(); // 箭头外层普通函数，内部 obj.fn() 仍是属性引用调用
+      };
+      funArrow(); // this 仍是 obj
+
+      // ====== 3. setTimeout 回调中的 this 脱离 ======
+      setTimeout(obj.fn, 0); // 脱离：传的是函数值，不是 obj.fn() 调用
+      setTimeout(function () {
+        obj.fn(); // 包装后保留 obj 作为接收者
+      }, 0);
+
+      // ====== 4. 解构方法同样丢失 this ======
+      var destructured = obj.fn;
+      destructured(); // 与 funA 相同
+
+      var fnFromDestructure = (function (o) {
+        var fn = o.fn; // 等价于 const { fn } = o
+        return fn;
+      })(obj);
+      fnFromDestructure(); // 脱离
+
+      // ====== 5. 数组方法回调中的 this ======
+      var list = {
+        items: [1, 2, 3],
+        sum() {
+          return this.items.reduce(function (acc, n) {
+            // 普通函数回调：this 不是 list（非严格模式为 window）
+            return acc + n;
+          }, 0);
+        },
+        sumFixed() {
+          var self = this;
+          return this.items.reduce(function (acc, n) {
+            return acc + n;
+          }.bind(this), 0);
+        },
+        sumArrow() {
+          return this.items.reduce((acc, n) => acc + n, 0); // 箭头函数捕获外层 this
+        },
+      };
+      console.log("reduce 脱离:", list.sum()); // 仍能工作（不依赖 this）
+      console.log("reduce bind:", list.sumFixed()); // 6
+      console.log("reduce 箭头:", list.sumArrow()); // 6
     </script>
     <!-- SCRIPT_END -->
 
@@ -102,5 +141,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

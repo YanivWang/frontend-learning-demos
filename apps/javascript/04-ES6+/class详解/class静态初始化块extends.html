@@ -11,6 +11,7 @@
     - static 块里的 super.xxx 和实例方法里的 super.xxx 有什么区别？
     - 静态方法为什么要通过类名调用，实例为什么访问不到？
     - 静态工厂方法和 constructor 分别适合什么场景？
+  相关: class静态初始化块, class类表达式, extends
 -->
 
 <!doctype html>
@@ -45,9 +46,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Static_initialization_blocks" target="_blank" rel="noreferrer">MDN Web Docs：Static initialization blocks</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/static" target="_blank" rel="noreferrer">MDN Web Docs：static</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/super" target="_blank" rel="noreferrer">MDN Web Docs：super</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Static_initialization_blocks">MDN: Static initialization blocks</a>：继承链上父类 static 块先于子类执行。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/static">MDN: static</a>：静态成员挂在类构造器上，实例不能直接访问。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/super">MDN: super</a>：static 块中 <code>super.xxx</code> 查找父类构造器上的静态成员。</li>
         </ul>
       </div>
     </section>
@@ -55,27 +56,27 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ====== 1. 父类静态初始化先于子类 ======
       class Animal {
         static age = 30;
-        static {}
+        static {
+          console.log("Animal static 块: age =", this.age); // 30
+        }
       }
 
-      //类的静态方法，静态属性是所有实例共享的
+      // ====== 2. 子类 static 块可用 super 访问父类静态成员 ======
       class Pig extends Animal {
-        //静态属性则适用于缓存、固定配置或其他不需要跨实例复制的数据
         static animalId = "10001";
 
-        //静态方法通常是实用函数，如创建或克隆对象的函数
-        //静态成员定义在类本身上
         static staticMethod() {
-          console.log("1111111");
-          console.log(this)//class Pig这里的this是class Pig类本身
+          console.log("staticMethod 被调用, this === Pig:", this === Pig); // true
           return "static method has been called.";
         }
 
         static {
-          //static代码块中可以使用super关键字访问父类的静态属性
-          console.log(super.age);
+          // MDN：static 块中 super.xxx 从父类构造器查找静态成员
+          console.log("Pig static 块: super.age =", super.age); // 30
+          console.log("Pig static 块: this.animalId =", this.animalId); // "10001"
         }
 
         constructor(name) {
@@ -83,18 +84,21 @@
           this.name = name;
         }
 
-        //类的静态方法，非常适合作为创建类实例的工厂方法
+        // 静态工厂方法：统一创建实例、隐藏构造细节
         static createPerson(name) {
           return new Pig(name);
         }
       }
 
-      Pig.greeting = "我是类本身的成员"
+      Pig.greeting = "我是类本身的成员";
 
-      //类的静态方法，需要通过类名调用
-      Pig.staticMethod();
-      console.log(Pig.createPerson("佩奇").name);
+      // ====== 3. 静态方法通过类名调用；实例不能直接访问 ======
+      console.log(Pig.staticMethod()); // "static method has been called."
+      const instance = Pig.createPerson("佩奇");
+      console.log("工厂方法创建:", instance.name); // "佩奇"
 
+      // 静态成员在类构造器上，不在实例原型链上
+      console.log("instance.staticMethod:", instance.staticMethod); // undefined
     </script>
     <!-- SCRIPT_END -->
 

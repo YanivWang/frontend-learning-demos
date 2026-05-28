@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 06-浏览器API / 存储
+  分类: javascript / 06-浏览器API / 存储
   主题: 结合 localforage 与 StorageManager 估算剩余容量
   要点:
     - localforage.iterate 只能估算当前 store 的业务数据大小
@@ -12,6 +12,7 @@
     - StorageManager.estimate 的 usage/quota 和 localforage.iterate 有什么区别？
     - 容量估算在大数据量或多标签页场景有哪些误差？
     - 项目里什么时候应该提示用户清理离线缓存？
+  相关: 获取已用容量, 封装-获取存储容量
 -->
 
 <!doctype html>
@@ -28,7 +29,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>结合 localforage 与 StorageManager 估算剩余容量</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">阅读本复习区后，点击下方按钮查看 store 业务估算与 origin 剩余配额（粗略值）。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -37,6 +38,7 @@
           <li>剩余容量不是固定值。浏览器会根据设备剩余磁盘、站点参与度、是否持久化存储、隐私模式等因素调整配额，并可能在存储压力下清理非持久化数据。</li>
           <li>容量估算要按值类型处理：字符串可用 <code>TextEncoder</code> 估算 UTF-8 字节数，<code>Blob</code> 读 <code>size</code>，<code>ArrayBuffer</code> 读 <code>byteLength</code>，对象再考虑 JSON 序列化和异常兜底。</li>
           <li>项目里通常把业务估算用于缓存详情页，把 <code>StorageManager.estimate()</code> 用于判断是否接近 origin 配额；不要在首屏频繁全量遍历大 store。</li>
+          <li><strong>运行环境：</strong> 剩余配额依赖 <code>navigator.storage.estimate()</code>；<code>file://</code> 下数值可能不准确。不能假设固定 50MB 上限。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
@@ -57,8 +59,24 @@
     </section>
     <!-- NOTES_END -->
 
+    <!-- PAGE_DOM_START -->
+    <section class="demo-block" aria-label="剩余容量估算">
+      <h2 class="demo-block__label">运行示例</h2>
+      <button id="run-remaining" type="button">估算剩余容量</button>
+      <pre id="runtime-output" aria-live="polite">尚未运行。</pre>
+    </section>
+    <!-- PAGE_DOM_END -->
+
     <!-- SCRIPT_START -->
     <script>
+      (function () {
+        var outputEl = document.getElementById("runtime-output");
+        function log(text) {
+          outputEl.textContent += (outputEl.textContent ? "\n" : "") + text;
+          console.log(text);
+        }
+
+      // ====== 1. 初始化 store 与字节估算工具 ======
       const encoder = new TextEncoder();
       const store = localforage.createInstance({
         name: "frontend-learning-demos",
@@ -83,12 +101,15 @@
         }
       }
 
+      // ====== 2. 写入演示数据 ======
       async function seedDemoData() {
         await store.setItem("draft", "离线草稿示例");
         await store.setItem("settings", { theme: "dark", synced: false });
       }
 
+      // ====== 3. iterate 估算 store + storage.estimate 估算 origin 剩余 ======
       async function estimateRemainingSize() {
+        outputEl.textContent = "";
         await seedDemoData();
 
         let storeUsageBytes = 0;
@@ -96,7 +117,7 @@
           storeUsageBytes += stringBytes(key) + valueBytes(value);
         });
 
-        console.log("当前 store 业务估算已用：" + (storeUsageBytes / 1024).toFixed(2) + " KB");
+        log("当前 store 业务估算已用：" + (storeUsageBytes / 1024).toFixed(2) + " KB");
 
         if (navigator.storage?.estimate) {
           const estimate = await navigator.storage.estimate();
@@ -104,18 +125,20 @@
           const quota = estimate.quota || 0;
           const remaining = Math.max(quota - usage, 0);
 
-          console.log("origin 总体已用：" + (usage / 1024 / 1024).toFixed(2) + " MB");
-          console.log("origin 总体配额：" + (quota / 1024 / 1024).toFixed(2) + " MB");
-          console.log("origin 粗略剩余：" + (remaining / 1024 / 1024).toFixed(2) + " MB");
+          log("origin 总体已用：" + (usage / 1024 / 1024).toFixed(2) + " MB");
+          log("origin 总体配额：" + (quota / 1024 / 1024).toFixed(2) + " MB");
+          log("origin 粗略剩余：" + (remaining / 1024 / 1024).toFixed(2) + " MB");
         } else {
-          console.warn("当前浏览器不支持 navigator.storage.estimate()，只能展示 store 业务估算值。");
+          log("不支持 navigator.storage.estimate()，仅展示 store 业务估算。");
         }
       }
 
-      estimateRemainingSize().catch(function (error) {
-        console.error("剩余容量估算失败：", error);
+      document.getElementById("run-remaining").addEventListener("click", function () {
+        estimateRemainingSize().catch(function (error) {
+          log("失败: " + error.name + " - " + error.message);
+        });
       });
-
+      })();
     </script>
     <!-- SCRIPT_END -->
 

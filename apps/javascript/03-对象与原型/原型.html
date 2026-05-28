@@ -1,16 +1,19 @@
 <!--
-分类: javascript / 03-对象与原型
+  分类: javascript / 03-对象与原型
   主题: 原型对象（prototype）与共享属性
   要点:
     - 构造函数的 prototype 是实例共享方法和属性的挂载点
-    - 实例的内部 [[Prototype]] 指向构造函数 prototype，可用 Object.getPrototypeOf 查看
-    - prototype.constructor 默认指回构造函数，但可被改写，不应过度依赖
-    - 原型上放引用类型共享状态会影响所有实例，通常只放方法或常量
+    - 实例 [[Prototype]] 指向构造函数 prototype；用 Object.getPrototypeOf 查看
+    - prototype.constructor 默认指回构造函数，可被改写，不应过度依赖
+    - 访问属性先查自有，再沿 [[Prototype]] 向上查找
+    - 原型上放可变引用类型会让所有实例共享同一份状态
   面试:
     - prototype 在构造函数和实例之间起什么作用？
-    - __proto__、[[Prototype]]、prototype 有什么区别？
+    - [[Prototype]]、__proto__、prototype 有什么区别？
     - constructor 属性为什么会指回构造函数？
     - 原型上为什么不建议放可变引用状态？
+    - 多个实例如何共享同一份方法？
+  相关: 构造函数, 原型链, 原型属性vs实例属性
 -->
 
 <!doctype html>
@@ -30,24 +33,27 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><strong>共享挂载点：</strong>每个可构造函数都有 <code>prototype</code> 对象，通过 <code>new</code> 创建的实例会把内部 <code>[[Prototype]]</code> 链到它。</li>
-          <li><strong>查找机制：</strong>访问实例属性时先查自有属性，找不到再沿原型链查 <code>prototype</code> 上的属性或方法。</li>
-          <li><strong>API 选择：</strong><code>__proto__</code> 是历史访问器，学习时能帮助理解；项目代码推荐用 <code>Object.getPrototypeOf()</code> 和 <code>Object.setPrototypeOf()</code>。</li>
-          <li><strong>constructor：</strong><code>prototype.constructor</code> 默认指回构造函数，但它只是普通属性，替换整个原型对象后需要手动恢复。</li>
-          <li><strong>共享状态陷阱：</strong>原型适合放方法；若把数组、对象这类可变引用放在原型上，所有实例会共享同一份状态，容易互相影响。</li>
+          <li><strong>共享挂载点：</strong>每个可构造函数都有 <code>prototype</code> 对象；<code>new Person()</code> 创建的实例会把 <code>[[Prototype]]</code> 链到 <code>Person.prototype</code>。</li>
+          <li><strong>查找机制：</strong>访问实例属性时先查自有属性，找不到再沿 <code>[[Prototype]]</code> 查 <code>prototype</code> 上的属性或方法。</li>
+          <li><strong>标准 API：</strong><code>__proto__</code> 是访问 <code>[[Prototype]]</code> 的历史属性，可辅助理解；项目代码推荐 <code>Object.getPrototypeOf()</code> / <code>Object.setPrototypeOf()</code>。</li>
+          <li><strong>constructor：</strong><code>Person.prototype.constructor</code> 默认指回 <code>Person</code>；替换整个 <code>prototype</code> 后需手动恢复 <code>constructor</code>。</li>
+          <li><strong>共享方法：</strong>挂在 <code>prototype</code> 上的方法被所有实例共享，<code>p1.sayHello === p2.sayHello</code> 为 true。</li>
+          <li><strong>共享状态陷阱：</strong>若把数组、对象等可变引用放在 <code>prototype</code> 上，所有实例会共享同一份状态，一个实例修改会影响其他实例。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>prototype 在构造函数和实例之间起什么作用？</strong> 结论是它是实例共享行为的对象。<code>new Person()</code> 会让实例的 <code>[[Prototype]]</code> 指向 <code>Person.prototype</code>，因此多个实例能共享同一个 <code>sayHello</code> 方法。</li>
-          <li><strong>__proto__、[[Prototype]]、prototype 有什么区别？</strong> <code>[[Prototype]]</code> 是规范里的内部槽，<code>__proto__</code> 是访问它的历史属性，<code>prototype</code> 是函数对象上用于创建实例原型链的普通属性。项目里优先用标准 API 查看原型。</li>
+          <li><strong>prototype 在构造函数和实例之间起什么作用？</strong> 它是实例共享行为的对象。<code>new Person()</code> 会让实例的 <code>[[Prototype]]</code> 指向 <code>Person.prototype</code>，因此多个实例能共享同一个 <code>sayHello</code> 方法。</li>
+          <li><strong>[[Prototype]]、__proto__、prototype 有什么区别？</strong> <code>[[Prototype]]</code> 是规范内部槽；<code>__proto__</code> 是访问它的历史属性；<code>prototype</code> 是<strong>函数对象上</strong>用于给实例链接原型链的普通属性。三者方向与所属对象不同。</li>
           <li><strong>constructor 属性为什么会指回构造函数？</strong> 默认的 <code>prototype</code> 对象自带 <code>constructor</code>，方便从原型回到构造函数。边界是它可被改写，替换原型后不自动保持正确。</li>
-          <li><strong>原型上为什么不建议放可变引用状态？</strong> 因为原型属性被所有实例共享，一个实例改数组或对象会影响其他实例。项目里实例自己的状态放构造函数，原型上主要放方法或不可变常量。</li>
+          <li><strong>原型上为什么不建议放可变引用状态？</strong> 原型属性被所有实例共享，一个实例改数组或对象会影响其他实例。实例状态放构造函数，原型上主要放方法或不可变常量。</li>
+          <li><strong>多个实例如何共享同一份方法？</strong> 方法定义在 <code>Person.prototype</code> 上，实例通过 <code>[[Prototype]]</code> 委托访问，因此引用相等且节省内存。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain" target="_blank" rel="noopener">MDN Web Docs：Inheritance and the prototype chain</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf" target="_blank" rel="noopener">MDN Web Docs：Object.getPrototypeOf()</a></li>
-          <li><a href="https://javascript.info/prototype-inheritance" target="_blank" rel="noopener">JavaScript.info：Prototypal inheritance</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain">MDN: Inheritance and the prototype chain</a>：原型链与属性查找规则。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf">MDN: Object.getPrototypeOf()</a>：读取 <code>[[Prototype]]</code> 的标准方式。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/proto">MDN: Object.prototype.__proto__</a>：历史访问器与不推荐在代码中使用的说明。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/prototype">MDN: Function.prototype</a>：所有函数 <code>[[Prototype]]</code> 的默认指向。</li>
         </ul>
       </div>
     </section>
@@ -55,34 +61,60 @@
 
     <!-- SCRIPT_START -->
     <script>
-      function Person(userId){
-        this.userId = userId;//构造函数中通过给this.xx赋值，为实例动态添加属性，这些属性是实例自身特有的
+      // ====== 1. prototype 是共享挂载点 ======
+      function Person(userId) {
+        // 构造函数内 this.xxx 是实例自有属性
+        this.userId = userId;
       }
-
-      //每个构造函数(或者普通函数)都有一个prototype属性，是一个对象，称作原型对象，原型对象设计出来的作用就是为了
-      //变量和方法共享的，被构造函数的实例共享
-
-      //通过原型模式定义的属性和方法是所有实例共享的
-      Person.prototype.userName = "姓名"
-      Person.prototype.userAge = "年龄"
-      Person.prototype.skinColor = "肤色"
-      Person.prototype.sayHello = function(){
+      Person.prototype.userName = "姓名";
+      Person.prototype.userAge = "年龄";
+      Person.prototype.skinColor = "肤色";
+      Person.prototype.sayHello = function () {
         console.log("你好呀!");
+      };
+
+      // ====== 2. 实例 [[Prototype]] 指向 Person.prototype ======
+      const p1 = new Person(1);
+      const p2 = new Person(2);
+      console.log("p1.skinColor（来自 prototype）:", p1.skinColor); // "肤色"
+      console.log("p2.skinColor:", p2.skinColor); // "肤色"
+      console.log(
+        "getPrototypeOf(p1) === Person.prototype:",
+        Object.getPrototypeOf(p1) === Person.prototype
+      ); // true
+
+      // ====== 3. constructor 默认指回构造函数 ======
+      console.log(
+        "Person.prototype.constructor === Person:",
+        Person.prototype.constructor === Person
+      ); // true
+      console.log(
+        "p1.constructor === Person:",
+        p1.constructor === Person
+      ); // true（经 [[Prototype]] 读到 prototype.constructor）
+
+      // ====== 4. getPrototypeOf 与 __proto__（历史访问器）======
+      console.log(
+        "__proto__ === getPrototypeOf(p1):",
+        p1.__proto__ === Object.getPrototypeOf(p1)
+      ); // true；项目代码优先 getPrototypeOf
+
+      // ====== 5. 多实例共享同一份 prototype 方法 ======
+      console.log("p1.sayHello === p2.sayHello:", p1.sayHello === p2.sayHello); // true
+      p1.sayHello();
+      p2.sayHello();
+
+      // ====== 6. 原型上放可变引用的陷阱 ======
+      function Team(name) {
+        this.name = name;
       }
-
-      const p1 = new Person();
-      console.log(p1.skinColor);
-
-      const p2 = new Person();
-      console.log(p2.skinColor);
-
-      //一旦一个函数被创建，那么它自动会被添加一个prototype属性指向原型对象，原型对象中一定会包含一个
-      //constructor属性，指向该构造函数本身
-      console.log(Person.prototype.constructor === p1.__proto__.constructor);
-
-      //循环引用
-      console.log(Person.prototype.constructor === Person); // true
-
+      Team.prototype.members = []; // 反例：可变数组放 prototype
+      const t1 = new Team("A");
+      const t2 = new Team("B");
+      t1.members.push("Alice");
+      console.log("t1.members:", t1.members); // ["Alice"]
+      console.log("t2.members（被 t1 影响）:", t2.members); // ["Alice"] ← 共享同一份数组
+      console.log("t1.members === t2.members:", t1.members === t2.members); // true
     </script>
     <!-- SCRIPT_END -->
 
@@ -91,6 +123,8 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+        <a href="./%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0.html">相关 · 构造函数</a>
+        <a href="./%E5%8E%9F%E5%9E%8B%E9%93%BE.html">相关 · 原型链</a>
         <a href="./%E5%87%BD%E6%95%B0%E4%B9%9F%E6%98%AF%E5%AF%B9%E8%B1%A1.html">← 函数也是对象</a>
         <a href="./%E5%8E%9F%E5%9E%8B%E9%93%BE.html">原型链 →</a>
       </nav>
@@ -104,5 +138,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

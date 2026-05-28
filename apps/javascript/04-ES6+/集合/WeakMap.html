@@ -11,6 +11,7 @@
     - WeakMap 和 Map 的核心区别是什么？
     - WeakMap 如何用于私有数据或 DOM 元数据？
     - WeakMap 的弱引用是否意味着可以预测 GC 时间？
+  相关: Map, WeakSet
 -->
 
 <!doctype html>
@@ -26,7 +27,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>WeakMap 弱引用映射</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">请打开 DevTools Console 查看输出；下方按钮演示 DOM 元数据关联。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -45,40 +46,57 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap" target="_blank" rel="noreferrer">MDN Web Docs：WeakMap</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap" target="_blank" rel="noreferrer">MDN: WeakMap</a>：弱引用键、可用 API 与典型场景。</li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <button id="myButton">click me</button>
+    <section class="demo-block" aria-label="DOM 元数据演示">
+      <h2>DOM 元数据演示</h2>
+      <p class="hint">点击按钮，Console 会输出 WeakMap 关联的点击计数。</p>
+      <button id="myButton" type="button">click me</button>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // WeakMap 键不属于「强引用」，不会阻止 GC
-      // 只要键被回收，对应键值对就一起消失
+      // ====== 1. WeakMap 基本 API：set / get / has / delete ======
+      // MDN：键必须是 Object 或非注册 Symbol
       const wm = new WeakMap();
-      // wm.set(1, 123);        // 报错：Invalid value used as weak map key
-      // wm.set("2", {});       // 报错：原始类型也不行
-      wm.set({}, { address: "北京奶东村" });
+      const keyObj = {};
+      wm.set(keyObj, { address: "北京" });
+      console.log("get:", wm.get(keyObj)); // { address: "北京" }
+      console.log("has:", wm.has(keyObj)); // true
 
-      // wm.entries           // WeakMap 不存在迭代方法
-      console.log(wm);
+      // ====== 2. 原始类型不能作为键 ======
+      try {
+        wm.set(1, 123);
+      } catch (err) {
+        // TypeError: Invalid value used as weak map key
+        console.log("set primitive key:", err.name, "-", err.message);
+      }
 
-      setTimeout(() => {
-        console.log(wm);
-      }, 3000);
+      try {
+        wm.set("str", {});
+      } catch (err) {
+        console.log("set string key:", err.name, "-", err.message);
+      }
 
-      // 场景 1：实现类的私有变量
+      // ====== 3. 无迭代/size 方法 ======
+      console.log("WeakMap 无 size:", wm.size); // undefined
+      console.log("WeakMap 无 entries:", typeof wm.entries); // "undefined"
+
+      // 不同引用取不到值
+      console.log("get({}):", wm.get({})); // undefined
+
+      // ====== 4. 场景：类私有数据（WeakMap 闭包模式）======
       const privateData = new WeakMap();
 
       class MyClass {
         constructor() {
-          privateData.set(this, {
-            secret: "这是私有数据",
-          });
+          privateData.set(this, { secret: "这是私有数据" });
         }
         getSecret() {
           return privateData.get(this).secret;
@@ -86,24 +104,27 @@
       }
 
       const instance = new MyClass();
-      console.log(instance.getSecret());
-      // 通过外部 key 取不到，但只要类内部能拿到 this 这个键，就能访问
-      console.log(privateData.get({})); // undefined
+      console.log("私有数据:", instance.getSecret()); // "这是私有数据"
+      console.log("外部 get({}):", privateData.get({})); // undefined
 
-      // 场景 2：给 DOM 节点关联元数据；节点被移除时元数据可自动回收
+      // ====== 5. 场景：DOM 节点元数据 ======
       const elementStates = new WeakMap();
       const button = document.getElementById("myButton");
 
-      elementStates.set(button, {
-        clickCount: 0,
-      });
+      elementStates.set(button, { clickCount: 0 });
 
-      button.addEventListener("click", function () {
+      function handleClick() {
         const state = elementStates.get(this);
         state.clickCount++;
         console.log(`按钮被点击了 ${state.clickCount} 次`);
-      });
+      }
 
+      button.addEventListener("click", handleClick);
+
+      // 页面卸载时清理监听器（WeakMap 条目会随 DOM 节点回收）
+      window.addEventListener("pagehide", function cleanup() {
+        button.removeEventListener("click", handleClick);
+      });
     </script>
     <!-- SCRIPT_END -->
 
@@ -125,5 +146,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

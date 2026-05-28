@@ -2,15 +2,17 @@
   分类: javascript / 01-基础
   主题: var / let / const 变量提升与暂时性死区
   要点:
-    - var 声明提升到函数顶部，声明前访问得 undefined（不报错）
-    - let / const 也会提升，但有暂时性死区，声明前访问抛 ReferenceError
+    - var 声明提升到函数/全局顶部，声明前访问得 undefined
+    - let/const 也会提升，但有 TDZ；TDZ 内访问或 typeof 均 ReferenceError
     - 函数声明整体提升，可在声明语句之前调用
     - const 必须初始化；块级作用域在 if/for 等语句块内同样生效
+    - var 在 if 块内声明仍属外层函数作用域，let/const 不泄漏
   面试:
     - 什么是暂时性死区？let 真的不提升吗？
+    - TDZ 内 typeof 会怎样？
     - 函数声明和 var 声明的提升顺序？
     - 块级作用域在哪些场景容易踩坑？
-  相关: 变量, 08-面试题/作用域
+  相关: 变量, typeof, 08-面试题/作用域
 -->
 
 <!doctype html>
@@ -30,16 +32,17 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>var</code> 在函数内提升到函数顶部，声明前访问得到 <code>undefined</code>，不会抛错。</li>
-          <li><code>let</code> / <code>const</code> 在词法上也会提升，但从块开始到声明语句之间是<strong>暂时性死区（TDZ）</strong>，访问会 <code>ReferenceError</code>。</li>
-          <li><code>const</code> 必须在声明时初始化；绑定不可改，但对象/数组的内容仍可变。</li>
+          <li><code>var</code> 在函数内提升到函数顶部、脚本顶层为全局作用域；声明前访问得到 <code>undefined</code>，不会抛错。</li>
+          <li><code>let</code> / <code>const</code> 在词法上也会提升，但从块开始到声明语句之间是<strong>暂时性死区（TDZ）</strong>，访问会 <code>ReferenceError</code>；TDZ 内 <code>typeof</code> 同样报错（与未声明变量不同）。</li>
+          <li><code>const</code> 必须在声明时初始化；绑定不可改，但对象/数组的内容仍可变（见 <a href="./变量.html">变量</a>）。</li>
           <li>函数声明会被<strong>整体提升</strong>，函数名在声明前就是可用的函数对象（见下方 <code>typeof example2</code>）。</li>
-          <li>块级作用域对 <code>if</code>、<code>for</code>、<code>{}</code> 均生效；<code>var</code> 在 <code>if</code> 块内声明仍属于外层函数作用域。</li>
+          <li>块级作用域对 <code>if</code>、<code>for</code>、<code>{}</code> 均生效；<code>var</code> 在 <code>if</code> 块内声明仍属于外层函数作用域，<code>let</code>/<code>const</code> 不泄漏。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
           <li><strong>什么是暂时性死区？</strong> 从块级作用域开始到 <code>let/const</code> 声明执行前，变量已存在于词法环境但不可访问。这是规范行为，不是「没提升」。</li>
           <li><strong>let 真的不提升吗？</strong> 会提升，只是 TDZ 内访问报错。与 var 的区别是：var 提升后值为 undefined；let/const 在 TDZ 内访问直接 ReferenceError。</li>
+          <li><strong>TDZ 内 typeof 会怎样？</strong> 与访问变量一样抛 <code>ReferenceError</code>；未声明的变量 <code>typeof x</code> 才返回 <code>"undefined"</code>。这是 TDZ 与「真正未声明」的重要区别。</li>
           <li><strong>函数声明 vs 变量声明的提升？</strong> 同作用域内函数声明优先于 var；函数声明整体提升，var 只提升声明不赋值。经典题见 <a href="../08-面试题/作用域/06-var与function同名提升.html">var 与 function 同名提升</a>。</li>
           <li><strong>块级作用域踩坑？</strong> <code>for (var i…)</code> 的 i 泄漏到外层；<code>for (let i…)</code> 每次迭代有独立绑定。闭包题见 <a href="../08-面试题/作用域/05-let-for循环闭包.html">let for 循环闭包</a>。</li>
         </ul>
@@ -47,8 +50,8 @@
         <ul>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let#temporal_dead_zone_tdz">MDN: let - Temporal dead zone</a>：TDZ 的触发时机和报错行为。</li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/const">MDN: const</a>：必须初始化、块级作用域与绑定不可重新赋值。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof">MDN: typeof</a>：TDZ 内 typeof 与未声明变量的区别。</li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">MDN: function declaration</a>：函数声明提升和作用域规则。</li>
-          <li><a href="https://javascript.info/var">JavaScript.info: The old "var"</a>：<code>var</code> 的函数作用域、重复声明和提升。</li>
         </ul>
       </div>
     </section>
@@ -56,37 +59,78 @@
 
     <!-- SCRIPT_START -->
     <script>
-      var gVar = 0;
-      const gConstVar = 1;
-
       function example() {
-        // var 声明被提升，访问到 undefined（不抛错）
-        console.log(varVar);
+        // ====== 1. var 声明提升：声明前访问得 undefined ======
+        // MDN：var 声明被提升并初始化为 undefined，赋值仍留在原位
+        console.log("var 提升:", varVar); // undefined
         var varVar = 1;
+        console.log("var 赋值后:", varVar); // 1
 
-        // let 在暂时性死区内访问会抛 ReferenceError
-        // console.log(letVar);
+        // ====== 2. let 暂时性死区（TDZ）======
+        // 在 let 声明前访问会 ReferenceError
+        try {
+          console.log(letVar);
+        } catch (err) {
+          console.log("TDZ 访问 let:", err.name, "-", err.message);
+        }
         let letVar = 2;
+        console.log("TDZ 结束后 letVar:", letVar); // 2
 
-        // const 同样有暂时性死区
-        // console.log(constVar);
+        // ====== 3. const 同样有 TDZ；必须带初始化 ======
+        try {
+          console.log(constVar);
+        } catch (err) {
+          console.log("TDZ 访问 const:", err.name, "-", err.message);
+        }
         const constVar = 3;
 
-        // 函数声明同样会被整体提升：在声明语句之前就可访问
-        console.log(typeof example2); // 'function'
+        // const a; // SyntaxError: Missing initializer（保留为注释）
+
+        const config = { theme: "light" };
+        config.theme = "dark"; // 合法：改对象属性，不是改绑定
+        console.log("const 对象属性可变:", config.theme); // "dark"
+
+        // ====== 4. TDZ 内 typeof 也 ReferenceError ======
+        try {
+          typeof tdzTypeCheck;
+        } catch (err) {
+          console.log("TDZ 内 typeof:", err.name, "-", err.message);
+        }
+        const tdzTypeCheck = 4;
+
+        // 对比：真正未声明的变量，typeof 返回 "undefined" 且不报错
+        console.log('typeof 未声明变量:', typeof neverDeclaredVar); // "undefined"
+
+        // ====== 5. 函数声明整体提升 ======
+        // 在声明语句之前就可访问完整函数对象
+        console.log("typeof example2:", typeof example2); // "function"
 
         function example2() {
-          var varVar11 = 11;
-          let letVar22 = 22;
-
-          console.log(varVar11);
-          console.log(letVar22);
+          var innerVar = 11;
+          let innerLet = 22;
+          console.log("example2 innerVar:", innerVar);
+          console.log("example2 innerLet:", innerLet);
         }
         example2();
+
+        // ====== 6. 块级作用域：var 泄漏 vs let/const 不泄漏 ======
+        if (true) {
+          var leakedVar = "var 泄漏到函数作用域";
+          let blockLet = "let 只在块内";
+        }
+        console.log("if 块外 leakedVar:", leakedVar);
+        try {
+          console.log(blockLet);
+        } catch (err) {
+          console.log("if 块外 blockLet:", err.name, "-", err.message);
+        }
+
+        // for (var i) 的 i 属于外层函数作用域（与 变量.html 呼应）
+        for (var loopVar = 0; loopVar < 2; loopVar++) {}
+        console.log("for(var) 循环外 loopVar:", loopVar); // 2
       }
 
       example();
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -96,6 +140,7 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
         <a href="./%E5%8F%98%E9%87%8F.html">相关 · 变量</a>
+        <a href="./typeof.html">相关 · typeof</a>
         <a href="./%E5%8F%98%E9%87%8F.html">← 变量</a>
         <a href="./%E5%87%BD%E6%95%B0.html">函数 →</a>
       </nav>
@@ -109,5 +154,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

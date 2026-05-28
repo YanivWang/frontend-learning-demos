@@ -5,12 +5,14 @@
     - 普通函数的 this 由调用形式决定，不由函数定义位置决定
     - obj.fn() 会把 obj 作为 this，独立调用在非严格模式下通常落到 window
     - 嵌套返回的普通函数再次独立调用时，会丢失外层调用的 this
-    - 箭头函数没有自己的 this，显式绑定、new 绑定与严格模式都有不同边界
+    - 严格模式下独立调用普通函数的 this 为 undefined
+    - 箭头函数没有自己的 this，捕获外层词法 this
   面试:
     - 普通函数的 this 到底由什么决定？
     - window.a()() 为什么第二次调用拿不到第一次的 this？
     - 严格模式、非严格模式下独立函数调用的 this 有什么不同？
     - 箭头函数和普通函数的 this 机制有什么区别？
+  相关: this-call-apply-bind, this-对象方法与脱离
 -->
 
 <!doctype html>
@@ -32,7 +34,7 @@
         <ul>
           <li>普通函数的 <code>this</code> 绑定在调用时确定。示例中 <code>window.a()</code> 是属性引用调用，所以 <code>a</code> 内部的 <code>this</code> 是 <code>window</code>。</li>
           <li><code>window.a()()</code> 分两步：先执行 <code>window.a()</code> 得到一个匿名函数，再把这个匿名函数作为普通函数独立调用；第二次调用没有接收者，非严格模式下 <code>this</code> 会被替换为 <code>window</code>。</li>
-          <li>“this 指向最后调用它的对象”只是记忆口诀，不是完整规则。更准确的说法是：根据调用表达式判断引用基值，或由 <code>call</code>/<code>apply</code>/<code>bind</code>、<code>new</code>、箭头函数词法捕获等规则决定。</li>
+          <li>「this 指向最后调用它的对象」只是记忆口诀，不是完整规则。更准确的说法是：根据调用表达式判断引用基值，或由 <code>call</code>/<code>apply</code>/<code>bind</code>、<code>new</code>、箭头函数词法捕获等规则决定。</li>
           <li>严格模式下，独立调用普通函数的 <code>this</code> 保持为 <code>undefined</code>；非严格模式下 <code>null</code>/<code>undefined</code> 会被替换为全局对象，原始值会装箱。</li>
           <li>箭头函数没有自己的 <code>this</code>，会捕获外层词法环境的 <code>this</code>，适合回调保留上下文，但不能作为构造函数使用。</li>
         </ul>
@@ -45,10 +47,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this">MDN：this</a></li>
-          <li><a href="https://javascript.info/object-methods">JavaScript.info：Object methods, this</a></li>
-          <li><a href="https://tc39.es/ecma262/#sec-ordinarycallbindthis">ECMA-262：OrdinaryCallBindThis</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions">MDN：Arrow function expressions</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this">MDN: this</a>：调用形式与 this 绑定规则。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions">MDN: Arrow function expressions</a>：词法 this 与不可构造。</li>
+          <li><a href="https://tc39.es/ecma262/#sec-ordinarycallbindthis">ECMA-262: OrdinaryCallBindThis</a>：普通函数调用时的 this 绑定。</li>
         </ul>
       </div>
     </section>
@@ -56,26 +57,59 @@
 
     <!-- SCRIPT_START -->
     <script>
-      //js中this的指向在函数定义的时候并不是确定的，而是在运行的时候，动态绑定
-      //this绑定到谁，是由谁调用它决定的
-
-      function a() {
+      // ====== 1. 属性引用调用 vs 独立调用 ======
+      // 普通函数的 this 在运行时由调用形式决定，不是定义时固定
+      function makeDemo() {
         this.age = 14;
-        console.log("this1: " + this);
-        console.log("age1: " + this.age);
+        console.log("makeDemo this:", this === window); // true（window.makeDemo() 属性引用调用）
 
-        //返回一个匿名函数
-        return function () {
-          console.log("this2: " + this);
-          console.log("age2: " + this.age);
-        }
+        // 返回普通函数：再次独立调用时会丢失外层 this
+        return function innerDemo() {
+          console.log("innerDemo this:", this === window); // true（独立调用，非严格模式替换为 window）
+          console.log("innerDemo age:", this.age); // 14（读 window.age）
+        };
       }
 
-      window.a();
-      window.a()();
+      window.makeDemo = makeDemo;
+      makeDemo(); // 第一次：this 是 window，window.age = 14
+      makeDemo()(); // 第二次：innerDemo 独立调用，this 仍是 window
 
-      //this永远指向的是最后调用它的对象
+      // ====== 2. 对象方法调用：this 是接收者 ======
+      const user = {
+        name: "wc",
+        greet() {
+          console.log("obj.greet this.name:", this.name); // "wc"
+        },
+      };
+      user.greet();
 
+      const detached = user.greet;
+      detached(); // 独立调用，非严格模式 this → window，this.name 为 undefined
+      console.log("detached this.name:", detached.call(user) === undefined ? "via window" : user.name);
+
+      // ====== 3. 严格模式：独立调用 this 为 undefined ======
+      function strictThis() {
+        "use strict";
+        console.log("严格模式独立调用 this:", this); // undefined
+      }
+      strictThis();
+
+      // ====== 4. 箭头函数：捕获外层词法 this ======
+      const arrowHost = {
+        label: "host",
+        run() {
+          const arrowFn = () => {
+            // 箭头函数没有自己的 this，读取 run 调用时的 this（即 arrowHost）
+            console.log("箭头函数 this.label:", this.label); // "host"
+          };
+          arrowFn();
+        },
+      };
+      arrowHost.run();
+
+      // 清理演示污染
+      delete window.makeDemo;
+      delete window.age;
     </script>
     <!-- SCRIPT_END -->
 
@@ -97,5 +131,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

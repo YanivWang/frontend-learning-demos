@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 08-面试题 / 手写
+  分类: javascript / 08-面试题 / 手写
   主题: 手写 LRU 缓存
   要点:
     - LRU 按最近使用顺序淘汰最久未访问的缓存项
@@ -11,6 +11,7 @@
     - Map 版 LRU 为什么能删除最旧 key？
     - Map 简化版和哈希表 + 双向链表版有什么差异？
     - LRU 缓存适合哪些项目场景，容量边界怎么处理？
+  相关: EventEmitter, this指向与作用域链
 -->
 
 <!doctype html>
@@ -19,20 +20,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>手写 LRU 缓存</title>
-    <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 720px; }
-      pre { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 8px; font-size: 0.85rem; }
-      button { padding: 6px 12px; margin: 4px 4px 4px 0; cursor: pointer; }
-      #log { margin-top: 1rem; font-family: ui-monospace, monospace; background: #f6f8fa; padding: 12px; border-radius: 8px; white-space: pre-wrap; }
-    </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
+    <style>
+      pre.code { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 8px; font-size: 0.85rem; overflow-x: auto; }
+      button { padding: 6px 12px; margin: 4px 4px 4px 0; cursor: pointer; }
+      #runtime-output { font-family: ui-monospace, monospace; background: #f6f8fa; padding: 12px; border-radius: 8px; white-space: pre-wrap; }
+    </style>
   </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>LRU Cache（Map 简化版）</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">先看本复习区，再点击「运行演示」查看下方操作日志是否与标准答法一致。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -60,37 +60,21 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <pre>class LRU {
-      constructor(capacity) {
-      if (!Number.isInteger(capacity) || capacity <= 0) {
-      throw new RangeError("capacity must be a positive integer");
-      }
-      this.capacity = capacity;
-      this.map = new Map();
-      }
-      get(key) {
-      if (!this.map.has(key)) return -1;
-      const val = this.map.get(key);
-      this.map.delete(key);
-      this.map.set(key, val);
-      return val;
-      }
-      put(key, value) {
-      if (this.map.has(key)) this.map.delete(key);
-      this.map.set(key, value);
-      if (this.map.size > this.capacity) {
-      const oldest = this.map.keys().next().value;
-      this.map.delete(oldest);
-      }
-      }
-      }</pre>
-      <p>容量 = 2，依次操作：</p>
+    <section class="demo-block">
+      <h2>LRU 实现与演示</h2>
+      <p class="tip">容量 = 2，依次 put/get；get(2) 应返回 -1，最终 keys 为 [3, 4]。</p>
+      <pre class="code">class LRU {
+  get(key) { /* 命中后 delete + set 刷新顺序 */ }
+  put(key, value) { /* 超容量删 map.keys().next().value */ }
+}</pre>
       <button type="button" id="run">运行演示</button>
-      <div id="log"></div>
+      <pre id="runtime-output" aria-live="polite">点击「运行演示」查看操作日志</pre>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // ====== 1. Map 版 LRU：get 命中刷新顺序，满容删最旧 key ======
       class LRU {
         constructor(capacity) {
           if (!Number.isInteger(capacity) || capacity <= 0) {
@@ -114,25 +98,54 @@
             this.map.delete(oldest);
           }
         }
-        keys() { return [...this.map.keys()]; }
+        keys() {
+          return [...this.map.keys()];
+        }
       }
 
+      // ====== 2. 演示：容量 2 的标准 LRU 操作流程 ======
       document.getElementById("run").onclick = () => {
         const log = [];
         const lru = new LRU(2);
         const steps = [
-          () => { lru.put(1, 1); log.push("put(1,1) → keys: " + lru.keys()); },
-          () => { lru.put(2, 2); log.push("put(2,2) → keys: " + lru.keys()); },
-          () => { log.push("get(1) = " + lru.get(1) + " → keys: " + lru.keys()); },
-          () => { lru.put(3, 3); log.push("put(3,3) 淘汰 key=2 → keys: " + lru.keys()); },
-          () => { log.push("get(2) = " + lru.get(2)); },
-          () => { lru.put(4, 4); log.push("put(4,4) 淘汰 key=1 → keys: " + lru.keys()); },
-          () => { log.push("get(1) = " + lru.get(1) + ", get(3) = " + lru.get(3) + ", get(4) = " + lru.get(4)); },
+          () => {
+            lru.put(1, 1);
+            log.push("put(1,1) → keys: " + lru.keys());
+          },
+          () => {
+            lru.put(2, 2);
+            log.push("put(2,2) → keys: " + lru.keys());
+          },
+          () => {
+            log.push("get(1) = " + lru.get(1) + " → keys: " + lru.keys());
+          },
+          () => {
+            lru.put(3, 3);
+            log.push("put(3,3) 淘汰 key=2 → keys: " + lru.keys());
+          },
+          () => {
+            log.push("get(2) = " + lru.get(2));
+          },
+          () => {
+            lru.put(4, 4);
+            log.push("put(4,4) 淘汰 key=1 → keys: " + lru.keys());
+          },
+          () => {
+            log.push(
+              "get(1)=" +
+                lru.get(1) +
+                ", get(3)=" +
+                lru.get(3) +
+                ", get(4)=" +
+                lru.get(4)
+            );
+          },
         ];
         steps.forEach((fn) => fn());
-        document.getElementById("log").textContent = log.join("\n");
+        const text = log.join("\n");
+        document.getElementById("runtime-output").textContent = text;
+        console.log(text);
       };
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -154,5 +167,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

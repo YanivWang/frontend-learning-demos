@@ -11,6 +11,7 @@
     - Set 数组去重为什么不能按对象内容去重？
     - Set 和 Array 在成员查询上如何选择？
     - Set、Map、WeakSet 分别适合什么场景？
+  相关: Map, WeakSet
 -->
 
 <!doctype html>
@@ -45,7 +46,7 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set" target="_blank" rel="noreferrer">MDN Web Docs：Set</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set" target="_blank" rel="noreferrer">MDN: Set</a>：SameValueZero、迭代顺序与常用 API。</li>
         </ul>
       </div>
     </section>
@@ -53,42 +54,50 @@
 
     <!-- SCRIPT_START -->
     <script>
-      //Set是值的集合，且每个值只能出现一次
-      //Set 可以包含任何 JavaScript 数据类型作为值
-      //基本上相当于使用 SameValueZero 算法来检查值的匹配性
-      //Set会维护插入的值的顺序
+      // ====== 1. 创建 Set 与基本 API ======
+      // MDN：Set 是值的集合，每个值只能出现一次
       const set = new Set([1, 2, 3, 4, 6, "wang"]);
+      set.add(2); // 重复值不会插入
+      console.log("size:", set.size); // 6
+      console.log("has(3):", set.has(3)); // true
+      console.log("has(undefined):", set.has(undefined)); // false
 
-      const entries = set.entries();
-      console.log("entries", entries);
+      // ====== 2. SameValueZero：NaN 与 +0/-0 ======
+      const nanSet = new Set();
+      nanSet.add(NaN);
+      nanSet.add(NaN);
+      console.log("NaN === NaN in Set:", nanSet.size); // 1
 
-      const values = set.values();
-      console.log("values", values);
+      const zeroSet = new Set([0, -0]);
+      console.log("+0 与 -0 视为相同:", zeroSet.size); // 1
 
-      const keys = set.keys();
-      console.log("keys", keys);
-
-      for (let item of entries) {
-        console.log(item);
-        console.log(item[0] + ":" + item[1]);
+      // ====== 3. 迭代：keys/values/entries 按插入顺序 ======
+      // MDN：Set 的 keys 与 values 相同，entries 返回 [value, value]
+      console.log("values:", [...set.values()]);
+      for (const [key, val] of set.entries()) {
+        console.log("entry:", key, val); // key === val
       }
 
-      const array = [...set];
-      console.log(array);
+      // ====== 4. 数组去重 ======
+      const arrayDup = [1, 2, 2, 1, 3, 3, 3];
+      console.log("dedupe:", [...new Set(arrayDup)]); // [1,2,3]
 
-      //数组去重
-      const arrayDub = [1, 2, 2, 1, 3, 3, 3];
+      // ====== 5. 对象按引用去重，非按内容 ======
+      const objSet = new Set();
+      objSet.add({ id: 1 });
+      objSet.add({ id: 1 });
+      console.log("两个相同内容对象:", objSet.size); // 2（引用不同）
 
-      console.log([...new Set(arrayDub)]);
+      const shared = { id: 1 };
+      objSet.add(shared);
+      objSet.add(shared);
+      console.log("同一引用添加两次:", objSet.size); // 3
 
-      const set1 = new Set();
-      console.log(set.has(undefined));
-
-      set1.add({});
-      set1.add({});
-
-      console.log(set1.size);
-
+      // ====== 6. add/delete/clear ======
+      set.delete(6);
+      console.log("delete 6, has:", set.has(6)); // false
+      const spreadArray = [...set];
+      console.log("spread to array:", spreadArray);
     </script>
     <!-- SCRIPT_END -->
 
@@ -98,7 +107,7 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./Map.html">← Map</a>
-        <a href="./WeakMap.html">WeakMap →</a>
+        <a href="./WeakSet.html">WeakSet →</a>
       </nav>
       <script>
         (function () {
@@ -110,5 +119,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

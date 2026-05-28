@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 06-浏览器API / 存储
+  分类: javascript / 06-浏览器API / 存储
   主题: FileReader 读取文件并存入 localforage
   要点:
     - FileReader.readAsDataURL 会把文件读成带 MIME 前缀的 base64 data URL
@@ -12,6 +12,7 @@
     - localforage 存 Blob 时要注意哪些浏览器后端差异？
     - 文件读取和写入 IndexedDB 分别有哪些失败路径？
     - 前端离线缓存用户文件时有哪些安全和隐私边界？
+  相关: 测试最大容量, localforage-基础API
 -->
 
 <!doctype html>
@@ -28,7 +29,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>FileReader 读取文件并存入 localforage</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">阅读本复习区后，选择一个小文件观察 Blob 缓存与 data URL 预览；大文件会跳过 base64 预览。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -37,6 +38,7 @@
           <li>localforage 常用 IndexedDB 后端时可以保存 Blob、ArrayBuffer 等值；如果浏览器只能回退到 localStorage，容量和二进制支持都会变差，生产代码要确认 driver 或做降级。</li>
           <li>读取文件要处理用户未选择文件、读取失败、用户重复选择同一文件、文件过大等情况；写入存储还要捕获配额不足和 IndexedDB 不可用。</li>
           <li>缓存用户文件涉及隐私和安全边界：不要默认长期保存敏感文件，提供删除入口，不要把 data URL 注入 <code>innerHTML</code>，展示时应使用受控的 <code>src</code> 或对象 URL。</li>
+          <li><strong>运行环境：</strong> 文件选择需用户手势，<code>file://</code> 与 <code>http(s)://</code> 均可；IndexedDB 在隐私模式可能不可用。不涉及需 HTTPS 的 File System Access API。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
@@ -70,6 +72,7 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ====== 1. localforage 实例与 UI ======
       const store = localforage.createInstance({
         name: "frontend-learning-demos",
         storeName: "localforage_file_reader",
@@ -84,6 +87,7 @@
         console.log(message);
       }
 
+      // ====== 2. FileReader 读 data URL（小文件预览）======
       function readAsDataURL(file) {
         return new Promise(function (resolve, reject) {
           const reader = new FileReader();
@@ -97,6 +101,7 @@
         });
       }
 
+      // ====== 3. 存 Blob 到 IndexedDB（优先于 base64）======
       async function storeFile(file) {
         if (!file) {
           setStatus("未选择文件。");

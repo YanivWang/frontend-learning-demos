@@ -11,6 +11,7 @@
     - WeakSet 为什么没有 size 和迭代能力？
     - WeakSet 如何用于递归遍历防循环？
     - 什么时候应该用 Set 而不是 WeakSet？
+  相关: Set, WeakMap
 -->
 
 <!doctype html>
@@ -45,7 +46,7 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet" target="_blank" rel="noreferrer">MDN Web Docs：WeakSet</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet" target="_blank" rel="noreferrer">MDN: WeakSet</a>：弱引用、成员类型限制与可用 API。</li>
         </ul>
       </div>
     </section>
@@ -53,21 +54,53 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ====== 1. WeakSet 基本 API：add / has / delete ======
+      // MDN：WeakSet 只能持有对象或非注册 Symbol
       const ws = new WeakSet();
-
-      // ws.add(1)//Uncaught TypeError: Invalid value used in weak set
-
-      //1.弱集合中的值只能是Object类型或者其子类型
-      //2.弱集合中的值是非正式的引用不会阻止垃圾回收
-      //3.下面这个代码，添加一个对象字面量作为值，没有任何引用指向这个对象字面量，则代码执行完毕后，
-      //该值就会被当做垃圾回收
-      const visited = {};
+      const visited = { id: 1 };
       ws.add(visited);
-      console.log("visited?", ws.has(visited));
+      console.log("visited?", ws.has(visited)); // true
 
-      //弱集合没有迭代方法，因为其值随时会被垃圾回收
-      // ws.forEach
+      ws.delete(visited);
+      console.log("delete 后:", ws.has(visited)); // false
 
+      // ====== 2. 原始值不能加入 WeakSet ======
+      try {
+        ws.add(1);
+      } catch (err) {
+        // TypeError: Invalid value used in weak set
+        console.log("add primitive:", err.name, "-", err.message);
+      }
+
+      // ====== 3. 弱引用：不阻止 GC（不可稳定观察回收时机）======
+      // 下面对象字面量若无其他强引用，GC 后 ws 中的记录也会消失
+      (function () {
+        const temp = { tag: "temp" };
+        ws.add(temp);
+        console.log("temp in ws:", ws.has(temp)); // true
+        // temp 离开作用域后，若无其他引用，可被 GC
+      })();
+
+      // ====== 4. 无 size / 迭代方法 ======
+      console.log("WeakSet 无 size:", ws.size); // undefined
+      console.log("WeakSet 无 forEach:", typeof ws.forEach); // "undefined"
+
+      // ====== 5. 场景：递归遍历防循环引用 ======
+      function walk(obj, seen, path) {
+        if (obj === null || typeof obj !== "object") return;
+        if (seen.has(obj)) {
+          console.log("跳过循环引用:", path);
+          return;
+        }
+        seen.add(obj);
+        for (const key of Object.keys(obj)) {
+          walk(obj[key], seen, path + "." + key);
+        }
+      }
+
+      const cyclic = { a: {} };
+      cyclic.a.parent = cyclic; // 循环引用
+      walk(cyclic, new WeakSet(), "root");
     </script>
     <!-- SCRIPT_END -->
 
@@ -89,5 +122,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

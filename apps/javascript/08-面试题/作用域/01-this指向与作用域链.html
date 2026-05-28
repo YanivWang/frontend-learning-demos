@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 08-面试题 / 作用域
+  分类: javascript / 08-面试题 / 作用域
   主题: 经典题 - this 指向与作用域链
   要点:
     - 普通函数独立调用时，非严格模式 this 会被绑定到全局对象 window
@@ -11,6 +11,7 @@
     - test() 为什么读取全局 val 而不是 bar() 里的 val？
     - 严格模式、let/const 或 type=module 会怎样改变这题结果？
     - 如何区分作用域链查找和 this 绑定规则？
+  相关: 嵌套作用域-返回值, 02-函数与作用域/this指向
 -->
 
 <!doctype html>
@@ -26,7 +27,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>经典题 - this 指向与作用域链</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -49,26 +50,46 @@
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this" target="_blank" rel="noreferrer">MDN: this</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/var" target="_blank" rel="noreferrer">MDN: var</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures" target="_blank" rel="noreferrer">MDN: Closures</a></li>
-          <li><a href="https://javascript.info/closure" target="_blank" rel="noreferrer">JavaScript.info: Variable scope, closure</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
+    <!-- PAGE_DOM_START -->
+    <section class="demo-block">
+      <h2>运行结果</h2>
+      <p class="tip">标准答法：依次输出 <code>1</code>、<code>1</code>、<code>1</code>（window.val → bar 中 this.val → test 中 val）。</p>
+      <pre id="runtime-output" aria-live="polite"></pre>
+    </section>
+    <!-- PAGE_DOM_END -->
+
     <!-- SCRIPT_START -->
     <script>
-      var val = 1;
-      function test() {
-        console.log(val);
-      }
-      function bar() {
-        var val = 2;
-        console.log(this.val);
-        test();
-      }
-      console.log(window.val); // 1
-      bar(); // 依次输出 1、1
+      (function () {
+        var out = document.getElementById("runtime-output");
+        var lines = [];
+        function emit(label, value) {
+          var line = label + ": " + value;
+          console.log(line);
+          lines.push(line);
+          if (out) out.textContent = lines.join("\n");
+        }
 
+        // ====== 1. 顶层 var 创建 window.val ======
+        var val = 1;
+        function test() {
+          emit("test() 中 val", val); // 预期: 1（沿定义时词法链找到全局 val）
+        }
+        function bar() {
+          var val = 2; // 局部 val 不影响 this.val 和 test()
+          emit("bar() 中 this.val", this.val); // 预期: 1（非严格独立调用，this → window）
+          test();
+        }
+
+        // ====== 2. 执行并输出 ======
+        emit("window.val", window.val); // 预期: 1
+        bar();
+      })();
     </script>
     <!-- SCRIPT_END -->
 
@@ -90,5 +111,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

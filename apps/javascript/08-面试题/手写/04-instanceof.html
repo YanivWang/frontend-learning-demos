@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 08-面试题 / 手写
+  分类: javascript / 08-面试题 / 手写
   主题: 手写 instanceof
   要点:
     - instanceof 判断左值原型链上是否能找到右侧构造函数的 prototype
@@ -11,6 +11,7 @@
     - 为什么原始值和 null 做 instanceof 会返回 false？
     - 手写 instanceof 为什么要校验右侧构造函数？
     - instanceof、typeof 和 Array.isArray 应该如何选？
+  相关: new, 03-对象与原型/原型链
 -->
 
 <!doctype html>
@@ -26,7 +27,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>手写 instanceof</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -55,40 +56,50 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>打开控制台查看断言结果。</p>
+    <section class="demo-block">
+      <h2>手写实现验证</h2>
+      <p class="tip">下方输出应与复习区标准答法一致；断言细节可同时在 DevTools Console 查看。</p>
+      <pre id="runtime-output" aria-live="polite"></pre>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      function myInstanceof(value, Constructor) {
-        if (value === null || value === undefined) return false;
-        if (typeof value !== "object" && typeof value !== "function") return false;
-        if (typeof Constructor !== "function") {
-          throw new TypeError("Right-hand side of instanceof is not callable");
+      (function () {
+        var out = document.getElementById("runtime-output");
+        var lines = [];
+        function emit(line) {
+          console.log(line);
+          lines.push(line);
+          if (out) out.textContent = lines.join("\n");
         }
 
-        const targetPrototype = Constructor.prototype;
-        let current = Object.getPrototypeOf(value);
-
-        while (current) {
-          if (current === targetPrototype) return true;
-          current = Object.getPrototypeOf(current);
+        // ====== 1. 手写 myInstanceof：沿原型链查找 Constructor.prototype ======
+        function myInstanceof(value, Constructor) {
+          if (value === null || value === undefined) return false;
+          if (typeof value !== "object" && typeof value !== "function") return false;
+          if (typeof Constructor !== "function") {
+            throw new TypeError("Right-hand side of instanceof is not callable");
+          }
+          const targetPrototype = Constructor.prototype;
+          let current = Object.getPrototypeOf(value);
+          while (current) {
+            if (current === targetPrototype) return true;
+            current = Object.getPrototypeOf(current);
+          }
+          return false;
         }
-        return false;
-      }
 
-      function Person() {}
-      const p = new Person();
+        // ====== 2. 验证：原型链匹配与边界 ======
+        function Person() {}
+        const p = new Person();
 
-      console.assert(myInstanceof(p, Person) === true, "p is Person");
-      console.assert(myInstanceof(p, Object) === true, "p is Object");
-      console.assert(myInstanceof([], Array) === true, "array is Array");
-      console.assert(myInstanceof("abc", String) === false, "primitive string is not String instance");
-      console.assert(myInstanceof(null, Object) === false, "null returns false");
-
-      console.log("p -> Person:", myInstanceof(p, Person));
-      console.log("[] -> Object:", myInstanceof([], Object));
-
+        emit("p instanceof Person: " + myInstanceof(p, Person));
+        emit("p instanceof Object: " + myInstanceof(p, Object));
+        emit("[] instanceof Array: " + myInstanceof([], Array));
+        emit('"abc" instanceof String: ' + myInstanceof("abc", String));
+        emit("null instanceof Object: " + myInstanceof(null, Object));
+      })();
     </script>
     <!-- SCRIPT_END -->
 
@@ -110,5 +121,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

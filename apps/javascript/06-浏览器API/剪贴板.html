@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 06-浏览器API
+  分类: javascript / 06-浏览器API
   主题: 文本复制到剪贴板的新旧两种方案
   要点:
     - navigator.clipboard.writeText 是现代异步剪贴板 API，通常要求安全上下文和用户激活
@@ -12,6 +12,7 @@
     - execCommand('copy') 为什么只能作为兜底？
     - 剪贴板复制失败时产品上应该怎么处理？
     - 复制 DOM 内容时为什么优先取 textContent？
+  相关: DOM操作, Notification
 -->
 
 <!doctype html>
@@ -22,8 +23,10 @@
     <title>剪贴板复制</title>
     <style>
       body { font-family: system-ui, sans-serif; margin: 1.5rem; }
-      button { padding: 6px 12px; margin-right: 8px; }
+      button { padding: 6px 12px; margin-right: 8px; margin-bottom: 8px; }
       #target { padding: 10px; background: #f5f5f5; border-radius: 4px; }
+      #env-banner { padding: 8px 10px; background: #fff8e6; border-left: 3px solid #f0ad4e; font-size: 0.875rem; margin-bottom: 12px; }
+      #hint { color: #0969da; font-family: ui-monospace, monospace; font-size: 0.875rem; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -32,7 +35,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>把文本复制到剪贴板</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">请阅读本复习区，并在下方演示区点击复制按钮；需人工验证：Clipboard API 要求安全上下文（HTTPS/localhost）和用户手势，file:// 可能失败。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -62,12 +65,15 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <div id="target">我是要被复制的内容（<span>包含嵌套 span</span>），文本可自定义。</div>
-    <p>
-      <button id="legacy">① 兼容方式 · document.execCommand('copy')</button>
-      <button id="modern">② 现代方式 · navigator.clipboard</button>
-    </p>
-    <p id="hint" style="color:#0969da;"></p>
+    <section class="demo-block">
+      <h2>剪贴板复制演示</h2>
+      <p class="tip">复制 <code>textContent</code> 纯文本；粘贴到任意编辑器验证结果。</p>
+      <p id="env-banner"></p>
+      <div id="target">我是要被复制的内容（<span>包含嵌套 span</span>），文本可自定义。</div>
+      <button type="button" id="legacy">① 兼容方式 · execCommand('copy')</button>
+      <button type="button" id="modern">② 现代方式 · navigator.clipboard</button>
+      <p id="hint"></p>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
@@ -75,14 +81,18 @@
       const target = document.getElementById("target");
       const hint = document.getElementById("hint");
 
-      // ============ ① 老旧但兼容性最好：execCommand ============
-      // 原理：把内容塞进一个 <input>，selectionRange + 触发浏览器复制命令
+      // ====== 0. 环境检测 ======
+      document.getElementById("env-banner").textContent =
+        "protocol=" + location.protocol +
+        " | isSecureContext=" + window.isSecureContext +
+        " | clipboard.writeText 需 HTTPS/localhost + 用户手势";
+
+      // ====== 1. execCommand 兜底（已废弃）======
       document.getElementById("legacy").addEventListener("click", () => {
         const text = target.textContent;
         const input = document.createElement("input");
         input.setAttribute("readonly", "readonly");
         input.setAttribute("value", text);
-        // 移出可视区，避免影响布局
         input.style.cssText = "position:fixed;top:-1000px;";
         document.body.appendChild(input);
         input.setSelectionRange(0, 9999);
@@ -96,22 +106,22 @@
         document.body.removeChild(input);
       });
 
-      // ============ ② 现代异步 API：navigator.clipboard ============
-      // 需要 HTTPS / localhost + 用户交互内调用
+      // ====== 2. Clipboard API（现代推荐）======
       document.getElementById("modern").addEventListener("click", async () => {
         if (!navigator.clipboard?.writeText) {
-          hint.textContent = "当前浏览器不支持 Clipboard API，请使用兼容方式或手动复制。";
+          hint.textContent = "当前浏览器不支持 Clipboard API，请用兼容方式或手动复制。";
           return;
         }
-
+        if (!window.isSecureContext) {
+          hint.textContent = "非安全上下文（file:// 或 HTTP），Clipboard API 可能 NotAllowedError";
+        }
         try {
           await navigator.clipboard.writeText(target.textContent);
-          hint.textContent = "复制成功（clipboard）";
+          hint.textContent = "复制成功（clipboard.writeText）";
         } catch (e) {
-          hint.textContent = "复制失败：" + e.message;
+          hint.textContent = e.name + ": " + e.message + " — 请手动选择文本复制";
         }
       });
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -133,5 +143,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

@@ -45,8 +45,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" target="_blank" rel="noreferrer">MDN Web Docs：Promise</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all" target="_blank" rel="noreferrer">MDN Web Docs：Promise.all()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">MDN: Promise</a>：executor 同步执行，then/catch 回调进入微任务。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all">MDN: Promise.all()</a>：并发等待、fail-fast、结果按输入顺序排列。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled">MDN: Promise.allSettled()</a>：收集每个任务成功/失败状态。</li>
         </ul>
       </div>
     </section>
@@ -54,55 +55,58 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // 把任务封装为「返回 Promise 的函数」，方便串行 then 调用
-      const taskP1 = () => new Promise((resolve) => {
-        setTimeout(function (param) {
-          console.log("p1");
-          resolve(param);
-        }, 1500, 'one');
-      });
-      const taskP2 = () => new Promise((resolve) => {
-        setTimeout(function (param) {
-          console.log("p2");
-          resolve(param);
-        }, 1000, 'two');
-      });
-      const taskP3 = () => new Promise((resolve) => {
-        setTimeout(function (param) {
-          console.log("p3");
-          resolve(param);
-        }, 2000, 'three');
-      });
-      const taskP4 = () => new Promise((resolve) => {
-        setTimeout(function (param) {
-          console.log("p4");
-          resolve(param);
-        }, 1000, 'four');
-      });
+      // ====== 1. 封装「返回 Promise 的函数」，便于串行 then 调用 ======
+      const delay = (ms, label) =>
+        new Promise((resolve) => {
+          setTimeout(() => {
+            console.log(label);
+            resolve(label);
+          }, ms);
+        });
+      const taskP1 = () => delay(1500, "p1");
+      const taskP2 = () => delay(1000, "p2");
+      const taskP3 = () => delay(2000, "p3");
+      const taskP4 = () => delay(1000, "p4");
 
-      // 一：并发执行（Promise.all）
-      //    总耗时 ≈ max(各任务时长)，任一失败立刻 reject
+      // ====== 2. Promise.all 并发：任务在调用时已启动，总耗时 ≈ max(各任务) ======
+      // MDN：全部 fulfilled 后按输入顺序返回结果数组；任一 reject 则 fail-fast
+      console.log("--- Promise.all 并发 ---");
       console.log("all start...");
-      Promise.all([taskP1(), taskP2(), taskP3(), taskP4()]).then(values => {
-        console.log("values:", values);
-        console.log("all finish...");
-      }).catch(reason => {
-        console.log("reason:", reason);
+      Promise.all([taskP1(), taskP2(), taskP3(), taskP4()])
+        .then((values) => {
+          console.log("all values（按输入顺序）:", values); // ["p1","p2","p3","p4"]
+          console.log("all finish...");
+        })
+        .catch((reason) => {
+          console.log("all rejected:", reason);
+        });
+
+      // ====== 3. fail-fast 演示：任一输入 reject，外层立即 reject ======
+      Promise.all([
+        Promise.resolve("ok"),
+        Promise.reject(new Error("fail-fast")),
+        Promise.resolve("ignored"),
+      ]).catch((err) => {
+        console.log("fail-fast:", err.message); // "fail-fast"
       });
 
-      // 二：串行执行
-      //    易错点：.then(taskP1()) 会立即启动任务，并把 Promise 实例当作非函数参数忽略
-      //    解决：.then(() => p1Fn())，确保下一个任务是「返回新 Promise 的函数」
-      new Promise((resolve) => {
-        console.log("serial start...");
-        resolve();
-      })
-      .then(() => taskP1())
-      .then(() => taskP2())
-      .then(() => console.log("serial end..."));
+      // ====== 4. then 链串行：回调须返回下一个 Promise ======
+      // 易错点：.then(taskP1()) 会立刻启动 taskP1 并把 Promise 实例当非函数参数忽略
+      console.log("--- then 链串行 ---");
+      Promise.resolve()
+        .then(() => {
+          console.log("serial start...");
+        })
+        .then(() => taskP1())
+        .then(() => taskP2())
+        .then(() => {
+          console.log("serial end...");
+        });
 
-      console.log("script end...");
+      // 错误写法（注释保留）：任务会提前启动，无法串行
+      // Promise.resolve().then(taskP1()).then(taskP2());
 
+      console.log("script end（同步，早于上述异步输出）...");
     </script>
     <!-- SCRIPT_END -->
 

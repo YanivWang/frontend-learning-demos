@@ -21,17 +21,20 @@
                 "typeof"
               ],
               "points": [
-                "var 函数作用域 + 声明提升，可重复声明；let/const 块级作用域，禁重复声明",
-                "null 主动空值，undefined 未赋值；== 相等、=== 不等；typeof null 为 object",
-                "原始类型 7 种 + object；function 的 typeof 返回 'function' 是特例",
-                "隐式全局赋值会污染 window；严格模式下会报 ReferenceError"
+                "var 函数/全局作用域、提升、可重复声明；let/const 块级、禁重复声明",
+                "顶层 var 挂 globalThis，let/const 不挂；非严格模式隐式赋值污染全局",
+                "TDZ：let/const 声明前及 TDZ 内 typeof 均 ReferenceError",
+                "null/undefined 语义与 ==/===；typeof null 为 object（历史遗留）",
+                "7 primitive + Object；const 绑定不可改但对象属性可变"
               ],
               "interviewPoints": [
-                "var / let / const 区别？什么是暂时性死区？",
+                "var / let / const 区别？顶层声明对 window 有何不同？",
+                "什么是 TDZ？TDZ 内 typeof 会怎样？",
                 "null 和 undefined 区别？如何判断空值？",
-                "typeof null 为什么是 object？如何精准判断类型？"
+                "typeof null 为什么是 object？如何精准判断类型？",
+                "const 能否修改对象？primitive 的 constructor 可靠吗？"
               ],
-              "searchText": "变量 变量声明、提升、null vs undefined、constructor javascript / 01-基础 变量进阶 typeof var 函数作用域 + 声明提升，可重复声明；let/const 块级作用域，禁重复声明 null 主动空值，undefined 未赋值；== 相等、=== 不等；typeof null 为 object 原始类型 7 种 + object；function 的 typeof 返回 'function' 是特例 隐式全局赋值会污染 window；严格模式下会报 ReferenceError var / let / const 区别？什么是暂时性死区？ null 和 undefined 区别？如何判断空值？ typeof null 为什么是 object？如何精准判断类型？"
+              "searchText": "变量 变量声明、提升、null vs undefined、constructor javascript / 01-基础 变量进阶 typeof var 函数/全局作用域、提升、可重复声明；let/const 块级、禁重复声明 顶层 var 挂 globalThis，let/const 不挂；非严格模式隐式赋值污染全局 TDZ：let/const 声明前及 TDZ 内 typeof 均 ReferenceError null/undefined 语义与 ==/===；typeof null 为 object（历史遗留） 7 primitive + Object；const 绑定不可改但对象属性可变 var / let / const 区别？顶层声明对 window 有何不同？ 什么是 TDZ？TDZ 内 typeof 会怎样？ null 和 undefined 区别？如何判断空值？ typeof null 为什么是 object？如何精准判断类型？ const 能否修改对象？primitive 的 constructor 可靠吗？"
             },
             {
               "title": "变量进阶",
@@ -42,20 +45,23 @@
               "prerequisite": "",
               "related": [
                 "变量",
+                "typeof",
                 "08-面试题/作用域"
               ],
               "points": [
-                "var 声明提升到函数顶部，声明前访问得 undefined（不报错）",
-                "let / const 也会提升，但有暂时性死区，声明前访问抛 ReferenceError",
+                "var 声明提升到函数/全局顶部，声明前访问得 undefined",
+                "let/const 也会提升，但有 TDZ；TDZ 内访问或 typeof 均 ReferenceError",
                 "函数声明整体提升，可在声明语句之前调用",
-                "const 必须初始化；块级作用域在 if/for 等语句块内同样生效"
+                "const 必须初始化；块级作用域在 if/for 等语句块内同样生效",
+                "var 在 if 块内声明仍属外层函数作用域，let/const 不泄漏"
               ],
               "interviewPoints": [
                 "什么是暂时性死区？let 真的不提升吗？",
+                "TDZ 内 typeof 会怎样？",
                 "函数声明和 var 声明的提升顺序？",
                 "块级作用域在哪些场景容易踩坑？"
               ],
-              "searchText": "变量进阶 var / let / const 变量提升与暂时性死区 javascript / 01-基础 变量 08-面试题/作用域 var 声明提升到函数顶部，声明前访问得 undefined（不报错） let / const 也会提升，但有暂时性死区，声明前访问抛 ReferenceError 函数声明整体提升，可在声明语句之前调用 const 必须初始化；块级作用域在 if/for 等语句块内同样生效 什么是暂时性死区？let 真的不提升吗？ 函数声明和 var 声明的提升顺序？ 块级作用域在哪些场景容易踩坑？"
+              "searchText": "变量进阶 var / let / const 变量提升与暂时性死区 javascript / 01-基础 变量 typeof 08-面试题/作用域 var 声明提升到函数/全局顶部，声明前访问得 undefined let/const 也会提升，但有 TDZ；TDZ 内访问或 typeof 均 ReferenceError 函数声明整体提升，可在声明语句之前调用 const 必须初始化；块级作用域在 if/for 等语句块内同样生效 var 在 if 块内声明仍属外层函数作用域，let/const 不泄漏 什么是暂时性死区？let 真的不提升吗？ TDZ 内 typeof 会怎样？ 函数声明和 var 声明的提升顺序？ 块级作用域在哪些场景容易踩坑？"
             },
             {
               "title": "函数",
@@ -635,13 +641,14 @@
               "prerequisite": "",
               "related": [
                 "01-基础/变量进阶",
-                "08-面试题/作用域"
+                "闭包-作用域链与变量提升"
               ],
               "points": [
                 "JS 使用词法作用域，标识符解析由代码书写位置决定",
                 "函数调用会创建词法环境，并通过 outer 引用串成作用域链",
                 "查找变量先当前环境、再外层环境，直到全局环境或抛 ReferenceError",
-                "闭包能保留外层词法环境，DevTools Scope 面板可观察这条链"
+                "标识符查找走作用域链，对象属性访问走原型链，二者不可混谈",
+                "闭包能保留外层词法环境，内层函数返回后仍可访问外层绑定"
               ],
               "interviewPoints": [
                 "作用域链如何决定变量查找顺序？",
@@ -649,7 +656,7 @@
                 "作用域链和原型链分别解决什么问题？",
                 "闭包为什么能在外层函数返回后继续访问外层变量？"
               ],
-              "searchText": "作用域链 作用域链与变量查找 javascript / 02-函数与作用域 01-基础/变量进阶 08-面试题/作用域 JS 使用词法作用域，标识符解析由代码书写位置决定 函数调用会创建词法环境，并通过 outer 引用串成作用域链 查找变量先当前环境、再外层环境，直到全局环境或抛 ReferenceError 闭包能保留外层词法环境，DevTools Scope 面板可观察这条链 作用域链如何决定变量查找顺序？ JS 为什么说是词法作用域而不是动态作用域？ 作用域链和原型链分别解决什么问题？ 闭包为什么能在外层函数返回后继续访问外层变量？"
+              "searchText": "作用域链 作用域链与变量查找 javascript / 02-函数与作用域 01-基础/变量进阶 闭包-作用域链与变量提升 JS 使用词法作用域，标识符解析由代码书写位置决定 函数调用会创建词法环境，并通过 outer 引用串成作用域链 查找变量先当前环境、再外层环境，直到全局环境或抛 ReferenceError 标识符查找走作用域链，对象属性访问走原型链，二者不可混谈 闭包能保留外层词法环境，内层函数返回后仍可访问外层绑定 作用域链如何决定变量查找顺序？ JS 为什么说是词法作用域而不是动态作用域？ 作用域链和原型链分别解决什么问题？ 闭包为什么能在外层函数返回后继续访问外层变量？"
             },
             {
               "title": "柯里化",
@@ -658,12 +665,16 @@
               "category": "javascript / 02-函数与作用域",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "闭包-作用域链与变量提升",
+                "08-面试题/手写/02-bind"
+              ],
               "points": [
                 "柯里化把多参数函数拆成可逐步接收参数的函数链",
                 "闭包负责保存已经收集到的参数，参数够 fn.length 后执行原函数",
                 "Array.prototype.slice.call(arguments) 是把类数组 arguments 转成数组的旧写法",
-                "现代代码更常用 rest 参数与展开语法，柯里化常用于复用配置或函数组合"
+                "fn.length 只统计默认值前的形参，默认参数/rest 会影响通用 curry 判断",
+                "柯里化强调分批调用，偏函数应用强调先固定部分参数"
               ],
               "interviewPoints": [
                 "柯里化和偏函数应用有什么区别？",
@@ -671,7 +682,7 @@
                 "arguments 为什么要借用 Array.prototype.slice？",
                 "项目里什么时候适合使用柯里化？"
               ],
-              "searchText": "柯里化 柯里化与参数收集 javascript / 02-函数与作用域 柯里化把多参数函数拆成可逐步接收参数的函数链 闭包负责保存已经收集到的参数，参数够 fn.length 后执行原函数 Array.prototype.slice.call(arguments) 是把类数组 arguments 转成数组的旧写法 现代代码更常用 rest 参数与展开语法，柯里化常用于复用配置或函数组合 柯里化和偏函数应用有什么区别？ 通用 curry 为什么依赖 fn.length，边界是什么？ arguments 为什么要借用 Array.prototype.slice？ 项目里什么时候适合使用柯里化？"
+              "searchText": "柯里化 柯里化与参数收集 javascript / 02-函数与作用域 闭包-作用域链与变量提升 08-面试题/手写/02-bind 柯里化把多参数函数拆成可逐步接收参数的函数链 闭包负责保存已经收集到的参数，参数够 fn.length 后执行原函数 Array.prototype.slice.call(arguments) 是把类数组 arguments 转成数组的旧写法 fn.length 只统计默认值前的形参，默认参数/rest 会影响通用 curry 判断 柯里化强调分批调用，偏函数应用强调先固定部分参数 柯里化和偏函数应用有什么区别？ 通用 curry 为什么依赖 fn.length，边界是什么？ arguments 为什么要借用 Array.prototype.slice？ 项目里什么时候适合使用柯里化？"
             }
           ]
         },
@@ -685,12 +696,17 @@
               "category": "javascript / 02-函数与作用域 / 闭包",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "01-作用域链",
+                "01-基础/变量进阶",
+                "闭包-内存泄漏与修复"
+              ],
               "points": [
                 "闭包是函数连同其可访问的外层词法环境一起被保留",
                 "var 声明会初始化为 undefined，let/const 在初始化前处于暂时性死区",
                 "顶层 var 和函数声明会成为浏览器全局对象属性，顶层 let/const 不会",
-                "arguments.callee 已废弃，严格模式禁用，应直接使用函数名或具名表达式"
+                "arguments.callee 已废弃，严格模式禁用，应直接使用函数名",
+                "闭包常用于封装私有状态，长期持有大对象时要主动释放引用"
               ],
               "interviewPoints": [
                 "什么是闭包，为什么外层函数返回后变量仍可访问？",
@@ -698,7 +714,7 @@
                 "浏览器脚本顶层 var 与 let/const 对 window 有什么影响？",
                 "为什么不推荐 arguments.callee？"
               ],
-              "searchText": "闭包-作用域链与变量提升 闭包的作用域链与变量提升 javascript / 02-函数与作用域 / 闭包 闭包是函数连同其可访问的外层词法环境一起被保留 var 声明会初始化为 undefined，let/const 在初始化前处于暂时性死区 顶层 var 和函数声明会成为浏览器全局对象属性，顶层 let/const 不会 arguments.callee 已废弃，严格模式禁用，应直接使用函数名或具名表达式 什么是闭包，为什么外层函数返回后变量仍可访问？ var 提升和 let/const 暂时性死区有什么区别？ 浏览器脚本顶层 var 与 let/const 对 window 有什么影响？ 为什么不推荐 arguments.callee？"
+              "searchText": "闭包-作用域链与变量提升 闭包的作用域链与变量提升 javascript / 02-函数与作用域 / 闭包 01-作用域链 01-基础/变量进阶 闭包-内存泄漏与修复 闭包是函数连同其可访问的外层词法环境一起被保留 var 声明会初始化为 undefined，let/const 在初始化前处于暂时性死区 顶层 var 和函数声明会成为浏览器全局对象属性，顶层 let/const 不会 arguments.callee 已废弃，严格模式禁用，应直接使用函数名 闭包常用于封装私有状态，长期持有大对象时要主动释放引用 什么是闭包，为什么外层函数返回后变量仍可访问？ var 提升和 let/const 暂时性死区有什么区别？ 浏览器脚本顶层 var 与 let/const 对 window 有什么影响？ 为什么不推荐 arguments.callee？"
             },
             {
               "title": "闭包-内存泄漏与修复",
@@ -707,12 +723,16 @@
               "category": "javascript / 02-函数与作用域 / 闭包",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "闭包-作用域链与变量提升",
+                "07-进阶/内存泄漏"
+              ],
               "points": [
                 "闭包不是泄漏本身，泄漏来自无用闭包仍被全局、定时器或监听器持有",
                 "长期闭包会保留其可达的外层对象，包含大数组或 DOM 时风险更高",
                 "释放引用、清理 timer、removeEventListener 和避免意外全局是常见修复",
-                "现代浏览器可回收不可达循环引用，但可达监听器链仍会保留内存"
+                "现代浏览器可回收不可达循环引用，但可达监听器链仍会保留内存",
+                "非严格模式下未声明赋值会创建全局属性，延长对象生命周期"
               ],
               "interviewPoints": [
                 "闭包一定会导致内存泄漏吗？",
@@ -720,7 +740,7 @@
                 "定时器和事件监听为什么容易和闭包一起造成泄漏？",
                 "前端项目里如何定位和修复闭包相关内存问题？"
               ],
-              "searchText": "闭包-内存泄漏与修复 闭包导致的内存泄漏与修复手段 javascript / 02-函数与作用域 / 闭包 闭包不是泄漏本身，泄漏来自无用闭包仍被全局、定时器或监听器持有 长期闭包会保留其可达的外层对象，包含大数组或 DOM 时风险更高 释放引用、清理 timer、removeEventListener 和避免意外全局是常见修复 现代浏览器可回收不可达循环引用，但可达监听器链仍会保留内存 闭包一定会导致内存泄漏吗？ 为什么把闭包变量置为 null 能帮助释放内存？ 定时器和事件监听为什么容易和闭包一起造成泄漏？ 前端项目里如何定位和修复闭包相关内存问题？"
+              "searchText": "闭包-内存泄漏与修复 闭包导致的内存泄漏与修复手段 javascript / 02-函数与作用域 / 闭包 闭包-作用域链与变量提升 07-进阶/内存泄漏 闭包不是泄漏本身，泄漏来自无用闭包仍被全局、定时器或监听器持有 长期闭包会保留其可达的外层对象，包含大数组或 DOM 时风险更高 释放引用、清理 timer、removeEventListener 和避免意外全局是常见修复 现代浏览器可回收不可达循环引用，但可达监听器链仍会保留内存 非严格模式下未声明赋值会创建全局属性，延长对象生命周期 闭包一定会导致内存泄漏吗？ 为什么把闭包变量置为 null 能帮助释放内存？ 定时器和事件监听为什么容易和闭包一起造成泄漏？ 前端项目里如何定位和修复闭包相关内存问题？"
             }
           ]
         },
@@ -734,12 +754,16 @@
               "category": "javascript / 02-函数与作用域 / this指向",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "this-call-apply-bind",
+                "this-对象方法与脱离"
+              ],
               "points": [
                 "普通函数的 this 由调用形式决定，不由函数定义位置决定",
                 "obj.fn() 会把 obj 作为 this，独立调用在非严格模式下通常落到 window",
                 "嵌套返回的普通函数再次独立调用时，会丢失外层调用的 this",
-                "箭头函数没有自己的 this，显式绑定、new 绑定与严格模式都有不同边界"
+                "严格模式下独立调用普通函数的 this 为 undefined",
+                "箭头函数没有自己的 this，捕获外层词法 this"
               ],
               "interviewPoints": [
                 "普通函数的 this 到底由什么决定？",
@@ -747,7 +771,7 @@
                 "严格模式、非严格模式下独立函数调用的 this 有什么不同？",
                 "箭头函数和普通函数的 this 机制有什么区别？"
               ],
-              "searchText": "this-动态绑定 this 的动态绑定 javascript / 02-函数与作用域 / this指向 普通函数的 this 由调用形式决定，不由函数定义位置决定 obj.fn() 会把 obj 作为 this，独立调用在非严格模式下通常落到 window 嵌套返回的普通函数再次独立调用时，会丢失外层调用的 this 箭头函数没有自己的 this，显式绑定、new 绑定与严格模式都有不同边界 普通函数的 this 到底由什么决定？ window.a()() 为什么第二次调用拿不到第一次的 this？ 严格模式、非严格模式下独立函数调用的 this 有什么不同？ 箭头函数和普通函数的 this 机制有什么区别？"
+              "searchText": "this-动态绑定 this 的动态绑定 javascript / 02-函数与作用域 / this指向 this-call-apply-bind this-对象方法与脱离 普通函数的 this 由调用形式决定，不由函数定义位置决定 obj.fn() 会把 obj 作为 this，独立调用在非严格模式下通常落到 window 嵌套返回的普通函数再次独立调用时，会丢失外层调用的 this 严格模式下独立调用普通函数的 this 为 undefined 箭头函数没有自己的 this，捕获外层词法 this 普通函数的 this 到底由什么决定？ window.a()() 为什么第二次调用拿不到第一次的 this？ 严格模式、非严格模式下独立函数调用的 this 有什么不同？ 箭头函数和普通函数的 this 机制有什么区别？"
             },
             {
               "title": "this-call-apply-bind",
@@ -756,12 +780,17 @@
               "category": "javascript / 02-函数与作用域 / this指向",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "this-动态绑定",
+                "08-面试题/手写/01-call-apply",
+                "02-bind"
+              ],
               "points": [
                 "call / apply 会立即调用函数，并把本次调用的 this 设为 thisArg",
-                "call 逐个传参，apply 接收数组或类数组参数，现代展开语法可替代多数 apply 场景",
+                "call 逐个传参，apply 接收数组或类数组参数",
                 "bind 返回新函数，不会立即执行；绑定后的 this 不能再被 call/apply 改写",
-                "非严格模式下 null/undefined thisArg 会被替换为全局对象，严格模式下保持原值"
+                "非严格模式下 null/undefined thisArg 会被替换为全局对象，严格模式下保持原值",
+                "现代展开语法 fn(...args) 可替代多数 apply 场景"
               ],
               "interviewPoints": [
                 "call、apply、bind 的共同点和区别是什么？",
@@ -770,7 +799,7 @@
                 "null/undefined 作为 thisArg 在严格和非严格模式下有什么差异？",
                 "现代代码中什么时候还需要 call/apply/bind？"
               ],
-              "searchText": "this-call-apply-bind 显式绑定 this：call / apply / bind javascript / 02-函数与作用域 / this指向 call / apply 会立即调用函数，并把本次调用的 this 设为 thisArg call 逐个传参，apply 接收数组或类数组参数，现代展开语法可替代多数 apply 场景 bind 返回新函数，不会立即执行；绑定后的 this 不能再被 call/apply 改写 非严格模式下 null/undefined thisArg 会被替换为全局对象，严格模式下保持原值 call、apply、bind 的共同点和区别是什么？ apply 为什么常和数组参数一起出现？ bind 返回的新函数还能被 call 改 this 吗？ null/undefined 作为 thisArg 在严格和非严格模式下有什么差异？ 现代代码中什么时候还需要 call/apply/bind？"
+              "searchText": "this-call-apply-bind 显式绑定 this：call / apply / bind javascript / 02-函数与作用域 / this指向 this-动态绑定 08-面试题/手写/01-call-apply 02-bind call / apply 会立即调用函数，并把本次调用的 this 设为 thisArg call 逐个传参，apply 接收数组或类数组参数 bind 返回新函数，不会立即执行；绑定后的 this 不能再被 call/apply 改写 非严格模式下 null/undefined thisArg 会被替换为全局对象，严格模式下保持原值 现代展开语法 fn(...args) 可替代多数 apply 场景 call、apply、bind 的共同点和区别是什么？ apply 为什么常和数组参数一起出现？ bind 返回的新函数还能被 call 改 this 吗？ null/undefined 作为 thisArg 在严格和非严格模式下有什么差异？ 现代代码中什么时候还需要 call/apply/bind？"
             },
             {
               "title": "this-new构造函数",
@@ -779,12 +808,16 @@
               "category": "javascript / 02-函数与作用域 / this指向",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "03-对象与原型/构造函数",
+                "08-面试题/手写/03-new"
+              ],
               "points": [
                 "new 会创建对象、链接原型、以新对象作为 this 执行构造函数并返回实例",
                 "构造函数不显式返回对象时，new 的结果就是新实例",
-                "不加 new 调用普通构造函数会让 this 按普通函数规则绑定，可能污染全局或报错",
-                "class 构造器必须用 new 调用，能避免传统构造函数漏写 new 的一类问题"
+                "构造函数显式 return 对象时，new 的结果变成该对象",
+                "不加 new 调用普通构造函数会让 this 按普通函数规则绑定，可能污染全局",
+                "class 构造器必须用 new 调用，默认严格模式"
               ],
               "interviewPoints": [
                 "new 操作符内部做了哪几步？",
@@ -793,7 +826,7 @@
                 "class 和传统构造函数在调用方式上有什么差异？",
                 "手写 new 时要注意哪些边界？"
               ],
-              "searchText": "this-new构造函数 new 调用构造函数时 this 的行为 javascript / 02-函数与作用域 / this指向 new 会创建对象、链接原型、以新对象作为 this 执行构造函数并返回实例 构造函数不显式返回对象时，new 的结果就是新实例 不加 new 调用普通构造函数会让 this 按普通函数规则绑定，可能污染全局或报错 class 构造器必须用 new 调用，能避免传统构造函数漏写 new 的一类问题 new 操作符内部做了哪几步？ 构造函数显式 return 对 new 的结果有什么影响？ 漏写 new 为什么危险？ class 和传统构造函数在调用方式上有什么差异？ 手写 new 时要注意哪些边界？"
+              "searchText": "this-new构造函数 new 调用构造函数时 this 的行为 javascript / 02-函数与作用域 / this指向 03-对象与原型/构造函数 08-面试题/手写/03-new new 会创建对象、链接原型、以新对象作为 this 执行构造函数并返回实例 构造函数不显式返回对象时，new 的结果就是新实例 构造函数显式 return 对象时，new 的结果变成该对象 不加 new 调用普通构造函数会让 this 按普通函数规则绑定，可能污染全局 class 构造器必须用 new 调用，默认严格模式 new 操作符内部做了哪几步？ 构造函数显式 return 对 new 的结果有什么影响？ 漏写 new 为什么危险？ class 和传统构造函数在调用方式上有什么差异？ 手写 new 时要注意哪些边界？"
             },
             {
               "title": "this-对象方法与脱离",
@@ -802,12 +835,16 @@
               "category": "javascript / 02-函数与作用域 / this指向",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "this-动态绑定",
+                "this-call-apply-bind"
+              ],
               "points": [
                 "this 由调用位置决定，obj.fn() 的调用者是 obj",
                 "把 obj.fn 赋给变量后，引用值不再携带原对象，直接调用会丢失 this",
                 "setTimeout、事件回调、解构方法都可能触发 this 脱离",
-                "解决方式包括 bind 固定 this、包装成箭头函数或改为显式传入依赖"
+                "解决方式包括 bind 固定 this、包装成箭头函数或改为显式传入依赖",
+                "非严格模式脱离后 this 可能是全局对象，严格模式下是 undefined"
               ],
               "interviewPoints": [
                 "为什么 obj.fn() 有 this，而 const fn = obj.fn; fn() 会丢 this？",
@@ -816,7 +853,7 @@
                 "解构对象方法时为什么要警惕 this？",
                 "如何从设计上减少 this 依赖？"
               ],
-              "searchText": "this-对象方法与脱离 方法被「赋值出去」后 this 的脱离 javascript / 02-函数与作用域 / this指向 this 由调用位置决定，obj.fn() 的调用者是 obj 把 obj.fn 赋给变量后，引用值不再携带原对象，直接调用会丢失 this setTimeout、事件回调、解构方法都可能触发 this 脱离 解决方式包括 bind 固定 this、包装成箭头函数或改为显式传入依赖 为什么 obj.fn() 有 this，而 const fn = obj.fn; fn() 会丢 this？ 哪些真实场景容易发生 this 脱离？ bind 和箭头函数解决 this 脱离有什么区别？ 解构对象方法时为什么要警惕 this？ 如何从设计上减少 this 依赖？"
+              "searchText": "this-对象方法与脱离 方法被「赋值出去」后 this 的脱离 javascript / 02-函数与作用域 / this指向 this-动态绑定 this-call-apply-bind this 由调用位置决定，obj.fn() 的调用者是 obj 把 obj.fn 赋给变量后，引用值不再携带原对象，直接调用会丢失 this setTimeout、事件回调、解构方法都可能触发 this 脱离 解决方式包括 bind 固定 this、包装成箭头函数或改为显式传入依赖 非严格模式脱离后 this 可能是全局对象，严格模式下是 undefined 为什么 obj.fn() 有 this，而 const fn = obj.fn; fn() 会丢 this？ 哪些真实场景容易发生 this 脱离？ bind 和箭头函数解决 this 脱离有什么区别？ 解构对象方法时为什么要警惕 this？ 如何从设计上减少 this 依赖？"
             }
           ]
         },
@@ -830,20 +867,26 @@
               "category": "javascript / 03-对象与原型",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "构造函数",
+                "原型",
+                "typeof"
+              ],
               "points": [
-                "对象字面量是创建普通对象的首选，new Object() 主要用于理解构造过程",
-                "自定义构造函数配合 new 可批量创建同类实例，但方法应放到 prototype 共享",
-                "constructor 通常来自原型对象，不适合作为唯一可靠类型判断",
-                "delete 会移除自有属性，赋值 undefined 只是保留键并清空值"
+                "对象字面量是创建普通对象的首选；new Object() 行为相近，多用于理解构造过程",
+                "自定义构造函数配合 new 批量创建同类实例；方法应挂 prototype 共享",
+                "实例的 [[Prototype]] 指向构造函数的 prototype；constructor 来自原型，不宜作唯一类型判断",
+                "delete 移除自有属性；赋值 undefined 只清空值，键仍在",
+                "构造函数内为每实例创建方法会浪费内存，应放 prototype"
               ],
               "interviewPoints": [
                 "对象字面量、new Object、自定义构造函数如何取舍？",
-                "constructor 属性为什么不适合作为唯一类型判断？",
+                "constructor 为什么不适合作为唯一类型判断？",
                 "delete 和 obj.key = undefined 有什么区别？",
-                "为什么构造函数中的方法不建议每个实例都创建一份？"
+                "为什么构造函数中的方法不建议每个实例都创建一份？",
+                "instanceof 与 constructor 各适合什么场景？"
               ],
-              "searchText": "创建对象 创建对象的多种方式 javascript / 03-对象与原型 对象字面量是创建普通对象的首选，new Object() 主要用于理解构造过程 自定义构造函数配合 new 可批量创建同类实例，但方法应放到 prototype 共享 constructor 通常来自原型对象，不适合作为唯一可靠类型判断 delete 会移除自有属性，赋值 undefined 只是保留键并清空值 对象字面量、new Object、自定义构造函数如何取舍？ constructor 属性为什么不适合作为唯一类型判断？ delete 和 obj.key = undefined 有什么区别？ 为什么构造函数中的方法不建议每个实例都创建一份？"
+              "searchText": "创建对象 创建对象的多种方式 javascript / 03-对象与原型 构造函数 原型 typeof 对象字面量是创建普通对象的首选；new Object() 行为相近，多用于理解构造过程 自定义构造函数配合 new 批量创建同类实例；方法应挂 prototype 共享 实例的 [[Prototype]] 指向构造函数的 prototype；constructor 来自原型，不宜作唯一类型判断 delete 移除自有属性；赋值 undefined 只清空值，键仍在 构造函数内为每实例创建方法会浪费内存，应放 prototype 对象字面量、new Object、自定义构造函数如何取舍？ constructor 为什么不适合作为唯一类型判断？ delete 和 obj.key = undefined 有什么区别？ 为什么构造函数中的方法不建议每个实例都创建一份？ instanceof 与 constructor 各适合什么场景？"
             },
             {
               "title": "访问器",
@@ -852,20 +895,26 @@
               "category": "javascript / 03-对象与原型",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "创建对象",
+                "defineProperty",
+                "defineProperty访问器属性"
+              ],
               "points": [
-                "访问器属性用 get/set 拦截属性读取和赋值，本身不直接存储 value",
-                "Object.defineProperty 可动态定义访问器，并控制 enumerable/configurable",
-                "同一个属性描述符不能同时拥有 value/writable 和 get/set",
-                "getter/setter 内部读写同名属性会递归，需用独立后备字段"
+                "访问器属性用 get/set 拦截读取和赋值，本身不直接存储 value",
+                "数据描述符（value/writable）与访问器描述符（get/set）互斥",
+                "Object.defineProperty 可动态定义访问器并控制 enumerable/configurable",
+                "getter/setter 内部读写同名属性会无限递归，需独立后备字段",
+                "适合派生属性、输入归一化；大量属性拦截用 Proxy 更合适"
               ],
               "interviewPoints": [
                 "数据属性和访问器属性有什么区别？",
                 "Object.defineProperty 定义访问器时描述符要注意什么？",
                 "getter/setter 为什么可能无限递归？",
-                "访问器属性适合哪些项目场景？"
+                "访问器属性适合哪些项目场景？",
+                "enumerable/configurable 默认值对访问器有何影响？"
               ],
-              "searchText": "访问器 访问器属性 get/set javascript / 03-对象与原型 访问器属性用 get/set 拦截属性读取和赋值，本身不直接存储 value Object.defineProperty 可动态定义访问器，并控制 enumerable/configurable 同一个属性描述符不能同时拥有 value/writable 和 get/set getter/setter 内部读写同名属性会递归，需用独立后备字段 数据属性和访问器属性有什么区别？ Object.defineProperty 定义访问器时描述符要注意什么？ getter/setter 为什么可能无限递归？ 访问器属性适合哪些项目场景？"
+              "searchText": "访问器 访问器属性 get/set javascript / 03-对象与原型 创建对象 defineProperty defineProperty访问器属性 访问器属性用 get/set 拦截读取和赋值，本身不直接存储 value 数据描述符（value/writable）与访问器描述符（get/set）互斥 Object.defineProperty 可动态定义访问器并控制 enumerable/configurable getter/setter 内部读写同名属性会无限递归，需独立后备字段 适合派生属性、输入归一化；大量属性拦截用 Proxy 更合适 数据属性和访问器属性有什么区别？ Object.defineProperty 定义访问器时描述符要注意什么？ getter/setter 为什么可能无限递归？ 访问器属性适合哪些项目场景？ enumerable/configurable 默认值对访问器有何影响？"
             },
             {
               "title": "构造函数",
@@ -874,20 +923,26 @@
               "category": "javascript / 03-对象与原型",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "创建对象",
+                "原型",
+                "函数也是对象"
+              ],
               "points": [
-                "构造函数通过 new 调用时，this 指向新创建的实例",
-                "实例属性写在构造函数中，原型方法写在 prototype 上共享",
-                "instanceof 沿原型链判断，constructor 只是普通可变属性",
-                "现代代码可用 class 表达同样的原型模型"
+                "函数被 new 调用时 this 指向新实例；构造函数内初始化实例自有属性",
+                "共享方法写在 Person.prototype 上，避免每实例一份函数",
+                "instanceof 沿 [[Prototype]] 链查找；constructor 只是可变属性",
+                "漏写 new 时 this 可能绑定 globalThis（非严格模式）",
+                "class 是构造函数 + 原型的语法糖，类方法仍在 prototype 上"
               ],
               "interviewPoints": [
                 "构造函数和普通函数的区别是什么？",
                 "为什么实例方法通常放在 prototype 上？",
                 "instanceof 和 constructor 判断类型有什么边界？",
-                "构造函数与 class 是什么关系？"
+                "构造函数与 class 是什么关系？",
+                "漏写 new 会发生什么？"
               ],
-              "searchText": "构造函数 构造函数最基本用法 javascript / 03-对象与原型 构造函数通过 new 调用时，this 指向新创建的实例 实例属性写在构造函数中，原型方法写在 prototype 上共享 instanceof 沿原型链判断，constructor 只是普通可变属性 现代代码可用 class 表达同样的原型模型 构造函数和普通函数的区别是什么？ 为什么实例方法通常放在 prototype 上？ instanceof 和 constructor 判断类型有什么边界？ 构造函数与 class 是什么关系？"
+              "searchText": "构造函数 构造函数最基本用法 javascript / 03-对象与原型 创建对象 原型 函数也是对象 函数被 new 调用时 this 指向新实例；构造函数内初始化实例自有属性 共享方法写在 Person.prototype 上，避免每实例一份函数 instanceof 沿 [[Prototype]] 链查找；constructor 只是可变属性 漏写 new 时 this 可能绑定 globalThis（非严格模式） class 是构造函数 + 原型的语法糖，类方法仍在 prototype 上 构造函数和普通函数的区别是什么？ 为什么实例方法通常放在 prototype 上？ instanceof 和 constructor 判断类型有什么边界？ 构造函数与 class 是什么关系？ 漏写 new 会发生什么？"
             },
             {
               "title": "函数也是对象",
@@ -896,20 +951,26 @@
               "category": "javascript / 03-对象与原型",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "构造函数",
+                "原型",
+                "typeof"
+              ],
               "points": [
-                "函数是可调用对象，既能执行，也能拥有属性和原型关系",
-                "普通函数对象的 [[Prototype]] 指向 Function.prototype",
-                "Function.prototype 继续链接到 Object.prototype，因此函数也是对象",
-                "构造函数的 prototype 属性用于实例原型，不等于函数自身的 [[Prototype]]"
+                "函数是可调用对象：typeof 为 function，仍参与对象原型链",
+                "普通函数 [[Prototype]] 指向 Function.prototype，再链到 Object.prototype",
+                "fn.prototype 是构造函数给实例用的原型；不等于函数自身的 [[Prototype]]",
+                "fn instanceof Function 与 Object 均为 true",
+                "可给函数挂静态属性，解释 class 静态方法本质"
               ],
               "interviewPoints": [
                 "为什么说函数也是对象？",
-                "fn.__proto__ 和 fn.prototype 有什么区别？",
+                "fn 的 [[Prototype]] 和 fn.prototype 有什么区别？",
                 "Function instanceof Object 为什么是 true？",
-                "理解函数对象对原型链有什么帮助？"
+                "理解函数对象对原型链有什么帮助？",
+                "typeof fn 为什么是 function 而不是 object？"
               ],
-              "searchText": "函数也是对象 函数也是对象 javascript / 03-对象与原型 函数是可调用对象，既能执行，也能拥有属性和原型关系 普通函数对象的 [[Prototype]] 指向 Function.prototype Function.prototype 继续链接到 Object.prototype，因此函数也是对象 构造函数的 prototype 属性用于实例原型，不等于函数自身的 [[Prototype]] 为什么说函数也是对象？ fn.__proto__ 和 fn.prototype 有什么区别？ Function instanceof Object 为什么是 true？ 理解函数对象对原型链有什么帮助？"
+              "searchText": "函数也是对象 函数也是对象 javascript / 03-对象与原型 构造函数 原型 typeof 函数是可调用对象：typeof 为 function，仍参与对象原型链 普通函数 [[Prototype]] 指向 Function.prototype，再链到 Object.prototype fn.prototype 是构造函数给实例用的原型；不等于函数自身的 [[Prototype]] fn instanceof Function 与 Object 均为 true 可给函数挂静态属性，解释 class 静态方法本质 为什么说函数也是对象？ fn 的 [[Prototype]] 和 fn.prototype 有什么区别？ Function instanceof Object 为什么是 true？ 理解函数对象对原型链有什么帮助？ typeof fn 为什么是 function 而不是 object？"
             },
             {
               "title": "原型",
@@ -918,20 +979,26 @@
               "category": "javascript / 03-对象与原型",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "构造函数",
+                "原型链",
+                "原型属性vs实例属性"
+              ],
               "points": [
                 "构造函数的 prototype 是实例共享方法和属性的挂载点",
-                "实例的内部 [[Prototype]] 指向构造函数 prototype，可用 Object.getPrototypeOf 查看",
-                "prototype.constructor 默认指回构造函数，但可被改写，不应过度依赖",
-                "原型上放引用类型共享状态会影响所有实例，通常只放方法或常量"
+                "实例 [[Prototype]] 指向构造函数 prototype；用 Object.getPrototypeOf 查看",
+                "prototype.constructor 默认指回构造函数，可被改写，不应过度依赖",
+                "访问属性先查自有，再沿 [[Prototype]] 向上查找",
+                "原型上放可变引用类型会让所有实例共享同一份状态"
               ],
               "interviewPoints": [
                 "prototype 在构造函数和实例之间起什么作用？",
-                "__proto__、[[Prototype]]、prototype 有什么区别？",
+                "[[Prototype]]、__proto__、prototype 有什么区别？",
                 "constructor 属性为什么会指回构造函数？",
-                "原型上为什么不建议放可变引用状态？"
+                "原型上为什么不建议放可变引用状态？",
+                "多个实例如何共享同一份方法？"
               ],
-              "searchText": "原型 原型对象（prototype）与共享属性 javascript / 03-对象与原型 构造函数的 prototype 是实例共享方法和属性的挂载点 实例的内部 [[Prototype]] 指向构造函数 prototype，可用 Object.getPrototypeOf 查看 prototype.constructor 默认指回构造函数，但可被改写，不应过度依赖 原型上放引用类型共享状态会影响所有实例，通常只放方法或常量 prototype 在构造函数和实例之间起什么作用？ __proto__、[[Prototype]]、prototype 有什么区别？ constructor 属性为什么会指回构造函数？ 原型上为什么不建议放可变引用状态？"
+              "searchText": "原型 原型对象（prototype）与共享属性 javascript / 03-对象与原型 构造函数 原型链 原型属性vs实例属性 构造函数的 prototype 是实例共享方法和属性的挂载点 实例 [[Prototype]] 指向构造函数 prototype；用 Object.getPrototypeOf 查看 prototype.constructor 默认指回构造函数，可被改写，不应过度依赖 访问属性先查自有，再沿 [[Prototype]] 向上查找 原型上放可变引用类型会让所有实例共享同一份状态 prototype 在构造函数和实例之间起什么作用？ [[Prototype]]、__proto__、prototype 有什么区别？ constructor 属性为什么会指回构造函数？ 原型上为什么不建议放可变引用状态？ 多个实例如何共享同一份方法？"
             },
             {
               "title": "原型链",
@@ -940,12 +1007,17 @@
               "category": "javascript / 03-对象与原型",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "原型",
+                "原型属性vs实例属性",
+                "class详解/extends"
+              ],
               "points": [
-                "原型链用于属性查找：自有属性找不到时沿 [[Prototype]] 逐级查找",
-                "组合继承用 Parent.call(this) 继承实例属性，用 Object.create 继承原型方法",
-                "重置 Child.prototype.constructor 是为了恢复默认构造函数指向",
-                "父构造函数上的静态属性不会被 Object.create(Parent.prototype) 继承"
+                "属性查找先自有再沿 [[Prototype]] 逐级向上直到 null",
+                "组合继承：Parent.call(this) 复制实例属性 + Object.create 链接原型方法",
+                "替换 Child.prototype 后需手动重置 constructor",
+                "父构造函数静态属性不会经 Object.create(Parent.prototype) 继承",
+                "class extends 是对组合继承等步骤的语法封装"
               ],
               "interviewPoints": [
                 "原型链属性查找规则是什么？",
@@ -954,12 +1026,12 @@
                 "父类静态属性为什么不会通过原型链继承？",
                 "class extends 和组合继承是什么关系？"
               ],
-              "searchText": "原型链 原型链与组合继承 javascript / 03-对象与原型 原型链用于属性查找：自有属性找不到时沿 [[Prototype]] 逐级查找 组合继承用 Parent.call(this) 继承实例属性，用 Object.create 继承原型方法 重置 Child.prototype.constructor 是为了恢复默认构造函数指向 父构造函数上的静态属性不会被 Object.create(Parent.prototype) 继承 原型链属性查找规则是什么？ 组合继承为什么要同时用 Parent.call 和 Object.create？ 为什么要重置 Child.prototype.constructor？ 父类静态属性为什么不会通过原型链继承？ class extends 和组合继承是什么关系？"
+              "searchText": "原型链 原型链与组合继承 javascript / 03-对象与原型 原型 原型属性vs实例属性 class详解/extends 属性查找先自有再沿 [[Prototype]] 逐级向上直到 null 组合继承：Parent.call(this) 复制实例属性 + Object.create 链接原型方法 替换 Child.prototype 后需手动重置 constructor 父构造函数静态属性不会经 Object.create(Parent.prototype) 继承 class extends 是对组合继承等步骤的语法封装 原型链属性查找规则是什么？ 组合继承为什么要同时用 Parent.call 和 Object.create？ 为什么要重置 Child.prototype.constructor？ 父类静态属性为什么不会通过原型链继承？ class extends 和组合继承是什么关系？"
             },
             {
               "title": "原型属性vs实例属性",
               "href": "apps/javascript/03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E5%8E%9F%E5%9E%8B%E5%B1%9E%E6%80%A7vs%E5%AE%9E%E4%BE%8B%E5%B1%9E%E6%80%A7.html",
-              "theme": "原型属性 vs 实例属性、hasOwnProperty 与 in",
+              "theme": "原型属性 vs 实例属性",
               "category": "javascript / 03-对象与原型",
               "difficulty": "",
               "prerequisite": "",
@@ -970,15 +1042,19 @@
               ],
               "points": [
                 "实例属性每个实例独立；原型属性所有实例共享一份引用",
-                "hasOwnProperty 只判自有；in 沿原型链查找",
-                "推荐 Object.getPrototypeOf(obj) 代替 __proto__（标准 API）"
+                "数据属性放构造函数 this.xxx；共享方法放 Foo.prototype.xxx",
+                "hasOwnProperty / Object.hasOwn 只判自有；in 沿 [[Prototype]] 链查找",
+                "Object.keys 等只遍历自有可枚举属性；for...in 需配合 hasOwn 过滤",
+                "读取 [[Prototype]] 优先 Object.getPrototypeOf，__proto__ 仅作理解"
               ],
               "interviewPoints": [
                 "原型属性与实例属性有什么区别？",
                 "hasOwnProperty 和 in 操作符有何不同？",
-                "如何只遍历对象自有属性？"
+                "如何只遍历对象自有属性？",
+                "构造函数内定义方法与 prototype 定义方法有何差异？",
+                "Object.hasOwn 与 hasOwnProperty 有何区别？"
               ],
-              "searchText": "原型属性vs实例属性 原型属性 vs 实例属性、hasOwnProperty 与 in javascript / 03-对象与原型 原型 原型链 构造函数 实例属性每个实例独立；原型属性所有实例共享一份引用 hasOwnProperty 只判自有；in 沿原型链查找 推荐 Object.getPrototypeOf(obj) 代替 __proto__（标准 API） 原型属性与实例属性有什么区别？ hasOwnProperty 和 in 操作符有何不同？ 如何只遍历对象自有属性？"
+              "searchText": "原型属性vs实例属性 原型属性 vs 实例属性 javascript / 03-对象与原型 原型 原型链 构造函数 实例属性每个实例独立；原型属性所有实例共享一份引用 数据属性放构造函数 this.xxx；共享方法放 Foo.prototype.xxx hasOwnProperty / Object.hasOwn 只判自有；in 沿 [[Prototype]] 链查找 Object.keys 等只遍历自有可枚举属性；for...in 需配合 hasOwn 过滤 读取 [[Prototype]] 优先 Object.getPrototypeOf，__proto__ 仅作理解 原型属性与实例属性有什么区别？ hasOwnProperty 和 in 操作符有何不同？ 如何只遍历对象自有属性？ 构造函数内定义方法与 prototype 定义方法有何差异？ Object.hasOwn 与 hasOwnProperty 有何区别？"
             }
           ]
         },
@@ -992,11 +1068,14 @@
               "category": "javascript / 04-ES6+",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "Map",
+                "Set"
+              ],
               "points": [
                 "解构用于从数组/对象中按结构绑定变量，支持默认值、重命名和嵌套",
-                "rest 收集剩余项，spread 在调用、数组字面量或对象字面量中展开数据",
-                "spread 和对象 rest 都是浅层复制，嵌套对象仍共享引用",
+                "解构默认值只在结果为 undefined 时生效，null 不会触发默认值",
+                "rest 收集剩余项，spread 在调用、数组或对象字面量中展开数据（浅拷贝）",
                 "模板字符串支持插值、多行和标签函数；?. 与 ?? 组合用于安全读取和默认值"
               ],
               "interviewPoints": [
@@ -1005,7 +1084,7 @@
                 "对象 spread 为什么不是深拷贝？",
                 "?. 和 ?? 与传统 &&、|| 默认值写法有什么区别？"
               ],
-              "searchText": "解构展开与模板字符串 解构、rest/spread、模板字符串、可选链与空值合并 javascript / 04-ES6+ 解构用于从数组/对象中按结构绑定变量，支持默认值、重命名和嵌套 rest 收集剩余项，spread 在调用、数组字面量或对象字面量中展开数据 spread 和对象 rest 都是浅层复制，嵌套对象仍共享引用 模板字符串支持插值、多行和标签函数；?. 与 ?? 组合用于安全读取和默认值 解构默认值什么时候生效，null 会不会触发默认值？ rest 和 spread 语法相同但语义有什么区别？ 对象 spread 为什么不是深拷贝？ ?. 和 ?? 与传统 &&、|| 默认值写法有什么区别？"
+              "searchText": "解构展开与模板字符串 解构、rest/spread、模板字符串、可选链与空值合并 javascript / 04-ES6+ Map Set 解构用于从数组/对象中按结构绑定变量，支持默认值、重命名和嵌套 解构默认值只在结果为 undefined 时生效，null 不会触发默认值 rest 收集剩余项，spread 在调用、数组或对象字面量中展开数据（浅拷贝） 模板字符串支持插值、多行和标签函数；?. 与 ?? 组合用于安全读取和默认值 解构默认值什么时候生效，null 会不会触发默认值？ rest 和 spread 语法相同但语义有什么区别？ 对象 spread 为什么不是深拷贝？ ?. 和 ?? 与传统 &&、|| 默认值写法有什么区别？"
             }
           ]
         },
@@ -1019,7 +1098,10 @@
               "category": "javascript / 04-ES6+ / 集合",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "Set",
+                "WeakMap"
+              ],
               "points": [
                 "Map 存储键值对，键可为任意值，对象键按引用身份比较",
                 "Map 维护键值对首次插入顺序，可直接 for...of 迭代 entries",
@@ -1032,7 +1114,7 @@
                 "Map 的迭代顺序和 entries 结果是什么？",
                 "为什么不要用 map.foo = value 存 Map 数据？"
               ],
-              "searchText": "Map Map 键值对集合 javascript / 04-ES6+ / 集合 Map 存储键值对，键可为任意值，对象键按引用身份比较 Map 维护键值对首次插入顺序，可直接 for...of 迭代 entries 常用 API：set/get/has/delete/clear/size/keys/values/entries 与 Object 相比，Map 更适合频繁增删和用户提供键的字典场景 Map 和 Object 用作字典时如何选择？ Map 的对象键为什么两个字面量对象不相等？ Map 的迭代顺序和 entries 结果是什么？ 为什么不要用 map.foo = value 存 Map 数据？"
+              "searchText": "Map Map 键值对集合 javascript / 04-ES6+ / 集合 Set WeakMap Map 存储键值对，键可为任意值，对象键按引用身份比较 Map 维护键值对首次插入顺序，可直接 for...of 迭代 entries 常用 API：set/get/has/delete/clear/size/keys/values/entries 与 Object 相比，Map 更适合频繁增删和用户提供键的字典场景 Map 和 Object 用作字典时如何选择？ Map 的对象键为什么两个字面量对象不相等？ Map 的迭代顺序和 entries 结果是什么？ 为什么不要用 map.foo = value 存 Map 数据？"
             },
             {
               "title": "Set",
@@ -1041,7 +1123,10 @@
               "category": "javascript / 04-ES6+ / 集合",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "Map",
+                "WeakSet"
+              ],
               "points": [
                 "Set 存储唯一值，按 SameValueZero 判断相等并保留插入顺序",
                 "[...new Set(arr)] 可做数组去重，但对象按引用身份去重",
@@ -1054,7 +1139,7 @@
                 "Set 和 Array 在成员查询上如何选择？",
                 "Set、Map、WeakSet 分别适合什么场景？"
               ],
-              "searchText": "Set Set 值的集合 javascript / 04-ES6+ / 集合 Set 存储唯一值，按 SameValueZero 判断相等并保留插入顺序 [...new Set(arr)] 可做数组去重，但对象按引用身份去重 Set.prototype.has 通常比数组 includes 更适合大量成员查询 Set 适合存在性判断和集合运算，不适合保存键值元数据 Set 如何判断两个值是否重复？ Set 数组去重为什么不能按对象内容去重？ Set 和 Array 在成员查询上如何选择？ Set、Map、WeakSet 分别适合什么场景？"
+              "searchText": "Set Set 值的集合 javascript / 04-ES6+ / 集合 Map WeakSet Set 存储唯一值，按 SameValueZero 判断相等并保留插入顺序 [...new Set(arr)] 可做数组去重，但对象按引用身份去重 Set.prototype.has 通常比数组 includes 更适合大量成员查询 Set 适合存在性判断和集合运算，不适合保存键值元数据 Set 如何判断两个值是否重复？ Set 数组去重为什么不能按对象内容去重？ Set 和 Array 在成员查询上如何选择？ Set、Map、WeakSet 分别适合什么场景？"
             },
             {
               "title": "WeakMap",
@@ -1063,7 +1148,10 @@
               "category": "javascript / 04-ES6+ / 集合",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "Map",
+                "WeakSet"
+              ],
               "points": [
                 "键必须是可被垃圾回收的对象或非注册 Symbol，WeakMap 不会强引用键",
                 "没有 keys/values/entries/forEach 等迭代方法，无法枚举",
@@ -1076,7 +1164,7 @@
                 "WeakMap 如何用于私有数据或 DOM 元数据？",
                 "WeakMap 的弱引用是否意味着可以预测 GC 时间？"
               ],
-              "searchText": "WeakMap WeakMap 弱引用映射 javascript / 04-ES6+ / 集合 键必须是可被垃圾回收的对象或非注册 Symbol，WeakMap 不会强引用键 没有 keys/values/entries/forEach 等迭代方法，无法枚举 典型场景：给已有对象关联私有数据、DOM 元数据或对象缓存 需要枚举、size 或调试完整内容时应使用 Map WeakMap 为什么不能枚举键？ WeakMap 和 Map 的核心区别是什么？ WeakMap 如何用于私有数据或 DOM 元数据？ WeakMap 的弱引用是否意味着可以预测 GC 时间？"
+              "searchText": "WeakMap WeakMap 弱引用映射 javascript / 04-ES6+ / 集合 Map WeakSet 键必须是可被垃圾回收的对象或非注册 Symbol，WeakMap 不会强引用键 没有 keys/values/entries/forEach 等迭代方法，无法枚举 典型场景：给已有对象关联私有数据、DOM 元数据或对象缓存 需要枚举、size 或调试完整内容时应使用 Map WeakMap 为什么不能枚举键？ WeakMap 和 Map 的核心区别是什么？ WeakMap 如何用于私有数据或 DOM 元数据？ WeakMap 的弱引用是否意味着可以预测 GC 时间？"
             },
             {
               "title": "WeakSet",
@@ -1085,7 +1173,10 @@
               "category": "javascript / 04-ES6+ / 集合",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "Set",
+                "WeakMap"
+              ],
               "points": [
                 "WeakSet 只能保存可被垃圾回收的对象或非注册 Symbol",
                 "WeakSet 对成员是弱引用，不会阻止对象被垃圾回收",
@@ -1098,7 +1189,7 @@
                 "WeakSet 如何用于递归遍历防循环？",
                 "什么时候应该用 Set 而不是 WeakSet？"
               ],
-              "searchText": "WeakSet WeakSet 弱引用集合 javascript / 04-ES6+ / 集合 WeakSet 只能保存可被垃圾回收的对象或非注册 Symbol WeakSet 对成员是弱引用，不会阻止对象被垃圾回收 没有 size 和迭代方法，不能 forEach、for...of 或展开 典型场景：临时标记对象是否处理过、递归遍历防循环 WeakSet 和 Set 的核心区别是什么？ WeakSet 为什么没有 size 和迭代能力？ WeakSet 如何用于递归遍历防循环？ 什么时候应该用 Set 而不是 WeakSet？"
+              "searchText": "WeakSet WeakSet 弱引用集合 javascript / 04-ES6+ / 集合 Set WeakMap WeakSet 只能保存可被垃圾回收的对象或非注册 Symbol WeakSet 对成员是弱引用，不会阻止对象被垃圾回收 没有 size 和迭代方法，不能 forEach、for...of 或展开 典型场景：临时标记对象是否处理过、递归遍历防循环 WeakSet 和 Set 的核心区别是什么？ WeakSet 为什么没有 size 和迭代能力？ WeakSet 如何用于递归遍历防循环？ 什么时候应该用 Set 而不是 WeakSet？"
             }
           ]
         },
@@ -1119,14 +1210,15 @@
               "points": [
                 "CommonJS 主要用于 Node.js 早期生态，运行时 require，同步加载",
                 "ES Module 是语言标准，静态 import/export，支持 tree-shaking",
-                "面试重点是语法、加载时机、值拷贝/实时绑定、浏览器支持差异"
+                "ESM 导入 live binding，CJS 常见导出是对象属性读取",
+                "浏览器原生 ESM 需 script type=\"module\"，CJS 不能直接在浏览器运行"
               ],
               "interviewPoints": [
                 "CommonJS 与 ES Module 核心区别？",
                 "CJS 导出与 ESM 导出在值绑定上有何不同？",
                 "浏览器如何原生使用 ES Module？"
               ],
-              "searchText": "CommonJS-vs-ESM CommonJS 与 ES Module 对比 javascript / 04-ES6+ / 模块化 ES6模块 ImportMaps CommonJS 主要用于 Node.js 早期生态，运行时 require，同步加载 ES Module 是语言标准，静态 import/export，支持 tree-shaking 面试重点是语法、加载时机、值拷贝/实时绑定、浏览器支持差异 CommonJS 与 ES Module 核心区别？ CJS 导出与 ESM 导出在值绑定上有何不同？ 浏览器如何原生使用 ES Module？"
+              "searchText": "CommonJS-vs-ESM CommonJS 与 ES Module 对比 javascript / 04-ES6+ / 模块化 ES6模块 ImportMaps CommonJS 主要用于 Node.js 早期生态，运行时 require，同步加载 ES Module 是语言标准，静态 import/export，支持 tree-shaking ESM 导入 live binding，CJS 常见导出是对象属性读取 浏览器原生 ESM 需 script type=\"module\"，CJS 不能直接在浏览器运行 CommonJS 与 ES Module 核心区别？ CJS 导出与 ESM 导出在值绑定上有何不同？ 浏览器如何原生使用 ES Module？"
             }
           ]
         },
@@ -1392,7 +1484,10 @@
               "category": "javascript / 04-ES6+ / class详解",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "extends",
+                "类与原型"
+              ],
               "points": [
                 "JavaScript 没有 abstract class 关键字，可用 new.target 做运行时约束",
                 "class 构造器中 new.target 指向直接被 new 调用的构造器",
@@ -1405,7 +1500,7 @@
                 "运行时抽象基类和 TypeScript abstract class 如何分工？",
                 "派生类里 super() 和 new.target 的关系是什么？"
               ],
-              "searchText": "抽象基类 用 new.target 实现抽象基类 javascript / 04-ES6+ / class详解 JavaScript 没有 abstract class 关键字，可用 new.target 做运行时约束 class 构造器中 new.target 指向直接被 new 调用的构造器 基类检测 new.target === Base 可阻止直接实例化，但不能强制子类实现方法 派生类 constructor 仍必须先 super()，否则无法访问 this new.target 在基类构造器里为什么能识别直接实例化？ 用 new.target 模拟抽象基类有哪些能力和限制？ 运行时抽象基类和 TypeScript abstract class 如何分工？ 派生类里 super() 和 new.target 的关系是什么？"
+              "searchText": "抽象基类 用 new.target 实现抽象基类 javascript / 04-ES6+ / class详解 extends 类与原型 JavaScript 没有 abstract class 关键字，可用 new.target 做运行时约束 class 构造器中 new.target 指向直接被 new 调用的构造器 基类检测 new.target === Base 可阻止直接实例化，但不能强制子类实现方法 派生类 constructor 仍必须先 super()，否则无法访问 this new.target 在基类构造器里为什么能识别直接实例化？ 用 new.target 模拟抽象基类有哪些能力和限制？ 运行时抽象基类和 TypeScript abstract class 如何分工？ 派生类里 super() 和 new.target 的关系是什么？"
             },
             {
               "title": "类与原型",
@@ -1414,7 +1509,10 @@
               "category": "javascript / 04-ES6+ / class详解",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "class类声明",
+                "extends"
+              ],
               "points": [
                 "class 是原型语法糖：实例方法在 prototype 上共享",
                 "公有/私有实例字段每个实例各有一份，静态字段在类构造器上",
@@ -1427,7 +1525,7 @@
                 "私有字段和普通下划线属性有什么本质区别？",
                 "如何用 Object.getPrototypeOf 验证实例与类原型的关系？"
               ],
-              "searchText": "类与原型 类的字段、方法与原型对象关系 javascript / 04-ES6+ / class详解 class 是原型语法糖：实例方法在 prototype 上共享 公有/私有实例字段每个实例各有一份，静态字段在类构造器上 constructor 中给 this 赋函数会让每个实例持有独立函数对象 私有字段只能在类体内部通过 this.#field 访问，类外访问是语法错误 class 方法、实例字段、静态字段分别存在哪里？ 为什么不建议在 constructor 里给 this 重复创建方法？ 私有字段和普通下划线属性有什么本质区别？ 如何用 Object.getPrototypeOf 验证实例与类原型的关系？"
+              "searchText": "类与原型 类的字段、方法与原型对象关系 javascript / 04-ES6+ / class详解 class类声明 extends class 是原型语法糖：实例方法在 prototype 上共享 公有/私有实例字段每个实例各有一份，静态字段在类构造器上 constructor 中给 this 赋函数会让每个实例持有独立函数对象 私有字段只能在类体内部通过 this.#field 访问，类外访问是语法错误 class 方法、实例字段、静态字段分别存在哪里？ 为什么不建议在 constructor 里给 this 重复创建方法？ 私有字段和普通下划线属性有什么本质区别？ 如何用 Object.getPrototypeOf 验证实例与类原型的关系？"
             },
             {
               "title": "私有构造函数",
@@ -1436,7 +1534,10 @@
               "category": "javascript / 04-ES6+ / class详解",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "类与原型",
+                "class类声明"
+              ],
               "points": [
                 "JavaScript 没有 private constructor 语法，只能用运行时协议模拟",
                 "静态私有字段只能在类体内部访问，适合隐藏构造许可标志",
@@ -1449,7 +1550,7 @@
                 "工厂方法模拟私有构造时如何避免异常后状态泄漏？",
                 "这种模式适合哪些场景，什么时候不值得使用？"
               ],
-              "searchText": "私有构造函数 用静态私有标志位模拟「私有构造函数」 javascript / 04-ES6+ / class详解 JavaScript 没有 private constructor 语法，只能用运行时协议模拟 静态私有字段只能在类体内部访问，适合隐藏构造许可标志 工厂方法先打开标志位再 new，constructor 校验后立即复位 模拟私有构造要处理异常复位，避免一次失败污染后续构造 JavaScript 能不能声明真正的私有构造函数？ 静态私有字段为什么能隐藏构造许可标志？ 工厂方法模拟私有构造时如何避免异常后状态泄漏？ 这种模式适合哪些场景，什么时候不值得使用？"
+              "searchText": "私有构造函数 用静态私有标志位模拟「私有构造函数」 javascript / 04-ES6+ / class详解 类与原型 class类声明 JavaScript 没有 private constructor 语法，只能用运行时协议模拟 静态私有字段只能在类体内部访问，适合隐藏构造许可标志 工厂方法先打开标志位再 new，constructor 校验后立即复位 模拟私有构造要处理异常复位，避免一次失败污染后续构造 JavaScript 能不能声明真正的私有构造函数？ 静态私有字段为什么能隐藏构造许可标志？ 工厂方法模拟私有构造时如何避免异常后状态泄漏？ 这种模式适合哪些场景，什么时候不值得使用？"
             },
             {
               "title": "class静态初始化块",
@@ -1458,7 +1559,10 @@
               "category": "javascript / 04-ES6+ / class详解",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "class静态初始化块extends",
+                "私有构造函数"
+              ],
               "points": [
                 "static 块在类求值阶段同步执行，不等到 new 实例",
                 "静态字段和 static 块按类体声明顺序交错执行",
@@ -1471,7 +1575,7 @@
                 "static 块适合替代哪些类外初始化写法？",
                 "为什么 static 块不能写 await、yield、arguments 或 super()？"
               ],
-              "searchText": "class静态初始化块 静态初始化块 static { ... } javascript / 04-ES6+ / class详解 static 块在类求值阶段同步执行，不等到 new 实例 静态字段和 static 块按类体声明顺序交错执行 块内 this 指向类构造器本身，可访问已声明的私有静态字段 static 块适合封装复杂静态初始化，但不能使用 await、yield、arguments 或 super() static 初始化块和静态字段初始化顺序是什么？ static 块里的 this、var、私有静态字段分别有什么作用域边界？ static 块适合替代哪些类外初始化写法？ 为什么 static 块不能写 await、yield、arguments 或 super()？"
+              "searchText": "class静态初始化块 静态初始化块 static { ... } javascript / 04-ES6+ / class详解 class静态初始化块extends 私有构造函数 static 块在类求值阶段同步执行，不等到 new 实例 静态字段和 static 块按类体声明顺序交错执行 块内 this 指向类构造器本身，可访问已声明的私有静态字段 static 块适合封装复杂静态初始化，但不能使用 await、yield、arguments 或 super() static 初始化块和静态字段初始化顺序是什么？ static 块里的 this、var、私有静态字段分别有什么作用域边界？ static 块适合替代哪些类外初始化写法？ 为什么 static 块不能写 await、yield、arguments 或 super()？"
             },
             {
               "title": "class静态初始化块extends",
@@ -1480,7 +1584,11 @@
               "category": "javascript / 04-ES6+ / class详解",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "class静态初始化块",
+                "class类表达式",
+                "extends"
+              ],
               "points": [
                 "继承链上父类静态字段和 static 块先初始化，子类随后初始化",
                 "子类 static 块中可用 super.xxx 读取父类静态属性或调用父类静态方法",
@@ -1493,7 +1601,7 @@
                 "静态方法为什么要通过类名调用，实例为什么访问不到？",
                 "静态工厂方法和 constructor 分别适合什么场景？"
               ],
-              "searchText": "class静态初始化块extends 静态初始化块在继承场景的特性 javascript / 04-ES6+ / class详解 继承链上父类静态字段和 static 块先初始化，子类随后初始化 子类 static 块中可用 super.xxx 读取父类静态属性或调用父类静态方法 静态成员属于类构造器，实例不能直接访问静态方法 static 块中不能调用 super()，也不能访问实例 this 父类和子类的静态初始化顺序如何保证？ static 块里的 super.xxx 和实例方法里的 super.xxx 有什么区别？ 静态方法为什么要通过类名调用，实例为什么访问不到？ 静态工厂方法和 constructor 分别适合什么场景？"
+              "searchText": "class静态初始化块extends 静态初始化块在继承场景的特性 javascript / 04-ES6+ / class详解 class静态初始化块 class类表达式 extends 继承链上父类静态字段和 static 块先初始化，子类随后初始化 子类 static 块中可用 super.xxx 读取父类静态属性或调用父类静态方法 静态成员属于类构造器，实例不能直接访问静态方法 static 块中不能调用 super()，也不能访问实例 this 父类和子类的静态初始化顺序如何保证？ static 块里的 super.xxx 和实例方法里的 super.xxx 有什么区别？ 静态方法为什么要通过类名调用，实例为什么访问不到？ 静态工厂方法和 constructor 分别适合什么场景？"
             },
             {
               "title": "class类表达式",
@@ -1502,7 +1610,10 @@
               "category": "javascript / 04-ES6+ / class详解",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "class类声明",
+                "extends"
+              ],
               "points": [
                 "class 表达式可匿名也可具名，结果值通常赋给变量或作为参数传递",
                 "具名 class 表达式的内部类名只在类体内部可见，便于递归或调试",
@@ -1515,7 +1626,7 @@
                 "什么时候会在项目里选择 class 表达式而不是声明式 class？",
                 "具名 class 表达式的内部名称为什么外部访问不到？"
               ],
-              "searchText": "class类表达式 class 表达式（匿名/具名） javascript / 04-ES6+ / class详解 class 表达式可匿名也可具名，结果值通常赋给变量或作为参数传递 具名 class 表达式的内部类名只在类体内部可见，便于递归或调试 class 表达式同样有严格模式、暂时性死区和必须 new 调用的 class 语义 与 class 声明相比，表达式更适合动态选择基类、工厂函数和局部类定义 匿名 class 表达式和具名 class 表达式有什么区别？ class 表达式和 class 声明在提升、作用域和重定义上如何区分？ 什么时候会在项目里选择 class 表达式而不是声明式 class？ 具名 class 表达式的内部名称为什么外部访问不到？"
+              "searchText": "class类表达式 class 表达式（匿名/具名） javascript / 04-ES6+ / class详解 class类声明 extends class 表达式可匿名也可具名，结果值通常赋给变量或作为参数传递 具名 class 表达式的内部类名只在类体内部可见，便于递归或调试 class 表达式同样有严格模式、暂时性死区和必须 new 调用的 class 语义 与 class 声明相比，表达式更适合动态选择基类、工厂函数和局部类定义 匿名 class 表达式和具名 class 表达式有什么区别？ class 表达式和 class 声明在提升、作用域和重定义上如何区分？ 什么时候会在项目里选择 class 表达式而不是声明式 class？ 具名 class 表达式的内部名称为什么外部访问不到？"
             },
             {
               "title": "class类声明",
@@ -1524,7 +1635,11 @@
               "category": "javascript / 04-ES6+ / class详解",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "class类表达式",
+                "extends",
+                "类与原型"
+              ],
               "points": [
                 "class 声明创建原型方法模板，但类名在声明前处于暂时性死区",
                 "class 主体默认严格模式；方法定义在 prototype，静态字段定义在类本身",
@@ -1537,7 +1652,7 @@
                 "为什么 class 声明不能在同一作用域重复声明，但声明后的绑定可以重新赋值？",
                 "无 extends 的类和派生类在 super() 调用上有什么边界？"
               ],
-              "searchText": "class类声明 class 声明的关键特性 javascript / 04-ES6+ / class详解 class 声明创建原型方法模板，但类名在声明前处于暂时性死区 class 主体默认严格模式；方法定义在 prototype，静态字段定义在类本身 实例字段在 new 时初始化，静态字段在类求值时初始化 私有字段必须预先声明，外部不能通过对象属性语法访问 class 声明和函数构造器在提升、严格模式、原型方法上有什么区别？ 静态字段、实例字段、私有字段分别在什么时候初始化？ 为什么 class 声明不能在同一作用域重复声明，但声明后的绑定可以重新赋值？ 无 extends 的类和派生类在 super() 调用上有什么边界？"
+              "searchText": "class类声明 class 声明的关键特性 javascript / 04-ES6+ / class详解 class类表达式 extends 类与原型 class 声明创建原型方法模板，但类名在声明前处于暂时性死区 class 主体默认严格模式；方法定义在 prototype，静态字段定义在类本身 实例字段在 new 时初始化，静态字段在类求值时初始化 私有字段必须预先声明，外部不能通过对象属性语法访问 class 声明和函数构造器在提升、严格模式、原型方法上有什么区别？ 静态字段、实例字段、私有字段分别在什么时候初始化？ 为什么 class 声明不能在同一作用域重复声明，但声明后的绑定可以重新赋值？ 无 extends 的类和派生类在 super() 调用上有什么边界？"
             },
             {
               "title": "extends",
@@ -1546,7 +1661,10 @@
               "category": "javascript / 04-ES6+ / class详解",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "class类声明",
+                "类与原型"
+              ],
               "points": [
                 "extends 同时连接子类构造器原型链和实例 prototype 原型链",
                 "派生类 constructor 必须先调用 super() 才能访问 this",
@@ -1559,7 +1677,7 @@
                 "super.method() 和 super() 分别在什么位置使用？",
                 "什么时候应该用组合而不是 class 继承？"
               ],
-              "searchText": "extends extends 继承与 super 调用 javascript / 04-ES6+ / class详解 extends 同时连接子类构造器原型链和实例 prototype 原型链 派生类 constructor 必须先调用 super() 才能访问 this 实例方法挂在 prototype 上共享，实例字段和私有字段每个实例各自初始化 继承耦合强，扩展内建对象时要优先考虑组合替代 extends 会建立哪两条原型链？ 派生类 constructor 为什么必须先 super() 再使用 this？ super.method() 和 super() 分别在什么位置使用？ 什么时候应该用组合而不是 class 继承？"
+              "searchText": "extends extends 继承与 super 调用 javascript / 04-ES6+ / class详解 class类声明 类与原型 extends 同时连接子类构造器原型链和实例 prototype 原型链 派生类 constructor 必须先调用 super() 才能访问 this 实例方法挂在 prototype 上共享，实例字段和私有字段每个实例各自初始化 继承耦合强，扩展内建对象时要优先考虑组合替代 extends 会建立哪两条原型链？ 派生类 constructor 为什么必须先 super() 再使用 this？ super.method() 和 super() 分别在什么位置使用？ 什么时候应该用组合而不是 class 继承？"
             }
           ]
         },
@@ -1580,14 +1698,15 @@
               "points": [
                 "script type=\"module\" 自动启用严格模式，import 必须是顶层语句",
                 "静态导入 import {...} from '...'，动态导入 import('...').then(...)",
-                "模块在浏览器中需要通过 http(s) 协议加载（直接 file:// 不行）"
+                "ESM 导入 live binding；模块按 URL 单例，首次加载时执行顶层代码",
+                "浏览器加载 ESM 需 http(s) 协议（file:// 会被 CORS/安全策略拦截）"
               ],
               "interviewPoints": [
                 "ES Module 与 CommonJS 有何区别？",
                 "静态 import 与动态 import() 分别适合什么场景？",
                 "为什么浏览器加载 ESM 需要 http(s) 协议？"
               ],
-              "searchText": "index ES Module import/export 静态导入与动态导入 javascript / 04-ES6+ / ES6模块 CommonJS-vs-ESM ImportMaps script type=\"module\" 自动启用严格模式，import 必须是顶层语句 静态导入 import {...} from '...'，动态导入 import('...').then(...) 模块在浏览器中需要通过 http(s) 协议加载（直接 file:// 不行） ES Module 与 CommonJS 有何区别？ 静态 import 与动态 import() 分别适合什么场景？ 为什么浏览器加载 ESM 需要 http(s) 协议？"
+              "searchText": "index ES Module import/export 静态导入与动态导入 javascript / 04-ES6+ / ES6模块 CommonJS-vs-ESM ImportMaps script type=\"module\" 自动启用严格模式，import 必须是顶层语句 静态导入 import {...} from '...'，动态导入 import('...').then(...) ESM 导入 live binding；模块按 URL 单例，首次加载时执行顶层代码 浏览器加载 ESM 需 http(s) 协议（file:// 会被 CORS/安全策略拦截） ES Module 与 CommonJS 有何区别？ 静态 import 与动态 import() 分别适合什么场景？ 为什么浏览器加载 ESM 需要 http(s) 协议？"
             }
           ]
         },
@@ -1599,14 +1718,17 @@
               "href": "apps/javascript/05-%E5%85%83%E7%BC%96%E7%A8%8B/%E4%BB%A3%E7%90%86%E7%9A%84%E7%BC%BA%E7%82%B9.html",
               "theme": "Proxy 的局限性",
               "category": "javascript / 05-元编程",
-              "difficulty": "",
-              "prerequisite": "",
-              "related": [],
+              "difficulty": "进阶",
+              "prerequisite": "proxy",
+              "related": [
+                "proxy",
+                "defineProperty"
+              ],
               "points": [
                 "Proxy 不能透明代理依赖内部槽位的内建对象方法，例如 Date.prototype.getDate",
                 "空 handler 也会让 Date 方法里的 this 变成代理对象，从而触发不兼容接收者错误",
                 "可在 get trap 中把函数 bind 回原对象，但这会改变方法的 this 和可扩展性边界",
-                "Proxy 还存在私有字段、相等性和旧环境无法完整 polyfill 等局限"
+                "Proxy 还存在私有字段、相等性、运行时开销和旧环境无法完整 polyfill 等局限"
               ],
               "interviewPoints": [
                 "为什么空 handler 的 Proxy 也不能透明代理 Date？",
@@ -1614,21 +1736,25 @@
                 "Proxy 在私有字段、=== 和旧浏览器兼容上有哪些边界？",
                 "遇到内建对象或类实例时是否应该直接套 Proxy？"
               ],
-              "searchText": "代理的缺点 Proxy 的局限性 javascript / 05-元编程 Proxy 不能透明代理依赖内部槽位的内建对象方法，例如 Date.prototype.getDate 空 handler 也会让 Date 方法里的 this 变成代理对象，从而触发不兼容接收者错误 可在 get trap 中把函数 bind 回原对象，但这会改变方法的 this 和可扩展性边界 Proxy 还存在私有字段、相等性和旧环境无法完整 polyfill 等局限 为什么空 handler 的 Proxy 也不能透明代理 Date？ bind 原对象修复内建方法调用有什么副作用？ Proxy 在私有字段、=== 和旧浏览器兼容上有哪些边界？ 遇到内建对象或类实例时是否应该直接套 Proxy？"
+              "searchText": "代理的缺点 Proxy 的局限性 javascript / 05-元编程 进阶 proxy proxy defineProperty Proxy 不能透明代理依赖内部槽位的内建对象方法，例如 Date.prototype.getDate 空 handler 也会让 Date 方法里的 this 变成代理对象，从而触发不兼容接收者错误 可在 get trap 中把函数 bind 回原对象，但这会改变方法的 this 和可扩展性边界 Proxy 还存在私有字段、相等性、运行时开销和旧环境无法完整 polyfill 等局限 为什么空 handler 的 Proxy 也不能透明代理 Date？ bind 原对象修复内建方法调用有什么副作用？ Proxy 在私有字段、=== 和旧浏览器兼容上有哪些边界？ 遇到内建对象或类实例时是否应该直接套 Proxy？"
             },
             {
               "title": "defineProperty",
               "href": "apps/javascript/05-%E5%85%83%E7%BC%96%E7%A8%8B/defineProperty.html",
               "theme": "Object.defineProperty 数据属性",
               "category": "javascript / 05-元编程",
-              "difficulty": "",
+              "difficulty": "进阶",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "defineProperty访问器属性",
+                "proxy"
+              ],
               "points": [
                 "数据属性由 value、writable、enumerable、configurable 四个描述符控制",
-                "Object.defineProperty 新增属性时，未声明的布尔描述符默认都是 false",
-                "configurable 为 false 后不能删除属性，也不能再随意修改描述符",
-                "Object.getOwnPropertyDescriptor 可用于核对属性真实特性"
+                "defineProperty 新增属性时，未声明的布尔描述符默认都是 false",
+                "writable/enumerable/configurable 分别管赋值、枚举和删除/重配",
+                "configurable: false 后不能删除属性，也不能再随意修改描述符",
+                "逐个属性改写有性能与维护成本，动态键监听优先考虑 Proxy"
               ],
               "interviewPoints": [
                 "defineProperty 创建的数据属性默认为什么不可写、不可枚举、不可配置？",
@@ -1636,18 +1762,21 @@
                 "configurable: false 之后还能修改哪些描述符？",
                 "defineProperty 和对象字面量创建属性的默认特性有什么区别？"
               ],
-              "searchText": "defineProperty Object.defineProperty 数据属性 javascript / 05-元编程 数据属性由 value、writable、enumerable、configurable 四个描述符控制 Object.defineProperty 新增属性时，未声明的布尔描述符默认都是 false configurable 为 false 后不能删除属性，也不能再随意修改描述符 Object.getOwnPropertyDescriptor 可用于核对属性真实特性 defineProperty 创建的数据属性默认为什么不可写、不可枚举、不可配置？ writable、enumerable、configurable 分别影响哪些对象操作？ configurable: false 之后还能修改哪些描述符？ defineProperty 和对象字面量创建属性的默认特性有什么区别？"
+              "searchText": "defineProperty Object.defineProperty 数据属性 javascript / 05-元编程 进阶 defineProperty访问器属性 proxy 数据属性由 value、writable、enumerable、configurable 四个描述符控制 defineProperty 新增属性时，未声明的布尔描述符默认都是 false writable/enumerable/configurable 分别管赋值、枚举和删除/重配 configurable: false 后不能删除属性，也不能再随意修改描述符 逐个属性改写有性能与维护成本，动态键监听优先考虑 Proxy defineProperty 创建的数据属性默认为什么不可写、不可枚举、不可配置？ writable、enumerable、configurable 分别影响哪些对象操作？ configurable: false 之后还能修改哪些描述符？ defineProperty 和对象字面量创建属性的默认特性有什么区别？"
             },
             {
               "title": "defineProperty访问器属性",
               "href": "apps/javascript/05-%E5%85%83%E7%BC%96%E7%A8%8B/defineProperty%E8%AE%BF%E9%97%AE%E5%99%A8%E5%B1%9E%E6%80%A7.html",
               "theme": "defineProperty 访问器属性 get/set",
               "category": "javascript / 05-元编程",
-              "difficulty": "",
-              "prerequisite": "",
-              "related": [],
+              "difficulty": "进阶",
+              "prerequisite": "defineProperty",
+              "related": [
+                "defineProperty",
+                "proxy"
+              ],
               "points": [
-                "访问器属性由 get/set 函数描述，不同时拥有 value 或 writable",
+                "访问器属性由 get/set 函数描述，不能与 value/writable 混用",
                 "getter 无参数，setter 只接收一个待写入的新值",
                 "get/set 内部读写同名属性会递归触发自身，通常用内部字段承载真实数据",
                 "访问器适合派生属性、校验和兼容旧式响应式拦截，复杂对象监听优先考虑 Proxy"
@@ -1658,29 +1787,33 @@
                 "为什么在 get/set 里读写同名属性会导致递归？",
                 "defineProperty 访问器和 Proxy 拦截对象操作时如何取舍？"
               ],
-              "searchText": "defineProperty访问器属性 defineProperty 访问器属性 get/set javascript / 05-元编程 访问器属性由 get/set 函数描述，不同时拥有 value 或 writable getter 无参数，setter 只接收一个待写入的新值 get/set 内部读写同名属性会递归触发自身，通常用内部字段承载真实数据 访问器适合派生属性、校验和兼容旧式响应式拦截，复杂对象监听优先考虑 Proxy 访问器属性和数据属性为什么不能混用 value/writable？ getter 和 setter 的参数、this、触发时机分别是什么？ 为什么在 get/set 里读写同名属性会导致递归？ defineProperty 访问器和 Proxy 拦截对象操作时如何取舍？"
+              "searchText": "defineProperty访问器属性 defineProperty 访问器属性 get/set javascript / 05-元编程 进阶 defineProperty defineProperty proxy 访问器属性由 get/set 函数描述，不能与 value/writable 混用 getter 无参数，setter 只接收一个待写入的新值 get/set 内部读写同名属性会递归触发自身，通常用内部字段承载真实数据 访问器适合派生属性、校验和兼容旧式响应式拦截，复杂对象监听优先考虑 Proxy 访问器属性和数据属性为什么不能混用 value/writable？ getter 和 setter 的参数、this、触发时机分别是什么？ 为什么在 get/set 里读写同名属性会导致递归？ defineProperty 访问器和 Proxy 拦截对象操作时如何取舍？"
             },
             {
               "title": "proxy",
               "href": "apps/javascript/05-%E5%85%83%E7%BC%96%E7%A8%8B/proxy.html",
               "theme": "Proxy 代理与基本拦截器",
               "category": "javascript / 05-元编程",
-              "difficulty": "",
-              "prerequisite": "",
-              "related": [],
+              "difficulty": "进阶",
+              "prerequisite": "defineProperty访问器属性",
+              "related": [
+                "defineProperty",
+                "代理的缺点"
+              ],
               "points": [
                 "Proxy 用 handler trap 拦截对象的读取、写入、has、delete 等基本操作",
-                "get trap 接收 target、property、receiver；set trap 还接收 value 并必须返回布尔值",
+                "未定义的 trap 默认转发到目标对象，等价于 Reflect 同名方法",
+                "get trap 接收 target、property、receiver；set trap 必须返回布尔值",
                 "Reflect 提供与对象内部操作同名的默认转发 API，能保留 receiver 语义",
-                "Proxy 没有可用于 instanceof 的 prototype，判断代理类型应依赖业务标记或目标能力"
+                "每次属性访问都经过 trap，有运行时性能代价；Proxy 无法完整 polyfill"
               ],
               "interviewPoints": [
                 "Proxy 的 get/set trap 分别能拦截什么，参数含义是什么？",
+                "未定义 trap 时 Proxy 的默认行为是什么？",
                 "为什么 set trap 必须返回 true 或 Reflect.set 的结果？",
-                "Proxy 和 Reflect 为什么经常一起使用？",
                 "Proxy 与 Object.defineProperty 在响应式实现上有什么区别？"
               ],
-              "searchText": "proxy Proxy 代理与基本拦截器 javascript / 05-元编程 Proxy 用 handler trap 拦截对象的读取、写入、has、delete 等基本操作 get trap 接收 target、property、receiver；set trap 还接收 value 并必须返回布尔值 Reflect 提供与对象内部操作同名的默认转发 API，能保留 receiver 语义 Proxy 没有可用于 instanceof 的 prototype，判断代理类型应依赖业务标记或目标能力 Proxy 的 get/set trap 分别能拦截什么，参数含义是什么？ 为什么 set trap 必须返回 true 或 Reflect.set 的结果？ Proxy 和 Reflect 为什么经常一起使用？ Proxy 与 Object.defineProperty 在响应式实现上有什么区别？"
+              "searchText": "proxy Proxy 代理与基本拦截器 javascript / 05-元编程 进阶 defineProperty访问器属性 defineProperty 代理的缺点 Proxy 用 handler trap 拦截对象的读取、写入、has、delete 等基本操作 未定义的 trap 默认转发到目标对象，等价于 Reflect 同名方法 get trap 接收 target、property、receiver；set trap 必须返回布尔值 Reflect 提供与对象内部操作同名的默认转发 API，能保留 receiver 语义 每次属性访问都经过 trap，有运行时性能代价；Proxy 无法完整 polyfill Proxy 的 get/set trap 分别能拦截什么，参数含义是什么？ 未定义 trap 时 Proxy 的默认行为是什么？ 为什么 set trap 必须返回 true 或 Reflect.set 的结果？ Proxy 与 Object.defineProperty 在响应式实现上有什么区别？"
             }
           ]
         },
@@ -1694,7 +1827,10 @@
               "category": "javascript / 06-浏览器API",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "DOM操作",
+                "Notification"
+              ],
               "points": [
                 "navigator.clipboard.writeText 是现代异步剪贴板 API，通常要求安全上下文和用户激活",
                 "document.execCommand('copy') 已废弃，只适合作为兼容兜底且依赖选区",
@@ -1708,7 +1844,7 @@
                 "剪贴板复制失败时产品上应该怎么处理？",
                 "复制 DOM 内容时为什么优先取 textContent？"
               ],
-              "searchText": "剪贴板 文本复制到剪贴板的新旧两种方案 javascript / 06-浏览器API navigator.clipboard.writeText 是现代异步剪贴板 API，通常要求安全上下文和用户激活 document.execCommand('copy') 已废弃，只适合作为兼容兜底且依赖选区 剪贴板写入可能因权限、非 HTTPS、无用户手势或浏览器策略失败 复制用户生成内容时应复制 textContent，避免把 HTML 当作可信内容传播 复制文本为什么优先使用 navigator.clipboard.writeText？ Clipboard API 为什么经常要求 HTTPS 和用户点击？ execCommand('copy') 为什么只能作为兜底？ 剪贴板复制失败时产品上应该怎么处理？ 复制 DOM 内容时为什么优先取 textContent？"
+              "searchText": "剪贴板 文本复制到剪贴板的新旧两种方案 javascript / 06-浏览器API DOM操作 Notification navigator.clipboard.writeText 是现代异步剪贴板 API，通常要求安全上下文和用户激活 document.execCommand('copy') 已废弃，只适合作为兼容兜底且依赖选区 剪贴板写入可能因权限、非 HTTPS、无用户手势或浏览器策略失败 复制用户生成内容时应复制 textContent，避免把 HTML 当作可信内容传播 复制文本为什么优先使用 navigator.clipboard.writeText？ Clipboard API 为什么经常要求 HTTPS 和用户点击？ execCommand('copy') 为什么只能作为兜底？ 剪贴板复制失败时产品上应该怎么处理？ 复制 DOM 内容时为什么优先取 textContent？"
             },
             {
               "title": "浏览器渲染与性能",
@@ -1743,7 +1879,10 @@
               "category": "javascript / 06-浏览器API",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "浏览器渲染与性能",
+                "fetch与跨域"
+              ],
               "points": [
                 "getElementById 返回单个元素，getElementsByClassName 返回实时 HTMLCollection",
                 "querySelectorAll 返回静态 NodeList，DOM 变化后不会自动补入新匹配项",
@@ -1756,7 +1895,7 @@
                 "classList 为什么比拼接 className 更可靠？",
                 "innerHTML 和 textContent 在安全边界上如何选择？"
               ],
-              "searchText": "DOM操作 DOM 基础操作（选择 / 属性 / 数据集 / 类） javascript / 06-浏览器API getElementById 返回单个元素，getElementsByClassName 返回实时 HTMLCollection querySelectorAll 返回静态 NodeList，DOM 变化后不会自动补入新匹配项 dataset 适合读写 data-* 自定义数据，classList 适合增删切换类名 用户输入写入页面时优先使用 textContent，避免 innerHTML 造成 XSS 风险 HTMLCollection 和 querySelectorAll 返回的 NodeList 有什么差异？ dataset、getAttribute 和直接挂 JS 属性分别适合什么场景？ classList 为什么比拼接 className 更可靠？ innerHTML 和 textContent 在安全边界上如何选择？"
+              "searchText": "DOM操作 DOM 基础操作（选择 / 属性 / 数据集 / 类） javascript / 06-浏览器API 浏览器渲染与性能 fetch与跨域 getElementById 返回单个元素，getElementsByClassName 返回实时 HTMLCollection querySelectorAll 返回静态 NodeList，DOM 变化后不会自动补入新匹配项 dataset 适合读写 data-* 自定义数据，classList 适合增删切换类名 用户输入写入页面时优先使用 textContent，避免 innerHTML 造成 XSS 风险 HTMLCollection 和 querySelectorAll 返回的 NodeList 有什么差异？ dataset、getAttribute 和直接挂 JS 属性分别适合什么场景？ classList 为什么比拼接 className 更可靠？ innerHTML 和 textContent 在安全边界上如何选择？"
             },
             {
               "title": "fetch与跨域",
@@ -1790,7 +1929,10 @@
               "category": "javascript / 06-浏览器API",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "fetch与跨域",
+                "ImportMaps"
+              ],
               "points": [
                 "强缓存由 Cache-Control 等响应头决定，命中时浏览器不发网络请求",
                 "协商缓存通过 ETag / Last-Modified 条件请求验证资源是否变化",
@@ -1805,7 +1947,7 @@
                 "前端静态资源为什么常用文件 hash 加长期缓存？",
                 "缓存配置错误会带来哪些线上风险？"
               ],
-              "searchText": "HTTP缓存 HTTP 强缓存与协商缓存 javascript / 06-浏览器API 强缓存由 Cache-Control 等响应头决定，命中时浏览器不发网络请求 协商缓存通过 ETag / Last-Modified 条件请求验证资源是否变化 no-cache 表示存储前可复用但每次须验证，no-store 表示不应存储 生产常用 HTML 入口不强缓存，带内容 hash 的静态资源长缓存 immutable 缓存策略错误会导致旧版本资源、隐私数据落盘或频繁回源 强缓存和协商缓存的请求链路有什么区别？ Cache-Control: no-cache 和 no-store 有什么区别？ ETag 和 Last-Modified 同时存在时如何理解优先级？ 前端静态资源为什么常用文件 hash 加长期缓存？ 缓存配置错误会带来哪些线上风险？"
+              "searchText": "HTTP缓存 HTTP 强缓存与协商缓存 javascript / 06-浏览器API fetch与跨域 ImportMaps 强缓存由 Cache-Control 等响应头决定，命中时浏览器不发网络请求 协商缓存通过 ETag / Last-Modified 条件请求验证资源是否变化 no-cache 表示存储前可复用但每次须验证，no-store 表示不应存储 生产常用 HTML 入口不强缓存，带内容 hash 的静态资源长缓存 immutable 缓存策略错误会导致旧版本资源、隐私数据落盘或频繁回源 强缓存和协商缓存的请求链路有什么区别？ Cache-Control: no-cache 和 no-store 有什么区别？ ETag 和 Last-Modified 同时存在时如何理解优先级？ 前端静态资源为什么常用文件 hash 加长期缓存？ 缓存配置错误会带来哪些线上风险？"
             },
             {
               "title": "ImportMaps",
@@ -1837,7 +1979,10 @@
               "category": "javascript / 06-浏览器API",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "ImportMaps",
+                "MutationObserver"
+              ],
               "points": [
                 "IntersectionObserver 异步报告目标元素与视口或指定 root 的交叉状态",
                 "rootMargin 适合提前预加载，threshold 控制达到多少可见比例才触发",
@@ -1849,7 +1994,7 @@
                 "懒加载图片进入视口后为什么要 unobserve？",
                 "图片加载失败或重复重置时要补哪些边界处理？"
               ],
-              "searchText": "IntersectionObserver IntersectionObserver 实现图片懒加载 javascript / 06-浏览器API IntersectionObserver 异步报告目标元素与视口或指定 root 的交叉状态 rootMargin 适合提前预加载，threshold 控制达到多少可见比例才触发 图片懒加载要处理加载失败、重复触发、重置时 observer 清理和可访问 alt 文本 IntersectionObserver 为什么比 scroll 事件更适合懒加载？ rootMargin 和 threshold 在图片预加载里分别控制什么？ 懒加载图片进入视口后为什么要 unobserve？ 图片加载失败或重复重置时要补哪些边界处理？"
+              "searchText": "IntersectionObserver IntersectionObserver 实现图片懒加载 javascript / 06-浏览器API ImportMaps MutationObserver IntersectionObserver 异步报告目标元素与视口或指定 root 的交叉状态 rootMargin 适合提前预加载，threshold 控制达到多少可见比例才触发 图片懒加载要处理加载失败、重复触发、重置时 observer 清理和可访问 alt 文本 IntersectionObserver 为什么比 scroll 事件更适合懒加载？ rootMargin 和 threshold 在图片预加载里分别控制什么？ 懒加载图片进入视口后为什么要 unobserve？ 图片加载失败或重复重置时要补哪些边界处理？"
             },
             {
               "title": "MutationObserver",
@@ -1858,7 +2003,10 @@
               "category": "javascript / 06-浏览器API",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "IntersectionObserver",
+                "DOM操作"
+              ],
               "points": [
                 "MutationObserver 异步批量报告 childList、attributes、characterData 等 DOM 变化",
                 "observe 配置决定监听范围；subtree 和 oldValue 能力有用但会增加记录成本",
@@ -1870,7 +2018,7 @@
                 "MutationObserver 回调里继续修改 DOM 有什么风险？",
                 "MutationObserver 和 ResizeObserver、IntersectionObserver 如何选型？"
               ],
-              "searchText": "MutationObserver MutationObserver 监听 DOM 变化 javascript / 06-浏览器API MutationObserver 异步批量报告 childList、attributes、characterData 等 DOM 变化 observe 配置决定监听范围；subtree 和 oldValue 能力有用但会增加记录成本 回调里继续改同一片 DOM 容易形成循环，组件卸载或任务结束要 disconnect MutationObserver 与 DOM Mutation Events 有什么区别？ observe 配置里 childList、attributes、subtree 分别影响什么？ MutationObserver 回调里继续修改 DOM 有什么风险？ MutationObserver 和 ResizeObserver、IntersectionObserver 如何选型？"
+              "searchText": "MutationObserver MutationObserver 监听 DOM 变化 javascript / 06-浏览器API IntersectionObserver DOM操作 MutationObserver 异步批量报告 childList、attributes、characterData 等 DOM 变化 observe 配置决定监听范围；subtree 和 oldValue 能力有用但会增加记录成本 回调里继续改同一片 DOM 容易形成循环，组件卸载或任务结束要 disconnect MutationObserver 与 DOM Mutation Events 有什么区别？ observe 配置里 childList、attributes、subtree 分别影响什么？ MutationObserver 回调里继续修改 DOM 有什么风险？ MutationObserver 和 ResizeObserver、IntersectionObserver 如何选型？"
             },
             {
               "title": "Notification",
@@ -1879,7 +2027,10 @@
               "category": "javascript / 06-浏览器API",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "ServiceWorker",
+                "MutationObserver"
+              ],
               "points": [
                 "Notification API 需要安全上下文和用户授权，权限状态为 granted、denied 或 default",
                 "requestPermission 应由用户手势触发，denied 后不要反复弹窗骚扰用户",
@@ -1891,7 +2042,7 @@
                 "页面 Notification 和 Push API 后台推送有什么区别？",
                 "循环通知或营销提醒要注意哪些体验和安全边界？"
               ],
-              "searchText": "Notification Notification 桌面通知 javascript / 06-浏览器API Notification API 需要安全上下文和用户授权，权限状态为 granted、denied 或 default requestPermission 应由用户手势触发，denied 后不要反复弹窗骚扰用户 页面通知适合当前页面会话；后台推送通常要结合 Service Worker 和 Push API Notification API 为什么必须先请求权限？ granted、denied、default 三种权限状态如何处理？ 页面 Notification 和 Push API 后台推送有什么区别？ 循环通知或营销提醒要注意哪些体验和安全边界？"
+              "searchText": "Notification Notification 桌面通知 javascript / 06-浏览器API ServiceWorker MutationObserver Notification API 需要安全上下文和用户授权，权限状态为 granted、denied 或 default requestPermission 应由用户手势触发，denied 后不要反复弹窗骚扰用户 页面通知适合当前页面会话；后台推送通常要结合 Service Worker 和 Push API Notification API 为什么必须先请求权限？ granted、denied、default 三种权限状态如何处理？ 页面 Notification 和 Push API 后台推送有什么区别？ 循环通知或营销提醒要注意哪些体验和安全边界？"
             },
             {
               "title": "Performance-API",
@@ -1900,7 +2051,10 @@
               "category": "javascript / 06-浏览器API",
               "difficulty": "进阶",
               "prerequisite": "浏览器渲染与性能",
-              "related": [],
+              "related": [
+                "requestAnimation",
+                "浏览器渲染与性能"
+              ],
               "points": [
                 "performance.now() 是相对 timeOrigin 的高精度单调时钟，适合测量耗时",
                 "mark / measure 属于 User Timing，用于给业务流程打点并生成 PerformanceEntry",
@@ -1912,7 +2066,7 @@
                 "navigation entry 与旧 performance.timing 有什么区别？",
                 "Performance API 指标上报有哪些隐私和兼容边界？"
               ],
-              "searchText": "Performance-API Performance API 计时与导航指标 javascript / 06-浏览器API 进阶 浏览器渲染与性能 performance.now() 是相对 timeOrigin 的高精度单调时钟，适合测量耗时 mark / measure 属于 User Timing，用于给业务流程打点并生成 PerformanceEntry navigation entry 替代旧 performance.timing，用于读取页面导航与加载阶段指标 performance.now() 为什么比 Date.now() 更适合测耗时？ mark / measure 在业务性能埋点里如何使用？ navigation entry 与旧 performance.timing 有什么区别？ Performance API 指标上报有哪些隐私和兼容边界？"
+              "searchText": "Performance-API Performance API 计时与导航指标 javascript / 06-浏览器API 进阶 浏览器渲染与性能 requestAnimation 浏览器渲染与性能 performance.now() 是相对 timeOrigin 的高精度单调时钟，适合测量耗时 mark / measure 属于 User Timing，用于给业务流程打点并生成 PerformanceEntry navigation entry 替代旧 performance.timing，用于读取页面导航与加载阶段指标 performance.now() 为什么比 Date.now() 更适合测耗时？ mark / measure 在业务性能埋点里如何使用？ navigation entry 与旧 performance.timing 有什么区别？ Performance API 指标上报有哪些隐私和兼容边界？"
             },
             {
               "title": "requestAnimation",
@@ -1921,7 +2075,10 @@
               "category": "javascript / 06-浏览器API",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "Performance-API",
+                "浏览器渲染与性能"
+              ],
               "points": [
                 "同步递归会持续占用当前调用栈；requestAnimationFrame 把回调排到下一次重绘前",
                 "rAF 回调接收高精度时间戳，应按时间差更新动画而不是假设固定 60fps",
@@ -1934,7 +2091,7 @@
                 "为什么动画逻辑应该使用回调时间戳计算进度？",
                 "组件卸载或页面隐藏时如何停止 rAF 循环？"
               ],
-              "searchText": "requestAnimation requestAnimationFrame 与递归调用对比 javascript / 06-浏览器API 同步递归会持续占用当前调用栈；requestAnimationFrame 把回调排到下一次重绘前 rAF 回调接收高精度时间戳，应按时间差更新动画而不是假设固定 60fps 后台标签页中的 rAF 通常会暂停或降频，适合视觉动画但不适合可靠计时 停止动画要保存返回 id 并调用 cancelAnimationFrame(id) requestAnimationFrame 为什么比同步递归更适合动画循环？ rAF 和 setTimeout/setInterval 做动画有什么差异？ 为什么动画逻辑应该使用回调时间戳计算进度？ 组件卸载或页面隐藏时如何停止 rAF 循环？"
+              "searchText": "requestAnimation requestAnimationFrame 与递归调用对比 javascript / 06-浏览器API Performance-API 浏览器渲染与性能 同步递归会持续占用当前调用栈；requestAnimationFrame 把回调排到下一次重绘前 rAF 回调接收高精度时间戳，应按时间差更新动画而不是假设固定 60fps 后台标签页中的 rAF 通常会暂停或降频，适合视觉动画但不适合可靠计时 停止动画要保存返回 id 并调用 cancelAnimationFrame(id) requestAnimationFrame 为什么比同步递归更适合动画循环？ rAF 和 setTimeout/setInterval 做动画有什么差异？ 为什么动画逻辑应该使用回调时间戳计算进度？ 组件卸载或页面隐藏时如何停止 rAF 循环？"
             },
             {
               "title": "ServiceWorker",
@@ -1943,7 +2100,10 @@
               "category": "javascript / 06-浏览器API",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "Notification",
+                "HTTP缓存"
+              ],
               "points": [
                 "Service Worker 是浏览器在页面外运行的 worker，可代理 fetch、缓存资源和支撑 PWA",
                 "注册要求安全上下文；脚本文件的位置决定默认 scope，不能随意控制更高层级路径",
@@ -1955,7 +2115,7 @@
                 "Service Worker 生命周期里 install、activate、fetch 分别做什么？",
                 "离线缓存有哪些常见坑和回滚策略？"
               ],
-              "searchText": "ServiceWorker Service Worker 基础注册 javascript / 06-浏览器API Service Worker 是浏览器在页面外运行的 worker，可代理 fetch、缓存资源和支撑 PWA 注册要求安全上下文；脚本文件的位置决定默认 scope，不能随意控制更高层级路径 生命周期包含 register、install、activate、fetch，缓存更新和失败回退必须显式设计 Service Worker 为什么必须运行在 HTTPS 或 localhost？ register 的 scope 由什么决定，为什么本页使用相对 scope？ Service Worker 生命周期里 install、activate、fetch 分别做什么？ 离线缓存有哪些常见坑和回滚策略？"
+              "searchText": "ServiceWorker Service Worker 基础注册 javascript / 06-浏览器API Notification HTTP缓存 Service Worker 是浏览器在页面外运行的 worker，可代理 fetch、缓存资源和支撑 PWA 注册要求安全上下文；脚本文件的位置决定默认 scope，不能随意控制更高层级路径 生命周期包含 register、install、activate、fetch，缓存更新和失败回退必须显式设计 Service Worker 为什么必须运行在 HTTPS 或 localhost？ register 的 scope 由什么决定，为什么本页使用相对 scope？ Service Worker 生命周期里 install、activate、fetch 分别做什么？ 离线缓存有哪些常见坑和回滚策略？"
             },
             {
               "title": "WebComponents",
@@ -1964,7 +2124,10 @@
               "category": "javascript / 06-浏览器API",
               "difficulty": "进阶",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "ServiceWorker",
+                "DOM操作"
+              ],
               "points": [
                 "Custom Elements 用 customElements.define 注册带连字符的自定义标签",
                 "Shadow DOM 提供封装边界和样式隔离，但事件、插槽和可访问性仍要显式设计",
@@ -1976,7 +2139,7 @@
                 "observedAttributes 为什么只监听属性而不是属性对象？",
                 "Web Components 与 React/Vue 组件如何选型和集成？"
               ],
-              "searchText": "WebComponents Web Components 自定义元素与 Shadow DOM javascript / 06-浏览器API 进阶 Custom Elements 用 customElements.define 注册带连字符的自定义标签 Shadow DOM 提供封装边界和样式隔离，但事件、插槽和可访问性仍要显式设计 observedAttributes 与 attributeChangedCallback 负责把属性变化同步到组件内部渲染 Web Components 由哪些标准能力组成？ Shadow DOM 的样式隔离和普通组件 CSS 作用域有什么区别？ observedAttributes 为什么只监听属性而不是属性对象？ Web Components 与 React/Vue 组件如何选型和集成？"
+              "searchText": "WebComponents Web Components 自定义元素与 Shadow DOM javascript / 06-浏览器API 进阶 ServiceWorker DOM操作 Custom Elements 用 customElements.define 注册带连字符的自定义标签 Shadow DOM 提供封装边界和样式隔离，但事件、插槽和可访问性仍要显式设计 observedAttributes 与 attributeChangedCallback 负责把属性变化同步到组件内部渲染 Web Components 由哪些标准能力组成？ Shadow DOM 的样式隔离和普通组件 CSS 作用域有什么区别？ observedAttributes 为什么只监听属性而不是属性对象？ Web Components 与 React/Vue 组件如何选型和集成？"
             },
             {
               "title": "WebSocket",
@@ -2011,7 +2174,10 @@
               "category": "javascript / 06-浏览器API / 存储",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "localforage-基础API",
+                "存储文件-FileReader"
+              ],
               "points": [
                 "Cookie 会随匹配请求自动发送，适合服务端参与的少量状态但要配置 Secure/HttpOnly/SameSite",
                 "sessionStorage 与 localStorage 是同步字符串 key-value API，适合少量前端状态",
@@ -2025,7 +2191,7 @@
                 "Cookie 的 Secure、HttpOnly、SameSite 分别解决什么问题？",
                 "浏览器存储写入失败或被清理时如何兜底？"
               ],
-              "searchText": "存储方案对比 Cookie、sessionStorage、localStorage、IndexedDB 对比 javascript / 06-浏览器API / 存储 Cookie 会随匹配请求自动发送，适合服务端参与的少量状态但要配置 Secure/HttpOnly/SameSite sessionStorage 与 localStorage 是同步字符串 key-value API，适合少量前端状态 IndexedDB 是异步事务型数据库，适合离线数据、对象、Blob 和较大缓存 存储容量、清理策略和隐私模式都由浏览器决定，业务必须处理写入失败 登录态、偏好设置和离线缓存分别应该选哪种存储？ localStorage 和 sessionStorage 的生命周期有什么区别？ 为什么不建议把大量数据写进 localStorage？ Cookie 的 Secure、HttpOnly、SameSite 分别解决什么问题？ 浏览器存储写入失败或被清理时如何兜底？"
+              "searchText": "存储方案对比 Cookie、sessionStorage、localStorage、IndexedDB 对比 javascript / 06-浏览器API / 存储 localforage-基础API 存储文件-FileReader Cookie 会随匹配请求自动发送，适合服务端参与的少量状态但要配置 Secure/HttpOnly/SameSite sessionStorage 与 localStorage 是同步字符串 key-value API，适合少量前端状态 IndexedDB 是异步事务型数据库，适合离线数据、对象、Blob 和较大缓存 存储容量、清理策略和隐私模式都由浏览器决定，业务必须处理写入失败 登录态、偏好设置和离线缓存分别应该选哪种存储？ localStorage 和 sessionStorage 的生命周期有什么区别？ 为什么不建议把大量数据写进 localStorage？ Cookie 的 Secure、HttpOnly、SameSite 分别解决什么问题？ 浏览器存储写入失败或被清理时如何兜底？"
             },
             {
               "title": "localforage-基础API",
@@ -2034,7 +2200,10 @@
               "category": "javascript / 06-浏览器API / 存储",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "存储方案对比",
+                "获取已用容量"
+              ],
               "points": [
                 "localforage 用 Promise API 封装 IndexedDB，并可按环境降级到 WebSQL/localStorage",
                 "setItem/getItem/removeItem/keys/length/iterate 都是异步操作，需要 await 或链式串行",
@@ -2048,7 +2217,7 @@
                 "localforage 与直接使用 IndexedDB 如何选？",
                 "localforage 写入失败时应该处理哪些边界？"
               ],
-              "searchText": "localforage-基础API localforage 基础 API javascript / 06-浏览器API / 存储 localforage 用 Promise API 封装 IndexedDB，并可按环境降级到 WebSQL/localStorage setItem/getItem/removeItem/keys/length/iterate 都是异步操作，需要 await 或链式串行 createInstance 可隔离 name/storeName，避免 clear 误删其他业务数据 存储值会经过结构化克隆或降级序列化，Blob、循环引用和配额失败要单独处理 localforage 相比直接用 localStorage 解决了什么问题？ localforage 的异步 API 为什么要按顺序 await？ clear 和 removeItem 在业务数据安全上有什么区别？ localforage 与直接使用 IndexedDB 如何选？ localforage 写入失败时应该处理哪些边界？"
+              "searchText": "localforage-基础API localforage 基础 API javascript / 06-浏览器API / 存储 存储方案对比 获取已用容量 localforage 用 Promise API 封装 IndexedDB，并可按环境降级到 WebSQL/localStorage setItem/getItem/removeItem/keys/length/iterate 都是异步操作，需要 await 或链式串行 createInstance 可隔离 name/storeName，避免 clear 误删其他业务数据 存储值会经过结构化克隆或降级序列化，Blob、循环引用和配额失败要单独处理 localforage 相比直接用 localStorage 解决了什么问题？ localforage 的异步 API 为什么要按顺序 await？ clear 和 removeItem 在业务数据安全上有什么区别？ localforage 与直接使用 IndexedDB 如何选？ localforage 写入失败时应该处理哪些边界？"
             },
             {
               "title": "获取已用容量",
@@ -2057,7 +2226,10 @@
               "category": "javascript / 06-浏览器API / 存储",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "localforage-基础API",
+                "获取剩余容量"
+              ],
               "points": [
                 "localforage.iterate 可遍历当前 store 的 key/value，用于业务级容量估算",
                 "TextEncoder 可按 UTF-8 估算字符串字节数，比 length 更接近实际文本大小",
@@ -2071,7 +2243,7 @@
                 "遍历统计容量在大数据量场景有什么性能风险？",
                 "Blob、Date、循环引用等值如何影响容量估算？"
               ],
-              "searchText": "获取已用容量 通过 iterate 统计已用容量 javascript / 06-浏览器API / 存储 localforage.iterate 可遍历当前 store 的 key/value，用于业务级容量估算 TextEncoder 可按 UTF-8 估算字符串字节数，比 length 更接近实际文本大小 Blob、ArrayBuffer、Date、循环引用等类型不能只靠 JSON.stringify 统计 StorageManager.estimate 返回 origin 级用量和配额，不能直接精确到 localforage store 如何粗略统计 localforage 当前 store 已用容量？ 为什么 key.length + JSON.stringify(value).length 不是准确字节数？ StorageManager.estimate 和业务自算容量有什么区别？ 遍历统计容量在大数据量场景有什么性能风险？ Blob、Date、循环引用等值如何影响容量估算？"
+              "searchText": "获取已用容量 通过 iterate 统计已用容量 javascript / 06-浏览器API / 存储 localforage-基础API 获取剩余容量 localforage.iterate 可遍历当前 store 的 key/value，用于业务级容量估算 TextEncoder 可按 UTF-8 估算字符串字节数，比 length 更接近实际文本大小 Blob、ArrayBuffer、Date、循环引用等类型不能只靠 JSON.stringify 统计 StorageManager.estimate 返回 origin 级用量和配额，不能直接精确到 localforage store 如何粗略统计 localforage 当前 store 已用容量？ 为什么 key.length + JSON.stringify(value).length 不是准确字节数？ StorageManager.estimate 和业务自算容量有什么区别？ 遍历统计容量在大数据量场景有什么性能风险？ Blob、Date、循环引用等值如何影响容量估算？"
             },
             {
               "title": "获取剩余容量",
@@ -2080,7 +2252,10 @@
               "category": "javascript / 06-浏览器API / 存储",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "获取已用容量",
+                "封装-获取存储容量"
+              ],
               "points": [
                 "localforage.iterate 只能估算当前 store 的业务数据大小",
                 "navigator.storage.estimate 返回 origin 级 usage/quota，可粗略判断配额压力",
@@ -2094,7 +2269,7 @@
                 "容量估算在大数据量或多标签页场景有哪些误差？",
                 "项目里什么时候应该提示用户清理离线缓存？"
               ],
-              "searchText": "获取剩余容量 结合 localforage 与 StorageManager 估算剩余容量 javascript / 06-浏览器API / 存储 localforage.iterate 只能估算当前 store 的业务数据大小 navigator.storage.estimate 返回 origin 级 usage/quota，可粗略判断配额压力 剩余容量不是固定 50MB，浏览器会受设备空间、持久化策略和站点使用情况影响 TextEncoder、Blob.size、ArrayBuffer.byteLength 能减少字符数估算误差 如何估算 localforage 当前 store 还剩多少可用空间？ 为什么不能用固定 50MB 当作浏览器真实剩余容量？ StorageManager.estimate 的 usage/quota 和 localforage.iterate 有什么区别？ 容量估算在大数据量或多标签页场景有哪些误差？ 项目里什么时候应该提示用户清理离线缓存？"
+              "searchText": "获取剩余容量 结合 localforage 与 StorageManager 估算剩余容量 javascript / 06-浏览器API / 存储 获取已用容量 封装-获取存储容量 localforage.iterate 只能估算当前 store 的业务数据大小 navigator.storage.estimate 返回 origin 级 usage/quota，可粗略判断配额压力 剩余容量不是固定 50MB，浏览器会受设备空间、持久化策略和站点使用情况影响 TextEncoder、Blob.size、ArrayBuffer.byteLength 能减少字符数估算误差 如何估算 localforage 当前 store 还剩多少可用空间？ 为什么不能用固定 50MB 当作浏览器真实剩余容量？ StorageManager.estimate 的 usage/quota 和 localforage.iterate 有什么区别？ 容量估算在大数据量或多标签页场景有哪些误差？ 项目里什么时候应该提示用户清理离线缓存？"
             },
             {
               "title": "封装-获取存储容量",
@@ -2103,7 +2278,10 @@
               "category": "javascript / 06-浏览器API / 存储",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "获取剩余容量",
+                "测试最大容量"
+              ],
               "points": [
                 "容量工具应返回结构化结果，而不是依赖外部可变对象传递统计值",
                 "localforage.iterate 估算 store 已用，StorageManager.estimate 估算 origin 总配额",
@@ -2117,7 +2295,7 @@
                 "浏览器不支持 StorageManager.estimate 时如何降级？",
                 "大数据量缓存页面多久统计一次更合理？"
               ],
-              "searchText": "封装-获取存储容量 封装 localforage 容量估算工具 javascript / 06-浏览器API / 存储 容量工具应返回结构化结果，而不是依赖外部可变对象传递统计值 localforage.iterate 估算 store 已用，StorageManager.estimate 估算 origin 总配额 估算逻辑要按字符串、Blob、ArrayBuffer、对象等类型分别处理 工具函数必须捕获序列化和浏览器 API 不支持等失败路径 如何把 localforage 容量统计封装成可复用工具？ 为什么封装时不建议把统计值写进外部对象？ 工具返回的 storeUsage 和 originQuota 分别代表什么？ 浏览器不支持 StorageManager.estimate 时如何降级？ 大数据量缓存页面多久统计一次更合理？"
+              "searchText": "封装-获取存储容量 封装 localforage 容量估算工具 javascript / 06-浏览器API / 存储 获取剩余容量 测试最大容量 容量工具应返回结构化结果，而不是依赖外部可变对象传递统计值 localforage.iterate 估算 store 已用，StorageManager.estimate 估算 origin 总配额 估算逻辑要按字符串、Blob、ArrayBuffer、对象等类型分别处理 工具函数必须捕获序列化和浏览器 API 不支持等失败路径 如何把 localforage 容量统计封装成可复用工具？ 为什么封装时不建议把统计值写进外部对象？ 工具返回的 storeUsage 和 originQuota 分别代表什么？ 浏览器不支持 StorageManager.estimate 时如何降级？ 大数据量缓存页面多久统计一次更合理？"
             },
             {
               "title": "测试最大容量",
@@ -2126,7 +2304,10 @@
               "category": "javascript / 06-浏览器API / 存储",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "封装-获取存储容量",
+                "存储文件-FileReader"
+              ],
               "points": [
                 "浏览器存储配额由实现策略决定，不能依赖固定容量假设",
                 "压测应由用户手动触发、分块写入，并随时允许停止和清理",
@@ -2140,7 +2321,7 @@
                 "StorageManager.estimate 和真实写入压测各自适合什么场景？",
                 "生产项目如何避免离线缓存把用户磁盘打满？"
               ],
-              "searchText": "测试最大容量 测试 localforage 最大可写容量 javascript / 06-浏览器API / 存储 浏览器存储配额由实现策略决定，不能依赖固定容量假设 压测应由用户手动触发、分块写入，并随时允许停止和清理 QuotaExceededError 只说明当前写入失败，不等同于所有存储后端完全不可用 测试数据会占用真实本地空间，demo 必须提供失败路径和清理入口 为什么不能通过一次大对象写入准确测出最大容量？ localforage 写满时如何处理 QuotaExceededError？ 为什么容量压测要分块写入并提供清理按钮？ StorageManager.estimate 和真实写入压测各自适合什么场景？ 生产项目如何避免离线缓存把用户磁盘打满？"
+              "searchText": "测试最大容量 测试 localforage 最大可写容量 javascript / 06-浏览器API / 存储 封装-获取存储容量 存储文件-FileReader 浏览器存储配额由实现策略决定，不能依赖固定容量假设 压测应由用户手动触发、分块写入，并随时允许停止和清理 QuotaExceededError 只说明当前写入失败，不等同于所有存储后端完全不可用 测试数据会占用真实本地空间，demo 必须提供失败路径和清理入口 为什么不能通过一次大对象写入准确测出最大容量？ localforage 写满时如何处理 QuotaExceededError？ 为什么容量压测要分块写入并提供清理按钮？ StorageManager.estimate 和真实写入压测各自适合什么场景？ 生产项目如何避免离线缓存把用户磁盘打满？"
             },
             {
               "title": "存储文件-FileReader",
@@ -2149,7 +2330,10 @@
               "category": "javascript / 06-浏览器API / 存储",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "测试最大容量",
+                "localforage-基础API"
+              ],
               "points": [
                 "FileReader.readAsDataURL 会把文件读成带 MIME 前缀的 base64 data URL",
                 "base64 字符串会放大体积并占用 JS 内存，大文件更适合存 Blob 或 ArrayBuffer",
@@ -2163,7 +2347,7 @@
                 "文件读取和写入 IndexedDB 分别有哪些失败路径？",
                 "前端离线缓存用户文件时有哪些安全和隐私边界？"
               ],
-              "searchText": "存储文件-FileReader FileReader 读取文件并存入 localforage javascript / 06-浏览器API / 存储 FileReader.readAsDataURL 会把文件读成带 MIME 前缀的 base64 data URL base64 字符串会放大体积并占用 JS 内存，大文件更适合存 Blob 或 ArrayBuffer localforage 基于 IndexedDB 时可存 Blob，回退到 localStorage 时能力和容量会受限 文件读取和存储都可能失败，必须处理未选择文件、读取错误和配额错误 readAsDataURL 和 readAsArrayBuffer 存文件有什么区别？ 为什么大文件不建议先转 base64 再缓存？ localforage 存 Blob 时要注意哪些浏览器后端差异？ 文件读取和写入 IndexedDB 分别有哪些失败路径？ 前端离线缓存用户文件时有哪些安全和隐私边界？"
+              "searchText": "存储文件-FileReader FileReader 读取文件并存入 localforage javascript / 06-浏览器API / 存储 测试最大容量 localforage-基础API FileReader.readAsDataURL 会把文件读成带 MIME 前缀的 base64 data URL base64 字符串会放大体积并占用 JS 内存，大文件更适合存 Blob 或 ArrayBuffer localforage 基于 IndexedDB 时可存 Blob，回退到 localStorage 时能力和容量会受限 文件读取和存储都可能失败，必须处理未选择文件、读取错误和配额错误 readAsDataURL 和 readAsArrayBuffer 存文件有什么区别？ 为什么大文件不建议先转 base64 再缓存？ localforage 存 Blob 时要注意哪些浏览器后端差异？ 文件读取和写入 IndexedDB 分别有哪些失败路径？ 前端离线缓存用户文件时有哪些安全和隐私边界？"
             }
           ]
         },
@@ -2177,10 +2361,13 @@
               "category": "javascript / 06-浏览器API / 事件模型",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "dom事件-冒泡捕获委托",
+                "Node与浏览器事件循环对比"
+              ],
               "points": [
                 "一段脚本先作为任务执行，调用栈清空后浏览器才执行微任务队列",
-                "Promise.then、queueMicrotask 和 await 后续代码都会进入微任务队列",
+                "Promise.then、queueMicrotask 与 await 后续都会进入微任务队列，同轮按入队顺序清空",
                 "setTimeout 回调是后续任务，必须等当前任务和本轮微任务清空后才执行",
                 "async 函数在 await 前同步执行，await 后的 continuation 按 Promise 反应处理"
               ],
@@ -2191,7 +2378,7 @@
                 "queueMicrotask 与 Promise.then 适合解决什么调度问题？",
                 "微任务过多会给渲染和用户交互带来什么风险？"
               ],
-              "searchText": "事件循环 事件循环综合（同步 + Promise + async/await + setTimeout） javascript / 06-浏览器API / 事件模型 一段脚本先作为任务执行，调用栈清空后浏览器才执行微任务队列 Promise.then、queueMicrotask 和 await 后续代码都会进入微任务队列 setTimeout 回调是后续任务，必须等当前任务和本轮微任务清空后才执行 async 函数在 await 前同步执行，await 后的 continuation 按 Promise 反应处理 这段同步、Promise、async/await、setTimeout 混合代码输出顺序是什么？ await 后面的代码为什么会晚于当前同步代码？ Promise 微任务为什么会先于 setTimeout(0)？ queueMicrotask 与 Promise.then 适合解决什么调度问题？ 微任务过多会给渲染和用户交互带来什么风险？"
+              "searchText": "事件循环 事件循环综合（同步 + Promise + async/await + setTimeout） javascript / 06-浏览器API / 事件模型 dom事件-冒泡捕获委托 Node与浏览器事件循环对比 一段脚本先作为任务执行，调用栈清空后浏览器才执行微任务队列 Promise.then、queueMicrotask 与 await 后续都会进入微任务队列，同轮按入队顺序清空 setTimeout 回调是后续任务，必须等当前任务和本轮微任务清空后才执行 async 函数在 await 前同步执行，await 后的 continuation 按 Promise 反应处理 这段同步、Promise、async/await、setTimeout 混合代码输出顺序是什么？ await 后面的代码为什么会晚于当前同步代码？ Promise 微任务为什么会先于 setTimeout(0)？ queueMicrotask 与 Promise.then 适合解决什么调度问题？ 微任务过多会给渲染和用户交互带来什么风险？"
             },
             {
               "title": "dom事件-冒泡捕获委托",
@@ -2200,7 +2387,10 @@
               "category": "javascript / 06-浏览器API / 事件模型",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "事件循环",
+                "Node与浏览器事件循环对比"
+              ],
               "points": [
                 "DOM 事件传播通常经历捕获、目标、冒泡三个阶段，监听选项决定在哪个阶段触发",
                 "stopPropagation 只阻止继续传播，stopImmediatePropagation 还会阻止同元素后续监听器",
@@ -2214,7 +2404,7 @@
                 "addEventListener 第三个参数从 boolean 到 options 有哪些常用配置？",
                 "事件委托处理用户生成内容时要注意什么？"
               ],
-              "searchText": "dom事件-冒泡捕获委托 DOM 事件流：捕获、目标、冒泡与事件委托 javascript / 06-浏览器API / 事件模型 DOM 事件传播通常经历捕获、目标、冒泡三个阶段，监听选项决定在哪个阶段触发 stopPropagation 只阻止继续传播，stopImmediatePropagation 还会阻止同元素后续监听器 事件委托依赖冒泡和 target/closest，适合动态列表但要校验命中范围 passive、once、capture 等 addEventListener 选项会影响默认行为、清理与触发顺序 DOM 事件捕获和冒泡的执行顺序是什么？ stopPropagation 与 stopImmediatePropagation 有什么区别？ 事件委托为什么适合动态列表？ addEventListener 第三个参数从 boolean 到 options 有哪些常用配置？ 事件委托处理用户生成内容时要注意什么？"
+              "searchText": "dom事件-冒泡捕获委托 DOM 事件流：捕获、目标、冒泡与事件委托 javascript / 06-浏览器API / 事件模型 事件循环 Node与浏览器事件循环对比 DOM 事件传播通常经历捕获、目标、冒泡三个阶段，监听选项决定在哪个阶段触发 stopPropagation 只阻止继续传播，stopImmediatePropagation 还会阻止同元素后续监听器 事件委托依赖冒泡和 target/closest，适合动态列表但要校验命中范围 passive、once、capture 等 addEventListener 选项会影响默认行为、清理与触发顺序 DOM 事件捕获和冒泡的执行顺序是什么？ stopPropagation 与 stopImmediatePropagation 有什么区别？ 事件委托为什么适合动态列表？ addEventListener 第三个参数从 boolean 到 options 有哪些常用配置？ 事件委托处理用户生成内容时要注意什么？"
             },
             {
               "title": "Node与浏览器事件循环对比",
@@ -2254,7 +2444,10 @@
               "category": "javascript / 06-浏览器API / 拖曳手柄",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "悬浮侧栏拖拽",
+                "dom事件-冒泡捕获委托"
+              ],
               "points": [
                 "mousedown 起点 → mousemove 计算偏移 → mouseup 解绑事件，是拖拽三段经典写法",
                 "拖拽中禁用 transition、阻止文本选中，避免宽度变化滞后或误选内容",
@@ -2268,7 +2461,7 @@
                 "为什么要限制侧栏最小和最大宽度？",
                 "Mouse Events 和 Pointer Events 在拖拽交互里如何选？"
               ],
-              "searchText": "贴边侧栏拖拽 拖拽调整侧栏宽度（Vue3 + requestAnimationFrame 版） javascript / 06-浏览器API / 拖曳手柄 mousedown 起点 → mousemove 计算偏移 → mouseup 解绑事件，是拖拽三段经典写法 拖拽中禁用 transition、阻止文本选中，避免宽度变化滞后或误选内容 requestAnimationFrame 只在下一帧提交最新宽度，避免 mousemove 高频触发渲染 生产项目优先考虑 Pointer Events，以覆盖鼠标、触摸和触控笔 拖拽调整宽度为什么要把 move/up 监听绑到 document？ requestAnimationFrame 在拖拽节流里解决什么问题？ 拖拽过程中为什么要禁用 transition 并阻止默认行为？ 为什么要限制侧栏最小和最大宽度？ Mouse Events 和 Pointer Events 在拖拽交互里如何选？"
+              "searchText": "贴边侧栏拖拽 拖拽调整侧栏宽度（Vue3 + requestAnimationFrame 版） javascript / 06-浏览器API / 拖曳手柄 悬浮侧栏拖拽 dom事件-冒泡捕获委托 mousedown 起点 → mousemove 计算偏移 → mouseup 解绑事件，是拖拽三段经典写法 拖拽中禁用 transition、阻止文本选中，避免宽度变化滞后或误选内容 requestAnimationFrame 只在下一帧提交最新宽度，避免 mousemove 高频触发渲染 生产项目优先考虑 Pointer Events，以覆盖鼠标、触摸和触控笔 拖拽调整宽度为什么要把 move/up 监听绑到 document？ requestAnimationFrame 在拖拽节流里解决什么问题？ 拖拽过程中为什么要禁用 transition 并阻止默认行为？ 为什么要限制侧栏最小和最大宽度？ Mouse Events 和 Pointer Events 在拖拽交互里如何选？"
             },
             {
               "title": "悬浮侧栏拖拽",
@@ -2277,7 +2470,9 @@
               "category": "javascript / 06-浏览器API / 拖曳手柄",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "贴边侧栏拖拽"
+              ],
               "points": [
                 "固定定位侧栏带外边距时，主内容 margin-left 要同时补偿侧栏宽度和页面间距",
                 "width 与 margin-left 变化会触发布局，requestAnimationFrame 只能合帧提交，不能消除重排",
@@ -2291,7 +2486,7 @@
                 "requestAnimationFrame 能否避免重排？",
                 "可调整布局组件有哪些可访问性和移动端边界？"
               ],
-              "searchText": "悬浮侧栏拖拽 悬浮侧栏拖拽 V2（带圆角与外边距） javascript / 06-浏览器API / 拖曳手柄 固定定位侧栏带外边距时，主内容 margin-left 要同时补偿侧栏宽度和页面间距 width 与 margin-left 变化会触发布局，requestAnimationFrame 只能合帧提交，不能消除重排 will-change 不是 GPU 加速开关，长期滥用会增加内存和图层管理成本 拖拽手柄要处理阻止默认行为、全局解绑和宽度边界 带外边距的 fixed 侧栏为什么要额外补偿主内容位置？ 拖拽中改 width 和 margin-left 会触发哪些渲染阶段？ will-change 应该如何谨慎使用？ requestAnimationFrame 能否避免重排？ 可调整布局组件有哪些可访问性和移动端边界？"
+              "searchText": "悬浮侧栏拖拽 悬浮侧栏拖拽 V2（带圆角与外边距） javascript / 06-浏览器API / 拖曳手柄 贴边侧栏拖拽 固定定位侧栏带外边距时，主内容 margin-left 要同时补偿侧栏宽度和页面间距 width 与 margin-left 变化会触发布局，requestAnimationFrame 只能合帧提交，不能消除重排 will-change 不是 GPU 加速开关，长期滥用会增加内存和图层管理成本 拖拽手柄要处理阻止默认行为、全局解绑和宽度边界 带外边距的 fixed 侧栏为什么要额外补偿主内容位置？ 拖拽中改 width 和 margin-left 会触发哪些渲染阶段？ will-change 应该如何谨慎使用？ requestAnimationFrame 能否避免重排？ 可调整布局组件有哪些可访问性和移动端边界？"
             }
           ]
         },
@@ -2305,7 +2500,10 @@
               "category": "javascript / 06-浏览器API / BOM",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "history",
+                "DOM操作"
+              ],
               "points": [
                 "URL 片段标识符（# 后内容）变化不会向服务器重新请求页面",
                 "hashchange 只响应片段变化，是 hash 路由更新视图的核心事件",
@@ -2318,7 +2516,7 @@
                 "location.hash 赋值和 location.replace(\"#/...\") 对历史栈有什么区别？",
                 "hash 路由和 History 路由在部署与用户体验上如何取舍？"
               ],
-              "searchText": "hash hash 路由的基本演示 javascript / 06-浏览器API / BOM URL 片段标识符（# 后内容）变化不会向服务器重新请求页面 hashchange 只响应片段变化，是 hash 路由更新视图的核心事件 location.hash 会新增历史记录，location.replace(\"#/...\") 会替换当前记录 hash 路由不依赖服务端 fallback，但 URL 语义和 SEO 通常弱于 History 路由 hash 路由为什么切换页面时不会刷新整页？ hashchange 和 popstate 分别适合监听哪类导航？ location.hash 赋值和 location.replace(\"#/...\") 对历史栈有什么区别？ hash 路由和 History 路由在部署与用户体验上如何取舍？"
+              "searchText": "hash hash 路由的基本演示 javascript / 06-浏览器API / BOM history DOM操作 URL 片段标识符（# 后内容）变化不会向服务器重新请求页面 hashchange 只响应片段变化，是 hash 路由更新视图的核心事件 location.hash 会新增历史记录，location.replace(\"#/...\") 会替换当前记录 hash 路由不依赖服务端 fallback，但 URL 语义和 SEO 通常弱于 History 路由 hash 路由为什么切换页面时不会刷新整页？ hashchange 和 popstate 分别适合监听哪类导航？ location.hash 赋值和 location.replace(\"#/...\") 对历史栈有什么区别？ hash 路由和 History 路由在部署与用户体验上如何取舍？"
             },
             {
               "title": "history",
@@ -2327,7 +2525,10 @@
               "category": "javascript / 06-浏览器API / BOM",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "hash",
+                "DOM操作"
+              ],
               "points": [
                 "pushState 追加同源历史记录，replaceState 替换当前历史记录",
                 "state 对象会随历史记录保存，并在 popstate 的 event.state 中取回",
@@ -2340,7 +2541,7 @@
                 "history state 有哪些同源、序列化和容量边界？",
                 "History 路由为什么需要服务端 fallback？"
               ],
-              "searchText": "history history pushState / replaceState 与 popstate javascript / 06-浏览器API / BOM pushState 追加同源历史记录，replaceState 替换当前历史记录 state 对象会随历史记录保存，并在 popstate 的 event.state 中取回 pushState / replaceState 本身不会触发 popstate，前进后退才会触发 History 路由刷新深层路径需要服务端 fallback 到入口 HTML pushState 和 replaceState 对历史栈的影响有什么区别？ 为什么调用 pushState 后不会立即触发 popstate？ history state 有哪些同源、序列化和容量边界？ History 路由为什么需要服务端 fallback？"
+              "searchText": "history history pushState / replaceState 与 popstate javascript / 06-浏览器API / BOM hash DOM操作 pushState 追加同源历史记录，replaceState 替换当前历史记录 state 对象会随历史记录保存，并在 popstate 的 event.state 中取回 pushState / replaceState 本身不会触发 popstate，前进后退才会触发 History 路由刷新深层路径需要服务端 fallback 到入口 HTML pushState 和 replaceState 对历史栈的影响有什么区别？ 为什么调用 pushState 后不会立即触发 popstate？ history state 有哪些同源、序列化和容量边界？ History 路由为什么需要服务端 fallback？"
             }
           ]
         },
@@ -2354,7 +2555,10 @@
               "category": "javascript / 06-浏览器API / toolTips",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "dom事件-冒泡捕获委托",
+                "Worker-基础与子脚本"
+              ],
               "points": [
                 "mouseenter/mouseleave 不冒泡，适合触发区与浮层之间的悬停状态控制",
                 "focusin/focusout 让键盘用户也能打开浮层，并用 relatedTarget 判断焦点是否仍在容器内",
@@ -2368,7 +2572,7 @@
                 "ARIA tooltip 与包含按钮的 popover 有什么边界？",
                 "延迟隐藏定时器有哪些竞态风险？"
               ],
-              "searchText": "index Vue3 实现悬停与键盘可访问的交互浮层 javascript / 06-浏览器API / toolTips mouseenter/mouseleave 不冒泡，适合触发区与浮层之间的悬停状态控制 focusin/focusout 让键盘用户也能打开浮层，并用 relatedTarget 判断焦点是否仍在容器内 交互内容不应标成纯 ARIA tooltip；包含按钮时更接近非模态 popover/dialog 延迟隐藏需要清理旧定时器，避免鼠标快速移动时出现闪烁或状态竞态 可交互 Tooltip 为什么不能只靠 :hover？ mouseenter/mouseleave 与 mouseover/mouseout 如何选？ 交互浮层为什么要补 focusin/focusout？ ARIA tooltip 与包含按钮的 popover 有什么边界？ 延迟隐藏定时器有哪些竞态风险？"
+              "searchText": "index Vue3 实现悬停与键盘可访问的交互浮层 javascript / 06-浏览器API / toolTips dom事件-冒泡捕获委托 Worker-基础与子脚本 mouseenter/mouseleave 不冒泡，适合触发区与浮层之间的悬停状态控制 focusin/focusout 让键盘用户也能打开浮层，并用 relatedTarget 判断焦点是否仍在容器内 交互内容不应标成纯 ARIA tooltip；包含按钮时更接近非模态 popover/dialog 延迟隐藏需要清理旧定时器，避免鼠标快速移动时出现闪烁或状态竞态 可交互 Tooltip 为什么不能只靠 :hover？ mouseenter/mouseleave 与 mouseover/mouseout 如何选？ 交互浮层为什么要补 focusin/focusout？ ARIA tooltip 与包含按钮的 popover 有什么边界？ 延迟隐藏定时器有哪些竞态风险？"
             }
           ]
         },
@@ -2382,7 +2586,9 @@
               "category": "javascript / 06-浏览器API / WebWorker / 01-基础",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "Worker-命名与消息分发"
+              ],
               "points": [
                 "Worker 在独立全局作用域运行，适合把 CPU 密集计算移出主线程",
                 "主线程与 worker 只能通过 postMessage/message 事件交换结构化克隆数据",
@@ -2395,7 +2601,7 @@
                 "importScripts() 与 module worker 的 import 有什么区别？",
                 "terminate() 和 self.close() 分别适合在哪一侧调用？"
               ],
-              "searchText": "Worker-基础与子脚本 Worker 基础与子脚本 javascript / 06-浏览器API / WebWorker / 01-基础 Worker 在独立全局作用域运行，适合把 CPU 密集计算移出主线程 主线程与 worker 只能通过 postMessage/message 事件交换结构化克隆数据 importScripts() 只能在 classic worker 中同步加载子脚本，module worker 应改用 import 主线程用 terminate() 结束 worker，worker 内部可用 self.close() 主动关闭 Web Worker 能解决什么问题，不能直接操作哪些浏览器对象？ postMessage 为什么不能传函数或 DOM 节点，大数据传输如何优化？ importScripts() 与 module worker 的 import 有什么区别？ terminate() 和 self.close() 分别适合在哪一侧调用？"
+              "searchText": "Worker-基础与子脚本 Worker 基础与子脚本 javascript / 06-浏览器API / WebWorker / 01-基础 Worker-命名与消息分发 Worker 在独立全局作用域运行，适合把 CPU 密集计算移出主线程 主线程与 worker 只能通过 postMessage/message 事件交换结构化克隆数据 importScripts() 只能在 classic worker 中同步加载子脚本，module worker 应改用 import 主线程用 terminate() 结束 worker，worker 内部可用 self.close() 主动关闭 Web Worker 能解决什么问题，不能直接操作哪些浏览器对象？ postMessage 为什么不能传函数或 DOM 节点，大数据传输如何优化？ importScripts() 与 module worker 的 import 有什么区别？ terminate() 和 self.close() 分别适合在哪一侧调用？"
             }
           ]
         },
@@ -2409,7 +2615,9 @@
               "category": "javascript / 06-浏览器API / WebWorker / 02-命名与消息分发",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "Worker-基础与子脚本"
+              ],
               "points": [
                 "new Worker(path, { name }) 可给 worker 调试上下文命名，便于区分多个后台任务",
                 "主线程用 { task, data } 这类消息协议分发任务，worker 返回 task/state/data 驱动 UI",
@@ -2422,7 +2630,7 @@
                 "如何避免 CPU 密集任务卡住 UI 或耗尽浏览器资源？",
                 "Worker 与 setTimeout 分片、requestIdleCallback 的选型边界是什么？"
               ],
-              "searchText": "Worker-命名与消息分发 给 Worker 命名 + 用消息体分发不同任务 javascript / 06-浏览器API / WebWorker / 02-命名与消息分发 new Worker(path, { name }) 可给 worker 调试上下文命名，便于区分多个后台任务 主线程用 { task, data } 这类消息协议分发任务，worker 返回 task/state/data 驱动 UI CPU 密集任务应放入 worker，主线程只负责启动、取消、展示结果和错误处理 terminate() 后同一个 Worker 实例不可复用，需要重新 new Worker 才能再次启动任务 Worker 的 name 选项解决什么调试问题？ 多任务 worker 为什么要设计消息协议，而不是只传裸值？ 如何避免 CPU 密集任务卡住 UI 或耗尽浏览器资源？ Worker 与 setTimeout 分片、requestIdleCallback 的选型边界是什么？"
+              "searchText": "Worker-命名与消息分发 给 Worker 命名 + 用消息体分发不同任务 javascript / 06-浏览器API / WebWorker / 02-命名与消息分发 Worker-基础与子脚本 new Worker(path, { name }) 可给 worker 调试上下文命名，便于区分多个后台任务 主线程用 { task, data } 这类消息协议分发任务，worker 返回 task/state/data 驱动 UI CPU 密集任务应放入 worker，主线程只负责启动、取消、展示结果和错误处理 terminate() 后同一个 Worker 实例不可复用，需要重新 new Worker 才能再次启动任务 Worker 的 name 选项解决什么调试问题？ 多任务 worker 为什么要设计消息协议，而不是只传裸值？ 如何避免 CPU 密集任务卡住 UI 或耗尽浏览器资源？ Worker 与 setTimeout 分片、requestIdleCallback 的选型边界是什么？"
             }
           ]
         },
@@ -2434,9 +2642,12 @@
               "href": "apps/javascript/07-%E8%BF%9B%E9%98%B6/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6.html",
               "theme": "垃圾回收、可达性、标记清除与分代回收",
               "category": "javascript / 07-进阶",
-              "difficulty": "",
+              "difficulty": "进阶",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "内存泄漏/index",
+                "深拷贝"
+              ],
               "points": [
                 "JavaScript 自动管理内存，但 GC 只能回收从根对象不可达的对象",
                 "标记清除能处理整体不可达的循环引用，引用计数无法单独解决循环",
@@ -2449,16 +2660,18 @@
                 "WeakMap 和 Map 在内存保留上的关键区别是什么？",
                 "项目里哪些引用最容易造成对象无法回收？"
               ],
-              "searchText": "垃圾回收 垃圾回收、可达性、标记清除与分代回收 javascript / 07-进阶 JavaScript 自动管理内存，但 GC 只能回收从根对象不可达的对象 标记清除能处理整体不可达的循环引用，引用计数无法单独解决循环 闭包、全局变量、定时器和事件监听都可能让对象意外保活 WeakMap / WeakSet 弱持有对象键或对象值，适合关联元数据和访问记录 JavaScript 的垃圾回收为什么通常按可达性判断？ 标记清除为什么能回收循环引用？ WeakMap 和 Map 在内存保留上的关键区别是什么？ 项目里哪些引用最容易造成对象无法回收？"
+              "searchText": "垃圾回收 垃圾回收、可达性、标记清除与分代回收 javascript / 07-进阶 进阶 内存泄漏/index 深拷贝 JavaScript 自动管理内存，但 GC 只能回收从根对象不可达的对象 标记清除能处理整体不可达的循环引用，引用计数无法单独解决循环 闭包、全局变量、定时器和事件监听都可能让对象意外保活 WeakMap / WeakSet 弱持有对象键或对象值，适合关联元数据和访问记录 JavaScript 的垃圾回收为什么通常按可达性判断？ 标记清除为什么能回收循环引用？ WeakMap 和 Map 在内存保留上的关键区别是什么？ 项目里哪些引用最容易造成对象无法回收？"
             },
             {
               "title": "深拷贝",
               "href": "apps/javascript/07-%E8%BF%9B%E9%98%B6/%E6%B7%B1%E6%8B%B7%E8%B4%9D.html",
               "theme": "浅拷贝 vs 深拷贝",
               "category": "javascript / 07-进阶",
-              "difficulty": "",
+              "difficulty": "进阶",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "垃圾回收"
+              ],
               "points": [
                 "浅拷贝只复制第一层属性值，嵌套对象、数组、Map 值仍共享引用",
                 "JSON 序列化深拷贝会丢失 undefined、函数、Symbol，Date 会变字符串，循环引用会报错",
@@ -2471,7 +2684,7 @@
                 "structuredClone 相比手写 deepClone 适合什么场景？",
                 "深拷贝在状态管理里为什么不总是最佳方案？"
               ],
-              "searchText": "深拷贝 浅拷贝 vs 深拷贝 javascript / 07-进阶 浅拷贝只复制第一层属性值，嵌套对象、数组、Map 值仍共享引用 JSON 序列化深拷贝会丢失 undefined、函数、Symbol，Date 会变字符串，循环引用会报错 structuredClone 使用结构化克隆算法，能处理 Date、RegExp、Map、Set、循环引用，但不能克隆函数和 DOM 节点 手写 deepClone 需要处理循环引用、内置对象、Symbol 键和原型，但属性描述符、getter/setter 是常见遗漏点 Object.assign 和展开运算符为什么不是深拷贝？ JSON.parse(JSON.stringify()) 做深拷贝会丢哪些类型？ structuredClone 相比手写 deepClone 适合什么场景？ 深拷贝在状态管理里为什么不总是最佳方案？"
+              "searchText": "深拷贝 浅拷贝 vs 深拷贝 javascript / 07-进阶 进阶 垃圾回收 浅拷贝只复制第一层属性值，嵌套对象、数组、Map 值仍共享引用 JSON 序列化深拷贝会丢失 undefined、函数、Symbol，Date 会变字符串，循环引用会报错 structuredClone 使用结构化克隆算法，能处理 Date、RegExp、Map、Set、循环引用，但不能克隆函数和 DOM 节点 手写 deepClone 需要处理循环引用、内置对象、Symbol 键和原型，但属性描述符、getter/setter 是常见遗漏点 Object.assign 和展开运算符为什么不是深拷贝？ JSON.parse(JSON.stringify()) 做深拷贝会丢哪些类型？ structuredClone 相比手写 deepClone 适合什么场景？ 深拷贝在状态管理里为什么不总是最佳方案？"
             },
             {
               "title": "无障碍-a11y",
@@ -2505,9 +2718,12 @@
               "href": "apps/javascript/07-%E8%BF%9B%E9%98%B6/%E5%AE%89%E5%85%A8/XSS%E4%B8%8ECSRF.html",
               "theme": "XSS 与 CSRF 防护",
               "category": "javascript / 07-进阶 / 安全",
-              "difficulty": "",
+              "difficulty": "进阶",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "无障碍-a11y",
+                "内存泄漏/index"
+              ],
               "points": [
                 "XSS 是把不可信数据送进可执行上下文，优先用上下文转义和安全 DOM sink 防护",
                 "DOM XSS 中 innerHTML 属于危险 sink，纯文本输出应使用 textContent 或 createTextNode",
@@ -2520,7 +2736,7 @@
                 "SameSite、CSRF Token、Origin/Referer 分别解决什么问题？",
                 "CSP 和 HttpOnly 为什么只能作为纵深防御？"
               ],
-              "searchText": "XSS与CSRF XSS 与 CSRF 防护 javascript / 07-进阶 / 安全 XSS 是把不可信数据送进可执行上下文，优先用上下文转义和安全 DOM sink 防护 DOM XSS 中 innerHTML 属于危险 sink，纯文本输出应使用 textContent 或 createTextNode CSRF 利用浏览器自动携带凭据发起跨站状态变更请求，服务端必须校验来源或 token CSP、HttpOnly、SameSite 是纵深防御，不能替代输出编码和服务端授权校验 XSS 和 CSRF 的攻击目标有什么本质区别？ 为什么不可信输入不能直接写入 innerHTML？ SameSite、CSRF Token、Origin/Referer 分别解决什么问题？ CSP 和 HttpOnly 为什么只能作为纵深防御？"
+              "searchText": "XSS与CSRF XSS 与 CSRF 防护 javascript / 07-进阶 / 安全 进阶 无障碍-a11y 内存泄漏/index XSS 是把不可信数据送进可执行上下文，优先用上下文转义和安全 DOM sink 防护 DOM XSS 中 innerHTML 属于危险 sink，纯文本输出应使用 textContent 或 createTextNode CSRF 利用浏览器自动携带凭据发起跨站状态变更请求，服务端必须校验来源或 token CSP、HttpOnly、SameSite 是纵深防御，不能替代输出编码和服务端授权校验 XSS 和 CSRF 的攻击目标有什么本质区别？ 为什么不可信输入不能直接写入 innerHTML？ SameSite、CSRF Token、Origin/Referer 分别解决什么问题？ CSP 和 HttpOnly 为什么只能作为纵深防御？"
             }
           ]
         },
@@ -2532,9 +2748,12 @@
               "href": "apps/javascript/07-%E8%BF%9B%E9%98%B6/%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/index.html",
               "theme": "全局大对象引用导致的内存占用",
               "category": "javascript / 07-进阶 / 内存泄漏",
-              "difficulty": "",
+              "difficulty": "进阶",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "垃圾回收",
+                "leakSuccess"
+              ],
               "points": [
                 "JavaScript GC 基于可达性，只要对象仍能从根对象访问就不能回收",
                 "顶层 var 会成为全局对象属性，顶层 const 属于全局词法环境，二者都可能长期持有大对象",
@@ -2547,16 +2766,19 @@
                 "如何用 DevTools 判断某个大对象仍被谁引用？",
                 "业务里如何避免缓存、单例或调试变量演变成内存泄漏？"
               ],
-              "searchText": "index 全局大对象引用导致的内存占用 javascript / 07-进阶 / 内存泄漏 JavaScript GC 基于可达性，只要对象仍能从根对象访问就不能回收 顶层 var 会成为全局对象属性，顶层 const 属于全局词法环境，二者都可能长期持有大对象 不再需要的大数组应缩短作用域或清空引用，而不是依赖立即触发 GC DevTools Memory 面板可用 Heap snapshot 和 retainers 定位谁持有对象 为什么全局变量引用的大对象不会被垃圾回收？ 顶层 var 和顶层 const 在内存保留上有什么差异与共同风险？ 如何用 DevTools 判断某个大对象仍被谁引用？ 业务里如何避免缓存、单例或调试变量演变成内存泄漏？"
+              "searchText": "index 全局大对象引用导致的内存占用 javascript / 07-进阶 / 内存泄漏 进阶 垃圾回收 leakSuccess JavaScript GC 基于可达性，只要对象仍能从根对象访问就不能回收 顶层 var 会成为全局对象属性，顶层 const 属于全局词法环境，二者都可能长期持有大对象 不再需要的大数组应缩短作用域或清空引用，而不是依赖立即触发 GC DevTools Memory 面板可用 Heap snapshot 和 retainers 定位谁持有对象 为什么全局变量引用的大对象不会被垃圾回收？ 顶层 var 和顶层 const 在内存保留上有什么差异与共同风险？ 如何用 DevTools 判断某个大对象仍被谁引用？ 业务里如何避免缓存、单例或调试变量演变成内存泄漏？"
             },
             {
               "title": "leakSuccess",
               "href": "apps/javascript/07-%E8%BF%9B%E9%98%B6/%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/leakSuccess.html",
               "theme": "通过手动置 null 释放闭包引用",
               "category": "javascript / 07-进阶 / 内存泄漏",
-              "difficulty": "",
+              "difficulty": "进阶",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "内存泄漏/index",
+                "timeline"
+              ],
               "points": [
                 "闭包会让函数保留对其词法环境的引用，捕获的大对象可能随函数长期存活",
                 "把保存闭包的变量置为 null 可以断开最后一条强引用，让对象变为可回收",
@@ -2569,16 +2791,19 @@
                 "为什么置 null 后内存不一定立刻下降？",
                 "在组件、事件监听和定时器场景中如何清理闭包引用？"
               ],
-              "searchText": "leakSuccess 通过手动置 null 释放闭包引用 javascript / 07-进阶 / 内存泄漏 闭包会让函数保留对其词法环境的引用，捕获的大对象可能随函数长期存活 把保存闭包的变量置为 null 可以断开最后一条强引用，让对象变为可回收 置 null 只是解除可达性，不保证立即触发 GC 或马上降低任务管理器内存 用 Heap snapshot 对比置 null 前后的 retainers，可验证引用链是否断开 闭包为什么可能让大对象长期留在内存中？ 把闭包变量置为 null 到底释放了什么？ 为什么置 null 后内存不一定立刻下降？ 在组件、事件监听和定时器场景中如何清理闭包引用？"
+              "searchText": "leakSuccess 通过手动置 null 释放闭包引用 javascript / 07-进阶 / 内存泄漏 进阶 内存泄漏/index timeline 闭包会让函数保留对其词法环境的引用，捕获的大对象可能随函数长期存活 把保存闭包的变量置为 null 可以断开最后一条强引用，让对象变为可回收 置 null 只是解除可达性，不保证立即触发 GC 或马上降低任务管理器内存 用 Heap snapshot 对比置 null 前后的 retainers，可验证引用链是否断开 闭包为什么可能让大对象长期留在内存中？ 把闭包变量置为 null 到底释放了什么？ 为什么置 null 后内存不一定立刻下降？ 在组件、事件监听和定时器场景中如何清理闭包引用？"
             },
             {
               "title": "timeline",
               "href": "apps/javascript/07-%E8%BF%9B%E9%98%B6/%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/timeline.html",
               "theme": "用 Performance 面板观察 DOM 节点 + 内存增长",
               "category": "javascript / 07-进阶 / 内存泄漏",
-              "difficulty": "",
+              "difficulty": "进阶",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "内存泄漏/leakSuccess",
+                "垃圾回收"
+              ],
               "points": [
                 "不断 appendChild 且不清理会让页面 DOM 节点数和渲染成本持续增长",
                 "Array.concat 反复合并大数组会制造新数组并增加 JS heap 压力",
@@ -2591,7 +2816,7 @@
                 "反复 concat 大数组为什么会带来 GC 压力？",
                 "线上页面发现内存曲线持续上升时如何定位根因？"
               ],
-              "searchText": "timeline 用 Performance 面板观察 DOM 节点 + 内存增长 javascript / 07-进阶 / 内存泄漏 不断 appendChild 且不清理会让页面 DOM 节点数和渲染成本持续增长 Array.concat 反复合并大数组会制造新数组并增加 JS heap 压力 Performance Monitor 可实时观察 JS heap、DOM Nodes、CPU 等指标变化 Memory 面板适合继续用 Heap snapshot 分析增长对象的 retainers 如何用 Performance Monitor 判断 DOM 节点和 JS heap 是否持续增长？ appendChild 增加的是已连接 DOM，和 Detached DOM 泄漏有什么区别？ 反复 concat 大数组为什么会带来 GC 压力？ 线上页面发现内存曲线持续上升时如何定位根因？"
+              "searchText": "timeline 用 Performance 面板观察 DOM 节点 + 内存增长 javascript / 07-进阶 / 内存泄漏 进阶 内存泄漏/leakSuccess 垃圾回收 不断 appendChild 且不清理会让页面 DOM 节点数和渲染成本持续增长 Array.concat 反复合并大数组会制造新数组并增加 JS heap 压力 Performance Monitor 可实时观察 JS heap、DOM Nodes、CPU 等指标变化 Memory 面板适合继续用 Heap snapshot 分析增长对象的 retainers 如何用 Performance Monitor 判断 DOM 节点和 JS heap 是否持续增长？ appendChild 增加的是已连接 DOM，和 Detached DOM 泄漏有什么区别？ 反复 concat 大数组为什么会带来 GC 压力？ 线上页面发现内存曲线持续上升时如何定位根因？"
             }
           ]
         },
@@ -2603,9 +2828,11 @@
               "href": "apps/javascript/07-%E8%BF%9B%E9%98%B6/%E6%89%8B%E5%86%99Promise/promiseAll.html",
               "theme": "手写 Promise.all",
               "category": "javascript / 07-进阶 / 手写Promise",
-              "difficulty": "",
-              "prerequisite": "",
-              "related": [],
+              "difficulty": "面试",
+              "prerequisite": "Promise-all并发与then串行",
+              "related": [
+                "资源预加载/index"
+              ],
               "points": [
                 "Promise.all 接收 iterable，返回一个聚合 Promise",
                 "空 iterable 立即 fulfilled；非空输入按传入顺序收集结果，而不是完成顺序",
@@ -2618,7 +2845,7 @@
                 "Promise.all 的 fail-fast 行为和 allSettled 有什么区别？",
                 "空数组、普通值、thenable、非 iterable 输入分别怎么处理？"
               ],
-              "searchText": "promiseAll 手写 Promise.all javascript / 07-进阶 / 手写Promise Promise.all 接收 iterable，返回一个聚合 Promise 空 iterable 立即 fulfilled；非空输入按传入顺序收集结果，而不是完成顺序 任一输入 rejected 时整体 fail-fast rejected，原因使用第一个拒绝原因 手写时要用 Promise.resolve 吸收普通值或 thenable，并用计数器避免稀疏数组 length 陷阱 Promise.all 为什么结果顺序按输入顺序而不是完成顺序？ 手写 Promise.all 时为什么要用独立完成计数器？ Promise.all 的 fail-fast 行为和 allSettled 有什么区别？ 空数组、普通值、thenable、非 iterable 输入分别怎么处理？"
+              "searchText": "promiseAll 手写 Promise.all javascript / 07-进阶 / 手写Promise 面试 Promise-all并发与then串行 资源预加载/index Promise.all 接收 iterable，返回一个聚合 Promise 空 iterable 立即 fulfilled；非空输入按传入顺序收集结果，而不是完成顺序 任一输入 rejected 时整体 fail-fast rejected，原因使用第一个拒绝原因 手写时要用 Promise.resolve 吸收普通值或 thenable，并用计数器避免稀疏数组 length 陷阱 Promise.all 为什么结果顺序按输入顺序而不是完成顺序？ 手写 Promise.all 时为什么要用独立完成计数器？ Promise.all 的 fail-fast 行为和 allSettled 有什么区别？ 空数组、普通值、thenable、非 iterable 输入分别怎么处理？"
             }
           ]
         },
@@ -2630,22 +2857,25 @@
               "href": "apps/javascript/07-%E8%BF%9B%E9%98%B6/%E8%B5%84%E6%BA%90%E9%A2%84%E5%8A%A0%E8%BD%BD/index.html",
               "theme": "用 new Image / new Audio 触发浏览器预加载",
               "category": "javascript / 07-进阶 / 资源预加载",
-              "difficulty": "",
+              "difficulty": "进阶",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "promiseAll",
+                "UMD插件模式/index"
+              ],
               "points": [
                 "new Image() / new Audio() 离屏设置 src 会触发资源请求，可在进入业务渲染前预热缓存",
                 "预加载进度只能按已完成资源数估算，不能代表字节级下载百分比",
                 "失败资源也要推进进度并暴露错误，否则进度条可能永久卡住",
-                "资源预加载受 HTTP 缓存、CORS、优先级和用户网络影响，不等同于强制缓存"
+                "预加载受 HTTP 缓存、CORS、优先级和网络影响，不等同于强制缓存；需真实网络验证"
               ],
               "interviewPoints": [
                 "new Image() 预加载为什么能让后续渲染更快？",
                 "资源预加载进度条为什么通常只能做数量进度？",
                 "预加载图片失败时应该如何设计回调和兜底？",
-                "new Image() 预加载和 <link rel=\"preload\"> 如何选型？"
+                "new Image() 预加载和 link rel=preload 如何选型？"
               ],
-              "searchText": "index 用 new Image / new Audio 触发浏览器预加载 javascript / 07-进阶 / 资源预加载 new Image() / new Audio() 离屏设置 src 会触发资源请求，可在进入业务渲染前预热缓存 预加载进度只能按已完成资源数估算，不能代表字节级下载百分比 失败资源也要推进进度并暴露错误，否则进度条可能永久卡住 资源预加载受 HTTP 缓存、CORS、优先级和用户网络影响，不等同于强制缓存 new Image() 预加载为什么能让后续渲染更快？ 资源预加载进度条为什么通常只能做数量进度？ 预加载图片失败时应该如何设计回调和兜底？ new Image() 预加载和 <link rel=\"preload\"> 如何选型？"
+              "searchText": "index 用 new Image / new Audio 触发浏览器预加载 javascript / 07-进阶 / 资源预加载 进阶 promiseAll UMD插件模式/index new Image() / new Audio() 离屏设置 src 会触发资源请求，可在进入业务渲染前预热缓存 预加载进度只能按已完成资源数估算，不能代表字节级下载百分比 失败资源也要推进进度并暴露错误，否则进度条可能永久卡住 预加载受 HTTP 缓存、CORS、优先级和网络影响，不等同于强制缓存；需真实网络验证 new Image() 预加载为什么能让后续渲染更快？ 资源预加载进度条为什么通常只能做数量进度？ 预加载图片失败时应该如何设计回调和兜底？ new Image() 预加载和 link rel=preload 如何选型？"
             }
           ]
         },
@@ -2657,9 +2887,12 @@
               "href": "apps/javascript/07-%E8%BF%9B%E9%98%B6/UMD%E6%8F%92%E4%BB%B6%E6%A8%A1%E5%BC%8F/index.html",
               "theme": "UMD 插件模式与多模块环境兼容",
               "category": "javascript / 07-进阶 / UMD插件模式",
-              "difficulty": "",
+              "difficulty": "进阶",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "资源预加载/index",
+                "CommonJS-vs-ESM"
+              ],
               "points": [
                 "UMD 是兼容 AMD、CommonJS 与浏览器全局变量的库包装模式",
                 "包装函数先探测运行环境，再把 factory 返回值导出到对应模块系统",
@@ -2672,7 +2905,7 @@
                 "UMD 包装里为什么要先判断 define.amd，再判断 exports？",
                 "在浏览器全局模式下如何避免插件污染 window 或覆盖同名变量？"
               ],
-              "searchText": "index UMD 插件模式与多模块环境兼容 javascript / 07-进阶 / UMD插件模式 UMD 是兼容 AMD、CommonJS 与浏览器全局变量的库包装模式 包装函数先探测运行环境，再把 factory 返回值导出到对应模块系统 UMD 适合老项目和直接 script 引入，新包优先提供 ESM 构建 入口检测顺序、全局对象和副作用配置会影响打包产物兼容性 UMD 为什么能让同一份插件同时支持 AMD、CommonJS 和 script 标签？ UMD 与 ESM、CommonJS 的选型边界是什么？ UMD 包装里为什么要先判断 define.amd，再判断 exports？ 在浏览器全局模式下如何避免插件污染 window 或覆盖同名变量？"
+              "searchText": "index UMD 插件模式与多模块环境兼容 javascript / 07-进阶 / UMD插件模式 进阶 资源预加载/index CommonJS-vs-ESM UMD 是兼容 AMD、CommonJS 与浏览器全局变量的库包装模式 包装函数先探测运行环境，再把 factory 返回值导出到对应模块系统 UMD 适合老项目和直接 script 引入，新包优先提供 ESM 构建 入口检测顺序、全局对象和副作用配置会影响打包产物兼容性 UMD 为什么能让同一份插件同时支持 AMD、CommonJS 和 script 标签？ UMD 与 ESM、CommonJS 的选型边界是什么？ UMD 包装里为什么要先判断 define.amd，再判断 exports？ 在浏览器全局模式下如何避免插件污染 window 或覆盖同名变量？"
             }
           ]
         },
@@ -2686,7 +2919,9 @@
               "category": "javascript / 08-面试题",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "加权随机"
+              ],
               "points": [
                 "debounce 会重置定时器，只在连续触发停止 wait 后执行，适合搜索建议和表单校验",
                 "throttle 在连续触发期间按固定间隔最多执行一次，适合 scroll、resize、mousemove",
@@ -2699,7 +2934,7 @@
                 "leading 和 trailing 选项会改变什么行为？",
                 "手写防抖节流时有哪些容易漏掉的边界？"
               ],
-              "searchText": "防抖节流 防抖（debounce）与节流（throttle） javascript / 08-面试题 debounce 会重置定时器，只在连续触发停止 wait 后执行，适合搜索建议和表单校验 throttle 在连续触发期间按固定间隔最多执行一次，适合 scroll、resize、mousemove leading / trailing 决定第一次立即执行还是最后补一次，直接影响交互体感 高频事件要注意 this、参数、清理定时器和组件卸载后的回调风险 防抖和节流的核心区别是什么？ 搜索建议、窗口 resize、滚动监听分别该选防抖还是节流？ leading 和 trailing 选项会改变什么行为？ 手写防抖节流时有哪些容易漏掉的边界？"
+              "searchText": "防抖节流 防抖（debounce）与节流（throttle） javascript / 08-面试题 加权随机 debounce 会重置定时器，只在连续触发停止 wait 后执行，适合搜索建议和表单校验 throttle 在连续触发期间按固定间隔最多执行一次，适合 scroll、resize、mousemove leading / trailing 决定第一次立即执行还是最后补一次，直接影响交互体感 高频事件要注意 this、参数、清理定时器和组件卸载后的回调风险 防抖和节流的核心区别是什么？ 搜索建议、窗口 resize、滚动监听分别该选防抖还是节流？ leading 和 trailing 选项会改变什么行为？ 手写防抖节流时有哪些容易漏掉的边界？"
             },
             {
               "title": "加权随机",
@@ -2708,7 +2943,10 @@
               "category": "javascript / 08-面试题",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "防抖节流",
+                "手写/01-call-apply"
+              ],
               "points": [
                 "加权随机把每个候选项映射到权重区间，随机数落在哪个区间就命中哪项",
                 "扩容数组写法直观但空间随权重总量增长，权重不是整数时还会有精度取舍",
@@ -2721,7 +2959,7 @@
                 "为什么前端 Math.random() 不适合真实抽奖开奖？",
                 "如何验证加权随机实现是否大致符合权重比例？"
               ],
-              "searchText": "加权随机 加权随机（按概率抽奖） javascript / 08-面试题 加权随机把每个候选项映射到权重区间，随机数落在哪个区间就命中哪项 扩容数组写法直观但空间随权重总量增长，权重不是整数时还会有精度取舍 累加权重写法按总权重生成随机阈值，单次抽取 O(n)，额外空间可做到 O(1) Math.random() 不是密码学安全随机，抽奖、风控、资金场景应由服务端可信随机源决定 加权随机如何用累加区间实现？ 扩容数组法和前缀权重法怎么比较？ 为什么前端 Math.random() 不适合真实抽奖开奖？ 如何验证加权随机实现是否大致符合权重比例？"
+              "searchText": "加权随机 加权随机（按概率抽奖） javascript / 08-面试题 防抖节流 手写/01-call-apply 加权随机把每个候选项映射到权重区间，随机数落在哪个区间就命中哪项 扩容数组写法直观但空间随权重总量增长，权重不是整数时还会有精度取舍 累加权重写法按总权重生成随机阈值，单次抽取 O(n)，额外空间可做到 O(1) Math.random() 不是密码学安全随机，抽奖、风控、资金场景应由服务端可信随机源决定 加权随机如何用累加区间实现？ 扩容数组法和前缀权重法怎么比较？ 为什么前端 Math.random() 不适合真实抽奖开奖？ 如何验证加权随机实现是否大致符合权重比例？"
             }
           ]
         },
@@ -2735,7 +2973,10 @@
               "category": "javascript / 08-面试题 / 手写",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "bind",
+                "02-函数与作用域/this-call-apply-bind"
+              ],
               "points": [
                 "call 和 apply 都会立即调用函数并显式指定 this，区别是参数传递形式不同",
                 "手写思路是把函数临时挂到 thisArg 包装对象上，用 Symbol 避免属性名冲突",
@@ -2748,7 +2989,7 @@
                 "thisArg 为 null、undefined 或原始值时怎么处理？",
                 "手写 apply 为什么要校验第二个参数并清理临时属性？"
               ],
-              "searchText": "call-apply 手写 call / apply javascript / 08-面试题 / 手写 call 和 apply 都会立即调用函数并显式指定 this，区别是参数传递形式不同 手写思路是把函数临时挂到 thisArg 包装对象上，用 Symbol 避免属性名冲突 null/undefined 的 thisArg 在非严格普通函数调用中会替换为 globalThis，原始值会装箱 临时属性必须在 finally 中删除，否则被调函数抛错时会污染目标对象 call 和 apply 的共同点与区别是什么？ 手写 call/apply 为什么要临时挂载函数？ thisArg 为 null、undefined 或原始值时怎么处理？ 手写 apply 为什么要校验第二个参数并清理临时属性？"
+              "searchText": "call-apply 手写 call / apply javascript / 08-面试题 / 手写 bind 02-函数与作用域/this-call-apply-bind call 和 apply 都会立即调用函数并显式指定 this，区别是参数传递形式不同 手写思路是把函数临时挂到 thisArg 包装对象上，用 Symbol 避免属性名冲突 null/undefined 的 thisArg 在非严格普通函数调用中会替换为 globalThis，原始值会装箱 临时属性必须在 finally 中删除，否则被调函数抛错时会污染目标对象 call 和 apply 的共同点与区别是什么？ 手写 call/apply 为什么要临时挂载函数？ thisArg 为 null、undefined 或原始值时怎么处理？ 手写 apply 为什么要校验第二个参数并清理临时属性？"
             },
             {
               "title": "bind",
@@ -2757,7 +2998,11 @@
               "category": "javascript / 08-面试题 / 手写",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "call-apply",
+                "new",
+                "02-函数与作用域/this-call-apply-bind"
+              ],
               "points": [
                 "bind 返回绑定函数，不会立即执行；call/apply 会立即执行",
                 "普通调用绑定函数时 this 固定为 thisArg，并支持预置参数",
@@ -2770,7 +3015,7 @@
                 "new 调用绑定函数时为什么要忽略绑定的 thisArg？",
                 "手写 bind 为什么要处理 prototype 原型链？"
               ],
-              "searchText": "bind 手写 bind javascript / 08-面试题 / 手写 bind 返回绑定函数，不会立即执行；call/apply 会立即执行 普通调用绑定函数时 this 固定为 thisArg，并支持预置参数 绑定函数被 new 调用时 this 指向新实例，绑定的 thisArg 会被忽略 手写 bind 要维护原函数 prototype 原型链，但 name、length 等规范细节通常会简化 bind 和 call/apply 最大区别是什么？ 手写 bind 如何同时支持预置参数和后续参数？ new 调用绑定函数时为什么要忽略绑定的 thisArg？ 手写 bind 为什么要处理 prototype 原型链？"
+              "searchText": "bind 手写 bind javascript / 08-面试题 / 手写 call-apply new 02-函数与作用域/this-call-apply-bind bind 返回绑定函数，不会立即执行；call/apply 会立即执行 普通调用绑定函数时 this 固定为 thisArg，并支持预置参数 绑定函数被 new 调用时 this 指向新实例，绑定的 thisArg 会被忽略 手写 bind 要维护原函数 prototype 原型链，但 name、length 等规范细节通常会简化 bind 和 call/apply 最大区别是什么？ 手写 bind 如何同时支持预置参数和后续参数？ new 调用绑定函数时为什么要忽略绑定的 thisArg？ 手写 bind 为什么要处理 prototype 原型链？"
             },
             {
               "title": "new",
@@ -2779,7 +3024,11 @@
               "category": "javascript / 08-面试题 / 手写",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "bind",
+                "instanceof",
+                "03-对象与原型/构造函数"
+              ],
               "points": [
                 "new 会创建新对象，并把新对象的原型链接到构造函数 prototype",
                 "构造函数以新对象作为 this 执行，实例属性通常在这一步写入",
@@ -2792,7 +3041,7 @@
                 "Object.create(Constructor.prototype) 在手写 new 中解决了什么？",
                 "手写 new 和 Reflect.construct 有什么边界差异？"
               ],
-              "searchText": "new 手写 new javascript / 08-面试题 / 手写 new 会创建新对象，并把新对象的原型链接到构造函数 prototype 构造函数以新对象作为 this 执行，实例属性通常在这一步写入 构造函数显式返回对象或函数时，new 表达式返回该对象；返回原始值则忽略 手写 new 可用 Object.create + apply 模拟，但 class 构造器不能被 apply 直接调用 new 操作符具体做了哪几步？ 构造函数显式 return 对 new 结果有什么影响？ Object.create(Constructor.prototype) 在手写 new 中解决了什么？ 手写 new 和 Reflect.construct 有什么边界差异？"
+              "searchText": "new 手写 new javascript / 08-面试题 / 手写 bind instanceof 03-对象与原型/构造函数 new 会创建新对象，并把新对象的原型链接到构造函数 prototype 构造函数以新对象作为 this 执行，实例属性通常在这一步写入 构造函数显式返回对象或函数时，new 表达式返回该对象；返回原始值则忽略 手写 new 可用 Object.create + apply 模拟，但 class 构造器不能被 apply 直接调用 new 操作符具体做了哪几步？ 构造函数显式 return 对 new 结果有什么影响？ Object.create(Constructor.prototype) 在手写 new 中解决了什么？ 手写 new 和 Reflect.construct 有什么边界差异？"
             },
             {
               "title": "instanceof",
@@ -2801,7 +3050,10 @@
               "category": "javascript / 08-面试题 / 手写",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "new",
+                "03-对象与原型/原型链"
+              ],
               "points": [
                 "instanceof 判断左值原型链上是否能找到右侧构造函数的 prototype",
                 "原始值、null、undefined 不参与普通对象原型链查找，结果为 false",
@@ -2814,7 +3066,7 @@
                 "手写 instanceof 为什么要校验右侧构造函数？",
                 "instanceof、typeof 和 Array.isArray 应该如何选？"
               ],
-              "searchText": "instanceof 手写 instanceof javascript / 08-面试题 / 手写 instanceof 判断左值原型链上是否能找到右侧构造函数的 prototype 原始值、null、undefined 不参与普通对象原型链查找，结果为 false 右值必须是可调用对象，且其 prototype 通常要是对象；异常路径要和原生语义区分 手写实现推荐使用 Object.getPrototypeOf 遍历，避免依赖 __proto__ instanceof 的判断过程是什么？ 为什么原始值和 null 做 instanceof 会返回 false？ 手写 instanceof 为什么要校验右侧构造函数？ instanceof、typeof 和 Array.isArray 应该如何选？"
+              "searchText": "instanceof 手写 instanceof javascript / 08-面试题 / 手写 new 03-对象与原型/原型链 instanceof 判断左值原型链上是否能找到右侧构造函数的 prototype 原始值、null、undefined 不参与普通对象原型链查找，结果为 false 右值必须是可调用对象，且其 prototype 通常要是对象；异常路径要和原生语义区分 手写实现推荐使用 Object.getPrototypeOf 遍历，避免依赖 __proto__ instanceof 的判断过程是什么？ 为什么原始值和 null 做 instanceof 会返回 false？ 手写 instanceof 为什么要校验右侧构造函数？ instanceof、typeof 和 Array.isArray 应该如何选？"
             },
             {
               "title": "Promise",
@@ -2823,7 +3075,11 @@
               "category": "javascript / 08-面试题 / 手写",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "instanceof",
+                "04-ES6+/异步/Promise",
+                "07-进阶/手写Promise"
+              ],
               "points": [
                 "Promise 有 pending / fulfilled / rejected 三种状态，状态一旦改变不可逆",
                 "then 必须返回新 Promise，并按回调返回值决定新 Promise 的状态",
@@ -2836,7 +3092,7 @@
                 "回调为什么要异步执行而不是 resolve 后同步调用？",
                 "手写 Promise 和原生 Promise 有哪些边界差异？"
               ],
-              "searchText": "Promise 面试简化版 Promise javascript / 08-面试题 / 手写 Promise 有 pending / fulfilled / rejected 三种状态，状态一旦改变不可逆 then 必须返回新 Promise，并按回调返回值决定新 Promise 的状态 回调异步执行；这里用 queueMicrotask 演示微任务入队 面试简化版只覆盖核心链式调用，不等同完整 Promise/A+ 或 ECMAScript 实现 Promise 为什么状态一旦改变就不能再变？ then 为什么必须返回一个新的 Promise？ 回调为什么要异步执行而不是 resolve 后同步调用？ 手写 Promise 和原生 Promise 有哪些边界差异？"
+              "searchText": "Promise 面试简化版 Promise javascript / 08-面试题 / 手写 instanceof 04-ES6+/异步/Promise 07-进阶/手写Promise Promise 有 pending / fulfilled / rejected 三种状态，状态一旦改变不可逆 then 必须返回新 Promise，并按回调返回值决定新 Promise 的状态 回调异步执行；这里用 queueMicrotask 演示微任务入队 面试简化版只覆盖核心链式调用，不等同完整 Promise/A+ 或 ECMAScript 实现 Promise 为什么状态一旦改变就不能再变？ then 为什么必须返回一个新的 Promise？ 回调为什么要异步执行而不是 resolve 后同步调用？ 手写 Promise 和原生 Promise 有哪些边界差异？"
             },
             {
               "title": "EventEmitter",
@@ -2845,7 +3101,10 @@
               "category": "javascript / 08-面试题 / 手写",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "Promise",
+                "06-浏览器API/事件模型"
+              ],
               "points": [
                 "EventEmitter 用事件名映射监听数组，on 注册、emit 同步派发",
                 "off 要能移除普通监听和 once 包装后的原始监听",
@@ -2858,7 +3117,7 @@
                 "emit 派发时为什么要复制监听列表？",
                 "EventEmitter 和 DOM EventTarget 有什么区别？"
               ],
-              "searchText": "EventEmitter 手写 EventEmitter javascript / 08-面试题 / 手写 EventEmitter 用事件名映射监听数组，on 注册、emit 同步派发 off 要能移除普通监听和 once 包装后的原始监听 emit 时复制监听数组，避免派发过程中增删监听影响本轮执行 Node.js EventEmitter 的 error 事件有特殊语义，面试简化版需要说明边界 EventEmitter 的 on、emit、off、once 分别要保证什么行为？ once 为什么通常要保存原始 listener 引用？ emit 派发时为什么要复制监听列表？ EventEmitter 和 DOM EventTarget 有什么区别？"
+              "searchText": "EventEmitter 手写 EventEmitter javascript / 08-面试题 / 手写 Promise 06-浏览器API/事件模型 EventEmitter 用事件名映射监听数组，on 注册、emit 同步派发 off 要能移除普通监听和 once 包装后的原始监听 emit 时复制监听数组，避免派发过程中增删监听影响本轮执行 Node.js EventEmitter 的 error 事件有特殊语义，面试简化版需要说明边界 EventEmitter 的 on、emit、off、once 分别要保证什么行为？ once 为什么通常要保存原始 listener 引用？ emit 派发时为什么要复制监听列表？ EventEmitter 和 DOM EventTarget 有什么区别？"
             },
             {
               "title": "LRU缓存",
@@ -2867,7 +3126,10 @@
               "category": "javascript / 08-面试题 / 手写",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "EventEmitter",
+                "this指向与作用域链"
+              ],
               "points": [
                 "LRU 按最近使用顺序淘汰最久未访问的缓存项",
                 "Map 保持插入顺序，get 命中后删除再 set 可刷新为最新",
@@ -2880,7 +3142,7 @@
                 "Map 简化版和哈希表 + 双向链表版有什么差异？",
                 "LRU 缓存适合哪些项目场景，容量边界怎么处理？"
               ],
-              "searchText": "LRU缓存 手写 LRU 缓存 javascript / 08-面试题 / 手写 LRU 按最近使用顺序淘汰最久未访问的缓存项 Map 保持插入顺序，get 命中后删除再 set 可刷新为最新 容量满时删除 Map 的第一个 key，也就是当前最旧项 严格 O(1) LRU 通常使用哈希表 + 双向链表，Map 版适合面试简化演示 LRU 为什么命中 get 后也要刷新顺序？ Map 版 LRU 为什么能删除最旧 key？ Map 简化版和哈希表 + 双向链表版有什么差异？ LRU 缓存适合哪些项目场景，容量边界怎么处理？"
+              "searchText": "LRU缓存 手写 LRU 缓存 javascript / 08-面试题 / 手写 EventEmitter this指向与作用域链 LRU 按最近使用顺序淘汰最久未访问的缓存项 Map 保持插入顺序，get 命中后删除再 set 可刷新为最新 容量满时删除 Map 的第一个 key，也就是当前最旧项 严格 O(1) LRU 通常使用哈希表 + 双向链表，Map 版适合面试简化演示 LRU 为什么命中 get 后也要刷新顺序？ Map 版 LRU 为什么能删除最旧 key？ Map 简化版和哈希表 + 双向链表版有什么差异？ LRU 缓存适合哪些项目场景，容量边界怎么处理？"
             }
           ]
         },
@@ -2894,7 +3156,10 @@
               "category": "javascript / 08-面试题 / 作用域",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "嵌套作用域-返回值",
+                "02-函数与作用域/this指向"
+              ],
               "points": [
                 "普通函数独立调用时，非严格模式 this 会被绑定到全局对象 window",
                 "顶层 var 在普通 script 中会创建 window 同名属性，let/const 与 ES module 不会",
@@ -2907,7 +3172,7 @@
                 "严格模式、let/const 或 type=module 会怎样改变这题结果？",
                 "如何区分作用域链查找和 this 绑定规则？"
               ],
-              "searchText": "this指向与作用域链 经典题 - this 指向与作用域链 javascript / 08-面试题 / 作用域 普通函数独立调用时，非严格模式 this 会被绑定到全局对象 window 顶层 var 在普通 script 中会创建 window 同名属性，let/const 与 ES module 不会 变量名查找走词法作用域链，this 的值由调用方式决定，两套规则不能混用 bar() 的局部 val 不会影响 test()，因为 test 在全局词法环境中定义 为什么 bar() 中 this.val 输出 1 而不是局部变量 2？ test() 为什么读取全局 val 而不是 bar() 里的 val？ 严格模式、let/const 或 type=module 会怎样改变这题结果？ 如何区分作用域链查找和 this 绑定规则？"
+              "searchText": "this指向与作用域链 经典题 - this 指向与作用域链 javascript / 08-面试题 / 作用域 嵌套作用域-返回值 02-函数与作用域/this指向 普通函数独立调用时，非严格模式 this 会被绑定到全局对象 window 顶层 var 在普通 script 中会创建 window 同名属性，let/const 与 ES module 不会 变量名查找走词法作用域链，this 的值由调用方式决定，两套规则不能混用 bar() 的局部 val 不会影响 test()，因为 test 在全局词法环境中定义 为什么 bar() 中 this.val 输出 1 而不是局部变量 2？ test() 为什么读取全局 val 而不是 bar() 里的 val？ 严格模式、let/const 或 type=module 会怎样改变这题结果？ 如何区分作用域链查找和 this 绑定规则？"
             },
             {
               "title": "嵌套作用域-返回值",
@@ -2916,7 +3181,10 @@
               "category": "javascript / 08-面试题 / 作用域",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "this指向与作用域链",
+                "嵌套作用域-返回函数"
+              ],
               "points": [
                 "内层函数 f 在 checkscope 内定义，词法作用域包含局部变量 scope",
                 "return f() 返回的是 f 的执行结果，此时直接得到字符串 local",
@@ -2929,7 +3197,7 @@
                 "词法作用域为什么不是按调用位置查找变量？",
                 "闭包什么时候会让外层局部变量继续存活？"
               ],
-              "searchText": "嵌套作用域-返回值 嵌套函数 - 返回内层函数执行结果 javascript / 08-面试题 / 作用域 内层函数 f 在 checkscope 内定义，词法作用域包含局部变量 scope return f() 返回的是 f 的执行结果，此时直接得到字符串 local 词法作用域由函数定义位置决定，不由调用位置动态改变 与下一题 return f 对比：返回函数会让局部词法环境通过闭包继续存活 checkscope() 为什么输出 local 而不是 global？ return f() 和 return f 在作用域题里有什么本质区别？ 词法作用域为什么不是按调用位置查找变量？ 闭包什么时候会让外层局部变量继续存活？"
+              "searchText": "嵌套作用域-返回值 嵌套函数 - 返回内层函数执行结果 javascript / 08-面试题 / 作用域 this指向与作用域链 嵌套作用域-返回函数 内层函数 f 在 checkscope 内定义，词法作用域包含局部变量 scope return f() 返回的是 f 的执行结果，此时直接得到字符串 local 词法作用域由函数定义位置决定，不由调用位置动态改变 与下一题 return f 对比：返回函数会让局部词法环境通过闭包继续存活 checkscope() 为什么输出 local 而不是 global？ return f() 和 return f 在作用域题里有什么本质区别？ 词法作用域为什么不是按调用位置查找变量？ 闭包什么时候会让外层局部变量继续存活？"
             },
             {
               "title": "嵌套作用域-返回函数",
@@ -2938,7 +3206,10 @@
               "category": "javascript / 08-面试题 / 作用域",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "嵌套作用域-返回值",
+                "闭包-作用域链与变量提升"
+              ],
               "points": [
                 "return f 返回的是内层函数引用，外部再调用时形成闭包",
                 "f 的自由变量 scope 按定义时词法环境解析，仍然指向 checkscope 内的 local",
@@ -2951,7 +3222,7 @@
                 "闭包为什么会让外层局部变量不被立即回收？",
                 "项目中使用闭包保存状态时要注意哪些内存边界？"
               ],
-              "searchText": "嵌套作用域-返回函数 嵌套函数 - 返回内层函数引用 javascript / 08-面试题 / 作用域 return f 返回的是内层函数引用，外部再调用时形成闭包 f 的自由变量 scope 按定义时词法环境解析，仍然指向 checkscope 内的 local 与 return f() 对比：输出同为 local，但一个返回结果，一个返回可复用函数 闭包会延长被引用词法环境的生命周期，使用不当可能保留过多状态 为什么 checkscope()() 仍然输出 local？ return f 和 return f() 在闭包生命周期上有什么区别？ 闭包为什么会让外层局部变量不被立即回收？ 项目中使用闭包保存状态时要注意哪些内存边界？"
+              "searchText": "嵌套作用域-返回函数 嵌套函数 - 返回内层函数引用 javascript / 08-面试题 / 作用域 嵌套作用域-返回值 闭包-作用域链与变量提升 return f 返回的是内层函数引用，外部再调用时形成闭包 f 的自由变量 scope 按定义时词法环境解析，仍然指向 checkscope 内的 local 与 return f() 对比：输出同为 local，但一个返回结果，一个返回可复用函数 闭包会延长被引用词法环境的生命周期，使用不当可能保留过多状态 为什么 checkscope()() 仍然输出 local？ return f 和 return f() 在闭包生命周期上有什么区别？ 闭包为什么会让外层局部变量不被立即回收？ 项目中使用闭包保存状态时要注意哪些内存边界？"
             },
             {
               "title": "var重复声明",
@@ -2960,7 +3231,10 @@
               "category": "javascript / 08-面试题 / 作用域",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "var与function同名提升",
+                "01-基础/变量"
+              ],
               "points": [
                 "var 在同一函数或全局作用域内允许重复声明，重复声明本身不会重新初始化变量",
                 "var a = 234 包含声明和赋值两步；真正覆盖前值的是执行阶段的赋值",
@@ -2973,7 +3247,7 @@
                 "let/const 为什么能避免同一作用域重复声明问题？",
                 "顶层 var 在浏览器普通脚本和 ES module 中有什么区别？"
               ],
-              "searchText": "var重复声明 var 重复声明：后值覆盖前值 javascript / 08-面试题 / 作用域 var 在同一函数或全局作用域内允许重复声明，重复声明本身不会重新初始化变量 var a = 234 包含声明和赋值两步；真正覆盖前值的是执行阶段的赋值 let/const 在同一作用域重复声明会抛 SyntaxError，能提前暴露命名冲突 普通 script 顶层 var 会创建 window 属性，ES module 与 let/const 不会 var 重复声明为什么不会报错，最终为什么输出 234？ var a; var a = 234; 中声明和赋值分别发生在什么时候？ let/const 为什么能避免同一作用域重复声明问题？ 顶层 var 在浏览器普通脚本和 ES module 中有什么区别？"
+              "searchText": "var重复声明 var 重复声明：后值覆盖前值 javascript / 08-面试题 / 作用域 var与function同名提升 01-基础/变量 var 在同一函数或全局作用域内允许重复声明，重复声明本身不会重新初始化变量 var a = 234 包含声明和赋值两步；真正覆盖前值的是执行阶段的赋值 let/const 在同一作用域重复声明会抛 SyntaxError，能提前暴露命名冲突 普通 script 顶层 var 会创建 window 属性，ES module 与 let/const 不会 var 重复声明为什么不会报错，最终为什么输出 234？ var a; var a = 234; 中声明和赋值分别发生在什么时候？ let/const 为什么能避免同一作用域重复声明问题？ 顶层 var 在浏览器普通脚本和 ES module 中有什么区别？"
             },
             {
               "title": "let-for循环闭包",
@@ -2982,7 +3256,10 @@
               "category": "javascript / 08-面试题 / 作用域",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "var重复声明",
+                "闭包-作用域链与变量提升"
+              ],
               "points": [
                 "for 循环头中的 let 会为每次迭代创建新的词法环境，闭包捕获各自的 i",
                 "本例输出 0、1、2、3、4；如果换成 var，所有函数共享同一个 i，最终多为 5",
@@ -2995,7 +3272,7 @@
                 "老代码中不用 let 如何修复循环闭包问题？",
                 "let 循环作用域和 forEach 回调参数有什么取舍？"
               ],
-              "searchText": "let-for循环闭包 let + for 循环的块作用域闭包 javascript / 08-面试题 / 作用域 for 循环头中的 let 会为每次迭代创建新的词法环境，闭包捕获各自的 i 本例输出 0、1、2、3、4；如果换成 var，所有函数共享同一个 i，最终多为 5 let/const 有块级作用域和暂时性死区，能减少循环回调中的共享变量坑 var 版本可用 IIFE 或函数参数保存快照，但现代代码优先使用 let for (let i...) 中的闭包为什么能分别输出 0 到 4？ 把 let 换成 var 为什么常见结果会变成 5 个 5？ 老代码中不用 let 如何修复循环闭包问题？ let 循环作用域和 forEach 回调参数有什么取舍？"
+              "searchText": "let-for循环闭包 let + for 循环的块作用域闭包 javascript / 08-面试题 / 作用域 var重复声明 闭包-作用域链与变量提升 for 循环头中的 let 会为每次迭代创建新的词法环境，闭包捕获各自的 i 本例输出 0、1、2、3、4；如果换成 var，所有函数共享同一个 i，最终多为 5 let/const 有块级作用域和暂时性死区，能减少循环回调中的共享变量坑 var 版本可用 IIFE 或函数参数保存快照，但现代代码优先使用 let for (let i...) 中的闭包为什么能分别输出 0 到 4？ 把 let 换成 var 为什么常见结果会变成 5 个 5？ 老代码中不用 let 如何修复循环闭包问题？ let 循环作用域和 forEach 回调参数有什么取舍？"
             },
             {
               "title": "var与function同名提升",
@@ -3004,7 +3281,10 @@
               "category": "javascript / 08-面试题 / 作用域",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "var重复声明",
+                "01-基础/变量进阶"
+              ],
               "points": [
                 "函数声明会在执行前创建函数绑定；同名函数声明中后面的声明覆盖前面的声明",
                 "var 同名声明不会覆盖已有函数绑定，执行到赋值语句时才把 a 改成数字",
@@ -3017,7 +3297,7 @@
                 "多个同名函数声明和 var 声明的处理顺序如何理解？",
                 "为什么现代代码要避免 var 和 function 同名声明？"
               ],
-              "searchText": "var与function同名提升 var 与 function 同名提升 javascript / 08-面试题 / 作用域 函数声明会在执行前创建函数绑定；同名函数声明中后面的声明覆盖前面的声明 var 同名声明不会覆盖已有函数绑定，执行到赋值语句时才把 a 改成数字 本例输出顺序是函数引用、1、3、3，关键是区分声明实例化和运行期赋值 同名 var/function 是老题和老脚本坑点，现代代码应避免同作用域重名声明 为什么第一行输出的是后一个 function a 而不是 undefined？ var a = 1 为什么会把函数绑定改成数字 1？ 多个同名函数声明和 var 声明的处理顺序如何理解？ 为什么现代代码要避免 var 和 function 同名声明？"
+              "searchText": "var与function同名提升 var 与 function 同名提升 javascript / 08-面试题 / 作用域 var重复声明 01-基础/变量进阶 函数声明会在执行前创建函数绑定；同名函数声明中后面的声明覆盖前面的声明 var 同名声明不会覆盖已有函数绑定，执行到赋值语句时才把 a 改成数字 本例输出顺序是函数引用、1、3、3，关键是区分声明实例化和运行期赋值 同名 var/function 是老题和老脚本坑点，现代代码应避免同作用域重名声明 为什么第一行输出的是后一个 function a 而不是 undefined？ var a = 1 为什么会把函数绑定改成数字 1？ 多个同名函数声明和 var 声明的处理顺序如何理解？ 为什么现代代码要避免 var 和 function 同名声明？"
             }
           ]
         },
@@ -3031,7 +3311,10 @@
               "category": "javascript / 09-Canvas / 动画",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "基础/index",
+                "var与function同名提升"
+              ],
               "points": [
                 "requestAnimationFrame 在下一次重绘前调度一帧，后台页通常会暂停",
                 "destination-out 半透明擦除旧像素，lighter 叠加新像素形成烟花亮度",
@@ -3044,7 +3327,7 @@
                 "粒子系统如何避免点击过快或页面长时间运行导致卡顿？",
                 "高 DPI、窗口 resize 和后台标签页会给 Canvas 动画带来什么边界？"
               ],
-              "searchText": "firework Canvas 烟花动画 javascript / 09-Canvas / 动画 requestAnimationFrame 在下一次重绘前调度一帧，后台页通常会暂停 destination-out 半透明擦除旧像素，lighter 叠加新像素形成烟花亮度 烟花上升到目标点后拆成粒子数组，粒子按速度、摩擦、重力和透明度衰减 粒子数量、画布尺寸和高刷新率屏幕都会影响帧率，需要限流和清理 为什么 Canvas 动画优先用 requestAnimationFrame？ Canvas 烟花拖尾为什么用 destination-out 而不是每帧 clearRect？ 粒子系统如何避免点击过快或页面长时间运行导致卡顿？ 高 DPI、窗口 resize 和后台标签页会给 Canvas 动画带来什么边界？"
+              "searchText": "firework Canvas 烟花动画 javascript / 09-Canvas / 动画 基础/index var与function同名提升 requestAnimationFrame 在下一次重绘前调度一帧，后台页通常会暂停 destination-out 半透明擦除旧像素，lighter 叠加新像素形成烟花亮度 烟花上升到目标点后拆成粒子数组，粒子按速度、摩擦、重力和透明度衰减 粒子数量、画布尺寸和高刷新率屏幕都会影响帧率，需要限流和清理 为什么 Canvas 动画优先用 requestAnimationFrame？ Canvas 烟花拖尾为什么用 destination-out 而不是每帧 clearRect？ 粒子系统如何避免点击过快或页面长时间运行导致卡顿？ 高 DPI、窗口 resize 和后台标签页会给 Canvas 动画带来什么边界？"
             }
           ]
         },
@@ -3058,7 +3341,10 @@
               "category": "javascript / 09-Canvas / 基础",
               "difficulty": "",
               "prerequisite": "",
-              "related": [],
+              "related": [
+                "firework",
+                "css/03-动画"
+              ],
               "points": [
                 "canvas 元素提供位图画布，CanvasRenderingContext2D 负责命令式绘制",
                 "基础流程是获取 2D 上下文、设置绘图状态、构建路径或矩形、再 fill/stroke",
@@ -3071,7 +3357,7 @@
                 "Canvas 和 SVG 在图表或可视化项目里如何选型？",
                 "Canvas 基础绘图有哪些尺寸、清晰度和可访问性边界？"
               ],
-              "searchText": "index Canvas 2D 基础绘图 javascript / 09-Canvas / 基础 canvas 元素提供位图画布，CanvasRenderingContext2D 负责命令式绘制 基础流程是获取 2D 上下文、设置绘图状态、构建路径或矩形、再 fill/stroke 路径状态会累积，绘制新形状前用 beginPath 隔离，否则样式和线段容易串联 Canvas 适合动态绘制和像素级效果，不适合需要 DOM 语义和可访问性的静态内容 Canvas 2D 绘图的基本调用顺序是什么？ beginPath、fill 和 stroke 分别解决什么问题？ Canvas 和 SVG 在图表或可视化项目里如何选型？ Canvas 基础绘图有哪些尺寸、清晰度和可访问性边界？"
+              "searchText": "index Canvas 2D 基础绘图 javascript / 09-Canvas / 基础 firework css/03-动画 canvas 元素提供位图画布，CanvasRenderingContext2D 负责命令式绘制 基础流程是获取 2D 上下文、设置绘图状态、构建路径或矩形、再 fill/stroke 路径状态会累积，绘制新形状前用 beginPath 隔离，否则样式和线段容易串联 Canvas 适合动态绘制和像素级效果，不适合需要 DOM 语义和可访问性的静态内容 Canvas 2D 绘图的基本调用顺序是什么？ beginPath、fill 和 stroke 分别解决什么问题？ Canvas 和 SVG 在图表或可视化项目里如何选型？ Canvas 基础绘图有哪些尺寸、清晰度和可访问性边界？"
             }
           ]
         }

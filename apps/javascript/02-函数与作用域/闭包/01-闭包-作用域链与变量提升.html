@@ -5,12 +5,14 @@
     - 闭包是函数连同其可访问的外层词法环境一起被保留
     - var 声明会初始化为 undefined，let/const 在初始化前处于暂时性死区
     - 顶层 var 和函数声明会成为浏览器全局对象属性，顶层 let/const 不会
-    - arguments.callee 已废弃，严格模式禁用，应直接使用函数名或具名表达式
+    - arguments.callee 已废弃，严格模式禁用，应直接使用函数名
+    - 闭包常用于封装私有状态，长期持有大对象时要主动释放引用
   面试:
     - 什么是闭包，为什么外层函数返回后变量仍可访问？
     - var 提升和 let/const 暂时性死区有什么区别？
     - 浏览器脚本顶层 var 与 let/const 对 window 有什么影响？
     - 为什么不推荐 arguments.callee？
+  相关: 01-作用域链, 01-基础/变量进阶, 闭包-内存泄漏与修复
 -->
 
 <!doctype html>
@@ -30,7 +32,7 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>闭包是“函数 + 它引用的外层词法环境”。示例里 <code>innerFn</code> 和 <code>innnnerFn</code> 继续读取 <code>outerVar</code>、<code>outerLet</code>、<code>innerVar</code>、<code>innerLet</code>，说明相关环境没有在外层函数返回后立刻释放。</li>
+          <li>闭包是「函数 + 它引用的外层词法环境」。示例里 <code>innerFn</code> 和 <code>innnnerFn</code> 继续读取 <code>outerVar</code>、<code>outerLet</code>、<code>innerVar</code>、<code>innerLet</code>，说明相关环境没有在外层函数返回后立刻释放。</li>
           <li><code>var</code> 声明会被提升并初始化为 <code>undefined</code>，所以赋值前读取 <code>outerVar</code> 得到 <code>undefined</code>。<code>let</code>/<code>const</code> 也会创建绑定，但初始化前处于暂时性死区，读取会抛 <code>ReferenceError</code>。</li>
           <li>浏览器普通脚本顶层的 <code>var</code> 与函数声明会成为全局对象属性；顶层 <code>let</code>/<code>const</code> 属于全局词法环境，不会挂到 <code>window</code>。模块脚本还有独立模块作用域。</li>
           <li><code>arguments</code> 是函数调用时的类数组实参对象，示例中可观察实参；但 <code>arguments.callee</code> 已废弃，严格模式中会报错，递归或自引用应使用函数名。</li>
@@ -39,17 +41,16 @@
         <h2>面试考点</h2>
         <ul>
           <li><strong>什么是闭包，为什么外层函数返回后变量仍可访问？</strong> 先结论：闭包让函数保留对外层词法环境的引用。原因是函数对象创建时记录了外层环境，内层函数还被外部变量持有时，垃圾回收不能释放这部分环境。项目中常见于事件回调、节流防抖、模块私有变量。</li>
-          <li><strong><code>var</code> 提升和 <code>let</code>/<code>const</code> 暂时性死区有什么区别？</strong> 先结论：<code>var</code> 可在声明前读取到 <code>undefined</code>，<code>let</code>/<code>const</code> 在初始化前不能访问。原因是 <code>var</code> 创建时已初始化，词法声明创建了绑定但要等执行到声明语句才初始化。边界是“提升”不是把代码文本移动，而是声明绑定阶段的行为。</li>
+          <li><strong><code>var</code> 提升和 <code>let</code>/<code>const</code> 暂时性死区有什么区别？</strong> 先结论：<code>var</code> 可在声明前读取到 <code>undefined</code>，<code>let</code>/<code>const</code> 在初始化前不能访问。原因是 <code>var</code> 创建时已初始化，词法声明创建了绑定但要等执行到声明语句才初始化。边界是「提升」不是把代码文本移动，而是声明绑定阶段的行为。</li>
           <li><strong>浏览器脚本顶层 <code>var</code> 与 <code>let</code>/<code>const</code> 对 <code>window</code> 有什么影响？</strong> 先结论：普通脚本顶层 <code>var</code> 会成为 <code>window</code> 属性，<code>let</code>/<code>const</code> 不会。原因是全局环境同时有对象环境记录和声明式环境记录。项目里要避免用顶层 <code>var</code> 暴露全局状态，模块化代码也不应依赖 <code>window.xxx</code> 读取声明。</li>
           <li><strong>为什么不推荐 <code>arguments.callee</code>？</strong> 先结论：它已废弃且严格模式禁用。原因是它会暴露当前执行函数，影响优化并和现代严格模式设计冲突。实际递归应使用具名函数、函数声明或把函数引用保存到明确变量中。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures">MDN：Closures</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Glossary/Hoisting">MDN：Hoisting</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let#temporal_dead_zone_tdz">MDN：let - Temporal dead zone</a></li>
-          <li><a href="https://tc39.es/ecma262/#sec-global-environment-records">ECMA-262：Global Environment Records</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments/callee">MDN：arguments.callee</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures">MDN: Closures</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Glossary/Hoisting">MDN: Hoisting</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let#temporal_dead_zone_tdz">MDN: let - Temporal dead zone</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments/callee">MDN: arguments.callee</a></li>
         </ul>
       </div>
     </section>
@@ -57,58 +58,72 @@
 
     <!-- SCRIPT_START -->
     <script>
-      //AAA:直接在script脚本顶层使用 var 声明的变量具有全局作用域(global scope)，会作为 window 对象的属性
+      // ====== 1. 顶层 var / function 挂 window，let/const 不挂 ======
       var globalVar = "globalVar1111";
+      console.log("window.globalVar:", window.globalVar); // "globalVar1111"
 
-      //AAAA:直接在script脚本顶层使用 function 关键字声明的函数，具有全局作用域(global scope), 会作为 window 对象的属性
+      let scriptLet = "I am let";
+      console.log("window.scriptLet:", window.scriptLet); // undefined
+
+      // ====== 2. 外层函数：arguments、var 提升、TDZ ======
       function outerFn(x, y) {
-        //函数内部声明的变量，具有局部(本地)作用域(local scope)
+        console.log("this:", this); // 普通函数调用时 this（非严格 → window）
+        console.log("arguments:", [...arguments]); // [1, 2, 3]
+        console.log("arguments.callee === outerFn:", arguments.callee === outerFn); // 非严格模式可用，但已废弃
+        console.log("globalVar from outer:", globalVar);
 
-        console.log("this,", this); //函数的内部对象 this 指向调用它的那个对象
-        console.log("arguments,", arguments); //函数的内部对象 arguments，包含传递给函数的实际的参数
-        console.log("arguments callee", arguments.callee === outerFn); //arguments callee 属性执行当前函数本身(指向正在执行的函数自身)
-        console.log("globalVar,", globalVar);
+        // var 提升：声明前读取得 undefined
+        console.log("outerVar before decl:", outerVar); // undefined
 
-        console.log(outerVar);//undefined (由于var声明的变量会有变量提升，所以在赋值之前，直接使用，值是undefined)
-        // console.log(outerLet);//<没有可用的值> 存在死区，不可访问，访问会报错：Uncaught ReferenceError: Cannot access 'outerLet' before initialization
+        // let TDZ：声明前访问抛 ReferenceError
+        try {
+          console.log(outerLet);
+        } catch (err) {
+          console.log("TDZ outerLet:", err.name, "-", err.message);
+        }
 
         var outerVar = 1000;
         let outerLet = 2000;
 
+        // ====== 3. 闭包：返回内层函数，保留外层环境 ======
         return function innerFn() {
-          console.log(outerVar);//闭包(嵌套函数)中引用的外部函数的作用域中的变量，存放在闭包作用域中
-          console.log(outerLet);
+          console.log("闭包 outerVar:", outerVar); // 1000
+          console.log("闭包 outerLet:", outerLet); // 2000
 
           var innerVar = 100;
           let innerLet = 200;
+          console.log("innerVar:", innerVar, "innerLet:", innerLet);
 
-          console.log(innerVar);
-          console.log(innerLet);
-
-          console.log("innerFn", innerFn);
-
-          return function innnnerFn(){
-            console.log(innerLet);
-            console.log(innerVar);
+          return function innnnerFn() {
+            // 三层闭包：仍能访问 innerLet、innerVar 及更外层绑定
+            console.log("三层闭包 innerLet:", innerLet); // 200
+            console.log("三层闭包 innerVar:", innerVar); // 100
 
             var nnnerVar = 123;
             let nnnerLet = 456;
-
-            console.log(nnnerVar);
-            console.log(nnnerLet);
-
-            console.log("innnnerFn,", innnnerFn);
-          }
+            console.log("nnnerVar:", nnnerVar, "nnnerLet:", nnnerLet);
+          };
         };
       }
 
-      //BBB：直接在script脚本顶层 使用 const 或者 let 声明的变量, 具有 脚本作用域(script scope)
-      const innnnerFn = outerFn(1, 2, 3)();
-      innnnerFn();
+      var innerReturned = outerFn(1, 2, 3);
+      var deepest = innerReturned(); // outerFn 已返回，但 innerFn 仍持有其环境
+      deepest(); // 三层闭包仍可运行
 
-      //BBB：直接在script脚本顶层使用 使用 const 或者 let 声明的变量，具有 脚本作用域(script scope)
-      let scriptLet = "I am let";
+      // ====== 4. arguments.callee 在严格模式中被禁用 ======
+      function strictCalleeDemo() {
+        "use strict";
+        try {
+          console.log(arguments.callee);
+        } catch (err) {
+          console.log("严格模式 callee:", err.name, "-", err.message);
+        }
+      }
+      strictCalleeDemo();
 
+      // 清理顶层 var 污染
+      delete window.globalVar;
+      delete window.outerFn;
     </script>
     <!-- SCRIPT_END -->
 
@@ -130,5 +145,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

@@ -5,13 +5,14 @@
     - JS 使用词法作用域，标识符解析由代码书写位置决定
     - 函数调用会创建词法环境，并通过 outer 引用串成作用域链
     - 查找变量先当前环境、再外层环境，直到全局环境或抛 ReferenceError
-    - 闭包能保留外层词法环境，DevTools Scope 面板可观察这条链
+    - 标识符查找走作用域链，对象属性访问走原型链，二者不可混谈
+    - 闭包能保留外层词法环境，内层函数返回后仍可访问外层绑定
   面试:
     - 作用域链如何决定变量查找顺序？
     - JS 为什么说是词法作用域而不是动态作用域？
     - 作用域链和原型链分别解决什么问题？
     - 闭包为什么能在外层函数返回后继续访问外层变量？
-  相关: 01-基础/变量进阶, 08-面试题/作用域
+  相关: 01-基础/变量进阶, 闭包-作用域链与变量提升
 -->
 
 <!doctype html>
@@ -33,22 +34,23 @@
         <ul>
           <li>作用域链是多个词法环境通过外层引用串起来的查找结构。示例里 <code>changeColorInner</code> 先找自己的 <code>innerColorChild</code>，再找 <code>changeColor</code> 中的 <code>tempColor</code>，最后才到全局的 <code>outerColor</code>。</li>
           <li>JS 是词法作用域：函数能访问哪些外层绑定，由函数定义时所在的位置决定，不由调用位置决定。把内层函数传到别处调用，也不会改变它的外层环境。</li>
-          <li>标识符查找只处理变量名、函数名这类绑定；对象属性访问走原型链。面试中要把“找变量”和“找属性”分开说明。</li>
+          <li>标识符查找只处理变量名、函数名这类绑定；对象属性访问走原型链。面试中要把「找变量」和「找属性」分开说明。</li>
           <li>内层函数可以读取外层绑定，外层函数不能反向读取内层局部绑定；外层绑定如果被内层函数长期引用，就形成闭包并延长相关环境的生命周期。</li>
-          <li><code>debugger</code> 命中后，DevTools 的 Scope 面板会展示 Local、Closure、Script/Global 等层级，是验证作用域链最直接的方式。</li>
+          <li>标识符在所有外层环境中都找不到时会抛 <code>ReferenceError</code>；DevTools Scope 面板可观察 Local、Closure、Script/Global 等层级。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
           <li><strong>作用域链如何决定变量查找顺序？</strong> 先结论：标识符会从当前词法环境开始逐层向外查找。原因是每个函数执行上下文都有当前环境和外层环境引用，规范中的 ResolveBinding 会沿这些环境解析名称。边界是它不负责属性查找，<code>obj.x</code> 的 <code>x</code> 走对象和原型链。</li>
-          <li><strong>JS 为什么说是词法作用域而不是动态作用域？</strong> 先结论：JS 的外层作用域由函数写在哪里决定。原因是函数创建时就记录了外部词法环境，而不是调用栈上的“调用者”。项目里把回调传给定时器、事件或 Promise 时，变量解析仍按定义位置走。</li>
+          <li><strong>JS 为什么说是词法作用域而不是动态作用域？</strong> 先结论：JS 的外层作用域由函数写在哪里决定。原因是函数创建时就记录了外部词法环境，而不是调用栈上的「调用者」。项目里把回调传给定时器、事件或 Promise 时，变量解析仍按定义位置走。</li>
+          <li><strong>作用域链和原型链分别解决什么问题？</strong> 作用域链解析自由变量（标识符）；原型链解析对象属性继承。二者机制独立：<code>innerFn</code> 找 <code>outerVar</code> 走作用域链，<code>obj.toString()</code> 找方法走原型链。</li>
           <li><strong>闭包为什么能在外层函数返回后继续访问外层变量？</strong> 先结论：因为内层函数仍引用外层词法环境，垃圾回收不能释放被引用的绑定。原因是闭包保存的是环境引用，不是简单复制一份值。边界是只要不再持有这个函数引用，相关环境就可以被回收。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://tc39.es/ecma262/#sec-lexical-environments">ECMA-262：Lexical Environments</a></li>
-          <li><a href="https://tc39.es/ecma262/#sec-resolvebinding">ECMA-262：ResolveBinding</a></li>
-          <li><a href="https://javascript.info/closure">JavaScript.info：Variable scope, closure</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures">MDN：Closures</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures">MDN: Closures</a>：词法作用域与闭包如何保留外层环境。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Glossary/Scope">MDN: Scope</a>：词法作用域与标识符查找规则。</li>
+          <li><a href="https://tc39.es/ecma262/#sec-lexical-environments">ECMA-262: Lexical Environments</a>：词法环境与外层引用。</li>
+          <li><a href="https://tc39.es/ecma262/#sec-resolvebinding">ECMA-262: ResolveBinding</a>：标识符解析算法。</li>
         </ul>
       </div>
     </section>
@@ -56,33 +58,97 @@
 
     <!-- SCRIPT_START -->
     <script>
-      var outerColor = "red"
+      // ====== 1. 嵌套作用域链：逐层向外查找 ======
+      // changeColorInner 查找 tempColor → changeColor 环境
+      // 查找 innerColorChild → 自身环境；查找 outerColor → 全局环境
+      var outerColor = "red";
 
-      function changeColor(){
-        var innerColor = "white"
+      function changeColor() {
+        var innerColor = "white";
+        var tempColor = outerColor; // 从外层（全局）读取 outerColor
 
-        var tempColor = outerColor;
+        console.log("changeColor tempColor:", tempColor); // "red"
 
-        console.log(tempColor);
-
-        function changeColorInner(){
-          var innerColorChild = "blue"
-
-          console.log(tempColor);
-
-          console.log(innerColorChild);
-
-          console.log(typeof changeColorInner);
-
-          debugger
+        function changeColorInner() {
+          var innerColorChild = "blue";
+          // tempColor 不在本层，沿作用域链找到 changeColor 中的绑定
+          console.log("inner tempColor:", tempColor); // "red"
+          console.log("inner innerColorChild:", innerColorChild); // "blue"
+          // 内层有自己的 innerColorChild，不会误读外层的 innerColor
+          console.log("typeof changeColorInner:", typeof changeColorInner); // "function"
         }
         changeColorInner();
       }
-
       changeColor();
 
-      console.log("执行完毕...");
+      // ====== 2. 词法作用域：定义位置决定外层环境，不由调用位置决定 ======
+      var lexicalVar = "defined-in-global";
 
+      function makeReader() {
+        var lexicalVar = "defined-in-makeReader";
+        return function readLexical() {
+          // 即使 readLexical 在其他作用域被调用，仍读 makeReader 环境中的 lexicalVar
+          return lexicalVar;
+        };
+      }
+
+      var reader = makeReader();
+      // 模拟「把函数传到别处调用」—— 仍返回 makeReader 闭包中的值
+      console.log("词法作用域 readLexical():", reader()); // "defined-in-makeReader"
+
+      // ====== 3. 作用域链 vs 原型链 ======
+      var protoDemo = { own: "instance" };
+      Object.setPrototypeOf(protoDemo, { inherited: "from-prototype" });
+
+      // 标识符 protoDemo 走作用域链；属性 .inherited 走原型链
+      console.log("作用域链 - 标识符 protoDemo:", protoDemo.own); // "instance"
+      console.log("原型链 - protoDemo.inherited:", protoDemo.inherited); // "from-prototype"
+      console.log("原型链 - protoDemo.toString:", typeof protoDemo.toString); // "function"（来自 Object.prototype）
+
+      // ====== 4. 闭包：外层函数返回后内层仍可访问外层绑定 ======
+      function createCounter() {
+        var count = 0;
+        return function increment() {
+          count += 1;
+          return count;
+        };
+      }
+
+      var counter = createCounter();
+      // changeColor 已执行完毕，但 increment 仍引用 createCounter 环境中的 count
+      console.log("闭包 counter():", counter()); // 1
+      console.log("闭包 counter():", counter()); // 2
+
+      // ====== 5. 找不到标识符 → ReferenceError ======
+      try {
+        console.log(notDeclaredAnywhere);
+      } catch (err) {
+        console.log("未声明标识符:", err.name, "-", err.message);
+      }
+
+      // 外层不能读取内层局部绑定
+      function outerOnly() {
+        function innerOnly() {
+          var secret = 42;
+        }
+        innerOnly();
+        try {
+          console.log(secret);
+        } catch (err) {
+          console.log("外层读内层:", err.name, "-", err.message);
+        }
+      }
+      outerOnly();
+
+      console.log("执行完毕…");
+
+      // 清理顶层 var 演示留下的 globalThis 属性
+      delete window.outerColor;
+      delete window.lexicalVar;
+      delete window.changeColor;
+      delete window.makeReader;
+      delete window.createCounter;
+      delete window.outerOnly;
     </script>
     <!-- SCRIPT_END -->
 
@@ -91,7 +157,8 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="../01-%E5%9F%BA%E7%A1%80/%E5%8F%98%E9%87%8F%E8%BF%9B%E9%98%B6.html">相关 · 01-基础/变量进阶</a>
+        <a href="../01-%E5%9F%BA%E7%A1%80/%E5%8F%98%E9%87%8F%E8%BF%9B%E9%98%B6.html">相关 · 变量进阶</a>
+        <a href="./%E9%97%AD%E5%8C%85/01-%E9%97%AD%E5%8C%85-%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE%E4%B8%8E%E5%8F%98%E9%87%8F%E6%8F%90%E5%8D%87.html">相关 · 闭包</a>
         <a href="../01-%E5%9F%BA%E7%A1%80/%E6%AD%A3%E5%88%99/04-%E6%AD%A3%E5%88%99-%E5%8E%BB%E6%A0%87%E7%82%B9.html">← 正则-去标点</a>
         <a href="./02-%E6%9F%AF%E9%87%8C%E5%8C%96.html">柯里化 →</a>
       </nav>
@@ -105,5 +172,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

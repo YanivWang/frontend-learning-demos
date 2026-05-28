@@ -1,6 +1,9 @@
 <!--
-分类: javascript / 07-进阶 / 手写Promise
+  分类: javascript / 07-进阶 / 手写Promise
   主题: 手写 Promise.all
+  难度: 面试
+  前置: Promise-all并发与then串行
+  相关: 资源预加载/index
   要点:
     - Promise.all 接收 iterable，返回一个聚合 Promise
     - 空 iterable 立即 fulfilled；非空输入按传入顺序收集结果，而不是完成顺序
@@ -26,7 +29,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>手写 Promise.all</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">请打开 DevTools Console 查看输出（含约 2 秒延迟的并发演示）。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -38,16 +41,16 @@
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>Promise.all</code> 为什么按输入顺序返回结果？</strong> 结论是规范要求 fulfillment values 按 iterable 迭代出的顺序组成数组。原因是调用方需要稳定地把结果映射回输入任务，而异步完成顺序不可预测。项目中并发请求用户、订单、权限时，结果顺序稳定能避免额外排序和配对错误。</li>
-          <li><strong>手写时为什么要用独立完成计数器？</strong> 结论是计数器表示真正 fulfilled 的元素数，数组 <code>length</code> 不能表示完成数。原因是先写入高索引会把 <code>length</code> 拉大，导致稀疏数组误判全部完成。边界是空 iterable 要单独处理，否则计数器永远不会触发 resolve。</li>
-          <li><strong><code>Promise.all</code> 和 <code>allSettled</code> 怎么选？</strong> 结论是任务互相依赖、任一失败就无法继续时用 <code>all</code>；需要拿到每个任务最终状态时用 <code>allSettled</code>。原因是 <code>all</code> fail-fast，<code>allSettled</code> 等全部 settled。项目中首屏必要数据可用 <code>all</code>，批量上报或多接口容错更适合 <code>allSettled</code>。</li>
-          <li><strong>普通值、thenable 和非 iterable 输入怎么处理？</strong> 结论是普通值和 thenable 都应通过 <code>Promise.resolve</code> 归一化，非 iterable 会让聚合 Promise rejected。原因是原生 <code>Promise.all</code> 面向 iterable，并对每个元素执行 Promise 解析过程。边界是手写面试版可简化，但要主动说明和规范实现的差异。</li>
+          <li><strong>Promise.all 为什么按输入顺序返回结果？</strong> 结论是规范要求 fulfillment values 按 iterable 迭代出的顺序组成数组。原因是调用方需要稳定地把结果映射回输入任务，而异步完成顺序不可预测。项目中并发请求用户、订单、权限时，结果顺序稳定能避免额外排序和配对错误。</li>
+          <li><strong>手写时为什么要用独立完成计数器？</strong> 结论是计数器表示真正 fulfilled 的元素数，数组 length 不能表示完成数。原因是先写入高索引会把 length 拉大，导致稀疏数组误判全部完成。边界是空 iterable 要单独处理，否则计数器永远不会触发 resolve。</li>
+          <li><strong>Promise.all 和 allSettled 怎么选？</strong> 结论是任务互相依赖、任一失败就无法继续时用 all；需要拿到每个任务最终状态时用 allSettled。原因是 all fail-fast，allSettled 等全部 settled。项目中首屏必要数据可用 all，批量上报或多接口容错更适合 allSettled。</li>
+          <li><strong>普通值、thenable 和非 iterable 输入怎么处理？</strong> 结论是普通值和 thenable 都应通过 Promise.resolve 归一化，非 iterable 会让聚合 Promise rejected。原因是原生 Promise.all 面向 iterable，并对每个元素执行 Promise 解析过程。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all">MDN Web Docs: Promise.all()</a></li>
-          <li><a href="https://tc39.es/ecma262/#sec-promise.all">ECMAScript Language Specification: Promise.all</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled">MDN Web Docs: Promise.allSettled()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all">MDN: Promise.all()</a></li>
+          <li><a href="https://tc39.es/ecma262/#sec-promise.all">ECMAScript 规范: Promise.all</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled">MDN: Promise.allSettled()</a></li>
         </ul>
       </div>
     </section>
@@ -55,21 +58,7 @@
 
     <!-- SCRIPT_START -->
     <script>
-      let p1 = new Promise((resolve) => {
-        setTimeout(() => resolve("p1 ok!"), 1500);
-      });
-
-      let p2 = new Promise((resolve) => {
-        setTimeout(() => resolve("p2 ok!"), 2000);
-      });
-
-      let p3 = new Promise((resolve) => {
-        setTimeout(() => resolve("p3 ok!"), 2000);
-      });
-
-      // 规则:
-      //   1.有一个失败就 reject
-      //   2.全部成功才 resolve
+      // ====== 1. 手写 Promise.myAll ======
       Promise.myAll = function (iterable) {
         return new Promise((resolve, reject) => {
           let items;
@@ -82,33 +71,60 @@
 
           const retArray = new Array(items.length);
 
-          // 边界：传空数组应立即 resolve([])
+          // 边界：空 iterable 立即 resolve([])
           if (items.length === 0) {
             resolve(retArray);
             return;
           }
 
-          // 用计数器 doneCount 代替 retArray.length，避免稀疏数组 length 判断陷阱
           let doneCount = 0;
-          items.forEach((tempPromise, index) => {
-            // 包一层 Promise.resolve，容忍非 thenable 输入
-            Promise.resolve(tempPromise).then((res) => {
-              retArray[index] = res;
-              doneCount++;
-              if (doneCount === items.length) {
-                resolve(retArray);
-              }
-            }).catch(reject);
+          items.forEach((item, index) => {
+            Promise.resolve(item)
+              .then((res) => {
+                retArray[index] = res;
+                doneCount++;
+                if (doneCount === items.length) {
+                  resolve(retArray);
+                }
+              })
+              .catch(reject); // fail-fast：第一个 reject 即整体 reject
           });
         });
       };
 
-      Promise.myAll([p1, p2, p3]).then(res => {
-        console.log("all resolved:", res);
-      }).catch(err => {
-        console.log("any rejected:", err);
+      // ====== 2. 并发演示：结果按输入顺序，不按完成顺序 ======
+      const p1 = new Promise((resolve) => setTimeout(() => resolve("p1 ok!"), 1500));
+      const p2 = new Promise((resolve) => setTimeout(() => resolve("p2 ok!"), 500));
+      const p3 = new Promise((resolve) => setTimeout(() => resolve("p3 ok!"), 1000));
+
+      Promise.myAll([p1, p2, p3]).then((res) => {
+        console.log("全部 resolved（按输入顺序）:", res);
+        // 预期: ["p1 ok!", "p2 ok!", "p3 ok!"]，尽管 p2 最先完成
       });
 
+      // ====== 3. 边界：空数组 ======
+      Promise.myAll([]).then((res) => {
+        console.log("空数组:", res); // []
+      });
+
+      // ====== 4. 边界：普通值与 thenable ======
+      Promise.myAll([42, Promise.resolve("thenable")]).then((res) => {
+        console.log("普通值 + thenable:", res); // [42, "thenable"]
+      });
+
+      // ====== 5. fail-fast：任一 reject 即整体 reject ======
+      Promise.myAll([
+        Promise.resolve("ok"),
+        Promise.reject(new Error("first reject")),
+        new Promise((resolve) => setTimeout(() => resolve("late"), 100)),
+      ]).catch((err) => {
+        console.log("fail-fast:", err.message); // "first reject"
+      });
+
+      // ====== 6. 稀疏数组陷阱：不能用 retArray.length 判断完成数 ======
+      const sparseDemo = [];
+      sparseDemo[99] = "done";
+      console.log("稀疏数组 length 误导:", sparseDemo.length); // 100，但只有 1 个元素
     </script>
     <!-- SCRIPT_END -->
 
@@ -118,7 +134,7 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="../%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/timeline.html">← timeline</a>
-        <a href="../%E8%B5%84%E6%BA%90%E9%A2%84%E5%8A%A0%E8%BD%BD/index.html">index →</a>
+        <a href="../%E8%B5%84%E6%BA%90%E9%A2%84%E5%8A%A0%E8%BD%BD/index.html">资源预加载 →</a>
       </nav>
       <script>
         (function () {
@@ -130,5 +146,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

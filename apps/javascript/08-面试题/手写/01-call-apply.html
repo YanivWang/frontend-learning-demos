@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 08-面试题 / 手写
+  分类: javascript / 08-面试题 / 手写
   主题: 手写 call / apply
   要点:
     - call 和 apply 都会立即调用函数并显式指定 this，区别是参数传递形式不同
@@ -11,6 +11,7 @@
     - 手写 call/apply 为什么要临时挂载函数？
     - thisArg 为 null、undefined 或原始值时怎么处理？
     - 手写 apply 为什么要校验第二个参数并清理临时属性？
+  相关: bind, 02-函数与作用域/this-call-apply-bind
 -->
 
 <!doctype html>
@@ -26,7 +27,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>手写 call / apply</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -49,65 +50,83 @@
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call" target="_blank" rel="noreferrer">MDN: Function.prototype.call()</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply" target="_blank" rel="noreferrer">MDN: Function.prototype.apply()</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this" target="_blank" rel="noreferrer">MDN: this</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol" target="_blank" rel="noreferrer">MDN: Symbol</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>打开控制台查看断言结果。</p>
+    <section class="demo-block">
+      <h2>手写实现验证</h2>
+      <p class="tip">下方输出应与复习区标准答法一致；断言细节可同时在 DevTools Console 查看。</p>
+      <pre id="runtime-output" aria-live="polite"></pre>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      Function.prototype.myCall = function (thisArg, ...args) {
-        if (typeof this !== "function") {
-          throw new TypeError("myCall must be called on a function");
+      (function () {
+        var out = document.getElementById("runtime-output");
+        var lines = [];
+        function emit(line) {
+          console.log(line);
+          lines.push(line);
+          if (out) out.textContent = lines.join("\n");
+        }
+        function assertOk(ok, msg) {
+          emit((ok ? "✓ " : "✗ ") + msg);
         }
 
-        const context = thisArg == null ? globalThis : Object(thisArg);
-        const key = Symbol("fn");
-        context[key] = this;
-        try {
-          return context[key](...args);
-        } finally {
-          delete context[key];
+        // ====== 1. 手写 myCall：临时挂载 + Symbol 键 + finally 清理 ======
+        Function.prototype.myCall = function (thisArg, ...args) {
+          if (typeof this !== "function") {
+            throw new TypeError("myCall must be called on a function");
+          }
+          const context = thisArg == null ? globalThis : Object(thisArg);
+          const key = Symbol("fn");
+          context[key] = this;
+          try {
+            return context[key](...args);
+          } finally {
+            delete context[key];
+          }
+        };
+
+        // ====== 2. 手写 myApply：校验类数组参数 ======
+        Function.prototype.myApply = function (thisArg, args) {
+          if (typeof this !== "function") {
+            throw new TypeError("myApply must be called on a function");
+          }
+          const isObjectLike =
+            args == null || typeof args === "object" || typeof args === "function";
+          if (!isObjectLike) {
+            throw new TypeError("args must be array-like or iterable");
+          }
+          const context = thisArg == null ? globalThis : Object(thisArg);
+          const key = Symbol("fn");
+          context[key] = this;
+          try {
+            const argList = args == null ? [] : Array.from(args);
+            return context[key](...argList);
+          } finally {
+            delete context[key];
+          }
+        };
+
+        // ====== 3. 验证：call/apply 指定 this 与传参 ======
+        function introduce(prefix, suffix) {
+          return prefix + this.name + suffix;
         }
-      };
+        const user = { name: "Ada" };
 
-      Function.prototype.myApply = function (thisArg, args) {
-        if (typeof this !== "function") {
-          throw new TypeError("myApply must be called on a function");
-        }
-        const isObjectLike = args == null || typeof args === "object" || typeof args === "function";
-        if (!isObjectLike) {
-          throw new TypeError("args must be array-like or iterable");
-        }
+        const callResult = introduce.myCall(user, "Hi, ", "!");
+        const applyResult = introduce.myApply(user, ["Hello, ", "."]);
+        const maxResult = Math.max.myApply(null, [1, 8, 3]);
 
-        const context = thisArg == null ? globalThis : Object(thisArg);
-        const key = Symbol("fn");
-        context[key] = this;
-        try {
-          const argList = args == null ? [] : Array.from(args);
-          return context[key](...argList);
-        } finally {
-          delete context[key];
-        }
-      };
-
-      function introduce(prefix, suffix) {
-        return prefix + this.name + suffix;
-      }
-
-      const user = { name: "Ada" };
-      console.assert(introduce.myCall(user, "Hi, ", "!") === "Hi, Ada!", "myCall supports args");
-      console.assert(introduce.myApply(user, ["Hello, ", "."]) === "Hello, Ada.", "myApply supports array args");
-      console.assert(Math.max.myApply(null, [1, 8, 3]) === 8, "myApply works with native functions");
-
-      console.log("myCall:", introduce.myCall(user, "Hi, ", "!"));
-      console.log("myApply:", introduce.myApply(user, ["Hello, ", "."]));
-
+        assertOk(callResult === "Hi, Ada!", "myCall: " + callResult);
+        assertOk(applyResult === "Hello, Ada.", "myApply: " + applyResult);
+        assertOk(maxResult === 8, "myApply(null, [1,8,3]) → Math.max = " + maxResult);
+      })();
     </script>
     <!-- SCRIPT_END -->
 
@@ -129,5 +148,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

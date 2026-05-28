@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 08-面试题 / 作用域
+  分类: javascript / 08-面试题 / 作用域
   主题: var 与 function 同名提升
   要点:
     - 函数声明会在执行前创建函数绑定；同名函数声明中后面的声明覆盖前面的声明
@@ -11,6 +11,7 @@
     - var a = 1 为什么会把函数绑定改成数字 1？
     - 多个同名函数声明和 var 声明的处理顺序如何理解？
     - 为什么现代代码要避免 var 和 function 同名声明？
+  相关: var重复声明, 01-基础/变量进阶
 -->
 
 <!doctype html>
@@ -18,7 +19,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>变量提升经典题 · var6</title>
+    <title>面试题 - var 与 function 同名提升</title>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
   </head>
@@ -26,7 +27,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>var + function 同名提升经典题</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -49,28 +50,47 @@
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function" target="_blank" rel="noreferrer">MDN: function declaration</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/var" target="_blank" rel="noreferrer">MDN: var</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Glossary/Hoisting" target="_blank" rel="noreferrer">MDN Glossary: Hoisting</a></li>
-          <li><a href="https://javascript.info/var" target="_blank" rel="noreferrer">JavaScript.info: The old "var"</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>打开控制台查看输出，思考为什么是函数引用 → 1 → 3 → 3。</p>
+    <section class="demo-block">
+      <h2>运行结果</h2>
+      <p class="tip">标准答法：依次输出 <strong>函数引用 → 1 → 3 → 3</strong>（声明阶段绑定函数，运行期赋值覆盖）。</p>
+      <pre id="runtime-output" aria-live="polite"></pre>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // 执行前：后一个函数声明覆盖前一个，a 先绑定为 function a() { return 4; }。
-      console.log(a);
-      var a = 1;
-      function a() { return 2; }
-      console.log(a);
-      var a = 3;
-      console.log(a);
-      function a() { return 4; }
-      console.log(a);
+      (function () {
+        var out = document.getElementById("runtime-output");
+        var lines = [];
+        function emit(step, value) {
+          var display =
+            typeof value === "function" ? "function a() { return 4; }" : String(value);
+          var line = step + ": " + display;
+          console.log(line);
+          lines.push(line);
+          if (out) out.textContent = lines.join("\n");
+        }
 
+        // ====== 1. 声明阶段：后一个 function a 覆盖前一个，var a 不重置函数绑定 ======
+        emit("第 1 行 console.log(a)", a);
+        var a = 1;
+        function a() {
+          return 2;
+        }
+        emit("var a = 1 后", a);
+        var a = 3;
+        emit("var a = 3 后", a);
+        function a() {
+          return 4;
+        }
+        emit("function a(){} 声明后（运行期不重新赋值）", a);
+      })();
     </script>
     <!-- SCRIPT_END -->
 
@@ -80,7 +100,7 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./05-let-for%E5%BE%AA%E7%8E%AF%E9%97%AD%E5%8C%85.html">← let-for循环闭包</a>
-        <a href="../../09-Canvas/%E5%8A%A8%E7%94%BB/firework.html">firework →</a>
+        <a href="../../09-Canvas/%E5%9F%BA%E7%A1%80/index.html">Canvas 基础 →</a>
       </nav>
       <script>
         (function () {
@@ -92,5 +112,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

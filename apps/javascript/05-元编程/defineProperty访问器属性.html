@@ -1,8 +1,11 @@
 <!--
-分类: javascript / 05-元编程
+  分类: javascript / 05-元编程
   主题: defineProperty 访问器属性 get/set
+  难度: 进阶
+  前置: defineProperty
+  相关: defineProperty, proxy
   要点:
-    - 访问器属性由 get/set 函数描述，不同时拥有 value 或 writable
+    - 访问器属性由 get/set 函数描述，不能与 value/writable 混用
     - getter 无参数，setter 只接收一个待写入的新值
     - get/set 内部读写同名属性会递归触发自身，通常用内部字段承载真实数据
     - 访问器适合派生属性、校验和兼容旧式响应式拦截，复杂对象监听优先考虑 Proxy
@@ -41,14 +44,13 @@
           <li><strong>访问器属性和数据属性为什么不能混用 value/writable？</strong> 结论是两类描述符互斥：数据属性保存值，访问器属性通过函数计算或接收写入。原因是规范会按描述符类型定义属性，混用会让同一属性既有存储语义又有函数语义。项目里要么用 <code>value/writable</code> 表示普通字段，要么用 <code>get/set</code> 表示派生或受控字段。</li>
           <li><strong>getter 和 setter 的参数、this、触发时机分别是什么？</strong> 结论是 getter 在读属性时运行且无参数，setter 在写属性时运行且只有一个新值参数，<code>this</code> 是本次访问的接收者。原因是属性访问语义只需要“读”或“写入的新值”。继承或 <code>Reflect.get</code> 改变 receiver 时，<code>this</code> 也会随之变化。</li>
           <li><strong>为什么在 get/set 里读写同名属性会导致递归？</strong> 结论是同名读写会再次命中同一个访问器。原因是访问器本身就是该属性的读取和写入入口。实际项目应使用内部字段、闭包或私有字段保存真实数据，例如本 demo 的 <code>firstName</code>、<code>lastName</code>。</li>
-          <li><strong>defineProperty 访问器和 Proxy 拦截对象操作时如何取舍？</strong> 结论是单个已知属性用访问器更直接，对象级元操作用 <code>Proxy</code> 更完整。原因是 <code>defineProperty</code> 只能定义已有目标上的具体属性，而 <code>Proxy</code> 可拦截读取、写入、删除、枚举、原型等操作。边界是 <code>Proxy</code> 不能被完全 polyfill，旧环境兼容仍可能需要访问器方案。</li>
+          <li><strong>defineProperty 访问器和 Proxy 拦截对象操作时如何取舍？</strong> 结论是单个已知属性用访问器更直接，对象级元操作用 <code>Proxy</code> 更完整。原因是 <code>defineProperty</code> 只能定义已有目标上的具体属性，而 <code>Proxy</code> 可拦截读取、写入、删除、枚举、原型等操作。边界是 <code>Proxy</code> 每次属性访问都有 trap 开销，且不能被完整 polyfill。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get">MDN: getter</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/set">MDN: setter</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty">MDN: Object.defineProperty()</a></li>
-          <li><a href="https://javascript.info/property-accessors">JavaScript.info: Property getters and setters</a></li>
         </ul>
       </div>
     </section>
@@ -56,36 +58,45 @@
 
     <!-- SCRIPT_START -->
     <script>
-      let person = {
+      // ====== 1. 访问器属性：fullName 组合 firstName / lastName ======
+      const person = {
         firstName: "Yaniv",
         lastName: "Wang",
       };
 
-      // 定义访问器属性：fullName 自身不存储 value，而是组合内部字段。
       Object.defineProperty(person, "fullName", {
         configurable: true,
         enumerable: true,
         set(value) {
-          console.log("set", value);
-
+          console.log("setter 收到:", value);
           const [firstName, lastName = ""] = value.split(" ");
           this.firstName = firstName;
           this.lastName = lastName;
         },
         get() {
-          console.log("get");
-          console.log("this", this); //谁调用，指向谁 {firstName: 'Yaniv', lastName: 'Wang'}
-
+          console.log("getter 触发, this === person:", this === person);
           return `${this.firstName} ${this.lastName}`.trim();
         },
       });
 
-      console.log(person.fullName);
+      // ====== 2. 读取触发 getter ======
+      console.log("读取 fullName:", person.fullName); // "Yaniv Wang"
 
+      // ====== 3. 写入触发 setter，再读触发 getter ======
       person.fullName = "Gao Jie";
+      console.log("写入后再读:", person.fullName); // "Gao Jie"
+      console.log("内部字段:", person.firstName, person.lastName);
 
-      console.log(person.fullName);
+      // ====== 4. 描述符类型：访问器属性没有 value/writable ======
+      const fullNameDesc = Object.getOwnPropertyDescriptor(person, "fullName");
+      console.log("访问器描述符键:", Object.keys(fullNameDesc));
+      // 预期: ["configurable", "enumerable", "get", "set"]，无 value/writable
 
+      // ====== 5. 反例：get/set 内读写同名属性会递归（仅注释，勿运行）======
+      // Object.defineProperty(bad, "x", {
+      //   get() { return this.x; }, // RangeError: Maximum call stack size exceeded
+      //   set(v) { this.x = v; },
+      // });
     </script>
     <!-- SCRIPT_END -->
 
@@ -94,6 +105,8 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+        <a href="./defineProperty.html">相关 · defineProperty</a>
+        <a href="./proxy.html">相关 · proxy</a>
         <a href="./defineProperty.html">← defineProperty</a>
         <a href="./proxy.html">proxy →</a>
       </nav>
@@ -107,5 +120,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

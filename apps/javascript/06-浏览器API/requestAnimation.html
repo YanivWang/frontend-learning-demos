@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 06-浏览器API
+  分类: javascript / 06-浏览器API
   主题: requestAnimationFrame 与递归调用对比
   要点:
     - 同步递归会持续占用当前调用栈；requestAnimationFrame 把回调排到下一次重绘前
@@ -11,6 +11,7 @@
     - rAF 和 setTimeout/setInterval 做动画有什么差异？
     - 为什么动画逻辑应该使用回调时间戳计算进度？
     - 组件卸载或页面隐藏时如何停止 rAF 循环？
+  相关: Performance-API, 浏览器渲染与性能
 -->
 
 <!doctype html>
@@ -19,6 +20,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>requestAnimationFrame</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
+      #box { width: 48px; height: 48px; background: #3d8bfd; border-radius: 6px; margin: 16px 0; }
+      button { margin: 4px 6px 4px 0; padding: 6px 10px; }
+      #runtime-output { padding: 10px; background: #f6f8fa; border-radius: 6px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; min-height: 4rem; }
+    </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
   </head>
@@ -26,7 +33,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>requestAnimationFrame 与递归调用对比</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">请阅读本复习区，并在下方演示区启动/停止动画；同时打开 DevTools Console 查看帧时间戳输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -53,32 +60,92 @@
     </section>
     <!-- NOTES_END -->
 
+    <!-- PAGE_DOM_START -->
+    <section class="demo-block">
+      <h2>rAF 动画演示</h2>
+      <p class="tip">蓝色方块按时间戳匀速移动；后台标签页 rAF 会暂停或降频，需切换标签页人工验证。</p>
+      <button type="button" id="startBtn">启动 rAF 动画</button>
+      <button type="button" id="stopBtn">停止动画</button>
+      <div id="box"></div>
+      <pre id="runtime-output" aria-live="polite">点击「启动 rAF 动画」开始…</pre>
+    </section>
+    <!-- PAGE_DOM_END -->
+
     <!-- SCRIPT_START -->
     <script>
+      const box = document.getElementById("box");
+      const output = document.getElementById("runtime-output");
       let rafId = 0;
       let frameCount = 0;
+      let lastTimestamp = 0;
+      let position = 0;
+      let running = false;
 
-      //递归调用必须有一个明确的结束条件，否则会到导致堆栈溢出
-      function animation1() {
-        console.log("动画...");
-        animation1();
+      function show(text) {
+        output.textContent = text;
       }
 
-      //animation1(); //错误
+      // ====== 1. 同步递归：会栈溢出（仅注释，不可运行）======
+      // function animationSync() {
+      //   console.log("动画...");
+      //   animationSync(); // RangeError: Maximum call stack size exceeded
+      // }
 
-      function animation2(timestamp) {
+      // ====== 2. rAF 循环：按时间差更新位置 ======
+      function animationLoop(timestamp) {
+        if (!running) return;
+
+        if (!lastTimestamp) lastTimestamp = timestamp;
+        const delta = timestamp - lastTimestamp; // 毫秒，用于跨刷新率匀速
+        lastTimestamp = timestamp;
         frameCount += 1;
-        console.log("动画帧...", frameCount, "timestamp:", Math.round(timestamp));
-        if (frameCount < 120) {
-          rafId = requestAnimationFrame(animation2);
-        }
-      }
-      rafId = requestAnimationFrame(animation2);
 
-      window.addEventListener("pagehide", function () {
+        position += delta * 0.08; // 像素/毫秒
+        if (position > 280) position = 0;
+        box.style.transform = "translateX(" + position.toFixed(1) + "px)";
+
+        if (frameCount <= 5 || frameCount % 30 === 0) {
+          console.log("帧", frameCount, "timestamp:", Math.round(timestamp), "delta:", Math.round(delta) + "ms");
+        }
+
+        show([
+          "帧数: " + frameCount,
+          "timestamp: " + Math.round(timestamp) + " ms",
+          "delta: " + Math.round(delta) + " ms",
+          "position: " + position.toFixed(1) + " px",
+        ].join("\n"));
+
+        rafId = requestAnimationFrame(animationLoop);
+      }
+
+      // ====== 3. 启动 / 停止 ======
+      document.getElementById("startBtn").addEventListener("click", () => {
+        if (running) return;
+        running = true;
+        frameCount = 0;
+        lastTimestamp = 0;
+        position = 0;
+        show("动画运行中…");
+        rafId = requestAnimationFrame(animationLoop);
+      });
+
+      document.getElementById("stopBtn").addEventListener("click", () => {
+        running = false;
+        cancelAnimationFrame(rafId);
+        show("已 cancelAnimationFrame，共运行 " + frameCount + " 帧");
+      });
+
+      // ====== 4. 页面隐藏时清理 ======
+      window.addEventListener("pagehide", () => {
+        running = false;
         cancelAnimationFrame(rafId);
       });
 
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          show("页面隐藏 — rAF 通常会暂停或降频（需人工切换标签验证）");
+        }
+      });
     </script>
     <!-- SCRIPT_END -->
 
@@ -100,5 +167,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

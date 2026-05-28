@@ -119,14 +119,18 @@
         const multiply = new Function("a", "b", "return a * b");
         console.log("[new Function] 2 * 3 =", multiply(2, 3));
 
-        const outerVar = "hello";
-        (function () { console.log("[IIFE 看见] outerVar =", outerVar); })();
-        try {
-          const f = new Function("return outerVar");
-          console.log(f());
-        } catch (e) {
-          console.log("[new Function 看不见 outerVar]", e.message);
-        }
+        (function () {
+          const outerVar = "hello-local";
+          (function () {
+            console.log("[IIFE 看见局部] outerVar =", outerVar);
+          })();
+          try {
+            const f = new Function("return outerVar");
+            console.log("[new Function 看不见局部]", f()); // ReferenceError 或读到全局同名
+          } catch (e) {
+            console.log("[new Function 看不见局部]", e.name, "-", e.message);
+          }
+        })();
 
     </script>
     <!-- SCRIPT_END -->

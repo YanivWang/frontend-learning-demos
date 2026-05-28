@@ -25,7 +25,7 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>类型检测三板斧</h1>
+      <h1>类型检测三板斧 — typeof / instanceof / toString</h1>
       <p class="hint">请打开 DevTools Console 查看输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
@@ -57,46 +57,44 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // ============ 1. typeof：粗粒度，只区分原始类型与对象/函数 ============
-      console.log(typeof undefined); // 'undefined'
-      console.log(typeof null);      // 'object'  ⚠️ 历史遗留 bug
-      console.log(typeof 0);         // 'number'
-      console.log(typeof NaN);       // 'number'
-      console.log(typeof "abc");     // 'string'
-      console.log(typeof true);      // 'boolean'
-      console.log(typeof Symbol());  // 'symbol'
-      console.log(typeof 1n);        // 'bigint'
-      console.log(typeof []);        // 'object'  数组也是 object
-      console.log(typeof {});        // 'object'
-      console.log(typeof /a/);       // 'object'
-      console.log(typeof function () {}); // 'function'
+      // ====== 1. typeof：粗粒度，适合原始类型与 function ======
+      // MDN：typeof null === 'object' 是历史遗留，不是 null 真是对象
+      console.log("typeof undefined:", typeof undefined); // "undefined"
+      console.log("typeof null:     ", typeof null); // "object" ← 历史遗留
+      console.log("typeof 0:        ", typeof 0); // "number"
+      console.log("typeof NaN:      ", typeof NaN); // "number"
+      console.log("typeof 'abc':    ", typeof "abc"); // "string"
+      console.log("typeof true:     ", typeof true); // "boolean"
+      console.log("typeof Symbol(): ", typeof Symbol()); // "symbol"
+      console.log("typeof 1n:       ", typeof 1n); // "bigint"
+      console.log("typeof []:       ", typeof []); // "object"
+      console.log("typeof {}:       ", typeof {}); // "object"
+      console.log("typeof /a/:      ", typeof /a/); // "object"
+      console.log("typeof function:", typeof function () {}); // "function"
 
-      // ============ 2. instanceof：基于原型链，不能跨 iframe ============
-      console.log([] instanceof Array);     // true
-      console.log([] instanceof Object);    // true（数组也是对象）
-      console.log("abc" instanceof String); // false（字面量不是 String 实例）
+      // ====== 2. instanceof：沿原型链，原始字面量无效 ======
+      console.log("[] instanceof Array:", [] instanceof Array); // true
+      console.log("[] instanceof Object:", [] instanceof Object); // true
+      console.log('"abc" instanceof String:', "abc" instanceof String); // false（字面量非包装对象）
 
-      // ============ 3. Object.prototype.toString.call —— 万能精准检测 ============
+      // 数组检测优先 Array.isArray（MDN 推荐）
+      console.log("Array.isArray([]):", Array.isArray([])); // true
+      console.log("Array.isArray({}):", Array.isArray({})); // false
+
+      // ====== 3. Object.prototype.toString.call —— 通用内置类型检测 ======
       const getType = Object.prototype.toString;
-      console.log(getType.call("aaa"));        // '[object String]'
-      console.log(getType.call(111));          // '[object Number]'
-      console.log(getType.call(true));         // '[object Boolean]'
-      console.log(getType.call([]));           // '[object Array]'
-      console.log(getType.call({}));           // '[object Object]'
-      console.log(getType.call(null));         // '[object Null]'
-      console.log(getType.call(undefined));    // '[object Undefined]'
-      console.log(getType.call(function () {})); // '[object Function]'
-      console.log(getType.call(new Date()));   // '[object Date]'
-      console.log(getType.call(/a/));          // '[object RegExp]'
+      console.log("toString null:", getType.call(null)); // "[object Null]"
+      console.log("toString []:", getType.call([])); // "[object Array]"
+      console.log("toString Date:", getType.call(new Date())); // "[object Date]"
+      console.log("toString fn:", getType.call(function () {})); // "[object Function]"
 
       // 工具函数：返回类型字符串小写
       function type(value) {
         return Object.prototype.toString.call(value).slice(8, -1).toLowerCase();
       }
-      console.log(type([])); // 'array'
-      console.log(type(/a/)); // 'regexp'
-      console.log(type(null)); // 'null'
-
+      console.log("type([]):", type([])); // "array"
+      console.log("type(null):", type(null)); // "null"
+      console.log("type(/a/):", type(/a/)); // "regexp"
     </script>
     <!-- SCRIPT_END -->
 

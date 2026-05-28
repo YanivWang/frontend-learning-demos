@@ -46,8 +46,8 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await" target="_blank" rel="noreferrer">MDN Web Docs：await</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function" target="_blank" rel="noreferrer">MDN Web Docs：async function</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await">MDN: await</a>：非 Promise 值按 fulfilled 处理，后续仍让出到微任务。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function">MDN: async function</a>：return 变 fulfilled，throw/reject 变 rejected。</li>
         </ul>
       </div>
     </section>
@@ -59,66 +59,47 @@
         return localforage.setItem(key, value);
       }
 
-      function getStorage(key) {
-        return localforage.getItem(key);
-      }
-
-      //await 后面的表达式可以是任何类型
-      //也可以是Promise对象(使用Promise对象包装异步函数)
-      //await 表示，紧跟在后面的表达式需要等待返回结果
-
-      // async 函数把 return/throw 包装成外层 Promise 的 fulfilled/rejected
+      // ====== 1. await 可等待 Promise、thenable 或普通值 ======
+      // 传入 setStorage(...) 时 Promise 已创建，m1/m2 会并发启动
       async function storeData(m1, m2) {
         try {
           const r1 = await m1;
           const r2 = await m2;
+          const r3 = await 123; // 普通值按 fulfilled 处理
 
-          const r3 = await 123;
-
-          //async函数，内部的return语法返回的值，会成为then方法回调函数的参数
-          return [r1, r2, r3];
+          return [r1, r2, r3]; // return 值成为外层 Promise 的 fulfilled value
         } catch (error) {
           console.error("存储失败", error);
-          throw error;
+          throw error; // 重新抛出，让调用方 catch
         }
       }
 
-      //async函数返回一个Promise对象
-      //async函数本身也是一个Promise对象，用来包装异步函数的
-      //所以只要调用了，就是立即执行，并立即返回，不会影响后面的程序的执行流程
-      //这里的返回并不是函数执行完毕的回调返回，而是函数调用的返回
-      //调用了async函数会立即返回一个Promise对象
-      let promise = storeData(setStorage("name", "Join"), setStorage("age", "30"));
-      promise.then(function (data) {
-        console.log(data);
-      }).catch(function (err) {
-        console.error(err);
-      });
+      storeData(setStorage("name", "Join"), setStorage("age", "30"))
+        .then(function (data) {
+          console.log("storeData 成功:", data);
+        })
+        .catch(function (err) {
+          console.error("storeData 失败:", err);
+        });
 
-      console.log("1234");
+      console.log("1234（同步，早于 await 完成）");
 
+      // ====== 2. await 右侧是已启动的 Promise；async 函数立即返回 Promise ======
       function timeout(ms) {
         return new Promise(function (resolve) {
           setTimeout(resolve, ms);
         });
       }
 
-      //async函数返回的Promise对象，必须等到内部所有await命令后面的Promise对象执行完，才会完成
-      //才会执行 then回调
       async function asyncPrint(value, ms) {
-        var v1 = await timeout(ms);
-        // await 解析结果为 undefined（setTimeout 的 resolve 未传值）
-
+        await timeout(ms); // resolve 未传值 → undefined
         console.log(value);
-
         return "qwert";
       }
 
-      //then的执行：必须等到async函数的函数体，全部执行完毕，或者中途出现错误或遇到return语句
-      asyncPrint("Hello World", 3000).then(function (data) {
-        console.log(data);
+      asyncPrint("Hello World", 1500).then(function (data) {
+        console.log("asyncPrint return:", data); // "qwert"
       });
-
     </script>
     <!-- SCRIPT_END -->
 

@@ -21,13 +21,14 @@
     <title>Import Maps</title>
     <style>
       body { font-family: system-ui, sans-serif; margin: 2rem; }
-      #out { margin-top: 1rem; padding: 12px; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; }
+      #out, #runtime-output { margin-top: 1rem; padding: 12px; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; }
+      #env-banner { padding: 8px 10px; background: #fff8e6; border-left: 3px solid #f0ad4e; font-size: 0.875rem; }
     </style>
     <script type="importmap">
     {
-    "imports": {
-    "utils/": "./lib/importmap-utils/"
-    }
+      "imports": {
+        "utils/": "./lib/importmap-utils/"
+      }
     }
     </script>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
@@ -37,7 +38,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Import Maps 模块映射</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">请阅读本复习区，并在下方演示区查看 import map 解析结果；需通过 HTTP(S) 或 localhost 静态服务打开，file:// 下 ESM 模块加载可能失败。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -64,15 +65,49 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>通过 import map 将 <code>utils/greet.js</code> 映射到本地 <code>lib/importmap-utils/greet.js</code>。</p>
-    <div id="out" aria-live="polite"></div>
+    <section class="demo-block">
+      <h2>Import Map 解析演示</h2>
+      <p class="tip">通过 import map 将 <code>utils/greet.js</code> 映射到本地 <code>lib/importmap-utils/greet.js</code>。</p>
+      <p id="env-banner"></p>
+      <button type="button" id="reloadBtn">重新加载模块</button>
+      <div id="out" aria-live="polite">加载中…</div>
+      <pre id="runtime-output"></pre>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script type="module">
-      import { greet } from "utils/greet.js";
-      document.getElementById("out").textContent = greet("Import Maps");
+      // ====== 0. 环境提示 ======
+      const envBanner = document.getElementById("env-banner");
+      envBanner.textContent =
+        "protocol=" + location.protocol +
+        " | ESM + import map 需 HTTP(S)/localhost；file:// 可能 CORS/MIME 失败";
 
+      const out = document.getElementById("out");
+      const runtimeOutput = document.getElementById("runtime-output");
+
+      // ====== 1. 通过 import map 解析 bare specifier ======
+      async function loadModule() {
+        out.textContent = "加载中…";
+        try {
+          const { greet } = await import("utils/greet.js");
+          out.textContent = greet("Import Maps");
+          runtimeOutput.textContent = [
+            "import map: utils/ → ./lib/importmap-utils/",
+            "解析结果: utils/greet.js → lib/importmap-utils/greet.js",
+            "模块导出: " + greet("demo"),
+          ].join("\n");
+        } catch (err) {
+          out.textContent = "模块加载失败";
+          runtimeOutput.textContent = err.name + ": " + err.message +
+            "\n\n请通过本地静态服务器打开本页（非 file://）。";
+        }
+      }
+
+      await loadModule();
+
+      // ====== 2. 重新加载 ======
+      document.getElementById("reloadBtn").addEventListener("click", loadModule);
     </script>
     <!-- SCRIPT_END -->
 
@@ -96,5 +131,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

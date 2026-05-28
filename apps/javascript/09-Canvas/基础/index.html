@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 09-Canvas / 基础
+  分类: javascript / 09-Canvas / 基础
   主题: Canvas 2D 基础绘图
   要点:
     - canvas 元素提供位图画布，CanvasRenderingContext2D 负责命令式绘制
@@ -11,6 +11,7 @@
     - beginPath、fill 和 stroke 分别解决什么问题？
     - Canvas 和 SVG 在图表或可视化项目里如何选型？
     - Canvas 基础绘图有哪些尺寸、清晰度和可访问性边界？
+  相关: firework, css/03-动画
 -->
 
 <!doctype html>
@@ -19,19 +20,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Canvas 2D · 基础绘图</title>
-    <style>
-      body { font-family: system-ui, sans-serif; margin: 1.5rem; }
-      canvas { border: 1px solid #ddd; display: block; margin-top: 0.5rem; }
-      p { color: #666; font-size: 0.875rem; }
-    </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
+    <style>
+      canvas { border: 1px solid #ddd; display: block; margin-top: 0.5rem; }
+    </style>
   </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Canvas 2D 基础</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">先看本复习区，再观察下方 canvas 中的矩形、路径、圆弧、文字与渐变绘制效果。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -51,7 +50,7 @@
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial" target="_blank" rel="noreferrer">MDN Canvas tutorial</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D" target="_blank" rel="noreferrer">MDN CanvasRenderingContext2D</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D" target="_blank" rel="noreferrer">MDN: CanvasRenderingContext2D</a></li>
           <li><a href="https://html.spec.whatwg.org/multipage/canvas.html" target="_blank" rel="noreferrer">WHATWG HTML Standard: The canvas element</a></li>
         </ul>
       </div>
@@ -59,70 +58,73 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>获取上下文 → 设置样式 → 绘制路径 / 图形 → fill / stroke</p>
-    <canvas id="canvasId" width="480" height="280">
-      当前浏览器不支持 Canvas
-    </canvas>
+    <section class="demo-block">
+      <h2>Canvas 2D 基础绘图演示</h2>
+      <p class="tip">获取上下文 → 设置样式 → 绘制路径 / 图形 → fill / stroke</p>
+      <canvas id="canvasId" width="480" height="280">
+        当前浏览器不支持 Canvas
+      </canvas>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // 1. 获取 canvas 引用
+      // ====== 1. 获取 canvas 与 2D 上下文 ======
       const canvas = document.getElementById("canvasId");
-
-      // 2. 获取 2D 绘图上下文
       const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        console.error("Canvas 2D 上下文不可用");
+      } else {
+        // ====== 2. 矩形：fillRect / strokeRect ======
+        ctx.fillStyle = "#667eea";
+        ctx.fillRect(20, 20, 100, 60);
+        ctx.strokeStyle = "#333";
+        ctx.strokeRect(20, 20, 100, 60);
 
-      // 3. 矩形：fillRect / strokeRect
-      ctx.fillStyle = "#667eea";
-      ctx.fillRect(20, 20, 100, 60);
-      ctx.strokeStyle = "#333";
-      ctx.strokeRect(20, 20, 100, 60);
-
-      // 4. 路径：直线
-      ctx.beginPath();
-      ctx.moveTo(160, 50);
-      ctx.lineTo(280, 50);
-      ctx.lineTo(220, 100);
-      ctx.closePath();
-      ctx.fillStyle = "rgba(240, 147, 251, 0.8)";
-      ctx.fill();
-      ctx.stroke();
-
-      // 5. 圆弧 / 圆
-      ctx.beginPath();
-      ctx.arc(360, 70, 40, 0, Math.PI * 2);
-      ctx.fillStyle = "#43e97b";
-      ctx.fill();
-      ctx.strokeStyle = "#2d8a5e";
-      ctx.stroke();
-
-      // 6. 文字
-      ctx.font = "16px system-ui, sans-serif";
-      ctx.fillStyle = "#333";
-      ctx.fillText("Hello Canvas", 20, 140);
-
-      // 7. 渐变
-      const gradient = ctx.createLinearGradient(20, 170, 200, 250);
-      gradient.addColorStop(0, "#4facfe");
-      gradient.addColorStop(1, "#00f2fe");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(20, 170, 180, 80);
-
-      // 8. 圆角矩形（手动 path）
-      function roundRect(x, y, w, h, r) {
+        // ====== 3. 路径：三角形 ======
         ctx.beginPath();
-        ctx.moveTo(x + r, y);
-        ctx.arcTo(x + w, y, x + w, y + h, r);
-        ctx.arcTo(x + w, y + h, x, y + h, r);
-        ctx.arcTo(x, y + h, x, y, r);
-        ctx.arcTo(x, y, x + w, y, r);
+        ctx.moveTo(160, 50);
+        ctx.lineTo(280, 50);
+        ctx.lineTo(220, 100);
         ctx.closePath();
-      }
-      roundRect(240, 170, 160, 80, 12);
-      ctx.fillStyle = "#fa709a";
-      ctx.fill();
+        ctx.fillStyle = "rgba(240, 147, 251, 0.8)";
+        ctx.fill();
+        ctx.stroke();
 
+        // ====== 4. 圆弧 / 圆 ======
+        ctx.beginPath();
+        ctx.arc(360, 70, 40, 0, Math.PI * 2);
+        ctx.fillStyle = "#43e97b";
+        ctx.fill();
+        ctx.strokeStyle = "#2d8a5e";
+        ctx.stroke();
+
+        // ====== 5. 文字 ======
+        ctx.font = "16px system-ui, sans-serif";
+        ctx.fillStyle = "#333";
+        ctx.fillText("Hello Canvas", 20, 140);
+
+        // ====== 6. 线性渐变 ======
+        const gradient = ctx.createLinearGradient(20, 170, 200, 250);
+        gradient.addColorStop(0, "#4facfe");
+        gradient.addColorStop(1, "#00f2fe");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(20, 170, 180, 80);
+
+        // ====== 7. 圆角矩形（arcTo 路径）======
+        function roundRect(x, y, w, h, r) {
+          ctx.beginPath();
+          ctx.moveTo(x + r, y);
+          ctx.arcTo(x + w, y, x + w, y + h, r);
+          ctx.arcTo(x + w, y + h, x, y + h, r);
+          ctx.arcTo(x, y + h, x, y, r);
+          ctx.arcTo(x, y, x + w, y, r);
+          ctx.closePath();
+        }
+        roundRect(240, 170, 160, 80, 12);
+        ctx.fillStyle = "#fa709a";
+        ctx.fill();
+      }
     </script>
     <!-- SCRIPT_END -->
 
@@ -132,7 +134,7 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="../%E5%8A%A8%E7%94%BB/firework.html">← firework</a>
-        <a href="../../../css/index.html">index →</a>
+        <a href="../../08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E4%BD%9C%E7%94%A8%E5%9F%9F/06-var%E4%B8%8Efunction%E5%90%8C%E5%90%8D%E6%8F%90%E5%8D%87.html">var与function同名提升 →</a>
       </nav>
       <script>
         (function () {
@@ -144,5 +146,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

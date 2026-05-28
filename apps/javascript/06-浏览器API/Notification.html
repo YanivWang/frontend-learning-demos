@@ -10,6 +10,7 @@
     - granted、denied、default 三种权限状态如何处理？
     - 页面 Notification 和 Push API 后台推送有什么区别？
     - 循环通知或营销提醒要注意哪些体验和安全边界？
+  相关: ServiceWorker, MutationObserver
 -->
 
 <!doctype html>
@@ -20,7 +21,9 @@
     <title>桌面通知 · Notification API</title>
     <style>
       body { font-family: system-ui, sans-serif; margin: 1.5rem; }
-      button { padding: 8px 14px; margin-right: 8px; }
+      button { padding: 8px 14px; margin-right: 8px; margin-bottom: 8px; }
+      #env-banner { padding: 8px 10px; background: #fff8e6; border-left: 3px solid #f0ad4e; font-size: 0.875rem; margin-bottom: 12px; }
+      #runtime-output { padding: 10px; background: #f6f8fa; border-radius: 6px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; min-height: 3rem; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -29,7 +32,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Notification 桌面通知</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">请阅读本复习区，并在下方演示区点击按钮；需人工验证：Notification 要求安全上下文（HTTPS/localhost），file:// 通常不可用，且需用户授权。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -58,59 +61,91 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>需要用户授权；HTTPS 或 localhost 下才可用；不同浏览器 UI 差异较大。</p>
-    <button id="ask">① 请求权限</button>
-    <button id="send">② 发送通知</button>
-    <button id="repeat">③ 每 4 秒发送一次</button>
-    <p>当前权限状态：<code id="status">unknown</code></p>
+    <section class="demo-block">
+      <h2>Notification 交互演示</h2>
+      <p class="tip">权限弹窗须由用户点击触发；denied 后需到浏览器设置手动开启。</p>
+      <p id="env-banner"></p>
+      <button type="button" id="ask">① 请求权限</button>
+      <button type="button" id="send">② 发送通知</button>
+      <button type="button" id="repeat">③ 每 4 秒发送一次</button>
+      <p>当前权限状态：<code id="status">unknown</code></p>
+      <pre id="runtime-output" aria-live="polite"></pre>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
       const status = document.getElementById("status");
+      const runtimeOutput = document.getElementById("runtime-output");
+      let timer = null;
+
+      function log(msg) {
+        runtimeOutput.textContent = "[" + new Date().toLocaleTimeString() + "] " + msg;
+      }
+
+      // ====== 0. 环境与权限检测 ======
+      document.getElementById("env-banner").textContent =
+        "protocol=" + location.protocol +
+        " | isSecureContext=" + window.isSecureContext +
+        " | file:// 或非安全上下文下 Notification 通常不可用";
+
       function refresh() {
         status.textContent = ("Notification" in window) ? Notification.permission : "不支持";
       }
       refresh();
 
+      // ====== 1. requestPermission（须用户手势）======
       function requestNotificationPermission() {
         if (!("Notification" in window)) {
           status.textContent = "不支持";
-          alert("此浏览器不支持桌面通知");
+          log("此浏览器不支持桌面通知");
           return Promise.resolve("unsupported");
+        }
+        if (!window.isSecureContext) {
+          log("非安全上下文，Notification 不可用（需 HTTPS 或 localhost）");
+          return Promise.resolve("insecure");
         }
         return Notification.requestPermission().then((perm) => {
           refresh();
+          log("权限结果: " + perm);
           return perm;
         });
       }
 
+      // ====== 2. 发送通知 ======
       function notify(title, options) {
         if (!("Notification" in window)) {
-          alert("此浏览器不支持桌面通知");
+          log("此浏览器不支持桌面通知");
+          return;
+        }
+        if (!window.isSecureContext) {
+          log("非安全上下文，无法发送通知");
           return;
         }
         if (Notification.permission === "granted") {
-          return new Notification(title, options);
+          new Notification(title, options);
+          log("已发送: " + title);
+          return;
         }
         if (Notification.permission !== "denied") {
           requestNotificationPermission().then((perm) => {
-            if (perm === "granted") new Notification(title, options);
+            if (perm === "granted") {
+              new Notification(title, options);
+              log("授权后已发送: " + title);
+            }
           });
           return;
         }
         status.textContent = "denied：用户已拒绝，请到浏览器设置中开启";
+        log("denied — 不再请求权限");
       }
 
-      document.getElementById("ask").onclick = () => {
-        requestNotificationPermission();
-      };
+      document.getElementById("ask").onclick = () => requestNotificationPermission();
 
       document.getElementById("send").onclick = () => {
         notify("Hello!", { body: "这是一条桌面通知 " + new Date().toLocaleTimeString() });
       };
 
-      let timer = null;
       const repeatButton = document.getElementById("repeat");
 
       function startRepeatingNotifications() {
@@ -118,6 +153,7 @@
         timer = setInterval(() => {
           notify("循环通知", { body: "随机值 " + Math.random().toFixed(3), tag: "demo-repeat" });
         }, 4000);
+        log("已开始每 4 秒发送（tag 相同会替换旧通知）");
       }
 
       repeatButton.onclick = () => {
@@ -125,9 +161,10 @@
           clearInterval(timer);
           timer = null;
           repeatButton.textContent = "③ 每 4 秒发送一次";
+          log("已停止循环通知");
           return;
         }
-        if (!("Notification" in window)) {
+        if (!("Notification" in window) || !window.isSecureContext) {
           requestNotificationPermission();
           return;
         }
@@ -137,15 +174,13 @@
         }
         if (Notification.permission === "denied") {
           status.textContent = "denied：用户已拒绝，请到浏览器设置中开启";
+          log("denied — 无法启动循环");
           return;
         }
         requestNotificationPermission().then((perm) => {
-          if (perm === "granted") {
-            startRepeatingNotifications();
-          }
+          if (perm === "granted") startRepeatingNotifications();
         });
       };
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -167,5 +202,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

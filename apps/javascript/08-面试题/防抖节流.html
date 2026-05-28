@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 08-面试题
+  分类: javascript / 08-面试题
   主题: 防抖（debounce）与节流（throttle）
   要点:
     - debounce 会重置定时器，只在连续触发停止 wait 后执行，适合搜索建议和表单校验
@@ -11,6 +11,7 @@
     - 搜索建议、窗口 resize、滚动监听分别该选防抖还是节流？
     - leading 和 trailing 选项会改变什么行为？
     - 手写防抖节流时有哪些容易漏掉的边界？
+  相关: 加权随机
 -->
 
 <!doctype html>
@@ -19,19 +20,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>防抖 / 节流</title>
+    <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
+    <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
     <style>
-      body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
       .box { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; min-height: 36px; }
       input { padding: 6px 8px; width: 240px; }
     </style>
-    <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
-    <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
   </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>防抖（debounce）/ 节流（throttle）</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">先看本复习区，再在下方演示区输入或移动鼠标观察效果。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -51,28 +51,30 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout" target="_blank" rel="noreferrer">MDN: Window.setTimeout()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener" target="_blank" rel="noreferrer">MDN: EventTarget.addEventListener()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame" target="_blank" rel="noreferrer">MDN: Window.requestAnimationFrame()</a></li>
-          <li><a href="https://lodash.com/docs/#debounce" target="_blank" rel="noreferrer">Lodash: _.debounce</a></li>
-          <li><a href="https://lodash.com/docs/#throttle" target="_blank" rel="noreferrer">Lodash: _.throttle</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout" target="_blank" rel="noreferrer">MDN: Window.setTimeout()</a>：防抖/节流的定时调度基础。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener" target="_blank" rel="noreferrer">MDN: EventTarget.addEventListener()</a>：高频事件监听与 <code>passive</code> 选项。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame" target="_blank" rel="noreferrer">MDN: Window.requestAnimationFrame()</a>：动画类高频更新的替代方案。</li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <h3>1. 防抖：触发 n 次只在最后一次后执行（适合：搜索建议、按钮防连点）</h3>
-    <input id="searchInput" placeholder="输入关键词搜索..." />
-    <div class="box" id="debounceBox">等待输入...</div>
-    <h3>2. 节流：n 毫秒内最多执行一次（适合：scroll、resize、mousemove）</h3>
-    <div class="box" id="throttleBox">移动鼠标试试...</div>
+    <section class="demo-block">
+      <h2>1. 防抖：连续触发只在停止后执行</h2>
+      <p class="tip">在输入框快速输入，观察下方文本只在停顿约 500ms 后更新（适合搜索建议、按钮防连点）。</p>
+      <input id="searchInput" placeholder="输入关键词搜索..." />
+      <div class="box" id="debounceBox">等待输入...</div>
+
+      <h2>2. 节流：固定间隔最多执行一次</h2>
+      <p class="tip">在页面移动鼠标，观察坐标约每 300ms 更新一次（适合 scroll、resize、mousemove）。</p>
+      <div class="box" id="throttleBox">移动鼠标试试...</div>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // ===== 防抖 =====
-      // 关键点：每次触发都重置定时器；只有"沉默"超过 wait 才会真正执行
+      // ====== 1. 防抖：每次触发重置定时器，停止 wait 后才执行 ======
       function debounce(fn, wait) {
         let timer = null;
         return function (...args) {
@@ -81,7 +83,7 @@
         };
       }
 
-      // ===== 节流（时间戳版）=====
+      // ====== 2. 节流（时间戳版，偏 leading）======
       function throttle(fn, wait) {
         let last = 0;
         return function (...args) {
@@ -93,7 +95,7 @@
         };
       }
 
-      // ===== 节流（定时器版，trailing 调用）=====
+      // ====== 3. 节流（定时器版，偏 trailing）======
       function throttleTimer(fn, wait) {
         let timer = null;
         return function (...args) {
@@ -105,20 +107,20 @@
         };
       }
 
-      // ===== 测试：防抖 =====
+      // ====== 4. 演示：搜索输入防抖 ======
       const debounceBox = document.getElementById("debounceBox");
       const handleSearch = debounce(function (e) {
-        debounceBox.textContent = "搜索：" + e.target.value + "（" + new Date().toLocaleTimeString() + "）";
+        debounceBox.textContent =
+          "搜索：" + e.target.value + "（" + new Date().toLocaleTimeString() + "）";
       }, 500);
       document.getElementById("searchInput").addEventListener("input", handleSearch);
 
-      // ===== 测试：节流 =====
+      // ====== 5. 演示：鼠标移动节流 ======
       const throttleBox = document.getElementById("throttleBox");
       const handleMove = throttle(function (e) {
         throttleBox.textContent = `(${e.clientX}, ${e.clientY}) at ${Date.now()}`;
       }, 300);
       document.addEventListener("mousemove", handleMove);
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -127,7 +129,7 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="../07-%E8%BF%9B%E9%98%B6/UMD%E6%8F%92%E4%BB%B6%E6%A8%A1%E5%BC%8F/index.html">← index</a>
+        <a href="../07-%E8%BF%9B%E9%98%B6/UMD%E6%8F%92%E4%BB%B6%E6%A8%A1%E5%BC%8F/index.html">← UMD插件模式</a>
         <a href="./%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA.html">加权随机 →</a>
       </nav>
       <script>
@@ -140,5 +142,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

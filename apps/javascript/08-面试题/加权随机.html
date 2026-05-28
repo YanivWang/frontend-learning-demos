@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 08-面试题
+  分类: javascript / 08-面试题
   主题: 加权随机（按概率抽奖）
   要点:
     - 加权随机把每个候选项映射到权重区间，随机数落在哪个区间就命中哪项
@@ -11,6 +11,7 @@
     - 扩容数组法和前缀权重法怎么比较？
     - 为什么前端 Math.random() 不适合真实抽奖开奖？
     - 如何验证加权随机实现是否大致符合权重比例？
+  相关: 防抖节流, 手写/01-call-apply
 -->
 
 <!doctype html>
@@ -19,18 +20,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>加权随机</title>
-    <style>
-      body { font-family: system-ui, sans-serif; margin: 1.5rem; }
-      pre { background: #f5f5f5; padding: 1rem; border-radius: 4px; }
-    </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
+    <style>
+      pre { background: #f5f5f5; padding: 1rem; border-radius: 4px; }
+    </style>
   </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>加权随机 / 抽奖概率</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">先看本复习区，再查看下方 10000 次采样命中率是否接近期望比例。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -50,38 +50,40 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random" target="_blank" rel="noreferrer">MDN: Math.random()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Crypto/getRandomValues" target="_blank" rel="noreferrer">MDN: Crypto.getRandomValues()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isFinite" target="_blank" rel="noreferrer">MDN: Number.isFinite()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random" target="_blank" rel="noreferrer">MDN: Math.random()</a>：伪随机数生成与适用边界。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Crypto/getRandomValues" target="_blank" rel="noreferrer">MDN: Crypto.getRandomValues()</a>：密码学安全随机源。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isFinite" target="_blank" rel="noreferrer">MDN: Number.isFinite()</a>：权重校验。</li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>需求：按概率 <code>{A: 0.5, B: 0.3, C: 0.2}</code> 随机抽中某一项。</p>
-    <h3>方案 1：扩容数组 + Math.random（直观）</h3>
-    <pre id="out1"></pre>
-    <h3>方案 2：累加阈值 + Math.random（推荐，O(1) 额外空间）</h3>
-    <pre id="out2"></pre>
+    <section class="demo-block">
+      <h2>加权随机采样验证</h2>
+      <p class="tip">按概率 <code>{A: 0.5, B: 0.3, C: 0.2}</code> 各跑 10000 次，命中率应大致接近期望比例。</p>
+      <h3>方案 1：扩容数组 + Math.random（直观）</h3>
+      <pre id="out1"></pre>
+      <h3>方案 2：累加阈值 + Math.random（推荐，O(1) 额外空间）</h3>
+      <pre id="out2"></pre>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // ============ 方案 1：扩容查找表 ============
+      // ====== 1. 方案 1：扩容查找表（直观，空间随权重放大）======
       function weightedRandV1(spec) {
         const table = [];
         for (const key in spec) {
-          // 把每项按概率 × 100 重复推入 table
           const count = Math.floor(spec[key] * 100);
           for (let i = 0; i < count; i++) table.push(key);
         }
         return table[Math.floor(Math.random() * table.length)];
       }
 
-      // ============ 方案 2：累加权重区间 ============
+      // ====== 2. 方案 2：累加权重区间（推荐，额外空间 O(1)）======
       function weightedRandV2(spec) {
-        const entries = Object.entries(spec); // [['A', 0.5], ...]
+        const entries = Object.entries(spec);
         const total = entries.reduce((sum, [, weight]) => {
           if (!Number.isFinite(weight) || weight < 0) {
             throw new TypeError("weight must be a finite non-negative number");
@@ -100,7 +102,7 @@
         }
       }
 
-      // ============ 验证：跑 10000 次 ============
+      // ====== 3. 验证：10000 次采样统计命中率 ======
       const spec = { A: 0.5, B: 0.3, C: 0.2 };
       function bench(fn) {
         const stat = {};
@@ -113,11 +115,15 @@
         );
       }
 
+      const result1 = bench(weightedRandV1);
+      const result2 = bench(weightedRandV2);
       document.getElementById("out1").textContent =
-        "10000 次采样命中率：\n" + JSON.stringify(bench(weightedRandV1), null, 2);
+        "10000 次采样命中率：\n" + JSON.stringify(result1, null, 2);
       document.getElementById("out2").textContent =
-        "10000 次采样命中率：\n" + JSON.stringify(bench(weightedRandV2), null, 2);
+        "10000 次采样命中率：\n" + JSON.stringify(result2, null, 2);
 
+      console.log("方案1 命中率:", result1); // 预期: A≈0.5, B≈0.3, C≈0.2
+      console.log("方案2 命中率:", result2);
     </script>
     <!-- SCRIPT_END -->
 
@@ -139,5 +145,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

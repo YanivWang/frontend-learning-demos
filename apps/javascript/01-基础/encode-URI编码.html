@@ -61,25 +61,37 @@
       const path = "https://example.com/搜索/文档.html";
       const query = "name=王成&city=北京";
 
-      // encodeURI：用于编码完整 URI，不破坏协议与路径分隔符
+      // ====== 1. encodeURI：编码完整 URI，保留结构字符 ======
       const encodedPath = encodeURI(path);
       console.log("encodeURI:", encodedPath);
       console.log("decodeURI:", decodeURI(encodedPath));
 
-      // encodeURIComponent：用于编码 URI 组件（查询串、参数值等）
+      // ====== 2. encodeURIComponent：编码 URI 组件 ======
       const encodedQuery = encodeURIComponent(query);
       console.log("encodeURIComponent:", encodedQuery);
       console.log("decodeURIComponent:", decodeURIComponent(encodedQuery));
 
-      // 拼 URL 时常见写法
-      const base = "https://example.com/api";
-      const url = `${base}?q=${encodeURIComponent("hello world")}&lang=${encodeURIComponent("中文")}`;
-      console.log("拼接 URL:", url);
-
-      // 对比：encodeURI 不会编码 & =，encodeURIComponent 会
+      // 对比：encodeURI 保留 & =，encodeURIComponent 会编码它们
       console.log("encodeURI('&='):", encodeURI("&="));
       console.log("encodeURIComponent('&='):", encodeURIComponent("&="));
 
+      // ====== 3. URLSearchParams：推荐构造查询字符串 ======
+      const params = new URLSearchParams();
+      params.set("q", "hello world");
+      params.set("lang", "中文");
+      params.append("tag", "js");
+      params.append("tag", "demo");
+      console.log("URLSearchParams:", params.toString());
+
+      const base = "https://example.com/api";
+      console.log("拼接 URL:", `${base}?${params.toString()}`);
+
+      // ====== 4. decodeURIComponent 遇非法转义抛 URIError ======
+      try {
+        decodeURIComponent("%");
+      } catch (err) {
+        console.log("非法转义:", err.name, "-", err.message);
+      }
     </script>
     <!-- SCRIPT_END -->
 

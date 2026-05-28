@@ -53,44 +53,41 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // 箭头函数只能写成匿名函数表达式，不能像 function 那样具名声明
-      const ArrowFunc = (x, y) => {
-        // 箭头函数内部没有 arguments；如需收集实参用剩余参数 ...args
-        // 顶层脚本里没有外层普通函数的 arguments，直接访问会 ReferenceError
-        // console.log(arguments);
-
-        console.log(x, y);
-
-        // 词法 this：由最近一层非箭头作用域决定，这里指向 window
-        console.log(this);
+      // ====== 1. 箭头函数语法与剩余参数 ======
+      const ArrowFunc = (x, y, ...rest) => {
+        // 箭头函数没有自己的 arguments；顶层直接访问 arguments 会 ReferenceError
+        console.log("参数:", x, y, "rest:", rest);
+        // 词法 this：由最近一层非箭头作用域决定，脚本顶层指向 window/globalThis
+        console.log("顶层箭头 this === window:", this === window);
       };
+      ArrowFunc(1, 2, 3, 4);
 
-      ArrowFunc(1, 2);
+      // ====== 2. 无 prototype，不能 new ======
+      console.log("ArrowFunc.prototype:", ArrowFunc.prototype); // undefined
+      // new ArrowFunc(); // TypeError: ArrowFunc is not a constructor
 
-      // 箭头函数没有 prototype 属性
-      console.log(ArrowFunc.prototype); // undefined
-
-      // console.log(ArrowFunc.prototype.constructor); // 报错：无法读取 undefined 的属性
-
-      // 易错点：箭头函数不能 new，否则 TypeError: ArrowFunc is not a constructor
-      // const af1 = new ArrowFunc();
-
-      // 对比：普通函数声明既能调用也能 new
+      // 对比：普通函数有 prototype，可作构造函数
       function Person() {}
-      console.log(Person.prototype);
+      console.log("Person.prototype:", Person.prototype);
+      console.log("Person.prototype.constructor === Person:", Person.prototype.constructor === Person);
 
-      console.log(Person.prototype.constructor === Person);
+      // ====== 3. 词法 this：call/apply/bind 无法改变 ======
+      const boundObj = { id: 99 };
+      const arrow = () => this;
+      const normal = function () { return this; };
+      console.log("箭头 call(boundObj):", arrow.call(boundObj) === window); // true，仍指向外层
+      console.log("普通 call(boundObj):", normal.call(boundObj)); // { id: 99 }
 
-      // Person 作为函数对象，其本身的构造器是 Function
-      console.log(Person.constructor === Person.__proto__.constructor);
-
-      console.log(Person.constructor === Function);
-
+      // ====== 4. 对象方法中误用箭头函数 ======
       const counter = {
         value: 1,
         getValue: () => this.value,
+        getValueNormal() {
+          return this.value;
+        },
       };
-      console.log("对象方法中误用箭头函数:", counter.getValue()); // undefined（this 不是 counter）
+      console.log("箭头方法 getValue:", counter.getValue()); // undefined（this 不是 counter）
+      console.log("普通方法 getValueNormal:", counter.getValueNormal()); // 1
 
     </script>
     <!-- SCRIPT_END -->

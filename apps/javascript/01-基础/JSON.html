@@ -53,51 +53,65 @@
 
     <!-- SCRIPT_START -->
     <script>
-      let book = {
+      const book = {
         title: "Professional JavaScript",
         authors: ["Nicholas C. Zakas", "Matt Frisbie"],
         edition: 4,
         year: 2017,
+        secret: "internal",
       };
 
-      // replacer 是函数：可以改写或丢弃属性（return undefined 即丢弃该字段）
-      let jsonText111 = JSON.stringify(
-      book,
-      (key, value) => {
-        switch (key) {
-          case "authors":
-          return value.join(",");
-          case "year":
-          return 5000;
-          case "edition":
-          return undefined;
-          default:
-          return value;
-        }
-      },
-      4
+      // ====== 1. replacer 为函数：按 key 变换或丢弃属性 ======
+      // return undefined 会忽略该对象属性（数组元素则变为 null）
+      const jsonWithReplacerFn = JSON.stringify(
+        book,
+        (key, value) => {
+          switch (key) {
+            case "authors":
+              return value.join(",");
+            case "year":
+              return 5000;
+            case "edition":
+              return undefined;
+            default:
+              return value;
+          }
+        },
+        4
       );
+      console.log("replacer 函数:\n", jsonWithReplacerFn);
 
-      let jsonText222 = JSON.stringify(book);
-      console.log("jsonText111 \n>>>", jsonText111);
-      console.log("jsonText222 \n>>>", jsonText222);
+      // ====== 2. replacer 为数组：属性白名单 ======
+      const jsonWithWhitelist = JSON.stringify(book, ["title", "year"], 2);
+      console.log("replacer 白名单:\n", jsonWithWhitelist);
 
-      // 各种特殊值在 stringify 时的行为
-      let jsObj = {
-        sum: (a, b) => a + b,   // 函数：被忽略（对象属性）/ 数组中变 null
-        name: "calcutor",
-        wc: undefined,           // undefined：被忽略
+      // ====== 3. 特殊值序列化行为 ======
+      const jsObj = {
+        sum: (a, b) => a + b,
+        name: "calculator",
+        wc: undefined,
         address: "",
-        date: new Date(),        // Date：调用 toJSON()，输出 ISO 字符串
-        reg: new RegExp("abc", "g"), // RegExp：序列化为 {} 空对象
-        symbol: Symbol(),        // Symbol：被忽略
-        nan: NaN,                // NaN/Infinity：输出 null
-        infinity: Infinity
+        date: new Date(),
+        reg: /abc/g,
+        symbol: Symbol("x"),
+        nan: NaN,
+        infinity: Infinity,
       };
+      console.log("特殊值 stringify:\n", JSON.stringify(jsObj, null, 2));
+      // 对象属性中的 function/undefined/Symbol 被忽略；NaN/Infinity → null；Date → ISO 字符串
 
-      let jsonText333 = JSON.stringify(jsObj, null, 3);
-      console.log("jsonText333 \n>>>", jsonText333);
+      // ====== 4. 循环引用会抛 TypeError ======
+      const circular = { name: "loop" };
+      circular.self = circular;
+      try {
+        JSON.stringify(circular);
+      } catch (err) {
+        console.log("循环引用:", err.name, "-", err.message);
+      }
 
+      // ====== 5. JSON.parse 与 stringify 成对 ======
+      const roundTrip = JSON.parse(JSON.stringify({ a: 1, b: [2, 3] }));
+      console.log("roundTrip:", roundTrip);
     </script>
     <!-- SCRIPT_END -->
 

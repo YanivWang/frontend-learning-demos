@@ -1,11 +1,14 @@
 <!--
-分类: javascript / 05-元编程
+  分类: javascript / 05-元编程
   主题: Object.defineProperty 数据属性
+  难度: 进阶
+  相关: defineProperty访问器属性, proxy
   要点:
     - 数据属性由 value、writable、enumerable、configurable 四个描述符控制
-    - Object.defineProperty 新增属性时，未声明的布尔描述符默认都是 false
-    - configurable 为 false 后不能删除属性，也不能再随意修改描述符
-    - Object.getOwnPropertyDescriptor 可用于核对属性真实特性
+    - defineProperty 新增属性时，未声明的布尔描述符默认都是 false
+    - writable/enumerable/configurable 分别管赋值、枚举和删除/重配
+    - configurable: false 后不能删除属性，也不能再随意修改描述符
+    - 逐个属性改写有性能与维护成本，动态键监听优先考虑 Proxy
   面试:
     - defineProperty 创建的数据属性默认为什么不可写、不可枚举、不可配置？
     - writable、enumerable、configurable 分别影响哪些对象操作？
@@ -33,8 +36,9 @@
           <li>数据属性由 <code>value</code>、<code>writable</code>、<code>enumerable</code>、<code>configurable</code> 描述：值本身、能否赋值、能否被枚举、能否删除或重新配置。</li>
           <li><code>Object.defineProperty</code> 新增属性时，未显式写出的布尔描述符默认都是 <code>false</code>；对象字面量或普通赋值创建的属性通常三者都是 <code>true</code>。</li>
           <li><code>writable: false</code> 会阻止重新赋值；非严格模式下赋值失败可能静默，严格模式下会抛出 <code>TypeError</code>。</li>
-          <li><code>configurable: false</code> 是最容易踩坑的开关：属性不能删除，描述符大多不能再改，只允许把 <code>writable</code> 从 <code>true</code> 改成 <code>false</code>。</li>
+          <li><code>configurable: false</code> 是最容易踩坑的开关：属性不能删除，描述符大多不能再改，只允许把仍为 <code>true</code> 的 <code>writable</code> 降为 <code>false</code>。</li>
           <li>调试属性行为时优先用 <code>Object.getOwnPropertyDescriptor</code> 查看真实描述符，不要只看 <code>console.log</code> 展示出的对象外观。</li>
+          <li><code>defineProperty</code> 只能逐个改写已有目标上的具体属性，无法拦截新增键；Vue 2 响应式因此需要递归遍历对象。现代动态监听更常用 <code>Proxy</code>，但 <code>defineProperty</code> 在只读 API、精确描述符控制场景仍有价值。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
@@ -45,8 +49,8 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty">MDN: Object.defineProperty()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getOwnPropertyDescriptor">MDN: Object.getOwnPropertyDescriptor()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty">MDN: Object.defineProperty()</a>：数据属性描述符与默认值。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getOwnPropertyDescriptor">MDN: Object.getOwnPropertyDescriptor()</a>：核对属性真实特性。</li>
           <li><a href="https://tc39.es/ecma262/multipage/fundamental-objects.html#sec-object.defineproperty">ECMAScript 规范: Object.defineProperty</a></li>
         </ul>
       </div>
@@ -55,40 +59,55 @@
 
     <!-- SCRIPT_START -->
     <script>
-      let person = {
-        age: 30
-      };
+      // ====== 1. defineProperty 新增属性：布尔描述符默认 false ======
+      const person = { age: 30 };
 
-      // 动态给对象添加一个 name 属性；未写出的布尔描述符默认都是 false
       Object.defineProperty(person, "name", {
         value: "wangcheng",
+        // 未写 writable/enumerable/configurable → 三者默认 false
       });
 
-      console.log(person);
+      const nameDesc = Object.getOwnPropertyDescriptor(person, "name");
+      console.log("defineProperty 默认描述符:", JSON.stringify(nameDesc, null, 2));
+      // 预期: writable/enumerable/configurable 均为 false
 
-      //两个参数
-      const descriptor1 = Object.getOwnPropertyDescriptor(person, "name");
-      /*
-      {
-        "value": "wangcheng",
-        "writable": false,
-        "enumerable": false,
-        "configurable": false
+      // ====== 2. 对比：字面量属性默认三者 true ======
+      const ageDesc = Object.getOwnPropertyDescriptor(person, "age");
+      console.log("字面量 age 描述符:", JSON.stringify(ageDesc, null, 2));
+      // 预期: writable/enumerable/configurable 均为 true
+
+      // ====== 3. writable: false 阻止赋值 ======
+      person.age = 99; // 合法：age 可写
+      console.log("age 可写后:", person.age); // 99
+
+      person.name = "newName"; // 非严格模式静默失败
+      console.log("name 不可写，赋值后仍为:", person.name); // "wangcheng"
+
+      // ====== 4. enumerable: false 不出现在 Object.keys ======
+      console.log("Object.keys(person):", Object.keys(person)); // 只有 "age"
+      console.log("'name' in person:", "name" in person); // true，属性仍存在
+
+      // ====== 5. configurable: false 不可删除、不可重配 ======
+      delete person.name;
+      console.log("delete name 后仍在:", "name" in person); // true
+
+      try {
+        Object.defineProperty(person, "name", { writable: true });
+      } catch (err) {
+        // TypeError: Cannot redefine property: name
+        console.log("不可配置属性无法重配:", err.name, "-", err.message);
       }
-      */
-      console.log(JSON.stringify(descriptor1, null, 4));
 
-      const descriptor2 = Object.getOwnPropertyDescriptor(person, "age");
-      /*
-      {
-        "value": 30,
-        "writable": true,
-        "enumerable": true,
-        "configurable": true
-      }
-      */
-      console.log(JSON.stringify(descriptor2, null, 4));
-
+      // ====== 6. 显式写出 true 可恢复普通属性行为 ======
+      const config = {};
+      Object.defineProperty(config, "theme", {
+        value: "light",
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+      config.theme = "dark";
+      console.log("显式 true 后可写:", config.theme); // "dark"
     </script>
     <!-- SCRIPT_END -->
 
@@ -97,7 +116,9 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="./%E4%BB%A3%E7%90%86%E7%9A%84%E7%BC%BA%E7%82%B9.html">← 代理的缺点</a>
+        <a href="./%E4%BB%A3%E7%90%86%E7%9A%84%E7%8B%B9%E7%82%B9.html">相关 · 代理的缺点</a>
+        <a href="./proxy.html">相关 · proxy</a>
+        <a href="./%E4%BB%A3%E7%90%86%E7%9A%84%E7%8B%B9%E7%82%B9.html">← 代理的缺点</a>
         <a href="./defineProperty%E8%AE%BF%E9%97%AE%E5%99%A8%E5%B1%9E%E6%80%A7.html">defineProperty访问器属性 →</a>
       </nav>
       <script>
@@ -110,5 +131,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

@@ -45,8 +45,8 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function" target="_blank" rel="noreferrer">MDN Web Docs：async function</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await" target="_blank" rel="noreferrer">MDN Web Docs：await</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function">MDN: async function</a>：try/catch 可捕获 await rejection。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await">MDN: await</a>：rejected Promise 像 throw 一样中断 async 函数。</li>
         </ul>
       </div>
     </section>
@@ -56,68 +56,60 @@
     <script>
       let callCount = 0;
 
+      // 模拟可能失败的异步步骤（50% 概率 reject）
       function syncFun(initParam) {
-        console.log(initParam);
-
         callCount++;
-        console.log("call...:" + callCount);
+        console.log("调用 syncFun:", initParam, "第", callCount, "次");
+
         return new Promise(function (resolve, reject) {
           setTimeout(function () {
             const rand = Math.floor(Math.random() * 2);
             if (rand > 0) {
-              resolve(rand);
+              resolve(initParam + "-ok");
             } else {
               reject(new Error("save err: " + initParam));
             }
-          }, 1000);
+          }, 300);
         });
       }
 
-      //实现错误多次重复尝试
-      let errCount = 0;
+      // ====== 1. try/catch 包 await：rejection 像 throw，可决定是否重试 ======
       async function setData(methodArray, paramArray) {
-        console.log("参数长度：" + arguments.length);
-
-        const maxRetries = 20;
+        const maxRetries = 5;
         let lastError;
-        for (let i = 0; i < maxRetries; i++) {
+
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
           try {
-            const dataArray = [];
-            //try里面实际上是同步的代码
-            let res = 0;
+            const dataArray = []; // 每轮重试前清空，避免混入失败轮次数据
             for (let j = 0; j < methodArray.length; j++) {
               if (paramArray && j in paramArray) {
-                res = await methodArray[j](paramArray[j]);//await语句如果失败，会立即终止执行
+                const res = await methodArray[j](paramArray[j]);
+                // await reject 会立即终止本轮 for，进入 catch
                 dataArray.push(res);
               }
             }
-            console.log("success");
+            console.log("success:", dataArray);
             return dataArray;
           } catch (e) {
             lastError = e;
-            console.warn("err:" + (++errCount), e);
+            console.warn("第", attempt + 1, "轮失败:", e.message);
           }
         }
 
+        // ====== 2. 重试耗尽后 throw，让调用方 catch 最终失败 ======
         throw lastError || new Error("重试次数耗尽");
       }
 
-      let methodArray = [];
-      methodArray.push(syncFun);
-      methodArray.push(syncFun);
-      methodArray.push(syncFun);
+      const methodArray = [syncFun, syncFun, syncFun];
+      const paramArray = ["data1", "data2", "data3"];
 
-      let paramArray = [];
-      paramArray.push("data1");
-      paramArray.push("data2");
-      paramArray.push("data3");
-
-      setData(methodArray, paramArray).then(function (data) {
-        console.log("final..." + data);
-      }).catch(function (error) {
-        console.error("failure...", error);
-      });
-
+      setData(methodArray, paramArray)
+        .then(function (data) {
+          console.log("final success:", data);
+        })
+        .catch(function (error) {
+          console.error("final failure:", error.message);
+        });
     </script>
     <!-- SCRIPT_END -->
 

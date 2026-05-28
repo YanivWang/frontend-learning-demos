@@ -11,6 +11,7 @@
     - 为什么不建议在 constructor 里给 this 重复创建方法？
     - 私有字段和普通下划线属性有什么本质区别？
     - 如何用 Object.getPrototypeOf 验证实例与类原型的关系？
+  相关: class类声明, extends
 -->
 
 <!doctype html>
@@ -46,9 +47,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes" target="_blank" rel="noreferrer">MDN Web Docs：Classes</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements" target="_blank" rel="noreferrer">MDN Web Docs：Private elements</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf" target="_blank" rel="noreferrer">MDN Web Docs：Object.getPrototypeOf()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes" target="_blank" rel="noreferrer">MDN: Classes</a>：字段、方法与原型关系。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements" target="_blank" rel="noreferrer">MDN: Private elements</a>：#field 与 _field 区别。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf" target="_blank" rel="noreferrer">MDN: Object.getPrototypeOf()</a>：验证原型链。</li>
         </ul>
       </div>
     </section>
@@ -56,53 +57,54 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // 除了 # 修饰的私有字段，其他都是公有的；静态字段也参与原型继承
+      // ====== 1. 字段与方法存放位置 ======
       class Person {
-        static userType = "whitePerson";
-        static #userTypeName = "wp";
+        static userType = "person"; // 类构造器上
+        static #typeCode = "P"; // 静态私有
 
-        // 公有/私有实例字段：每个实例各一份
-        userAge = 18;
-        #userAgeName = 18;
+        userAge = 18; // 每个实例各一份
+        #userAgeName = 18; // 实例私有
 
-        // constructor：new 时被调用；不写则使用默认空构造器
-        constructor(userName, weight) {
-          // super(userName); // 没有父类不能 super()
-
+        constructor(userName) {
           this.userName = userName;
 
-          // 私有字段不能通过赋值临时创建，必须在类体中预先声明
-          // this.#weight = weight;
-
-          // 反面：把方法挂在 this 上，每个实例都会有一份独立函数对象
-          this.sayHello = function () {};
+          // 反面：每个实例独立函数对象
+          this.sayHello = function () {
+            return "hi " + this.userName;
+          };
         }
 
-        // 推荐：实例方法挂 prototype 上，由所有实例共享
+        // 推荐：原型方法，所有实例共享
         eat() {
-          // 实例方法里访问私有字段须用 this.#field
-          console.log("this.#userAgeName", this.#userAgeName);
-          console.log("I am eatting!");
+          console.log(`${this.userName} eating, #age=${this.#userAgeName}`);
         }
       }
 
-      console.log(Person);
-      console.log(typeof Person);
-
-      const p1 = new Person();
+      const p1 = new Person("Alice");
+      const p2 = new Person("Bob");
       p1.eat();
-      console.log("Person.prototype === Object.getPrototypeOf(p1)", Person.prototype === Object.getPrototypeOf(p1));
-      console.log("p1.hasOwnProperty('sayHello')", Object.hasOwn(p1, "sayHello"));
-      console.log("p1.hasOwnProperty('eat')", Object.hasOwn(p1, "eat"));
 
-      // 实例访问类静态属性返回 undefined（静态只能用类名访问）
-      console.log("p1.userType", p1.userType);
+      // ====== 2. Object.getPrototypeOf 验证原型关系 ======
+      console.log(
+        "Person.prototype === Object.getPrototypeOf(p1):",
+        Person.prototype === Object.getPrototypeOf(p1)
+      ); // true
 
-      // 类外部无法直接访问实例的私有字段
-      // console.log("p1.#userAgeName", p1.#userAgeName);
+      // ====== 3. 实例方法共享 vs 实例自有方法 ======
+      console.log("eat 共享:", p1.eat === p2.eat); // true（prototype）
+      console.log("sayHello 独立:", p1.sayHello === p2.sayHello); // false（own property）
+      console.log("hasOwn eat:", Object.hasOwn(p1, "eat")); // false
+      console.log("hasOwn sayHello:", Object.hasOwn(p1, "sayHello")); // true
+      console.log("hasOwn userAge:", Object.hasOwn(p1, "userAge")); // true
 
-      console.log("Person.userType", Person.userType);
+      // ====== 4. 静态成员 vs 实例访问 ======
+      console.log("Person.userType:", Person.userType); // "person"
+      console.log("p1.userType:", p1.userType); // undefined
 
+      // ====== 5. 下划线约定 vs 私有字段 ======
+      p1._legacyPrivate = "still readable"; // 约定，非真正私有
+      console.log("外部读 _legacyPrivate:", p1._legacyPrivate);
+      // p1.#userAgeName // SyntaxError：类外不能访问 #field
     </script>
     <!-- SCRIPT_END -->
 
@@ -124,5 +126,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

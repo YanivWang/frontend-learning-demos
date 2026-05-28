@@ -1,17 +1,19 @@
 <!--
-分类: javascript / 02-函数与作用域 / this指向
+  分类: javascript / 02-函数与作用域 / this指向
   主题: new 调用构造函数时 this 的行为
   要点:
     - new 会创建对象、链接原型、以新对象作为 this 执行构造函数并返回实例
     - 构造函数不显式返回对象时，new 的结果就是新实例
-    - 不加 new 调用普通构造函数会让 this 按普通函数规则绑定，可能污染全局或报错
-    - class 构造器必须用 new 调用，能避免传统构造函数漏写 new 的一类问题
+    - 构造函数显式 return 对象时，new 的结果变成该对象
+    - 不加 new 调用普通构造函数会让 this 按普通函数规则绑定，可能污染全局
+    - class 构造器必须用 new 调用，默认严格模式
   面试:
     - new 操作符内部做了哪几步？
     - 构造函数显式 return 对 new 的结果有什么影响？
     - 漏写 new 为什么危险？
     - class 和传统构造函数在调用方式上有什么差异？
     - 手写 new 时要注意哪些边界？
+  相关: 03-对象与原型/构造函数, 08-面试题/手写/03-new
 -->
 
 <!doctype html>
@@ -39,7 +41,7 @@
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>new 操作符内部做了哪几步？</strong> 结论是创建对象、链接原型、绑定 <code>this</code> 执行构造函数、返回对象。原因是 JS 的“实例”本质依赖原型链；项目里理解这点才能解释 <code>instanceof</code>、原型方法共享和手写 new。</li>
+          <li><strong>new 操作符内部做了哪几步？</strong> 结论是创建对象、链接原型、绑定 <code>this</code> 执行构造函数、返回对象。原因是 JS 的「实例」本质依赖原型链；项目里理解这点才能解释 <code>instanceof</code>、原型方法共享和手写 new。</li>
           <li><strong>构造函数显式 return 对 new 的结果有什么影响？</strong> 如果返回对象，最终结果就是该对象；如果返回原始值或没有返回，结果仍是新实例。边界是构造函数里随意 return 对象会破坏实例原型关系。</li>
           <li><strong>漏写 new 为什么危险？</strong> 传统构造函数会变成普通函数调用，<code>this</code> 不再指向新实例。非严格模式可能污染 <code>window</code>，严格模式通常报错；项目里用 <code>class</code>、工厂函数或命名规范降低风险。</li>
           <li><strong>class 和传统构造函数有什么差异？</strong> <code>class</code> 语法仍基于原型，但构造器必须用 <code>new</code> 调用，并默认运行在严格模式。维护旧代码时要理解两者的共同原型模型和调用边界。</li>
@@ -47,9 +49,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new" target="_blank" rel="noopener">MDN Web Docs：new operator</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_classes" target="_blank" rel="noopener">MDN Web Docs：Using classes</a></li>
-          <li><a href="https://javascript.info/constructor-new" target="_blank" rel="noopener">JavaScript.info：Constructor, operator new</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new">MDN: new operator</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_classes">MDN: Using classes</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/constructor">MDN: constructor</a></li>
         </ul>
       </div>
     </section>
@@ -57,27 +59,62 @@
 
     <!-- SCRIPT_START -->
     <script>
-      //js函数中的this是动态绑定的
+      // ====== 1. new 调用：this 指向新实例 ======
       function Person(name, age) {
         this.name1 = name;
         this.age1 = age;
-
-        console.log("this: " + this);
+        console.log("new Person this:", this);
       }
-
-      //当使用new 操作符来调用函数，把函数当做类使用
-      //此时this的作用域就是安全的，this始终指向新创建的Person实例对象
+      Person.prototype.sayHi = function () {
+        return "hi " + this.name1;
+      };
 
       var p1 = new Person("wc", 25);
-      console.log(p1.name1);
-      console.log(window.name1);//undefined
-      console.log(window.age1);//undefined
+      console.log("p1.name1:", p1.name1); // "wc"
+      console.log("p1.sayHi():", p1.sayHi()); // "hi wc"
+      console.log("instanceof:", p1 instanceof Person); // true
+      console.log("window.name1:", window.name1); // undefined（new 时未污染全局）
 
-      Person("wzl", 50);//直接调用该构造函数，不使用new操作符，则和调用普通的函数一样，函数内部的this，就是window对象
+      // ====== 2. 漏写 new：普通函数调用，非严格模式污染全局 ======
+      Person("wzl", 50); // 无 new → this 是 window
+      console.log("漏写 new 后 window.name1:", window.name1); // "wzl"
+      console.log("漏写 new 后 window.age1:", window.age1); // 50
 
-      console.log(window.name1);
-      console.log(window.age1);
+      // ====== 3. 显式 return 对象：new 结果变成返回的对象 ======
+      function Factory(label) {
+        this.label = label;
+        return { hijacked: true }; // 返回对象 → new 的结果是该对象
+      }
+      var f1 = new Factory("original");
+      console.log("return 对象 f1:", f1); // { hijacked: true }
+      console.log("f1.label:", f1.label); // undefined
 
+      // ====== 4. 显式 return 原始值：忽略，仍返回新实例 ======
+      function WithPrimitiveReturn(name) {
+        this.name = name;
+        return 42; // 原始值被忽略
+      }
+      var p2 = new WithPrimitiveReturn("ok");
+      console.log("return 原始值 p2.name:", p2.name); // "ok"
+
+      // ====== 5. class 构造器必须用 new ======
+      class Modern {
+        constructor(value) {
+          this.value = value;
+        }
+      }
+      var m1 = new Modern("class");
+      console.log("class 实例:", m1.value); // "class"
+      try {
+        Modern("no-new"); // TypeError: Class constructor Modern cannot be invoked without 'new'
+      } catch (err) {
+        console.log("class 无 new:", err.name, "-", err.message.slice(0, 50) + "…");
+      }
+
+      // 清理全局污染
+      delete window.name1;
+      delete window.age1;
+      delete window.Person;
     </script>
     <!-- SCRIPT_END -->
 
@@ -99,5 +136,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

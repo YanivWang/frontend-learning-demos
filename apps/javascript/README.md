@@ -73,7 +73,7 @@
 | `03-对象与原型/函数也是对象.html` | 函数也是对象 |
 | `03-对象与原型/原型.html` | 原型对象（prototype）与共享属性 |
 | `03-对象与原型/原型链.html` | 原型链与组合继承 |
-| `03-对象与原型/原型属性vs实例属性.html` | 原型属性 vs 实例属性、hasOwnProperty 与 in |
+| `03-对象与原型/原型属性vs实例属性.html` | 原型属性 vs 实例属性 |
 | `04-ES6+/集合/Map.html` | Map 键值对集合 |
 | `04-ES6+/集合/Set.html` | Set 值的集合 |
 | `04-ES6+/集合/WeakMap.html` | WeakMap 弱引用映射 |

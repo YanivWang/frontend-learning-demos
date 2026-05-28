@@ -1,6 +1,8 @@
 <!--
-分类: javascript / 07-进阶 / 内存泄漏
+  分类: javascript / 07-进阶 / 内存泄漏
   主题: 用 Performance 面板观察 DOM 节点 + 内存增长
+  难度: 进阶
+  相关: 内存泄漏/leakSuccess, 垃圾回收
   要点:
     - 不断 appendChild 且不清理会让页面 DOM 节点数和渲染成本持续增长
     - Array.concat 反复合并大数组会制造新数组并增加 JS heap 压力
@@ -26,7 +28,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>用 Performance 面板观察 DOM 节点 + 内存增长</h1>
-      <p class="hint">打开 DevTools 的 Performance Monitor，点击“增长”观察 JS heap 与 DOM Nodes 曲线；多次点击可能明显占用内存。</p>
+      <p class="hint">打开 DevTools 的 Performance Monitor，点击“增长”观察 JS heap 与 DOM Nodes 曲线。<strong>需人工在浏览器验证</strong>：多次点击会明显占用内存，请在本地环境操作。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -39,37 +41,53 @@
         <h2>面试考点</h2>
         <ul>
           <li><strong>如何用 Performance Monitor 判断页面是否持续涨内存？</strong> 结论是边复现操作边观察 JS heap size、DOM Nodes 和 CPU 曲线是否持续上升且不能回落。原因是这些指标能快速提示是对象堆增长、DOM 节点增长还是执行开销过高。边界是它只能给趋势，不能直接告诉你哪段代码持有对象，根因还要靠 Performance 录制和 Heap snapshot。</li>
-          <li><strong>本页的 <code>appendChild</code> 和 Detached DOM 泄漏有什么区别？</strong> 结论是本页创建的是仍连接在文档中的 DOM 节点，不是 Detached 节点。原因是节点被追加到 <code>document.body</code> 后仍属于页面结构，浏览器必须参与渲染。项目里如果节点被移除后仍被数组、闭包或监听器引用，才需要按 Detached DOM 泄漏去查。</li>
-          <li><strong>为什么反复 <code>concat</code> 大数组会造成 GC 压力？</strong> 结论是 <code>concat</code> 返回新数组，旧数组和新数组在一段时间内都可能存在，且元素复制成本很高。原因是每次增长都要分配更大的连续结构并复制引用。项目中应避免无上限累积，按场景选择 <code>push</code>、环形缓冲、分页或流式处理。</li>
+          <li><strong>本页的 appendChild 和 Detached DOM 泄漏有什么区别？</strong> 结论是本页创建的是仍连接在文档中的 DOM 节点，不是 Detached 节点。原因是节点被追加到 document.body 后仍属于页面结构，浏览器必须参与渲染。项目里如果节点被移除后仍被数组、闭包或监听器引用，才需要按 Detached DOM 泄漏去查。</li>
+          <li><strong>为什么反复 concat 大数组会造成 GC 压力？</strong> 结论是 concat 返回新数组，旧数组和新数组在一段时间内都可能存在，且元素复制成本很高。原因是每次增长都要分配更大的连续结构并复制引用。项目中应避免无上限累积，按场景选择 push、环形缓冲、分页或流式处理。</li>
           <li><strong>线上发现内存曲线持续上升怎么排查？</strong> 结论是先复现最小操作路径，再区分 DOM 增长、JS heap 增长和监听器增长。原因是不同指标对应不同问题：列表未清理、缓存无上限、闭包保留状态、重复绑定监听。边界是偶发峰值不等于泄漏，只有多轮操作后基线持续升高才更值得按泄漏处理。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://developer.chrome.com/docs/devtools/performance-monitor">Chrome DevTools: Performance monitor panel</a></li>
           <li><a href="https://developer.chrome.com/docs/devtools/memory-problems">Chrome DevTools: Fix memory problems</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Memory_management">MDN Web Docs: Memory management</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Memory_management">MDN: Memory management</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <button id="grow">增长</button>
+    <section class="demo-block" aria-label="内存增长演示">
+      <h2>DOM + JS heap 增长演示</h2>
+      <p class="tip">打开 DevTools → More tools → Performance monitor，观察 DOM Nodes 与 JS heap size，然后多次点击按钮。</p>
+      <button type="button" id="grow">增长</button>
+      <p id="stats" aria-live="polite"></p>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      var x = [];
+      // ====== 1. 累积数组：每次 concat 创建新数组，旧数组短期仍存活 ======
+      let x = [];
+      let clickCount = 0;
 
       function grow() {
-        for (var i = 0; i < 10000; i++) {
+        clickCount++;
+
+        // ====== 2. 追加 10000 个已连接 DOM 节点 ======
+        for (let i = 0; i < 10000; i++) {
           document.body.appendChild(document.createElement("p"));
         }
-        x = x.concat(new Array(1000 * 1000).fill("11111111"))
+
+        // ====== 3. concat 大数组：推高 JS heap ======
+        x = x.concat(new Array(1000 * 1000).fill("11111111"));
+
+        const domCount = document.getElementsByTagName("p").length;
+        document.getElementById("stats").textContent =
+          `已点击 ${clickCount} 次 | DOM p 节点: ${domCount} | 累积数组 length: ${x.length}`;
+        console.log(`第 ${clickCount} 次增长 | p 节点: ${domCount} | x.length: ${x.length}`);
       }
 
       document.getElementById("grow").addEventListener("click", grow);
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -91,5 +109,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

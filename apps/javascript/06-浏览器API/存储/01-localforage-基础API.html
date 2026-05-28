@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 06-浏览器API / 存储
+  分类: javascript / 06-浏览器API / 存储
   主题: localforage 基础 API
   要点:
     - localforage 用 Promise API 封装 IndexedDB，并可按环境降级到 WebSQL/localStorage
@@ -12,6 +12,7 @@
     - clear 和 removeItem 在业务数据安全上有什么区别？
     - localforage 与直接使用 IndexedDB 如何选？
     - localforage 写入失败时应该处理哪些边界？
+  相关: 存储方案对比, 获取已用容量
 -->
 
 <!doctype html>
@@ -28,7 +29,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>localforage 基础 API</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">阅读本复习区后，点击下方按钮运行 localforage API 演示；也可打开 DevTools Console 对照。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -37,6 +38,7 @@
           <li><code>createInstance({ name, storeName })</code> 可以把 demo 数据隔离到独立仓库；业务代码不应随意调用 <code>clear()</code>，除非确认要清空整个 store，删除单个 key 优先用 <code>removeItem()</code>。</li>
           <li><code>iterate</code>、<code>keys</code>、<code>length</code> 适合调试和管理小规模 key 集合；大量数据仍应设计索引、分页或直接使用 IndexedDB 游标，避免一次性遍历造成性能问题。</li>
           <li>失败路径必须处理：配额不足、用户清理、隐私模式、降级驱动差异、Blob 支持差异都可能让 Promise reject；缓存类数据要能从网络或默认值恢复。</li>
+          <li><strong>运行环境：</strong> IndexedDB 在 <code>file://</code> 与 <code>http(s)://</code> 通常可用；隐私模式或禁用存储时可能失败。配额与驱逐策略因浏览器而异，无固定上限保证。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
@@ -57,42 +59,67 @@
     </section>
     <!-- NOTES_END -->
 
+    <!-- PAGE_DOM_START -->
+    <section class="demo-block" aria-label="localforage API 演示">
+      <h2 class="demo-block__label">运行示例</h2>
+      <p class="tip">按顺序演示 setItem → getItem → keys/length → iterate → removeItem；结束后会清理 demo 数据。</p>
+      <button id="run-demo" type="button">运行 API 演示</button>
+      <pre id="runtime-output" aria-live="polite">尚未运行。</pre>
+    </section>
+    <!-- PAGE_DOM_END -->
+
     <!-- SCRIPT_START -->
     <script>
-      const store = localforage.createInstance({
-        name: "frontend-learning-demos",
-        storeName: "localforage_basic_api",
-        description: "localforage 基础 API demo",
-      });
+      (function () {
+        var outputEl = document.getElementById("runtime-output");
+        var lines = [];
 
-      async function runLocalforageDemo() {
-        try {
-          const savedValue = await store.setItem("profile", { name: "王成", role: "learner" });
-          console.log("1 setItem:", savedValue);
-
-          const profile = await store.getItem("profile");
-          console.log("2 getItem:", profile);
-
-          await store.setItem("theme", "dark");
-          console.log("3 keys:", await store.keys());
-          console.log("4 length:", await store.length());
-
-          await store.iterate(function (value, key, iterationNumber) {
-            console.log("5 iterate:", iterationNumber, key, value);
-          });
-
-          await store.removeItem("profile");
-          console.log("6 removeItem profile:", await store.getItem("profile"));
-
-          await store.removeItem("theme");
-          console.log("7 cleanup keys:", await store.keys());
-        } catch (error) {
-          console.error("localforage 操作失败：", error);
+        function log(step, payload) {
+          var text = step + (payload !== undefined ? ": " + JSON.stringify(payload) : "");
+          lines.push(text);
+          console.log(text);
+          outputEl.textContent = lines.join("\n");
         }
-      }
 
-      runLocalforageDemo();
+        var store = localforage.createInstance({
+          name: "frontend-learning-demos",
+          storeName: "localforage_basic_api",
+          description: "localforage 基础 API demo",
+        });
 
+        async function runLocalforageDemo() {
+          lines = [];
+          try {
+            // ====== 1. setItem / getItem ======
+            var savedValue = await store.setItem("profile", { name: "王成", role: "learner" });
+            log("1 setItem", savedValue);
+
+            var profile = await store.getItem("profile");
+            log("2 getItem", profile);
+
+            // ====== 2. keys / length / iterate ======
+            await store.setItem("theme", "dark");
+            log("3 keys", await store.keys());
+            log("4 length", await store.length());
+
+            await store.iterate(function (value, key, iterationNumber) {
+              log("5 iterate " + iterationNumber, { key: key, value: value });
+            });
+
+            // ====== 3. removeItem 与清理 ======
+            await store.removeItem("profile");
+            log("6 removeItem profile", await store.getItem("profile"));
+
+            await store.removeItem("theme");
+            log("7 cleanup keys", await store.keys());
+          } catch (error) {
+            log("失败", { name: error.name, message: error.message });
+            console.error("localforage 操作失败：", error);
+          }
+        }
+
+        document.getElementById("run-demo").addEventListener("click", runLocalforageDemo);
+      })();
     </script>
     <!-- SCRIPT_END -->
 

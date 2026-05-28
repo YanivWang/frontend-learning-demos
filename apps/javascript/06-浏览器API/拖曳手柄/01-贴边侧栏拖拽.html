@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 06-浏览器API / 拖曳手柄
+  分类: javascript / 06-浏览器API / 拖曳手柄
   主题: 拖拽调整侧栏宽度（Vue3 + requestAnimationFrame 版）
   要点:
     - mousedown 起点 → mousemove 计算偏移 → mouseup 解绑事件，是拖拽三段经典写法
@@ -12,6 +12,7 @@
     - 拖拽过程中为什么要禁用 transition 并阻止默认行为？
     - 为什么要限制侧栏最小和最大宽度？
     - Mouse Events 和 Pointer Events 在拖拽交互里如何选？
+  相关: 悬浮侧栏拖拽, dom事件-冒泡捕获委托
 -->
 
 <!doctype html>
@@ -205,7 +206,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>拖拽调整侧栏宽度（Vue3 + requestAnimationFrame 版）</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">阅读本复习区后，在下方拖拽侧栏右侧手柄，观察宽度变化与主内容 margin 联动。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -214,6 +215,7 @@
           <li>拖拽中临时添加 <code>.no-transition</code>，并在 <code>mousedown</code> 里 <code>preventDefault()</code>，可以减少宽度跟手滞后和文本被选中的问题。</li>
           <li><code>requestAnimationFrame</code> 不是让宽度变化“更少计算”，而是把高频 <code>mousemove</code> 合并到浏览器下一帧提交，避免一帧内多次写响应式状态。</li>
           <li>侧栏宽度要设置最小/最大边界，保证菜单仍可用、主内容不被完全挤压；真实项目还应支持键盘操作或可访问的替代设置项。</li>
+          <li><strong>运行环境：</strong> 鼠标拖拽在 <code>file://</code> 与 <code>http(s)://</code> 均可；触屏需 Pointer Events。本页通过 CDN 同级路径加载 Vue3，不依赖 HTTPS 特权 API。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
@@ -235,6 +237,8 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
+    <section class="demo-block" aria-label="贴边侧栏拖拽演示">
+      <h2 class="demo-block__label">运行示例</h2>
     <div id="app">
       <!-- 左侧导航栏 -->
       <div
@@ -311,6 +315,7 @@
                 </div>
               </div>
             </div>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
@@ -319,6 +324,7 @@
 
       createApp({
         setup() {
+          // ====== 1. 侧栏状态与菜单数据 ======
           // 导航栏宽度（初始200px）
           const sidebarWidth = ref(200);
 
@@ -343,7 +349,7 @@
           let rafId = null; // requestAnimationFrame ID
           let pendingWidth = sidebarWidth.value;
 
-          // 开始调整宽度
+          // ====== 2. mousedown：记录起点并绑定 document 监听 ======
           const startResize = (e) => {
             isResizing.value = true;
             startX.value = e.clientX;
@@ -363,7 +369,7 @@
             e.preventDefault();
           };
 
-          // 调整宽度 - 使用requestAnimationFrame优化性能
+          // ====== 3. mousemove + rAF：合帧写入宽度 ======
           const resize = (e) => {
             if (!isResizing.value) return;
 
@@ -383,7 +389,7 @@
             }
           };
 
-          // 停止调整宽度
+          // ====== 4. mouseup：解绑监听并恢复过渡 ======
           const stopResize = () => {
             isResizing.value = false;
 

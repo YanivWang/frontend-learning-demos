@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 08-面试题 / 手写
+  分类: javascript / 08-面试题 / 手写
   主题: 手写 EventEmitter
   要点:
     - EventEmitter 用事件名映射监听数组，on 注册、emit 同步派发
@@ -11,6 +11,7 @@
     - once 为什么通常要保存原始 listener 引用？
     - emit 派发时为什么要复制监听列表？
     - EventEmitter 和 DOM EventTarget 有什么区别？
+  相关: Promise, 06-浏览器API/事件模型
 -->
 
 <!doctype html>
@@ -26,7 +27,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>手写 EventEmitter</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -48,70 +49,84 @@
         <ul>
           <li><a href="https://nodejs.org/api/events.html" target="_blank" rel="noreferrer">Node.js: Events</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget" target="_blank" rel="noreferrer">MDN: EventTarget</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener" target="_blank" rel="noreferrer">MDN: EventTarget.addEventListener()</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>打开控制台查看断言结果。</p>
+    <section class="demo-block">
+      <h2>手写实现验证</h2>
+      <p class="tip">标准答法：第一次 emit 触发 on + once；第二次 emit 只触发 on；off 后 emit 返回 false。</p>
+      <pre id="runtime-output" aria-live="polite"></pre>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      class EventEmitter {
-        constructor() {
-          this.events = Object.create(null);
+      (function () {
+        var out = document.getElementById("runtime-output");
+        var lines = [];
+        function emitLine(line) {
+          console.log(line);
+          lines.push(line);
+          if (out) out.textContent = lines.join("\n");
         }
 
-        on(type, listener) {
-          if (!this.events[type]) this.events[type] = [];
-          this.events[type].push(listener);
-          return this;
+        // ====== 1. EventEmitter：on / off / once / emit ======
+        class EventEmitter {
+          constructor() {
+            this.events = Object.create(null);
+          }
+
+          on(type, listener) {
+            if (!this.events[type]) this.events[type] = [];
+            this.events[type].push(listener);
+            return this;
+          }
+
+          off(type, listener) {
+            const listeners = this.events[type];
+            if (!listeners) return this;
+            this.events[type] = listeners.filter(
+              (fn) => fn !== listener && fn._origin !== listener
+            );
+            return this;
+          }
+
+          once(type, listener) {
+            const wrapper = (...args) => {
+              this.off(type, wrapper);
+              listener.apply(this, args);
+            };
+            wrapper._origin = listener;
+            return this.on(type, wrapper);
+          }
+
+          emit(type, ...args) {
+            const listeners = this.events[type];
+            if (!listeners || listeners.length === 0) return false;
+            listeners.slice().forEach((listener) => listener.apply(this, args));
+            return true;
+          }
         }
 
-        off(type, listener) {
-          const listeners = this.events[type];
-          if (!listeners) return this;
-          this.events[type] = listeners.filter(fn => fn !== listener && fn._origin !== listener);
-          return this;
+        // ====== 2. 验证：on + once + off ======
+        const bus = new EventEmitter();
+        const result = [];
+        function onMessage(value) {
+          result.push("on:" + value);
         }
 
-        once(type, listener) {
-          const wrapper = (...args) => {
-            this.off(type, wrapper);
-            listener.apply(this, args);
-          };
-          wrapper._origin = listener;
-          return this.on(type, wrapper);
-        }
+        bus.on("message", onMessage);
+        bus.once("message", (value) => result.push("once:" + value));
 
-        emit(type, ...args) {
-          const listeners = this.events[type];
-          if (!listeners || listeners.length === 0) return false;
-          listeners.slice().forEach(listener => listener.apply(this, args));
-          return true;
-        }
-      }
-
-      const bus = new EventEmitter();
-      const result = [];
-      function onMessage(value) {
-        result.push("on:" + value);
-      }
-
-      bus.on("message", onMessage);
-      bus.once("message", value => result.push("once:" + value));
-
-      console.assert(bus.emit("message", 1) === true, "emit returns true when listeners exist");
-      console.assert(bus.emit("message", 2) === true, "second emit still has on listener");
-      bus.off("message", onMessage);
-      console.assert(bus.emit("message", 3) === false, "off removes listener");
-      console.assert(result.join("|") === "on:1|once:1|on:2", "on once off work");
-
-      console.log("result:", result);
-
+        emitLine("第 1 次 emit(1): " + bus.emit("message", 1));
+        emitLine("第 2 次 emit(2): " + bus.emit("message", 2));
+        bus.off("message", onMessage);
+        emitLine("off 后 emit(3): " + bus.emit("message", 3));
+        emitLine("result: " + result.join("|")); // 预期: on:1|once:1|on:2
+      })();
     </script>
     <!-- SCRIPT_END -->
 
@@ -133,5 +148,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

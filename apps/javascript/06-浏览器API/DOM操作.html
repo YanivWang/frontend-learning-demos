@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 06-浏览器API
+  分类: javascript / 06-浏览器API
   主题: DOM 基础操作（选择 / 属性 / 数据集 / 类）
   要点:
     - getElementById 返回单个元素，getElementsByClassName 返回实时 HTMLCollection
@@ -11,6 +11,7 @@
     - dataset、getAttribute 和直接挂 JS 属性分别适合什么场景？
     - classList 为什么比拼接 className 更可靠？
     - innerHTML 和 textContent 在安全边界上如何选择？
+  相关: 浏览器渲染与性能, fetch与跨域
 -->
 
 <!doctype html>
@@ -23,6 +24,7 @@
       body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
       #box { padding: 8px 12px; background: #fafafa; border: 1px solid #ddd; border-radius: 4px; margin: 8px 0; }
       .info { color: #888; font-size: 13px; }
+      #runtime-output { margin-top: 12px; padding: 10px; background: #f6f8fa; border-radius: 6px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; min-height: 3rem; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -31,7 +33,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>DOM 基础：选择 / 属性 / 数据集 / 内容</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">请阅读本复习区，并在下方演示区点击按钮观察 DOM 变化；同时打开 DevTools Console 查看选择器对比输出。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -61,55 +63,96 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <button id="btn">点击运行 DOM 操作</button>
-    <div id="testA" class="testContent"
-      data-name="王成"
-      title="我是 tooltip"
-      align="center"
-      style="width:160px">
-      我是一个 box
-    </div>
-    <textarea accesskey="f" placeholder="按 Alt+F (Mac: Ctrl+Alt+F) 聚焦"></textarea>
-    <p class="info">accesskey 可用键盘快捷键聚焦元素；contenteditable 让 div 可编辑；dir 控制文字方向。</p>
-    <div contenteditable="true" dir="rtl" id="editableBox" style="margin-top:8px;padding:6px;border:1px dashed #aaa;">我可以编辑（dir=rtl，从右往左）</div>
+    <section class="demo-block">
+      <h2>DOM 选择与属性操作</h2>
+      <p class="tip">点击按钮修改下方 box；「对比集合」演示 HTMLCollection 实时更新 vs NodeList 静态快照。</p>
+      <button type="button" id="btn">运行 DOM 操作</button>
+      <button type="button" id="compareBtn">对比 HTMLCollection / NodeList</button>
+      <div id="testA" class="testContent"
+        data-name="王成"
+        title="我是 tooltip"
+        align="center"
+        style="width:160px">
+        我是一个 box
+      </div>
+      <textarea accesskey="f" placeholder="按 Alt+F (Mac: Ctrl+Alt+F) 聚焦"></textarea>
+      <p class="info">accesskey 可用键盘快捷键聚焦元素；contenteditable 让 div 可编辑；dir 控制文字方向。</p>
+      <div contenteditable="true" dir="rtl" id="editableBox" style="margin-top:8px;padding:6px;border:1px dashed #aaa;">我可以编辑（dir=rtl，从右往左）</div>
+      <pre id="runtime-output" aria-live="polite">等待操作…</pre>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      const output = document.getElementById("runtime-output");
+
+      function show(lines) {
+        output.textContent = Array.isArray(lines) ? lines.join("\n") : lines;
+      }
+
+      // ====== 1. 选择器：单个 vs 集合 ======
       document.getElementById("btn").addEventListener("click", function () {
-        // ① 选择器：单个 vs 集合
         const single = document.getElementById("testA");
-        const list = document.getElementsByClassName("testContent"); // 实时 HTMLCollection
-        const list2 = document.querySelectorAll(".testContent");     // 静态 NodeList
+        const liveList = document.getElementsByClassName("testContent"); // 实时 HTMLCollection
+        const staticList = document.querySelectorAll(".testContent"); // 静态 NodeList
         console.log("单个:", single);
-        console.log("HTMLCollection:", list);
-        console.log("NodeList:", list2);
+        console.log("HTMLCollection:", liveList);
+        console.log("NodeList:", staticList);
 
-        // ② 内容修改：用户输入或接口文本优先用 textContent，避免被当 HTML 解析。
-        list[0].textContent = "已被修改";
+        // ====== 2. 内容修改：用户输入优先 textContent ======
+        liveList[0].textContent = "已被修改";
 
-        // ③ 内联样式 .style.xxx
+        // ====== 3. 内联样式 .style.xxx ======
         single.style.backgroundColor = "#ffe5b4";
 
-        // ④ 属性 getAttribute / setAttribute
+        // ====== 4. 属性 getAttribute / setAttribute ======
         const dataName = single.getAttribute("data-name");
         console.log("data-name =", dataName);
         single.setAttribute("age", "20");
 
-        // ⑤ 数据集 dataset —— 更现代的 data-* 访问方式
+        // ====== 5. dataset —— 读写 data-* ======
         console.log("dataset:", single.dataset);
         single.dataset.role = "demo";
         console.log("dataset.role:", single.dataset.role);
 
-        // ⑥ 类操作
+        // ====== 6. classList 增删切换 ======
         single.classList.add("active");
         single.classList.toggle("active");
 
-        // ⑦ 直接挂自定义 JS 属性（不会反映到 HTML）
+        // ====== 7. 直接挂 JS 属性（不会反映到 HTML）======
         single.foo = "bar";
         console.log("自定义 JS 属性:", single.foo);
+
+        show([
+          "textContent: " + single.textContent,
+          "data-name: " + dataName,
+          "dataset.role: " + single.dataset.role,
+          "age attribute: " + single.getAttribute("age"),
+          "JS 属性 foo: " + single.foo + "（outerHTML 中不可见）",
+        ]);
       });
 
+      // ====== 8. HTMLCollection 实时 vs NodeList 静态 ======
+      document.getElementById("compareBtn").addEventListener("click", () => {
+        const container = document.querySelector(".demo-block");
+        const live = document.getElementsByClassName("testContent");
+        const snapshot = document.querySelectorAll(".testContent");
+        const before = { live: live.length, snapshot: snapshot.length };
+
+        const extra = document.createElement("div");
+        extra.className = "testContent";
+        extra.textContent = "动态插入的 testContent";
+        container.insertBefore(extra, output);
+
+        show([
+          "插入前 — HTMLCollection: " + before.live + "，NodeList: " + before.snapshot,
+          "插入后 — HTMLCollection: " + live.length + "（实时 +1）",
+          "插入后 — NodeList: " + snapshot.length + "（静态不变，需重新 querySelectorAll）",
+          "重新 querySelectorAll: " + document.querySelectorAll(".testContent").length,
+        ]);
+        console.log("HTMLCollection 实时长度:", live.length);
+        console.log("旧 NodeList 快照长度:", snapshot.length);
+      });
     </script>
     <!-- SCRIPT_END -->
 
@@ -131,5 +174,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

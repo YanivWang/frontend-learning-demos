@@ -10,6 +10,7 @@
     - observe 配置里 childList、attributes、subtree 分别影响什么？
     - MutationObserver 回调里继续修改 DOM 有什么风险？
     - MutationObserver 和 ResizeObserver、IntersectionObserver 如何选型？
+  相关: IntersectionObserver, DOM操作
 -->
 
 <!doctype html>
@@ -18,6 +19,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MutationObserver</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
+      #app { min-height: 48px; padding: 12px; border: 2px dashed #94a3b8; border-radius: 8px; background: #f8fafc; }
+      button { margin: 4px 6px 4px 0; padding: 6px 10px; }
+      #runtime-output { margin-top: 12px; padding: 10px; background: #f6f8fa; border-radius: 6px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; min-height: 6rem; max-height: 240px; overflow: auto; }
+    </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
   </head>
@@ -25,7 +32,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>MutationObserver 监听 DOM 变化</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">请阅读本复习区，并在下方演示区点击按钮触发 DOM 变化；观察 #runtime-output 中的 mutation 记录。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -53,74 +60,100 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <div id="app" class="app"></div>
+    <section class="demo-block">
+      <h2>MutationObserver 交互演示</h2>
+      <p class="tip">点击按钮修改 #app 区域；mutation 回调异步批量投递，多条连续改动可能合并为一次回调。</p>
+      <div id="app" class="app">初始内容</div>
+      <button type="button" id="addChildBtn">添加子节点（childList）</button>
+      <button type="button" id="attrBtn">修改 class（attributes）</button>
+      <button type="button" id="textBtn">修改文本（characterData）</button>
+      <button type="button" id="disconnectBtn">disconnect 停止观察</button>
+      <pre id="runtime-output" aria-live="polite">等待 DOM 变化…</pre>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      //new MutationObserver 创建并返回一个突变观察器 => 它会在触发指定 DOM 事件时，调用指定的回调函数
-      //MutationObserver 对DOM的观察不会立即启动，而是必须调用observe()方法，来确定监听哪一部分的DOM以及要响应哪些更改
+      const appDom = document.getElementById("app");
+      const logBox = document.getElementById("runtime-output");
+      const lines = [];
 
-      //重点: 在回调函数中尽量避免进行复杂操作或再次触发 DOM 变化（可能导致无限循环）
-      //执行时机: 回调函数在微任务队列中执行，所有 DOM 变化完成后才会触发
+      function appendLog(text) {
+        lines.push("[" + new Date().toLocaleTimeString() + "] " + text);
+        if (lines.length > 30) lines.shift();
+        logBox.textContent = lines.join("\n");
+        console.log(text);
+      }
 
-      //多个连续的 DOM 变化会被合并为一次回调执行
-
-      //mutationsList 变化记录的数组，每个记录描述一次具体变化
-      //observer 当前 MutationObserver 实例本身
-
-      //回调函数是异步执行的，会在所有 DOM 变化完成后批量触发（而非每次变化立即执行），避免频繁触发导致性能问题；
-      function callback(mutationList, observer) {
-        // debugger
+      // ====== 1. 创建 MutationObserver ======
+      // 回调在微任务队列中异步执行，连续 DOM 变化会批量合并
+      function callback(mutationList) {
         mutationList.forEach((mutation) => {
-          console.log(mutation.addedNodes);
-          console.log(mutation.removedNodes);
-
-          //mutation.target 发生变化的目标节点
-          switch (mutation.type) {//mutation.type 获取发生变动的类型(子节点变动，节点属性变动 文本内容变化)
+          switch (mutation.type) {
             case "childList":
-            /* 从树上添加或移除一个或更多的子节点；参见 mutation.addedNodes 与
-            mutation.removedNodes */
-            console.log("A child node has been added or removed.");
-
-            break;
+              appendLog(
+                "childList: +" + mutation.addedNodes.length +
+                " / -" + mutation.removedNodes.length
+              );
+              break;
             case "attributes":
-            /* mutation.target 中某节点的一个属性值被更改；该属性名称在 mutation.attributeName 中，
-            该属性之前的值为 mutation.oldValue */
-            console.log("节点" + mutation.target.tagName + "的属性" + mutation.attributeName + "被更改，" + "原来的值是" + mutation.oldValue + "新值" + mutation.target.className);
-
-            break;
+              appendLog(
+                "attributes: " + mutation.attributeName +
+                " 旧值=" + mutation.oldValue +
+                " 新值=" + mutation.target.getAttribute(mutation.attributeName)
+              );
+              break;
+            case "characterData":
+              appendLog(
+                "characterData: 旧值=" + mutation.oldValue +
+                " 新值=" + mutation.target.textContent
+              );
+              break;
           }
         });
       }
 
-      //回调函数会在被指定的节点或者子树以及以及配置项有DOM变动时调用
       const observer = new MutationObserver(callback);
 
+      // ====== 2. observe 配置 ======
       const config = {
-        attributes: true, // 观察属性变化
-        childList: true, // 观察目标节点 子节点的变化，是否有添加或者删除
-        subtree: true, // 观察所有后代节点 => 避免过度使用 subtree: true，这会增加观察范围和计算量
-        characterData: true, // 观察文本内容变化
-        attributeOldValue: true, // 记录属性变化前的值
-        characterDataOldValue: true, // 记录文本变化前的值
+        attributes: true,
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributeOldValue: true,
+        characterDataOldValue: true,
       };
-
-      //开始观察DOM
-      const appDom = document.querySelector("#app");
       observer.observe(appDom, config);
+      appendLog("已开始 observe #app");
 
-      //模拟 DOM 修改
-      setTimeout(() => {
-        appDom.textContent = "内容更新";
+      // ====== 3. 演示 childList ======
+      document.getElementById("addChildBtn").addEventListener("click", () => {
+        const span = document.createElement("span");
+        span.textContent = " [子节点 " + Date.now().toString().slice(-4) + "]";
+        appDom.appendChild(span);
+      });
 
-        setTimeout(()=>{
-          appDom.className = "appNew";
-          observer.disconnect();
-          console.log("演示结束，已 disconnect MutationObserver。");
-        },5000)
-      }, 3000);
+      // ====== 4. 演示 attributes ======
+      document.getElementById("attrBtn").addEventListener("click", () => {
+        appDom.classList.toggle("appNew");
+      });
 
+      // ====== 5. 演示 characterData ======
+      document.getElementById("textBtn").addEventListener("click", () => {
+        const textNode = appDom.firstChild;
+        if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+          textNode.textContent = "文本已更新 @" + new Date().toLocaleTimeString();
+        } else {
+          appDom.insertBefore(document.createTextNode("新文本节点"), appDom.firstChild);
+        }
+      });
+
+      // ====== 6. disconnect 清理 ======
+      document.getElementById("disconnectBtn").addEventListener("click", () => {
+        observer.disconnect();
+        appendLog("已 disconnect，后续 DOM 变化不再触发回调");
+      });
     </script>
     <!-- SCRIPT_END -->
 
@@ -142,5 +175,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

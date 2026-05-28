@@ -2,14 +2,17 @@
   分类: javascript / 01-基础
   主题: 变量声明、提升、null vs undefined、constructor
   要点:
-    - var 函数作用域 + 声明提升，可重复声明；let/const 块级作用域，禁重复声明
-    - null 主动空值，undefined 未赋值；== 相等、=== 不等；typeof null 为 object
-    - 原始类型 7 种 + object；function 的 typeof 返回 'function' 是特例
-    - 隐式全局赋值会污染 window；严格模式下会报 ReferenceError
+    - var 函数/全局作用域、提升、可重复声明；let/const 块级、禁重复声明
+    - 顶层 var 挂 globalThis，let/const 不挂；非严格模式隐式赋值污染全局
+    - TDZ：let/const 声明前及 TDZ 内 typeof 均 ReferenceError
+    - null/undefined 语义与 ==/===；typeof null 为 object（历史遗留）
+    - 7 primitive + Object；const 绑定不可改但对象属性可变
   面试:
-    - var / let / const 区别？什么是暂时性死区？
+    - var / let / const 区别？顶层声明对 window 有何不同？
+    - 什么是 TDZ？TDZ 内 typeof 会怎样？
     - null 和 undefined 区别？如何判断空值？
     - typeof null 为什么是 object？如何精准判断类型？
+    - const 能否修改对象？primitive 的 constructor 可靠吗？
   相关: 变量进阶, typeof
 -->
 
@@ -30,26 +33,28 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>var</code> 是函数作用域，声明会提升到函数顶部，重复声明后者被忽略；<code>for (var i…)</code> 的 <code>i</code> 在循环外仍可访问。</li>
-          <li><code>let</code> / <code>const</code> 是块级作用域，不可重复声明；<code>const</code> 必须初始化，但对象/数组内部属性仍可改。</li>
-          <li>声明提升：在 <code>var</code> 声明前访问得到 <code>undefined</code>；<code>let</code> / <code>const</code> 有暂时性死区，声明前访问抛 <code>ReferenceError</code>（详见 <a href="./变量进阶.html">变量进阶</a>）。</li>
-          <li><code>undefined</code> 表示「已声明未赋值」；<code>null</code> 表示开发者主动赋的「空值」；<code>null == undefined</code> 为 true，<code>===</code> 为 false。</li>
-          <li>原始类型 7 种：number、string、boolean、null、undefined、symbol、bigint；引用类型 object；<code>typeof null === 'object'</code> 是历史遗留 bug。</li>
-          <li>不加声明直接赋值（非严格模式）会在全局对象上创建属性，污染全局命名空间。</li>
+          <li><code>var</code> 在函数内为函数作用域、脚本顶层为全局作用域；声明会提升，可重复声明；<code>for (var i…)</code> 的 <code>i</code> 会泄漏到循环外。</li>
+          <li><code>let</code> / <code>const</code> 是块级作用域，不可重复声明；脚本顶层的 <code>let</code>/<code>const</code> 不会成为 <code>globalThis</code> 的属性（与顶层 <code>var</code> 不同）。</li>
+          <li>声明提升：<code>var</code> 声明前访问得 <code>undefined</code>；<code>let</code>/<code>const</code> 在暂时性死区（TDZ）内访问或对其使用 <code>typeof</code> 均抛 <code>ReferenceError</code>（进阶见 <a href="./变量进阶.html">变量进阶</a>）。</li>
+          <li><code>const</code> 必须初始化；绑定不可重新赋值，但对象/数组的内部属性仍可修改（MDN 称「immutable binding」而非 immutable value）。</li>
+          <li><code>undefined</code> 表示缺省/无值（未初始化、缺省返回、不存在的属性等）；<code>null</code> 表示刻意赋的「无对象」；<code>null == undefined</code> 为 true，<code>===</code> 为 false。</li>
+          <li>ECMAScript 共 8 种类型：7 种 primitive + <code>Object</code>；<code>typeof null === 'object'</code> 是历史遗留；不加声明直接赋值在非严格模式下会污染 <code>globalThis</code>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>var / let / const 区别？</strong> var 函数作用域、可重复声明、会提升；let/const 块级、不可重复声明；const 绑定不可重新赋值。业务代码优先 let/const。</li>
-          <li><strong>什么是暂时性死区（TDZ）？</strong> let/const 在词法上也会提升，但在声明语句执行前处于 TDZ，访问会 ReferenceError。var 提升后可直接读到 undefined。</li>
-          <li><strong>null 和 undefined 区别？</strong> undefined 是缺省/未赋值；null 是刻意清空引用。判断空值推荐 <code>value == null</code>（同时覆盖两者）或 <code>value === null || value === undefined</code>。</li>
-          <li><strong>typeof null 为什么是 object？</strong> 早期 JS 用二进制低位 tag 表示类型，null 的 tag 与 object 相同。精准类型检测用 <code>Object.prototype.toString.call</code>（见 <a href="./typeof.html">typeof</a>）。</li>
+          <li><strong>var / let / const 区别？</strong> var 函数/全局作用域、可重复声明、提升后值为 undefined；let/const 块级、不可重复声明、有 TDZ。顶层 var 挂 globalThis，let/const 不挂。业务代码优先 let/const。</li>
+          <li><strong>什么是 TDZ？TDZ 内 typeof 会怎样？</strong> 从块开始到 let/const 声明执行前，绑定已存在但不可访问；访问或对未声明完成的绑定使用 typeof 均 ReferenceError。var 提升后可直接读到 undefined。</li>
+          <li><strong>null 和 undefined 区别？</strong> undefined 是缺省/无值；null 是刻意表示无对象。判断空值推荐 <code>value == null</code> 或 <code>value === null || value === undefined</code>。</li>
+          <li><strong>typeof null 为什么是 object？</strong> 早期实现中 null 的 type tag 与 object 相同。精准检测用 <code>Object.prototype.toString.call</code> 或 <code>value === null</code>（见 <a href="./typeof.html">typeof</a>）。</li>
+          <li><strong>const 能否修改对象？constructor 可靠吗？</strong> 不能重新赋值绑定，但可改对象属性。primitive 访问 <code>.constructor</code> 会经自动装箱；MDN 不建议用 constructor 做类型检测，优先 typeof / instanceof / Symbol.toStringTag。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/var">MDN: var</a>：函数作用域、声明提升和全局属性行为。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let">MDN: let</a>：块级作用域、重复声明限制和暂时性死区。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof">MDN: typeof</a>：<code>null</code>、函数和原始类型检测边界。</li>
-          <li><a href="https://javascript.info/types">JavaScript.info: Data types</a>：原始类型、对象类型与 <code>null</code>/<code>undefined</code> 语义。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/var">MDN: var</a>：函数/全局作用域、声明提升和全局属性行为。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let">MDN: let</a>：块级作用域、TDZ 与顶层不挂 globalThis。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/const">MDN: const</a>：必须初始化、绑定不可改与对象属性可变。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof">MDN: typeof</a>：<code>null</code>、TDZ 与原始类型检测边界。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures">MDN: Data structures</a>：7 种 primitive、Object 与 null/undefined 语义。</li>
         </ul>
       </div>
     </section>
@@ -57,69 +62,116 @@
 
     <!-- SCRIPT_START -->
     <script>
-      //重复的var声明会被忽略
+      // ====== 1. var：重复声明与 for 循环作用域泄漏 ======
+      // 同一作用域内重复 var 合法；无初始值的后者不会覆盖已有值
       var userName = "123";
       var userName;
-      console.log("userName", userName);//123
+      console.log("userName（重复 var）:", userName); // "123"
 
       function outputNumbers(count) {
+        // var 无块级作用域：for 里的 i 属于 outputNumbers 函数作用域
         for (var i = 3; i < count; i++) {
-          console.log(i);
+          console.log("loop i:", i);
         }
-        var i; //重新声明变量
-        console.log(i); //5 (var 无块级作用域，for 循环里的 i 在循环外仍可访问)
+        var i; // 同一绑定上的重复声明，不会重置 i
+        console.log("循环外 i:", i); // 5（循环结束时 i 自增到 5）
       }
-      outputNumbers(5)
+      outputNumbers(5);
 
-      //声明提升导致的奇怪的现象，变量在其声明语句之前就可以访问
-      console.log("userAge", userAge);//undefined
+      // ====== 2. var 声明提升 ======
+      // 仅声明被提升并初始化为 undefined，赋值仍留在原位
+      console.log("userAge（提升）:", userAge); // undefined
       var userAge;
 
+      // ====== 3. let / const 基础限制 ======
       let age = 123;
+      // let age; // SyntaxError: 块级变量不可重复声明
 
-      //let age;//Cannot redeclare block-scoped variable 'age'.
+      // const 必须带初始化
+      // const a; // SyntaxError: Missing initializer in const declaration
 
-      //使用const声明的变量必须初始化
-      //const a;//'const' declarations must be initialized.
+      const config = { theme: "light" };
+      config.theme = "dark"; // 合法：改对象属性，不是改绑定
+      console.log("const 对象属性可变:", config.theme); // "dark"
+      // config = {}; // TypeError: Assignment to constant variable
 
-      // ====== 隐式声明：不加 var/let/const 直接赋值 ======
-      // 非严格模式下相当于创建全局变量（很坑！）；严格模式下会报 ReferenceError
-      // testStr = "abc";  // ⚠️ 不推荐
-      // console.log(window.testStr); // 'abc'（会污染全局对象）
+      // ====== 4. 顶层 var vs let/const 与 globalThis ======
+      var scriptTopVar = "from-var";
+      let scriptTopLet = "from-let";
+      console.log("window.scriptTopVar:", window.scriptTopVar); // "from-var"
+      console.log("window.scriptTopLet:", window.scriptTopLet); // undefined
 
-      // ====== null vs undefined：JS 里两种"空值"的核心区别 ======
-      console.log("typeof undefined:", typeof undefined); // 'undefined'
-      console.log("typeof null:     ", typeof null);      // 'object'  ← 历史遗留 bug
+      // ====== 5. 暂时性死区（TDZ）======
+      {
+        try {
+          console.log(tdzDemo);
+        } catch (err) {
+          // ReferenceError: Cannot access 'tdzDemo' before initialization
+          console.log("TDZ 访问 let:", err.name, "-", err.message);
+        }
+        let tdzDemo = 1;
 
-      console.log("null == undefined :", null == undefined);  // true（值相等）
-      console.log("null === undefined:", null === undefined); // false（类型不等）
+        try {
+          // TDZ 内 typeof 同样抛 ReferenceError（与未声明变量不同）
+          typeof tdzTypeCheck;
+        } catch (err) {
+          console.log("TDZ 内 typeof:", err.name, "-", err.message);
+        }
+        const tdzTypeCheck = 2;
+        console.log("TDZ 结束后 tdzDemo:", tdzDemo); // 1
+      }
 
-      // 语义区别：
-      //   undefined：变量已声明但还没赋值（系统自动设置）
-      //   null     ：开发者主动表示"这里什么都没有"（人为设置）
-      let willAssign;          // 系统默认 undefined
-      let cleared = null;      // 主动清空一个引用
+      // ====== 6. 隐式全局赋值（非严格模式，演示后清理）======
+      function assignWithoutDecl() {
+        demoImplicitGlobal = "polluted"; // 无 var/let/const → 创建 globalThis 属性
+      }
+      assignWithoutDecl();
+      console.log("隐式全局:", window.demoImplicitGlobal); // "polluted"
+      delete window.demoImplicitGlobal; // 演示完毕，清理污染
+
+      // ====== 7. null vs undefined ======
+      console.log("typeof undefined:", typeof undefined); // "undefined"
+      console.log("typeof null:     ", typeof null); // "object" ← 历史遗留
+
+      console.log("null == undefined :", null == undefined); // true
+      console.log("null === undefined:", null === undefined); // false
+
+      let willAssign; // 声明未初始化 → 绑定值为 undefined
+      let cleared = null; // 主动表示「无对象」
       console.log("willAssign:", willAssign);
       console.log("cleared:   ", cleared);
 
-      // ====== constructor：返回创建该变量的构造函数 ======
-      console.log("'abc'.constructor:", "abc".constructor); // ƒ String()
-      console.log("(123).constructor:", (123).constructor); // ƒ Number()
-      console.log("true.constructor :", true.constructor);  // ƒ Boolean()
-      console.log("[1,2].constructor:", [1, 2].constructor); // ƒ Array()
-      // null 和 undefined 没有 constructor，访问会抛错
-      // console.log(null.constructor);      // ❌ TypeError
-      // console.log(undefined.constructor); // ❌ TypeError
+      // ====== 8. constructor 与自动装箱 ======
+      // primitive 访问属性时会临时装箱，再从 [[Prototype]] 读取 constructor
+      // MDN：不宜用 constructor 做类型检测，优先 typeof / instanceof
+      console.log("'abc'.constructor:", "abc".constructor.name); // "String"
+      console.log("(123).constructor:", (123).constructor.name); // "Number"
+      console.log("true.constructor :", true.constructor.name); // "Boolean"
+      console.log("[1,2].constructor:", [1, 2].constructor.name); // "Array"
+      // null / undefined 上访问任意属性直接 TypeError（不是「没有 constructor」那么简单）
+      // console.log(null.constructor);      // TypeError
+      // console.log(undefined.constructor); // TypeError
 
-      // ====== JS 的 7 种基础类型 ======
-      // 原始类型 (7)：number / string / boolean / null / undefined / symbol（ES6）/ bigint（ES2020）
-      // 引用类型 (1)：object（数组、函数、Date、RegExp 等都属于 object）
-      console.log("typeof of {}:    ", typeof {});       // 'object'
-      console.log("typeof of []:    ", typeof []);       // 'object'
-      console.log("typeof of fn:    ", typeof function(){}); // 'function' ← 特例
-      console.log("typeof of Symbol:", typeof Symbol());   // 'symbol'
-      console.log("typeof of 1n:    ", typeof 1n);         // 'bigint'
+      // ====== 9. typeof 与 ECMAScript 类型 ======
+      // 8 种类型：7 primitive + Object；typeof 对函数返回 "function" 是运算符特例
+      console.log("typeof {}:    ", typeof {}); // "object"
+      console.log("typeof []:    ", typeof []); // "object"
+      console.log("typeof fn:    ", typeof function () {}); // "function"
+      console.log("typeof Symbol:", typeof Symbol()); // "symbol"
+      console.log("typeof 1n:    ", typeof 1n); // "bigint"
 
+      // 精准区分 null 与 plain object（见 typeof.html 展开）
+      console.log(
+        "toString(null):",
+        Object.prototype.toString.call(null)
+      ); // "[object Null]"
+      console.log(
+        "toString({}):  ",
+        Object.prototype.toString.call({})
+      ); // "[object Object]"
+
+      // 清理顶层 var 演示留下的 globalThis 属性
+      delete window.scriptTopVar;
     </script>
     <!-- SCRIPT_END -->
 
@@ -142,5 +194,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

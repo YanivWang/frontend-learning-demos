@@ -11,6 +11,7 @@
     - class 表达式和 class 声明在提升、作用域和重定义上如何区分？
     - 什么时候会在项目里选择 class 表达式而不是声明式 class？
     - 具名 class 表达式的内部名称为什么外部访问不到？
+  相关: class类声明, extends
 -->
 
 <!doctype html>
@@ -46,8 +47,8 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/class" target="_blank" rel="noreferrer">MDN Web Docs：class expression</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes" target="_blank" rel="noreferrer">MDN Web Docs：Classes</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/class" target="_blank" rel="noreferrer">MDN: class expression</a>：匿名/具名表达式与作用域。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes" target="_blank" rel="noreferrer">MDN: Classes</a>：class 通用语义。</li>
         </ul>
       </div>
     </section>
@@ -55,34 +56,56 @@
 
     <!-- SCRIPT_START -->
     <script>
-      //类表达式
-      //1.可以是匿名的类
+      // ====== 1. 匿名 class 表达式 ======
+      // MDN：class 表达式产生类值，可赋给变量
       const Dog = class {
-        //类的构造方法用于创建和初始化类的对象实例
-        //一个类最多只能有一个 constructor 方法
         constructor(name) {
           this.name = name;
         }
       };
       const dog1 = new Dog("dog111");
-      console.log("我是dog1", dog1.name);
+      console.log("匿名 class:", dog1.name); // "dog111"
+      console.log("Dog.name:", Dog.name); // ""（匿名，外部名来自变量 Dog）
 
-      //2.也可以是具名的类
+      // ====== 2. 具名 class 表达式 ======
+      // 内部名 Cat1 只在类体可见，外层用 Cat 访问
       const Cat = class Cat1 {
         constructor(name) {
-          // 没有 extends 的 class 是基类，constructor 内不能调用 super()
-          // super(name);
+          // 无 extends 不能 super()
           this.name = name;
         }
-
         getInternalClassName() {
-          return Cat1.name;
+          return Cat1.name; // 类体内部可引用 Cat1
         }
       };
       const cat1 = new Cat("cat111");
-      console.log("我是cat1", cat1.name, cat1.getInternalClassName());
-      // console.log(Cat1); // ReferenceError: Cat1 is not defined
+      console.log("具名 class:", cat1.name, cat1.getInternalClassName()); // cat111 Cat1
 
+      // 外部访问内部名 ReferenceError
+      try {
+        console.log(Cat1);
+      } catch (err) {
+        console.log("外部访问 Cat1:", err.name, "-", err.message);
+      }
+
+      // ====== 3. 工厂函数返回 class 表达式 ======
+      function createAnimal(baseName) {
+        return class {
+          constructor(nickname) {
+            this.fullName = baseName + "-" + nickname;
+          }
+        };
+      }
+      const Bird = createAnimal("Avian");
+      console.log("工厂 class:", new Bird("Tweety").fullName); // Avian-Tweety
+
+      // ====== 4. 必须 new 调用 ======
+      try {
+        Dog("no-new");
+      } catch (err) {
+        // TypeError: Class constructor Dog cannot be invoked without 'new'
+        console.log("无 new 调用:", err.name, "-", err.message);
+      }
     </script>
     <!-- SCRIPT_END -->
 
@@ -104,5 +127,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

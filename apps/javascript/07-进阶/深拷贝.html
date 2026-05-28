@@ -1,6 +1,8 @@
 <!--
-分类: javascript / 07-进阶
+  分类: javascript / 07-进阶
   主题: 浅拷贝 vs 深拷贝
+  难度: 进阶
+  相关: 垃圾回收
   要点:
     - 浅拷贝只复制第一层属性值，嵌套对象、数组、Map 值仍共享引用
     - JSON 序列化深拷贝会丢失 undefined、函数、Symbol，Date 会变字符串，循环引用会报错
@@ -39,76 +41,95 @@
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>Object.assign</code> 和展开运算符为什么不是深拷贝？</strong> 结论：它们都是浅拷贝，只复制对象自身可枚举属性的第一层值。原因是嵌套对象的属性值本身就是引用，复制后两个对象仍指向同一份嵌套数据。项目里合并一层配置可以用它们，更新深层状态时要沿修改路径逐层复制或使用专门工具。</li>
-          <li><strong>为什么不推荐把 JSON 序列化当通用深拷贝？</strong> 结论：它只适合纯 JSON 数据，不是通用对象克隆。原因是 JSON 格式本身不能表达函数、<code>undefined</code>、Symbol、循环引用、Map/Set 等对象语义，部分类型会被丢弃或降级。接口 DTO、缓存纯数据可以用，业务对象、表单状态、图结构不应依赖它。</li>
-          <li><strong><code>structuredClone()</code> 能替代所有手写深拷贝吗？</strong> 结论：大多数结构化数据优先用它，但不是万能。原因是它按结构化克隆算法复制，能处理很多内置类型和循环引用，也会对函数、DOM 节点等不可克隆值抛错。需要自定义类实例规则、保留访问器或兼容旧环境时，仍要评估 polyfill、库或业务专用克隆函数。</li>
-          <li><strong>手写 <code>deepClone</code> 面试题应该答到哪些边界？</strong> 结论：递归复制普通对象只是起点，完整答法要包含循环引用、数组、<code>Date</code>、<code>RegExp</code>、<code>Map</code>、<code>Set</code>、Symbol 键和原型。原因是真实对象图不只是一层 plain object。边界上还要说明属性描述符、getter/setter、不可克隆资源和性能问题，避免把面试实现误当生产级实现。</li>
-          <li><strong>深拷贝在前端状态管理里什么时候反而有问题？</strong> 结论：整树深拷贝通常不是首选。原因是它会带来不必要的 CPU 与内存开销，并破坏未变化对象的引用稳定性，影响 memo、diff 和缓存命中。实际项目更常用结构共享的不可变更新，只复制变化分支。</li>
+          <li><strong>Object.assign 和展开运算符为什么不是深拷贝？</strong> 结论是它们都是浅拷贝，只复制对象自身可枚举属性的第一层值。原因是嵌套对象的属性值本身就是引用，复制后两个对象仍指向同一份嵌套数据。项目里合并一层配置可以用它们，更新深层状态时要沿修改路径逐层复制或使用专门工具。</li>
+          <li><strong>为什么不推荐把 JSON 序列化当通用深拷贝？</strong> 结论是它只适合纯 JSON 数据，不是通用对象克隆。原因是 JSON 格式本身不能表达函数、<code>undefined</code>、Symbol、循环引用、Map/Set 等对象语义，部分类型会被丢弃或降级。接口 DTO、缓存纯数据可以用，业务对象、表单状态、图结构不应依赖它。</li>
+          <li><strong>structuredClone() 能替代所有手写深拷贝吗？</strong> 结论是大多数结构化数据优先用它，但不是万能。原因是它按结构化克隆算法复制，能处理很多内置类型和循环引用，也会对函数、DOM 节点等不可克隆值抛错。需要自定义类实例规则、保留访问器或兼容旧环境时，仍要评估 polyfill、库或业务专用克隆函数。</li>
+          <li><strong>深拷贝在前端状态管理里什么时候反而有问题？</strong> 结论是整树深拷贝通常不是首选。原因是它会带来不必要的 CPU 与内存开销，并破坏未变化对象的引用稳定性，影响 memo、diff 和缓存命中。实际项目更常用结构共享的不可变更新，只复制变化分支。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone" target="_blank" rel="noreferrer">MDN: Window.structuredClone()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm" target="_blank" rel="noreferrer">MDN: The structured clone algorithm</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign" target="_blank" rel="noreferrer">MDN: Object.assign()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify" target="_blank" rel="noreferrer">MDN: JSON.stringify()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone">MDN: structuredClone()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm">MDN: The structured clone algorithm</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign">MDN: Object.assign()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify">MDN: JSON.stringify()</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>核心区别：浅拷贝只复制第一层，引用类型（数组/对象/函数）仍然指向同一份；深拷贝递归复制每一层。</p>
+    <section class="demo-block" aria-label="演示说明">
+      <h2>观察要点</h2>
+      <p class="tip">浅拷贝只复制第一层，引用类型（数组/对象）仍指向同一份；深拷贝递归复制每一层。具体数值对比见 Console。</p>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // ============ 1. 浅拷贝的几种写法 ============
+      // ====== 1. 浅拷贝：Object.assign / 展开运算符 ======
       const src = { a: 1, b: { c: 2 } };
 
       const s1 = Object.assign({}, src);
       const s2 = { ...src };
-      const s3 = Array.isArray(src) ? src.slice() : { ...src };
 
       s1.b.c = 99;
       console.log("浅拷贝改 s1.b.c 后，src.b.c =", src.b.c); // 99 —— 共享引用
+      console.log("s1 === src:", s1 === src); // false（顶层是新对象）
+      console.log("s1.b === src.b:", s1.b === src.b); // true（嵌套仍共享）
 
-      // ============ 2. JSON 序列化（最简单但有坑）============
-      //   ❌ 不支持：函数、undefined、Symbol、Date(变字符串)、RegExp(变 {})、循环引用
+      // ====== 2. JSON 序列化深拷贝（有类型丢失）======
       function cloneJSON(obj) {
         return JSON.parse(JSON.stringify(obj));
       }
-      const d1 = cloneJSON({ a: 1, b: { c: 2 } });
-      d1.b.c = 99;
-      console.log("JSON 深拷贝后 src.b.c 不变 =", { a: 1, b: { c: 2 } }.b.c);
 
-      // ============ 3. 现代 API：structuredClone（推荐）============
-      //   原生、支持循环引用、支持 Date/RegExp/Map/Set/TypedArray，但仍不支持函数
+      const jsonSrc = {
+        a: 1,
+        b: { c: 2 },
+        d: undefined,
+        e: () => {},
+        f: Symbol("s"),
+        g: new Date("2020-01-01"),
+      };
+      const d1 = cloneJSON(jsonSrc);
+      console.log("JSON 丢失 undefined:", "d" in d1); // false
+      console.log("JSON 丢失函数:", "e" in d1); // false
+      console.log("JSON Date 变字符串:", typeof d1.g); // "string"
+
+      d1.b.c = 99;
+      console.log("JSON 深拷贝后 jsonSrc.b.c 不变 =", jsonSrc.b.c); // 2
+
+      // ====== 3. structuredClone（现代推荐，有边界）======
       if (typeof structuredClone === "function") {
-        const obj = { a: 1, d: new Date(), r: /foo/, m: new Map([["x", 1]]) };
-        const c = structuredClone(obj);
-        console.log("structuredClone Date:", c.d instanceof Date, c.d.getTime() === obj.d.getTime());
-        console.log("structuredClone RegExp:", c.r instanceof RegExp, c.r.source);
-        console.log("structuredClone Map:", c.m instanceof Map, c.m.get("x"));
+        const rich = {
+          a: 1,
+          d: new Date(),
+          r: /foo/i,
+          m: new Map([["x", 1]]),
+        };
+        const cloned = structuredClone(rich);
+        console.log("structuredClone Date:", cloned.d instanceof Date);
+        console.log("structuredClone RegExp:", cloned.r instanceof RegExp);
+        console.log("structuredClone Map:", cloned.m.get("x"));
+
+        try {
+          structuredClone({ fn: () => {} });
+        } catch (err) {
+          console.log("structuredClone 不能克隆函数:", err.name); // DataCloneError
+        }
       }
 
-      // ============ 4. 手写深拷贝（递归 + WeakMap 处理循环引用）============
+      // ====== 4. 手写 deepClone（递归 + WeakMap 处理循环引用）======
       function deepClone(value, hash = new WeakMap()) {
-        // ① 基本类型直接返回
         if (value === null || typeof value !== "object") return value;
-
-        // ② 处理 Date / RegExp
         if (value instanceof Date) return new Date(value);
         if (value instanceof RegExp) return new RegExp(value.source, value.flags);
-
-        // ③ 循环引用：用 WeakMap 记录已克隆对象
         if (hash.has(value)) return hash.get(value);
 
-        // ④ 处理数组 / Map / Set / 普通对象
         let result;
         if (Array.isArray(value)) result = [];
         else if (value instanceof Map) result = new Map();
         else if (value instanceof Set) result = new Set();
-        else result = Object.create(Object.getPrototypeOf(value)); // 保留原型
+        else result = Object.create(Object.getPrototypeOf(value));
 
         hash.set(value, result);
 
@@ -117,7 +138,6 @@
         } else if (value instanceof Set) {
           value.forEach((v) => result.add(deepClone(v, hash)));
         } else {
-          // 拷贝 Symbol 键也别落下
           Reflect.ownKeys(value).forEach((key) => {
             result[key] = deepClone(value[key], hash);
           });
@@ -125,16 +145,15 @@
         return result;
       }
 
-      // ============ 验证 ============
+      // ====== 5. 验证手写 deepClone ======
       const a = { name: "瓜子", info: { age: 3 }, list: [1, [2, 3]] };
       a.self = a; // 循环引用
       const b = deepClone(a);
       b.info.age = 99;
       b.list[1][0] = 999;
-      console.log("a.info.age 不变 =", a.info.age);     // 3
+      console.log("a.info.age 不变 =", a.info.age); // 3
       console.log("a.list[1][0] 不变 =", a.list[1][0]); // 2
-      console.log("b.self === b ?", b.self === b);       // true 循环引用保留
-
+      console.log("b.self === b ?", b.self === b); // true
     </script>
     <!-- SCRIPT_END -->
 
@@ -143,6 +162,7 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+        <a href="./%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6.html">相关 · 垃圾回收</a>
         <a href="./%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6.html">← 垃圾回收</a>
         <a href="./%E6%97%A0%E9%9A%9C%E7%A2%8D-a11y.html">无障碍-a11y →</a>
       </nav>
@@ -156,5 +176,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

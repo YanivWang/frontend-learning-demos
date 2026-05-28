@@ -11,6 +11,7 @@
     - 派生类 constructor 为什么必须先 super() 再使用 this？
     - super.method() 和 super() 分别在什么位置使用？
     - 什么时候应该用组合而不是 class 继承？
+  相关: class类声明, 类与原型
 -->
 
 <!doctype html>
@@ -46,9 +47,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/extends" target="_blank" rel="noreferrer">MDN Web Docs：extends</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/super" target="_blank" rel="noreferrer">MDN Web Docs：super</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements" target="_blank" rel="noreferrer">MDN Web Docs：Private elements</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/extends" target="_blank" rel="noreferrer">MDN: extends</a>：两条原型链与派生类构造器规则。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/super" target="_blank" rel="noreferrer">MDN: super</a>：super() 与 super.method() 用法。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements" target="_blank" rel="noreferrer">MDN: Private elements</a>：私有字段在继承中的访问规则。</li>
         </ul>
       </div>
     </section>
@@ -56,61 +57,78 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ====== 1. 基类：静态/实例/私有字段与原型方法 ======
       class Person {
-        // 静态字段
-        static userType = "whitePerson";
-        static #userTypeName = "wp";
+        static userType = "person";
+        static #typeCode = "P";
 
-        // 公有/私有 实例字段
         userAge = 18;
         #userAgeName = 18;
 
-        constructor(userName, weight) {
-          // 没有父类不能调用 super()：SyntaxError: 'super' keyword unexpected here
-          // super(userName);
-
-          // 普通公有属性可以通过赋值临时创建
+        constructor(userName) {
+          // 无 extends 不能 super()
           this.userName = userName;
-
-          // 私有字段必须在类体中预先声明，不能通过 this.#x = v 直接创建
-          // this.#weight = weight; // SyntaxError
         }
 
-        // 实例方法存储在 prototype 上，由所有实例共享
         eat() {
-          // 读私有字段须用 this.#field，不能写死具体实例名
-          console.log("this.#userAgeName", this.#userAgeName);
-          console.log("I am eatting!");
+          console.log(`${this.userName} eating, private age ${this.#userAgeName}`);
+        }
+
+        greet() {
+          return `Hello, ${this.userName}`;
         }
       }
 
-      console.log("================= Person =================")
-
-      console.log(typeof Person);
-
-      const p1 = new Person();
+      const p1 = new Person("Alice");
       p1.eat();
+      console.log(
+        "instance prototype:",
+        Person.prototype === Object.getPrototypeOf(p1)
+      ); // true
 
-      console.log(typeof p1);
-
-      console.log("Person.prototype === Object.getPrototypeOf(p1)", Person.prototype === Object.getPrototypeOf(p1));
-
+      // ====== 2. extends 建立两条原型链 ======
       class WhitePerson extends Person {
         skinColor = "white";
 
-        constructor(userName){
-          // 派生类必须在使用 this 前调用 super()
-          super(userName);
+        constructor(userName) {
+          super(userName); // 必须先 super() 才能用 this
+          this.skinColor = "white";
+        }
+
+        greet() {
+          // super.method() 调用父类原型方法
+          return super.greet() + ` (${this.skinColor})`;
         }
       }
 
-      console.log("================= WhitePerson =================")
-      const whitePerson1 = new WhitePerson("特朗普");
-      whitePerson1.eat();
-      console.log(whitePerson1.userName);
-      console.log("WhitePerson 继承 Person 静态链", Object.getPrototypeOf(WhitePerson) === Person);
-      console.log("WhitePerson.prototype 继承 Person.prototype", Object.getPrototypeOf(WhitePerson.prototype) === Person.prototype);
+      const wp = new WhitePerson("Bob");
+      console.log("greet override:", wp.greet());
+      console.log(
+        "静态链:",
+        Object.getPrototypeOf(WhitePerson) === Person
+      ); // true
+      console.log(
+        "实例原型链:",
+        Object.getPrototypeOf(WhitePerson.prototype) === Person.prototype
+      ); // true
+      console.log("继承静态字段:", WhitePerson.userType); // "person"
 
+      // ====== 3. super() 前访问 this 会 ReferenceError ======
+      class BadChild extends Person {
+        constructor(name) {
+          try {
+            this.name = name; // super() 前
+          } catch (err) {
+            console.log("super 前 this:", err.name, "-", err.message);
+          }
+          super(name);
+        }
+      }
+      new BadChild("test");
+
+      // ====== 4. 实例字段 vs 原型方法 ======
+      console.log("eat 共享:", p1.eat === wp.eat); // true（原型方法）
+      console.log("userAge 独立:", p1.userAge === wp.userAge); // true 但各自实例字段
     </script>
     <!-- SCRIPT_END -->
 
@@ -120,7 +138,7 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="./class%E7%B1%BB%E5%A3%B0%E6%98%8E.html">← class类声明</a>
-        <a href="../ES6%E6%A8%A1%E5%9D%97/index.html">index →</a>
+        <a href="../ES6%E6%A8%A1%E5%9D%97/index.html">ES6模块 →</a>
       </nav>
       <script>
         (function () {
@@ -132,5 +150,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

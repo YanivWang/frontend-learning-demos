@@ -11,6 +11,7 @@
     - static 块里的 this、var、私有静态字段分别有什么作用域边界？
     - static 块适合替代哪些类外初始化写法？
     - 为什么 static 块不能写 await、yield、arguments 或 super()？
+  相关: class静态初始化块extends, 私有构造函数
 -->
 
 <!doctype html>
@@ -46,8 +47,8 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Static_initialization_blocks" target="_blank" rel="noreferrer">MDN Web Docs：Static initialization blocks</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Public_class_fields" target="_blank" rel="noreferrer">MDN Web Docs：Public class fields</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Static_initialization_blocks">MDN: Static initialization blocks</a>：类求值时同步执行、<code>this</code> 指向类构造器。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Public_class_fields">MDN: Public class fields</a>：静态/实例字段初始化器与 static 块交错顺序。</li>
         </ul>
       </div>
     </section>
@@ -55,52 +56,49 @@
 
     <!-- SCRIPT_START -->
     <script>
-      //1.静态初始化块
-      //父类的任何静态初始化都是先进行的，然后才是子类的初始化
-      //static变量声明，static静态初始化块逻辑, 会在类初始化的时候就执行，而不是new Pig()实例的时候
-      //这些语句是同步执行的,按照顺序执行
-      //静态代码块的作用域嵌套在类主体的词法作用域内，并且可以访问类内声明的私有名称，而不会导致语法错误。
+      // ====== 1. 静态字段与 static 块按声明顺序交错执行（类求值阶段）======
+      // MDN：static 块在类定义被求值时同步执行，不等到 new 实例
       class Pig {
-        //类静态属性
-        static consoleP = console.log("consoleP");//类初始化的时候会执行
+        static consoleP = console.log("静态字段初始化器 consoleP"); // 类求值时执行
         static animalId = "10001";
 
-        //类实例属性
-        type = "animal"//类初始化的时候，不会执行
+        // 实例字段在 new 时初始化，类求值阶段不会执行
+        type = "animal";
 
         static {
-          console.log("type", this.type)//undefined
-
-          var a = 1;
-          console.log(a);
-
-          console.log(this.animalId)
-
-          //初始化块可以引用其上方的字段值，但不能引用其下方的字段值
-          console.log(this.species)
+          // this 指向类构造器 Pig，不是实例
+          console.log("static 块1: this.type =", this.type); // undefined（实例字段尚未存在）
+          var blockLocal = 1; // 块作用域，不泄漏到类外
+          console.log("static 块1: blockLocal =", blockLocal); // 1
+          console.log("static 块1: this.animalId =", this.animalId); // "10001"（上方已声明）
+          // 下方尚未声明的静态字段，读取得到 undefined
+          console.log("static 块1: this.species =", this.species); // undefined
         }
 
         static species = "pig";
 
         static {
-          console.log(this.species)
-
-          //静态代码块中的 this 是指 类的构造函数对象(class Pig)
-          console.log(this)
+          console.log("static 块2: this.species =", this.species); // "pig"
+          console.log("static 块2: this === Pig:", this === Pig); // true
         }
 
-        static #privateId="privateId123"
+        static #privateId = "privateId123";
         static {
-          //可以访问类的静态私有属性
-          console.log(this.#privateId);
+          // 可访问同类的私有静态字段（MDN: static initialization blocks）
+          console.log("static 块3: #privateId =", this.#privateId); // "privateId123"
         }
 
         constructor(name) {
-          console.log("Pig 构造器>>", name);
+          console.log("Pig 构造器（new 时才执行）>>", name);
           this.name = name;
         }
       }
 
+      // ====== 2. 类求值已完成；new 时才走实例构造 ======
+      console.log("--- 类定义求值完毕，开始 new 实例 ---");
+      const pig = new Pig("佩奇");
+      console.log("实例字段 pig.type:", pig.type); // "animal"
+      console.log("静态字段 Pig.species:", Pig.species); // "pig"
     </script>
     <!-- SCRIPT_END -->
 

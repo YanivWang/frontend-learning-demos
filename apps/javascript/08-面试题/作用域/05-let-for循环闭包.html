@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 08-面试题 / 作用域
+  分类: javascript / 08-面试题 / 作用域
   主题: let + for 循环的块作用域闭包
   要点:
     - for 循环头中的 let 会为每次迭代创建新的词法环境，闭包捕获各自的 i
@@ -11,6 +11,7 @@
     - 把 let 换成 var 为什么常见结果会变成 5 个 5？
     - 老代码中不用 let 如何修复循环闭包问题？
     - let 循环作用域和 forEach 回调参数有什么取舍？
+  相关: var重复声明, 闭包-作用域链与变量提升
 -->
 
 <!doctype html>
@@ -26,7 +27,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>let + for 循环的块作用域闭包</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -49,25 +50,56 @@
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let" target="_blank" rel="noreferrer">MDN: let</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures#creating_closures_in_loops_a_common_mistake" target="_blank" rel="noreferrer">MDN: Creating closures in loops</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for" target="_blank" rel="noreferrer">MDN: for statement</a></li>
-          <li><a href="https://javascript.info/var" target="_blank" rel="noreferrer">JavaScript.info: The old "var"</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
+    <!-- PAGE_DOM_START -->
+    <section class="demo-block">
+      <h2>运行结果</h2>
+      <p class="tip">标准答法：<code>for (let i...)</code> 依次输出 <code>0, 1, 2, 3, 4</code>；若换成 <code>var</code> 则常见为 5 个 <code>5</code>。</p>
+      <pre id="runtime-output" aria-live="polite"></pre>
+    </section>
+    <!-- PAGE_DOM_END -->
+
     <!-- SCRIPT_START -->
     <script>
-      let retArray = [];
-      for (let i = 0; i < 5; i++) {
-        retArray[i] = function () {
-          console.log(i);
-        };
-      }
+      (function () {
+        var out = document.getElementById("runtime-output");
+        var lines = [];
 
-      retArray.forEach((item) => {
-        item();
-      });
+        function emit(label, values) {
+          var line = label + ": " + values.join(", ");
+          console.log(line);
+          lines.push(line);
+          if (out) out.textContent = lines.join("\n");
+        }
 
+        // ====== 1. for (let i...)：每次迭代独立绑定，闭包分别捕获 0~4 ======
+        var retArray = [];
+        for (let i = 0; i < 5; i++) {
+          retArray[i] = function () {
+            return i;
+          };
+        }
+        var letResults = retArray.map(function (fn) {
+          return fn();
+        });
+        emit("for (let i...)", letResults); // 预期: 0, 1, 2, 3, 4
+
+        // ====== 2. 对比 for (var i...)：共享同一 i，循环结束后 i === 5 ======
+        var varArray = [];
+        for (var j = 0; j < 5; j++) {
+          varArray[j] = function () {
+            return j;
+          };
+        }
+        var varResults = varArray.map(function (fn) {
+          return fn();
+        });
+        emit("for (var i...) 对比", varResults); // 预期: 5, 5, 5, 5, 5
+      })();
     </script>
     <!-- SCRIPT_END -->
 
@@ -89,5 +121,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

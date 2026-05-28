@@ -45,9 +45,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function" target="_blank" rel="noreferrer">MDN Web Docs：async function</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await" target="_blank" rel="noreferrer">MDN Web Docs：await</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncFunction" target="_blank" rel="noreferrer">MDN Web Docs：AsyncFunction</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function">MDN: async function</a>：可用于声明、表达式、箭头、对象/类方法。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await">MDN: await</a>：rejection 中断 async 函数；局部 .catch 可吞掉错误。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncFunction">MDN: AsyncFunction</a>：async 函数的构造器类型。</li>
         </ul>
       </div>
     </section>
@@ -55,69 +55,67 @@
 
     <!-- SCRIPT_START -->
     <script>
-      //函数声明
+      // ====== 1. async 可用于多种函数形态，调用结果都是 Promise ======
       async function f1() {
-
+        return "声明式";
       }
 
-      //匿名函数表达式
       const foo = async function () {
-
+        return "函数表达式";
       };
 
-      //箭头函数表达式
-      const arrowFoo = async () => "arrow result";
+      const arrowFoo = async () => "箭头函数";
 
-      //函数属性
-      let obj = {
+      const obj = {
         name: "wc",
-        age: 18,
-        async foo() {
-        }
+        async method() {
+          return "对象方法";
+        },
       };
 
-      obj.foo().then();
-      arrowFoo().then(function (value) {
-        console.log(value);
-      });
+      f1().then((v) => console.log("f1:", v));
+      arrowFoo().then((v) => console.log("arrowFoo:", v));
+      obj.method().then((v) => console.log("obj.method:", v));
 
-      //异常处理
-      //正常情况下：await后面是一个Promise对象，返回该对象的结果(Promise对象自执行能力)
-      //如果 Promise 对象变为 reject 状态，reject 参数会被 async 函数返回的 Promise 上 .catch() 回调接收到
-      //任何一个await语句后面的Promise对象如果变成reject，那么整个async函数都立刻中断执行
+      // ====== 2. await rejection 中断 async 函数，外层 .catch 接收 ======
       async function handleError() {
         await Promise.reject("出错");
-        console.log("111");
+        console.log("111（不会执行）");
         return "执行完毕";
       }
 
-      handleError().then(function (data) {
-        console.log("data:" + data);
-      }).catch(function (err) {
-        console.error("err:" + err);
-      });
+      handleError()
+        .then(function (data) {
+          console.log("data:" + data);
+        })
+        .catch(function (err) {
+          console.error("handleError catch:", err); // "出错"
+        });
 
-      //异常处理
+      // ====== 3. await 前先 .catch 局部吞错 vs try/catch 包 await ======
       async function handleException() {
         try {
+          // 局部 .catch 吞掉 rejection，外层 await 看到的是 fulfilled(undefined)
           await Promise.reject("出错").catch(function () {
-            console.log("AAA");
+            console.log("AAA（局部 catch 吞错）");
           });
 
+          // 未被局部 catch 的 rejection 会被外层 try/catch 捕获
           await Promise.reject("出错了啊");
         } catch (e) {
-          console.log(e + "BBB");
+          console.log(e + " BBB");
         }
-        console.log("CCC");
+        console.log("CCC（catch 后继续执行）");
         return "执行完毕";
       }
 
-      handleException().then(function (data) {
-        console.log("DDD:" + data);
-      }).catch(function (err) {
-        console.log("EEE:" + err);
-      });
-
+      handleException()
+        .then(function (data) {
+          console.log("DDD:" + data); // "执行完毕"
+        })
+        .catch(function (err) {
+          console.log("EEE:" + err);
+        });
     </script>
     <!-- SCRIPT_END -->
 

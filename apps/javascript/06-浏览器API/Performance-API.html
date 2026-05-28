@@ -12,6 +12,7 @@
     - mark / measure 在业务性能埋点里如何使用？
     - navigation entry 与旧 performance.timing 有什么区别？
     - Performance API 指标上报有哪些隐私和兼容边界？
+  相关: requestAnimation, 浏览器渲染与性能
 -->
 
 <!doctype html>
@@ -22,8 +23,8 @@
     <title>Performance API</title>
     <style>
       body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 720px; }
-      button { padding: 8px 12px; cursor: pointer; }
-      #log { margin-top: 1rem; padding: 12px; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; }
+      button { padding: 8px 12px; cursor: pointer; margin: 4px 6px 4px 0; }
+      #log { margin-top: 1rem; padding: 12px; background: #f6f8fa; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; min-height: 4rem; }
     </style>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
@@ -32,7 +33,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Performance API</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">请阅读本复习区，并在下方演示区点击按钮运行计时示例；Navigation Timing 数据因页面加载时机而异。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -61,33 +62,75 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <button type="button" id="run">运行 mark / measure 示例</button>
-    <div id="log" aria-live="polite"></div>
+    <section class="demo-block">
+      <h2>Performance 计时演示</h2>
+      <p class="tip">对比 performance.now() 与 Date.now()；mark/measure 演示异步任务耗时。</p>
+      <button type="button" id="run">运行 mark / measure</button>
+      <button type="button" id="compareBtn">对比 now() 精度</button>
+      <button type="button" id="navBtn">读取 Navigation Timing</button>
+      <pre id="log" aria-live="polite"></pre>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
       const log = document.getElementById("log");
       const lines = [];
+
+      function append(text) {
+        lines.push(text);
+        log.textContent = lines.join("\n");
+      }
+
+      // ====== 1. 页面加载时的 Navigation Timing ======
       const nav = performance.getEntriesByType("navigation")[0];
       if (nav) {
-        lines.push("DOMContentLoaded: " + Math.round(nav.domContentLoadedEventEnd) + " ms");
-        lines.push("Load event: " + Math.round(nav.loadEventEnd) + " ms");
+        append("DOMContentLoaded: " + Math.round(nav.domContentLoadedEventEnd) + " ms");
+        append("Load event: " + Math.round(nav.loadEventEnd) + " ms");
+      } else {
+        append("Navigation Timing 不可用（等待点击「读取 Navigation Timing」）");
       }
+
+      // ====== 2. mark / measure ======
       document.getElementById("run").onclick = async () => {
         performance.clearMarks("task-start");
         performance.clearMarks("task-end");
         performance.clearMeasures("task");
+
         performance.mark("task-start");
+        const t0 = performance.now();
         await new Promise((r) => setTimeout(r, 120));
         performance.mark("task-end");
         performance.measure("task", "task-start", "task-end");
-        const m = performance.getEntriesByName("task").pop();
-        lines.push("measure task: " + Math.round(m.duration) + " ms");
-        log.textContent = lines.join("\n");
-      };
-      log.textContent = lines.join("\n") || "点击按钮运行 measure 示例";
 
+        const m = performance.getEntriesByName("task").pop();
+        append("measure task: " + Math.round(m.duration) + " ms");
+        append("performance.now 差值: " + Math.round(performance.now() - t0) + " ms");
+      };
+
+      // ====== 3. performance.now vs Date.now ======
+      document.getElementById("compareBtn").onclick = () => {
+        const p0 = performance.now();
+        const d0 = Date.now();
+        let sum = 0;
+        for (let i = 0; i < 1e5; i++) sum += i;
+        append("performance.now 耗时: " + (performance.now() - p0).toFixed(3) + " ms（单调、高精度）");
+        append("Date.now 差值: " + (Date.now() - d0) + " ms（可能为 0，精度仅毫秒）");
+        append("timeOrigin: " + performance.timeOrigin);
+      };
+
+      // ====== 4. Navigation Timing 详情 ======
+      document.getElementById("navBtn").onclick = () => {
+        const entry = performance.getEntriesByType("navigation")[0];
+        if (!entry) {
+          append("无 navigation entry");
+          return;
+        }
+        append("type: " + entry.type);
+        append("domInteractive: " + Math.round(entry.domInteractive) + " ms");
+        append("domComplete: " + Math.round(entry.domComplete) + " ms");
+        append("transferSize: " + entry.transferSize + " bytes");
+      };
     </script>
     <!-- SCRIPT_END -->
 
@@ -109,5 +152,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

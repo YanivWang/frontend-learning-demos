@@ -45,8 +45,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" target="_blank" rel="noreferrer">MDN Web Docs：Promise</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await" target="_blank" rel="noreferrer">MDN Web Docs：await</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">MDN: Promise</a>：executor 同步执行，then/catch 为微任务。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await">MDN: await</a>：暂停 async 函数，恢复代码排入微任务。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop">MDN: Event loop</a>：每轮任务结束后清空微任务，再取下一宏任务。</li>
         </ul>
       </div>
     </section>
@@ -54,48 +55,44 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ====== 1. 宏任务：setTimeout 回调在下一轮任务执行 ======
       setTimeout(() => {
-        console.log(0);
+        console.log(0); // 预期：最后输出（宏任务）
       }, 0);
 
+      // ====== 2. async/await：await 让出执行权，恢复代码进入微任务 ======
       async function async1() {
-        console.log("a");
+        console.log("a"); // 同步
 
-        await async2();
+        await async2(); // async2 同步跑完；async1 剩余部分排入微任务
 
-        console.log("b");
+        console.log("b"); // 微任务（在同步代码和 Promise.then 之后）
       }
 
       async function async2() {
-        console.log("c");
+        console.log("c"); // 同步（await 右侧表达式先求值）
       }
 
       async1();
 
-      //一个promise对象新建后，其回调函数会立即执行，但是可能不会立即返回结果(如果在promise中执行了一个异步操作)
-      //1.resolve
-      //2.reject
+      // ====== 3. Promise executor 同步，then 回调异步（微任务）======
+      // MDN：new Promise(executor) 立刻同步调用 executor
+      new Promise(function (resolve) {
+        console.log("1"); // 同步
+        resolve("ok");
+        console.log("2"); // 同步（resolve 后 executor 仍继续执行）
+      })
+        .then(function () {
+          console.log(4); // 微任务
+        })
+        .catch(function () {
+          console.log(5);
+        });
 
-      //使用then指定promise对象状态为resolve时的回调函数
-      //使用catch指定promise对象状态为reject时的回调函数
-      let p1 = new Promise(function (resolve, reject) {
-        console.log("1");
-        let flag = true;
-        if (flag) {
-          resolve("ok");
+      console.log(3); // 同步
 
-          console.log("2");
-        } else {
-          reject("failure");
-        }
-      }).then(function () {
-        console.log(4);
-      }).catch(function () {
-        console.log(5);
-      });
-
-      console.log(3);
-
+      // 预期完整顺序：a → c → 1 → 2 → 3 → b → 4 → 0
+      // 解释：同步栈清空后先跑微任务（b、4），再进入 setTimeout 宏任务（0）
     </script>
     <!-- SCRIPT_END -->
 

@@ -26,7 +26,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>用 Promise 把图片预加载封装成同步风格</h1>
-      <p class="hint">请打开 DevTools Console 查看输出；图片加载失败时页面会显示错误提示。</p>
+      <p class="hint">请打开 DevTools Console 查看输出；图片加载需网络，失败时页面会显示错误提示。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -45,10 +45,10 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/Image" target="_blank" rel="noreferrer">MDN Web Docs：HTMLImageElement Image() constructor</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/load_event" target="_blank" rel="noreferrer">MDN Web Docs：HTMLElement load event</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/error_event" target="_blank" rel="noreferrer">MDN Web Docs：HTMLElement error event</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all" target="_blank" rel="noreferrer">MDN Web Docs：Promise.all()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/Image">MDN: HTMLImageElement.Image()</a>：创建 <code>HTMLImageElement</code> 预加载图片。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/load_event">MDN: load event</a>：资源加载成功时触发。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/error_event">MDN: error event</a>：加载失败时触发，须 reject 并做 UI 兜底。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all">MDN: Promise.all()</a>：多图预加载并发等待。</li>
         </ul>
       </div>
     </section>
@@ -60,6 +60,8 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ====== 1. 把 Image load/error 封装成 Promise ======
+      // MDN：先绑定 onload/onerror，再设置 src，避免缓存命中时错过事件
       function loadImgSync(url) {
         return new Promise(function (resolve, reject) {
           const img = new Image();
@@ -67,26 +69,31 @@
           img.onload = function () {
             resolve(img);
           };
-
           img.onerror = function () {
             reject(new Error("图片加载失败：" + url));
           };
-
-          img.src = url;
+          img.src = url; // 赋值后立即开始加载
         });
       }
 
-      var url = "https://www.baidu.com/img/bd_logo1.png?qua=high";
-      loadImgSync(url).then(function (img) {
-        console.log(img);
-        var imgDiv = document.querySelector(".imgDiv");
-        imgDiv.replaceChildren(img);
-      }).catch(function (error) {
-        console.error(error);
-        var imgDiv = document.querySelector(".imgDiv");
-        imgDiv.textContent = "图片加载失败，请检查网络、跨域或资源地址。";
-      });
+      // ====== 2. 单张预加载：then 更新 DOM，catch 做 UI 兜底 ======
+      const url = "https://www.baidu.com/img/bd_logo1.png?qua=high";
+      loadImgSync(url)
+        .then(function (img) {
+          console.log("load 成功:", img.src);
+          document.querySelector(".imgDiv").replaceChildren(img);
+        })
+        .catch(function (error) {
+          console.error(error);
+          // 用 textContent 展示错误，避免把 URL 拼进 innerHTML
+          document.querySelector(".imgDiv").textContent =
+            "图片加载失败，请检查网络、跨域或资源地址。";
+        });
 
+      // ====== 3. 多张预加载可组合 Promise.all（需网络，此处注释保留写法）======
+      // Promise.all([loadImgSync(url1), loadImgSync(url2)])
+      //   .then((imgs) => console.log("全部加载完成", imgs.length))
+      //   .catch((err) => console.error("任一失败 fail-fast:", err));
     </script>
     <!-- SCRIPT_END -->
 

@@ -46,9 +46,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*" target="_blank" rel="noreferrer">MDN Web Docs：function*</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/yield" target="_blank" rel="noreferrer">MDN Web Docs：yield</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols" target="_blank" rel="noreferrer">MDN Web Docs：Iteration protocols</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">MDN: function*</a>：调用返回 Generator，函数体不立即执行。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/yield">MDN: yield</a>：暂停并把值交给调用方；next(value) 可送回暂停点。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols">MDN: Iteration protocols</a>：<code>Symbol.iterator</code> 与 <code>{ value, done }</code>。</li>
         </ul>
       </div>
     </section>
@@ -56,25 +56,22 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // function* 声明一个 generator 函数
+      // ====== 1. function* 调用返回 Generator，函数体不立即执行 ======
       function* generator1() {
-        // yield 定义不同的内部状态
-        yield 'wang';
-        yield 'cheng';
-        return 'ending';
+        const incoming = yield "wang"; // 暂停；next(value) 传入的值成为 yield 表达式结果
+        console.log("收到 next 传入:", incoming); // "hello"
+        yield "cheng";
+        return "ending"; // return 结束迭代，done: true
       }
 
-      // 调用 generator 函数返回「迭代器对象」，并不会立即执行函数体
-      // 每次调用 .next() 推进到下一个 yield，返回 { value, done }
-      var hw = generator1();
+      const hw = generator1();
+      console.log("首次 next（启动）:", hw.next()); // { value: 'wang', done: false }
+      console.log("next('hello'):", hw.next("hello")); // { value: 'cheng', done: false }
+      console.log("第三次 next:", hw.next()); // { value: 'ending', done: true }
+      console.log("结束后 next:", hw.next()); // { value: undefined, done: true }
 
-      console.log(hw.next()); // { value: 'wang',  done: false }
-      console.log(hw.next()); // { value: 'cheng', done: false }
-      console.log(hw.next()); // { value: 'ending',done: true }
-      console.log(hw.next()); // { value: undefined, done: true }
-
-      // 普通对象没有默认迭代器；用 Symbol.iterator 手动实现可迭代对象
-      let a = {
+      // ====== 2. 普通对象实现 Symbol.iterator 后可 for...of ======
+      const range = {
         from: 1,
         to: 3,
         [Symbol.iterator]() {
@@ -83,23 +80,22 @@
           return {
             next() {
               return current <= last
-              ? { value: current++, done: false }
-              : { value: undefined, done: true };
-            }
+                ? { value: current++, done: false }
+                : { value: undefined, done: true };
+            },
           };
-        }
+        },
       };
 
-      const it = a[Symbol.iterator]();
-      console.log(it.next()); // { value: 1, done: false }
-      console.log(it.next()); // { value: 2, done: false }
-      console.log(it.next()); // { value: 3, done: false }
-      console.log(it.next()); // { value: undefined, done: true }
+      const it = range[Symbol.iterator]();
+      console.log("手动 next:", it.next()); // { value: 1, done: false }
+      console.log("手动 next:", it.next()); // { value: 2, done: false }
+      console.log("手动 next:", it.next()); // { value: 3, done: false }
+      console.log("手动 next:", it.next()); // { value: undefined, done: true }
 
-      // 实现 Symbol.iterator 后可以直接用 for..of / 展开运算
-      for (const n of a) console.log('for..of', n);
-      console.log('spread', [...a]);
-
+      // ====== 3. 实现 Symbol.iterator 后支持 for...of / 展开 ======
+      for (const n of range) console.log("for..of", n); // 1, 2, 3
+      console.log("spread", [...range]); // [1, 2, 3]
     </script>
     <!-- SCRIPT_END -->
 

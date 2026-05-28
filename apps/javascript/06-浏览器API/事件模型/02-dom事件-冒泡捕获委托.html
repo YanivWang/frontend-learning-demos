@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 06-浏览器API / 事件模型
+  分类: javascript / 06-浏览器API / 事件模型
   主题: DOM 事件流：捕获、目标、冒泡与事件委托
   要点:
     - DOM 事件传播通常经历捕获、目标、冒泡三个阶段，监听选项决定在哪个阶段触发
@@ -12,6 +12,7 @@
     - 事件委托为什么适合动态列表？
     - addEventListener 第三个参数从 boolean 到 options 有哪些常用配置？
     - 事件委托处理用户生成内容时要注意什么？
+  相关: 事件循环, Node与浏览器事件循环对比
 -->
 
 <!doctype html>
@@ -38,7 +39,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>DOM 事件流：捕获、冒泡、委托</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">阅读本复习区后，在下方演示区点击嵌套方块、切换模式并点击列表项，观察捕获/冒泡与事件委托。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -47,6 +48,7 @@
           <li><code>stopPropagation()</code> 阻止事件继续进入后续祖先节点，但不会阻止当前元素上已经注册的其他监听器；<code>stopImmediatePropagation()</code> 还会阻止当前元素后续监听器执行。</li>
           <li>事件委托适合动态列表和大量子元素，能减少绑定和销毁成本；不适合所有事件，例如不冒泡的事件或需要独立生命周期的复杂交互通常应单独绑定。</li>
           <li><code>addEventListener</code> 现代推荐使用 options 对象：<code>capture</code> 控制阶段，<code>once</code> 自动解绑，<code>passive</code> 声明不会调用 <code>preventDefault()</code>，滚动场景可减少浏览器等待。</li>
+          <li><strong>运行环境：</strong> DOM 事件在 <code>file://</code> 与 <code>http(s)://</code> 下均可演示；本页不依赖 HTTPS 或用户手势权限。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
@@ -68,6 +70,8 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
+    <section class="demo-block" aria-label="DOM 事件演示">
+      <h2 class="demo-block__label">运行示例</h2>
     <div class="panel">
       <section>
         <div class="outer" data-name="outer">
@@ -92,10 +96,12 @@
         <div id="log">点击 inner 查看事件触发顺序。</div>
       </section>
     </div>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // ====== 1. 捕获 / 冒泡与 stopPropagation 演示 ======
       const logBox = document.getElementById("log");
       const nodes = document.querySelectorAll(".outer, .middle, .inner");
       let mode = "normal";
@@ -138,6 +144,7 @@
 
       bindEventFlow();
 
+      // ====== 2. 模式切换按钮 ======
       document.getElementById("normalBtn").addEventListener("click", () => {
         mode = "normal";
         resetLog("已切换：正常传播。点击 inner。");
@@ -153,6 +160,7 @@
         resetLog("已切换：inner 冒泡阶段 stopImmediatePropagation。点击 inner。");
       });
 
+      // ====== 3. 事件委托：父级 ul 统一处理 li 点击 ======
       document.getElementById("todoList").addEventListener("click", event => {
         const item = event.target.closest("li");
         if (!item || !event.currentTarget.contains(item)) return;

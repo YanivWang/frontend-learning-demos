@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 06-浏览器API / 存储
+  分类: javascript / 06-浏览器API / 存储
   主题: 封装 localforage 容量估算工具
   要点:
     - 容量工具应返回结构化结果，而不是依赖外部可变对象传递统计值
@@ -12,6 +12,7 @@
     - 工具返回的 storeUsage 和 originQuota 分别代表什么？
     - 浏览器不支持 StorageManager.estimate 时如何降级？
     - 大数据量缓存页面多久统计一次更合理？
+  相关: 获取剩余容量, 测试最大容量
 -->
 
 <!doctype html>
@@ -28,7 +29,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>封装 localforage 容量估算工具</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">阅读本复习区后，点击下方按钮调用封装的 <code>getStorageInfo()</code> 查看结构化结果。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -37,6 +38,7 @@
           <li>比起把累加值挂到外部对象，封装函数内部维护局部变量并返回结果更直观，也减少并发调用时互相污染的风险。</li>
           <li>估算函数要按类型处理：字符串用 <code>TextEncoder</code>，<code>Blob</code> 用 <code>size</code>，<code>ArrayBuffer</code> 用 <code>byteLength</code>，普通对象再尝试 JSON 序列化。</li>
           <li>失败路径包括序列化异常、浏览器不支持 <code>StorageManager.estimate()</code>、localforage 后端不可用或配额已满；工具应返回可解释的降级结果或抛出给调用方处理。</li>
+          <li><strong>运行环境：</strong> 与 IndexedDB / <code>storage.estimate</code> 相同；<code>file://</code> 下 origin 字段可能为 <code>null</code>，工具应做降级展示。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
@@ -57,8 +59,20 @@
     </section>
     <!-- NOTES_END -->
 
+    <!-- PAGE_DOM_START -->
+    <section class="demo-block" aria-label="容量工具封装演示">
+      <h2 class="demo-block__label">运行示例</h2>
+      <button id="run-info" type="button">获取容量信息</button>
+      <pre id="runtime-output" aria-live="polite">尚未运行。</pre>
+    </section>
+    <!-- PAGE_DOM_END -->
+
     <!-- SCRIPT_START -->
     <script>
+      (function () {
+        var outputEl = document.getElementById("runtime-output");
+
+      // ====== 1. 字节估算工具（按类型分别处理）======
       const encoder = new TextEncoder();
       const store = localforage.createInstance({
         name: "frontend-learning-demos",
@@ -83,6 +97,7 @@
         }
       }
 
+      // ====== 2. 封装 getStorageInfo：返回结构化结果而非外部可变对象 ======
       async function estimateStoreUsage(targetStore) {
         let totalBytes = 0;
         await targetStore.iterate(function (value, key) {
@@ -112,12 +127,13 @@
         };
       }
 
+      // ====== 3. 演示：写入混合类型数据并输出 JSON ======
       async function runDemo() {
         await store.setItem("todo-cache", [{ id: 1, title: "离线任务", done: false }]);
         await store.setItem("avatar-placeholder", new Blob(["demo avatar"], { type: "text/plain" }));
 
         const info = await getStorageInfo(store);
-        console.log("容量信息：", {
+        const view = {
           storeUsageKB: (info.storeUsageBytes / 1024).toFixed(2),
           originUsageMB:
             info.originUsageBytes == null ? "unknown" : (info.originUsageBytes / 1024 / 1024).toFixed(2),
@@ -125,13 +141,18 @@
             info.originQuotaBytes == null ? "unknown" : (info.originQuotaBytes / 1024 / 1024).toFixed(2),
           originRemainingMB:
             info.originRemainingBytes == null ? "unknown" : (info.originRemainingBytes / 1024 / 1024).toFixed(2),
-        });
+        };
+        outputEl.textContent = JSON.stringify(view, null, 2);
+        console.log("容量信息：", view);
       }
 
-      runDemo().catch(function (error) {
-        console.error("获取存储容量失败：", error);
+      document.getElementById("run-info").addEventListener("click", function () {
+        runDemo().catch(function (error) {
+          outputEl.textContent = error.name + ": " + error.message;
+          console.error("获取存储容量失败：", error);
+        });
       });
-
+      })();
     </script>
     <!-- SCRIPT_END -->
 

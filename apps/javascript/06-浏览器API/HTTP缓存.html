@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 06-浏览器API
+  分类: javascript / 06-浏览器API
   主题: HTTP 强缓存与协商缓存
   要点:
     - 强缓存由 Cache-Control 等响应头决定，命中时浏览器不发网络请求
@@ -13,6 +13,7 @@
     - ETag 和 Last-Modified 同时存在时如何理解优先级？
     - 前端静态资源为什么常用文件 hash 加长期缓存？
     - 缓存配置错误会带来哪些线上风险？
+  相关: fetch与跨域, ImportMaps
 -->
 
 <!doctype html>
@@ -69,6 +70,9 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
+    <section class="demo-block">
+    <h2>HTTP 缓存对照表</h2>
+    <p class="tip">下方按钮模拟浏览器缓存决策（非真实 HTTP）；真实缓存行为需在 DevTools Network 面板验证。</p>
     <table>
       <thead><tr><th>类型</th><th>关键响应头</th><th>行为</th></tr></thead>
       <tbody>
@@ -84,38 +88,53 @@
       <li><code>max-age=31536000, immutable</code>：带 hash 的静态资源长缓存</li>
     </ul>
     <h2>模拟：本地「缓存表」</h2>
-    <p>点击下方按钮模拟浏览器缓存决策（非真实 HTTP，便于理解流程）。</p>
     <button type="button" id="btn-strong">强缓存命中（200 from cache）</button>
     <button type="button" id="btn-304">协商缓存 304</button>
     <button type="button" id="btn-200">缓存失效 200 新内容</button>
-    <div id="log"></div>
+    <pre id="log" aria-live="polite"></pre>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // ====== 1. 模拟本地缓存条目 ======
       const cache = { etag: '"abc123"', body: "v1 内容", maxAge: 60, storedAt: Date.now() };
       const log = document.getElementById("log");
-      function write(msg) { log.textContent += msg + "\n"; }
 
+      function write(msg) {
+        log.textContent += msg + "\n";
+      }
+
+      // ====== 2. 强缓存：未过期则不发请求 ======
       document.getElementById("btn-strong").onclick = () => {
         log.textContent = "";
         const age = (Date.now() - cache.storedAt) / 1000;
-        if (age < cache.maxAge) write(`[强缓存] age=${age.toFixed(0)}s < max-age → 200 (from disk cache)\n不发送请求`);
-        else write("[强缓存] 已过期，进入协商缓存流程");
+        if (age < cache.maxAge) {
+          write("[强缓存] age=" + age.toFixed(0) + "s < max-age=" + cache.maxAge);
+          write("→ 200 (from disk cache)，不发送网络请求");
+        } else {
+          write("[强缓存] 已过期（age=" + age.toFixed(0) + "s），进入协商缓存流程");
+        }
       };
+
+      // ====== 3. 协商缓存：304 Not Modified ======
       document.getElementById("btn-304").onclick = () => {
         log.textContent = "";
-        write("请求: If-None-Match: " + cache.etag);
+        write("请求头: If-None-Match: " + cache.etag);
         write("响应: 304 Not Modified → 使用本地副本");
+        write("Body: " + cache.body);
       };
+
+      // ====== 4. 缓存失效：200 新内容 ======
       document.getElementById("btn-200").onclick = () => {
         log.textContent = "";
         cache.body = "v2 新内容 @ " + new Date().toLocaleTimeString();
         cache.etag = '"xyz' + Date.now() + '"';
         cache.storedAt = Date.now();
-        write("响应: 200 OK\n新 ETag: " + cache.etag + "\nBody: " + cache.body);
+        write("响应: 200 OK");
+        write("新 ETag: " + cache.etag);
+        write("Body: " + cache.body);
       };
-
     </script>
     <!-- SCRIPT_END -->
 

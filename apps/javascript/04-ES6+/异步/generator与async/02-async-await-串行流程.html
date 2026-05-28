@@ -45,8 +45,8 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function" target="_blank" rel="noreferrer">MDN Web Docs：async function</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await" target="_blank" rel="noreferrer">MDN Web Docs：await</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function">MDN: async function</a>：调用立即返回 Promise。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await">MDN: await</a>：暂停 async 函数，恢复代码进入微任务。</li>
         </ul>
       </div>
     </section>
@@ -54,22 +54,30 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ====== 1. 封装延时 Promise ======
       function timeout(ms) {
         return new Promise(function (resolve) {
           setTimeout(resolve, ms);
         });
       }
 
-      async function asyncPrint(value,ms) {
-        await timeout(ms);
-        console.log(value);
+      // ====== 2. 多个 await 默认串行：后一步等前一步完成 ======
+      async function serialFlow() {
+        console.log("串行 start");
+        await timeout(800);
+        console.log("step 1");
+        await timeout(800);
+        console.log("step 2");
+        console.log("串行 end");
+        return "done";
       }
 
-      //async函数，本身也是返回Promise
-      asyncPrint("print", 3000).then(function () {
-        console.log("asyncPrint finished");
+      // ====== 3. async 函数调用立即返回 Promise，函数体执行到第一个 await ======
+      console.log("调用 serialFlow 前（同步）");
+      serialFlow().then(function (result) {
+        console.log("serialFlow then:", result); // "done"
       });
-
+      console.log("调用 serialFlow 后（同步，不等待 await）");
     </script>
     <!-- SCRIPT_END -->
 

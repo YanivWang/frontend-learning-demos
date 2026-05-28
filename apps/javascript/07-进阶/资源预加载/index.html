@@ -1,16 +1,18 @@
 <!--
-分类: javascript / 07-进阶 / 资源预加载
+  分类: javascript / 07-进阶 / 资源预加载
   主题: 用 new Image / new Audio 触发浏览器预加载
+  难度: 进阶
+  相关: promiseAll, UMD插件模式/index
   要点:
     - new Image() / new Audio() 离屏设置 src 会触发资源请求，可在进入业务渲染前预热缓存
     - 预加载进度只能按已完成资源数估算，不能代表字节级下载百分比
     - 失败资源也要推进进度并暴露错误，否则进度条可能永久卡住
-    - 资源预加载受 HTTP 缓存、CORS、优先级和用户网络影响，不等同于强制缓存
+    - 预加载受 HTTP 缓存、CORS、优先级和网络影响，不等同于强制缓存；需真实网络验证
   面试:
     - new Image() 预加载为什么能让后续渲染更快？
     - 资源预加载进度条为什么通常只能做数量进度？
     - 预加载图片失败时应该如何设计回调和兜底？
-    - new Image() 预加载和 <link rel="preload"> 如何选型？
+    - new Image() 预加载和 link rel=preload 如何选型？
 -->
 
 <!doctype html>
@@ -20,56 +22,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>资源预加载 · ResLoader</title>
     <script src="lib/ResLoader.js"></script>
-    <style>
-      body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
-      progress { width: 320px; height: 14px; }
-      img { width: 80px; height: 80px; margin-right: 6px; object-fit: cover; border-radius: 4px; }
-    </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
+    <style>
+      .preload-gallery img { width: 80px; height: 80px; margin-right: 6px; object-fit: cover; border-radius: 4px; }
+      #bar { width: 320px; height: 14px; }
+    </style>
   </head>
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>统一的图片 / 音频预加载器</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">在浏览器中打开本页，结合下方演示区观察进度与图片渲染。<strong>需人工在浏览器验证</strong>：依赖 picsum.photos 外网请求，离线或网络受限时可能全部失败。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
           <li><code>new Image()</code> / <code>new Audio()</code> 创建离屏资源对象后设置 <code>src</code>，浏览器会像普通资源一样发起请求；后续使用同 URL 时能复用 HTTP 缓存或内存缓存。</li>
           <li>本 demo 的 <code>onProgress(current, total)</code> 是“已完成资源数 / 总资源数”，适合驱动加载页进度条；它不是字节级进度，单个大图和小图权重相同。</li>
           <li>真实项目必须处理失败路径：图片 <code>error</code>、音频 <code>error</code> 也要计入完成并记录失败 URL，否则任一资源 404、跨域失败或网络中断都会让 <code>onComplete</code> 永远不触发。</li>
-          <li>预加载不等于强制缓存。是否复用取决于 URL 完全一致、HTTP 缓存响应头、浏览器缓存策略和资源优先级；带随机查询参数的 URL 通常会绕开缓存。</li>
-          <li><code>&lt;link rel="preload"&gt;</code> 更适合首屏关键资源的声明式优先加载；<code>new Image()</code> 更适合游戏、轮播、相册等运行时才能确定的图片列表。</li>
-          <li>图片如果后续绘制到 <code>canvas</code>，还要考虑 CORS 与画布污染；仅作为 <code>&lt;img&gt;</code> 展示时，跨域限制相对少，但网络失败仍需要占位图或重试策略。</li>
+          <li><strong>工程局限</strong>：预加载不等于强制缓存。是否复用取决于 URL 完全一致、HTTP 缓存响应头、浏览器缓存策略和资源优先级；带随机查询参数的 URL 通常会绕开缓存。弱网、CDN 故障、CORS 限制和移动端流量预算都可能让预加载反而拖慢首屏。</li>
+          <li><code>&lt;link rel="preload"&gt;</code> 更适合首屏关键资源的声明式优先加载；<code>new Image()</code> 更适合游戏、轮播、相册等运行时才能确定的图片列表。canvas 绘制还需考虑 CORS 与画布污染。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>new Image()</code> 预加载为什么能让后续渲染更快？</strong> 结论：因为设置 <code>src</code> 后浏览器会提前请求图片，后续相同 URL 的 <code>&lt;img&gt;</code> 通常能命中缓存。原因是资源请求和缓存由浏览器网络层管理，不要求元素已经插入 DOM。边界是缓存复用取决于 URL、响应头和浏览器策略，跨页面或弱网场景不能保证必然瞬时完成。</li>
-          <li><strong>资源预加载进度条为什么通常只能做数量进度？</strong> 结论：用离屏图片对象只能可靠知道每个资源 load/error 完成，无法知道每个图片的实时字节进度。原因是 <code>HTMLImageElement</code> 不提供下载字节进度事件。项目里若需要精确字节进度，要改用 <code>fetch</code> 流式读取并自行解码，但会增加兼容性、缓存和 CORS 复杂度。</li>
+          <li><strong>new Image() 预加载为什么能让后续渲染更快？</strong> 结论：因为设置 src 后浏览器会提前请求图片，后续相同 URL 的 img 通常能命中缓存。原因是资源请求和缓存由浏览器网络层管理，不要求元素已经插入 DOM。边界是缓存复用取决于 URL、响应头和浏览器策略，跨页面或弱网场景不能保证必然瞬时完成。</li>
+          <li><strong>资源预加载进度条为什么通常只能做数量进度？</strong> 结论：用离屏图片对象只能可靠知道每个资源 load/error 完成，无法知道每个图片的实时字节进度。原因是 HTMLImageElement 不提供下载字节进度事件。项目里若需要精确字节进度，要改用 fetch 流式读取并自行解码，但会增加兼容性、缓存和 CORS 复杂度。</li>
           <li><strong>预加载失败时应该怎么设计？</strong> 结论：失败要进入进度统计，并单独暴露失败 URL 给业务兜底。原因是加载页的目标是进入可用状态，而不是因为某个非关键资源失败永久阻塞。项目中常见做法是记录失败、展示占位图、允许重试，并区分关键资源和非关键资源。</li>
-          <li><strong><code>new Image()</code> 和 <code>&lt;link rel="preload"&gt;</code> 如何选型？</strong> 结论：首屏关键资源优先用 <code>preload</code> 声明意图，运行时列表优先用 JS 预加载。原因是 <code>preload</code> 能参与浏览器优先级调度且更早发现资源，JS 预加载则灵活可控。边界是 preload 使用错误会抢占带宽，JS 预加载过多也会影响首屏和移动端流量。</li>
+          <li><strong>new Image() 和 link rel=preload 如何选型？</strong> 结论：首屏关键资源优先用 preload 声明意图，运行时列表优先用 JS 预加载。原因是 preload 能参与浏览器优先级调度且更早发现资源，JS 预加载则灵活可控。边界是 preload 使用错误会抢占带宽，JS 预加载过多也会影响首屏和移动端流量。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/Image" target="_blank" rel="noreferrer">MDN: Image() constructor</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAudioElement/Audio" target="_blank" rel="noreferrer">MDN: Audio() constructor</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel/preload" target="_blank" rel="noreferrer">MDN: rel="preload"</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching" target="_blank" rel="noreferrer">MDN: HTTP caching</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/Image">MDN: Image() constructor</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAudioElement/Audio">MDN: Audio() constructor</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel/preload">MDN: rel="preload"</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching">MDN: HTTP caching</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <p>核心思路：<code>new Image()</code> / <code>new Audio()</code> 离屏触发下载，浏览器自动缓存，加载完成后业务侧再使用相同 URL 即可走缓存。</p>
-    <progress id="bar" max="100" value="0"></progress>
-    <p id="msg">准备中…</p>
-    <div id="gallery"></div>
+    <section class="demo-block" aria-label="预加载演示">
+      <h2>ResLoader 预加载演示</h2>
+      <p class="tip">观察进度条与下方 gallery；全部完成后才会渲染图片。若网络不可用，Console 会输出 onError 警告。</p>
+      <progress id="bar" max="100" value="0"></progress>
+      <p id="msg">准备中…</p>
+      <div id="gallery" class="preload-gallery"></div>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // ====== 1. 创建 ResLoader 实例 ======
       const loader = new ResLoader({
         baseUrl: "",
         resources: [
@@ -80,28 +84,37 @@
         ],
         onStart(total) {
           document.getElementById("msg").textContent = `开始加载 ${total} 张...`;
+          console.log("onStart, total =", total);
         },
         onProgress(current, total) {
           const percent = Math.round((current / total) * 100);
           document.getElementById("bar").value = percent;
-          document.getElementById("msg").textContent = `加载中：${current}/${total}（${percent}%）`;
+          document.getElementById("msg").textContent =
+            `加载中：${current}/${total}（${percent}%）`;
+          console.log(`onProgress: ${current}/${total}`);
         },
         onError(url) {
-          console.warn("资源预加载失败，业务侧可在这里记录或替换占位资源：", url);
+          // 失败也计入进度，避免永久卡住
+          console.warn("资源预加载失败（可替换占位图）:", url);
         },
         onComplete(total) {
-          document.getElementById("msg").textContent = `全部 ${total} 张加载完成，开始渲染`;
+          document.getElementById("msg").textContent =
+            `全部 ${total} 张加载完成，开始渲染`;
+          console.log("onComplete, 开始渲染 gallery");
+
+          // ====== 2. 预加载完成后渲染：同 URL 通常走缓存 ======
           const gallery = document.getElementById("gallery");
           loader.option.resources.forEach((url) => {
             const img = new Image();
-            img.src = url; // 已被预加载，直接走缓存
+            img.src = url;
+            img.alt = "预加载示例";
             gallery.appendChild(img);
           });
         },
       });
 
+      // ====== 3. 启动预加载 ======
       loader.start();
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -111,7 +124,7 @@
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a href="../%E6%89%8B%E5%86%99Promise/promiseAll.html">← promiseAll</a>
-        <a href="../UMD%E6%8F%92%E4%BB%B6%E6%A8%A1%E5%BC%8F/index.html">index →</a>
+        <a href="../UMD%E6%8F%92%E4%BB%B6%E6%A8%A1%E5%BC%8F/index.html">UMD插件模式 →</a>
       </nav>
       <script>
         (function () {
@@ -123,5 +136,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

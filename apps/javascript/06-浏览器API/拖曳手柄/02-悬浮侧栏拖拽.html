@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 06-浏览器API / 拖曳手柄
+  分类: javascript / 06-浏览器API / 拖曳手柄
   主题: 悬浮侧栏拖拽 V2（带圆角与外边距）
   要点:
     - 固定定位侧栏带外边距时，主内容 margin-left 要同时补偿侧栏宽度和页面间距
@@ -12,6 +12,7 @@
     - will-change 应该如何谨慎使用？
     - requestAnimationFrame 能否避免重排？
     - 可调整布局组件有哪些可访问性和移动端边界？
+  相关: 贴边侧栏拖拽
 -->
 
 <!doctype html>
@@ -212,7 +213,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>悬浮侧栏拖拽 V2（带圆角与外边距）</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">阅读本复习区后，拖拽带圆角与外边距的侧栏，注意主内容 margin-left = 侧栏宽度 + 16px。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -221,6 +222,7 @@
           <li><code>will-change</code> 适合短时间提示浏览器某个属性即将变化，但它不是“GPU 加速开关”；对 <code>width</code>、<code>margin-left</code> 这类布局属性长期使用可能增加内存和图层管理成本。</li>
           <li>拖拽交互要处理用户体验边界：按下时阻止默认选中文本，移动时限制宽度范围，结束时解绑监听，避免页面后续交互被残留监听影响。</li>
           <li>现代实现可以考虑 Pointer Events 和 <code>setPointerCapture()</code>，统一鼠标、触摸、触控笔；本 demo 保留 Mouse Events，便于对照基础拖拽流程。</li>
+          <li><strong>运行环境：</strong> 与贴边版相同；<code>file://</code> 可加载 Vue3 本地脚本。改 <code>width</code>/<code>margin-left</code> 会触发布局，rAF 仅合并提交频率。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
@@ -242,6 +244,8 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
+    <section class="demo-block" aria-label="悬浮侧栏拖拽演示">
+      <h2 class="demo-block__label">运行示例</h2>
     <div id="app">
       <!-- 左侧导航栏 -->
       <div
@@ -321,6 +325,7 @@
                 </div>
               </div>
             </div>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
@@ -329,6 +334,7 @@
 
       createApp({
         setup() {
+          // ====== 1. 侧栏状态（含外边距补偿）======
           // 导航栏宽度（初始200px）
           const sidebarWidth = ref(200);
 
@@ -354,6 +360,7 @@
           let pendingWidth = sidebarWidth.value;
 
           // 开始调整宽度
+          // ====== 2～4. 拖拽三阶段（与贴边版相同，margin-left 含 +16）======
           const startResize = (e) => {
             isResizing.value = true;
             startX.value = e.clientX;

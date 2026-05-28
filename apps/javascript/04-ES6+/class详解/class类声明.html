@@ -11,6 +11,7 @@
     - 静态字段、实例字段、私有字段分别在什么时候初始化？
     - 为什么 class 声明不能在同一作用域重复声明，但声明后的绑定可以重新赋值？
     - 无 extends 的类和派生类在 super() 调用上有什么边界？
+  相关: class类表达式, extends, 类与原型
 -->
 
 <!doctype html>
@@ -46,9 +47,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes" target="_blank" rel="noreferrer">MDN Web Docs：Classes</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/class" target="_blank" rel="noreferrer">MDN Web Docs：class declaration</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements" target="_blank" rel="noreferrer">MDN Web Docs：Private elements</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes" target="_blank" rel="noreferrer">MDN: Classes</a>：class 语法与原型关系。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/class" target="_blank" rel="noreferrer">MDN: class declaration</a>：TDZ 与不可重复声明。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements" target="_blank" rel="noreferrer">MDN: Private elements</a>：私有字段语法与访问规则。</li>
         </ul>
       </div>
     </section>
@@ -56,48 +57,65 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // 1.类声明不会提升（函数声明会提升）
-      // Uncaught ReferenceError: Cannot access 'Person' before initialization
-      // const p = new Person();
+      // ====== 1. class 声明不提升，有 TDZ ======
+      // MDN：class 声明像 let 一样有暂时性死区，声明前访问 ReferenceError
+      // const p = new Person(); // ReferenceError: Cannot access 'Person' before initialization
 
-      // 空的类声明也是有效的
-      class Person {
+      class Person {}
 
-      }
-
-      // class 声明的语义和 let 类似：不具有提升，有暂时性死区
+      // ====== 2. 静态字段、实例字段、私有字段 ======
       class WhitePerson {
-        // 静态字段：类初始化时即执行
+        // 静态字段：类求值时初始化一次
         static userType = "whitePerson";
 
-        // 实例字段：每个 new 出来的实例各有一份
+        // 实例字段：每次 new 时初始化
         userAge = 18;
+        userHeight; // 未赋值 → undefined
 
-        // 类字段是属性，无需 const/let
-        userHeight;
-
-        // 私有字段：必须在类声明体中预先声明
+        // 私有字段：必须在类体预先声明
         #privateField;
         #privateId = 10001;
 
-        constructor(userName){
-          // 易错点：没有 extends 的类不能调用 super()
-          //   SyntaxError: 'super' keyword unexpected here
+        constructor(userName) {
+          // 无 extends 的基类不能调用 super()（SyntaxError）
           // super();
           this.userName = userName;
         }
+
+        describe() {
+          return `${this.userName}, age ${this.userAge}, id ${this.#privateId}`;
+        }
       }
 
-      // 类名标识符不可重新声明（Uncaught SyntaxError: Identifier 'WhitePerson' has already been declared）
-      // const WhitePerson = 123;
-      //
-      // 类声明绑定可重新赋值（更接近 let），但项目代码不应这样做：
-      // WhitePerson = "new value";
+      const wp = new WhitePerson("Ada");
+      console.log("instance:", wp.describe());
+      console.log("static userType:", WhitePerson.userType); // "whitePerson"
+      console.log("prototype method shared:", wp.describe === new WhitePerson("B").describe); // true
 
-      const wp = new WhitePerson("trump");
-      console.log(wp);
-      console.log(WhitePerson.userType);
+      // ====== 3. TDZ 演示（声明前访问类名）======
+      {
+        try {
+          // eslint-disable-next-line no-undef
+          typeof NotYetDeclared;
+        } catch (err) {
+          // class 声明前 typeof 也 ReferenceError（与 let 相同）
+          console.log("TDZ typeof class:", err.name, "-", err.message);
+        }
+        class NotYetDeclared {}
+        console.log("TDZ 结束后可用:", typeof NotYetDeclared); // "function"
+      }
 
+      // ====== 4. 类体默认严格模式：解构方法后 this 为 undefined ======
+      const looseMethod = wp.describe;
+      try {
+        looseMethod();
+      } catch (err) {
+        // TypeError: Cannot read private member #privateId from an object whose class did not declare it
+        console.log("strict this:", err.name, "-", err.message.slice(0, 40) + "...");
+      }
+
+      // ====== 5. 不可重复声明（绑定可重新赋值，项目里禁止）======
+      // class WhitePerson {} // SyntaxError: Identifier 'WhitePerson' has already been declared
     </script>
     <!-- SCRIPT_END -->
 
@@ -119,5 +137,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

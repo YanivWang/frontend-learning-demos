@@ -45,9 +45,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*" target="_blank" rel="noreferrer">MDN Web Docs：function*</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function" target="_blank" rel="noreferrer">MDN Web Docs：async function</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await" target="_blank" rel="noreferrer">MDN Web Docs：await</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">MDN: function*</a>：yield 暂停，执行器在 Promise fulfilled 后 next。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function">MDN: async function</a>：语言内置 Promise 执行器。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await">MDN: await</a>：按 Promise.resolve 规则吸收 thenable。</li>
         </ul>
       </div>
     </section>
@@ -55,13 +55,15 @@
 
     <!-- SCRIPT_START -->
     <script>
-      function timeOut(ms = 300) {
+      // ====== 1. 延时 Promise 工具 ======
+      function timeOut(ms) {
         return new Promise(function (resolve) {
           setTimeout(resolve, ms);
         });
       }
 
-      // 简易执行器：把 yield 的值当作 Promise，resolve 后再 next
+      // ====== 2. 手写 generator 执行器：yield Promise → fulfilled 后 next 推进 ======
+      // 只处理 fulfilled 路径；rejection 应通过 gen.throw(error) 送回 generator
       function runGenerator(genFn) {
         const gen = genFn();
         function step(prev) {
@@ -75,30 +77,33 @@
       }
 
       function* flowGen() {
-        yield timeOut();
+        yield timeOut(200);
         console.log("[generator] step1");
-        yield timeOut();
+        yield timeOut(200);
         console.log("[generator] step2");
         return "done-gen";
       }
 
+      // ====== 3. async/await：语言内置执行器，语义等价于上面手写版 ======
       async function flowAsync() {
-        await timeOut();
+        await timeOut(200);
         console.log("[async] step1");
-        await timeOut();
+        await timeOut(200);
         console.log("[async] step2");
         return "done-async";
       }
 
-      console.log("--- generator + 执行器（等价于手写 co）---");
-      runGenerator(flowGen).then(function (result) {
-        console.log("[generator] return:", result);
-        console.log("--- async/await（语言内置执行器）---");
-        return flowAsync();
-      }).then(function (result) {
-        console.log("[async] return:", result);
-      });
-
+      // 先跑 generator + 执行器，再跑 async，用 then 链串行对比
+      console.log("--- generator + 执行器 ---");
+      runGenerator(flowGen)
+        .then(function (result) {
+          console.log("[generator] return:", result);
+          console.log("--- async/await（内置执行器）---");
+          return flowAsync();
+        })
+        .then(function (result) {
+          console.log("[async] return:", result);
+        });
     </script>
     <!-- SCRIPT_END -->
 

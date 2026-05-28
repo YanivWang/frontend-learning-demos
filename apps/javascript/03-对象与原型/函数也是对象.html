@@ -1,16 +1,19 @@
 <!--
-分类: javascript / 03-对象与原型
+  分类: javascript / 03-对象与原型
   主题: 函数也是对象
   要点:
-    - 函数是可调用对象，既能执行，也能拥有属性和原型关系
-    - 普通函数对象的 [[Prototype]] 指向 Function.prototype
-    - Function.prototype 继续链接到 Object.prototype，因此函数也是对象
-    - 构造函数的 prototype 属性用于实例原型，不等于函数自身的 [[Prototype]]
+    - 函数是可调用对象：typeof 为 function，仍参与对象原型链
+    - 普通函数 [[Prototype]] 指向 Function.prototype，再链到 Object.prototype
+    - fn.prototype 是构造函数给实例用的原型；不等于函数自身的 [[Prototype]]
+    - fn instanceof Function 与 Object 均为 true
+    - 可给函数挂静态属性，解释 class 静态方法本质
   面试:
     - 为什么说函数也是对象？
-    - fn.__proto__ 和 fn.prototype 有什么区别？
+    - fn 的 [[Prototype]] 和 fn.prototype 有什么区别？
     - Function instanceof Object 为什么是 true？
     - 理解函数对象对原型链有什么帮助？
+    - typeof fn 为什么是 function 而不是 object？
+  相关: 构造函数, 原型, typeof
 -->
 
 <!doctype html>
@@ -30,24 +33,27 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><strong>可调用对象：</strong>函数既有 <code>[[Call]]</code> 能力可以执行，也能像对象一样挂属性，所以 <code>typeof fn</code> 是 <code>"function"</code>，但它仍参与对象原型链。</li>
-          <li><strong>函数自身原型链：</strong>普通函数对象的 <code>[[Prototype]]</code> 指向 <code>Function.prototype</code>，而 <code>Function.prototype</code> 又链接到 <code>Object.prototype</code>。</li>
-          <li><strong>两个 prototype 概念：</strong><code>fn.__proto__</code> 描述函数对象自己从哪里继承；<code>fn.prototype</code> 是函数作为构造函数时给实例链接的原型对象。</li>
-          <li><strong>instanceof 结果：</strong><code>fn instanceof Function</code> 和 <code>fn instanceof Object</code> 都为 true，是因为原型链上分别能找到 <code>Function.prototype</code> 和 <code>Object.prototype</code>。</li>
-          <li><strong>项目意义：</strong>理解函数是对象，才能解释给函数挂静态属性、构造函数原型方法、手写 <code>bind/call</code> 以及 class 静态方法的本质。</li>
+          <li><strong>可调用对象：</strong>函数既有 <code>[[Call]]</code> 能力可以执行，也能像对象一样挂属性；<code>typeof fn</code> 返回 <code>"function"</code> 是运算符特例，但函数仍参与对象原型链。</li>
+          <li><strong>函数自身 [[Prototype]]：</strong>普通函数对象的 <code>[[Prototype]]</code> 指向 <code>Function.prototype</code>，而 <code>Function.prototype</code> 的 <code>[[Prototype]]</code> 又指向 <code>Object.prototype</code>。</li>
+          <li><strong>两个 prototype 概念：</strong><code>Object.getPrototypeOf(fn)</code> 描述函数对象自己从哪里继承；<code>fn.prototype</code> 是函数作为构造函数时给实例链接的原型对象。两者方向与含义完全不同。</li>
+          <li><strong>instanceof 结果：</strong><code>fn instanceof Function</code> 和 <code>fn instanceof Object</code> 都为 true，因为原型链上分别能找到 <code>Function.prototype</code> 和 <code>Object.prototype</code>。</li>
+          <li><strong>静态属性：</strong>可直接给函数对象挂属性（如 <code>Person.version = "1.0"</code>），对应 <code>class</code> 的静态方法/字段，挂在构造函数本身而非 <code>prototype</code>。</li>
+          <li><strong>历史访问器：</strong><code>fn.__proto__</code> 等价于 <code>Object.getPrototypeOf(fn)</code>，仅作理解；项目代码优先标准 API。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>为什么说函数也是对象？</strong> 结论是函数是一种特殊对象：能被调用，也能拥有属性并沿原型链继承。原因是 JS 中函数对象有内部调用能力，同时仍链接到 <code>Function.prototype</code> 和 <code>Object.prototype</code>。</li>
-          <li><strong>fn.__proto__ 和 fn.prototype 有什么区别？</strong> <code>fn.__proto__</code> 是函数对象自己的原型，通常等于 <code>Function.prototype</code>；<code>fn.prototype</code> 是它作为构造函数时给实例使用的原型对象。两者方向不同，不能混淆。</li>
-          <li><strong>Function instanceof Object 为什么是 true？</strong> 因为 <code>Function</code> 本身也是一个函数对象，它的原型链最终会到达 <code>Object.prototype</code>。这体现了“函数是对象”的统一模型。</li>
+          <li><strong>为什么说函数也是对象？</strong> 函数是一种特殊对象：能被调用，也能拥有属性并沿原型链继承。JS 中函数对象有内部调用能力，同时仍链接到 <code>Function.prototype</code> 和 <code>Object.prototype</code>。</li>
+          <li><strong>fn 的 [[Prototype]] 和 fn.prototype 有什么区别？</strong> <code>[[Prototype]]</code>（经 <code>getPrototypeOf(fn)</code> 读取）是函数对象自己的原型，通常等于 <code>Function.prototype</code>；<code>fn.prototype</code> 是它作为构造函数时给实例使用的原型对象。两者不能混淆。</li>
+          <li><strong>Function instanceof Object 为什么是 true？</strong> 因为 <code>Function</code> 本身也是函数对象，它的 <code>[[Prototype]]</code> 链最终会到达 <code>Object.prototype</code>。这体现了「函数是对象」的统一模型。</li>
           <li><strong>理解函数对象对原型链有什么帮助？</strong> 它能解释构造函数为什么能挂静态属性、实例为什么能共享原型方法，以及 <code>class</code> 静态方法和实例方法为什么落在不同对象上。</li>
+          <li><strong>typeof fn 为什么是 function 而不是 object？</strong> <code>typeof</code> 对 callable 对象返回 <code>"function"</code> 是历史设计特例，便于区分可调用与普通对象；但函数仍继承 <code>Object.prototype</code> 上的方法如 <code>toString</code>。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function" target="_blank" rel="noopener">MDN Web Docs：Function</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain" target="_blank" rel="noopener">MDN Web Docs：Inheritance and the prototype chain</a></li>
-          <li><a href="https://javascript.info/function-object" target="_blank" rel="noopener">JavaScript.info：Function object</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">MDN: Function</a>：函数对象与 <code>Function.prototype</code>。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain">MDN: Inheritance and the prototype chain</a>：函数在原型链中的位置。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf">MDN: Object.getPrototypeOf()</a>：读取 <code>[[Prototype]]</code> 的标准 API。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof">MDN: typeof</a>：对函数返回 <code>"function"</code> 的说明。</li>
         </ul>
       </div>
     </section>
@@ -55,22 +61,61 @@
 
     <!-- SCRIPT_START -->
     <script>
-      function Person() {}
+      // ====== 1. 函数是可调用对象 ======
+      function Person(name) {
+        this.name = name;
+      }
+      console.log("typeof Person:", typeof Person); // "function"
+      console.log("Person 可调用:", typeof Person === "function");
 
-      //函数属于对象的一种特殊类型，所有的函数都是Function类型的实例
-      console.log(Person.__proto__ === Function.prototype);
+      // ====== 2. 函数 [[Prototype]] → Function.prototype → Object.prototype ======
+      console.log(
+        "getPrototypeOf(Person) === Function.prototype:",
+        Object.getPrototypeOf(Person) === Function.prototype
+      ); // true
+      console.log(
+        "getPrototypeOf(Function.prototype) === Object.prototype:",
+        Object.getPrototypeOf(Function.prototype) === Object.prototype
+      ); // true
+      // 历史访问器 __proto__ 等价，项目代码优先 getPrototypeOf
+      console.log(
+        "Person.__proto__ === getPrototypeOf(Person):",
+        Person.__proto__ === Object.getPrototypeOf(Person)
+      ); // true
 
-      //它作为实例的时候，也有__proto__属性指向其原型对象，其原型对象也是Function类型实例
-      console.log(typeof Person.__proto__);
-      console.log(typeof Function.prototype);
+      // ====== 3. fn.prototype vs 函数自身 [[Prototype]] ======
+      // fn.prototype 是给 new Person() 实例用的；与函数自己的 [[Prototype]] 无关
+      Person.prototype.greet = function () {
+        return "hi";
+      };
+      const p = new Person("wc");
+      console.log(
+        "getPrototypeOf(p) === Person.prototype:",
+        Object.getPrototypeOf(p) === Person.prototype
+      ); // true
+      console.log(
+        "getPrototypeOf(Person) === Person.prototype:",
+        Object.getPrototypeOf(Person) === Person.prototype
+      ); // false ← 两者完全不同
 
-      //而它原型的原型是Object类型的实例
-      console.log(typeof Function.prototype.__proto__);
+      // ====== 4. instanceof Function 与 Object ======
+      console.log("Person instanceof Function:", Person instanceof Function); // true
+      console.log("Person instanceof Object:", Person instanceof Object); // true
+      console.log("Function instanceof Object:", Function instanceof Object); // true
+      console.log("p instanceof Person:", p instanceof Person); // true
 
-      console.log(Person instanceof Object);//true
-      console.log(Person instanceof Function);//true
-      console.log(Function instanceof Object);//true
-
+      // ====== 5. 给函数挂静态属性（class 静态方法的本质）======
+      Person.version = "1.0";
+      Person.create = function (name) {
+        return new Person(name);
+      };
+      console.log("Person.version:", Person.version); // "1.0"
+      const p2 = Person.create("factory");
+      console.log("Person.create():", p2.name); // "factory"
+      console.log(
+        "静态属性在构造函数上，不在 prototype:",
+        "version" in Person.prototype
+      ); // false
     </script>
     <!-- SCRIPT_END -->
 
@@ -79,6 +124,9 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+        <a href="./%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0.html">相关 · 构造函数</a>
+        <a href="./%E5%8E%9F%E5%9E%8B.html">相关 · 原型</a>
+        <a href="../01-%E5%9F%BA%E7%A1%80/typeof.html">相关 · typeof</a>
         <a href="./%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0.html">← 构造函数</a>
         <a href="./%E5%8E%9F%E5%9E%8B.html">原型 →</a>
       </nav>
@@ -92,5 +140,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

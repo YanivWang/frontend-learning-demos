@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 06-浏览器API / BOM
+  分类: javascript / 06-浏览器API / BOM
   主题: history pushState / replaceState 与 popstate
   要点:
     - pushState 追加同源历史记录，replaceState 替换当前历史记录
@@ -11,6 +11,7 @@
     - 为什么调用 pushState 后不会立即触发 popstate？
     - history state 有哪些同源、序列化和容量边界？
     - History 路由为什么需要服务端 fallback？
+  相关: hash, DOM操作
 -->
 
 <!doctype html>
@@ -19,6 +20,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BOM history pushState/replaceState</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
+      button { margin: 4px 8px 4px 0; padding: 6px 12px; }
+      #route-view { padding: 16px; margin: 12px 0; border: 2px solid #94a3b8; border-radius: 8px; background: #f8fafc; min-height: 48px; }
+      #runtime-output { padding: 10px; background: #f6f8fa; border-radius: 6px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; min-height: 4rem; max-height: 200px; overflow: auto; }
+    </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
   </head>
@@ -26,7 +33,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>history pushState / replaceState 与 popstate</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">请阅读本复习区，并在下方演示区点击导航按钮；pushState 后需主动渲染，popstate 仅在前进/后退时触发。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -55,41 +62,64 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <div>
-      <button onclick="jumpToPageA()">pushState 导航到A页面</button>
-      <button onclick="jumpToPageB()">replaceState 导航到B页面</button>
-    </div>
+    <section class="demo-block">
+      <h2>History API 演示</h2>
+      <p class="tip">pushState 追加记录、replaceState 替换记录；调用后须主动 renderRoute，popstate 只在前进/后退时触发。</p>
+      <button type="button" id="btnA">pushState 导航到 A 页面</button>
+      <button type="button" id="btnB">replaceState 导航到 B 页面</button>
+      <div id="route-view">当前路由：<em>（初始）</em></div>
+      <pre id="runtime-output" aria-live="polite"></pre>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      function jumpToPageA() {
-        const stateObject = {
-          name: "wangcheng"
-        };
-        const title = "我是A页面";
-        const url = "page-aaa";
+      const routeView = document.getElementById("route-view");
+      const logBox = document.getElementById("runtime-output");
+      const logs = [];
 
-        history.pushState(stateObject, title, url);
-        console.log("pushState 后需要应用主动渲染，当前 state:", history.state);
+      function appendLog(text) {
+        logs.push("[" + new Date().toLocaleTimeString() + "] " + text);
+        if (logs.length > 20) logs.shift();
+        logBox.textContent = logs.join("\n");
+        console.log(text);
       }
 
-      function jumpToPageB() {
-        const stateObject = {
-          name: "gaojie"
-        };
-        const title = "我是B页面";
-        const url = "page-bbb";
-
-        history.replaceState(stateObject, title, url);
-        console.log("replaceState 替换当前记录，当前 state:", history.state);
+      // ====== 1. 根据 history.state 渲染视图 ======
+      function renderRoute() {
+        const path = location.pathname.split("/").pop() || location.href;
+        const state = history.state;
+        const label = state?.title || "（无 state）";
+        routeView.innerHTML =
+          "pathname: <strong>" + location.pathname + "</strong><br>" +
+          "history.state: <code>" + JSON.stringify(state) + "</code><br>" +
+          "视图: " + label;
       }
 
-      // 监听 window 对象上的 popstate：用户前进/后退时触发。
-      window.addEventListener("popstate", (event) => {
-        console.log("event", event);
+      // ====== 2. pushState：追加历史记录 ======
+      document.getElementById("btnA").addEventListener("click", () => {
+        const stateObject = { title: "A 页面", name: "wangcheng" };
+        history.pushState(stateObject, "", "page-aaa");
+        appendLog("pushState → page-aaa（不会触发 popstate）");
+        renderRoute();
       });
 
+      // ====== 3. replaceState：替换当前记录 ======
+      document.getElementById("btnB").addEventListener("click", () => {
+        const stateObject = { title: "B 页面", name: "gaojie" };
+        history.replaceState(stateObject, "", "page-bbb");
+        appendLog("replaceState → page-bbb（不会触发 popstate）");
+        renderRoute();
+      });
+
+      // ====== 4. popstate：前进/后退时触发 ======
+      window.addEventListener("popstate", (event) => {
+        appendLog("popstate state=" + JSON.stringify(event.state));
+        renderRoute();
+      });
+
+      renderRoute();
+      appendLog("页面就绪；pushState/replaceState 后需主动渲染");
     </script>
     <!-- SCRIPT_END -->
 
@@ -111,5 +141,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

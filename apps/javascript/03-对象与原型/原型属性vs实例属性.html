@@ -1,14 +1,18 @@
 <!--
   分类: javascript / 03-对象与原型
-  主题: 原型属性 vs 实例属性、hasOwnProperty 与 in
+  主题: 原型属性 vs 实例属性
   要点:
     - 实例属性每个实例独立；原型属性所有实例共享一份引用
-    - hasOwnProperty 只判自有；in 沿原型链查找
-    - 推荐 Object.getPrototypeOf(obj) 代替 __proto__（标准 API）
+    - 数据属性放构造函数 this.xxx；共享方法放 Foo.prototype.xxx
+    - hasOwnProperty / Object.hasOwn 只判自有；in 沿 [[Prototype]] 链查找
+    - Object.keys 等只遍历自有可枚举属性；for...in 需配合 hasOwn 过滤
+    - 读取 [[Prototype]] 优先 Object.getPrototypeOf，__proto__ 仅作理解
   面试:
     - 原型属性与实例属性有什么区别？
     - hasOwnProperty 和 in 操作符有何不同？
     - 如何只遍历对象自有属性？
+    - 构造函数内定义方法与 prototype 定义方法有何差异？
+    - Object.hasOwn 与 hasOwnProperty 有何区别？
   相关: 原型, 原型链, 构造函数
 -->
 
@@ -17,7 +21,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>原型属性 vs 实例属性 · hasOwnProperty / in</title>
+    <title>原型属性 vs 实例属性</title>
     <link rel="stylesheet" href="../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../packages/shared/demo-shell.css" />
   </head>
@@ -29,24 +33,27 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>实例属性每个实例独立；原型属性所有实例共享一份引用。</li>
-          <li>数据属性放构造函数内 <code>this.xxx</code>；方法放 <code>Foo.prototype.xxx</code>。</li>
-          <li><code>hasOwnProperty</code> 只判自有；<code>in</code> 沿原型链查找。</li>
-          <li>遍历自有属性：<code>Object.keys</code>、<code>Object.getOwnPropertyNames</code>、for...in + hasOwnProperty。</li>
-          <li>推荐 <code>Object.getPrototypeOf(obj)</code> 代替 <code>__proto__</code>（标准 API）。</li>
+          <li><strong>实例属性：</strong>构造函数内 <code>this.xxx</code> 或实例上直接赋值，每个对象独立一份；构造函数内定义的函数方法也是每实例一份。</li>
+          <li><strong>原型属性：</strong>写在 <code>Foo.prototype.xxx</code> 上，所有实例通过 <code>[[Prototype]]</code> 共享同一份引用；适合放方法，不宜放可变引用状态。</li>
+          <li><strong>hasOwn vs in：</strong><code>hasOwnProperty</code> / <code>Object.hasOwn</code> 只检查自有属性；<code>in</code> 沿 <code>[[Prototype]]</code> 链查找，能发现继承的 <code>toString</code> 等方法。</li>
+          <li><strong>遍历自有属性：</strong><code>Object.keys</code>、<code>Object.getOwnPropertyNames</code>、<code>Reflect.ownKeys</code> 只含自有键；<code>for...in</code> 会枚举原型链上可枚举属性，需配合 <code>Object.hasOwn</code> 过滤。</li>
+          <li><strong>[[Prototype]] API：</strong><code>Object.getPrototypeOf(obj)</code> 读取实例 <code>[[Prototype]]</code>；历史属性 <code>__proto__</code> 等价但 MDN 不推荐在生产代码中使用。</li>
+          <li><strong>fn.prototype 边界：</strong><code>prototype</code> 是<strong>函数对象</strong>上的属性，普通实例 <code>p.prototype</code> 为 <code>undefined</code>（除非手动赋值）。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>原型属性与实例属性有什么区别？</strong> 结论是实例属性每个对象独立，原型属性由所有实例共享。实例状态应放构造函数或实例字段，方法放原型；可变引用状态放原型会导致多个实例互相影响。</li>
-          <li><strong>hasOwnProperty 和 in 操作符有何不同？</strong> <code>hasOwnProperty</code> 只检查对象自身属性，<code>in</code> 会沿原型链查找。项目里判断配置是否显式传入时用自有属性判断，判断对象能否访问某能力时可用 <code>in</code>。</li>
-          <li><strong>如何只遍历对象自有属性？</strong> 常用 <code>Object.keys()</code> 获取自有可枚举字符串键，<code>Object.getOwnPropertyNames()</code> 获取不可枚举字符串键，<code>Reflect.ownKeys()</code> 同时包含 symbol。<code>for...in</code> 必须配合自有属性过滤。</li>
+          <li><strong>原型属性与实例属性有什么区别？</strong> 实例属性每个对象独立，原型属性由所有实例共享。实例状态放构造函数或实例字段，方法放原型；可变引用状态放原型会导致多个实例互相影响。</li>
+          <li><strong>hasOwnProperty 和 in 操作符有何不同？</strong> <code>hasOwnProperty</code> / <code>Object.hasOwn</code> 只检查对象自身属性，<code>in</code> 会沿原型链查找。判断配置是否显式传入用自有属性，判断对象能否访问某能力时可用 <code>in</code>。</li>
+          <li><strong>如何只遍历对象自有属性？</strong> 常用 <code>Object.keys()</code> 获取自有可枚举字符串键，<code>Object.getOwnPropertyNames()</code> 含不可枚举字符串键，<code>Reflect.ownKeys()</code> 同时包含 symbol。<code>for...in</code> 必须配合自有属性过滤。</li>
+          <li><strong>构造函数内定义方法与 prototype 定义方法有何差异？</strong> 构造函数内每 <code>new</code> 创建新函数，<code>d1.eat !== d2.eat</code>；<code>prototype</code> 上所有实例共享，<code>p1.eat === p2.eat</code>。</li>
+          <li><strong>Object.hasOwn 与 hasOwnProperty 有何区别？</strong> <code>Object.hasOwn(obj, key)</code> 不依赖原型链上的 <code>hasOwnProperty</code> 方法，对无原型对象或覆盖过 <code>hasOwnProperty</code> 的对象更安全；ES2022 起推荐优先使用。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain" target="_blank" rel="noopener">MDN Web Docs：Inheritance and the prototype chain</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwn" target="_blank" rel="noopener">MDN Web Docs：Object.hasOwn()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/in" target="_blank" rel="noopener">MDN Web Docs：in operator</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf" target="_blank" rel="noopener">MDN Web Docs：Object.getPrototypeOf()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain">MDN: Inheritance and the prototype chain</a>：自有属性与原型链查找。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwn">MDN: Object.hasOwn()</a>：判断自有属性的现代 API。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/in">MDN: in</a>：沿原型链检测属性是否存在。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf">MDN: Object.getPrototypeOf()</a>：读取 <code>[[Prototype]]</code>。</li>
         </ul>
       </div>
     </section>
@@ -54,7 +61,7 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // ============ 1. 两种写法的本质对比 ============
+      // ====== 1. 构造函数内方法 vs prototype 方法 ======
       function Dog(name) {
         this.name = name;
         this.eat = function () {
@@ -63,7 +70,7 @@
       }
       const d1 = new Dog("旺财");
       const d2 = new Dog("小黑");
-      console.log("[A] d1.eat === d2.eat ?", d1.eat === d2.eat);
+      console.log("[实例方法] d1.eat === d2.eat:", d1.eat === d2.eat); // false
 
       function Panda() {}
       Panda.prototype.name = "熊猫";
@@ -72,9 +79,9 @@
       };
       const p1 = new Panda();
       const p2 = new Panda();
-      console.log("[B] p1.eat === p2.eat ?", p1.eat === p2.eat);
+      console.log("[原型方法] p1.eat === p2.eat:", p1.eat === p2.eat); // true
 
-      // ============ 2. hasOwnProperty：只检查自有属性 ============
+      // ====== 2. hasOwnProperty / Object.hasOwn：只检查自有属性 ======
       function Person() {
         this.name = "wc";
         this.age = 20;
@@ -83,45 +90,55 @@
       const me = new Person();
       me.salary = 10000;
 
-      console.log("hasOwnProperty('name'):    ", me.hasOwnProperty("name"));
-      console.log("hasOwnProperty('salary'):  ", me.hasOwnProperty("salary"));
-      console.log("hasOwnProperty('species'): ", me.hasOwnProperty("species"));
-      console.log("hasOwnProperty('toString'):", me.hasOwnProperty("toString"));
+      console.log("hasOwn('name'):", Object.hasOwn(me, "name")); // true
+      console.log("hasOwn('salary'):", Object.hasOwn(me, "salary")); // true
+      console.log("hasOwn('species'):", Object.hasOwn(me, "species")); // false
+      console.log("hasOwn('toString'):", Object.hasOwn(me, "toString")); // false
 
-      // ============ 3. in 操作符：沿原型链查找 ============
-      console.log("'name'     in me:", "name" in me);
-      console.log("'species'  in me:", "species" in me);
-      console.log("'toString' in me:", "toString" in me);
-      console.log("'salary'   in me:", "salary" in me);
+      // ====== 3. in 操作符：沿 [[Prototype]] 链查找 ======
+      console.log("'name' in me:", "name" in me); // true
+      console.log("'species' in me:", "species" in me); // true（原型上）
+      console.log("'toString' in me:", "toString" in me); // true（Object.prototype）
+      console.log("'salary' in me:", "salary" in me); // true
 
-      // ============ 4. 仅遍历自有属性 ============
-      function Cat() { this.name = "Tom"; this.age = 3; }
+      // ====== 4. 仅遍历自有属性 ======
+      function Cat() {
+        this.name = "Tom";
+        this.age = 3;
+      }
       Cat.prototype.species = "cat";
-      const c = new Cat();
+      const cat = new Cat();
 
-      console.log("--- for...in ---");
-      for (const k in c) console.log(k, "(hasOwn:", c.hasOwnProperty(k), ")");
-      console.log("Object.keys:               ", Object.keys(c));
-      console.log("Object.getOwnPropertyNames: ", Object.getOwnPropertyNames(c));
+      console.log("--- for...in（含原型可枚举属性）---");
+      for (const k in cat) {
+        console.log(k, "hasOwn:", Object.hasOwn(cat, k));
+      }
+      console.log("Object.keys:               ", Object.keys(cat));
+      console.log("Object.getOwnPropertyNames: ", Object.getOwnPropertyNames(cat));
 
-      // ============ 5. __proto__ ≡ Object.getPrototypeOf(obj) ============
-      function Person2(name) { this.name = name; }
+      // ====== 5. [[Prototype]] 与 getPrototypeOf ======
+      function Person2(name) {
+        this.name = name;
+      }
       const p = new Person2("wc");
-      const proto1 = p.__proto__;
-      const proto2 = Object.getPrototypeOf(p);
-      console.log("p.__proto__ === getPrototypeOf(p) ?", proto1 === proto2);
-      console.log("p.__proto__ === Person2.prototype  ?", proto1 === Person2.prototype);
-      console.log("p.prototype:", p.prototype);
-      console.log("Person2.prototype 是函数的属性:", typeof Person2.prototype);
+      const protoViaGetter = Object.getPrototypeOf(p);
+      console.log(
+        "__proto__ === getPrototypeOf(p):",
+        p.__proto__ === protoViaGetter
+      ); // true
+      console.log(
+        "getPrototypeOf(p) === Person2.prototype:",
+        protoViaGetter === Person2.prototype
+      ); // true
+      console.log("p.prototype:", p.prototype); // undefined（prototype 是函数对象的属性）
 
-      // ============ 6. 同一实例的方法引用相等 ============
+      // ====== 6. 同一构造函数实例共享原型方法 ======
       function Animal() {}
       Animal.prototype.run = function () {};
       const a = new Animal();
       const b = new Animal();
-      console.log("a.run === b.run ?", a.run === b.run);
-      console.log("a.toString === b.toString ?", a.toString === b.toString);
-
+      console.log("a.run === b.run:", a.run === b.run); // true
+      console.log("a.toString === b.toString:", a.toString === b.toString); // true（Object.prototype）
     </script>
     <!-- SCRIPT_END -->
 
@@ -146,6 +163,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-
   </body>
 </html>

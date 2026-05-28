@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 06-浏览器API / BOM
+  分类: javascript / 06-浏览器API / BOM
   主题: hash 路由的基本演示
   要点:
     - URL 片段标识符（# 后内容）变化不会向服务器重新请求页面
@@ -11,6 +11,7 @@
     - hashchange 和 popstate 分别适合监听哪类导航？
     - location.hash 赋值和 location.replace("#/...") 对历史栈有什么区别？
     - hash 路由和 History 路由在部署与用户体验上如何取舍？
+  相关: history, DOM操作
 -->
 
 <!doctype html>
@@ -19,6 +20,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BOM hash 路由</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 1.5rem; line-height: 1.6; }
+      button { margin: 4px 8px 4px 0; padding: 6px 12px; }
+      #route-view { padding: 16px; margin: 12px 0; border: 2px solid #94a3b8; border-radius: 8px; background: #f8fafc; min-height: 48px; }
+      #runtime-output { padding: 10px; background: #f6f8fa; border-radius: 6px; font-family: ui-monospace, monospace; font-size: 0.8125rem; white-space: pre-wrap; min-height: 4rem; max-height: 200px; overflow: auto; }
+    </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
   </head>
@@ -26,7 +33,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>hash 路由的基本演示</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">请阅读本复习区，并在下方演示区点击导航按钮；观察 #route-view 与事件日志，同时可用浏览器后退验证历史栈。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -55,34 +62,66 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <div>
-      <button onclick="jumpToPageA()">修改hash 导航到A页面</button>
-      <button onclick="jumpToPageB()">修改hash 导航到B页面</button>
-    </div>
+    <section class="demo-block">
+      <h2>hash 路由演示</h2>
+      <p class="tip">「导航到 A」新增历史记录可后退；「导航到 B（replace）」替换当前记录。片段变化不触发整页刷新。</p>
+      <button type="button" id="btnA">修改 hash 导航到 A 页面</button>
+      <button type="button" id="btnB">replace 导航到 B 页面</button>
+      <div id="route-view">当前路由：<em>（初始）</em></div>
+      <pre id="runtime-output" aria-live="polite"></pre>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      function jumpToPageA() {
-        // 直接给 location.hash 赋值会创建一条新的历史记录。
-        window.location.hash = "#/page-aaa";
+      const routeView = document.getElementById("route-view");
+      const logBox = document.getElementById("runtime-output");
+      const logs = [];
+
+      function appendLog(text) {
+        logs.push("[" + new Date().toLocaleTimeString() + "] " + text);
+        if (logs.length > 20) logs.shift();
+        logBox.textContent = logs.join("\n");
+        console.log(text);
       }
 
-      function jumpToPageB() {
-        // replace 不保留当前历史记录，用户点击后退不会回到替换前的 hash。
-        window.location.replace("#/page-bbb");
+      const routes = {
+        "#/page-aaa": "A 页面 — 首页内容",
+        "#/page-bbb": "B 页面 — 替换导航",
+      };
+
+      // ====== 1. 根据 hash 渲染视图 ======
+      function renderRoute() {
+        const hash = location.hash || "（无 hash）";
+        const content = routes[hash] || "未知路由: " + hash;
+        routeView.innerHTML = "当前路由：<strong>" + hash + "</strong><br>" + content;
       }
 
-      // popstate 仅在 pushState/replaceState 导航时触发；纯 hash 变化请监听 hashchange
-      window.addEventListener("popstate", (event) => {
-        console.log("popstate event", event);
+      // ====== 2. location.hash 赋值（新增历史记录）======
+      document.getElementById("btnA").addEventListener("click", () => {
+        location.hash = "#/page-aaa";
+        appendLog("location.hash = #/page-aaa（新增历史记录）");
       });
 
-      //监听 window 对象上的 hashchange 事件
+      // ====== 3. location.replace（替换历史记录）======
+      document.getElementById("btnB").addEventListener("click", () => {
+        location.replace("#/page-bbb");
+        appendLog("location.replace(#/page-bbb)（替换当前记录）");
+      });
+
+      // ====== 4. hashchange：hash 路由核心事件 ======
       window.addEventListener("hashchange", (event) => {
-        console.log("hashchange event", event);
+        appendLog("hashchange: " + event.oldURL + " → " + event.newURL);
+        renderRoute();
       });
 
+      // ====== 5. popstate 不监听纯 hash 变化（对比用）======
+      window.addEventListener("popstate", (event) => {
+        appendLog("popstate（History API）state=" + JSON.stringify(event.state));
+      });
+
+      renderRoute();
+      appendLog("页面就绪，当前 hash: " + (location.hash || "（空）"));
     </script>
     <!-- SCRIPT_END -->
 
@@ -104,5 +143,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

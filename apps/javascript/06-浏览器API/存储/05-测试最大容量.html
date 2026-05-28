@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 06-浏览器API / 存储
+  分类: javascript / 06-浏览器API / 存储
   主题: 测试 localforage 最大可写容量
   要点:
     - 浏览器存储配额由实现策略决定，不能依赖固定容量假设
@@ -12,6 +12,7 @@
     - 为什么容量压测要分块写入并提供清理按钮？
     - StorageManager.estimate 和真实写入压测各自适合什么场景？
     - 生产项目如何避免离线缓存把用户磁盘打满？
+  相关: 封装-获取存储容量, 存储文件-FileReader
 -->
 
 <!doctype html>
@@ -28,7 +29,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>测试 localforage 最大可写容量</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">阅读本复习区后，在下方<strong>手动点击</strong>开始压测；会向独立 store 分块写入真实数据，结束后请清理。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -37,6 +38,7 @@
           <li><code>QuotaExceededError</code> 表示本次写入超过当前可用配额或被策略拒绝，项目里要捕获并提示用户清理缓存、减少离线数据或改为服务端保存。</li>
           <li><code>navigator.storage.estimate()</code> 适合快速看总体配额压力，真实写入压测适合验证当前数据形态能否写入；前者成本低但不精确，后者更接近结果但有副作用。</li>
           <li>容量压测会写入真实本地数据，demo 和生产诊断工具都必须由用户主动触发，并提供停止、清理和错误提示，避免页面打开就污染用户存储。</li>
+          <li><strong>运行环境：</strong> 压测依赖 IndexedDB；<code>file://</code> 与隐私模式下可能更早触发 <code>QuotaExceededError</code>。无网络要求；写入会占用本机磁盘，请勿在生产环境自动运行。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
@@ -70,6 +72,7 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ====== 1. 独立 store 与 UI 状态 ======
       const store = localforage.createInstance({
         name: "frontend-learning-demos",
         storeName: "localforage_quota_probe",
@@ -103,6 +106,7 @@
         console.log("origin quota MB:", ((estimate.quota || 0) / 1024 / 1024).toFixed(2));
       }
 
+      // ====== 2. 分块写入压测（用户手动触发）======
       async function runQuotaProbe() {
         if (isRunning) return;
         shouldStop = false;

@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 08-面试题 / 作用域
+  分类: javascript / 08-面试题 / 作用域
   主题: 嵌套函数 - 返回内层函数引用
   要点:
     - return f 返回的是内层函数引用，外部再调用时形成闭包
@@ -11,6 +11,7 @@
     - return f 和 return f() 在闭包生命周期上有什么区别？
     - 闭包为什么会让外层局部变量不被立即回收？
     - 项目中使用闭包保存状态时要注意哪些内存边界？
+  相关: 嵌套作用域-返回值, 闭包-作用域链与变量提升
 -->
 
 <!doctype html>
@@ -26,7 +27,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>嵌套函数 - 返回内层函数引用</h1>
-      <p class="hint">请打开 DevTools Console 查看输出。</p>
+      <p class="hint">先看本复习区，再查看下方输出是否与标准答法一致；细节可打开 DevTools Console。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -47,16 +48,23 @@
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures" target="_blank" rel="noreferrer">MDN: Closures</a></li>
-          <li><a href="https://javascript.info/closure" target="_blank" rel="noreferrer">JavaScript.info: Variable scope, closure</a></li>
           <li><a href="https://tc39.es/ecma262/#sec-lexical-environments" target="_blank" rel="noreferrer">ECMA-262: Lexical Environments</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
+    <!-- PAGE_DOM_START -->
+    <section class="demo-block">
+      <h2>运行结果</h2>
+      <p class="tip">标准答法：<code>checkscope()()</code> 输出 <code>"local"</code>（闭包保留定义时词法环境中的局部 scope）。</p>
+      <pre id="runtime-output" aria-live="polite"></pre>
+    </section>
+    <!-- PAGE_DOM_END -->
+
     <!-- SCRIPT_START -->
     <script>
-      // 返回函数引用，外部再调用时仍能访问定义时的词法环境。
+      // ====== 1. 返回函数引用：外部再调用时形成闭包 ======
       var scope = "global";
 
       function checkscope() {
@@ -66,11 +74,14 @@
           return scope;
         }
 
-        return f;
+        return f; // 返回函数本身，不是 f() 的执行结果
       }
 
-      console.log(checkscope()()); // local
-
+      // ====== 2. 输出验证 ======
+      var result = checkscope()();
+      console.log("checkscope()():", result); // 预期: "local"
+      document.getElementById("runtime-output").textContent =
+        'checkscope()(): "' + result + '"';
     </script>
     <!-- SCRIPT_END -->
 
@@ -92,5 +103,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

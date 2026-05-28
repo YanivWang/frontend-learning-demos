@@ -1,5 +1,5 @@
 <!--
-分类: javascript / 06-浏览器API / toolTips
+  分类: javascript / 06-浏览器API / toolTips
   主题: Vue3 实现悬停与键盘可访问的交互浮层
   要点:
     - mouseenter/mouseleave 不冒泡，适合触发区与浮层之间的悬停状态控制
@@ -12,6 +12,7 @@
     - 交互浮层为什么要补 focusin/focusout？
     - ARIA tooltip 与包含按钮的 popover 有什么边界？
     - 延迟隐藏定时器有哪些竞态风险？
+  相关: dom事件-冒泡捕获委托, Worker-基础与子脚本
 -->
 
 <!doctype html>
@@ -114,6 +115,7 @@
           <li>键盘用户无法触发鼠标悬停，因此触发区应是可聚焦控件，并用 <code>focusin</code> / <code>focusout</code> 维护显示状态；<code>focusout</code> 通过 <code>event.relatedTarget</code> 判断焦点是否仍在浮层容器内。</li>
           <li>包含按钮、链接等可交互内容时，不应把它当作纯 ARIA <code>tooltip</code>。纯 tooltip 通常只提供说明文本；本例更接近非模态 popover / dialog，需要在真实项目里继续补充 Escape 关闭、焦点管理和定位防溢出。</li>
           <li>Vue 这里只负责把事件和响应式状态绑定起来：<code>ref</code> 保存显示状态，模板类名与 ARIA 状态从响应式值派生；不要把 DOM 可见状态和 Vue 状态拆成两套来源。</li>
+          <li><strong>运行环境：</strong> 悬停与键盘焦点在 <code>file://</code> 与 <code>http(s)://</code> 均可；<code>alert</code> 需用户交互。不涉及需 HTTPS 的 Notification 等 API。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
@@ -135,6 +137,8 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
+    <section class="demo-block" aria-label="Tooltip 演示">
+      <h2 class="demo-block__label">运行示例</h2>
     <div id="app">
       <h2>Vue3 可交互 Tooltip 示例</h2>
       <p>将鼠标移入或用 Tab 聚焦下方区域，会在上方显示可交互浮层。</p>
@@ -174,6 +178,7 @@
         </div>
       </div>
     </div>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
@@ -182,11 +187,13 @@
 
       createApp({
         setup() {
+          // ====== 1. 显示状态与定时器 ======
           const isTooltipVisible = ref(false);
           const container = ref(null);
           const tooltip = ref(null);
           let hideTimeout = null;
 
+          // ====== 2. 显示：取消待执行的隐藏 ======
           const showTooltip = () => {
             // 清除任何待执行的隐藏操作
             if (hideTimeout) {
@@ -200,6 +207,7 @@
             isTooltipVisible.value = false;
           };
 
+          // ====== 3. 延迟隐藏：允许鼠标移入浮层 ======
           const hideTooltipWithDelay = () => {
             // 添加小延迟，允许鼠标移动到tooltip
             hideTimeout = setTimeout(() => {
@@ -224,6 +232,7 @@
             hideTooltip();
           };
 
+          // ====== 4. 键盘：focusout + relatedTarget 判断焦点是否离开容器 ======
           const handleContainerFocusOut = (event) => {
             if (!container.value?.contains(event.relatedTarget)) {
               hideTooltipWithDelay();

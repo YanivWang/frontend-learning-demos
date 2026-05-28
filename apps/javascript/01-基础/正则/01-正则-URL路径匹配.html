@@ -52,26 +52,40 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // 期望匹配：/languages/learn-<lang>-online/course/.. 或 /unit/..
-      // 反面案例：/.../ala/.. 不应匹配
-      let path = "http://localhost:8080/#/languages/learn-french-online/course/12/2/6/4/0";
-      path = "http://localhost:8080/#/languages/learn-french-online/unit/6&31";
+      const samplePath =
+        "http://localhost:8080/#/languages/learn-french-online/course/12/2/6/4/0";
 
-      path = "http://localhost:8080/#/languages/learn-french-online/ala/6&31";
+      // ====== 1. 常见错误：[course|unit] 是字符类，不是「或」======
+      const wrongClass = /\/(?:course|unit)/; // 正确写法示意
+      const charClassTrap = /[course|unit]/;
+      console.log("字符类 [course|unit] 匹配 'c':", charClassTrap.test("c")); // true（匹配 c/o/u/r/s/e/|/n/i/t 任一）
+      console.log("非捕获 (?:course|unit) 匹配路径:", wrongClass.test(samplePath)); // true
 
-      // 用非捕获分组 (?:course|unit) 表达「course 或 unit」二选一
-      let regPath2 = /\/languages\/learn-\w+-online\/(?:course|unit).*/;
-      if (regPath2.test(path)) {
-        // 提取 -<lang>- 中的语言部分并首字母大写
-        let regC = /-\w+-/;
-        let targetLan = path.match(regC)[0];
-        targetLan = targetLan.slice(1, targetLan.length - 1).toLowerCase();
-        targetLan = targetLan.slice(0, 1).toUpperCase() + targetLan.slice(1);
-        console.log("targetLan: " + targetLan);
-      } else {
-        console.log("not match:", path);
+      // ====== 2. 正确匹配 URL 语言段与 course/unit 段 ======
+      const regPath = /\/languages\/learn-\w+-online\/(?:course|unit).*/;
+      console.log("course 路径:", regPath.test(samplePath)); // true
+
+      const unitPath =
+        "http://localhost:8080/#/languages/learn-french-online/unit/6&31";
+      console.log("unit 路径:", regPath.test(unitPath)); // true
+
+      const invalidPath =
+        "http://localhost:8080/#/languages/learn-french-online/ala/6&31";
+      console.log("无效 ala 段:", regPath.test(invalidPath)); // false
+
+      if (regPath.test(samplePath)) {
+        const langMatch = samplePath.match(/-(\w+)-/);
+        const targetLan =
+          langMatch[1].slice(0, 1).toUpperCase() + langMatch[1].slice(1).toLowerCase();
+        console.log("提取语言:", targetLan); // French
       }
 
+      // ====== 3. g 标志与 lastIndex：同一 RegExp 重复 test 可能不同 ======
+      const globalRe = /a/g;
+      console.log("g test #1:", globalRe.test("aba")); // true，lastIndex → 1
+      console.log("g test #2:", globalRe.test("aba")); // true，lastIndex → 3
+      console.log("g test #3:", globalRe.test("aba")); // false，lastIndex → 0
+      globalRe.lastIndex = 0; // 单次校验前重置，或不用 g
     </script>
     <!-- SCRIPT_END -->
 

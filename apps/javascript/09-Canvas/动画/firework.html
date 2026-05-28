@@ -11,6 +11,7 @@
     - Canvas 烟花拖尾为什么用 destination-out 而不是每帧 clearRect？
     - 粒子系统如何避免点击过快或页面长时间运行导致卡顿？
     - 高 DPI、窗口 resize 和后台标签页会给 Canvas 动画带来什么边界？
+  相关: 基础/index, var与function同名提升
 -->
 
 <!doctype html>
@@ -37,7 +38,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Canvas 烟花动画</h1>
-      <p class="hint">在黑色画布上点击或自动发射烟花；复习要点见上方，动画逻辑见源码与 DevTools。</p>
+      <p class="hint">先看本复习区，再在下方黑色画布点击或等待自动发射烟花；动画使用 requestAnimationFrame 与合成模式 API。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -65,17 +66,16 @@
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <div style="text-align:center;clear:both">
-    </div>
-    <canvas id="canvas">Canvas is not supported in your browser.</canvas>
-    <!-- (function(){})() 立即运行的匿名函数 -->
-    <!-- Function对象是js中的固有对象，所有的函数实际上都是一个Function的实例 -->
+    <section class="demo-block">
+      <h2>Canvas 烟花动画</h2>
+      <p class="tip">点击画布按住发射，或等待自动烟花；拖尾由 destination-out 半透明擦除实现，粒子叠加用 lighter 合成。</p>
+      <canvas id="canvas">Canvas is not supported in your browser.</canvas>
+    </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // when animating on canvas, it is best to use requestAnimationFrame instead of setTimeout or setInterval
-      // not supported in all browsers though and sometimes needs a prefix, so we need a shim
+      // ====== 1. requestAnimationFrame 兼容 shim ======
       window.requestAnimFrame = (function () {
         return window.requestAnimationFrame ||
         window.webkitRequestAnimationFrame ||
@@ -85,9 +85,7 @@
         };
       })();
 
-      // now we will setup our basic variables for the demo
-      var a = 1, b, c, d;
-
+      // ====== 2. 画布尺寸与烟花 / 粒子集合 ======
       var canvas = document.getElementById('canvas'),
       ctx = canvas.getContext('2d'),
       // full screen dimensions
@@ -129,7 +127,7 @@
         return Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
       }
 
-      // create firework constructor
+      // ====== 3. Firework：从底部飞向目标点，抵达后爆炸 ======
       function Firework(sx, sy, tx, ty) {
         // actual coordinates
         this.x = sx;
@@ -209,7 +207,7 @@
         ctx.stroke();
       };
 
-      // create particle
+      // ====== 4. Particle：爆炸粒子，带摩擦、重力与透明度衰减 ======
       function Particle(x, y) {
         this.x = x;
         this.y = y;
@@ -273,23 +271,16 @@
         }
       }
 
-      // main demo loop
+      // ====== 5. 主循环：destination-out 拖尾 + lighter 粒子叠加 ======
       function loop() {
-        // this function will run endlessly with requestAnimationFrame
         requestAnimFrame(loop);
 
-        // increase the hue to get different colored fireworks over time
         hue += 0.5;
 
-        // normally, clearRect() would be used to clear the canvas
-        // we want to create a trailing effect though
-        // setting the composite operation to destination-out will allow us to clear the canvas at a specific opacity, rather than wiping it entirely
+        // destination-out + 半透明填充：逐步擦除旧像素形成拖尾（非 clearRect 全清）
         ctx.globalCompositeOperation = 'destination-out';
-        // decrease the alpha property to create more prominent trails
         ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
         ctx.fillRect(0, 0, cw, ch);
-        // change the composite operation back to our main mode
-        // lighter creates bright highlight points as the fireworks and particles overlap each other
         ctx.globalCompositeOperation = 'lighter';
 
         // loop over each firework, draw it, update it
@@ -329,8 +320,7 @@
         }
       }
 
-      // mouse event bindings
-      // update the mouse coordinates on mousemove
+      // ====== 6. 鼠标交互：按住发射 + limiterTick 限流 ======
       canvas.addEventListener('mousemove', function (e) {
         var rect = canvas.getBoundingClientRect();
         mx = e.clientX - rect.left;
@@ -348,7 +338,6 @@
         mousedown = false;
       });
 
-      // once the window loads, we are ready for some fireworks!
       window.onload = loop;
 
     </script>

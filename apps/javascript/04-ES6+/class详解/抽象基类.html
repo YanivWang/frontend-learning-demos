@@ -11,6 +11,7 @@
     - 用 new.target 模拟抽象基类有哪些能力和限制？
     - 运行时抽象基类和 TypeScript abstract class 如何分工？
     - 派生类里 super() 和 new.target 的关系是什么？
+  相关: extends, 类与原型
 -->
 
 <!doctype html>
@@ -45,8 +46,8 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new.target" target="_blank" rel="noreferrer">MDN Web Docs：new.target</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/extends" target="_blank" rel="noreferrer">MDN Web Docs：extends</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new.target" target="_blank" rel="noreferrer">MDN: new.target</a>：构造器中指向被 new 的构造器。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/extends" target="_blank" rel="noreferrer">MDN: extends</a>：派生类 super() 规则。</li>
         </ul>
       </div>
     </section>
@@ -54,30 +55,57 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ====== 1. 抽象基类：new.target 阻止直接实例化 ======
+      // MDN：new.target 在构造器内指向被 new 直接调用的函数/class
       class Animal {
         constructor() {
-          console.log(new.target === Animal);
+          console.log("Animal ctor, new.target === Animal:", new.target === Animal);
           if (new.target === Animal) {
-            throw new Error("Animal 类是抽象基类，不能被实例化");
+            throw new Error("Animal 是抽象基类，不能被直接实例化");
           }
+        }
 
-          console.log("this>>>", this);//Dog {}
+        speak() {
+          throw new Error("子类必须实现 speak()");
         }
       }
 
-      // const a1 = new Animal();
+      try {
+        new Animal();
+      } catch (err) {
+        console.log("直接 new Animal:", err.message);
+      }
 
+      // ====== 2. 子类实例化：new.target 指向子类 ======
       class Dog extends Animal {
-        //子类如果有显式声明一个constructor函数，在必须在该函数内部调用super()，就是调用父类构造函数
         constructor(name) {
-          super();
+          super(); // 进入 Animal 构造器时 new.target 仍是 Dog
           this.name = name;
+        }
+
+        speak() {
+          return `${this.name} says woof`;
         }
       }
 
       const d1 = new Dog("旺财");
-      console.log("d1.name", d1.name);
+      console.log("d1.speak():", d1.speak());
 
+      // ====== 3. 基类默认方法抛错：运行时“抽象方法”约束 ======
+      class Cat extends Animal {
+        constructor(name) {
+          super();
+          this.name = name;
+        }
+        // 未实现 speak()
+      }
+
+      const cat = new Cat("Mimi");
+      try {
+        cat.speak();
+      } catch (err) {
+        console.log("未实现 speak:", err.message);
+      }
     </script>
     <!-- SCRIPT_END -->
 
@@ -99,5 +127,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>
