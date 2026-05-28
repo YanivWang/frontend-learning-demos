@@ -2,9 +2,10 @@
   分类: javascript / 01-基础 / 正则
   主题: 用正则识别 URL 与图片格式
   要点:
-    - URL 正则需兼顾协议、域名、路径、query
-    - 扩展名匹配可用 i 标志或 toUpperCase
-    - 贪婪量词 + 长 query 可能 catastrophic backtracking
+    - URL 正则可校验基础格式；复杂 URL 优先 new URL() 解析
+    - 图片扩展名用 i 标志或 (?i) 等价写法，后缀前加 (?=\?|$) 限定边界
+    - 贪婪 .* 在长 query 上可能大量回溯；改用 [^?#]+ 或非贪婪 .*?
+    - toUpperCase + 大写扩展名是可行技巧，但 i 标志更直观
   面试:
     - 如何写 URL 校验正则？
     - 贪婪量词有什么风险？
@@ -42,9 +43,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/URL" target="_blank" rel="noopener">MDN Web Docs：URL</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions" target="_blank" rel="noopener">MDN Web Docs：Regular expressions guide</a></li>
-          <li><a href="https://javascript.info/regexp-greedy-and-lazy" target="_blank" rel="noopener">JavaScript.info：Greedy and lazy quantifiers</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/URL" target="_blank" rel="noopener">MDN: URL</a>：标准 URL 解析与 pathname/search 拆分。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions" target="_blank" rel="noopener">MDN: Regular expressions guide</a>：量词与字符类。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/lastIndex" target="_blank" rel="noopener">MDN: RegExp.lastIndex</a>：全局匹配游标。</li>
         </ul>
       </div>
     </section>
@@ -52,22 +53,61 @@
 
     <!-- SCRIPT_START -->
     <script>
-      let src = "https://preview.redd.it/auxxzvikl0p31.jpg?width=640&crop=smart&auto=webp&s=dfd4acbecca8da105f7adcaa4a3f540454aa2d17";
+      const src =
+        "https://preview.redd.it/auxxzvikl0p31.jpg?width=640&crop=smart&auto=webp&s=dfd4acbecca8da105f7adcaa4a3f540454aa2d17";
 
-      // URL 正则：协议 + 域名（至少包含一个 .）+ 可选路径 / 查询参数
-      let regUrl = /(http|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/;
-      if (regUrl.test(src)){
-        console.log("是链接");
+      // ============ 1. 基础 URL 格式正则 ============
+      // 协议 + 主机（至少一个 .）+ 可选路径/query；仅作「看起来像 URL」的提示
+      const regUrl =
+        /https?:\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-.@?^=%&:/~+#]*[\w\-@?^=%&/~+#])?/;
+      console.log("URL 正则 test:", regUrl.test(src)); // true
+
+      // ============ 2. 图片扩展名：i 标志 vs toUpperCase 技巧 ============
+      // 推荐：i 标志 + 后缀边界 (?=\?|$)，避免把 query 里的 .webp 误判为扩展名
+      const regImgModern = /\.(bmp|jpe?g|png|gif|webp)(?=\?|$)/i;
+      console.log("现代写法 i 标志:", regImgModern.test(src)); // true
+
+      // 旧技巧：整串 toUpperCase 后用大写扩展名 + 贪婪 .*（见 §3 风险）
+      const regImgLegacy = /.*(\.(BMP|JPG|JPEG|PNG|GIF)).*/;
+      console.log(
+        "legacy toUpperCase 写法:",
+        regUrl.test(src) && regImgLegacy.test(src.toUpperCase())
+      ); // true
+
+      // ============ 3. 贪婪量词回溯风险 ============
+      // 贪婪 .* 会尽量多吃字符再回退；长 query 时性能差
+      const greedySuffix = /.*\.jpg/;
+      const safeSuffix = /[^?#]+\.jpg(?=\?|$)/;
+      const longQuery = src + "&x=".repeat(200);
+      console.time("贪婪 .* 后缀");
+      greedySuffix.test(longQuery);
+      console.timeEnd("贪婪 .* 后缀");
+      console.time("安全 [^?#]+ 后缀");
+      safeSuffix.test(longQuery);
+      console.timeEnd("安全 [^?#]+ 后缀");
+      console.log("两种写法结果一致:", greedySuffix.test(src), safeSuffix.test(src)); // true true
+
+      // ============ 4. URL API：生产环境优先 ============
+      // MDN：new URL() 能正确拆分 protocol、hostname、pathname、search
+      try {
+        const parsed = new URL(src);
+        console.log("URL API protocol:", parsed.protocol); // "https:"
+        console.log("URL API pathname:", parsed.pathname); // "/auxxzvikl0p31.jpg"
+        console.log("URL API search 长度:", parsed.search.length); // query 字符串
+        console.log(
+          "pathname 匹配图片后缀:",
+          regImgModern.test(parsed.pathname)
+        ); // true（比整串正则更稳）
+      } catch (err) {
+        console.log("URL 解析失败:", err.name, "-", err.message);
       }
 
-      // 把后缀转大写后用大写字母匹配，避免分别写 jpg|JPG|Jpg
-      let regImg = /.*(\.(BMP|JPG|JPEG|PNG|GIF)).*/;
-      if (regUrl.test(src) && regImg.test(src.toUpperCase())) {
-        console.log("成功!");
-      } else {
-        console.log("失败!");
-      }
-
+      // ============ 5. 正则局限：不能替代安全校验 ============
+      const fakeUrl = "https://evil.example/fake.jpg.exe?redirect=ok";
+      console.log("假图片 URL 仍匹配后缀正则:", regImgModern.test(fakeUrl)); // false（.exe 在后）
+      console.log(
+        "仅靠正则无法判断资源可信；需白名单域名 + 服务端校验"
+      );
     </script>
     <!-- SCRIPT_END -->
 
@@ -91,5 +131,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

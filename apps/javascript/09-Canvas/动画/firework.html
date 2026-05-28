@@ -17,8 +17,8 @@
 <!doctype html>
 <html lang="zh-CN">
   <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width"/>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Canvas 烟花动画</title>
     <style>
       /* basic styles for black background and crosshair cursor */
@@ -46,7 +46,7 @@
           <li>本例没有用 <code>clearRect()</code> 立刻清屏，而是先把 <code>globalCompositeOperation</code> 设为 <code>destination-out</code>，再用半透明矩形逐步擦除旧像素，所以轨迹会残留几帧后淡出。</li>
           <li><code>lighter</code> 合成模式会把重叠像素的颜色相加，适合烟花、光点、粒子发光这类视觉效果；绘制普通 UI 或图表时通常保持默认的 <code>source-over</code>，避免颜色被意外叠亮。</li>
           <li>烟花对象负责从底部飞向目标点，抵达后创建粒子；粒子对象保存位置、历史坐标、角度、速度、摩擦、重力和透明度，每帧先更新状态再绘制，透明度衰减到阈值后从数组移除。</li>
-          <li>Canvas 动画的常见风险是粒子过多、画布过大、窗口 resize 后尺寸不匹配，以及高刷新率屏幕上如果不用时间差计算会运动变快；项目中通常要限制发射频率、控制粒子上限，并在销毁页面时取消动画。</li>
+          <li>Canvas 动画的常见风险是粒子过多、画布过大、窗口 resize 后尺寸不匹配，以及高刷新率屏幕上如果不用时间差计算会运动变快；项目中通常要限制发射频率、控制粒子上限，并在销毁页面时取消动画。<strong>高 DPI 缩放、窗口 resize 与后台标签页 rAF 暂停</strong>本页未完整实现，<strong>需人工在浏览器验证</strong>（缩放窗口、切换标签页、DevTools 节流观察）。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
@@ -57,9 +57,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial" target="_blank" rel="noreferrer">MDN Canvas tutorial</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame" target="_blank" rel="noreferrer">MDN Window: requestAnimationFrame()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation" target="_blank" rel="noreferrer">MDN CanvasRenderingContext2D: globalCompositeOperation</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame" target="_blank" rel="noreferrer">MDN: requestAnimationFrame()</a>：与重绘同步、回调只执行一次。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation" target="_blank" rel="noreferrer">MDN: globalCompositeOperation</a>：<code>destination-out</code> 保留不重叠区域、<code>lighter</code> 颜色相加。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial" target="_blank" rel="noreferrer">MDN: Canvas tutorial</a>：2D 绘图与合成模式入门。</li>
         </ul>
       </div>
     </section>
@@ -75,7 +75,8 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // ====== 1. requestAnimationFrame 兼容 shim ======
+      // ============ 1. requestAnimationFrame 兼容 shim ============
+      // rAF 回调只执行一次，连续动画须在每帧末尾再次注册（MDN: requestAnimationFrame）
       window.requestAnimFrame = (function () {
         return window.requestAnimationFrame ||
         window.webkitRequestAnimationFrame ||
@@ -85,222 +86,179 @@
         };
       })();
 
-      // ====== 2. 画布尺寸与烟花 / 粒子集合 ======
+      // ============ 2. 画布尺寸与烟花 / 粒子集合 ============
       var canvas = document.getElementById('canvas'),
       ctx = canvas.getContext('2d'),
-      // full screen dimensions
       cw = window.innerWidth,
       ch = window.innerHeight,
-      // firework collection
       fireworks = [],
-      // particle collection
       particles = [],
-      // starting hue
       hue = 120,
-      // when launching fireworks with a click, too many get launched at once without a limiter, one launch per 5 loop ticks
-      limiterTotal = 5,
+      limiterTotal = 5, // 鼠标按住时每 5 帧最多发射 1 枚，防止连点卡顿
       limiterTick = 0,
-      // this will time the auto launches of fireworks, one launch per 80 loop ticks
-      timerTotal = 80,
+      timerTotal = 80, // 自动发射间隔：每 80 帧 1 枚
       timerTick = 0,
       mousedown = false,
-      // mouse x coordinate,
       mx,
-      // mouse y coordinate
-      my;
+      my,
+      bootLogged = false;
 
-      // set canvas dimensions
+      // canvas.width/height 为缓冲区像素，本例等于视口 CSS 像素（未按 devicePixelRatio 缩放）
       canvas.width = cw;
       canvas.height = ch;
 
-      // now we are going to setup our function placeholders for the entire demo
-      // get a random number within a range
       function random(min, max) {
         return Math.random() * (max - min) + min;
       }
 
-      // calculate the distance between two points
-      //sqrt(开平方) and pow(乘方)
       function calculateDistance(p1x, p1y, p2x, p2y) {
         var xDistance = p1x - p2x,
         yDistance = p1y - p2y;
         return Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
       }
 
-      // ====== 3. Firework：从底部飞向目标点，抵达后爆炸 ======
+      // ============ 3. Firework：从底部飞向目标点，抵达后爆炸 ============
       function Firework(sx, sy, tx, ty) {
-        // actual coordinates
         this.x = sx;
         this.y = sy;
-        // starting coordinates
         this.sx = sx;
         this.sy = sy;
-        // target coordinates
         this.tx = tx;
         this.ty = ty;
-        // distance from starting point to target
         this.distanceToTarget = calculateDistance(sx, sy, tx, ty);
         this.distanceTraveled = 0;
-        // track the past coordinates of each firework to create a trail effect, increase the coordinate count to create more prominent trails
+        // 历史坐标队列：每帧 unshift 当前点、pop 最旧点，draw 时连尾迹线
         this.coordinates = [];
         this.coordinateCount = 3;
-        // populate initial coordinate collection with the current coordinates
-        while (this.coordinateCount--) {//0 null undefined ""
+        while (this.coordinateCount--) {
           this.coordinates.push([this.x, this.y]);
         }
         this.angle = Math.atan2(ty - sy, tx - sx);
         this.speed = 2;
-        this.acceleration = 1.05;//增加某物的速度和速率
+        this.acceleration = 1.05;
         this.brightness = random(50, 70);
-        // circle target indicator radius
         this.targetRadius = 1;
       }
 
-      // update firework
-      //使用 prototype 能动态的为函数添加属性和方法
       Firework.prototype.update = function (index) {
-        // remove last item in coordinates array
         this.coordinates.pop();
-        // add current coordinates to the start of the array
         this.coordinates.unshift([this.x, this.y]);
 
-        // cycle the circle target indicator radius
         if (this.targetRadius < 8) {
           this.targetRadius += 0.3;
         } else {
           this.targetRadius = 1;
         }
 
-        // speed up the firework
         this.speed *= this.acceleration;
 
-        // get the current velocities based on angle and speed
         var vx = Math.cos(this.angle) * this.speed,
         vy = Math.sin(this.angle) * this.speed;
-        // how far will the firework have traveled with velocities applied?
         this.distanceTraveled = calculateDistance(this.sx, this.sy, this.x + vx, this.y + vy);
 
-        // if the distance traveled, including velocities, is greater than the initial distance to the target, then the target has been reached
+        // 累计位移超过初始距离即视为抵达目标，生成粒子并移除烟花
         if (this.distanceTraveled >= this.distanceToTarget) {
           createParticles(this.tx, this.ty);
-          // remove the firework, use the index passed into the update function to determine which to remove
           fireworks.splice(index, 1);
         } else {
-          // target not reached, keep traveling
           this.x += vx;
           this.y += vy;
         }
       };
 
-      // draw firework
       Firework.prototype.draw = function () {
         ctx.beginPath();
-        // move to the last tracked coordinate in the set, then draw a line to the current x and y
         ctx.moveTo(this.coordinates[this.coordinates.length - 1][0], this.coordinates[this.coordinates.length - 1][1]);
         ctx.lineTo(this.x, this.y);
         ctx.strokeStyle = 'hsl(' + hue + ', 100%, ' + this.brightness + '%)';
         ctx.stroke();
 
         ctx.beginPath();
-        // draw the target for this firework with a pulsing circle
         ctx.arc(this.tx, this.ty, this.targetRadius, 0, Math.PI * 2);
         ctx.stroke();
       };
 
-      // ====== 4. Particle：爆炸粒子，带摩擦、重力与透明度衰减 ======
+      // ============ 4. Particle：爆炸粒子，摩擦 / 重力 / 透明度衰减 ============
       function Particle(x, y) {
         this.x = x;
         this.y = y;
-        // track the past coordinates of each particle to create a trail effect, increase the coordinate count to create more prominent trails
         this.coordinates = [];
         this.coordinateCount = 5;
         while (this.coordinateCount--) {
           this.coordinates.push([this.x, this.y]);
         }
-        // set a random angle in all possible directions, in radians
         this.angle = random(0, Math.PI * 2);
         this.speed = random(1, 10);
-        // friction will slow the particle down
-        this.friction = 0.95;
-        // gravity will be applied and pull the particle down
+        this.friction = 0.95; // 每帧 speed *= friction，模拟空气阻力
         this.gravity = 1;
-        // set the hue to a random number +-20 of the overall hue variable
         this.hue = random(hue - 20, hue + 20);
         this.brightness = random(50, 80);
         this.alpha = 1;
-        // set how fast the particle fades out
-        this.decay = random(0.015, 0.03);
+        this.decay = random(0.015, 0.03); // 每帧 alpha 递减，低于阈值后 splice 移除
       }
 
-      // update particle
       Particle.prototype.update = function (index) {
-        // remove last item in coordinates array
         this.coordinates.pop();
-        // add current coordinates to the start of the array
         this.coordinates.unshift([this.x, this.y]);
-        // slow down the particle
         this.speed *= this.friction;
-        // apply velocity
         this.x += Math.cos(this.angle) * this.speed;
         this.y += Math.sin(this.angle) * this.speed + this.gravity;
-        // fade out the particle
         this.alpha -= this.decay;
 
-        // remove the particle once the alpha is low enough, based on the passed in index
         if (this.alpha <= this.decay) {
           particles.splice(index, 1);
         }
       };
 
-      // draw particle
       Particle.prototype.draw = function () {
         ctx.beginPath();
-        // move to the last tracked coordinates in the set, then draw a line to the current x and y
         ctx.moveTo(this.coordinates[this.coordinates.length - 1][0], this.coordinates[this.coordinates.length - 1][1]);
         ctx.lineTo(this.x, this.y);
         ctx.strokeStyle = 'hsla(' + this.hue + ', 100%, ' + this.brightness + '%, ' + this.alpha + ')';
         ctx.stroke();
       };
 
-      // create particle group/explosion
       function createParticles(x, y) {
-        // increase the particle count for a bigger explosion, beware of the canvas performance hit with the increased particles though
         var particleCount = 30;
         while (particleCount--) {
           particles.push(new Particle(x, y));
         }
       }
 
-      // ====== 5. 主循环：destination-out 拖尾 + lighter 粒子叠加 ======
+      // ============ 5. 主循环：destination-out 拖尾 + lighter 粒子叠加 ============
       function loop() {
         requestAnimFrame(loop);
 
+        if (!bootLogged) {
+          console.log("Canvas 缓冲区:", cw, "x", ch, "devicePixelRatio:", window.devicePixelRatio);
+          console.log("rAF 每帧回调一次，loop 末尾再次 requestAnimFrame 形成连续动画");
+          bootLogged = true;
+        }
+
         hue += 0.5;
 
-        // destination-out + 半透明填充：逐步擦除旧像素形成拖尾（非 clearRect 全清）
+        // destination-out：保留与半透明矩形不重叠的旧像素 → 逐步淡出拖尾（MDN: globalCompositeOperation）
         ctx.globalCompositeOperation = 'destination-out';
         ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
         ctx.fillRect(0, 0, cw, ch);
+        // lighter：重叠处颜色相加，适合光点/烟花（默认 source-over 不会叠亮）
         ctx.globalCompositeOperation = 'lighter';
 
-        // loop over each firework, draw it, update it
         var i = fireworks.length;
         while (i--) {
           fireworks[i].draw();
           fireworks[i].update(i);
         }
 
-        // loop over each particle, draw it, update it
-        var i = particles.length;
+        i = particles.length;
         while (i--) {
           particles[i].draw();
           particles[i].update(i);
         }
 
-        // launch fireworks automatically to random coordinates, when the mouse isn't down
+        // 未按住鼠标时，定时从底部中央自动发射
         if (timerTick >= timerTotal) {
           if (!mousedown) {
-            // start the firework at the bottom middle of the screen, then set the random target coordinates, the random y coordinates will be set within the range of the top half of the screen
             fireworks.push(new Firework(cw / 2, ch, random(0, cw), random(0, ch / 2)));
             timerTick = 0;
           }
@@ -308,10 +266,9 @@
           timerTick++;
         }
 
-        // limit the rate at which fireworks get launched when mouse is down
+        // 按住鼠标时按 limiterTick 限流发射
         if (limiterTick >= limiterTotal) {
           if (mousedown) {
-            // start the firework at the bottom middle of the screen, then set the current mouse coordinates as the target
             fireworks.push(new Firework(cw / 2, ch, mx, my));
             limiterTick = 0;
           }
@@ -320,14 +277,13 @@
         }
       }
 
-      // ====== 6. 鼠标交互：按住发射 + limiterTick 限流 ======
+      // ============ 6. 鼠标交互：坐标映射 + 按住发射 ============
       canvas.addEventListener('mousemove', function (e) {
         var rect = canvas.getBoundingClientRect();
         mx = e.clientX - rect.left;
         my = e.clientY - rect.top;
       });
 
-      // toggle mousedown state and prevent canvas from being selected
       canvas.addEventListener('mousedown', function (e) {
         e.preventDefault();
         mousedown = true;
@@ -339,7 +295,6 @@
       });
 
       window.onload = loop;
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -348,6 +303,8 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="../%E5%9F%BA%E7%A1%80/index.html">相关 · 基础/index</a>
+        <a href="../../08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E4%BD%9C%E7%94%A8%E5%9F%9F/06-var%E4%B8%8Efunction%E5%90%8C%E5%90%8D%E6%8F%90%E5%8D%87.html">相关 · var与function同名提升</a>
         <a href="../../08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E4%BD%9C%E7%94%A8%E5%9F%9F/06-var%E4%B8%8Efunction%E5%90%8C%E5%90%8D%E6%8F%90%E5%8D%87.html">← var与function同名提升</a>
         <a href="../%E5%9F%BA%E7%A1%80/index.html">index →</a>
       </nav>
@@ -361,8 +318,6 @@
       </script>
     </footer>
     <!-- NAV_END -->
-
-  
-</body>
+  </body>
 </html>
 

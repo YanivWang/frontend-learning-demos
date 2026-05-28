@@ -82,7 +82,7 @@
         log.textContent = lines.join("\n");
       }
 
-      // ====== 1. 页面加载时的 Navigation Timing ======
+      // ============ 1. 页面加载时的 Navigation Timing ============
       const nav = performance.getEntriesByType("navigation")[0];
       if (nav) {
         append("DOMContentLoaded: " + Math.round(nav.domContentLoadedEventEnd) + " ms");
@@ -91,7 +91,7 @@
         append("Navigation Timing 不可用（等待点击「读取 Navigation Timing」）");
       }
 
-      // ====== 2. mark / measure ======
+      // ============ 2. mark / measure ============
       document.getElementById("run").onclick = async () => {
         performance.clearMarks("task-start");
         performance.clearMarks("task-end");
@@ -108,7 +108,7 @@
         append("performance.now 差值: " + Math.round(performance.now() - t0) + " ms");
       };
 
-      // ====== 3. performance.now vs Date.now ======
+      // ============ 3. performance.now vs Date.now ============
       document.getElementById("compareBtn").onclick = () => {
         const p0 = performance.now();
         const d0 = Date.now();
@@ -119,7 +119,7 @@
         append("timeOrigin: " + performance.timeOrigin);
       };
 
-      // ====== 4. Navigation Timing 详情 ======
+      // ============ 4. Navigation Timing 详情 ============
       document.getElementById("navBtn").onclick = () => {
         const entry = performance.getEntriesByType("navigation")[0];
         if (!entry) {
@@ -131,6 +131,12 @@
         append("domComplete: " + Math.round(entry.domComplete) + " ms");
         append("transferSize: " + entry.transferSize + " bytes");
       };
+
+      // ============ 5. 旧 performance.timing 已不推荐（MDN 历史兼容）============
+      // 新代码应读 PerformanceNavigationTiming；timing 字段仍可能存在但勿用于新埋点
+      if ("timing" in performance) {
+        console.log("performance.timing 仍存在（历史 API），新代码用 getEntriesByType('navigation')");
+      }
     </script>
     <!-- SCRIPT_END -->
 
@@ -139,6 +145,8 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+        <a href="./requestAnimation.html">相关 · requestAnimation</a>
+        <a href="./%E6%B5%8F%E8%A7%88%E5%99%A8%E6%B8%B2%E6%9F%93%E4%B8%8E%E6%80%A7%E8%83%BD.html">相关 · 浏览器渲染与性能</a>
         <a href="./Notification.html">← Notification</a>
         <a href="./requestAnimation.html">requestAnimation →</a>
       </nav>

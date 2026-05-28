@@ -2,6 +2,7 @@
   分类: javascript / 07-进阶
   主题: 无障碍 a11y：语义化、焦点与 ARIA
   难度: 进阶
+  相关: 垃圾回收, 安全/XSS与CSRF
   要点:
     - 原生语义控件自带角色、键盘行为和可访问状态，优先于 div + ARIA 模拟
     - ARIA 只改变辅助技术理解，不会自动补齐点击、键盘和焦点逻辑
@@ -33,7 +34,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>无障碍 a11y：语义化、焦点与 ARIA</h1>
-      <p class="hint">用 Tab 聚焦下方按钮，再按 Enter 或 Space 触发展开；观察焦点样式、aria-expanded 和动态状态文本。</p>
+      <p class="hint">请阅读本复习区，并在下方演示区用 Tab 聚焦按钮、Enter/Space 切换展开；观察焦点样式、aria-expanded 与 aria-live 状态文本。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -75,12 +76,17 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // ====== 1. 获取演示元素 ======
+      // ============ 1. 获取演示元素 ============
       const btn = document.getElementById("toggle");
       const panel = document.getElementById("panel");
       const status = document.getElementById("status");
 
-      // ====== 2. 切换展开/折叠：同步 aria-expanded、hidden、按钮文案 ======
+      // 原生 button 自带 role、Tab 聚焦、Enter/Space 触发；div role=button 需手动补齐
+      console.log("原生 button.tagName:", btn.tagName); // BUTTON
+      console.log("原生 button 默认 type:", btn.type); // button（非 submit）
+      console.log("需人工在浏览器验证：Tab 顺序、focus-visible、读屏播报");
+
+      // ============ 2. 切换展开/折叠：同步 aria-expanded、hidden、按钮文案 ============
       btn.addEventListener("click", () => {
         const open = btn.getAttribute("aria-expanded") === "true";
         const nextOpen = !open;
@@ -91,6 +97,7 @@
         status.textContent = nextOpen ? "已展开" : "已折叠";
 
         console.log("aria-expanded:", nextOpen, "| panel.hidden:", panel.hidden);
+        console.log("aria-controls 指向:", btn.getAttribute("aria-controls")); // panel
       });
     </script>
     <!-- SCRIPT_END -->
@@ -100,6 +107,8 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+        <a href="./%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6.html">相关 · 垃圾回收</a>
+        <a href="./%E5%AE%89%E5%85%A8/XSS%E4%B8%8ECSRF.html">相关 · 安全/XSS与CSRF</a>
         <a href="./%E6%B7%B1%E6%8B%B7%E8%B4%9D.html">← 深拷贝</a>
         <a href="./%E5%AE%89%E5%85%A8/XSS%E4%B8%8ECSRF.html">XSS与CSRF →</a>
       </nav>

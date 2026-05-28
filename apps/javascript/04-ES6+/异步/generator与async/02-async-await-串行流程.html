@@ -54,14 +54,14 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // ====== 1. 封装延时 Promise ======
+      // ============ 1. 封装延时 Promise ============
       function timeout(ms) {
         return new Promise(function (resolve) {
           setTimeout(resolve, ms);
         });
       }
 
-      // ====== 2. 多个 await 默认串行：后一步等前一步完成 ======
+      // ============ 2. 多个 await 默认串行：后一步等前一步完成 ============
       async function serialFlow() {
         console.log("串行 start");
         await timeout(800);
@@ -72,9 +72,11 @@
         return "done";
       }
 
-      // ====== 3. async 函数调用立即返回 Promise，函数体执行到第一个 await ======
+      // ============ 3. async 函数调用立即返回 Promise，函数体执行到第一个 await ============
       console.log("调用 serialFlow 前（同步）");
-      serialFlow().then(function (result) {
+      const serialPromise = serialFlow();
+      console.log("serialFlow 返回值是 Promise:", serialPromise instanceof Promise); // true
+      serialPromise.then(function (result) {
         console.log("serialFlow then:", result); // "done"
       });
       console.log("调用 serialFlow 后（同步，不等待 await）");
@@ -99,5 +101,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

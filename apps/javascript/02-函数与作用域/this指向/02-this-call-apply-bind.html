@@ -59,7 +59,7 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // ====== 1. 隐式绑定 vs 脱离 ======
+      // ============ 1. 隐式绑定 vs 脱离 ============
       var a = {
         user: "wc",
         fn: function (num1, num2) {
@@ -74,19 +74,19 @@
       var b = a.fn;
       b(); // 脱离：非严格模式 this → window，this.user 为 undefined
 
-      // ====== 2. call：立即执行 + 逐个传参 ======
+      // ============ 2. call：立即执行 + 逐个传参 ============
       b.call(a); // 显式绑定 this 为 a
       b.call(a, 10, 20); // 显式绑定 + 传参
 
-      // ====== 3. apply：立即执行 + 数组传参 ======
+      // ============ 3. apply：立即执行 + 数组传参 ============
       b.apply(a, [100, 200]); // 第二参数必须是 array-like
       // apply 只取前两个参数，多余实参被忽略
       b.apply(a, [100, 200], 400, "wc"); // 仍只传 [100,200]
 
-      // ====== 4. null/undefined 作为 thisArg（非严格模式替换为全局对象）======
+      // ============ 4. null/undefined 作为 thisArg（非严格模式替换为全局对象）============
       b.apply(null); // this → window（非严格模式）
 
-      // ====== 5. bind：返回新函数，延迟执行 ======
+      // ============ 5. bind：返回新函数，延迟执行 ============
       var bound = b.bind(a, 111); // 预置第一个参数
       console.log("bind 返回类型:", typeof bound); // "function"
       bound(222); // this 仍是 a，实参 111+222
@@ -96,16 +96,23 @@
       bound.call(other, 333); // this 仍是 a，不是 other
       console.log("bind+call 后 this.user:", bound.call(other).user === "wc" ? "wc" : "changed");
 
-      // ====== 6. 严格模式下 null/undefined 不替换 ======
+      // ============ 6. 严格模式下 null/undefined 不替换 ============
       function strictFn() {
         "use strict";
         console.log("严格模式 apply(null) this:", this); // null
       }
       strictFn.apply(null);
 
-      // ====== 7. 现代替代：展开语法 ======
+      // ============ 7. 现代替代：展开语法 ============
       var nums = [3, 4];
       console.log("展开语法:", b.call(a, ...nums)); // 等价于 b.call(a, 3, 4)
+
+      // 清理顶层 var 污染
+      delete window.a;
+      delete window.b;
+      delete window.bound;
+      delete window.other;
+      delete window.nums;
     </script>
     <!-- SCRIPT_END -->
 
@@ -114,6 +121,9 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="./01-this-%E5%8A%A8%E6%80%81%E7%BB%91%E5%AE%9A.html">相关 · this-动态绑定</a>
+        <a href="../../08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/01-call-apply.html">相关 · 08-面试题/手写/01-call-apply</a>
+        <a href="../../08-%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/02-bind.html">相关 · 02-bind</a>
         <a href="./01-this-%E5%8A%A8%E6%80%81%E7%BB%91%E5%AE%9A.html">← this-动态绑定</a>
         <a href="./03-this-new%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0.html">this-new构造函数 →</a>
       </nav>

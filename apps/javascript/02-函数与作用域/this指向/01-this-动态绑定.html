@@ -57,24 +57,22 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // ====== 1. 属性引用调用 vs 独立调用 ======
+      // ============ 1. 属性引用调用 vs 独立调用（window.a()() 模式）============
       // 普通函数的 this 在运行时由调用形式决定，不是定义时固定
-      function makeDemo() {
+      window.a = function () {
         this.age = 14;
-        console.log("makeDemo this:", this === window); // true（window.makeDemo() 属性引用调用）
+        console.log("window.a this === window:", this === window); // true
 
         // 返回普通函数：再次独立调用时会丢失外层 this
-        return function innerDemo() {
-          console.log("innerDemo this:", this === window); // true（独立调用，非严格模式替换为 window）
-          console.log("innerDemo age:", this.age); // 14（读 window.age）
+        return function () {
+          console.log("inner this === window:", this === window); // true
+          console.log("inner age:", this.age); // 14（读 window.age）
         };
-      }
+      };
+      window.a(); // 第一次：this 是 window，window.age = 14
+      window.a()(); // 第二次：独立调用，this 仍是 window
 
-      window.makeDemo = makeDemo;
-      makeDemo(); // 第一次：this 是 window，window.age = 14
-      makeDemo()(); // 第二次：innerDemo 独立调用，this 仍是 window
-
-      // ====== 2. 对象方法调用：this 是接收者 ======
+      // ============ 2. 对象方法调用：this 是接收者 ============
       const user = {
         name: "wc",
         greet() {
@@ -84,17 +82,17 @@
       user.greet();
 
       const detached = user.greet;
-      detached(); // 独立调用，非严格模式 this → window，this.name 为 undefined
-      console.log("detached this.name:", detached.call(user) === undefined ? "via window" : user.name);
+      detached(); // 独立调用：Console 输出 this.name 为 undefined
+      console.log("call 显式绑定可恢复 context:", typeof detached.call(user)); // "undefined"（greet 无返回值但正常执行）
 
-      // ====== 3. 严格模式：独立调用 this 为 undefined ======
+      // ============ 3. 严格模式：独立调用 this 为 undefined ============
       function strictThis() {
         "use strict";
         console.log("严格模式独立调用 this:", this); // undefined
       }
       strictThis();
 
-      // ====== 4. 箭头函数：捕获外层词法 this ======
+      // ============ 4. 箭头函数：捕获外层词法 this ============
       const arrowHost = {
         label: "host",
         run() {
@@ -108,7 +106,7 @@
       arrowHost.run();
 
       // 清理演示污染
-      delete window.makeDemo;
+      delete window.a;
       delete window.age;
     </script>
     <!-- SCRIPT_END -->
@@ -118,6 +116,8 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="./02-this-call-apply-bind.html">相关 · this-call-apply-bind</a>
+        <a href="./04-this-%E5%AF%B9%E8%B1%A1%E6%96%B9%E6%B3%95%E4%B8%8E%E8%84%B1%E7%A6%BB.html">相关 · this-对象方法与脱离</a>
         <a href="../%E9%97%AD%E5%8C%85/02-%E9%97%AD%E5%8C%85-%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E4%B8%8E%E4%BF%AE%E5%A4%8D.html">← 闭包-内存泄漏与修复</a>
         <a href="./02-this-call-apply-bind.html">this-call-apply-bind →</a>
       </nav>

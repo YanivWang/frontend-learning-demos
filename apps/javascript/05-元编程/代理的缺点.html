@@ -60,7 +60,7 @@
     <script>
       const target = new Date();
 
-      // ====== 1. 空 handler：trap 默认转发，但内建方法仍失败 ======
+      // ============ 1. 空 handler：trap 默认转发，但内建方法仍失败 ============
       const proxy = new Proxy(target, {});
       console.log("proxy instanceof Date:", proxy instanceof Date); // true
 
@@ -69,14 +69,14 @@
       try {
         proxy.getDate();
       } catch (err) {
-        // TypeError: proxy.getDate is not a function 或 incompatible receiver
+        // TypeError: 'getDate' called on an object that is not a valid instance of Date
         console.log("空 handler 代理调用 getDate 报错:", err.name, "-", err.message);
       }
 
-      // ====== 2. 对象身份：proxy !== target ======
+      // ============ 2. 对象身份：proxy !== target ============
       console.log("proxy === target:", proxy === target); // false
 
-      // ====== 3. 修复：get trap 中对函数 bind 到原对象 ======
+      // ============ 3. 修复：get trap 中对函数 bind 到原对象 ============
       const proxyFixed = new Proxy(target, {
         get(obj, prop) {
           const value = Reflect.get(obj, prop, obj);
@@ -89,15 +89,25 @@
 
       console.log("修复后 proxyFixed.getDate():", proxyFixed.getDate());
 
-      // ====== 4. bind 修复的副作用：receiver 不再参与 ======
+      // ============ 4. bind 修复的副作用：receiver 不再参与 ============
       // 若方法依赖继承链上的 this 或二次包装，bind 会破坏语义
       console.log("bind 后方法 this 固定为原对象，不适合通用透明代理");
 
-      // ====== 5. 私有字段示例（注释，需 ES2022+ 环境）======
-      // class Secret { #key = 42; read() { return this.#key; } }
-      // const inst = new Secret();
-      // const p = new Proxy(inst, {});
-      // p.read(); // TypeError: Cannot read private member
+      // ============ 5. 私有字段：代理后 this 不匹配导致读取失败 ============
+      class Secret {
+        #key = 42;
+        read() {
+          return this.#key;
+        }
+      }
+      const inst = new Secret();
+      console.log("原实例 read():", inst.read()); // 42
+      const privateProxy = new Proxy(inst, {});
+      try {
+        privateProxy.read();
+      } catch (err) {
+        console.log("私有字段方法经代理调用:", err.name, "-", err.message);
+      }
     </script>
     <!-- SCRIPT_END -->
 
@@ -108,7 +118,7 @@
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
         <a href="./proxy.html">相关 · proxy</a>
         <a href="./defineProperty.html">相关 · defineProperty</a>
-        <a href="./proxy.html">← proxy</a>
+        <a href="../04-ES6%2B/ES6%E6%A8%A1%E5%9D%97/index.html">← index</a>
         <a href="./defineProperty.html">defineProperty →</a>
       </nav>
       <script>

@@ -82,13 +82,13 @@
         output.textContent = typeof value === "string" ? value : JSON.stringify(value, null, 2);
       }
 
-      // ====== 0. 环境信息 ======
+      // ============ 0. 环境信息 ============
       document.getElementById("env-banner").textContent =
         "protocol=" + location.protocol +
         " | origin=" + location.origin +
         " | file:// 下 fetch 跨域仍受同源策略约束；CORS 细节需 DevTools Network 验证";
 
-      // ====== 1. 成功路径：检查 response.ok ======
+      // ============ 1. 成功路径：检查 response.ok ============
       async function fetchPost() {
         show("加载中…");
         try {
@@ -108,7 +108,7 @@
         }
       }
 
-      // ====== 2. HTTP 错误：fetch 不会 reject ======
+      // ============ 2. HTTP 错误：fetch 不会 reject ============
       async function fetch404() {
         show("加载中…");
         try {
@@ -123,7 +123,7 @@
         }
       }
 
-      // ====== 3. 本地 fallback ======
+      // ============ 3. 本地 fallback ============
       function showFallback() {
         show({
           userId: 1,
@@ -133,7 +133,7 @@
         });
       }
 
-      // ====== 4. no-cors：opaque 响应不可读 ======
+      // ============ 4. no-cors：opaque 响应不可读 ============
       async function demoNoCors() {
         try {
           const response = await fetch("https://example.com", { mode: "no-cors" });
@@ -153,6 +153,12 @@
       document.getElementById("httpErrBtn").addEventListener("click", fetch404);
       document.getElementById("fallbackBtn").addEventListener("click", showFallback);
       document.getElementById("nocorsBtn").addEventListener("click", demoNoCors);
+
+      // ============ 5. CORS 预检触发条件（Console 说明，无需真实 OPTIONS）============
+      // 简单请求：GET/HEAD/POST + 限定 Content-Type + 无自定义头 → 直接跨域
+      // 非简单：PUT/DELETE、Authorization、application/json 等 → 浏览器先发 OPTIONS 预检
+      console.log("CORS 预检触发示例：fetch(url, { method:'PUT' }) 或 headers: { Authorization }");
+      console.log("预检失败时 JS 通常只见 TypeError，细节需 DevTools Network 查看 OPTIONS");
     </script>
     <!-- SCRIPT_END -->
 

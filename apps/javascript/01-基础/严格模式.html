@@ -105,10 +105,21 @@
       }
       console.log("[6] 改 arguments[0] 后:", argsDemo(1)); // a 仍为 1
 
-      // ============ 7. 局部严格模式：IIFE 内开启，不影响外部 ============
+      // ============ 7. eval 在严格模式下不向外层泄漏 var ============
       (function () {
         "use strict";
-        console.log("[7] IIFE 内独立调用 this:", function () { return this; }());
+        eval("var innerStrict = 42");
+        try {
+          console.log("[7] innerStrict:", innerStrict);
+        } catch (err) {
+          console.log("[7] 严格 eval 隔离:", err.name, "-", err.message);
+        }
+      })();
+
+      // ============ 8. 局部严格模式：IIFE 内开启，不影响外部 ============
+      (function () {
+        "use strict";
+        console.log("[8] IIFE 内独立调用 this:", function () { return this; }());
       })();
 
     </script>

@@ -104,7 +104,7 @@
         return div;
       }
 
-      // ====== 1. layout thrashing ======
+      // ============ 1. layout thrashing ============
       document.getElementById("badBtn").addEventListener("click", () => {
         list.innerHTML = "";
         const start = performance.now();
@@ -115,7 +115,7 @@
         result.textContent = "逐个插入耗时：" + (performance.now() - start).toFixed(2) + "ms";
       });
 
-      // ====== 2. DocumentFragment 批量插入 ======
+      // ============ 2. DocumentFragment 批量插入 ============
       document.getElementById("goodBtn").addEventListener("click", () => {
         list.innerHTML = "";
         const start = performance.now();
@@ -127,10 +127,16 @@
         result.textContent = "批量插入耗时：" + (performance.now() - start).toFixed(2) + "ms";
       });
 
-      // ====== 3. transform/opacity 动画 ======
+      // ============ 3. transform/opacity 动画 ============
       document.getElementById("animateBtn").addEventListener("click", () => {
         box.classList.toggle("move");
         result.textContent = "transform/opacity 通常走合成阶段，比频繁改 left/top 更适合动画。";
+      });
+
+      // ============ 4. requestAnimationFrame：把 DOM 写入排到下一帧（与 rAF demo 呼应）============
+      // 批量 DOM 更新可包在 rAF 里与绘制节奏对齐，但不能替代减少 layout thrashing
+      requestAnimationFrame(() => {
+        console.log("rAF 回调在下一帧重绘前执行，适合合帧更新 UI");
       });
     </script>
     <!-- SCRIPT_END -->

@@ -50,7 +50,7 @@
         <ul>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get">MDN: getter</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/set">MDN: setter</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty">MDN: Object.defineProperty()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty">MDN: Object.defineProperty()</a>：访问器描述符与互斥规则。</li>
         </ul>
       </div>
     </section>
@@ -58,7 +58,7 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // ====== 1. 访问器属性：fullName 组合 firstName / lastName ======
+      // ============ 1. 访问器属性：fullName 组合 firstName / lastName ============
       const person = {
         firstName: "Yaniv",
         lastName: "Wang",
@@ -79,24 +79,47 @@
         },
       });
 
-      // ====== 2. 读取触发 getter ======
+      // ============ 2. 读取触发 getter ============
       console.log("读取 fullName:", person.fullName); // "Yaniv Wang"
 
-      // ====== 3. 写入触发 setter，再读触发 getter ======
+      // ============ 3. 写入触发 setter，再读触发 getter ============
       person.fullName = "Gao Jie";
       console.log("写入后再读:", person.fullName); // "Gao Jie"
       console.log("内部字段:", person.firstName, person.lastName);
 
-      // ====== 4. 描述符类型：访问器属性没有 value/writable ======
+      // ============ 4. 描述符类型：访问器属性没有 value/writable ============
       const fullNameDesc = Object.getOwnPropertyDescriptor(person, "fullName");
       console.log("访问器描述符键:", Object.keys(fullNameDesc));
       // 预期: ["configurable", "enumerable", "get", "set"]，无 value/writable
 
-      // ====== 5. 反例：get/set 内读写同名属性会递归（仅注释，勿运行）======
-      // Object.defineProperty(bad, "x", {
-      //   get() { return this.x; }, // RangeError: Maximum call stack size exceeded
-      //   set(v) { this.x = v; },
-      // });
+      // ============ 5. 数据/访问器描述符混用会抛 TypeError ============
+      try {
+        Object.defineProperty({}, "conflict", {
+          value: 1,
+          get() {
+            return 2;
+          },
+        });
+      } catch (err) {
+        console.log("value 与 get 混用:", err.name, "-", err.message);
+      }
+
+      // ============ 6. 反例：get/set 内读写同名属性会递归 ============
+      const bad = {};
+      Object.defineProperty(bad, "x", {
+        configurable: true,
+        get() {
+          return this.x; // 再次触发 getter
+        },
+        set(v) {
+          this.x = v; // 再次触发 setter
+        },
+      });
+      try {
+        bad.x = 1;
+      } catch (err) {
+        console.log("同名访问器递归:", err.name, "-", err.message);
+      }
     </script>
     <!-- SCRIPT_END -->
 

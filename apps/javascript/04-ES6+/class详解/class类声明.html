@@ -57,13 +57,13 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // ====== 1. class 声明不提升，有 TDZ ======
+      // ============ 1. class 声明不提升，有 TDZ ============
       // MDN：class 声明像 let 一样有暂时性死区，声明前访问 ReferenceError
       // const p = new Person(); // ReferenceError: Cannot access 'Person' before initialization
 
       class Person {}
 
-      // ====== 2. 静态字段、实例字段、私有字段 ======
+      // ============ 2. 静态字段、实例字段、私有字段 ============
       class WhitePerson {
         // 静态字段：类求值时初始化一次
         static userType = "whitePerson";
@@ -92,7 +92,7 @@
       console.log("static userType:", WhitePerson.userType); // "whitePerson"
       console.log("prototype method shared:", wp.describe === new WhitePerson("B").describe); // true
 
-      // ====== 3. TDZ 演示（声明前访问类名）======
+      // ============ 3. TDZ 演示（声明前访问类名） ============
       {
         try {
           // eslint-disable-next-line no-undef
@@ -105,7 +105,7 @@
         console.log("TDZ 结束后可用:", typeof NotYetDeclared); // "function"
       }
 
-      // ====== 4. 类体默认严格模式：解构方法后 this 为 undefined ======
+      // ============ 4. 类体默认严格模式：解构方法后 this 为 undefined ============
       const looseMethod = wp.describe;
       try {
         looseMethod();
@@ -114,8 +114,13 @@
         console.log("strict this:", err.name, "-", err.message.slice(0, 40) + "...");
       }
 
-      // ====== 5. 不可重复声明（绑定可重新赋值，项目里禁止）======
+      // ============ 5. 不可重复声明；绑定可重新赋值（项目里禁止） ============
       // class WhitePerson {} // SyntaxError: Identifier 'WhitePerson' has already been declared
+      {
+        class TempClass {}
+        TempClass = class {}; // 合法：class 声明创建的是可变绑定
+        console.log("class 绑定可重新赋值:", typeof TempClass); // "function"
+      }
     </script>
     <!-- SCRIPT_END -->
 
@@ -124,6 +129,9 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="./class%E7%B1%BB%E8%A1%A8%E8%BE%BE%E5%BC%8F.html">相关 · class类表达式</a>
+        <a href="./extends.html">相关 · extends</a>
+        <a href="./%E7%B1%BB%E4%B8%8E%E5%8E%9F%E5%9E%8B.html">相关 · 类与原型</a>
         <a href="./class%E7%B1%BB%E8%A1%A8%E8%BE%BE%E5%BC%8F.html">← class类表达式</a>
         <a href="./extends.html">extends →</a>
       </nav>

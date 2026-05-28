@@ -58,25 +58,35 @@
 
     <!-- SCRIPT_START -->
     <script>
-      let str = '{"hotRankNum":3,"index":1,"cgIndex":1,"pId":"67ac6749-4e44-4bb4-a81d-3f473e847948","title":"I feel like I just saw something I shouldn\'t have","type":"linkType","content":"<div><span class=\\"iconfont icon-link\\"></span><a href=\\"https://www.reddit.com\\">www.reddit.com</a></div>","cgName":"jp","upNum":2,"commentNum":1,"timeStamp":1570600685329,"uId":"uid1001","uName":"wangcheng","downNum":0}';
-      console.log("str:" + str);
+      // ============ 1. 含转义字符的 JSON 文本：parse 还原为对象 ============
+      // content 字段内含 HTML 与 \"，源码里用 \\ 表示单个反斜杠
+      const rawJson =
+        '{"hotRankNum":3,"index":1,"cgIndex":1,"pId":"67ac6749-4e44-4bb4-a81d-3f473e847948","title":"I feel like I just saw something I shouldn\'t have","type":"linkType","content":"<div><span class=\\"iconfont icon-link\\"></span><a href=\\"https://www.reddit.com\\">www.reddit.com</a></div>","cgName":"jp","upNum":2,"commentNum":1,"timeStamp":1570600685329,"uId":"uid1001","uName":"wangcheng","downNum":0}';
+      console.log("原始 JSON 文本:", rawJson);
+      const parsed = JSON.parse(rawJson);
+      console.log("JSON.parse 后 content:", parsed.content);
 
-      let a = JSON.parse(str);
-      console.log(a);
+      // ============ 2. JSON.stringify：对象 → 合法 JSON 文本 ============
+      const str2 = JSON.stringify(parsed);
+      console.log("stringify 后:", str2);
 
-      let str2 = JSON.stringify(a);
-      console.log("str2:" + str2);
-
-      // 演示二次转义：当结果还要嵌入到另一段 JSON 字符串时，需要把 \" 再变成 \\\"
-      let str3 = JSON.stringify(a);
-      let reg = /\\"/g;
+      // ============ 3. 二次嵌套：JSON 文本再作为外层字符串值时需额外转义反斜杠 ============
+      // 日志里看到 \\\" 是因为反斜杠本身也被转义了，不是解析后的实际值
+      let str3 = JSON.stringify(parsed);
+      const reg = /\\"/g;
       if (reg.test(str3)) {
         str3 = str3.replace(reg, '\\\\"');
       }
-      console.log("str3:" + str3);
+      console.log("二次转义后:", str3);
 
-      console.log("escape 已废弃示例:", escape("中国 & JSON")); // 历史格式，勿用于新代码
+      // ============ 4. JSON 必须转义的字符演示 ============
+      const mustEscape = { quote: 'He said "hi"', backslash: "a\\b", newline: "a\nb" };
+      console.log("控制字符与引号 stringify:\n", JSON.stringify(mustEscape, null, 2));
+      console.log("parse 还原 newline:", JSON.parse(JSON.stringify(mustEscape)).newline);
 
+      // ============ 5. escape 已废弃：与 JSON / URL 编码不是同一套规则 ============
+      console.log("escape 输出:", escape("中国 & JSON")); // 历史 %uXXXX 格式，勿用于新代码
+      console.log("对比 encodeURIComponent:", encodeURIComponent("中国 & JSON"));
     </script>
     <!-- SCRIPT_END -->
 
@@ -100,5 +110,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

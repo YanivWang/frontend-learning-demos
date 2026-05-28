@@ -12,3 +12,8 @@ export const sayHello = () => {
 };
 
 export let ageVar = 30;
+
+/** 更新导出绑定，供 index.html 验证 ESM live binding */
+export function bumpAge(delta = 1) {
+  ageVar += delta;
+}

@@ -73,7 +73,7 @@
           if (out) out.textContent = lines.join("\n");
         }
 
-        // ====== 1. EventEmitter：on / off / once / emit ======
+        // ============ 1. EventEmitter：on / off / once / emit ============
         class EventEmitter {
           constructor() {
             this.events = Object.create(null);
@@ -111,7 +111,7 @@
           }
         }
 
-        // ====== 2. 验证：on + once + off ======
+        // ============ 2. 验证：on + once + off ============
         const bus = new EventEmitter();
         const result = [];
         function onMessage(value) {
@@ -126,6 +126,21 @@
         bus.off("message", onMessage);
         emitLine("off 后 emit(3): " + bus.emit("message", 3));
         emitLine("result: " + result.join("|")); // 预期: on:1|once:1|on:2
+
+        // ============ 3. 验证：emit 复制监听列表，派发中 off 不影响本轮 ============
+        const snapBus = new EventEmitter();
+        const snapLog = [];
+        snapBus.on("snap", () => snapLog.push("a"));
+        snapBus.on("snap", () => {
+          snapLog.push("b");
+          snapBus.off("snap", snapLogFn);
+        });
+        function snapLogFn() {
+          snapLog.push("c");
+        }
+        snapBus.on("snap", snapLogFn);
+        snapBus.emit("snap");
+        emitLine("emit 快照派发: " + snapLog.join("|")); // 预期: a|b|c
       })();
     </script>
     <!-- SCRIPT_END -->
@@ -135,6 +150,7 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="./05-Promise.html">相关 · Promise</a>
         <a href="./05-Promise.html">← Promise</a>
         <a href="./07-LRU%E7%BC%93%E5%AD%98.html">LRU缓存 →</a>
       </nav>

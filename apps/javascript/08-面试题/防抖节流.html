@@ -74,7 +74,7 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // ====== 1. 防抖：每次触发重置定时器，停止 wait 后才执行 ======
+      // ============ 1. 防抖：每次触发重置定时器，停止 wait 后才执行 ============
       function debounce(fn, wait) {
         let timer = null;
         return function (...args) {
@@ -83,7 +83,7 @@
         };
       }
 
-      // ====== 2. 节流（时间戳版，偏 leading）======
+      // ============ 2. 节流（时间戳版，偏 leading）============
       function throttle(fn, wait) {
         let last = 0;
         return function (...args) {
@@ -95,7 +95,7 @@
         };
       }
 
-      // ====== 3. 节流（定时器版，偏 trailing）======
+      // ============ 3. 节流（定时器版，偏 trailing）============
       function throttleTimer(fn, wait) {
         let timer = null;
         return function (...args) {
@@ -107,7 +107,7 @@
         };
       }
 
-      // ====== 4. 演示：搜索输入防抖 ======
+      // ============ 4. 演示：搜索输入防抖（trailing）============
       const debounceBox = document.getElementById("debounceBox");
       const handleSearch = debounce(function (e) {
         debounceBox.textContent =
@@ -115,12 +115,40 @@
       }, 500);
       document.getElementById("searchInput").addEventListener("input", handleSearch);
 
-      // ====== 5. 演示：鼠标移动节流 ======
+      // ============ 5. 演示：鼠标移动节流（时间戳版 leading）============
       const throttleBox = document.getElementById("throttleBox");
       const handleMove = throttle(function (e) {
         throttleBox.textContent = `(${e.clientX}, ${e.clientY}) at ${Date.now()}`;
       }, 300);
       document.addEventListener("mousemove", handleMove);
+
+      // ============ 6. console 验证：定时器版节流 + leading 防抖 ============
+      let trailingRuns = 0;
+      const trailingFn = throttleTimer(() => {
+        trailingRuns++;
+        console.log("throttleTimer 执行次数:", trailingRuns); // 200ms 内连调 3 次 → 1
+      }, 200);
+      trailingFn();
+      trailingFn();
+      trailingFn();
+      setTimeout(() => trailingFn(), 250);
+
+      function debounceLeading(fn, wait) {
+        let timer = null;
+        return function (...args) {
+          const callNow = !timer;
+          clearTimeout(timer);
+          timer = setTimeout(() => {
+            timer = null;
+          }, wait);
+          if (callNow) fn.apply(this, args);
+        };
+      }
+      const leadingLog = debounceLeading((msg) => {
+        console.log("leading debounce:", msg); // 首次立即执行
+      }, 300);
+      leadingLog("first call immediate");
+      leadingLog("suppressed until wait");
     </script>
     <!-- SCRIPT_END -->
 
@@ -129,7 +157,8 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="../07-%E8%BF%9B%E9%98%B6/UMD%E6%8F%92%E4%BB%B6%E6%A8%A1%E5%BC%8F/index.html">← UMD插件模式</a>
+        <a href="./%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA.html">相关 · 加权随机</a>
+        <a href="../07-%E8%BF%9B%E9%98%B6/UMD%E6%8F%92%E4%BB%B6%E6%A8%A1%E5%BC%8F/index.html">← index</a>
         <a href="./%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA.html">加权随机 →</a>
       </nav>
       <script>

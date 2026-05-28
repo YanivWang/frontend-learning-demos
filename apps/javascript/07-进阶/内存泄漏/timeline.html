@@ -66,27 +66,29 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // ====== 1. 累积数组：每次 concat 创建新数组，旧数组短期仍存活 ======
+      // ============ 1. 累积数组：每次 concat 创建新数组，旧数组短期仍存活 ============
       let x = [];
       let clickCount = 0;
 
       function grow() {
         clickCount++;
 
-        // ====== 2. 追加 10000 个已连接 DOM 节点 ======
+        // 追加 10000 个已连接 DOM 节点（非 Detached DOM）
         for (let i = 0; i < 10000; i++) {
           document.body.appendChild(document.createElement("p"));
         }
 
-        // ====== 3. concat 大数组：推高 JS heap ======
+        // concat 大数组：返回新数组并复制元素，推高 JS heap
         x = x.concat(new Array(1000 * 1000).fill("11111111"));
 
         const domCount = document.getElementsByTagName("p").length;
         document.getElementById("stats").textContent =
           `已点击 ${clickCount} 次 | DOM p 节点: ${domCount} | 累积数组 length: ${x.length}`;
         console.log(`第 ${clickCount} 次增长 | p 节点: ${domCount} | x.length: ${x.length}`);
+        console.log("→ 需人工在浏览器验证：Performance Monitor 观察 JS heap / DOM Nodes 曲线");
       }
 
+      // ============ 2. 绑定点击事件 ============
       document.getElementById("grow").addEventListener("click", grow);
     </script>
     <!-- SCRIPT_END -->
@@ -96,6 +98,8 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="./leakSuccess.html">相关 · 内存泄漏/leakSuccess</a>
+        <a href="../%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6.html">相关 · 垃圾回收</a>
         <a href="./leakSuccess.html">← leakSuccess</a>
         <a href="../%E6%89%8B%E5%86%99Promise/promiseAll.html">promiseAll →</a>
       </nav>

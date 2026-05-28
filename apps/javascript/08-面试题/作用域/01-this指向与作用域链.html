@@ -75,7 +75,7 @@
           if (out) out.textContent = lines.join("\n");
         }
 
-        // ====== 1. 顶层 var 创建 window.val ======
+        // ============ 1. 顶层 var 创建 window.val ============
         var val = 1;
         function test() {
           emit("test() 中 val", val); // 预期: 1（沿定义时词法链找到全局 val）
@@ -86,9 +86,22 @@
           test();
         }
 
-        // ====== 2. 执行并输出 ======
+        // ============ 2. 执行并输出 ============
         emit("window.val", window.val); // 预期: 1
         bar();
+
+        // ============ 3. 对比：严格模式下独立调用 this 为 undefined ============
+        (function () {
+          "use strict";
+          function strictBar() {
+            try {
+              emit("严格模式 this.val", this.val);
+            } catch (e) {
+              emit("严格模式 this.val", e.name + "（this 为 undefined）");
+            }
+          }
+          strictBar();
+        })();
       })();
     </script>
     <!-- SCRIPT_END -->
@@ -98,6 +111,7 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="./02-%E5%B5%8C%E5%A5%97%E4%BD%9C%E7%94%A8%E5%9F%9F-%E8%BF%94%E5%9B%9E%E5%80%BC.html">相关 · 嵌套作用域-返回值</a>
         <a href="../%E6%89%8B%E5%86%99/07-LRU%E7%BC%93%E5%AD%98.html">← LRU缓存</a>
         <a href="./02-%E5%B5%8C%E5%A5%97%E4%BD%9C%E7%94%A8%E5%9F%9F-%E8%BF%94%E5%9B%9E%E5%80%BC.html">嵌套作用域-返回值 →</a>
       </nav>

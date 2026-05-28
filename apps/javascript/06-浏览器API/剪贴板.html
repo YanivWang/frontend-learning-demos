@@ -81,13 +81,16 @@
       const target = document.getElementById("target");
       const hint = document.getElementById("hint");
 
-      // ====== 0. 环境检测 ======
+      // ============ 0. 环境检测 ============
       document.getElementById("env-banner").textContent =
         "protocol=" + location.protocol +
         " | isSecureContext=" + window.isSecureContext +
         " | clipboard.writeText 需 HTTPS/localhost + 用户手势";
 
-      // ====== 1. execCommand 兜底（已废弃）======
+      // textContent 取纯文本；innerHTML 含标签，复制/传播 HTML 有 XSS 风险
+      console.log("textContent 长度:", target.textContent.length, "innerHTML 长度:", target.innerHTML.length);
+
+      // ============ 1. execCommand 兜底（已废弃） ============
       document.getElementById("legacy").addEventListener("click", () => {
         const text = target.textContent;
         const input = document.createElement("input");
@@ -106,7 +109,7 @@
         document.body.removeChild(input);
       });
 
-      // ====== 2. Clipboard API（现代推荐）======
+      // ============ 2. Clipboard API（现代推荐） ============
       document.getElementById("modern").addEventListener("click", async () => {
         if (!navigator.clipboard?.writeText) {
           hint.textContent = "当前浏览器不支持 Clipboard API，请用兼容方式或手动复制。";
@@ -130,6 +133,8 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+        <a href="./DOM%E6%93%8D%E4%BD%9C.html">相关 · DOM操作</a>
+        <a href="./Notification.html">相关 · Notification</a>
         <a href="../05-%E5%85%83%E7%BC%96%E7%A8%8B/proxy.html">← proxy</a>
         <a href="./%E6%B5%8F%E8%A7%88%E5%99%A8%E6%B8%B2%E6%9F%93%E4%B8%8E%E6%80%A7%E8%83%BD.html">浏览器渲染与性能 →</a>
       </nav>

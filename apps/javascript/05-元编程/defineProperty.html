@@ -2,6 +2,7 @@
   分类: javascript / 05-元编程
   主题: Object.defineProperty 数据属性
   难度: 进阶
+  前置: 访问器
   相关: defineProperty访问器属性, proxy
   要点:
     - 数据属性由 value、writable、enumerable、configurable 四个描述符控制
@@ -36,8 +37,8 @@
           <li>数据属性由 <code>value</code>、<code>writable</code>、<code>enumerable</code>、<code>configurable</code> 描述：值本身、能否赋值、能否被枚举、能否删除或重新配置。</li>
           <li><code>Object.defineProperty</code> 新增属性时，未显式写出的布尔描述符默认都是 <code>false</code>；对象字面量或普通赋值创建的属性通常三者都是 <code>true</code>。</li>
           <li><code>writable: false</code> 会阻止重新赋值；非严格模式下赋值失败可能静默，严格模式下会抛出 <code>TypeError</code>。</li>
-          <li><code>configurable: false</code> 是最容易踩坑的开关：属性不能删除，描述符大多不能再改，只允许把仍为 <code>true</code> 的 <code>writable</code> 降为 <code>false</code>。</li>
-          <li>调试属性行为时优先用 <code>Object.getOwnPropertyDescriptor</code> 查看真实描述符，不要只看 <code>console.log</code> 展示出的对象外观。</li>
+          <li><code>enumerable: false</code> 不会出现在 <code>Object.keys</code>、<code>for...in</code> 和对象展开中，但 <code>in</code> 仍为 true。</li>
+          <li><code>configurable: false</code> 后属性不能删除、描述符大多不能再改；若仍为可写数据属性，可把 <code>writable</code> 从 <code>true</code> 降为 <code>false</code>。</li>
           <li><code>defineProperty</code> 只能逐个改写已有目标上的具体属性，无法拦截新增键；Vue 2 响应式因此需要递归遍历对象。现代动态监听更常用 <code>Proxy</code>，但 <code>defineProperty</code> 在只读 API、精确描述符控制场景仍有价值。</li>
         </ul>
         <h2>面试考点</h2>
@@ -59,35 +60,52 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // ====== 1. defineProperty 新增属性：布尔描述符默认 false ======
+      // ============ 1. defineProperty 新增属性：布尔描述符默认 false ============
       const person = { age: 30 };
 
       Object.defineProperty(person, "name", {
         value: "wangcheng",
-        // 未写 writable/enumerable/configurable → 三者默认 false
+        // 未写 writable/enumerable/configurable → 三者默认 false（MDN 默认值）
       });
 
       const nameDesc = Object.getOwnPropertyDescriptor(person, "name");
       console.log("defineProperty 默认描述符:", JSON.stringify(nameDesc, null, 2));
       // 预期: writable/enumerable/configurable 均为 false
 
-      // ====== 2. 对比：字面量属性默认三者 true ======
+      // ============ 2. 对比：字面量属性默认三者 true ============
       const ageDesc = Object.getOwnPropertyDescriptor(person, "age");
       console.log("字面量 age 描述符:", JSON.stringify(ageDesc, null, 2));
       // 预期: writable/enumerable/configurable 均为 true
 
-      // ====== 3. writable: false 阻止赋值 ======
+      // ============ 3. writable: false 阻止赋值（非严格静默 / 严格抛错） ============
       person.age = 99; // 合法：age 可写
       console.log("age 可写后:", person.age); // 99
 
       person.name = "newName"; // 非严格模式静默失败
       console.log("name 不可写，赋值后仍为:", person.name); // "wangcheng"
 
-      // ====== 4. enumerable: false 不出现在 Object.keys ======
+      (function strictWritableDemo() {
+        "use strict";
+        const o = {};
+        Object.defineProperty(o, "locked", { value: 1, writable: false });
+        try {
+          o.locked = 2;
+        } catch (err) {
+          console.log("strict writable:false 赋值:", err.name, "-", err.message);
+        }
+        console.log("strict 下 locked 仍为:", o.locked); // 1
+      })();
+
+      // ============ 4. enumerable: false 不出现在 keys / for...in ============
       console.log("Object.keys(person):", Object.keys(person)); // 只有 "age"
+      const enumKeys = [];
+      for (const key in person) {
+        enumKeys.push(key);
+      }
+      console.log("for...in 可枚举键:", enumKeys); // ["age"]
       console.log("'name' in person:", "name" in person); // true，属性仍存在
 
-      // ====== 5. configurable: false 不可删除、不可重配 ======
+      // ============ 5. configurable: false 不可删除、不可重配 ============
       delete person.name;
       console.log("delete name 后仍在:", "name" in person); // true
 
@@ -98,7 +116,27 @@
         console.log("不可配置属性无法重配:", err.name, "-", err.message);
       }
 
-      // ====== 6. 显式写出 true 可恢复普通属性行为 ======
+      // ============ 6. configurable:false 但 writable:true 可改值并降为不可写 ============
+      const sealed = {};
+      Object.defineProperty(sealed, "score", {
+        value: 10,
+        writable: true,
+        configurable: false,
+      });
+      sealed.score = 20; // 赋值仍有效
+      console.log("不可配置但可写，赋值后:", sealed.score); // 20
+      Object.defineProperty(sealed, "score", { writable: false }); // 允许 true → false
+      console.log(
+        "writable 降为 false 后描述符:",
+        Object.getOwnPropertyDescriptor(sealed, "score"),
+      );
+      try {
+        Object.defineProperty(sealed, "score", { value: 99 });
+      } catch (err) {
+        console.log("writable:false 后不能再改 value:", err.name, "-", err.message);
+      }
+
+      // ============ 7. 显式写出 true 可恢复普通属性行为 ============
       const config = {};
       Object.defineProperty(config, "theme", {
         value: "light",
@@ -116,9 +154,9 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="./%E4%BB%A3%E7%90%86%E7%9A%84%E7%8B%B9%E7%82%B9.html">相关 · 代理的缺点</a>
+        <a href="./defineProperty%E8%AE%BF%E9%97%AE%E5%99%A8%E5%B1%9E%E6%80%A7.html">相关 · defineProperty访问器属性</a>
         <a href="./proxy.html">相关 · proxy</a>
-        <a href="./%E4%BB%A3%E7%90%86%E7%9A%84%E7%8B%B9%E7%82%B9.html">← 代理的缺点</a>
+        <a href="./%E4%BB%A3%E7%90%86%E7%9A%84%E7%BC%BA%E7%82%B9.html">← 代理的缺点</a>
         <a href="./defineProperty%E8%AE%BF%E9%97%AE%E5%99%A8%E5%B1%9E%E6%80%A7.html">defineProperty访问器属性 →</a>
       </nav>
       <script>

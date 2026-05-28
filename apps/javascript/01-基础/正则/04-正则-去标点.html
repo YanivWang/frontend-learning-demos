@@ -4,6 +4,7 @@
   要点:
     - 手工列举 Unicode 码点可控；\p{P} + u 更简洁
     - 链式 replace 便于分语言处理
+    - \p{L} 匹配字母、\p{N} 匹配数字，可组合保留语义
     - 是否保留 - _ + 等依赖业务语义
   面试:
     - 如何用正则去标点？
@@ -42,9 +43,8 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Unicode_character_class_escape" target="_blank" rel="noopener">MDN Web Docs：Unicode character class escape</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions" target="_blank" rel="noopener">MDN Web Docs：Regular expressions guide</a></li>
-          <li><a href="https://javascript.info/regexp-unicode" target="_blank" rel="noopener">JavaScript.info：Unicode properties</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Unicode_character_class_escape" target="_blank" rel="noopener">MDN: Unicode character class escape</a>：\p{P}、\p{L}、\p{N}。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions" target="_blank" rel="noopener">MDN: Regular expressions guide</a>：replace 链式处理。</li>
         </ul>
       </div>
     </section>
@@ -52,39 +52,57 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // 中文常见标点 Unicode 范围（手工列举更可控；也可直接用 \p{P} 但需 u 修饰符）
-      const RE_CN = /(\u3002|\uff1f|\uff01|\uff0c|\u3001|\uff1b|\uff1a|\u201c|\u201d|\u2018|\u2019|\uff08|\uff09|\u300a|\u300b|\u3008|\u3009|\u3010|\u3011|\u300e|\u300f|\u300c|\u300d|\ufe43|\ufe44|\u3014|\u3015|\u2026|\u2014|\uff5e|\ufe4f|\uffe5)/g;
-      // ASCII 常见标点（注意 - _ + 等需要根据语义决定是否清理）
-      const RE_EN = /(\~|\`|\!|\@|\#|\$|\%|\^|\&|\*|\(|\)|\-|\_|\+|\=|\||\\|\[|\]|\{|\}|\;|\:|\"|\'|\,|\<|\.|\>|\/|\?)/g;
-      // 西文/重音/特殊（西班牙语 ¡¿、法语重音附加符号等）
-      const RE_OTHER = /(¡|¿|!|!!!|《|》|́)/g;
-      // 连续空白合并为单空格
+      // ============ 1. 手工列举：中文 / 英文 / 其他标点 ============
+      const RE_CN =
+        /(\u3002|\uff1f|\uff01|\uff0c|\u3001|\uff1b|\uff1a|\u201c|\u201d|\u2018|\u2019|\uff08|\uff09|\u300a|\u300b|\u3008|\u3009|\u3010|\u3011|\u300e|\u300f|\u300c|\u300d|\ufe43|\ufe44|\u3014|\u3015|\u2026|\u2014|\uff5e|\ufe4f|\uffe5)/g;
+      const RE_EN =
+        /(\~|\`|\!|\@|\#|\$|\%|\^|\&|\*|\(|\)|\-|\_|\+|\=|\||\\|\[|\]|\{|\}|\;|\:|\"|\'|\,|\<|\.|\>|\/|\?)/g;
+      const RE_OTHER = /(¡|¿|!!!|《|》|́)/g;
       const RE_BLANK = /\s+/g;
 
       function removeBD(str) {
         return str
-        .replace(RE_CN, "")
-        .replace(RE_EN, "")
-        .replace(RE_OTHER, "")
-        .replace(RE_BLANK, " ")
-        .trim();
+          .replace(RE_CN, "")
+          .replace(RE_EN, "")
+          .replace(RE_OTHER, "")
+          .replace(RE_BLANK, " ")
+          .trim();
       }
 
-      const raw = "# I have a cat! is $ @  ́  《chinese》¿ ¡ 。、| ？ / \\ + =";
+      const raw =
+        "# I have a cat! is $ @  ́  《chinese》¿ ¡ 。、| ？ / \\ + =";
       console.log("原始:", raw);
-      console.log("去标点:", removeBD(raw));
+      console.log("手工去标点:", removeBD(raw));
 
-      // ===== 单独判断「是否是标点」/「是否以标点结尾」 =====
+      // ============ 2. 判断单个字符是否为标点 ============
       function isPunctuation(ch) {
-        return /^(\u3002|\uff1f|\uff01|\uff0c|\u3001|\uff1b|\uff1a|\u201c|\u201d|\u2018|\u2019|\uff08|\uff09|\u300a|\u300b|\u3008|\u3009|\u3010|\u3011|\u300e|\u300f|\u300c|\u300d|\ufe43|\ufe44|\u3014|\u3015|\u2026|\u2014|\uff5e|\ufe4f|\uffe5|\~|\`|\!|\@|\#|\$|\%|\^|\&|\*|\(|\)|\-|\_|\+|\=|\||\\|\[|\]|\{|\}|\;|\:|\"|\'|\,|\<|\.|\>|\/|\?|¡|¿|!|!!!|《|》|́)$/.test(ch);
+        return /\p{P}/u.test(ch);
       }
-      console.log("'.' 是标点:", isPunctuation("."));
-      console.log("'a' 是标点:", isPunctuation("a"));
+      console.log("'.' 是标点:", isPunctuation(".")); // true
+      console.log("'a' 是标点:", isPunctuation("a")); // false
+      console.log("'。' 是标点:", isPunctuation("。")); // true
 
-      // 现代写法：用 Unicode 属性 \p{P}（需 u 修饰符）
+      // ============ 3. Unicode 属性 \p{P}：现代简洁写法 ============
       const modernRE = /\p{P}/gu;
-      console.log("ES2018 \\p{P} 去标点:", raw.replace(modernRE, "").replace(/\s+/g, " ").trim());
+      console.log(
+        "ES2018 \\p{P} 去标点:",
+        raw.replace(modernRE, "").replace(RE_BLANK, " ").trim()
+      );
 
+      // ============ 4. \p{L} 字母与 \p{N} 数字 ============
+      // MDN：Unicode 属性转义需 u 标志；可用于「只保留字母数字」类清洗
+      const sample = "Hello, 世界123!";
+      console.log(
+        "只保留字母数字 \\p{L}\\p{N}:",
+        sample.replace(/[^\p{L}\p{N}]/gu, "")
+      ); // "Hello世界123"
+
+      // ============ 5. 业务边界：slug 常保留 - _ ============
+      const slugInput = "my-cool_post+tag!";
+      const slugSafe = slugInput
+        .replace(/[^\w\-_+]/g, "") // 保留连字符、下划线、加号
+        .replace(/_+/g, "_");
+      console.log("slug 保留 - _ +:", slugSafe); // "my-cool_post+tag"
     </script>
     <!-- SCRIPT_END -->
 
@@ -108,5 +126,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

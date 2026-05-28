@@ -55,7 +55,7 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // ====== 1. async 可用于多种函数形态，调用结果都是 Promise ======
+      // ============ 1. async 多种声明形态，调用结果都是 Promise ============
       async function f1() {
         return "声明式";
       }
@@ -67,40 +67,33 @@
       const arrowFoo = async () => "箭头函数";
 
       const obj = {
-        name: "wc",
         async method() {
           return "对象方法";
         },
       };
 
-      f1().then((v) => console.log("f1:", v));
-      arrowFoo().then((v) => console.log("arrowFoo:", v));
-      obj.method().then((v) => console.log("obj.method:", v));
+      class Service {
+        async classMethod() {
+          return "类方法";
+        }
+      }
 
-      // ====== 2. await rejection 中断 async 函数，外层 .catch 接收 ======
+      const service = new Service();
+
+      // ============ 2. await rejection 中断函数体，外层 .catch 接收 ============
       async function handleError() {
         await Promise.reject("出错");
         console.log("111（不会执行）");
         return "执行完毕";
       }
 
-      handleError()
-        .then(function (data) {
-          console.log("data:" + data);
-        })
-        .catch(function (err) {
-          console.error("handleError catch:", err); // "出错"
-        });
-
-      // ====== 3. await 前先 .catch 局部吞错 vs try/catch 包 await ======
+      // ============ 3. await 前 .catch 局部吞错 vs try/catch 包 await ============
       async function handleException() {
         try {
-          // 局部 .catch 吞掉 rejection，外层 await 看到的是 fulfilled(undefined)
           await Promise.reject("出错").catch(function () {
             console.log("AAA（局部 catch 吞错）");
           });
 
-          // 未被局部 catch 的 rejection 会被外层 try/catch 捕获
           await Promise.reject("出错了啊");
         } catch (e) {
           console.log(e + " BBB");
@@ -109,13 +102,42 @@
         return "执行完毕";
       }
 
-      handleException()
-        .then(function (data) {
-          console.log("DDD:" + data); // "执行完毕"
-        })
-        .catch(function (err) {
-          console.log("EEE:" + err);
-        });
+      // ============ 4. 外层仍要 catch：内部未处理错误表现为 rejected Promise ============
+      async function unhandledInside() {
+        await Promise.reject(new Error("内部未 try/catch"));
+      }
+
+      (async function main() {
+        console.log("--- §1 声明形态 ---");
+        console.log("f1:", await f1());
+        console.log("foo:", await foo());
+        console.log("arrowFoo:", await arrowFoo());
+        console.log("obj.method:", await obj.method());
+        console.log("classMethod:", await service.classMethod());
+        console.log(
+          "均为 Promise:",
+          [f1(), foo(), arrowFoo()].every((p) => p instanceof Promise),
+        );
+
+        console.log("--- §2 await rejection ---");
+        try {
+          await handleError();
+        } catch (err) {
+          console.error("handleError 外层 catch:", err);
+        }
+
+        console.log("--- §3 局部 .catch vs try/catch ---");
+        console.log("DDD:", await handleException());
+
+        console.log("--- §4 外层兜底 ---");
+        try {
+          await unhandledInside();
+        } catch (e) {
+          console.error("unhandledInside 外层 catch:", e.name, e.message);
+        }
+      })().catch(function (err) {
+        console.error("demo 未捕获错误:", err.name, err.message);
+      });
     </script>
     <!-- SCRIPT_END -->
 
@@ -137,5 +159,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

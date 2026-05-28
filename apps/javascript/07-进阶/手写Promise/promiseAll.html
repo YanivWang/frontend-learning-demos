@@ -58,7 +58,7 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // ====== 1. 手写 Promise.myAll ======
+      // ============ 1. 手写 Promise.myAll ============
       Promise.myAll = function (iterable) {
         return new Promise((resolve, reject) => {
           let items;
@@ -92,7 +92,7 @@
         });
       };
 
-      // ====== 2. 并发演示：结果按输入顺序，不按完成顺序 ======
+      // ============ 2. 并发演示：结果按输入顺序，不按完成顺序 ============
       const p1 = new Promise((resolve) => setTimeout(() => resolve("p1 ok!"), 1500));
       const p2 = new Promise((resolve) => setTimeout(() => resolve("p2 ok!"), 500));
       const p3 = new Promise((resolve) => setTimeout(() => resolve("p3 ok!"), 1000));
@@ -102,17 +102,17 @@
         // 预期: ["p1 ok!", "p2 ok!", "p3 ok!"]，尽管 p2 最先完成
       });
 
-      // ====== 3. 边界：空数组 ======
+      // ============ 3. 边界：空数组 ============
       Promise.myAll([]).then((res) => {
         console.log("空数组:", res); // []
       });
 
-      // ====== 4. 边界：普通值与 thenable ======
+      // ============ 4. 边界：普通值与 thenable ============
       Promise.myAll([42, Promise.resolve("thenable")]).then((res) => {
         console.log("普通值 + thenable:", res); // [42, "thenable"]
       });
 
-      // ====== 5. fail-fast：任一 reject 即整体 reject ======
+      // ============ 5. fail-fast：任一 reject 即整体 reject ============
       Promise.myAll([
         Promise.resolve("ok"),
         Promise.reject(new Error("first reject")),
@@ -121,10 +121,20 @@
         console.log("fail-fast:", err.message); // "first reject"
       });
 
-      // ====== 6. 稀疏数组陷阱：不能用 retArray.length 判断完成数 ======
+      // ============ 6. 非 iterable 输入：TypeError ============
+      Promise.myAll(null).catch((err) => {
+        console.log("非 iterable:", err.name); // TypeError
+      });
+
+      // ============ 7. 稀疏数组陷阱：不能用 retArray.length 判断完成数 ============
       const sparseDemo = [];
       sparseDemo[99] = "done";
       console.log("稀疏数组 length 误导:", sparseDemo.length); // 100，但只有 1 个元素
+
+      // ============ 8. 与原生 Promise.all 行为对照 ============
+      Promise.all([Promise.resolve("native")]).then((res) => {
+        console.log("原生 Promise.all:", res); // ["native"]
+      });
     </script>
     <!-- SCRIPT_END -->
 
@@ -133,8 +143,9 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="../%E8%B5%84%E6%BA%90%E9%A2%84%E5%8A%A0%E8%BD%BD/index.html">相关 · 资源预加载/index</a>
         <a href="../%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/timeline.html">← timeline</a>
-        <a href="../%E8%B5%84%E6%BA%90%E9%A2%84%E5%8A%A0%E8%BD%BD/index.html">资源预加载 →</a>
+        <a href="../%E8%B5%84%E6%BA%90%E9%A2%84%E5%8A%A0%E8%BD%BD/index.html">index →</a>
       </nav>
       <script>
         (function () {

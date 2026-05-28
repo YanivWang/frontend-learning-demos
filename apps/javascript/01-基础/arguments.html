@@ -56,40 +56,50 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ============ 1. 形参与 arguments：实参集合 vs 形参绑定 ============
       function f1(x, y) {
-        // 1) 形参 x, y 与 arguments 的关系：实参可以多/少于形参，arguments 永远是真实传入的实参集合
+        // 实参可多/少于形参；arguments 始终是真实传入的实参集合
         console.log("形参 x, y:", x, y);
         console.log("arguments:", arguments);
         console.log("arguments.length:", arguments.length);
 
-        // 2) arguments 是「类数组对象」：有 length、可用下标访问，但没有数组方法
+        // 类数组：有 length 和下标，但没有 map/filter 等数组方法
         console.log("typeof arguments:", typeof arguments); // 'object'
-        // arguments.slice(0); // ❌ TypeError: arguments.slice is not a function
+        // arguments.slice(0); // TypeError: arguments.slice is not a function
 
-        // 3) 把 arguments 转成真数组的三种方式
         const arr1 = Array.prototype.slice.call(arguments);
         const arr2 = Array.from(arguments);
         const arr3 = [...arguments];
         console.log("Array.prototype.slice.call:", arr1);
         console.log("Array.from:", arr2);
         console.log("[...arguments]:", arr3);
-
-        // 4) arguments.callee 指向函数自身（严格模式下被禁用，不推荐）
-        // console.log(arguments.callee);
-
-        // 5) Object.keys 也能拿到 arguments 的下标
         console.log("Object.keys:", Object.keys(arguments));
       }
       f1(1, 2, 3, 4);
 
-      // ===== 现代写法：用剩余参数 ...rest 代替 arguments =====
+      // ============ 2. 非严格模式：形参与 arguments[0] 初始联动 ============
+      function looseSync(a) {
+        arguments[0] = 99;
+        return { a, arguments0: arguments[0] };
+      }
+      console.log("非严格改 arguments[0]:", looseSync(1)); // a 与 arguments[0] 同为 99
+
+      // ============ 3. 严格模式：形参与 arguments 不再联动 ============
+      function strictSync(a) {
+        "use strict";
+        arguments[0] = 99;
+        return { a, arguments0: arguments[0] };
+      }
+      console.log("严格改 arguments[0]:", strictSync(1)); // a 仍为 1
+
+      // ============ 4. 剩余参数 ...rest：真数组，只收集剩余实参 ============
       function f2(first, ...rest) {
         console.log("first:", first);
         console.log("rest 是真数组:", Array.isArray(rest), rest);
       }
       f2(10, 20, 30, 40);
 
-      // ===== 箭头函数没有 arguments，会向外层找 =====
+      // ============ 5. 箭头函数无 arguments，沿作用域链找外层 ============
       function outer() {
         const arrow = () => {
           console.log("箭头函数中的 arguments 来自 outer:", arguments);
@@ -97,7 +107,6 @@
         arrow();
       }
       outer("a", "b");
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -121,5 +130,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

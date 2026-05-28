@@ -58,7 +58,7 @@
     <!-- PAGE_DOM_START -->
     <section class="demo-block">
       <h2>运行结果</h2>
-      <p class="tip">标准答法：<code>for (let i...)</code> 依次输出 <code>0, 1, 2, 3, 4</code>；若换成 <code>var</code> 则常见为 5 个 <code>5</code>。</p>
+      <p class="tip">标准答法：<code>for (let i...)</code> 依次输出 <code>0, 1, 2, 3, 4</code>；若换成 <code>var</code> 则常见为 5 个 <code>5</code>；IIFE 可修复 var 版。</p>
       <pre id="runtime-output" aria-live="polite"></pre>
     </section>
     <!-- PAGE_DOM_END -->
@@ -76,7 +76,7 @@
           if (out) out.textContent = lines.join("\n");
         }
 
-        // ====== 1. for (let i...)：每次迭代独立绑定，闭包分别捕获 0~4 ======
+        // ============ 1. for (let i...)：每次迭代独立绑定，闭包分别捕获 0~4 ============
         var retArray = [];
         for (let i = 0; i < 5; i++) {
           retArray[i] = function () {
@@ -88,7 +88,7 @@
         });
         emit("for (let i...)", letResults); // 预期: 0, 1, 2, 3, 4
 
-        // ====== 2. 对比 for (var i...)：共享同一 i，循环结束后 i === 5 ======
+        // ============ 2. 对比 for (var i...)：共享同一 i，循环结束后 i === 5 ============
         var varArray = [];
         for (var j = 0; j < 5; j++) {
           varArray[j] = function () {
@@ -99,6 +99,20 @@
           return fn();
         });
         emit("for (var i...) 对比", varResults); // 预期: 5, 5, 5, 5, 5
+
+        // ============ 3. IIFE 修复 var 循环闭包（老代码写法）============
+        var iifeArray = [];
+        for (var k = 0; k < 5; k++) {
+          iifeArray[k] = (function (snapshot) {
+            return function () {
+              return snapshot;
+            };
+          })(k);
+        }
+        var iifeResults = iifeArray.map(function (fn) {
+          return fn();
+        });
+        emit("IIFE 修复 var 循环", iifeResults); // 预期: 0, 1, 2, 3, 4
       })();
     </script>
     <!-- SCRIPT_END -->
@@ -108,6 +122,8 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="./04-var%E9%87%8D%E5%A4%8D%E5%A3%B0%E6%98%8E.html">相关 · var重复声明</a>
+        <a href="../../02-%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F/%E9%97%AD%E5%8C%85/01-%E9%97%AD%E5%8C%85-%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%93%BE%E4%B8%8E%E5%8F%98%E9%87%8F%E6%8F%90%E5%8D%87.html">相关 · 闭包-作用域链与变量提升</a>
         <a href="./04-var%E9%87%8D%E5%A4%8D%E5%A3%B0%E6%98%8E.html">← var重复声明</a>
         <a href="./06-var%E4%B8%8Efunction%E5%90%8C%E5%90%8D%E6%8F%90%E5%8D%87.html">var与function同名提升 →</a>
       </nav>

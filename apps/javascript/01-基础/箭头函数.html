@@ -53,16 +53,23 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // ====== 1. 箭头函数语法与剩余参数 ======
+      // ============ 1. 箭头函数语法与剩余参数 ============
       const ArrowFunc = (x, y, ...rest) => {
-        // 箭头函数没有自己的 arguments；顶层直接访问 arguments 会 ReferenceError
+        // 箭头函数没有自己的 arguments；在函数体内访问外层 arguments 会沿作用域链查找
         console.log("参数:", x, y, "rest:", rest);
         // 词法 this：由最近一层非箭头作用域决定，脚本顶层指向 window/globalThis
         console.log("顶层箭头 this === window:", this === window);
       };
       ArrowFunc(1, 2, 3, 4);
 
-      // ====== 2. 无 prototype，不能 new ======
+      // 脚本顶层箭头函数内直接写 arguments → ReferenceError（非箭头作用域才有 arguments）
+      try {
+        (() => arguments)();
+      } catch (err) {
+        console.log("顶层箭头访问 arguments:", err.name, "-", err.message);
+      }
+
+      // ============ 2. 无 prototype，不能 new ============
       console.log("ArrowFunc.prototype:", ArrowFunc.prototype); // undefined
       // new ArrowFunc(); // TypeError: ArrowFunc is not a constructor
 
@@ -71,14 +78,14 @@
       console.log("Person.prototype:", Person.prototype);
       console.log("Person.prototype.constructor === Person:", Person.prototype.constructor === Person);
 
-      // ====== 3. 词法 this：call/apply/bind 无法改变 ======
+      // ============ 3. 词法 this：call/apply/bind 无法改变 ============
       const boundObj = { id: 99 };
       const arrow = () => this;
       const normal = function () { return this; };
       console.log("箭头 call(boundObj):", arrow.call(boundObj) === window); // true，仍指向外层
       console.log("普通 call(boundObj):", normal.call(boundObj)); // { id: 99 }
 
-      // ====== 4. 对象方法中误用箭头函数 ======
+      // ============ 4. 对象方法中误用箭头函数 ============
       const counter = {
         value: 1,
         getValue: () => this.value,
@@ -111,5 +118,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

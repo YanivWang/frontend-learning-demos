@@ -83,9 +83,17 @@
       const sendButton = document.getElementById("send");
       const closeButton = document.getElementById("close");
 
-      // ====== 0. 环境提示 ======
+      // ============ 0. 环境提示 ============
       document.getElementById("env-banner").textContent =
         "protocol=" + location.protocol + " | WebSocket 需外网可达 echo 服务";
+
+      // readyState：CONNECTING=0 OPEN=1 CLOSING=2 CLOSED=3；仅 OPEN 时可可靠 send()
+      console.log("WebSocket.readyState 常量:", {
+        CONNECTING: WebSocket.CONNECTING,
+        OPEN: WebSocket.OPEN,
+        CLOSING: WebSocket.CLOSING,
+        CLOSED: WebSocket.CLOSED,
+      });
 
       function resetConnectionState() {
         clearInterval(heartbeat);
@@ -96,7 +104,7 @@
         closeButton.disabled = true;
       }
 
-      // ====== 1. 建立连接 ======
+      // ============ 1. 建立连接 ============
       document.getElementById("connect").onclick = () => {
         if (ws && ws.readyState <= 1) return append("已有连接");
         ws = new WebSocket(URL);
@@ -126,7 +134,7 @@
         };
       };
 
-      // ====== 2. 发送前检查 readyState ======
+      // ============ 2. 发送前检查 readyState ============
       sendButton.onclick = () => {
         if (ws?.readyState === WebSocket.OPEN) {
           ws.send("ping-" + Date.now());
@@ -136,10 +144,10 @@
         append("连接未打开（readyState=" + (ws?.readyState ?? "null") + "），不能发送");
       };
 
-      // ====== 3. 主动关闭 ======
+      // ============ 3. 主动关闭 ============
       closeButton.onclick = () => ws?.close(1000, "demo closed");
 
-      // ====== 4. 页面卸载清理 ======
+      // ============ 4. 页面卸载清理 ============
       window.addEventListener("beforeunload", () => {
         if (ws?.readyState === WebSocket.OPEN) {
           ws.close(1000, "page unloading");
@@ -166,5 +174,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

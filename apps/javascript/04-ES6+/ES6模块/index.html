@@ -55,14 +55,21 @@
     <!-- SCRIPT_START -->
     <script type="module">
       // 注意：import 声明会被提升，moduleA 顶层代码实际先于下方同步代码执行
-      import { ageVar, sayHello } from "./moduleA.js";
+      import { ageVar, bumpAge, sayHello } from "./moduleA.js";
       import "./moduleA.js"; // 同一 URL 不会重复执行顶层
 
-      // ====== 1. 静态 import 与模块单例 ======
+      // ============ 1. 静态 import 与模块单例 ============
+      // MDN：模块按 URL 单例，重复 import 同一 URL 不会再次执行顶层代码
       console.log("ageVar（静态导入 live binding）:", ageVar); // 30
       sayHello();
 
-      // ====== 2. 动态 import()：条件加载、返回 Promise ======
+      // ============ 2. live binding：导出方更新后导入方可见 ============
+      // MDN：import 的是只读 live binding，不能写 ageVar = 99（模块解析期 SyntaxError）
+      bumpAge(5);
+      console.log("bumpAge 后 live binding:", ageVar); // 35
+      sayHello();
+
+      // ============ 3. 动态 import()：条件加载、返回 Promise ============
       // MDN：可在任意表达式位置使用，适合懒加载
       async function loadModuleDynamically() {
         try {
@@ -77,7 +84,7 @@
       }
       loadModuleDynamically();
 
-      // ====== 3. 当前协议检测 ======
+      // ============ 4. 当前协议检测 ============
       if (location.protocol === "file:") {
         console.warn(
           "[ESM Demo] 当前为 file:// 协议，模块加载可能失败。请使用 npm run dev 或 VitePress 访问。"

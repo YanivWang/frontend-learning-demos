@@ -33,7 +33,7 @@
           <li><code>await</code> 遇到 rejected Promise 会像同步代码 <code>throw</code> 一样中断当前 async 函数，可用 <code>try...catch</code> 捕获并决定是否进入下一轮重试。</li>
           <li>串行执行多个异步步骤时，只要某一步失败，本轮后续步骤不会继续执行；重试前应清空本轮已收集的中间结果，避免把失败轮次数据当成成功结果。</li>
           <li>重试循环需要明确最大次数，次数耗尽后必须 <code>throw</code> 最后一次错误，让调用方的 <code>.catch</code> 或外层 <code>try...catch</code> 获得最终失败。</li>
-          <li>真实接口重试不能无脑重试：只对网络抖动、超时、5xx 等可恢复错误重试；对参数错误、鉴权失败、业务校验失败应直接失败。</li>
+          <li>本页用「前 2 次 reject、第 3 次 resolve」的可控模拟，便于在 Console 验证重试次数与清空中间结果；生产还要区分可重试与不可重试错误。</li>
           <li>生产代码还要考虑指数退避、取消信号、幂等性和监控日志，避免重试放大流量或重复提交订单。</li>
         </ul>
         <h2>面试考点</h2>
@@ -54,62 +54,82 @@
 
     <!-- SCRIPT_START -->
     <script>
-      let callCount = 0;
+      // ============ 1. 可控失败：前 2 次 reject，第 3 次 resolve（可验证重试） ============
+      let attemptByStep = 0;
 
-      // 模拟可能失败的异步步骤（50% 概率 reject）
-      function syncFun(initParam) {
-        callCount++;
-        console.log("调用 syncFun:", initParam, "第", callCount, "次");
-
+      function flakyStep(label) {
+        attemptByStep++;
+        const attempt = attemptByStep;
         return new Promise(function (resolve, reject) {
           setTimeout(function () {
-            const rand = Math.floor(Math.random() * 2);
-            if (rand > 0) {
-              resolve(initParam + "-ok");
+            if (attempt <= 2) {
+              reject(new Error("模拟失败 " + label + " 第" + attempt + "次"));
             } else {
-              reject(new Error("save err: " + initParam));
+              resolve(label + "-ok");
             }
-          }, 300);
+          }, 50);
         });
       }
 
-      // ====== 1. try/catch 包 await：rejection 像 throw，可决定是否重试 ======
-      async function setData(methodArray, paramArray) {
-        const maxRetries = 5;
+      // ============ 2. try/catch 包 await：reject 中断本轮，清空中间结果后重试 ============
+      async function setDataWithRetry(steps, maxRetries) {
         let lastError;
 
-        for (let attempt = 0; attempt < maxRetries; attempt++) {
+        for (let round = 0; round < maxRetries; round++) {
+          const dataArray = []; // 每轮开头清空，避免混入上一轮部分成功数据
           try {
-            const dataArray = []; // 每轮重试前清空，避免混入失败轮次数据
-            for (let j = 0; j < methodArray.length; j++) {
-              if (paramArray && j in paramArray) {
-                const res = await methodArray[j](paramArray[j]);
-                // await reject 会立即终止本轮 for，进入 catch
-                dataArray.push(res);
-              }
+            for (let i = 0; i < steps.length; i++) {
+              const res = await steps[i]();
+              dataArray.push(res);
             }
-            console.log("success:", dataArray);
+            console.log("第", round + 1, "轮成功:", dataArray);
             return dataArray;
           } catch (e) {
             lastError = e;
-            console.warn("第", attempt + 1, "轮失败:", e.message);
+            console.warn("第", round + 1, "轮失败:", e.message, "dataArray=", dataArray);
           }
         }
 
-        // ====== 2. 重试耗尽后 throw，让调用方 catch 最终失败 ======
         throw lastError || new Error("重试次数耗尽");
       }
 
-      const methodArray = [syncFun, syncFun, syncFun];
-      const paramArray = ["data1", "data2", "data3"];
+      // ============ 3. 重试耗尽：外层 catch 接收最终失败 ============
+      async function demoRetrySuccess() {
+        attemptByStep = 0;
+        const data = await setDataWithRetry(
+          [
+            function () {
+              return flakyStep("step1");
+            },
+            function () {
+              return flakyStep("step2");
+            },
+          ],
+          5,
+        );
+        console.log("demoRetrySuccess final:", data);
+      }
 
-      setData(methodArray, paramArray)
-        .then(function (data) {
-          console.log("final success:", data);
-        })
-        .catch(function (error) {
-          console.error("final failure:", error.message);
-        });
+      async function demoRetryExhausted() {
+        let calls = 0;
+        async function alwaysFail() {
+          calls++;
+          throw new Error("不可恢复错误 第" + calls + "次");
+        }
+
+        try {
+          await setDataWithRetry([alwaysFail], 2);
+        } catch (e) {
+          console.error("demoRetryExhausted catch:", e.message); // 不可恢复错误 第2次
+        }
+      }
+
+      (async function main() {
+        await demoRetrySuccess();
+        await demoRetryExhausted();
+      })().catch(function (err) {
+        console.error("demo 未捕获错误:", err.name, err.message);
+      });
     </script>
     <!-- SCRIPT_END -->
 
@@ -131,5 +151,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

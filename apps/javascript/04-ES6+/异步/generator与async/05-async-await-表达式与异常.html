@@ -59,46 +59,100 @@
         return localforage.setItem(key, value);
       }
 
-      // ====== 1. await 可等待 Promise、thenable 或普通值 ======
-      // 传入 setStorage(...) 时 Promise 已创建，m1/m2 会并发启动
-      async function storeData(m1, m2) {
-        try {
-          const r1 = await m1;
-          const r2 = await m2;
-          const r3 = await 123; // 普通值按 fulfilled 处理
-
-          return [r1, r2, r3]; // return 值成为外层 Promise 的 fulfilled value
-        } catch (error) {
-          console.error("存储失败", error);
-          throw error; // 重新抛出，让调用方 catch
-        }
-      }
-
-      storeData(setStorage("name", "Join"), setStorage("age", "30"))
-        .then(function (data) {
-          console.log("storeData 成功:", data);
-        })
-        .catch(function (err) {
-          console.error("storeData 失败:", err);
-        });
-
-      console.log("1234（同步，早于 await 完成）");
-
-      // ====== 2. await 右侧是已启动的 Promise；async 函数立即返回 Promise ======
       function timeout(ms) {
         return new Promise(function (resolve) {
           setTimeout(resolve, ms);
         });
       }
 
+      // ============ 1. await 非 Promise：thenable / 普通值按 Promise.resolve 处理 ============
+      async function awaitNonPromise() {
+        const thenable = {
+          then(resolve) {
+            resolve("thenable-value");
+          },
+        };
+        const fromThenable = await thenable;
+        const fromNumber = await 123;
+        console.log("await thenable:", fromThenable);
+        console.log("await 普通值:", fromNumber);
+        return fromNumber;
+      }
+
+      // ============ 2. await rejection 中断 async 函数，后续语句不执行 ============
+      async function awaitRejectionStops() {
+        try {
+          await Promise.reject(new Error("await-reject"));
+          console.log("不会执行（reject 后中断）");
+        } catch (e) {
+          console.log("try/catch 捕获 await rejection:", e.message);
+        }
+      }
+
+      // ============ 3. async return → 外层 Promise fulfilled；throw → rejected ============
+      async function asyncReturnAndThrow() {
+        const fulfilled = await Promise.resolve("ok-value");
+        return fulfilled;
+      }
+
+      async function asyncThrow() {
+        throw new Error("async-throw");
+      }
+
+      // ============ 4. localforage：try/catch 捕获存储失败并 rethrow ============
+      // 传入 setStorage(...) 时 Promise 已创建，m1/m2 并发启动
+      async function storeData(m1, m2) {
+        try {
+          const r1 = await m1;
+          const r2 = await m2;
+          return [r1, r2];
+        } catch (error) {
+          console.error("存储失败", error.name, error.message);
+          throw error;
+        }
+      }
+
+      // ============ 5. 调用 async 立即返回 Promise；第一个 await 前同步执行 ============
       async function asyncPrint(value, ms) {
-        await timeout(ms); // resolve 未传值 → undefined
-        console.log(value);
+        console.log("asyncPrint 同步开头:", value);
+        await timeout(ms);
+        console.log("asyncPrint await 后:", value);
         return "qwert";
       }
 
-      asyncPrint("Hello World", 1500).then(function (data) {
-        console.log("asyncPrint return:", data); // "qwert"
+      console.log("同步：早于所有 await 完成");
+
+      (async function main() {
+        console.log("--- §1 await 非 Promise ---");
+        const n = await awaitNonPromise();
+        console.log("asyncReturn fulfilled:", await asyncReturnAndThrow());
+
+        console.log("--- §2 await rejection ---");
+        await awaitRejectionStops();
+
+        try {
+          await asyncThrow();
+        } catch (e) {
+          console.log("外层 catch async throw:", e.message);
+        }
+
+        console.log("--- §4 localforage 存储 ---");
+        try {
+          const stored = await storeData(
+            setStorage("name", "Join"),
+            setStorage("age", "30"),
+          );
+          console.log("storeData 成功:", stored);
+        } catch (err) {
+          console.error("storeData 外层 catch:", err.name, err.message);
+        }
+
+        console.log("--- §5 async 立即返回 Promise ---");
+        const p = asyncPrint("Hello World", 800);
+        console.log("asyncPrint 返回值是 Promise:", p instanceof Promise);
+        console.log("asyncPrint return:", await p);
+      })().catch(function (err) {
+        console.error("demo 未捕获错误:", err.name, err.message);
       });
     </script>
     <!-- SCRIPT_END -->
@@ -121,5 +175,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

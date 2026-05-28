@@ -78,7 +78,7 @@
         const FULFILLED = "fulfilled";
         const REJECTED = "rejected";
 
-        // ====== 1. 状态机 + queueMicrotask 异步回调 ======
+        // ============ 1. 状态机 + queueMicrotask 异步回调 ============
         class MyPromise {
           constructor(executor) {
             this.status = PENDING;
@@ -190,7 +190,7 @@
           }
         }
 
-        // ====== 2. 链式调用：1 → 2 → 异步 3 ======
+        // ============ 2. 链式调用：1 → 2 → 异步 3 ============
         MyPromise.resolve(1)
           .then((value) => value + 1)
           .then((value) => {
@@ -203,7 +203,7 @@
             emit("then 链最终结果: " + value); // 预期: 3
           });
 
-        // ====== 3. catch + finally ======
+        // ============ 3. catch + finally ============
         MyPromise.reject("fail")
           .catch((reason) => {
             emit("catch 收到: " + reason);
@@ -211,6 +211,13 @@
           })
           .finally(() => emit("finally 执行"))
           .then((value) => emit("catch 恢复后: " + value));
+
+        // ============ 4. 验证：状态落定后重复 resolve/reject 被忽略 ============
+        new MyPromise((resolve, reject) => {
+          resolve("first");
+          resolve("ignored");
+          reject("also ignored");
+        }).then((value) => emit("重复 resolve 仅首次生效: " + value));
       })();
     </script>
     <!-- SCRIPT_END -->
@@ -220,6 +227,7 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="./04-instanceof.html">相关 · instanceof</a>
         <a href="./04-instanceof.html">← instanceof</a>
         <a href="./06-EventEmitter.html">EventEmitter →</a>
       </nav>

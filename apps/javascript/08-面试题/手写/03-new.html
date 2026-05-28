@@ -77,7 +77,7 @@
           emit((ok ? "✓ " : "✗ ") + msg);
         }
 
-        // ====== 1. 手写 myNew：创建对象 → 连原型 → apply 执行 → 处理返回值 ======
+        // ============ 1. 手写 myNew：创建对象 → 连原型 → apply 执行 → 处理返回值 ============
         function myNew(Constructor, ...args) {
           if (typeof Constructor !== "function") {
             throw new TypeError("Constructor must be a function");
@@ -96,7 +96,7 @@
           return isObject ? result : instance;
         }
 
-        // ====== 2. 验证：实例属性 + 原型方法 + instanceof ======
+        // ============ 2. 验证：实例属性 + 原型方法 + instanceof ============
         function Person(name) {
           this.name = name;
         }
@@ -108,13 +108,21 @@
         assertOk(p instanceof Person, "p instanceof Person");
         assertOk(p.say() === "I am Ada", "p.say() = " + p.say());
 
-        // ====== 3. 验证：构造函数显式 return 对象覆盖默认实例 ======
+        // ============ 3. 验证：构造函数显式 return 对象覆盖默认实例 ============
         function Factory() {
           this.name = "inner";
           return { name: "returned object" };
         }
         const f = myNew(Factory);
         assertOk(f.name === "returned object", "Factory return 对象 → " + f.name);
+
+        // ============ 4. 验证：return 原始值被忽略，仍返回实例 ============
+        function IgnorePrimitive() {
+          this.tag = "instance";
+          return 42;
+        }
+        const ip = myNew(IgnorePrimitive);
+        assertOk(ip.tag === "instance", "return 原始值忽略 → 仍得实例");
       })();
     </script>
     <!-- SCRIPT_END -->
@@ -124,6 +132,9 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="./02-bind.html">相关 · bind</a>
+        <a href="./04-instanceof.html">相关 · instanceof</a>
+        <a href="../../03-%E5%AF%B9%E8%B1%A1%E4%B8%8E%E5%8E%9F%E5%9E%8B/%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0.html">相关 · 03-对象与原型/构造函数</a>
         <a href="./02-bind.html">← bind</a>
         <a href="./04-instanceof.html">instanceof →</a>
       </nav>

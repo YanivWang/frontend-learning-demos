@@ -38,7 +38,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>HTTP 强缓存 vs 协商缓存</h1>
-      <p class="hint">在浏览器中打开本页，结合下方演示区观察效果；要点与面试答法见上方复习区。</p>
+      <p class="hint">请阅读本复习区，并在下方演示区点击按钮模拟缓存决策；真实 HTTP 缓存行为需在 DevTools Network 面板人工验证。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -91,13 +91,14 @@
     <button type="button" id="btn-strong">强缓存命中（200 from cache）</button>
     <button type="button" id="btn-304">协商缓存 304</button>
     <button type="button" id="btn-200">缓存失效 200 新内容</button>
+    <button type="button" id="btn-nocache">no-cache vs no-store（Console）</button>
     <pre id="log" aria-live="polite"></pre>
     </section>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      // ====== 1. 模拟本地缓存条目 ======
+      // ============ 1. 模拟本地缓存条目 ============
       const cache = { etag: '"abc123"', body: "v1 内容", maxAge: 60, storedAt: Date.now() };
       const log = document.getElementById("log");
 
@@ -105,7 +106,7 @@
         log.textContent += msg + "\n";
       }
 
-      // ====== 2. 强缓存：未过期则不发请求 ======
+      // ============ 2. 强缓存：未过期则不发请求 ============
       document.getElementById("btn-strong").onclick = () => {
         log.textContent = "";
         const age = (Date.now() - cache.storedAt) / 1000;
@@ -117,7 +118,7 @@
         }
       };
 
-      // ====== 3. 协商缓存：304 Not Modified ======
+      // ============ 3. 协商缓存：304 Not Modified ============
       document.getElementById("btn-304").onclick = () => {
         log.textContent = "";
         write("请求头: If-None-Match: " + cache.etag);
@@ -125,7 +126,7 @@
         write("Body: " + cache.body);
       };
 
-      // ====== 4. 缓存失效：200 新内容 ======
+      // ============ 4. 缓存失效：200 新内容 ============
       document.getElementById("btn-200").onclick = () => {
         log.textContent = "";
         cache.body = "v2 新内容 @ " + new Date().toLocaleTimeString();
@@ -135,6 +136,17 @@
         write("新 ETag: " + cache.etag);
         write("Body: " + cache.body);
       };
+
+      // ============ 5. no-cache vs no-store（MDN Cache-Control 语义）============
+      // no-cache：可存本地，但使用前必须向服务器验证（If-None-Match / If-Modified-Since）
+      // no-store：不应存储请求或响应，常用于隐私/敏感数据
+      document.getElementById("btn-nocache").onclick = () => {
+        log.textContent = "";
+        write("[no-cache] 本地有副本 → 仍发条件请求验证 → 可能 304 或 200");
+        write("[no-store] 不写入 disk/memory cache → 每次等同全新请求");
+        console.log("no-cache: 可缓存但每次使用前须 revalidate");
+        console.log("no-store: 禁止存储，与 max-age=0 不同");
+      };
     </script>
     <!-- SCRIPT_END -->
 
@@ -143,6 +155,8 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
+        <a href="./fetch%E4%B8%8E%E8%B7%A8%E5%9F%9F.html">相关 · fetch与跨域</a>
+        <a href="./ImportMaps.html">相关 · ImportMaps</a>
         <a href="./fetch%E4%B8%8E%E8%B7%A8%E5%9F%9F.html">← fetch与跨域</a>
         <a href="./ImportMaps.html">ImportMaps →</a>
       </nav>
@@ -156,5 +170,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

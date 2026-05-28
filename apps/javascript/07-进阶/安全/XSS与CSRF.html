@@ -90,20 +90,30 @@ Set-Cookie: session=...; HttpOnly; Secure; SameSite=Lax</pre>
 
     <!-- SCRIPT_START -->
     <script>
-      // ====== 1. 危险 sink：innerHTML 会把输入当 HTML 解析 ======
       const nick = document.getElementById("nick");
+
+      // ============ 1. XSS 三种来源（本页演示 DOM XSS） ============
+      console.log("Stored XSS: 恶意数据存服务端，其他用户访问时触发");
+      console.log("Reflected XSS: 请求参数回显到页面时触发");
+      console.log("DOM XSS: 前端脚本把不可信数据写入 innerHTML 等 sink —— 本页演示");
+
+      // ============ 2. 危险 sink：innerHTML 会把输入当 HTML 解析 ============
       document.getElementById("unsafe").onclick = () => {
         document.getElementById("unsafe-out").innerHTML = "你好，" + nick.value;
-        console.log("innerHTML 写入完成 — 若 payload 含 onerror 等可能执行脚本");
+        console.log("innerHTML 写入完成 — 需人工在浏览器验证：payload 含 onerror 可能执行脚本");
       };
 
-      // ====== 2. 安全 sink：textContent / createTextNode 当纯文本处理 ======
+      // ============ 3. 安全 sink：textContent / createTextNode 当纯文本处理 ============
       document.getElementById("safe").onclick = () => {
         const el = document.getElementById("safe-out");
         el.textContent = "";
         el.append(document.createTextNode("你好，" + nick.value));
-        console.log("textContent 写入完成 — 输入始终为纯文本");
+        console.log("textContent 写入完成 — 输入始终为纯文本，标签不会被解析");
       };
+
+      // ============ 4. CSRF 防护要点（服务端校验，Console 摘要） ============
+      console.log("CSRF: 攻击站点诱导浏览器带 Cookie 发起状态变更请求");
+      console.log("防护: SameSite Cookie + CSRF Token + Origin/Referer 校验");
     </script>
     <!-- SCRIPT_END -->
 
@@ -112,8 +122,10 @@ Set-Cookie: session=...; HttpOnly; Secure; SameSite=Lax</pre>
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="../%E6%97%A0%E9%9A%9C%E7%A2%8D-a11y.html">相关 · 无障碍-a11y</a>
+        <a href="../%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/index.html">相关 · 内存泄漏/index</a>
         <a href="../%E6%97%A0%E9%9A%9C%E7%A2%8D-a11y.html">← 无障碍-a11y</a>
-        <a href="../%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/index.html">内存泄漏 →</a>
+        <a href="../%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/index.html">index →</a>
       </nav>
       <script>
         (function () {

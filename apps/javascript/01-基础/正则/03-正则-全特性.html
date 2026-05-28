@@ -20,11 +20,6 @@
     <title>正则表达式全特性</title>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
-    <style>
-      body { font-family: system-ui, monospace; margin: 1.5rem; line-height: 1.7; }
-      code { background: #f5f5f5; padding: 1px 4px; border-radius: 3px; }
-      .hint { color: #666; font-size: 0.9rem; margin: 0.5rem 0 1rem; font-family: system-ui, sans-serif; }
-    </style>
   </head>
   <body class="demo-page">
     <!-- NOTES_START -->
@@ -111,6 +106,29 @@
       const m = date.match(/(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/);
       console.log("命名捕获:", m.groups); // { year: '2025', month: '12', day: '31' }
 
+      // ============ 10. 零宽断言：lookahead / lookbehind ============
+      // (?=) 前瞻：后面必须满足条件，不消耗字符
+      console.log("前瞻 (?=bar):", "foobar".match(/foo(?=bar)/)?.[0]); // "foo"
+      console.log("前瞻不匹配:", "foobaz".match(/foo(?=bar)/)); // null
+      // (?<=) 后顾：前面必须满足条件（ES2018）
+      console.log("后顾 (?<=foo):", "foobar".match(/(?<=foo)bar/)?.[0]); // "bar"
+      // (?!) 负前瞻；(?<!) 负后顾
+      console.log("负前瞻 (?!bar):", "foobaz".match(/foo(?!bar)\w+/)); // ["foobaz"]
+
+      // ============ 11. s / u / y 标志 ============
+      // s (dotAll)：让 . 匹配换行
+      const multiline = "a\nb";
+      console.log("无 s 时 . 不匹配换行:", multiline.match(/a.b/)); // null
+      console.log("s 标志 dotAll:", multiline.match(/a.b/s)?.[0]); // "a\nb"
+      // u (Unicode)：正确处理 Unicode 码点（如 emoji）
+      console.log("u 标志 emoji:", "😀x".match(/\u{1F600}/u)?.[0]); // "😀"
+      // y (sticky)：从 lastIndex 开始匹配，不匹配则 lastIndex 归零
+      const sticky = /\d/y;
+      sticky.lastIndex = 2;
+      console.log("y sticky test 'ab12':", sticky.test("ab12"), sticky.lastIndex); // true, 4
+      sticky.lastIndex = 0;
+      console.log("y sticky 不匹配时 lastIndex:", sticky.test("abc"), sticky.lastIndex); // false, 0
+
     </script>
     <!-- SCRIPT_END -->
 
@@ -134,5 +152,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

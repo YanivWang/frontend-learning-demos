@@ -51,7 +51,7 @@
         <ul>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">MDN: Proxy</a>：handler trap 与默认转发行为。</li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/Proxy/get">MDN: handler.get()</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/Proxy/set">MDN: handler.set()</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/Proxy/set">MDN: handler.set()</a>：返回值与严格模式 TypeError。</li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect">MDN: Reflect</a></li>
         </ul>
       </div>
@@ -67,14 +67,14 @@
         },
       };
 
-      // ====== 1. 空 handler：trap 默认转发，行为接近原对象 ======
+      // ============ 1. 空 handler：trap 默认转发，行为接近原对象 ============
       const transparent = new Proxy(person, {});
       console.log("空 handler 读取 name:", transparent.name); // "wangcheng"
       transparent.name = "透明代理";
       console.log("空 handler 写入后 person.name:", person.name); // "透明代理"
       person.name = "wangcheng"; // 恢复
 
-      // ====== 2. 自定义 get/set trap + Reflect 默认转发 ======
+      // ============ 2. 自定义 get/set trap + Reflect 默认转发 ============
       const handler = {
         get(targetObj, property, receiver) {
           console.log(`get trap: ${String(property)}`);
@@ -96,7 +96,22 @@
       proxy.name = "我是高杰";
       console.log("写入后 proxy/person:", proxy.name, person.name);
 
-      // ====== 3. has / deleteProperty trap 也能拦截元操作 ======
+      // ============ 3. set trap 返回 false：严格模式抛 TypeError ============
+      (function strictSetTrapDemo() {
+        "use strict";
+        const reject = new Proxy({}, {
+          set() {
+            return false; // 表示写入失败
+          },
+        });
+        try {
+          reject.x = 1;
+        } catch (err) {
+          console.log("set trap 返回 false:", err.name, "-", err.message);
+        }
+      })();
+
+      // ============ 4. has / deleteProperty trap 拦截元操作 ============
       const metaHandler = {
         has(target, prop) {
           console.log("has trap:", String(prop));
@@ -112,11 +127,14 @@
       delete metaProxy.b;
       console.log("删除 b 后 keys:", Object.keys(metaProxy));
 
-      // ====== 4. Proxy 不能用 instanceof Proxy 判断 ======
-      // TypeError: Function has non-object prototype 'undefined' in instanceof check
-      // console.log(proxy instanceof Proxy);
+      // ============ 5. Proxy 不能用 instanceof Proxy 判断 ============
+      try {
+        console.log("proxy instanceof Proxy:", proxy instanceof Proxy);
+      } catch (err) {
+        console.log("instanceof Proxy 报错:", err.name, "-", err.message);
+      }
 
-      // ====== 5. Reflect 是与 trap 同名的默认转发 API ======
+      // ============ 6. Reflect 是与 trap 同名的默认转发 API ============
       console.log("Reflect 类型:", typeof Reflect); // "object"
       console.log("Reflect.get(proxy, 'name'):", Reflect.get(proxy, "name"));
     </script>
@@ -127,10 +145,10 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../index.html">目录</a>
-        <a href="./defineProperty%E8%AE%BF%E9%97%AE%E5%99%A8%E5%B1%9E%E6%80%A7.html">相关 · defineProperty访问器属性</a>
+        <a href="./defineProperty.html">相关 · defineProperty</a>
         <a href="./%E4%BB%A3%E7%90%86%E7%9A%84%E7%BC%BA%E7%82%B9.html">相关 · 代理的缺点</a>
         <a href="./defineProperty%E8%AE%BF%E9%97%AE%E5%99%A8%E5%B1%9E%E6%80%A7.html">← defineProperty访问器属性</a>
-        <a href="./%E4%BB%A3%E7%90%86%E7%9A%84%E7%8B%B9%E7%82%B9.html">代理的缺点 →</a>
+        <a href="../06-%E6%B5%8F%E8%A7%88%E5%99%A8API/%E5%89%AA%E8%B4%B4%E6%9D%BF.html">剪贴板 →</a>
       </nav>
       <script>
         (function () {

@@ -39,7 +39,7 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>DOM 事件流：捕获、冒泡、委托</h1>
-      <p class="hint">阅读本复习区后，在下方演示区点击嵌套方块、切换模式并点击列表项，观察捕获/冒泡与事件委托。</p>
+      <p class="hint">阅读本复习区后，在下方点击嵌套方块、切换模式并点击列表项；<code>once</code> 选项见 DevTools Console。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -101,7 +101,7 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // ====== 1. 捕获 / 冒泡与 stopPropagation 演示 ======
+      // ============ 1. 捕获 / 冒泡与 stopPropagation 演示 ============
       const logBox = document.getElementById("log");
       const nodes = document.querySelectorAll(".outer, .middle, .inner");
       let mode = "normal";
@@ -144,7 +144,7 @@
 
       bindEventFlow();
 
-      // ====== 2. 模式切换按钮 ======
+      // ============ 2. 模式切换按钮 ============
       document.getElementById("normalBtn").addEventListener("click", () => {
         mode = "normal";
         resetLog("已切换：正常传播。点击 inner。");
@@ -160,12 +160,20 @@
         resetLog("已切换：inner 冒泡阶段 stopImmediatePropagation。点击 inner。");
       });
 
-      // ====== 3. 事件委托：父级 ul 统一处理 li 点击 ======
+      // ============ 3. 事件委托：父级 ul 统一处理 li 点击 ============
       document.getElementById("todoList").addEventListener("click", event => {
         const item = event.target.closest("li");
         if (!item || !event.currentTarget.contains(item)) return;
         resetLog("事件委托：父级 ul 捕获到 li 点击，id=" + item.dataset.id + "，文本=" + item.textContent);
       });
+
+      // ============ 4. addEventListener options：once / capture（Console）============
+      // capture 已在 §1 的 addEventListener(..., true) 演示；passive 主要用于 scroll/touch，见复习区
+      let onceDemoCount = 0;
+      document.getElementById("normalBtn").addEventListener("click", function () {
+        onceDemoCount += 1;
+        console.log("once 监听触发次数:", onceDemoCount, "（仅第一次有效）");
+      }, { once: true });
 
     </script>
     <!-- SCRIPT_END -->
@@ -175,6 +183,8 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="./01-%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF.html">相关 · 事件循环</a>
+        <a href="./03-Node%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E5%AF%B9%E6%AF%94.html">相关 · Node与浏览器事件循环对比</a>
         <a href="./01-%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF.html">← 事件循环</a>
         <a href="./03-Node%E4%B8%8E%E6%B5%8F%E8%A7%88%E5%99%A8%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E5%AF%B9%E6%AF%94.html">Node与浏览器事件循环对比 →</a>
       </nav>
@@ -188,5 +198,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

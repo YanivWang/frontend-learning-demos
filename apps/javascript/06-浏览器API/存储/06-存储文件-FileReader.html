@@ -72,7 +72,7 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // ====== 1. localforage 实例与 UI ======
+      // ============ 1. localforage 实例与 UI ============
       const store = localforage.createInstance({
         name: "frontend-learning-demos",
         storeName: "localforage_file_reader",
@@ -87,7 +87,7 @@
         console.log(message);
       }
 
-      // ====== 2. FileReader 读 data URL（小文件预览）======
+      // ============ 2. FileReader 读 data URL / ArrayBuffer ============
       function readAsDataURL(file) {
         return new Promise(function (resolve, reject) {
           const reader = new FileReader();
@@ -101,7 +101,20 @@
         });
       }
 
-      // ====== 3. 存 Blob 到 IndexedDB（优先于 base64）======
+      function readAsArrayBuffer(file) {
+        return new Promise(function (resolve, reject) {
+          const reader = new FileReader();
+          reader.onload = function () {
+            resolve(reader.result);
+          };
+          reader.onerror = function () {
+            reject(reader.error || new Error("FileReader 读取失败"));
+          };
+          reader.readAsArrayBuffer(file);
+        });
+      }
+
+      // ============ 3. 存 Blob 到 IndexedDB（优先于 base64）============
       async function storeFile(file) {
         if (!file) {
           setStatus("未选择文件。");
@@ -123,6 +136,8 @@
             const dataURL = await readAsDataURL(file);
             console.log("dataURL 字符数：", dataURL.length);
             console.log("dataURL 预览前 80 字符：", dataURL.slice(0, 80));
+            const buffer = await readAsArrayBuffer(file);
+            console.log("readAsArrayBuffer byteLength：", buffer.byteLength);
           } else {
             console.warn("文件超过 512KB，跳过 readAsDataURL 预览，避免额外内存开销。");
           }
@@ -150,6 +165,8 @@
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
         <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
+        <a href="./05-%E6%B5%8B%E8%AF%95%E6%9C%80%E5%A4%A7%E5%AE%B9%E9%87%8F.html">相关 · 测试最大容量</a>
+        <a href="./01-localforage-%E5%9F%BA%E7%A1%80API.html">相关 · localforage-基础API</a>
         <a href="./05-%E6%B5%8B%E8%AF%95%E6%9C%80%E5%A4%A7%E5%AE%B9%E9%87%8F.html">← 测试最大容量</a>
         <a href="../%E4%BA%8B%E4%BB%B6%E6%A8%A1%E5%9E%8B/01-%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF.html">事件循环 →</a>
       </nav>
@@ -163,5 +180,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

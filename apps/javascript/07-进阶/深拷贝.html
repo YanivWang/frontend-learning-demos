@@ -66,9 +66,10 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // ====== 1. 浅拷贝：Object.assign / 展开运算符 ======
       const src = { a: 1, b: { c: 2 } };
 
+      // ============ 1. 浅拷贝：Object.assign / 展开运算符 ============
+      // 只复制第一层属性值；嵌套对象仍共享引用
       const s1 = Object.assign({}, src);
       const s2 = { ...src };
 
@@ -76,8 +77,9 @@
       console.log("浅拷贝改 s1.b.c 后，src.b.c =", src.b.c); // 99 —— 共享引用
       console.log("s1 === src:", s1 === src); // false（顶层是新对象）
       console.log("s1.b === src.b:", s1.b === src.b); // true（嵌套仍共享）
+      console.log("展开运算符 s2.b === src.b:", s2.b === src.b); // true，行为同 assign
 
-      // ====== 2. JSON 序列化深拷贝（有类型丢失）======
+      // ============ 2. JSON 序列化深拷贝（有类型丢失） ============
       function cloneJSON(obj) {
         return JSON.parse(JSON.stringify(obj));
       }
@@ -93,12 +95,22 @@
       const d1 = cloneJSON(jsonSrc);
       console.log("JSON 丢失 undefined:", "d" in d1); // false
       console.log("JSON 丢失函数:", "e" in d1); // false
+      console.log("JSON 丢失 Symbol:", "f" in d1); // false
       console.log("JSON Date 变字符串:", typeof d1.g); // "string"
 
       d1.b.c = 99;
       console.log("JSON 深拷贝后 jsonSrc.b.c 不变 =", jsonSrc.b.c); // 2
 
-      // ====== 3. structuredClone（现代推荐，有边界）======
+      // 循环引用：JSON.stringify 会抛 TypeError
+      const cyclic = { a: 1 };
+      cyclic.self = cyclic;
+      try {
+        JSON.stringify(cyclic);
+      } catch (err) {
+        console.log("JSON 循环引用报错:", err.name); // TypeError
+      }
+
+      // ============ 3. structuredClone（现代推荐，有边界） ============
       if (typeof structuredClone === "function") {
         const rich = {
           a: 1,
@@ -111,6 +123,12 @@
         console.log("structuredClone RegExp:", cloned.r instanceof RegExp);
         console.log("structuredClone Map:", cloned.m.get("x"));
 
+        // 循环引用：structuredClone 可处理
+        const ring = { n: 1 };
+        ring.self = ring;
+        const ringClone = structuredClone(ring);
+        console.log("structuredClone 循环引用:", ringClone.self === ringClone); // true
+
         try {
           structuredClone({ fn: () => {} });
         } catch (err) {
@@ -118,7 +136,7 @@
         }
       }
 
-      // ====== 4. 手写 deepClone（递归 + WeakMap 处理循环引用）======
+      // ============ 4. 手写 deepClone（递归 + WeakMap 处理循环引用） ============
       function deepClone(value, hash = new WeakMap()) {
         if (value === null || typeof value !== "object") return value;
         if (value instanceof Date) return new Date(value);
@@ -138,6 +156,7 @@
         } else if (value instanceof Set) {
           value.forEach((v) => result.add(deepClone(v, hash)));
         } else {
+          // Reflect.ownKeys 包含 Symbol 键
           Reflect.ownKeys(value).forEach((key) => {
             result[key] = deepClone(value[key], hash);
           });
@@ -145,8 +164,9 @@
         return result;
       }
 
-      // ====== 5. 验证手写 deepClone ======
+      // ============ 5. 验证手写 deepClone ============
       const a = { name: "瓜子", info: { age: 3 }, list: [1, [2, 3]] };
+      a[Symbol("tag")] = "pet";
       a.self = a; // 循环引用
       const b = deepClone(a);
       b.info.age = 99;
@@ -154,6 +174,7 @@
       console.log("a.info.age 不变 =", a.info.age); // 3
       console.log("a.list[1][0] 不变 =", a.list[1][0]); // 2
       console.log("b.self === b ?", b.self === b); // true
+      console.log("Symbol 键被复制:", b[Symbol("tag")]); // "pet"
     </script>
     <!-- SCRIPT_END -->
 

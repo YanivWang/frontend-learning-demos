@@ -2,9 +2,11 @@
   分类: javascript / 01-基础
   主题: 数组方法、是否改变原数组与常见手写
   要点:
-    - map/filter/reduce/some/every 等迭代方法不修改原数组
-    - push/pop/shift/unshift/splice/sort/reverse 会修改原数组
-    - 去重、扁平化、分组统计是数组面试常见题
+    - map/filter/reduce 等迭代方法不修改原数组；map 返回新数组，forEach 返回 undefined
+    - push/pop/shift/unshift/splice/sort/reverse 会修改原数组；可用 toSorted/toReversed 等不可变 API
+    - includes 用 SameValueZero 能找到 NaN；indexOf 用严格相等找不到 NaN
+    - 去重：Set 可正确处理 NaN；filter+indexOf 因 indexOf 找不到 NaN 会丢元素；对象按 key 用 Map
+    - 扁平化 flat(depth)、手写 reduce；分组统计用 reduce
   面试:
     - 哪些数组方法会改变原数组，如何保持不可变更新？
     - 如何实现数组去重、扁平化与分组统计？
@@ -29,25 +31,27 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><strong>不改原数组</strong>：map、filter、reduce、some、every、find、findIndex、slice、concat、flat、includes 等。</li>
+          <li><strong>不改原数组</strong>：map、filter、reduce、some、every、find、findIndex、slice、concat、flat、includes 等（返回新数组或布尔值）。</li>
           <li><strong>会改原数组</strong>：push、pop、shift、unshift、splice、sort、reverse、fill、copyWithin。</li>
-          <li><code>sort()</code> 默认按字符串 Unicode 排序，数字排序需 <code>(a,b)=&gt;a-b</code>。</li>
-          <li><code>includes(NaN)</code> 为 true；<code>indexOf(NaN)</code> 为 -1（=== 比较）。</li>
-          <li>手写常考：去重（Set / filter+indexOf）、扁平化（flat / reduce）、分组（reduce）。</li>
+          <li><code>sort()</code> 无比较函数时，元素先转字符串再按 <strong>UTF-16 码元</strong> 排序；数字需 <code>(a,b)=&gt;a-b</code>。</li>
+          <li><code>includes(NaN)</code> 为 true（SameValueZero）；<code>indexOf(NaN)</code> 为 -1（严格相等 <code>===</code>）。</li>
+          <li>去重：<code>Set</code> 按 SameValueZero 可去 NaN；<code>filter+indexOf</code> 依赖 indexOf，找不到 NaN 会误删；对象按 key 用 <code>Map</code>。</li>
+          <li><code>flat()</code> 默认深度为 1；完全扁平用 <code>flat(Infinity)</code> 或 reduce 递归。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
           <li><strong>哪些方法改原数组？</strong> 结论：push/pop/shift/unshift/splice/sort/reverse/fill/copyWithin 会原地修改。原因是这些 API 设计为就地更新；在 React/Vue 状态或 reducer 中要先复制再调用，或使用 <code>toSorted</code>/<code>toReversed</code> 等现代不可变 API。</li>
-          <li><strong>数组去重怎么选？</strong> 结论：基础值用 <code>[...new Set(arr)]</code> 最直接，对象数组按 key 用 <code>Map</code>。原因是 Set 按 SameValueZero 比较值，不能自动按对象内容去重；业务里要先定义唯一键。</li>
+          <li><strong>数组去重怎么选？</strong> 结论：基础值用 <code>[...new Set(arr)]</code> 最直接，对象数组按 key 用 <code>Map</code>。原因是 Set 按 SameValueZero 比较值；<code>filter+indexOf</code> 内部用 indexOf（严格相等），含 NaN 时去重结果不可靠。</li>
           <li><strong>map vs forEach？</strong> 结论：<code>map</code> 返回等长新数组，<code>forEach</code> 返回 <code>undefined</code>。原因是 map 用于映射数据，forEach 用于副作用；链式计算用 map/filter/reduce，日志或 DOM 操作用 forEach。</li>
           <li><strong>[1,2,3].map(parseInt)？</strong> 结论：结果是 <code>[1, NaN, NaN]</code>。原因是 map 传入 <code>(value, index)</code>，parseInt 把 index 当 radix；项目中应写 <code>.map(Number)</code> 或 <code>.map(v =&gt; parseInt(v, 10))</code>。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">MDN: Array</a>：数组实例方法总览及是否原地修改。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map">MDN: Array.prototype.map()</a>：回调参数和返回新数组语义。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort">MDN: Array.prototype.sort()</a>：默认字符串排序和原地修改行为。</li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set">MDN: Set</a>：Set 唯一性和 SameValueZero 比较。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">MDN: Array</a>：复制方法 vs 变异方法总览。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map">MDN: Array.prototype.map()</a>：回调参数、parseInt 陷阱。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort">MDN: Array.prototype.sort()</a>：默认 UTF-16 字符串序与原地修改。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes">MDN: Array.prototype.includes()</a>：SameValueZero 与 NaN。</li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set">MDN: Set</a>：SameValueZero 去重。</li>
         </ul>
       </div>
     </section>
@@ -57,71 +61,144 @@
     <script>
       const nums = [1, 2, 3, 4, 5];
 
-      // ============ 1. 常见迭代 ============
-      console.log("map:", nums.map(n => n * 2));
-      console.log("filter:", nums.filter(n => n % 2 === 0));
+      // ============ 1. 常见迭代（不修改原数组 nums） ============
+      // map：对每个元素映射，返回等长新数组
+      console.log("map:", nums.map((n) => n * 2));
+      // filter：保留回调返回 true 的元素
+      console.log("filter:", nums.filter((n) => n % 2 === 0));
+      // reduce：累加器从左到右归约为单个值
       console.log("reduce sum:", nums.reduce((sum, n) => sum + n, 0));
-      console.log("some > 3:", nums.some(n => n > 3));
-      console.log("every > 0:", nums.every(n => n > 0));
+      // some / every：是否存在 / 是否全部满足条件
+      console.log("some > 3:", nums.some((n) => n > 3));
+      console.log("every > 0:", nums.every((n) => n > 0));
+      // forEach：仅副作用，无返回值（见 §2）
       nums.forEach((n, index) => {
         if (index < 2) console.log("forEach:", index, n);
       });
 
-      // ============ 2. 查找类 ============
+      // ============ 2. map 与 forEach 返回值对比 ============
+      const mapped = nums.map((n) => n * 2);
+      const foreachResult = nums.forEach((n) => n * 2);
+      console.log("map 返回新数组:", mapped, "原数组不变:", nums);
+      console.log("forEach 返回值:", foreachResult); // undefined
+
+      // ============ 3. map(parseInt) 踩坑：第二参数是 index，被当作 radix ============
+      // parseInt("1", 0) → 1；parseInt("2", 1) → NaN；parseInt("3", 2) → NaN
+      console.log("[1,2,3].map(parseInt):", [1, 2, 3].map(parseInt));
+      console.log(
+        '["1","2","3"].map(parseInt):',
+        ["1", "2", "3"].map(parseInt),
+      );
+      console.log(
+        "正确写法 map(Number):",
+        ["1", "2", "3"].map(Number),
+      );
+
+      // ============ 4. 查找类 ============
       const users = [
         { id: 1, name: "A" },
-        { id: 2, name: "B" }
+        { id: 2, name: "B" },
       ];
-      console.log("find:", users.find(user => user.id === 2));
-      console.log("findIndex:", users.findIndex(user => user.id === 2));
+      // find / findIndex：找到即返回元素或下标，否则 undefined / -1
+      console.log("find:", users.find((user) => user.id === 2));
+      console.log("findIndex:", users.findIndex((user) => user.id === 2));
+      // includes：SameValueZero，NaN 视为相等
       console.log("includes NaN:", [1, NaN].includes(NaN)); // true
+      // indexOf：严格相等 ===，NaN 永远匹配不到
       console.log("indexOf NaN:", [1, NaN].indexOf(NaN)); // -1
 
-      // ============ 3. 会改变原数组的方法 ============
+      // ============ 5. 栈式方法：push/pop/shift/unshift（均修改原数组） ============
+      const stack = [1, 2];
+      stack.push(3); // 末尾入栈，返回新 length
+      console.log("push 后:", stack);
+      console.log("pop 弹出:", stack.pop(), "剩余:", stack);
+      const queue = [10, 20, 30];
+      console.log("shift 弹出首项:", queue.shift(), "剩余:", queue);
+      queue.unshift(5); // 首部入队
+      console.log("unshift 后:", queue);
+
+      // ============ 6. sort / reverse / splice（修改原数组） ============
       const changed = [3, 10, 2];
-      changed.sort(); // 默认按字符串字典序排序
-      console.log("sort default:", changed); // [10, 2, 3]
+      // 无 compareFn：转字符串后按 UTF-16 码元排序 → "10" 在 "2" 前
+      changed.sort();
+      console.log("sort 默认:", changed); // [10, 2, 3]
       changed.sort((a, b) => a - b);
-      console.log("sort number:", changed); // [2, 3, 10]
+      console.log("sort 数字:", changed); // [2, 3, 10]
       changed.reverse();
-      console.log("reverse mutates:", changed);
-      changed.splice(1, 1, 99);
-      console.log("splice mutates:", changed);
+      console.log("reverse:", changed);
+      // splice(start, deleteCount, ...items)：删除并可选插入，返回被删项数组
+      const removed = changed.splice(1, 1, 99);
+      console.log("splice 删除项:", removed, "变更后:", changed);
 
-      // ============ 4. 不改变原数组的方法 ============
+      // ============ 7. 不可变替代：toSorted / toReversed（不修改原数组） ============
+      const original = [3, 1, 2];
+      const sortedCopy = original.toSorted((a, b) => a - b);
+      const reversedCopy = original.toReversed();
+      console.log("toSorted 副本:", sortedCopy, "原数组:", original);
+      console.log("toReversed 副本:", reversedCopy, "原数组:", original);
+
+      // ============ 8. slice / concat（不修改原数组，浅拷贝元素引用） ============
       const source = [1, 2, 3];
-      console.log("slice:", source.slice(0, 2), "source:", source);
-      console.log("concat:", source.concat([4, 5]), "source:", source);
+      console.log("slice:", source.slice(0, 2), "source 不变:", source);
+      console.log("concat:", source.concat([4, 5]), "source 不变:", source);
 
-      // ============ 5. 去重 ============
+      // ============ 9. 去重 ============
       const repeated = [1, 2, 2, 3, 3, 3];
       const uniqueBySet = [...new Set(repeated)];
-      const uniqueByFilter = repeated.filter((item, index, arr) => arr.indexOf(item) === index);
-      console.log("unique Set:", uniqueBySet);
-      console.log("unique filter:", uniqueByFilter);
+      const uniqueByFilter = repeated.filter(
+        (item, index, arr) => arr.indexOf(item) === index,
+      );
+      console.log("Set 去重:", uniqueBySet);
+      console.log("filter+indexOf:", uniqueByFilter);
 
-      // ============ 6. 扁平化 ============
+      // NaN：Set 保留一个 NaN；indexOf(NaN)===-1，filter+indexOf 会把 NaN 全部滤掉
+      const withNan = [1, NaN, NaN, 2];
+      console.log("Set 去 NaN:", [...new Set(withNan)]); // [1, NaN, 2]
+      console.log(
+        "filter+indexOf 含 NaN:",
+        withNan.filter((item, i, arr) => arr.indexOf(item) === i),
+      ); // [1, 2] —— NaN 被误删
+      console.log(
+        "纯 NaN 数组 filter+indexOf:",
+        [NaN, NaN].filter((item, i, arr) => arr.indexOf(item) === i),
+      ); // []
+
+      // 对象数组：按 id 用 Map 保留首次出现
+      const rows = [
+        { id: 1, name: "a" },
+        { id: 2, name: "b" },
+        { id: 1, name: "a-dup" },
+      ];
+      const uniqueByKey = [
+        ...new Map(rows.map((row) => [row.id, row])).values(),
+      ];
+      console.log("Map 按 id 去重:", uniqueByKey);
+
+      // ============ 10. 扁平化 ============
       const nested = [1, [2, [3, [4]]]];
       function flatten(arr) {
         return arr.reduce((result, item) => {
-          return result.concat(Array.isArray(item) ? flatten(item) : item);
+          return result.concat(
+            Array.isArray(item) ? flatten(item) : item,
+          );
         }, []);
       }
-      console.log("flatten recursive:", flatten(nested));
-      console.log("flat Infinity:", nested.flat(Infinity));
+      console.log("reduce 递归扁平:", flatten(nested));
+      // flat() 默认 depth=1，只展开一层
+      console.log("flat(1):", nested.flat(1));
+      console.log("flat(Infinity):", nested.flat(Infinity));
 
-      // ============ 7. reduce 分组统计 ============
+      // ============ 11. reduce 分组统计 ============
       const orders = [
         { type: "book", price: 20 },
         { type: "food", price: 10 },
-        { type: "book", price: 15 }
+        { type: "book", price: 15 },
       ];
       const group = orders.reduce((acc, item) => {
         acc[item.type] = (acc[item.type] || 0) + item.price;
         return acc;
       }, {});
-      console.log("group by type:", group);
-
+      console.log("按 type 汇总 price:", group);
     </script>
     <!-- SCRIPT_END -->
 
@@ -144,5 +221,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

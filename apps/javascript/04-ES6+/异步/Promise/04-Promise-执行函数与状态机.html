@@ -54,7 +54,7 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // ====== 1. executor 在构造时同步执行，then 回调在 settled 后作为微任务 ======
+      // ============ 1. executor 在构造时同步执行，then 回调在 settled 后作为微任务 ============
       console.log("--- executor 同步执行 ---");
       const pSync = new Promise(function (resolve) {
         console.log("executor 同步执行"); // 立刻输出
@@ -63,7 +63,7 @@
       console.log("构造器返回后，then 尚未执行");
       pSync.then((v) => console.log("then 微任务:", v)); // "sync-done"
 
-      // ====== 2. 状态 settled 后不可逆，后续 resolve/reject 被忽略 ======
+      // ============ 2. 状态 settled 后不可逆，后续 resolve/reject 被忽略 ============
       const pSettled = new Promise(function (resolve, reject) {
         resolve("first");
         reject(new Error("ignored after resolve"));
@@ -73,14 +73,14 @@
         .then((v) => console.log("settled 值:", v)) // "first"
         .catch((err) => console.error("不会走到:", err.message));
 
-      // ====== 3. executor 内同步 throw 等价于 reject ======
+      // ============ 3. executor 内同步 throw 等价于 reject ============
       new Promise(function () {
         throw new Error("executor 同步 throw");
       }).catch((err) => {
         console.log("同步 throw → reject:", err.message);
       });
 
-      // ====== 4. 异步回调里的 throw 须手动 reject（构造器无法捕获）======
+      // ============ 4. 异步回调里的 throw 须手动 reject（构造器无法捕获） ============
       new Promise(function (resolve, reject) {
         setTimeout(function () {
           try {
@@ -93,7 +93,7 @@
         console.log("异步 reject:", err.message);
       });
 
-      // ====== 5. 异步 executor：随机 resolve/reject，演示 then/catch ======
+      // ============ 5. 异步 executor：随机 resolve/reject，演示 then/catch ============
       function randomExecutor(resolve, reject) {
         setTimeout(function () {
           const ret = Math.random() * 10;
@@ -130,5 +130,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>
