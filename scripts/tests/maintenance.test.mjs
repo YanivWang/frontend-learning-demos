@@ -91,6 +91,28 @@ test("framework mount DOM is wrapped by PAGE_DOM markers", () => {
   assert.deepEqual(failures, []);
 });
 
+test("vue2 learning pages do not contain draft-note wording", () => {
+  const files = listHtmlFiles(join(ROOT, "apps/vue2/src"));
+  const bannedPatterns = [
+    /说的那么高端/,
+    /类似于java中的jar包/i,
+    /1111|2222/,
+    /原文件为空壳/,
+  ];
+  const failures = [];
+
+  for (const file of files) {
+    const html = readFileSync(file, "utf8");
+    for (const pattern of bannedPatterns) {
+      if (pattern.test(html)) {
+        failures.push(`${relative(ROOT, file)}: ${pattern}`);
+      }
+    }
+  }
+
+  assert.deepEqual(failures, []);
+});
+
 test("sync-readmes --check validates README tables without rewriting them", () => {
   const readmeFiles = [
     "apps/javascript/README.md",

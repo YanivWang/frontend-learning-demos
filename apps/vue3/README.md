@@ -1,6 +1,6 @@
 # Vue 3
 
-Vue 3.5.x 时代的 demo（`libs/vue.global.js` 为 **3.5.34**，全局构建）。`apps/vue3/src/` 下共 **41** 个 `.html` 文件`.html`，目标是覆盖 Vue3 面试常用基础、进阶原理和项目实战常问点。每个文件都可以直接在浏览器打开，无需构建。
+Vue 3.5.x 时代的 demo（`libs/vue.global.js` 为 **3.5.34**，全局构建）。`apps/vue3/src/` 下共 **41** 个 `.html` 文件，目标是覆盖 Vue3 面试常用基础、进阶原理和项目实战常问点。每个文件都可以直接在浏览器打开，无需构建。
 
 ## 推荐顺序
 
@@ -27,7 +27,7 @@ Vue 3.5.x 时代的 demo（`libs/vue.global.js` 为 **3.5.34**，全局构建）
 
 通用库 `axios` / `lodash` / `js-cookie` 见 [`../../packages/shared/libs/README.md`](../../packages/shared/libs/README.md)。
 
-说明：当前可运行 Vue3 demo 只实际引用 `vue.global.js`；Router / Pinia 相关 demo 目前仍以面试代码片段和概念说明为主，预置库先保留，后续改成可运行示例时再接入对应 `<script src>`。
+说明：多数 Vue3 demo 只实际引用 `vue.global.js`；Router / Pinia 主题中既有概念说明页，也有可运行页。`07-路由状态工程化/06-Router与Pinia可运行示例.html` 已同时接入 `vue-router.global.js` 和 `pinia.iife.js`，`07-路由状态工程化/02-Pinia核心面试点.html` 已接入 `pinia.iife.js`。Vite / Vitest 等工程化主题仍以面试边界和配置片段为主，需要在真实工程中验证完整能力。
 
 ## 完整 demo 清单
 
