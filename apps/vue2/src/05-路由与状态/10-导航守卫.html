@@ -1,5 +1,5 @@
 <!--
-  分类: vue2 / 05-路由与状态
+  分类: vue2 / 05-路由与状态
   主题: vue-router 全套导航守卫 + 受保护路由（meta.requiresAuth）
   要点:
     - 导航守卫可全局、路由独享、组件内声明，用来放行、重定向或取消导航
@@ -7,13 +7,13 @@
     - beforeRouteEnter 不能访问 this，只能通过 next(vm => ...) 拿到组件实例
     - afterEach 没有 next，适合埋点和收尾；不要在守卫中漏调或多调 next
   面试:
-    - Vue Router 3 的完整导航解析流程大致是什么？
-    - 全局 beforeEach、beforeEnter、组件内守卫分别放什么逻辑？
+    - 导航守卫的完整流程怎么讲？
+    - 全局守卫、路由独享守卫、组件内守卫怎么分工？
     - beforeRouteEnter 为什么不能直接访问 this？
-    - 登录拦截用 meta.requiresAuth 时要注意哪些刷新、重定向和存储边界？
+    - 登录拦截有哪些坑？
 -->
 
-<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -28,7 +28,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>vue-router 全套导航守卫 + 受保护路由（meta.requiresAuth）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        未登录时点击 <code>About（需登录）</code> 应跳转 Login；点「模拟登录」后进入 About；离开 About 时会弹出确认框。打开
+        Console 观察全局/路由独享/组件内守卫的打印顺序。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -70,6 +73,11 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // 导航守卫 + meta.requiresAuth 受保护路由
+      // 官方：beforeEach/beforeEnter/beforeRouteEnter 等可放行、重定向或取消导航；
+      // beforeRouteEnter 不能访问 this，可用 next(vm => ...)。
+      // ---------------------------------------------------------------------------
       const AUTH_KEY = 'vue2-demo-auth';
 
       const Home = {
@@ -113,7 +121,7 @@
         template: `
         <div>
           <p>请登录后访问 About</p>
-          <button @click="login">模拟登录</button>
+          <button type="button" @click="login">模拟登录</button>
         </div>
         `,
         methods: {
@@ -192,5 +200,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
-</html>
+</body>
+</html>

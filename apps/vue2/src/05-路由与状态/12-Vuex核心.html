@@ -7,10 +7,10 @@
     - getter 类似 store 级 computed；返回函数的 getter 适合按参数查询，但不等同数组 getter
     - mapState / mapGetters 把 store 字段映射成组件 computed，避免模板里反复写 $store
   面试:
-    - Vuex 的 state、mutation、action、getter 分别负责什么？
-    - 为什么 Vuex 要求通过 mutation 修改状态，而不是组件直接改 state？
-    - getter 返回函数时和普通数组 getter 有什么区别？
-    - mapState 访问组件局部状态时为什么要用普通函数而不是箭头函数？
+    - Vuex 的核心角色怎么分工？
+    - 为什么不能随意直接改 Vuex state？
+    - getter 返回函数有什么坑？
+    - mapState 里什么时候不能用箭头函数？
 -->
 
 <!doctype html>
@@ -30,7 +30,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vuex 全家桶（state / mutations / actions / getters / mapState / mapGetters）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        下方区域展示根组件、User、About 的 store 映射结果（count、name、getCount、doneTodos）；打开
+        Console 查看 getter 与 commit/dispatch 的演示输出。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -66,24 +69,10 @@
 
     <!-- SCRIPT_START -->
     <script>
-      //vuex概念：
-      //Vuex是什么：Vuex是一个专为vue.js应用程序开发的状态管理模式。它采用集中式存储管理应用的所有组件的状态
-      //并以相应的规则保证状态以一种可预测的方式发生变化
-      //将组件的共享状态抽取出来，以一个全局单例模式管理,这样每个组件都能访问到这个全局唯一的状态实例，就不需要层层的传递参数
-      //每个组件都能获取状态和触发事件
-
-      //vuex核心：
-      //每一个Vuex应用的核心就是store(仓库)，"store"就像是一个容器，它包含着你的应用中大部分的状态(state)。Vuex(全局的单例对象)和单纯的全局对象
-      //有两点不同：
-      /*
-      * 1.Vuex 的状态存储是响应式的。当 Vue 组件从 store 中读取状态的时候，如果 store 中的状态发生变化，那么相应的组件也会得到高效更新（它和组件内部的数据一样，都是响应式的数据）
-      * 2.不能直接改变store中的状态。改变store中状态的唯一途径就是显式的“提交”(commit)mutation。这样使得我们可以方便的跟踪每一个状态的变化
-      * */
-
-      //vuex: 使用单一状态树，用一个全局单例模式对象，包含应用的所有层级状态。因此作为一个唯一的数据源存在。也就是每个应用只能
-      //包含一个store实例。单一状态树让我们能够直接地定位任一特定的状态片段。在调试的过程中也能轻易地取得整个当前应用状态的快照。
-      //在组件中使用Vuex的state,需要使用计算属性的方法
-
+      // ---------------------------------------------------------------------------
+      // Vuex 核心：state / mutations / actions / getters / mapState
+      // 官方：mutation 同步改 state；action 可异步并 commit mutation；getter 为派生状态。
+      // ---------------------------------------------------------------------------
       const store = new Vuex.Store({
         //该属性用于存储共享的状态
         state: {
@@ -133,7 +122,10 @@
         }
       });
 
-      //通过属性访问，是作为Vue的响应式系统的一部分缓存
+      // ---------------------------------------------------------------------------
+      // 根组件 + User / About：mapState、mapGetters 映射
+      // 官方：mapState 生成 computed；访问组件局部 state 时映射函数须用普通 function。
+      // ---------------------------------------------------------------------------
       console.log(store.getters.getCount);
       console.log(store.getters.doneTodos(2));
       console.log(store.getters.doneTodosCount);

@@ -1,11 +1,12 @@
 <!--
   分类: vue2 / 03-生命周期
-  主题: Vue2 八个生命周期钩子速记
+  主题: Vue 2 八个生命周期钩子速记
   要点:
     - 创建阶段：beforeCreate 尚不能访问 data/methods，created 后可访问响应式数据和方法
-    - 挂载阶段：beforeMount 模板已准备渲染，mounted 后当前实例有真实 DOM
-    - 更新阶段：beforeUpdate 数据已变但 DOM 尚未同步，updated 后 DOM 已完成 patch
+    - 挂载阶段：beforeMount 模板已准备渲染，mounted 后当前实例有真实 DOM（$el）
+    - 更新阶段：beforeUpdate 数据已变但 DOM 可能未同步，updated 后 DOM 已完成 patch
     - 销毁阶段：beforeDestroy 仍可清理资源，destroyed 后指令、事件和子实例已解绑
+    - Vue 2 使用 beforeDestroy/destroyed；Vue 3 Options API 改名为 beforeUnmount/unmounted
   面试:
     - beforeCreate 和 created 最大区别是什么？
     - created 和 mounted 分别适合放什么逻辑？
@@ -19,7 +20,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vue2 生命周期钩子速记</title>
+    <title>Vue 2 生命周期钩子速记</title>
     <script src="../../libs/vue.js"></script>
     <style>
       body { font-family: sans-serif; padding: 16px; }
@@ -32,31 +33,36 @@
   <body class="demo-page">
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
-      <h1>Vue2 八个生命周期钩子速记</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <h1>Vue 2 八个生命周期钩子速记</h1>
+      <p class="hint">
+        打开页面后先看 <code>#app</code> 下方 <code>&lt;pre&gt;</code> 里自动出现的
+        <code>created</code> → <code>beforeMount</code> → <code>mounted</code> 顺序；点「触发更新」观察
+        <code>beforeUpdate</code> / <code>updated</code>；点「销毁实例」观察
+        <code>beforeDestroy</code>，并打开 Console 查看 <code>destroyed</code> 日志。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
           <li>创建阶段顺序是 <code>beforeCreate</code> → <code>created</code>。<code>beforeCreate</code> 时 data、computed、methods、watch 还没初始化；<code>created</code> 后可以访问响应式数据和方法，但还没有挂载真实 DOM。</li>
-          <li>挂载阶段顺序是 <code>beforeMount</code> → <code>mounted</code>。<code>mounted</code> 后当前实例的 <code>$el</code> 已可访问；如果要确保整个视图已根据后续状态变化更新，再配合 <code>$nextTick</code>。</li>
+          <li>挂载阶段顺序是 <code>beforeMount</code> → <code>mounted</code>。<code>mounted</code> 后当前实例的 <code>$el</code> 已可访问；若要确保整个视图已根据后续状态变化更新，再配合 <code>$nextTick</code>。</li>
           <li>更新阶段顺序是 <code>beforeUpdate</code> → <code>updated</code>。<code>beforeUpdate</code> 中数据已经是新值，DOM 可能还是旧值；<code>updated</code> 中 DOM 已 patch，但不要在这里无条件改状态，容易形成更新循环。</li>
           <li>销毁阶段顺序是 <code>beforeDestroy</code> → <code>destroyed</code>。定时器、全局事件、第三方实例、订阅等副作用优先在 <code>beforeDestroy</code> 清理；<code>$destroy()</code> 会触发这两个钩子，但日常更推荐用 <code>v-if</code> 控制组件生命周期。</li>
-          <li>Vue2 使用 <code>beforeDestroy/destroyed</code>，Vue3 Options API 改名为 <code>beforeUnmount/unmounted</code>；维护 Vue2 老项目时要用旧命名，新项目迁移时要注意生命周期名和组合式 API 写法差异。</li>
+          <li>Vue 2 使用 <code>beforeDestroy/destroyed</code>，Vue 3 Options API 改名为 <code>beforeUnmount/unmounted</code>；维护 Vue 2 老项目时要用旧命名，新项目迁移时要注意生命周期名和组合式 API 写法差异。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
           <li><strong>beforeCreate 和 created 最大区别是什么？</strong> 结论是 <code>beforeCreate</code> 不能可靠访问 data/methods，<code>created</code> 可以。原因是 Vue 初始化选项、响应式数据和方法绑定发生在这两个钩子之间。项目里初始化纯 JS 数据请求通常从 <code>created</code> 起步，不要在 <code>beforeCreate</code> 调用 methods。</li>
-          <li><strong>created 和 mounted 分别适合什么逻辑？</strong> 结论是 created 适合不依赖 DOM 的初始化，mounted 适合依赖 DOM 的第三方插件、尺寸读取或焦点处理。原因是 created 阶段实例数据已就绪但 DOM 未挂载，mounted 后才有 <code>$el</code>。边界是服务端渲染和异步子组件场景下，DOM 相关逻辑还要更谨慎。</li>
-          <li><strong>beforeUpdate 和 updated 中读 DOM 有什么区别？</strong> 结论是 <code>beforeUpdate</code> 读到的 DOM 可能仍是旧状态，<code>updated</code> 后 DOM 已与本次状态同步。原因是更新流程先改响应式数据，再进行虚拟 DOM patch。项目里如果要在状态变化后读最新 DOM，也常用 <code>$nextTick</code> 聚焦到一次具体更新。</li>
-          <li><strong>销毁阶段应该做什么？</strong> 结论是清理组件创建的外部资源。原因是 Vue 会清理自己的指令、事件和子组件，但不会自动取消你手动注册到 <code>window</code> 的监听、定时器、WebSocket 或第三方库实例。项目里通常在 <code>beforeDestroy</code> 做清理，避免内存泄漏和重复回调。</li>
-          <li><strong>Vue2 和 Vue3 生命周期迁移要注意什么？</strong> 结论是核心阶段类似，但销毁命名从 destroy 改为 unmount。原因是 Vue3 API 统一表达“卸载组件”。维护 Vue2 用 <code>beforeDestroy/destroyed</code>，迁到 Vue3 Options API 用 <code>beforeUnmount/unmounted</code>，组合式 API 用 <code>onBeforeUnmount/onUnmounted</code>。</li>
+          <li><strong>created 和 mounted 分别适合放什么逻辑？</strong> 结论是 created 适合不依赖 DOM 的初始化，mounted 适合依赖 DOM 的第三方插件、尺寸读取或焦点处理。原因是 created 阶段实例数据已就绪但 DOM 未挂载，mounted 后才有 <code>$el</code>。边界是服务端渲染和异步子组件场景下，DOM 相关逻辑还要更谨慎。</li>
+          <li><strong>beforeUpdate 和 updated 中读 DOM 有什么边界？</strong> 结论是 <code>beforeUpdate</code> 读到的 DOM 可能仍是旧状态，<code>updated</code> 后 DOM 已与本次状态同步。原因是更新流程先改响应式数据，再进行虚拟 DOM patch。项目里如果要在状态变化后读最新 DOM，也常用 <code>$nextTick</code> 聚焦到一次具体更新；在 <code>updated</code> 里无条件改 data 可能触发更新循环。</li>
+          <li><strong>beforeDestroy / destroyed 应该如何清理副作用？</strong> 结论是外部资源在 <code>beforeDestroy</code> 清理，<code>destroyed</code> 时实例已不可用。原因是 Vue 会清理自己的指令、事件和子组件，但不会自动取消你手动注册到 <code>window</code> 的监听、定时器、WebSocket 或第三方库实例。项目里通常在 <code>beforeDestroy</code> 做清理，避免内存泄漏和重复回调。</li>
+          <li><strong>Vue2 生命周期和 Vue3 命名有什么迁移差异？</strong> 结论是核心阶段类似，但销毁命名从 destroy 改为 unmount。原因是 Vue 3 API 统一表达「卸载组件」。维护 Vue 2 用 <code>beforeDestroy/destroyed</code>，迁到 Vue 3 Options API 用 <code>beforeUnmount/unmounted</code>，组合式 API 用 <code>onBeforeUnmount/onUnmounted</code>。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://v2.vuejs.org/v2/guide/instance.html#Instance-Lifecycle-Hooks" target="_blank" rel="noreferrer">Vue 2 官方文档：Instance Lifecycle Hooks</a></li>
-          <li><a href="https://v2.vuejs.org/v2/api/#Options-Lifecycle-Hooks" target="_blank" rel="noreferrer">Vue 2 API：Options / Lifecycle Hooks</a></li>
-          <li><a href="https://v2.vuejs.org/v2/api/#vm-destroy" target="_blank" rel="noreferrer">Vue 2 API：vm.$destroy()</a></li>
-          <li><a href="https://v3-migration.vuejs.org/breaking-changes/vnode-lifecycle-events.html" target="_blank" rel="noreferrer">Vue 3 Migration Guide：Lifecycle hook rename notes</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/instance.html#Instance-Lifecycle-Hooks">Vue 2 Guide: Instance Lifecycle Hooks</a></li>
+          <li><a href="https://v2.vuejs.org/v2/api/#Options-Lifecycle-Hooks">Vue 2 API: Options / Lifecycle Hooks</a></li>
+          <li><a href="https://v2.vuejs.org/v2/api/#vm-destroy">Vue 2 API: vm.$destroy()</a></li>
+          <li><a href="https://v3-migration.vuejs.org/breaking-changes/vnode-lifecycle-events.html">Vue 3 Migration Guide: Lifecycle hook rename</a></li>
         </ul>
       </div>
     </section>
@@ -65,8 +71,8 @@
     <!-- PAGE_DOM_START -->
     <div id="app">
       <p>msg: {{ msg }}（count: {{ count }}）</p>
-      <button @click="count++">触发更新（beforeUpdate / updated）</button>
-      <button @click="destroyVm">销毁实例（beforeDestroy / destroyed）</button>
+      <button type="button" @click="count++">触发更新（beforeUpdate / updated）</button>
+      <button type="button" @click="destroyVm">销毁实例（beforeDestroy / destroyed）</button>
       <h3>钩子执行顺序（最新在上）：</h3>
       <pre>{{ logs.join('\n') }}</pre>
     </div>
@@ -74,18 +80,11 @@
 
     <!-- SCRIPT_START -->
     <script>
-      /*
-      * beforeCreate：在 new 一个 vue 实例后，只有一些默认的生命周期钩子和默认事件，data 和 methods 都还没有初始化
-      * created：data 和 methods 都已经被初始化好了；若要调用 methods 或操作 data，最早可以在这个阶段进行
-      * beforeMount：执行到这个钩子的时候，在内存中已经编译好了模板，但是还没有挂载到页面中，此时页面还是旧的
-      * mounted：执行到这个钩子的时候，就表示 Vue 实例已经初始化完成了。此时组件脱离了创建阶段，进入到了运行阶段。
-      如果我们想要通过插件操作页面上的 DOM 节点，最早可以在和这个阶段中进行
-      * beforeUpdate：当执行这个钩子时，页面中显示的数据还是旧的，data 中的数据是更新后的，页面还没有和最新的数据保持同步
-      * updated：页面显示的数据和 data 中的数据已经保持同步了，都是最新的
-      * beforeDestroy：Vue 实例从运行阶段进入到了销毁阶段，此时所有的 data 和 methods、指令、过滤器……都处于可用状态，还没有真正被销毁
-      * destroyed：此时所有的 data 和 methods、指令、过滤器……都处于不可用状态，组件已经被销毁了
-      * */
-
+      // ---------------------------------------------------------------------------
+      // vm：八个生命周期钩子顺序演示（单根实例 #app）
+      // 官方：选项钩子按 beforeCreate → created → beforeMount → mounted →
+      //       beforeUpdate → updated → beforeDestroy → destroyed 调用。
+      // ---------------------------------------------------------------------------
       var vm = new Vue({
         el: '#app',
         data: {
@@ -94,6 +93,7 @@
           logs: []
         },
         beforeCreate: function () {
+          // 官方：此时 data / methods 尚未初始化，勿访问 this.msg
           console.log('[beforeCreate] data/methods 尚未初始化，this.msg =', this.msg);
         },
         created: function () {
@@ -115,7 +115,7 @@
           this._pushLog('beforeDestroy — 实例即将销毁，data/methods 仍可用');
         },
         destroyed: function () {
-          // 此时实例已从 DOM 移除，此处仅 console 记录（模板已不可更新）
+          // 官方：实例已销毁，指令与事件监听已解绑；模板不可再更新
           console.log('[destroyed] 实例已销毁，指令和事件监听已解绑');
         },
         methods: {
@@ -129,7 +129,6 @@
           }
         }
       });
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -151,5 +150,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

@@ -7,10 +7,10 @@
     - then/catch 返回新的 Promise，因此可以链式串联成功、失败和恢复流程
     - 在 Vue Router 和 Vuex 中，导航和 dispatch 都可能返回 Promise，需要处理失败路径
   面试:
-    - Promise 构造函数里的 executor 是同步还是异步？
-    - resolve/reject 后状态为什么不能再次改变？
-    - then/catch 为什么能继续链式调用？
-    - Vuex action 或路由导航返回 Promise 时如何处理失败？
+    - Promise executor 是同步还是异步？
+    - Promise 状态为什么不可逆？
+    - then/catch 为什么能链式调用？
+    - Vue 项目里 Promise 失败路径怎么处理？
 -->
 
 <!doctype html>
@@ -26,7 +26,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Promise 基础与 Vue 异步流程前置</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        点击「重新运行 Promise 演示」按钮，打开 Console 观察 <code>start new Promise</code> 同步打印与约
+        0～2 秒后 <code>Done</code> / <code>Failed</code> 的异步结果（随机成功或超时失败）。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -54,31 +57,43 @@
     </section>
     <!-- NOTES_END -->
 
+    <!-- PAGE_DOM_START -->
+    <div id="app">
+      <button type="button" id="run-promise">重新运行 Promise 演示</button>
+      <p id="promise-status">（结果见 Console）</p>
+    </div>
+    <!-- PAGE_DOM_END -->
+
     <!-- SCRIPT_START -->
     <script>
-      //Promise对象: 承诺将来会执行的对象
-      new Promise(function (resolve, reject) {
-        console.log('start new Promise...');
-        var timeOut = Math.random() * 2;
-        console.log('set timeout to: ' + timeOut + ' seconds.');
-        setTimeout(function () {
-          if (timeOut < 1) {
-            console.log('call resolve()...');
-            resolve('200 OK');//请求成功，一定要调用 resolve，使 Promise 对象的状态置为 fulfilled
-          }
-          else {
-            console.log('call reject()...');
-            reject('timeout in ' + timeOut + ' seconds.');//请求失败，一定调用reject，使Promise对象的状态置为rejected
-          }
-        }, timeOut * 1000);
-      }).then(function (r) {
-        console.log('Done: ' + r);
-      }).catch(function (reason) {
-        console.log('Failed: ' + reason);
-      });
+      // ---------------------------------------------------------------------------
+      // Promise 基础：executor 同步、then/catch 链式
+      // 官方：executor 立即执行；settled 后状态不可逆；then/catch 返回新 Promise。
+      // ---------------------------------------------------------------------------
+      function runPromiseDemo() {
+        console.log('--- Promise demo start ---');
+        new Promise(function (resolve, reject) {
+          console.log('start new Promise...');
+          var timeOut = Math.random() * 2;
+          console.log('set timeout to: ' + timeOut + ' seconds.');
+          setTimeout(function () {
+            if (timeOut < 1) {
+              console.log('call resolve()...');
+              resolve('200 OK');
+            } else {
+              console.log('call reject()...');
+              reject('timeout in ' + timeOut + ' seconds.');
+            }
+          }, timeOut * 1000);
+        }).then(function (r) {
+          console.log('Done: ' + r);
+        }).catch(function (reason) {
+          console.log('Failed: ' + reason);
+        });
+      }
 
-      //直接new Promise()对象，传入的函数就是被执行
-
+      document.getElementById('run-promise').addEventListener('click', runPromiseDemo);
+      runPromiseDemo();
     </script>
     <!-- SCRIPT_END -->
 

@@ -27,7 +27,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>手写 Vue2 响应式核心（Observer / Dep / Watcher / Computed）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        打开浏览器 DevTools → Console，刷新本页后观察日志：改 <code>vm.message</code>、读
+        <code>vm.messageLength</code> 与 watch 回调，对照 Observer / Dep / Watcher / Computed 链路；复习要点与面试答法见本区块。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -39,10 +42,11 @@
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue2 响应式为什么要初始化时遍历 data？</strong> 结论是因为 <code>Object.defineProperty</code> 只能拦截已经定义好的属性。Vue2 必须在实例创建时把 <code>data</code> 中已有字段转换成 getter/setter，后续读取和写入才能被追踪。边界是运行时新增属性默认不响应，必须用 <code>Vue.set</code> 或替换对象。</li>
-          <li><strong>Dep 和 Watcher 分别负责什么？</strong> 结论是 Dep 管“这个属性有哪些订阅者”，Watcher 管“某段逻辑依赖了哪些属性并如何更新”。原因是 getter 阶段只有当前正在执行的 watcher 才知道自己依赖谁，setter 阶段属性自己的 dep 才知道该通知谁。项目里 render、watch、computed 都可以理解成不同类型的 watcher。</li>
-          <li><strong>computed 为什么能缓存？</strong> 结论是 computed 背后是 lazy watcher。它不会在依赖变化时立刻重新计算，而是标记 dirty，等模板或代码下一次读取它时再求值并缓存。边界是 computed getter 必须保持同步、无副作用；异步请求和外部写入更适合 watch。</li>
-          <li><strong>手写版和真实 Vue2 有哪些差距？</strong> 结论是教学版只演示核心链路，真实 Vue2 还包含依赖去重、异步批量更新、数组拦截、组件生命周期和错误处理。原因是框架要在复杂组件树中控制更新成本。面试回答时不要把几十行教学代码说成完整 Vue 源码。</li>
+          <li><strong>Vue2 响应式为什么要在初始化时遍历 data？</strong> 结论是因为 <code>Object.defineProperty</code> 只能拦截已经定义好的属性。Vue2 必须在实例创建时把 <code>data</code> 中已有字段转换成 getter/setter，后续读取和写入才能被追踪。边界是运行时新增属性默认不响应，必须用 <code>Vue.set</code> 或替换对象。</li>
+          <li><strong>Dep 和 Watcher 分别解决什么问题？</strong> 结论是 Dep 管“这个属性有哪些订阅者”，Watcher 管“某段逻辑依赖了哪些属性并如何更新”。原因是 getter 阶段只有当前正在执行的 watcher 才知道自己依赖谁，setter 阶段属性自己的 dep 才知道该通知谁。项目里 render、watch、computed 都可以理解成不同类型的 watcher。</li>
+          <li><strong>computed 为什么可以缓存，watch 为什么适合副作用？</strong> 结论是 computed 背后是 lazy watcher，依赖变化只标记 dirty，下次读取才重新求值并缓存；watch 在依赖变化时立即执行回调，适合异步请求、DOM 操作等副作用。边界是 computed getter 必须同步、无副作用；需要“数据变了就做事”时用 watch。</li>
+          <li><strong>手写响应式和真实 Vue2 实现有哪些边界差距？</strong> 结论是教学版只演示核心链路，真实 Vue2 还包含依赖去重、异步批量更新、数组拦截、组件生命周期和错误处理。原因是框架要在复杂组件树中控制更新成本。面试回答时不要把几十行教学代码说成完整 Vue 源码。</li>
+          <li><strong>Vue2 defineProperty 响应式相比 Vue3 Proxy 有什么限制？</strong> 结论是 defineProperty 只能逐属性拦截，无法天然感知新增/删除属性和数组索引变化。原因是每个 key 都要单独定义描述符。Vue2 因此需要 <code>Vue.set</code> 和数组变更方法；Vue3 Proxy 能从对象层面拦截更多操作。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -57,8 +61,10 @@
 
     <!-- SCRIPT_START -->
     <script>
-      // 核心响应式类 Observer（简化）
-      //1.递归劫持 data 以及其嵌套子对象
+      // ---------------------------------------------------------------------------
+      // Observer：递归劫持 data，为每个已有字段挂 getter/setter
+      // getter 收集依赖，setter 通知 Dep；嵌套对象继续 walk
+      // ---------------------------------------------------------------------------
       class Observer {
         constructor(data) {
           this.walk(data);
@@ -106,8 +112,9 @@
         }
       }
 
-      //使用发布-订阅模式管理依赖关系
-      // 依赖管理器 Dep（简化）
+      // ---------------------------------------------------------------------------
+      // Dep：依赖容器；Dep.target 指向当前正在求值的 Watcher
+      // ---------------------------------------------------------------------------
       class Dep {
         constructor() {
           this.subs = [];
@@ -126,7 +133,9 @@
       }
       Dep.target = null; // 全局唯一 Watcher 标记（存储当前正在运行的 Watcher）
 
-      // Watcher 就是被收集的依赖
+      // ---------------------------------------------------------------------------
+      // Watcher：订阅者；lazy 模式用于 computed，非 lazy 用于 watch / render
+      // ---------------------------------------------------------------------------
       class Watcher {
         constructor(getter, options = {}) {
           const { callback, lazy } = options;
@@ -184,7 +193,9 @@
         }
       }
 
-      // 计算属性类，在其内部也是通过Watcher实现，是带有一个 dirty 属性的 watcher
+      // ---------------------------------------------------------------------------
+      // Computed：lazy Watcher 封装；读取时才 evaluate，依赖变化只标 dirty
+      // ---------------------------------------------------------------------------
       class Computed {
         constructor(getter) {
           // 创建 lazy Watcher(计算属性创建的 watcher，内部设置 lazy = true)
@@ -206,7 +217,9 @@
         }
       }
 
-      // 模拟 Vue 初始化时对 data 的劫持
+      // ---------------------------------------------------------------------------
+      // initData：模拟 Vue 初始化 — 劫持 data、代理到 vm、注册 watch / computed
+      // ---------------------------------------------------------------------------
       function initData(vm) {
         // debugger;
         //一：处理data
@@ -252,7 +265,9 @@
         });
       }
 
-      // ---------- 使用示例 ----------
+      // ---------------------------------------------------------------------------
+      // 使用示例：Console 观察 getter/setter、watch 回调与 computed 缓存
+      // ---------------------------------------------------------------------------
       const vm = {
         $options: {
           data() {

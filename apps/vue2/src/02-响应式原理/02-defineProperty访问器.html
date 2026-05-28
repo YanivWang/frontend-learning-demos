@@ -26,7 +26,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Object.defineProperty 实现访问器属性（Vue2 响应式核心）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        打开 DevTools → Console，刷新后观察 <code>person</code> 的 getter/setter 日志；尝试理解为何 setter 内不能写
+        <code>this.name</code>；复习要点与面试答法见本区块。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -39,9 +42,9 @@
         <h2>面试考点</h2>
         <ul>
           <li><strong>数据属性和访问器属性有什么区别？</strong> 结论是数据属性直接保存值，访问器属性通过 getter/setter 计算或拦截值。原因是二者使用不同的属性描述符字段，<code>value/writable</code> 不能和 <code>get/set</code> 同时出现。项目里做普通数据建模多用数据属性，做拦截、校验、响应式原理演示才用访问器属性。</li>
-          <li><strong>getter/setter 里为什么不能直接读写同名属性？</strong> 结论是会递归触发自身。setter 中执行 <code>this.name = value</code> 等于再次调用 <code>name</code> 的 setter，getter 中读 <code>this.name</code> 也会再次调用 getter。正确做法是把真实值放到闭包变量、Symbol key 或另一个不冲突的字段里。</li>
+          <li><strong>getter/setter 里为什么不能直接读写 this.name？</strong> 结论是会递归触发自身。setter 中执行 <code>this.name = value</code> 等于再次调用 <code>name</code> 的 setter，getter 中读 <code>this.name</code> 也会再次调用 getter。正确做法是把真实值放到闭包变量、Symbol key 或另一个不冲突的字段里。</li>
           <li><strong>Vue2 为什么能用 defineProperty 做响应式？</strong> 结论是 Vue2 通过 getter 收集依赖，通过 setter 通知更新。原因是模板渲染或 computed 读取数据时会触发 getter，Vue 能记录当前 watcher；数据写入触发 setter 后，就能通知这些 watcher。边界是这要求属性在初始化时已经存在。</li>
-          <li><strong>defineProperty 相比 Proxy 的限制是什么？</strong> 结论是它是逐属性拦截，不能天然感知新增/删除属性和数组索引变化。原因是每个 key 都要单独定义描述符。Vue2 因此需要 <code>Vue.set</code> 和数组变更方法；Vue3 的 Proxy 能从对象层面拦截更多操作。</li>
+          <li><strong>defineProperty 响应式有哪些天然限制？</strong> 结论是只能拦截已有属性，无法天然感知新增/删除属性和数组索引变化。原因是每个 key 都要单独定义描述符。Vue2 因此需要 <code>Vue.set</code> 和数组变更方法；Vue3 Proxy 能从对象层面拦截更多操作。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -55,6 +58,9 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // 访问器属性演示：闭包 _name 存真实值，避免 setter 内 this.name 递归
+      // ---------------------------------------------------------------------------
       let person = {
         name: "wangcheng",
       };

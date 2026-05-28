@@ -32,7 +32,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>用 Performance 时间线观察大数组对响应式性能的影响</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        先打开 DevTools → Performance 并开始录制，再依次点击「慢：循环 push」与「快：整体赋值」对比
+        <code>arr.length</code> 与日志耗时；也可点错误 <code>onclick</code> 按钮观察报错；复习要点与面试答法见本区块。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -45,9 +48,9 @@
         <h2>面试考点</h2>
         <ul>
           <li><strong>为什么大数组逐项 push 可能比整体赋值慢？</strong> 结论是逐项 push 会让响应式系统经历更多次数组变更拦截和更新调度。原因是 Vue2 对数组变更方法做了包装，每次变更都可能通知依赖。项目里导入、筛选或聚合大量数据时，先构造普通数组再整体替换通常更稳定。</li>
-          <li><strong>原生 onclick 和 Vue 的 @click 有什么区别？</strong> 结论是 <code>@click</code> 在 Vue 模板编译后的组件上下文中调用 methods，原生 <code>onclick</code> 是浏览器内联事件，默认找全局函数。原因是二者绑定和作用域模型不同。Vue 项目里应使用 <code>v-on</code>/<code>@</code>，并把错误路径作为调试信号。</li>
-          <li><strong>Performance 面板要看什么？</strong> 结论是看长任务、scripting 耗时、渲染和布局是否被数据更新放大。原因是 <code>performance.now()</code> 只能给一段代码打点，无法展示浏览器主线程完整工作。项目里要结合录制结果、组件更新范围和 DOM 数量判断瓶颈。</li>
-          <li><strong>Vue2 大列表优化有哪些方案？</strong> 结论是减少响应式写入次数、减少渲染节点、减少 watcher 和稳定 diff。原因是性能压力可能来自数据观察、虚拟 DOM diff、真实 DOM 更新或布局。项目边界上，大量可见行优先虚拟列表，大量静态数据可考虑冻结或不放入深层响应式对象。</li>
+          <li><strong>原生 onclick 和 Vue 的 @click 有什么作用域区别？</strong> 结论是 <code>@click</code> 在 Vue 模板编译后的组件上下文中调用 methods，原生 <code>onclick</code> 是浏览器内联事件，默认找全局函数。原因是二者绑定和作用域模型不同。Vue 项目里应使用 <code>v-on</code>/<code>@</code>，并把错误路径作为调试信号。</li>
+          <li><strong>Performance 面板应该观察哪些信号？</strong> 结论是看长任务、scripting 耗时、渲染和布局是否被数据更新放大。原因是 <code>performance.now()</code> 只能给一段代码打点，无法展示浏览器主线程完整工作。项目里要结合录制结果、组件更新范围和 DOM 数量判断瓶颈。</li>
+          <li><strong>Vue2 大列表性能优化有哪些边界方案？</strong> 结论是减少响应式写入次数、减少渲染节点、减少 watcher 和稳定 diff。原因是性能压力可能来自数据观察、虚拟 DOM diff、真实 DOM 更新或布局。项目边界上，大量可见行优先虚拟列表，大量静态数据可考虑冻结或不放入深层响应式对象。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -64,10 +67,10 @@
     <div id="app">
       <div>{{ message }}</div>
       <p class="warn">错误写法（原生 onclick 无法调用 Vue methods）：</p>
-      <button onclick="handleClickFn()">onclick="handleClickFn()" — 点击会报错</button>
+      <button type="button" onclick="handleClickFn()">onclick="handleClickFn()" — 点击会报错</button>
       <p>正确写法：</p>
-      <button @click="pushManyTimes">慢：循环 push 1 万次到响应式 arr</button>
-      <button @click="assignWhole">快：非响应式 buffer 处理后 this.arr = buffer</button>
+      <button type="button" @click="pushManyTimes">慢：循环 push 1 万次到响应式 arr</button>
+      <button type="button" @click="assignWhole">快：非响应式 buffer 处理后 this.arr = buffer</button>
       <div>arr.length = {{ arr.length }}</div>
       <pre>{{ logs.join('\n') }}</pre>
       <p><small>提示：点击按钮前打开 DevTools → Performance → 录制，可在 timeline 中看到 scripting 耗时差异</small></p>
@@ -76,6 +79,9 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // 大数组性能对比：逐项 push vs buffer 整体赋值；原生 onclick 与 @click 作用域
+      // ---------------------------------------------------------------------------
       new Vue({
         el: "#app",
         data() {

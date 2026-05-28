@@ -1,9 +1,9 @@
 <!--
-  分类: vue2 / 01-基础语法
-  主题: 事件修饰符 @event.modifier
-  要点:
-    - .prevent ≡ e.preventDefault()；.stop ≡ e.stopPropagation()
-    - .once 只触发一次；.capture 用捕获模式；.self 仅当 target 是元素自身时触发
+  分类: vue2 / 01-基础语法
+  主题: 事件修饰符 @event.modifier
+  要点:
+    - .prevent ≡ e.preventDefault()；.stop ≡ e.stopPropagation()
+    - .once 只触发一次；.capture 用捕获模式；.self 仅当 target 是元素自身时触发
     - 链式可叠加：@click.stop.prevent；按键修饰符如 @keyup.enter 同理
   面试:
     - Vue 2 事件修饰符解决的核心问题是什么？
@@ -13,7 +13,7 @@
     - 按键修饰符和事件修饰符有什么区别？
 -->
 
-<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -31,7 +31,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>事件修饰符 @event.modifier</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        依次操作各区块：提交表单看 <code>.prevent</code>；点内外层对比 <code>.stop</code> / <code>.self</code>；
+        点 once 按钮第二次无效；在输入框按 Enter 看按键修饰符；日志区显示触发顺序。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -47,6 +50,7 @@
           <li><strong>.stop、.prevent、.self 分别对应哪些原生事件行为？</strong> 结论是 <code>.stop</code> 调用 <code>stopPropagation</code>，<code>.prevent</code> 调用 <code>preventDefault</code>，<code>.self</code> 只在目标元素就是当前元素时触发。原因是 Vue 编译模板时会为这些修饰符生成事件包装代码。边界是 <code>.self</code> 不是阻止冒泡，它只是过滤触发条件。</li>
           <li><strong>为什么修饰符链式书写时顺序会影响生成代码？</strong> 结论是 Vue 按修饰符出现顺序生成代码。原因是先过滤自身再阻止默认行为，和先阻止默认行为再过滤自身，作用范围不同。项目里如果只想点击遮罩本身才阻止默认行为，应明确使用符合预期的顺序。</li>
           <li><strong>.capture、.once、.passive 适合哪些边界场景？</strong> 结论是捕获阶段监听用 <code>.capture</code>，一次性动作用 <code>.once</code>，滚动等不阻止默认行为的监听可考虑 <code>.passive</code>。原因是这些修饰符对应浏览器事件监听选项。边界是 <code>.passive</code> 和 <code>.prevent</code> 语义冲突，不应同时使用。</li>
+          <li><strong>按键修饰符和事件修饰符有什么区别？</strong> 结论是事件修饰符（<code>.stop</code> / <code>.prevent</code> 等）控制事件传播与默认行为；按键修饰符（<code>.enter</code> 等）过滤特定键。原因是前者作用于所有事件类型，后者只在键盘事件上匹配 keyCode/key。项目里表单提交用 <code>.prevent</code>，搜索框回车用 <code>@keyup.enter</code>。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -74,7 +78,7 @@
         <div class="inner">点空白处才触发 outer.self</div>
       </div>
       <h3>.once — 只触发一次</h3>
-      <button @click.once="log('once 按钮')">只能点一次</button>
+      <button type="button" @click.once="log('once 按钮')">只能点一次</button>
       <h3>.capture — 捕获阶段</h3>
       <div class="outer" @click.capture="log('outer capture')">
         <div class="inner" @click="log('inner 冒泡')">capture 先于 inner</div>
@@ -89,6 +93,10 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // app：事件修饰符（.prevent / .stop / .self / .once / .capture / 按键修饰符）
+      // 官方：修饰符在模板层声明事件行为；链式顺序影响生成代码。
+      // ---------------------------------------------------------------------------
       new Vue({
         el: '#app',
         data: {
@@ -126,5 +134,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
-</html>
+</body>
+</html>

@@ -29,7 +29,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>嵌套路由与默认子路由（path: ''）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        依次点击 <code>/user/foo</code>、<code>/user/foo/profile</code>、<code>/user/foo/course</code>
+        链接：访问父路径时下方应显示 Hello 默认子页，切到 profile/course 时子出口切换对应内容。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -45,6 +48,7 @@
           <li><strong>为什么访问 /user/foo 时还能显示子页面？</strong> 结论是父路由渲染 User，User 内部的子出口再渲染 <code>path: ''</code> 对应组件。原因是嵌套路由匹配会沿父子记录逐层渲染。边界是父组件缺少 <code>router-view</code> 时，子组件不会显示。</li>
           <li><strong>默认子路由和 redirect 到某个子路径怎么选？</strong> 结论是父路径本身有业务含义时用默认子路由，只想规范 URL 时用 redirect。原因是默认子路由不改变地址栏，redirect 会把导航改到目标路径。项目里 tab 首页常用默认子路由，旧路径兼容常用 redirect。</li>
           <li><strong>默认子路由页面如何处理参数变化？</strong> 结论是不能只依赖首次创建钩子。原因是父路由参数变化时组件可能被复用。需要 watch <code>$route.params</code>、使用 <code>beforeRouteUpdate</code>，或给 <code>router-view</code> 设置合适的 key 来强制重建。</li>
+          <li><strong>嵌套路由缺少 router-view 会发生什么？</strong> 结论是子路由组件无处渲染，页面只有父布局没有内容区。原因是 children 匹配结果必须挂载到父组件内的 outlet。项目里布局组件模板务必保留子 <code>router-view</code>。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -69,6 +73,10 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // 默认子路由 path: ''
+      // 官方：children 中 path 为空字符串时，访问父路径即渲染该子组件。
+      // ---------------------------------------------------------------------------
       const User = {
         template: `<div>
         <div>user — id: {{ $route.params.id }}</div>
@@ -97,9 +105,6 @@
       const router = new VueRouter({ routes });
 
       new Vue({ router }).$mount('#app');
-
-      // 同一路由不同 params（/user/foo → /user/bar）会复用 User 组件
-
     </script>
     <!-- SCRIPT_END -->
 

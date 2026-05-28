@@ -27,7 +27,11 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>虚拟 DOM / diff / key</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        在各列表项输入框中分别输入内容，再点「头部插入」或「反转列表」，观察稳定
+        <code>id</code> 作为 <code>:key</code> 时输入框状态是否跟随对应数据项移动；下方
+        <code>&lt;pre&gt;</code> 有面试答法摘要。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -39,10 +43,10 @@
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue 2 更新链路怎么讲？</strong> 结论是数据变化触发 watcher，重新执行 render 生成新 vnode，再和旧 vnode patch 到真实 DOM。原因是 Vue 不直接用模板字符串操作 DOM，而是把 UI 表达成 vnode。项目里性能分析应关注数据变更规模、render 成本和 patch 后真实 DOM 成本。</li>
-          <li><strong>key 主要解决性能还是身份？</strong> 结论是先解决节点身份，性能收益是副作用。原因是 key 让 Vue 能确认两个 vnode 是否代表同一项数据，再决定复用、移动或销毁。边界是乱用随机 key 会让每次更新都像全量重建，反而更慢。</li>
-          <li><strong>为什么可变列表不能用 index key？</strong> 结论是 index 会随插入、删除、排序改变，不能稳定代表数据项。原因是 Vue 会把同一个位置的 DOM 当作同一个节点复用。项目里带输入框、动画、组件状态的列表必须用数据库 id 或前端生成的稳定 id。</li>
-          <li><strong>什么时候可以不写 key？</strong> 结论是简单静态列表或只追加且没有局部状态的列表风险较低，但动态组件、表单项、可重排列表应写稳定 key。原因是无 key 时 Vue 会尽量就地复用。边界是为了强制重建组件，也可以主动改变 key。</li>
+          <li><strong>Vue 2 更新时 template、render、vnode、patch 的关系是什么？</strong> 结论是 template 编译成 render（或直接使用 render），render 执行返回 vnode；数据变化触发 watcher 重新 render，新 vnode 与旧 vnode 经 patch 更新真实 DOM。原因是 Vue 不直接用模板字符串操作 DOM，而是把 UI 表达成 vnode 再 diff。项目里性能分析应关注数据变更规模、render 成本和 patch 后真实 DOM 成本。</li>
+          <li><strong>key 在 diff 中解决的是性能问题还是节点身份问题？</strong> 结论是先解决节点身份，性能收益是副作用。原因是 key 让 Vue 能确认两个 vnode 是否代表同一项数据，再决定复用、移动或销毁。边界是乱用随机 key 会让每次更新都像全量重建，反而更慢。</li>
+          <li><strong>为什么可变列表不能用 index 作为 key？</strong> 结论是 index 会随插入、删除、排序改变，不能稳定代表数据项。原因是 Vue 会把同一个位置的 DOM 当作同一个节点复用。项目里带输入框、动画、组件状态的列表必须用数据库 id 或前端生成的稳定 id。</li>
+          <li><strong>什么时候可以不写 key，什么时候必须写稳定 key？</strong> 结论是简单静态列表或只追加且没有局部状态的列表风险较低，但动态组件、表单项、可重排列表应写稳定 key。原因是无 key 时 Vue 会尽量就地复用。边界是为了强制重建组件，也可以主动改变 key。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -58,8 +62,8 @@
     <!-- PAGE_DOM_START -->
     <div id="app">
       <p>点击“头部插入”，观察使用稳定 id 作为 key 时，输入框状态会跟着对应数据走。</p>
-      <button @click="insertAtHead">头部插入</button>
-      <button @click="reverseList">反转列表</button>
+      <button type="button" @click="insertAtHead">头部插入</button>
+      <button type="button" @click="reverseList">反转列表</button>
       <ul>
         <li v-for="item in list" :key="item.id">
           {{ item.name }} <input :placeholder="'输入 ' + item.name">
@@ -71,6 +75,11 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // app：虚拟 DOM diff + 稳定 key 演示
+      // 官方：render 返回 vnode；patch 同层比较 children，key 帮助识别节点身份与移动关系。
+      // 头部插入 / 反转后，稳定 id 作 key 时输入框状态跟随数据项，而非错位复用。
+      // ---------------------------------------------------------------------------
       new Vue({
         el: "#app",
         data() {

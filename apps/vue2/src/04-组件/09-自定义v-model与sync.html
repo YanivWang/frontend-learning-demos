@@ -27,7 +27,11 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>自定义组件 v-model 与 .sync</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        在 <code>text-editor</code> 输入框编辑观察 <code>title</code> 联动；点
+        <code>switch-button</code> 切换 <code>enabled</code>；点「打开弹窗」再点「关闭」验证
+        <code>:visible.sync</code>。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -63,13 +67,17 @@
       <switch-button v-model="enabled"></switch-button>
       <p>enabled: {{ enabled }}</p>
       <h3>.sync: update:visible</h3>
-      <button @click="dialogVisible = true">打开弹窗</button>
+      <button type="button" @click="dialogVisible = true">打开弹窗</button>
       <simple-dialog :visible.sync="dialogVisible"></simple-dialog>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // text-editor：默认 v-model（:value + @input）
+      // 官方：自定义组件 v-model 默认展开为 value prop 与 input 事件。
+      // ---------------------------------------------------------------------------
       Vue.component("text-editor", {
         props: ["value"],
         template: `
@@ -80,6 +88,9 @@
         `
       });
 
+      // ---------------------------------------------------------------------------
+      // switch-button：model 选项改写 v-model 为 checked/change
+      // ---------------------------------------------------------------------------
       Vue.component("switch-button", {
         model: {
           prop: "checked",
@@ -87,22 +98,28 @@
         },
         props: ["checked"],
         template: `
-        <button @click="$emit('change', !checked)">
+        <button type="button" @click="$emit('change', !checked)">
           {{ checked ? '开启' : '关闭' }}
         </button>
         `
       });
 
+      // ---------------------------------------------------------------------------
+      // simple-dialog：.sync 语法糖（:visible + @update:visible）
+      // ---------------------------------------------------------------------------
       Vue.component("simple-dialog", {
         props: ["visible"],
         template: `
         <div v-if="visible" style="border:1px solid #ccc;padding:8px;margin-top:8px;">
           <p>我是弹窗内容</p>
-          <button @click="$emit('update:visible', false)">关闭</button>
+          <button type="button" @click="$emit('update:visible', false)">关闭</button>
         </div>
         `
       });
 
+      // ---------------------------------------------------------------------------
+      // #app：演示 v-model、model 选项与 .sync 三种双向绑定约定
+      // ---------------------------------------------------------------------------
       new Vue({
         el: "#app",
         data() {

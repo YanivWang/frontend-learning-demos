@@ -29,7 +29,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>命名视图（同级多个 router-view）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        打开页面即可见三个同级 <code>router-view</code> 同时渲染「首页」「课程」「底部」；本页仅一条
+        <code>/</code> 路由，用 <code>components</code> 对象驱动多出口布局。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -45,6 +48,7 @@
           <li><strong>components 对象里的 default 有什么特殊含义？</strong> 结论是 <code>default</code> 对应没有 name 的 <code>router-view</code>。原因是无名出口也需要一个稳定键参与映射。边界是如果只写 <code>component</code>，它等价于只给默认出口渲染一个组件。</li>
           <li><strong>一个路径如何同时渲染顶部、内容和底部区域？</strong> 结论是在模板放多个命名出口，在路由记录里写 <code>components</code> 对象。原因是一次路由匹配可以携带多个组件映射。项目里要注意这些区域都由同一个路由状态控制，局部独立切换更适合普通组件状态或嵌套路由。</li>
           <li><strong>什么时候不用命名视图而用普通组件组合？</strong> 结论是静态布局或只属于某个页面内部的 UI 组合，普通组件更简单。原因是命名视图会把布局细节推到路由配置里，过度使用会让路由表膨胀。只有多个区域确实需要随 URL 同步切换时才值得使用。</li>
+          <li><strong>命名视图常见配置错误是什么？</strong> 结论是用单数 <code>component</code> 却期望填充多个出口、<code>components</code> 的 key 与 <code>router-view name</code> 不一致、或漏配 <code>default</code>。原因是映射必须一一对应。项目里对照 DevTools 看哪个 outlet 未匹配组件。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -67,7 +71,10 @@
 
     <!-- SCRIPT_START -->
     <script>
-      //一个视图需要一个组件来渲染，一个页面上可以同时有多个view(视图)
+      // ---------------------------------------------------------------------------
+      // 命名视图：同级多个 router-view
+      // 官方：无名 outlet 对应 components.default；name="a" 对应 components.a。
+      // ---------------------------------------------------------------------------
       const Home = {
         template: `<div>首页</div>`
       };
@@ -81,11 +88,10 @@
       };
 
       const router = new VueRouter({
-        routes:[
+        routes: [
           {
-            path:'/',
-            //component: Home,//注意和下面的区别
-            components:{//一个路径匹配多个组件(每个组件在不同的router-view视图组件中进行渲染)
+            path: '/',
+            components: {
               default: Home,
               a: Course,
               b: Bottom
@@ -97,8 +103,7 @@
       new Vue({
         el: '#app',
         router
-      })
-
+      });
     </script>
     <!-- SCRIPT_END -->
 

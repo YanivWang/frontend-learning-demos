@@ -28,7 +28,11 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>路由 props 解耦组件与 $route</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        依次点击 <code>props: true</code>、<code>静态对象</code>、<code>函数式</code>、<code>命名视图</code>
+        链接，对比下方 props 与 <code>$route.params</code> 的注入差异；函数式路由带
+        <code>?q=vue</code>，观察 <code>keyword</code> 来自 query。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -40,10 +44,10 @@
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>为什么路由组件推荐用 props 接收参数？</strong> 结论是用 props 能把组件从 <code>$route</code> 上解耦出来。原因是组件只关心 <code>id</code>、<code>postid</code> 这类业务输入，复用和单测时不必伪造完整路由对象。边界是需要读取导航来源、完整 query 或 meta 时，仍可以在页面容器层使用 <code>$route</code>。</li>
-          <li><strong><code>props: true</code>、对象模式、函数模式怎么选？</strong> 结论是 params 同名直传用 <code>true</code>，固定配置用对象，query/params 转换用函数。原因是三种模式对应不同数据来源。项目里常用函数模式把字符串 id 转成数字，或把 <code>query.q</code> 重命名为组件更清晰的 <code>keyword</code>。</li>
-          <li><strong>命名视图的 props 为什么不能只写一个 <code>true</code>？</strong> 结论是多视图应按 <code>default</code>、<code>sideBar</code> 等 view 名称分别配置。原因是一个路由记录可能同时渲染多个组件，每个组件的入参不同。边界是只有默认视图时才可以直接写布尔、对象或函数。</li>
-          <li><strong>props 解耦后还要处理 params 变化吗？</strong> 结论是要处理。原因是 <code>/user/1</code> 到 <code>/user/2</code> 可能复用同一个组件实例，不会重新走 created。项目里详情页应 watch prop 或 <code>$route</code>，也可以用 <code>beforeRouteUpdate</code> 发起新请求和处理失败态。</li>
+          <li><strong>为什么路由组件推荐用 props 接收 params，而不是到处读 $route？</strong> 结论是用 props 能把组件从 <code>$route</code> 上解耦出来。原因是组件只关心 <code>id</code>、<code>postid</code> 这类业务输入，复用和单测时不必伪造完整路由对象。边界是需要读取导航来源、完整 query 或 meta 时，仍可以在页面容器层使用 <code>$route</code>。</li>
+          <li><strong>props: true、对象模式、函数模式分别适合什么参数来源？</strong> 结论是 params 同名直传用 <code>true</code>，固定配置用对象，query/params 转换用函数。原因是三种模式对应不同数据来源。项目里常用函数模式把字符串 id 转成数字，或把 <code>query.q</code> 重命名为组件更清晰的 <code>keyword</code>。</li>
+          <li><strong>命名视图配置 props 时为什么要按 view 名称分别声明？</strong> 结论是多视图应按 <code>default</code>、<code>sideBar</code> 等 view 名称分别配置。原因是一个路由记录可能同时渲染多个组件，每个组件的入参不同。边界是只有默认视图时才可以直接写布尔、对象或函数。</li>
+          <li><strong>同一路由组件只变 params 时，为什么还要 watch $route 或 beforeRouteUpdate？</strong> 结论是要处理。原因是 <code>/user/1</code> 到 <code>/user/2</code> 可能复用同一个组件实例，不会重新走 created。项目里详情页应 watch prop 或 <code>$route</code>，也可以用 <code>beforeRouteUpdate</code> 发起新请求和处理失败态。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -75,6 +79,10 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // 路由 props 解耦：true / 静态对象 / 函数 / 命名视图
+      // 官方：props: true 将 route.params 注入同名 props；函数模式可转换 params/query。
+      // ---------------------------------------------------------------------------
       const home = { template: "<div>home</div>" };
 
       const userPropsTrue = {
@@ -137,11 +145,8 @@
       ];
 
       const router = new VueRouter({ routes });
-      var wm = new Vue({ router }).$mount('#app');
 
-      // 同一路由不同 params 会复用组件，应 watch $route 或使用 beforeRouteUpdate
-      console.log(wm);
-
+      new Vue({ router }).$mount('#app');
     </script>
     <!-- SCRIPT_END -->
 

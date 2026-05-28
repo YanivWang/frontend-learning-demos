@@ -7,10 +7,10 @@
     - 模块 state 推荐写成函数，避免复用模块对象时状态相互污染
     - mapState / mapGetters / mapActions 可接 namespace 简化组件访问
   面试:
-    - Vuex 为什么要用 module 拆分 store？
-    - namespaced: true 改变了 commit、dispatch、getter 的哪些访问方式？
-    - module state 为什么常写成函数？
-    - 模块化 store 在大型项目中有哪些命名和复用边界？
+    - Vuex 为什么需要 module？
+    - namespaced: true 有什么影响？
+    - module state 为什么建议写函数？
+    - 模块化 store 有哪些坑？
 -->
 
 <!doctype html>
@@ -30,7 +30,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vuex Module 演示（按模块拆分 store）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        下方展示 <code>moduleA.count</code>（含 <code>doubleCount</code>）与 <code>moduleB.name</code>；打开
+        Console 查看带命名空间的 <code>commit</code> / <code>dispatch</code> 调用日志。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -64,12 +67,10 @@
 
     <!-- SCRIPT_START -->
     <script>
-      //由于使用单一状态树，应用的所有状态都会被集中到一个对象中。当应用非常复杂的时候，store对象就可能变的非常臃肿
-      //使用Vuex的module功能，可以将store对象分割成模块。
-      //每个模块拥有自己的state，mutation，action，getter
-      //甚至是嵌套子模块——从上至下进行同样方式的分割
-
-      // 模块 A：计数器
+      // ---------------------------------------------------------------------------
+      // Vuex Module：按业务域拆分 + namespaced
+      // 官方：modules 挂载子 state；namespaced 时 commit/dispatch 带 moduleName/ 前缀。
+      // ---------------------------------------------------------------------------
       const moduleA = {
         namespaced: true,
         state: () => ({ count: 0 }),
@@ -111,6 +112,10 @@
       store.dispatch('moduleA/incrementAsync', 3);
       store.commit('moduleB/setName', 'wangcheng');
 
+      // ---------------------------------------------------------------------------
+      // 根组件：mapState / mapGetters / mapActions 命名空间映射
+      // 官方：mapState('moduleA', ...) 简化跨模块访问。
+      // ---------------------------------------------------------------------------
       new Vue({
         data() {
           return {}

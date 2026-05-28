@@ -29,7 +29,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>自定义指令 / 过滤器 / mixin / 插件</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        输入框自动聚焦（v-focus）；修改 price 看过滤器格式化；点按钮调用 mixin 方法与
+        <code>$toast</code> 插件；日志区显示 created 顺序与调用结果。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -45,6 +48,7 @@
           <li><strong>Vue 2 过滤器为什么不适合承载复杂业务逻辑？</strong> 结论是过滤器只适合显示层格式化。原因是它只能在插值和 <code>v-bind</code> 表达式中使用，表达力和可测试性都不适合复杂状态派生。项目里金额展示可以用过滤器，带依赖的计算和复用逻辑应改为 computed、methods 或普通工具函数；Vue 3 已移除过滤器。</li>
           <li><strong>mixin 的合并规则和风险是什么？</strong> 结论是 mixin 会按 Vue 选项合并策略合并进组件，生命周期钩子都会执行，同名对象选项可能冲突或被组件覆盖。原因是 mixin 本质是把一份组件选项混入另一份组件选项。项目里大量 mixin 会让属性和方法来源不清，维护时要谨慎。</li>
           <li><strong>插件 install 通常用来注册哪些全局能力？</strong> 结论是插件用于集中安装全局组件、指令、过滤器、mixin 或原型方法。原因是 <code>Vue.use(plugin)</code> 会调用插件的 <code>install</code> 方法，把全局扩展挂到 Vue 构造器上。边界是全局能力会影响整个应用，命名和副作用要非常克制。</li>
+          <li><strong>维护 Vue 2 项目时如何说明这些 API 与 Vue 3 选型边界？</strong> 结论是 Vue 3 移除 filters、弱化 mixin，自定义指令与插件仍可用但写法有变。原因是 Vue 2 已 EOL，新项目应优先 Composition API 与 Vite。存量项目识别这些 API 边界，迁移时 filters→computed/methods，mixin→composables。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -62,14 +66,18 @@
     <div id="app">
       <input v-focus v-border="'#409eff'" v-model="price">
       <p>过滤器格式化: {{ price | currency }}</p>
-      <button @click="sayFromMixin">调用 mixin 方法</button>
-      <button @click="$toast('插件方法来自 Vue.prototype')">调用插件方法</button>
+      <button type="button" @click="sayFromMixin">调用 mixin 方法</button>
+      <button type="button" @click="$toast('插件方法来自 Vue.prototype')">调用插件方法</button>
       <pre>{{ logs.join('\n') }}</pre>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // 全局自定义指令：v-focus / v-border
+      // 官方：指令钩子接收 el、binding 等；适合封装底层 DOM 行为。
+      // ---------------------------------------------------------------------------
       Vue.directive("focus", {
         inserted(el) {
           el.focus();
@@ -114,6 +122,9 @@
 
       Vue.use(ToastPlugin);
 
+      // ---------------------------------------------------------------------------
+      // #app：指令 + 过滤器 + mixin + 插件综合演示
+      // ---------------------------------------------------------------------------
       new Vue({
         el: "#app",
         mixins: [logMixin],

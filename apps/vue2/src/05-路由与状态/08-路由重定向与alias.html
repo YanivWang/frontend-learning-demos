@@ -1,6 +1,6 @@
 <!--
-  分类: vue2 / 05-路由与状态
-  主题: vue-router 路由重定向 与 alias 别名
+  分类: vue2 / 05-路由与状态
+  主题: vue-router 路由重定向 与 alias 别名
   要点:
     - redirect 命中后会发起到目标路由的新导航，地址栏显示目标 URL
     - alias 让别名 URL 保持在地址栏，但渲染原路由组件
@@ -14,7 +14,7 @@
     - 配置 redirect / alias 时有哪些 SEO 和权限边界？
 -->
 
-<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -29,7 +29,11 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>vue-router 路由重定向 与 alias 别名</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        点击 <code>to a</code> 观察地址栏变为 <code>/b</code>（redirect）；点击 <code>to /我是</code>
+        对比 <code>to c</code>：alias 下地址栏保持别名但渲染 C 组件；「当前」行显示
+        <code>$route.fullPath</code>。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -45,6 +49,7 @@
           <li><strong>旧路径迁移应该用 redirect 还是 alias？</strong> 结论是多数迁移用 redirect。原因是用户和搜索引擎最终看到的是新路径，团队也能把旧路径逐步下线。alias 更适合保留业务别名或短路径，但长期多 URL 指向同内容要考虑规范化。</li>
           <li><strong>alias 为什么地址栏不变但组件会复用原路由？</strong> 结论是 alias 只是额外匹配入口，不会把 location 改成原 path。原因是 Vue Router 在匹配别名时仍使用原路由记录的组件配置。边界是业务中读取 <code>$route.path</code> 时会看到别名路径，要避免把 path 当唯一业务身份。</li>
           <li><strong>redirect 是否会执行目标路由的守卫？</strong> 结论是会按最终目标导航流程处理。原因是 redirect 产生的是一次新的路由解析，目标路由的匹配、组件和守卫才是最终结果。项目里鉴权和埋点应关注最终到达的路由，而不是只看被 redirect 的入口。</li>
+          <li><strong>配置 redirect / alias 时有哪些 SEO 和权限边界？</strong> 结论是 redirect 利于 URL 规范化与旧链迁移；alias 多 URL 同内容需考虑 canonical 与鉴权一致性。原因是搜索引擎可能索引多个入口，alias 路径读到的 <code>$route.path</code> 是别名。项目里勿用 alias 绕过需鉴权的路径。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -63,7 +68,7 @@
       <router-link to="/c">to c</router-link>
       <router-link to="/我是">to /我是（alias of /c）</router-link>
       <router-link to="/d">to d</router-link>
-      <button @click="goToCByName">编程式 push({ name: 'toC' })</button>
+      <button type="button" @click="goToCByName">编程式 push({ name: 'toC' })</button>
       <p>当前: {{ $route.fullPath }}</p>
       <router-view></router-view>
     </div>
@@ -71,6 +76,10 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // redirect 与 alias
+      // 官方：redirect 导航到目标 URL；alias 为同一路由记录增加别名入口，地址栏保持别名。
+      // ---------------------------------------------------------------------------
       const A = { template: `<div>A（不会显示，/a 会 redirect 到 /b）</div>` };
       const B = { template: `<div>B</div>` };
       const C = { template: `<div>C</div>` };
@@ -103,7 +112,6 @@
           }
         }
       });
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -125,5 +133,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
-</html>
+</body>
+</html>

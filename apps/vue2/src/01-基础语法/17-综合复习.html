@@ -29,7 +29,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>综合复习（computed / methods / watch / 局部组件 / 简写）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        打开 Console，修改下方 input 的 msg：观察 computed 多次读取只打印一次、methods
+        每次渲染都打印；对比 <code>nowLabel</code>（computed）与 <code>nowMethod()</code> 缓存差异。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -44,6 +47,7 @@
           <li><strong>computed、methods、watch 怎么选？</strong> 结论是派生值用 <code>computed</code>，用户动作或普通函数逻辑用 <code>methods</code>，数据变化后的副作用用 <code>watch</code>。原因是 <code>computed</code> 有依赖缓存，<code>methods</code> 每次渲染都会执行，<code>watch</code> 能拿到新旧值并承载异步或外部影响。项目里常见边界是：列表筛选结果用 computed，点击提交用 method，搜索词变化后防抖请求接口用 watch。</li>
           <li><strong>为什么 computed 不加括号而 methods 要加括号？</strong> 结论是 <code>computed</code> 暴露成实例上的属性，<code>methods</code> 暴露成实例上的函数。Vue 会为计算属性创建 getter 并在访问时按依赖缓存结果，而方法只有被调用才执行。易错点是把同一个名字同时放进 <code>computed</code> 和 <code>methods</code>，会让模板含义变得不清楚。</li>
           <li><strong>局部组件注册的作用域是什么？</strong> 结论是局部组件只对注册它的那个组件模板可见。原因是 <code>components</code> 选项属于当前组件的解析上下文，不会自动向子组件继续传播。项目里如果 <code>componentb</code> 的模板要渲染 <code>componenta</code>，就要在 <code>componentb.components</code> 再注册一次。</li>
+          <li><strong>methods 和 computed 同名会带来什么问题？</strong> 结论是模板读取时含义不清，可能触发覆盖或警告。原因是两者都挂载到实例上但访问方式不同（属性 vs 函数调用）。项目里应严格区分命名，派生值放 computed，动作放 methods。</li>
           <li><strong>维护 Vue 2 时如何回答新项目选型？</strong> 结论是 Vue 2 规则仍然值得维护旧系统时掌握，但新项目通常应优先 Vue 3 与 Vite。原因是 Vue 2 已进入 EOL 后的历史版本语境，生态与官方推荐都转向 Vue 3。边界是存量项目迁移要评估依赖、IE 兼容和构建链，而不是只因为语法熟悉就继续新开 Vue 2。</li>
         </ul>
         <h2>参考资料</h2>
@@ -78,42 +82,10 @@
 
     <!-- SCRIPT_START -->
     <script>
-      //通过 import(Es2015写法)/require(CommonJS的写法) 使用一个模块系统
-      //使用 require.context 全局注册基础组件，全局注册的行为，必须在根Vue实例创建之前，注册
-
-      var a = "wang";
-      var b = "cheng";
-
-      //ES2015+的写法
-      var c = {
-        a,
-        b
-      };
-
-      console.log(c);
-
-      //组件是可以复用的Vue实例，所以它们与 new Vue 接收相同的选项，仅有的例外是像 el 这样根实例特有的选项
-      //取而代之的是，一个组件的 data 选项必须是一个函数，因此每个实例可以维护一份被返回对象的独立的拷贝
-      //组件的注册，全局注册和局部注册
-      //父组件通过prop向子组件传递数据
-      //子组件通过事件向父组件发消息
-      //$watch 用来监听一个属性的变化
-      //创建一个实例没有 el 选项，不会立即进入构建过程，需要手动调用 $mount(el) 来挂载 vue 实例到 DOM 上
-      //在底层的实现上，Vue将模板编译成虚拟DOM渲染函数，结合响应式系统，Vue能计算出，最少能渲染多少组件，并把
-      //DOM操作次数减少到最小
-      //{{}}用于绑定文本值，html属性的绑定需要使用 v-bind(:) 监听事件： v-on(@)
-      //模板中不仅可以绑定简单的属性键值，还可以绑定javascript表达式(Vue提供了完全的javascript表达式的支持)
-      //Vue指令的作用：将其绑定的表达式的值的改变，带来的影响，响应式的作用于DOM
-      //当使用Vue指令来绑定html的特性的时候，被绑定的这个html特性，被称作该指令的参数，特性的值，就是传入给该参数的值
-      //v-on的参数，是监听的事件名称
-      //对于任何的复杂逻辑都需要使用计算属性 computed
-      //data是用于接收正常的属性
-      //computed用于接收，需要一定逻辑处理的特性,计算属性会基于依赖关系进行数据的缓存，如果依赖关系没有发生改变，则不会重新求值
-      //多标签页面使用component来动态的切换
-      //组件命名规范：字母全小写，且必须包含一个连字符号（避免和当前以及未来的 HTML 元素相冲突）
-      //使用component组件，动态切换组件(做课程的题型的切换)
-
-      //组件的局部注册：通过一个javascipt对象来创建组件
+      // ---------------------------------------------------------------------------
+      // 局部组件 componenta / componentb（ES2015 对象属性简写）
+      // 官方：components 局部注册只对当前组件模板可见；子组件需再次注册。
+      // ---------------------------------------------------------------------------
       var componenta = {
         template:"<div>组件A</div>"
       };
@@ -127,6 +99,10 @@
         }
       };
 
+      // ---------------------------------------------------------------------------
+      // #app：computed vs methods vs watch 综合对比
+      // 官方：computed 按依赖缓存；methods 每次调用执行；watch 响应变化后副作用。
+      // ---------------------------------------------------------------------------
       new Vue({
         el: "#app",
         data:{

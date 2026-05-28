@@ -27,7 +27,11 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vue.component 全局组件 + data 与 vm 代理同步</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        查看 <code>#app_1</code> 的 <code>todo-item</code> 列表渲染；在 <code>#app_2</code> 点击文字切换
+        <code>msg</code>，打开 Console 观察 <code>data.a</code> 与 <code>app_2.a</code>、
+        <code>app_2.$data === data</code> 的同步日志。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -39,10 +43,10 @@
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue.component 注册后为什么所有子组件都能用？</strong> 结论：全局注册会把组件挂到 Vue 构造器的全局注册表，之后创建的根实例及其子组件模板都能解析到它。原因是模板编译需要先知道标签对应的组件定义。边界是注册顺序要早于实例模板编译，过多全局组件也会让依赖关系变得不清晰。</li>
-          <li><strong>props 和 data 代理分别解决什么问题？</strong> 结论：props 解决父到子的外部输入，data 代理解决实例内部状态访问。原因是 Vue 会把 data 中已有字段代理到 vm，同时把 props 暴露给组件模板。项目里应避免子组件直接改 prop，状态来源放在拥有它的父组件或状态层。</li>
-          <li><strong>为什么 Vue 2 里动态新增根级 data 字段不推荐？</strong> 结论：实例创建后新增的根级字段不会自动具备响应式能力。原因是 Vue 2 基于 <code>Object.defineProperty</code> 初始化拦截已有属性。边界是嵌套对象可用 <code>Vue.set</code>，但根级字段最好提前声明。</li>
-          <li><strong>全局组件和局部组件怎么选？</strong> 结论：跨很多页面复用的基础组件可以全局注册，业务组件优先局部注册。原因是局部注册让依赖更显式，也更利于维护和按需加载。Vue 2 已是历史版本语境，新项目通常应直接使用 Vue 3 的组件组织方式。</li>
+          <li><strong>Vue.component 注册的组件什么时候能在模板里使用？</strong> 结论：全局注册完成后、且早于根实例模板编译时即可使用。原因是 Vue 在编译模板前需先解析标签对应的组件定义。边界是注册顺序必须在前，局部注册则只对声明它的组件模板可见。</li>
+          <li><strong>props、data 代理和 vm.$data 的关系怎么解释？</strong> 结论：props 是父到子的外部输入，data 字段会代理到 vm 上，<code>vm.$data</code> 指向原始 data 对象。原因是 Vue 初始化时把 data 既有属性代理到实例。项目里改 <code>vm.a</code> 与改 <code>data.a</code> 等价，但动态新增根级字段不会自动响应式。</li>
+          <li><strong>Vue 2 里为什么不建议运行时给根 data 动态加新字段？</strong> 结论：实例创建后新增的根级字段不会自动具备响应式能力。原因是 Vue 2 基于 <code>Object.defineProperty</code> 在初始化时拦截已有属性。边界是嵌套对象可用 <code>Vue.set</code>，根级字段应预声明在 data 中。</li>
+          <li><strong>全局组件适合什么场景，什么时候应该改为局部组件？</strong> 结论：跨页面复用的基础组件可全局注册，业务组件优先局部注册。原因是局部注册让依赖更显式、便于按需加载。Vue 2 已是历史版本语境，新项目通常应直接使用 Vue 3 的组件组织方式。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -78,17 +82,18 @@
         console.log("1111");
       }
 
-      //Vue组件系统:任意类型的应用界面都是可以抽象成一个组件树
-      //Vue组件类似于web自定义组件，是web组件规范的一部分吧，实现了web组件规范的slot api和is特性
-      //v-bind:(web组件属性title,id,width,height...其它自定义组件的属性)
-
-      //父元素可以通过自定义组件的prop给子组件传递值
-      //一个Vue应用是从 new Vue()开始的，所有的Vue组件都是Vue的实例
+      // ---------------------------------------------------------------------------
+      // todo-item：Vue.component 全局注册 + props 下传
+      // 官方：全局注册后，根实例及其子组件树编译模板时均可解析该组件；props 为父到子只读输入。
+      // ---------------------------------------------------------------------------
       Vue.component('todo-item', {
-        props: ['todo'],//props用于定义组件的属性
-        template: "<li>{{todo.name}}:{{todo.age}}</li>"//template用于定义组件的模板html代码
+        props: ['todo'],
+        template: "<li>{{todo.name}}:{{todo.age}}</li>"
       });
 
+      // ---------------------------------------------------------------------------
+      // app_1：v-for 渲染全局组件列表（稳定 :key="item.id"）
+      // ---------------------------------------------------------------------------
       var app_1 = new Vue({
         el: "#app_1",
         data: {
@@ -100,10 +105,10 @@
         }
       });
 
-      //只有创建Vue实例时：data字段中的key，才是响应式的，当这些数据改变的时候，视图会重新渲染
-      //通过 this.xx 和 app.xx 动态添加的都不是响应式的
-
-      //data 和 method
+      // ---------------------------------------------------------------------------
+      // app_2：data 对象与 vm 字段代理同步（vm.$data === data）
+      // 官方：new Vue 时 data 既有字段会代理到实例；创建后动态新增根级字段不自动响应式。
+      // ---------------------------------------------------------------------------
       var data = {
         a: 1,
         msg: "点击我"

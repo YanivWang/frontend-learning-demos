@@ -7,10 +7,10 @@
     - action 支持载荷对象和对象风格 dispatch，团队项目应统一约定参数结构
     - 异步 action 要处理失败、重复点击和竞态，不能只写成功 commit
   面试:
-    - 为什么 Vuex mutation 要同步，而 action 可以异步？
-    - dispatch 返回 Promise 后组件应该如何串联后续 UI 流程？
-    - action 的载荷写法和对象风格 dispatch 有什么区别？
-    - 异步 action 在接口失败或重复点击时要怎么设计？
+    - 为什么 mutation 同步、action 异步？
+    - 组件如何等待 Vuex action 完成？
+    - 载荷写法怎么选？
+    - 异步 action 的风险点是什么？
 -->
 
 <!doctype html>
@@ -29,7 +29,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vuex actions 详解（载荷 / 异步 / Promise / 嵌套 dispatch）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        点击下方按钮触发 <code>commit</code> / <code>dispatch</code>：观察 <code>count</code> 与
+        <code>status</code> 行变化；「await checkoutPlus」与「模拟失败 action」演示 Promise 成功/失败路径。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -63,6 +66,10 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // Vuex actions：载荷、异步、Promise、嵌套 dispatch
+      // 官方：action 提交 mutation 而非直接改 state；dispatch 返回 handler 返回值（含 Promise）。
+      // ---------------------------------------------------------------------------
       const store = new Vuex.Store({
         state: {
           count: 0,
@@ -148,10 +155,10 @@
         <div>
           <div>count: {{ count }}</div>
           <div>{{ status }}</div>
-          <button @click="$store.commit('increment')">commit increment</button>
-          <button @click="dispatchAsync">dispatch incrementAsync({ amount: 3 })</button>
-          <button @click="runCheckout">await checkoutPlus</button>
-          <button @click="runCheckoutFail">模拟失败 action</button>
+          <button type="button" @click="$store.commit('increment')">commit increment</button>
+          <button type="button" @click="dispatchAsync">dispatch incrementAsync({ amount: 3 })</button>
+          <button type="button" @click="runCheckout">await checkoutPlus</button>
+          <button type="button" @click="runCheckoutFail">模拟失败 action</button>
         </div>
         `,
         methods: {

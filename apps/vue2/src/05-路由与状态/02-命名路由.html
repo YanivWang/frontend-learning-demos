@@ -30,7 +30,11 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>命名路由（router-link :to="{ name: 'xxx' }"）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        点击 <code>User (foo/bar)</code>、<code>About</code> 链接，或点「编程式 push」按钮，观察下方
+        <code>params.id</code> 变化；Cookie 行展示 <code>js-cookie</code> 读取结果（可在 Console 执行
+        <code>Cookies.set('name','xxx')</code> 后刷新验证）。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -46,6 +50,7 @@
           <li><strong>router-link 的对象写法如何传 params？</strong> 结论是写成 <code>:to="{ name: 'user', params: { id: 'foo' } }"</code>。原因是 Vue Router 根据 name 找到带动态片段的路由记录，再把 params 填入路径。边界是 params 字段名必须和 path 中的 <code>:id</code> 对上。</li>
           <li><strong>params 和 path 同时写时为什么容易失效？</strong> 结论是不要期待 <code>{ path: '/user', params: { id: 1 } }</code> 自动生成 <code>/user/1</code>。原因是 path 已经是完整路径入口，params 不会再参与动态片段填充。需要动态片段时用命名路由，或自己拼出完整 path。</li>
           <li><strong>Cookie 这类浏览器状态和路由状态要如何区分？</strong> 结论是 Cookie 表示客户端持久化/请求携带状态，路由表示当前页面位置。原因是 Cookie 会参与跨请求存储，路由只描述 UI 导航。项目里认证 token、偏好设置可在 Cookie 或存储中，当前页签、资源 ID 更适合路由。</li>
+          <li><strong>命名路由在重构路由路径时有什么价值？</strong> 结论是调用方只依赖稳定的 <code>name</code>，path 从 <code>/user/:id</code> 改为 <code>/members/:id</code> 时不必逐处改链接。原因是命名路由把语义与 URL 字符串解耦。项目里详情、编辑、权限跳转等高频入口尤其受益。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -63,7 +68,7 @@
         <router-link v-bind:to="{ name: 'user', params: { id: 'foo' } }">User (foo)</router-link>
         <router-link v-bind:to="{ name: 'user', params: { id: 'bar' } }">User (bar)</router-link>
         <router-link v-bind:to="{ name: 'about' }">About</router-link>
-        <button @click="goUserByCode">编程式 push({ name: 'user', params: { id: 'code' } })</button>
+        <button type="button" @click="goUserByCode">编程式 push({ name: 'user', params: { id: 'code' } })</button>
       </p>
       <p>Cookie name: {{ cookieName || '(未设置，可在控制台 Cookies.set("name","xxx") 试试)' }}</p>
       <router-view></router-view>
@@ -72,6 +77,10 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // 命名路由：router-link / push 使用 { name, params }
+      // 官方：路由记录配置 name 后，可用 name + params 生成链接，降低 path 硬编码。
+      // ---------------------------------------------------------------------------
       var name = Cookies.get("name");
       console.log("Cookies.get('name'):", name);
 
@@ -87,16 +96,8 @@
       };
 
       const routes = [
-        {
-          name: "user",
-          path: "/user/:id",
-          component: User
-        },
-        {
-          name: "about",
-          path: "/about",
-          component: About
-        }
+        { name: "user", path: "/user/:id", component: User },
+        { name: "about", path: "/about", component: About }
       ];
 
       const router = new VueRouter({ routes });
@@ -112,7 +113,6 @@
           }
         }
       }).$mount('#app');
-
     </script>
     <!-- SCRIPT_END -->
 

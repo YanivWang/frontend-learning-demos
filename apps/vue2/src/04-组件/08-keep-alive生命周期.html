@@ -27,7 +27,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>keep-alive 与 activated / deactivated</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        切换 TabA / TabB，观察下方生命周期日志；在某 tab 输入框输入文字后再切换，验证
+        <code>keep-alive</code> 是否保留内容与 <code>activated/deactivated</code> 触发顺序。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -41,7 +44,7 @@
         <ul>
           <li><strong>keep-alive 缓存的是什么？</strong> 结论：缓存的是组件实例。原因是它让被切走的动态组件不进入销毁流程，再次显示时复用原实例。边界是缓存会占内存，不能无脑包所有页面。</li>
           <li><strong>activated/deactivated 和 mounted/destroyed 有什么区别？</strong> 结论：mounted/destroyed 对应真实挂载和销毁，activated/deactivated 对应缓存组件进入和离开活跃状态。原因是 keep-alive 下组件离开时并未销毁。项目里恢复或暂停副作用应放在 activated/deactivated。</li>
-          <li><strong>keep-alive 适合什么场景？</strong> 结论：适合需要返回后保留状态的互斥视图。原因是用户期望 tab 输入、列表滚动、步骤表单不被重置。边界是实时数据页需要重新拉取或校验过期状态。</li>
+          <li><strong>keep-alive 常用于哪些页面场景，风险是什么？</strong> 结论：适合 tab、列表返回详情、表单步骤等需保留状态的互斥视图。原因是用户期望输入、滚动不被重置。风险是缓存过多占内存，隐藏组件中的副作用若不暂停可能造成重复请求或性能问题。</li>
           <li><strong>include/exclude/max 为什么重要？</strong> 结论：它们控制缓存范围和数量。原因是缓存实例越多，内存和副作用管理成本越高。项目里应给需要缓存的组件明确 <code>name</code>，再配置白名单或最大缓存数。</li>
         </ul>
         <h2>参考资料</h2>
@@ -56,8 +59,8 @@
 
     <!-- PAGE_DOM_START -->
     <div id="app">
-      <button @click="current = 'TabA'">TabA</button>
-      <button @click="current = 'TabB'">TabB</button>
+      <button type="button" @click="current = 'TabA'">TabA</button>
+      <button type="button" @click="current = 'TabB'">TabB</button>
       <keep-alive>
         <component :is="current"></component>
       </keep-alive>
@@ -67,6 +70,10 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // TabA / TabB：keep-alive 生命周期钩子对比
+      // 官方：缓存组件切走触发 deactivated，再次进入触发 activated；不触发 destroy。
+      // ---------------------------------------------------------------------------
       const makeTab = function (name) {
         return {
           template: `
@@ -96,6 +103,9 @@
       Vue.component("TabA", makeTab("TabA"));
       Vue.component("TabB", makeTab("TabB"));
 
+      // ---------------------------------------------------------------------------
+      // #app：keep-alive 包裹动态组件 + 日志面板
+      // ---------------------------------------------------------------------------
       new Vue({
         el: "#app",
         data() {

@@ -1,6 +1,6 @@
 <!--
-  分类: vue2 / 05-路由与状态
-  主题: 嵌套路由 + 默认子路由 + 编程式导航 push / replace
+  分类: vue2 / 05-路由与状态
+  主题: 嵌套路由 + 默认子路由 + 编程式导航 push / replace
   要点:
     - 父路由组件内部放 router-view，children 决定子路由渲染位置
     - 子路由 path 不以 / 开头时会相对父路径拼接
@@ -14,7 +14,7 @@
     - 嵌套路由页面如何处理未知子路径？
 -->
 
-<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -29,7 +29,11 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>嵌套路由 + 默认子路由 + 编程式导航 push / replace</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        点击 <code>push /user/foo</code>、<code>push profile</code>、<code>replace course</code> 按钮或下方
+        <code>router-link</code>，观察地址栏与嵌套 <code>router-view</code> 内容；用浏览器后退对比
+        <code>push</code>（可回退）与 <code>replace</code>（替换当前记录）的差异。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -45,6 +49,7 @@
           <li><strong>子路由 path 什么时候写相对路径，什么时候写绝对路径？</strong> 结论是大多数嵌套页面写相对路径，不以斜杠开头。原因是相对路径会拼接父路径，能体现层级关系。边界是子路由以 <code>/</code> 开头会作为根路径匹配，适合少数需要共享父布局但 URL 不体现层级的场景。</li>
           <li><strong>默认子路由 path: '' 解决什么问题？</strong> 结论是它让访问父路径时也能渲染一个默认子页面。原因是没有默认子路由时，父组件中的子出口没有匹配内容。项目里常把概览页、欢迎页、默认 tab 写成 <code>path: ''</code>。</li>
           <li><strong>push 和 replace 对浏览器历史记录有什么区别？</strong> 结论是 push 入栈，replace 替换当前条目。原因是它们分别对应浏览器 history 的新增和替换语义。比如列表到详情用 push，登录成功后从登录页去首页常用 replace，避免后退回登录页。</li>
+          <li><strong>嵌套路由页面如何处理未知子路径？</strong> 结论是在 children 末尾配置 catch-all 或 404 子路由。原因是父组件可能已渲染但子出口无匹配时会空白。项目里常用 <code>{ path: '*', component: NotFound }</code> 或 redirect 到默认子页。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -59,9 +64,9 @@
     <!-- PAGE_DOM_START -->
     <div id="app">
       <div>
-        <button @click="pushTo('/user/foo')">push /user/foo</button>
-        <button @click="pushTo('/user/foo/profile')">push profile</button>
-        <button @click="replaceTo('/user/foo/course')">replace course</button>
+        <button type="button" @click="pushTo('/user/foo')">push /user/foo</button>
+        <button type="button" @click="pushTo('/user/foo/profile')">push profile</button>
+        <button type="button" @click="replaceTo('/user/foo/course')">replace course</button>
       </div>
       <p>
         <router-link to="/user/foo">/user/foo</router-link>
@@ -74,6 +79,11 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // 嵌套路由 + 默认子路由 + 编程式导航
+      // 官方：父组件内放 router-view；children path 相对父路径拼接；path: '' 为默认子路由。
+      // push 新增历史记录，replace 替换当前记录。
+      // ---------------------------------------------------------------------------
       const User = {
         template: `<div>
         <div>user — id: {{ $route.params.id }}</div>
@@ -134,9 +144,6 @@
           }
         }
       }).$mount('#app');
-
-      // 同一路由不同 params（/user/foo → /user/bar）会复用 User 组件，需 watch $route
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -158,5 +165,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
-</html>
+</body>
+</html>

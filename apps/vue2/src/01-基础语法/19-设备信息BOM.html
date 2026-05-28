@@ -26,7 +26,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>设备信息读取（与 Vue 无强关联，纯 BOM）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        点「刷新设备信息」读取 DPR、视口宽度与 screen 对象；对比三者的数值差异；
+        缩放浏览器窗口后再次刷新观察变化。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -53,17 +56,40 @@
     </section>
     <!-- NOTES_END -->
 
+    <!-- PAGE_DOM_START -->
+    <div id="device-info">
+      <button type="button" id="refresh-btn">刷新设备信息</button>
+      <pre id="output">点击按钮读取 devicePixelRatio / innerWidth / screen</pre>
+    </div>
+    <!-- PAGE_DOM_END -->
+
     <!-- SCRIPT_START -->
     <script>
-      let bt = window.devicePixelRatio;
-      console.log("bt: " + bt);
+      // ---------------------------------------------------------------------------
+      // BOM 设备信息读取：DPR / 视口 / 物理屏幕
+      // MDN：devicePixelRatio 为物理像素与 CSS 像素比；screen 不等于视口。
+      // ---------------------------------------------------------------------------
+      function readDeviceInfo() {
+        var dpr = window.devicePixelRatio;
+        var viewportW = window.innerWidth;
+        var rootW = document.documentElement.clientWidth;
+        var screenInfo = window.screen;
 
-      // window 上没有 clientWidth；获取视口宽度应使用 window.innerWidth
-      let screenX = window.innerWidth;
-      console.log("screenX: " + screenX);
+        return [
+          "devicePixelRatio: " + dpr,
+          "innerWidth: " + viewportW,
+          "documentElement.clientWidth: " + rootW,
+          "screen.width: " + screenInfo.width,
+          "screen.height: " + screenInfo.height,
+          "screen.availWidth: " + screenInfo.availWidth
+        ].join("\n");
+      }
 
-      let screenY = window.screen;
-      console.log("screenY: " + screenY);
+      document.getElementById("refresh-btn").addEventListener("click", function () {
+        document.getElementById("output").textContent = readDeviceInfo();
+      });
+
+      document.getElementById("output").textContent = readDeviceInfo();
 
     </script>
     <!-- SCRIPT_END -->

@@ -28,7 +28,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vue2 组件通信方式汇总</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        点 child-card「props + $emit」改名、点透传按钮看 logs；点兄弟 A 发事件观察兄弟 B 收到消息；查看
+        <code>inject theme.color</code> 与 <code>$attrs</code> 透传效果。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -44,6 +47,7 @@
           <li><strong>provide / inject 和 Vuex 的边界怎么划分？</strong> 结论是 provide/inject 用来传稳定上下文，Vuex 用来管理可追踪的共享状态。原因是 Vue 2 的 provide/inject 默认不是为了响应式状态流设计的，调试链路也不如 Vuex 明确。项目里常把主题、表单校验上下文放 provide/inject，把登录用户、购物车、权限放 Vuex。</li>
           <li><strong>EventBus 为什么容易内存泄漏，如何清理？</strong> 结论是 EventBus 注册的回调如果不在组件销毁前移除，就可能在组件销毁后继续触发。原因是事件总线持有回调引用，页面切换或组件反复创建会累积监听。Vue 2 中通常在 <code>created</code> 里 <code>$on</code>，在 <code>beforeDestroy</code> 里用同一个函数引用 <code>$off</code>。</li>
           <li><strong>$attrs / $listeners 适合解决什么组件封装问题？</strong> 结论是它们适合透明封装基础组件。原因是包装组件不必显式声明每个原生属性和事件，也能把父层传入的能力转交给内部按钮或输入框。边界是关键业务 props 仍建议显式声明，避免组件接口过于隐式。</li>
+          <li><strong>Vue2 维护期项目迁移到 Vue3 时通信 API 有哪些变化？</strong> 结论是 props/$emit 语义保留，但 <code>$listeners</code> 合并进 <code>$attrs</code>、<code>.sync</code> 改为 <code>v-model:prop</code>、EventBus 需改用 mitt 等替代。原因是 Vue 3 简化了 attrs 透传并移除了部分 Vue 2 专用 API。维护项目迁移时应逐页替换这些写法。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -73,17 +77,27 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // EventBus：兄弟组件通信（须在 beforeDestroy 中 $off 清理）
+      // ---------------------------------------------------------------------------
       const EventBus = new Vue();
 
+      // ---------------------------------------------------------------------------
+      // base-button：$attrs / $listeners 透传封装
+      // 官方：inheritAttrs: false 时，未声明为 props 的 attribute 进入 $attrs。
+      // ---------------------------------------------------------------------------
       Vue.component("base-button", {
         inheritAttrs: false,
         template: `
-        <button v-bind="$attrs" v-on="$listeners">
+        <button type="button" v-bind="$attrs" v-on="$listeners">
           {{ $attrs['button-text'] || '按钮' }}
         </button>
         `
       });
 
+      // ---------------------------------------------------------------------------
+      // child-card：props + $emit + provide/inject + $attrs 透传
+      // ---------------------------------------------------------------------------
       Vue.component("child-card", {
         inject: ["theme"],
         props: ["title"],
@@ -91,14 +105,17 @@
         <section style="border:1px solid #ddd;padding:8px;margin-bottom:8px;">
           <p>props title: {{ title }}</p>
           <p>inject theme.color: {{ theme.color }}</p>
-          <button @click="$emit('rename', '子组件改名请求')">props + $emit</button>
+          <button type="button" @click="$emit('rename', '子组件改名请求')">props + $emit</button>
           <base-button v-bind="$attrs" @click="$emit('native-click')"></base-button>
         </section>
         `
       });
 
+      // ---------------------------------------------------------------------------
+      // sibling-a / sibling-b：EventBus 发布订阅
+      // ---------------------------------------------------------------------------
       Vue.component("sibling-a", {
-        template: `<button @click="send">兄弟 A 发送事件</button>`,
+        template: `<button type="button" @click="send">兄弟 A 发送事件</button>`,
         methods: {
           send() {
             EventBus.$emit("sibling-message", "来自兄弟 A");
@@ -124,6 +141,9 @@
         }
       });
 
+      // ---------------------------------------------------------------------------
+      // #app：汇总 props/$emit、provide/inject、EventBus、$attrs 四种通信
+      // ---------------------------------------------------------------------------
       new Vue({
         el: "#app",
         provide() {

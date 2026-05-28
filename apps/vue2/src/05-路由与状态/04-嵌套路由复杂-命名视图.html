@@ -29,7 +29,11 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>嵌套路由 + 命名视图组合（settings 综合页）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        页面加载后自动进入 <code>/settings</code>；点击 <code>emails</code> / <code>profile</code>
+        链接，观察主内容区变化；切到 <code>profile</code> 时同时出现编辑区与右侧
+        <code>helper</code> 预览区（命名视图）。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -45,6 +49,7 @@
           <li><strong>components.default 和 router-view name 如何对应？</strong> 结论是无名 <code>router-view</code> 对应 <code>default</code>，有名出口按 name 找同名组件。原因是 Vue Router 需要用对象键把多个 outlet 和多个组件一一映射。边界是写成单数 <code>component</code> 时只能填充默认出口。</li>
           <li><strong>为什么 settings/profile 可以同时渲染内容和预览区？</strong> 结论是它的路由记录使用了 <code>components</code> 对象。原因是一个匹配结果可以给默认出口放编辑组件，同时给 helper 出口放预览组件。项目里这比在组件内部写大量条件渲染更容易表达路由驱动的布局。</li>
           <li><strong>hash 模式和 history 模式在部署上有什么差异？</strong> 结论是 hash 模式对静态文件更友好，history 模式 URL 更干净但需要服务端兜底。原因是 hash 后面的片段不会发给服务器，而 history 深层路径刷新会请求真实路径。静态 demo 和 GitHub Pages 常用 hash，生产 history 要配置 fallback。</li>
+          <li><strong>复杂路由页面如何避免路由配置失控？</strong> 结论是按布局层、业务页、辅助区拆分 children，命名视图 key 与 outlet name 一一对应，并给未知子路径配 fallback。原因是路由表膨胀后难维护且易出现空白出口。项目里可配合路由模块化与常量命名。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -66,9 +71,10 @@
 
     <!-- SCRIPT_START -->
     <script>
-      //定义一个组件(实际上只是声明了一个组件选项对象)
-      //组件名称采用驼峰式命名法
-      //如果直接在dom中使用的话，必须采用a-b(字母全小写，中间用连字符号连接的写法)
+      // ---------------------------------------------------------------------------
+      // 嵌套路由 + 命名视图：settings 综合布局
+      // 官方：children 嵌套子页；components.default / helper 对应多个 router-view 出口。
+      // ---------------------------------------------------------------------------
       const UserSettingNav = {
         template: `
         <div class="us__nav">
@@ -79,7 +85,6 @@
         `
       };
 
-      //在一个组件中使用其它的组件的方式 1.直接使用，在template中使用组件的名称(这个会静态的一致存在)  2.通过嵌套的router-view使用(需要配合指定的导航使用)
       const UserSetting = {
         template: `
         <div class="us">
@@ -89,7 +94,7 @@
           <router-view name="helper" class="us__content us__content--helper"/>
         </div>
         `,
-        components: {//局部声明的组件，要想使用它，需要在本组件的components属性中加入被使用的组件
+        components: {
           UserSettingNav
         }
       };
@@ -116,26 +121,23 @@
           <h3>Preview of your profile</h3>
         </div>
         `
-      }
+      };
 
-      //定义路由的配置选项
       const router = new VueRouter({
         routes: [
           {
-            path: '/settings',//顶级路由的路径
-            component: UserSetting,//顶级组件(页面级别的组件)
-            children: [//嵌套视图
+            path: '/settings',
+            component: UserSetting,
+            children: [
               {
-                path: 'emails',//相对于根路径
-
-                //注意这里是component 不是components(本例中父组件的嵌套路由视图有两个，但是匹配的路由只有一个，此时会默认选择一个路由视图来渲染匹配的组件)
+                path: 'emails',
                 component: UserEmailsSubscriptions
               },
               {
                 path: 'profile',
-                components: {//使用命名视图来匹配多个视图组件(匹配的是顶级组件下的嵌套视图)
+                components: {
                   default: UserProfile,
-                  helper: UserProfilePreview//一个视图对应一个组件
+                  helper: UserProfilePreview
                 }
               }
             ]
@@ -145,11 +147,9 @@
 
       router.push('/settings');
 
-      //创建并挂载 vue 实例
       new Vue({
         router
       }).$mount("#app");
-
     </script>
     <!-- SCRIPT_END -->
 

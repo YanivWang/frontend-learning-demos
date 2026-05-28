@@ -29,7 +29,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>watch 与 computed 的取舍</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        在 <code>app1</code>～<code>app3</code> 修改 firstName/lastName 观察 fullName 同步方式；
+        在 <code>app4</code> 输入含 <code>?</code> 的问题（试 yes/no/fail）观察防抖与异步竞态处理。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -45,6 +48,7 @@
           <li><strong>为什么 fullName 用 computed 比用 watch 同步字段更好？</strong> 结论是 computed 状态更少，数据来源更清楚。原因是 watch 方案需要额外维护 <code>fullName</code>，任何一个源字段同步漏掉都会出错；computed 每次都从 <code>firstName</code> 和 <code>lastName</code> 派生，不存第二份真相。边界是如果变化后要触发请求或埋点，才应使用 watch。</li>
           <li><strong>watch 里发请求为什么要处理防抖和旧结果覆盖？</strong> 结论是用户快速输入会触发多次变化，旧异步结果可能晚于新请求返回。原因是异步完成顺序不等于输入顺序，不处理会把界面改回过期答案。项目里通常配合防抖、取消请求、版本号或 AbortController，并明确展示错误状态。</li>
           <li><strong>computed setter 适合解决什么问题？</strong> 结论是适合把一个可写的派生值拆分回多个源数据。原因是 getter 定义如何组合，setter 定义外部赋值时如何反向更新源字段。项目里可用于姓名拆分、区间输入等同步逻辑，但复杂副作用仍应放在 methods 或 watch。</li>
+          <li><strong>维护 Vue 2 项目时如何说明 watch 与 Vue 3 选型边界？</strong> 结论是 Vue 2/3 的 watch 语义基本一致，Vue 3 新增 <code>watchEffect</code> 等组合式 API。原因是 Vue 2 已 EOL，新项目应优先 Vue 3 Composition API；存量项目的 watch 选项可直接迁移。边界是复杂副作用在 Vue 3 中也可用 composable 封装。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -77,6 +81,7 @@
       <div>name: {{fullName}}</div>
       <input v-model="firstName">
       <input v-model="lastName">
+      <input v-model="fullName" placeholder="直接改 fullName 触发 setter">
     </div>
     <div id="app4">
       <div>当需要在数据变化时，执行异步或者开销较大的操作时，使用 watch 才是有效选择</div>
@@ -88,7 +93,10 @@
 
     <!-- SCRIPT_START -->
     <script>
-      //使用watch进行数据变化引起的异步操作
+      // ---------------------------------------------------------------------------
+      // app4：watch + 防抖 + 异步竞态（requestVersion）
+      // 官方：watch 适合数据变化后的异步或开销较大操作；computed 不适合承载副作用。
+      // ---------------------------------------------------------------------------
       var vm4 = new Vue({
         el: '#app4',
         data: {
@@ -117,7 +125,7 @@
 
             this.answer = '模拟请求中...';
 
-            window.setTimeout(() => {
+            window.setTimeout(function () {
               if (currentVersion !== this.requestVersion) {
                 return;
               }
@@ -133,6 +141,9 @@
         }
       });
 
+      // ---------------------------------------------------------------------------
+      // app1：watch 手动同步 fullName（反面教材，对比 computed）
+      // ---------------------------------------------------------------------------
       var vm1 = new Vue({
         el: '#app1',
         data: {
@@ -150,6 +161,9 @@
         }
       });
 
+      // ---------------------------------------------------------------------------
+      // app2：computed 派生 fullName（推荐写法）
+      // ---------------------------------------------------------------------------
       var vm2 = new Vue({
         el: '#app2',
         data: {
@@ -165,6 +179,9 @@
         }
       });
 
+      // ---------------------------------------------------------------------------
+      // app3：computed get/set 拆分 fullName
+      // ---------------------------------------------------------------------------
       var vm3 = new Vue({
         el: '#app3',
         data: {

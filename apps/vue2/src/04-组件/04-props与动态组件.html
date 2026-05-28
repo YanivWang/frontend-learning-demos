@@ -27,7 +27,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>props 传值 + 自定义事件 + 动态组件</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        点子组件「发送消息」在 Console 查看 <code>blow-event</code> 负载；点击组件根区域验证
+        <code>@click.native</code>；点 <code>next</code> 按钮切换 <code>&lt;component :is&gt;</code> 动态组件。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -68,15 +71,17 @@
       <div>
         切换子组件
       </div>
-      <button @click="switchNextComp">next</button>
+      <button type="button" @click="switchNextComp">next</button>
       <component v-bind:is="currentComp"></component>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      console.log("111");
-
+      // ---------------------------------------------------------------------------
+      // my-comp1：props 下传 + $emit 上抛 + 父组件 .native 监听根元素点击
+      // 官方：DOM 模板自定义事件推荐 kebab-case；.native 监听组件根元素原生事件（Vue 3 已移除）。
+      // ---------------------------------------------------------------------------
       Vue.component("my-comp1", {
         data: function () {
           return {
@@ -91,7 +96,7 @@
           <div>{{title}}</div>
           <div>{{content}}</div>
 
-          <button @click="triggleEvent">发送消息</button>
+          <button type="button" @click="triggleEvent">发送消息</button>
         </div>
         `,
         methods:{
@@ -102,6 +107,9 @@
         }
       });
 
+      // ---------------------------------------------------------------------------
+      // my-comp2 / MyComp3：动态组件切换目标
+      // ---------------------------------------------------------------------------
       Vue.component("my-comp2", {
         template: `<div>组件二</div>`
       });
@@ -110,6 +118,10 @@
         template: `<div>组件三</div>`
       };
 
+      // ---------------------------------------------------------------------------
+      // #app：动态组件 <component :is="currentComp">
+      // 官方：:is 可绑定已注册组件名或组件选项对象；切换默认销毁旧实例。
+      // ---------------------------------------------------------------------------
       new Vue({
         data: {
           title: "我是title",

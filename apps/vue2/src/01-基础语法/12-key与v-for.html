@@ -1,5 +1,5 @@
 <!--
-  分类: vue2 / 01-基础语法
+  分类: vue2 / 01-基础语法
   主题: key 复用控制 + v-for 遍历数组/对象
   要点:
     - v-for 可遍历数组和对象，数组参数为 (item, index)，对象参数为 (value, key, index)
@@ -15,7 +15,7 @@
     - v-if 和 v-for 放在一起时为什么要谨慎？
 -->
 
-<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -29,7 +29,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>key 复用控制 + v-for 遍历数组/对象</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        先在无 key 区输入内容再切换 loginType 观察输入保留；再在有 key 区重复对比；
+        点「切换 v-if」观察 template 分组渲染。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -45,6 +48,7 @@
           <li><strong>为什么切换两个 input 时加 key 会清空旧输入？</strong> 结论是不同 key 会让 Vue 把它们视为不同元素。原因是无 key 时 Vue 可能复用同一个 input 节点，浏览器保留的输入值也会跟着留下；加 key 后旧节点被销毁，新节点重新创建。项目里登录方式切换、动态表单切换经常需要这个行为。</li>
           <li><strong>v-for 遍历数组和对象的参数顺序是什么？</strong> 结论是数组通常是 <code>(item, index)</code>，对象通常是 <code>(value, key, index)</code>。原因是对象遍历多了属性名这一层。边界是对象属性枚举顺序遵循 JavaScript 的对象枚举规则，不要把普通对象遍历当成严格排序列表。</li>
           <li><strong>为什么列表重排时不推荐用 index 当 key？</strong> 结论是 index 代表位置，不代表数据身份。原因是插入或删除后，同一个 index 可能对应不同数据，导致组件状态或输入值错位。边界是完全静态、不会重排也没有内部状态的简单列表，用 index 风险较低，但仍优先稳定 id。</li>
+          <li><strong>v-if 和 v-for 放在一起时为什么要谨慎？</strong> 结论是同元素混用时 <code>v-for</code> 优先级更高，条件与列表渲染耦合。原因是 Vue 2 会先进入循环再判断条件，既影响可读性也可能带来不必要遍历。项目里通常用 computed 先过滤数组，再 <code>v-for</code> 渲染结果。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -67,7 +71,7 @@
         <template v-else>
           <div>你不能看见我222</div>
         </template>
-        <button @click="triggleShowHandle">切换 v-if</button>
+        <button type="button" @click="triggleShowHandle">切换 v-if</button>
       </div>
       <hr>
       <h3>无 :key — 切换 loginType 时 input 会被复用，输入内容会保留</h3>
@@ -83,7 +87,7 @@
           <input placeholder="input your email...">
         </div>
       </template>
-      <button @click="triggleLoginTypeHandle">切换 loginType（无 key）</button>
+      <button type="button" @click="triggleLoginTypeHandle">切换 loginType（无 key）</button>
       <hr>
       <h3>有 :key="loginTypeWithKey" — 切换时强制销毁旧 input，输入不会保留</h3>
       <template v-if="loginTypeWithKey === 'username'">
@@ -98,11 +102,11 @@
           <input :key="loginTypeWithKey" placeholder="input your email...">
         </div>
       </template>
-      <button @click="triggleLoginTypeWithKeyHandle">切换 loginType（有 key）</button>
+      <button type="button" @click="triggleLoginTypeWithKeyHandle">切换 loginType（有 key）</button>
       <hr>
       <h3>v-for 遍历数组</h3>
       <template v-for="(people, index) of peoples">
-        <div :key="people.name">
+        <div :key="people.id">
           <div>{{ index + 1 }}
             <span>{{ people.name }}</span>
             <span>{{ people.age }}</span>
@@ -124,6 +128,10 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // #main：key 复用控制 + v-for 数组/对象遍历
+      // 官方：建议稳定 string/number key；无 key 时 Vue 就地复用 DOM 可能保留输入状态。
+      // ---------------------------------------------------------------------------
       var vm = new Vue({
         el: "#main",
         data: {
@@ -131,9 +139,9 @@
           loginTypeWithKey: 'username',
           showFlag: true,
           peoples: [
-            {name: "张三", age: 20},
-            {name: "join", age: 20},
-            {name: "kaka", age: 20}
+            {id: 1, name: "张三", age: 20},
+            {id: 2, name: "join", age: 20},
+            {id: 3, name: "kaka", age: 20}
           ],
           unitList: {
             0: "基础一",
@@ -175,5 +183,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
-</html>
+</body>
+</html>

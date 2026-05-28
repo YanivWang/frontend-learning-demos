@@ -29,7 +29,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>ref 引用 DOM / 子组件实例</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        点「focus()」通过 DOM ref 聚焦输入框；点「调用子组件方法」观察子组件
+        <code>sayHi</code> 返回值写入日志区。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -45,6 +48,7 @@
           <li><strong>为什么不建议把 ref 当成常规数据流？</strong> 结论是 ref 是命令式访问通道，不是响应式数据设计。原因是 <code>$refs</code> 本身不响应式，父组件直接读写子组件实例会让依赖关系变隐蔽。项目里常规通信仍优先 props 和 events，ref 只处理少量边界动作。</li>
           <li><strong>什么时候访问 $refs 会拿不到值？</strong> 结论是首次渲染前、组件未挂载、受 <code>v-if</code> 控制且当前未渲染时都可能拿不到。原因是 ref 依赖真实节点或组件实例已经创建。项目里条件渲染后要访问 DOM，通常在状态变化后放到 <code>nextTick</code>。</li>
           <li><strong>调用子组件方法应该优先 ref 还是 props / events？</strong> 结论是常规业务交互优先 props / events，明确命令式动作才使用 ref。原因是 props/events 更符合单向数据流，ref 会增加父子耦合。边界是表单校验暴露 <code>validate()</code>、播放器暴露 <code>play()</code> 这类命令式 API 可以用 ref。</li>
+          <li><strong>维护 Vue 2 项目时如何说明 ref 与 Vue 3 选型边界？</strong> 结论是 Vue 2/3 的 ref 语义一致，Vue 3 组合式 API 中 ref 还可指响应式引用。原因是 Vue 2 已 EOL，新项目应优先 Vue 3；存量项目的 <code>$refs</code> 用法可直接迁移。边界是 Vue 3 的 template ref 在 setup 中需用 <code>ref()</code> 声明。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -59,15 +63,18 @@
     <!-- PAGE_DOM_START -->
     <div id="app">
       <input ref="myInput" placeholder="点按钮聚焦我" />
-      <button @click="focusInput">focus()</button>
+      <button type="button" @click="focusInput">focus()</button>
       <hello ref="hello"></hello>
-      <button @click="callChild">调用子组件方法</button>
+      <button type="button" @click="callChild">调用子组件方法</button>
       <pre>{{ logs.join('\n') }}</pre>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // hello 子组件：供 ref 获取组件实例
+      // ---------------------------------------------------------------------------
       Vue.component('hello', {
         template: '<div>Hello {{ name }}</div>',
         data: function () {
@@ -81,6 +88,10 @@
         }
       });
 
+      // ---------------------------------------------------------------------------
+      // #app：ref 引用 DOM 节点与子组件实例
+      // 官方：普通元素 ref 得 DOM；组件 ref 得实例；$refs 非响应式。
+      // ---------------------------------------------------------------------------
       new Vue({
         el: '#app',
         data: function () {

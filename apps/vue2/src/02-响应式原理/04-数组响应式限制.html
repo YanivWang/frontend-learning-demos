@@ -27,7 +27,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vue2 数组响应式限制</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        依次点击五个按钮，对比「索引赋值 / 改 length」与 <code>Vue.set</code>、<code>splice</code> 正确写法下
+        <code>items</code> 与下方日志是否同步更新；复习要点与面试答法见本区块。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -40,9 +43,9 @@
         <h2>面试考点</h2>
         <ul>
           <li><strong>Vue2 为什么能监听 push 却不能监听索引赋值？</strong> 结论是 Vue2 对数组方法做了包装，但没有为每个可能的索引都建立拦截。原因是 <code>Object.defineProperty</code> 的逐属性模型不适合动态数组索引和 length。项目里用变更方法或 <code>Vue.set</code>，不要直接写 <code>arr[i] = value</code> 后期待页面刷新。</li>
-          <li><strong>Vue.set 和 splice 替换怎么选？</strong> 结论是二者都能触发更新，单点替换时 <code>Vue.set</code> 语义直观，涉及插入、删除、截断时用 <code>splice</code>。原因是 <code>splice</code> 属于 Vue2 包装过的数组变更方法。边界是索引必须有效，越界或负数索引要先明确业务含义。</li>
+          <li><strong>Vue.set(arr, index, value) 和 splice 替换怎么选？</strong> 结论是二者都能触发更新，单点替换时 <code>Vue.set</code> 语义直观，涉及插入、删除、截断时用 <code>splice</code>。原因是 <code>splice</code> 属于 Vue2 包装过的数组变更方法。边界是索引必须有效，越界或负数索引要先明确业务含义。</li>
           <li><strong>直接修改 length 为什么不可靠？</strong> 结论是它会改变数组长度但不会通知 Vue2 视图更新。原因是 length 不是 Vue2 包装的变更方法调用。项目里清空数组可用 <code>this.items = []</code> 或 <code>this.items.splice(0)</code>，截断可用 <code>splice(newLength)</code>。</li>
-          <li><strong>大列表数组更新要注意什么？</strong> 结论是减少高频逐项响应式写入。原因是每次变更都可能触发依赖通知和后续渲染调度。项目里可先构造普通数组再整体赋值，并配合分页、虚拟列表和稳定 key 控制渲染成本。</li>
+          <li><strong>大列表数组更新在 Vue2 中要注意什么性能边界？</strong> 结论是减少高频逐项响应式写入。原因是每次变更都可能触发依赖通知和后续渲染调度。项目里可先构造普通数组再整体赋值，并配合分页、虚拟列表和稳定 key 控制渲染成本。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -57,17 +60,20 @@
     <!-- PAGE_DOM_START -->
     <div id="app">
       <p>items: {{ items }}</p>
-      <button @click="badSet">索引赋值: items[1] = 'B'</button>
-      <button @click="goodSetByVueSet">Vue.set(items, 1, 'B')</button>
-      <button @click="goodSetBySplice">splice 替换</button>
-      <button @click="badLength">直接改 length</button>
-      <button @click="goodLength">splice 截断</button>
+      <button type="button" @click="badSet">索引赋值: items[1] = 'B'</button>
+      <button type="button" @click="goodSetByVueSet">Vue.set(items, 1, 'B')</button>
+      <button type="button" @click="goodSetBySplice">splice 替换</button>
+      <button type="button" @click="badLength">直接改 length</button>
+      <button type="button" @click="goodLength">splice 截断</button>
       <pre>{{ logs.join('\n') }}</pre>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // 数组响应式限制：对比错误索引/length 写法与 Vue.set、splice 正确写法
+      // ---------------------------------------------------------------------------
       new Vue({
         el: "#app",
         data() {

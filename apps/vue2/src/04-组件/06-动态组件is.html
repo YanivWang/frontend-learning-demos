@@ -29,7 +29,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>动态组件 &lt;component :is=&quot;...&quot;&gt;</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        点 Home / About / User 切换 tab，在某 tab 的输入框输入文字后再切换回来，验证
+        <code>keep-alive</code> 是否保留输入内容。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -41,10 +44,10 @@
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>:is</code> 可以接收什么？</strong> 结论：可以接收已注册组件名字符串，也可以接收组件选项对象。原因是 Vue 在渲染动态组件时会根据该值解析出要渲染的组件定义。边界是 DOM 模板里组件名要注意大小写和注册名匹配。</li>
-          <li><strong>动态组件切换时实例会怎样？</strong> 结论：默认旧组件会被销毁，新组件会被创建。原因是当前渲染的组件类型变了，Vue 需要替换对应组件实例。需要保留表单、滚动或缓存数据时，用 <code>keep-alive</code> 包住动态组件。</li>
-          <li><strong>keep-alive 为什么能保留输入框？</strong> 结论：它缓存的是组件实例，不只是 DOM。原因是被切走的组件不会走销毁流程，再次进入时复用原实例。边界是缓存过多会占内存，复杂场景要配置 include、exclude 或 max。</li>
-          <li><strong>动态组件和 v-if 怎么选？</strong> 结论：多种组件类型在同一位置互斥切换时用动态组件，单个组件或少量 DOM 显隐用 <code>v-if</code>/<code>v-show</code>。原因是动态组件把组件类型变成数据，更适合配置化切换。</li>
+          <li><strong>component 的 is 属性可以接收哪些值？</strong> 结论：可以接收已注册组件名字符串，也可以接收组件选项对象。原因是 Vue 在渲染动态组件时会根据该值解析出要渲染的组件定义。边界是 DOM 模板里组件名要注意大小写和注册名匹配。</li>
+          <li><strong>动态组件切换时组件实例默认会怎样变化？</strong> 结论：默认旧组件会被销毁，新组件会被创建。原因是当前渲染的组件类型变了，Vue 需要替换对应组件实例。需要保留表单、滚动或缓存数据时，用 <code>keep-alive</code> 包住动态组件。</li>
+          <li><strong>keep-alive 为什么能保留 tab 内输入状态？</strong> 结论：它缓存的是组件实例，不只是 DOM。原因是被切走的组件不会走销毁流程，再次进入时复用原实例。边界是缓存过多会占内存，复杂场景要配置 include、exclude 或 max。</li>
+          <li><strong>动态组件、v-if 和路由切换如何取舍？</strong> 结论：同位置互斥组件类型用动态组件，简单条件块用 <code>v-if</code>/<code>v-show</code>，页面级导航用路由。原因是动态组件把组件类型变成数据，路由则管理 URL 与历史栈。边界是需要保留状态时配合 <code>keep-alive</code> 或路由 meta。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -58,7 +61,7 @@
 
     <!-- PAGE_DOM_START -->
     <div id="app">
-      <button v-for="(tab, idx) in tabs" :key="idx" @click="currentTab = tab">
+      <button type="button" v-for="tab in tabs" :key="tab" @click="currentTab = tab">
         {{ tab }}
       </button>
       <keep-alive>
@@ -69,10 +72,17 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // Home / About / User：动态组件切换目标
+      // 官方：<component :is> 按绑定值渲染不同组件；keep-alive 缓存被切走的实例。
+      // ---------------------------------------------------------------------------
       Vue.component('Home',  { template: '<div>Home 页：counter <input/></div>' });
       Vue.component('About', { template: '<div>About 页：counter <input/></div>' });
       Vue.component('User',  { template: '<div>User 页：counter <input/></div>' });
 
+      // ---------------------------------------------------------------------------
+      // #app：keep-alive 包裹动态组件，切换 tab 保留输入状态
+      // ---------------------------------------------------------------------------
       new Vue({
         el: '#app',
         data: { tabs: ['Home', 'About', 'User'], currentTab: 'Home' }

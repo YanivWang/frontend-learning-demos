@@ -37,7 +37,11 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>v-bind:class 三种写法（对象 / 对象引用 / 数组）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        在 <code>app1</code> / <code>app2</code> / <code>app3</code> 分别点「点击」切换
+        <code>active</code>、<code>text-danger</code> 类名；观察静态 <code>class="yellowBg"</code> 与
+        <code>:class</code> 合并效果。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -53,6 +57,7 @@
           <li><strong>静态 <code>class</code> 和 <code>:class</code> 同时存在时 Vue 会覆盖还是合并？</strong> 结论是会合并，不会用动态 class 覆盖静态 class。原因是 Vue 对 <code>class</code> 绑定做了特殊处理，会把普通属性和绑定结果归一成最终类名列表。项目里常把布局、基础样式写在静态 class，把 active、error、disabled 这类状态交给 <code>:class</code>。</li>
           <li><strong>为什么复杂 class 条件通常放到 computed 里？</strong> 结论是为了让模板保持声明式和可读。原因是模板里嵌套太多三元表达式或布尔判断会把展示结构和状态规则揉在一起，后期排查样式状态很困难。边界是只有一两个简单开关时直接写对象更清楚，不必为了抽象而抽象。</li>
           <li><strong>数组语法里写 <code>{ active: isActive }</code> 和 <code>{ activeClass: isActive }</code> 有什么区别？</strong> 结论是前者输出类名 <code>active</code>，后者输出类名 <code>activeClass</code>。原因是对象语法的 key 是类名字面量，不会再去 data 里取同名变量。项目里如果类名来自变量，应写成数组项 <code>activeClass</code>；如果是固定类名的条件开关，才写对象 key。</li>
+          <li><strong>维护 Vue 2 项目时如何说明 :class 与 Vue 3 选型边界？</strong> 结论是 Vue 2/3 的 <code>:class</code> 对象/数组语法基本一致，差异在响应式底层与项目选型。原因是 Vue 2 已 EOL，新项目应优先 Vue 3；存量项目继续用 <code>:class</code> 维护样式状态即可。边界是 Vue 3 不再推荐 filters，复杂样式逻辑仍应抽 computed。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -106,6 +111,10 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // app3：:class 数组语法（含对象嵌入）
+      // 官方：数组元素可为字符串、表达式或对象；对象 key 为类名，value 为真值时保留。
+      // ---------------------------------------------------------------------------
       var vm3 = new Vue({
         el: "#app3",
         data: {
@@ -136,6 +145,9 @@
         watch: {}
       });
 
+      // ---------------------------------------------------------------------------
+      // app1：:class 对象语法 + 静态 class 合并
+      // ---------------------------------------------------------------------------
       var vm1 = new Vue({
         el: "#app1",
         data: {
@@ -158,6 +170,9 @@
         watch: {}
       });
 
+      // ---------------------------------------------------------------------------
+      // app2：:class 绑定 computed 返回的对象
+      // ---------------------------------------------------------------------------
       var vm2 = new Vue({
         el: "#app2",
         data: {

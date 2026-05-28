@@ -29,7 +29,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>nextTick 与异步 DOM 更新队列</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        点「修改 message 后读取 DOM」对比同步读取与 <code>nextTick</code> 后读取的
+        <code>textContent</code>；点「连续修改 count」观察 DOM 在本轮末尾统一刷新。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -45,6 +48,7 @@
           <li><strong>nextTick 适合解决哪些实际问题？</strong> 结论是它适合“依赖最新 DOM”的动作。原因是回调执行时 Vue 已完成本轮响应式更新对应的 DOM patch。项目里常见场景是列表新增后滚动到底部、弹窗出现后聚焦输入框、条件渲染后读取元素尺寸。</li>
           <li><strong>nextTick 和 setTimeout 有什么区别？</strong> 结论是 <code>nextTick</code> 等 Vue 自己的更新队列，<code>setTimeout</code> 只是把回调放到宏任务。原因是 Vue 会优先选择合适的异步策略来 flush 更新队列，语义更明确。边界是 <code>nextTick</code> 不负责等待网络、图片加载或 CSS 动画结束。</li>
           <li><strong>连续修改同一个响应式数据时 DOM 为什么不会同步刷新三次？</strong> 结论是 Vue 会去重并批量更新 watcher。原因是同一轮事件循环内多次状态变化可以合并成一次渲染，减少性能浪费。项目里不要依赖中间 DOM 状态，应以最终数据状态和 <code>nextTick</code> 后的 DOM 为准。</li>
+          <li><strong>维护 Vue 2 项目时如何说明 nextTick 与 Vue 3 选型边界？</strong> 结论是 Vue 2/3 的 <code>$nextTick</code> 语义一致，差异在项目选型。原因是 Vue 2 已 EOL，新项目应优先 Vue 3；存量项目的 nextTick 用法可直接迁移。边界是 Vue 3 也保留异步 DOM 更新队列机制。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -59,8 +63,8 @@
     <!-- PAGE_DOM_START -->
     <div id="app">
       <p ref="text">{{ message }}</p>
-      <button @click="changeMessage">修改 message 后读取 DOM</button>
-      <button @click="batchUpdate">连续修改 count</button>
+      <button type="button" @click="changeMessage">修改 message 后读取 DOM</button>
+      <button type="button" @click="batchUpdate">连续修改 count</button>
       <p>count: {{ count }}</p>
       <pre>{{ log.join('\n') }}</pre>
     </div>
@@ -68,6 +72,10 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // app：异步 DOM 更新队列与 $nextTick
+      // 官方：数据变更后 DOM 更新走异步队列；nextTick 在 patch 完成后执行回调。
+      // ---------------------------------------------------------------------------
       new Vue({
         el: "#app",
         data() {

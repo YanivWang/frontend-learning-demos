@@ -29,7 +29,11 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>动态路径参数 :id 与 $route.params</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        点击 <code>home</code> / <code>userA</code> / <code>userB</code> 切换路由，观察下方
+        <code>user</code> 区显示的 <code>id</code> 与 <code>postid</code>；从 userA 切到 userB 时打开
+        Console，查看 <code>route params changed</code> 日志（同组件复用、生命周期不重新执行）。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -45,6 +49,7 @@
           <li><strong>params 变化为什么不会重新触发 created？</strong> 结论是同一个路由记录只是参数变化时，Vue Router 会复用原组件实例。原因是复用比销毁重建更高效，也能保留局部状态。项目里如果要重新请求详情，需要 watch <code>$route</code> 或使用 <code>beforeRouteUpdate</code>。</li>
           <li><strong>params 和 query 应该如何区分？</strong> 结论是资源身份用 params，可选条件用 query。原因是 params 通常是路径模式的一部分，query 可以增删而不改变路由层级。比如 <code>/users/42</code> 表示用户 42，<code>?tab=orders</code> 表示当前展示订单页签。</li>
           <li><strong>动态路由参数缺失或格式错误时怎么兜底？</strong> 结论是要校验并处理失败路径。原因是用户可以手动改 URL，参数也可能过期或没有权限。项目里常做格式判断、接口 404 展示、路由守卫拦截或跳转统一错误页。</li>
+          <li><strong>为什么推荐用 props: true 解耦路由组件？</strong> 结论是用 props 接收 params 后，组件不再硬依赖 <code>$route</code>，可在 Storybook、单测或非路由场景复用。原因是官方 <code>props: true</code> 会把 <code>route.params</code> 按字段名注入组件。边界是仍需 watch prop 或 <code>$route</code> 处理同组件 params 变化。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -75,14 +80,15 @@
 
     <!-- SCRIPT_START -->
     <script>
-      console.log("111");
-
+      // ---------------------------------------------------------------------------
+      // home / user：动态路径参数与 $route.params
+      // 官方：path 中用 :name 声明动态片段，匹配后可通过 $route.params 读取。
+      // 同一路由记录仅 params 变化时组件会复用，需 watch $route 或 beforeRouteUpdate。
+      // ---------------------------------------------------------------------------
       const home = {
         template: "<div>home</div>"
       };
 
-      //在组件中使用$route会使之与对应的路由形成高度耦合，从而使组件只能在某些特定的URL上使用，限制了灵活性
-      //使用prop将组件和路由解耦
       const user = {
         watch: {
           $route: function (to, from) {
@@ -91,37 +97,19 @@
         },
         template: `<div>
         <span>user</span>
-        <span>id:{{$route.params.id}}</span>
+        <span>id: {{ $route.params.id }}</span>
+        <span>postid: {{ $route.params.postid }}</span>
       </div>`
       };
 
-      //2.定义路由
-      //component: 1.一个组件  2.Vue.extend()创建的组件构造器
       const routes = [
-        {
-          path: "/", component: home
-        },
-        {
-          path: "/user/:id/post/:postid", component: user//使用:标记一个路径参数，当匹配到一个路由，参数值，将会被设置到this.$route.params
-        }
+        { path: "/", component: home },
+        { path: "/user/:id/post/:postid", component: user }
       ];
 
-      //3.创建router实例，然后传入"router"配置
-      const router = new VueRouter({
-        routes
-      });
+      const router = new VueRouter({ routes });
 
-      //4.创建和挂载根实例
-      //通过为根实例注入路由器：我们可以在任何组件内通过this.$router访问路由器  this.$route访问当前的路由
-      var wm = new Vue({
-        router
-      }).$mount('#app');
-
-      //5.注意：当使用的路由参数，从/user/wangcheng/post/123  /user/wangcheng/post/456，匹配到的是同一个组件的话，
-      //原来的组件会被复用，意味着组件的生命周期钩子不会再被调用，可以使用watch来监控路由的变化
-
-      console.log(wm);
-
+      new Vue({ router }).$mount("#app");
     </script>
     <!-- SCRIPT_END -->
 

@@ -2,15 +2,18 @@
   分类: vue2 / 01-基础语法
   主题: Vue 2 基础指令与响应式绑定合集
   要点:
-    - Mustache 插值渲染文本，v-bind 绑定属性，v-on 绑定事件，v-model 绑定表单输入
-    - v-if 控制条件渲染，v-for 渲染列表且应提供稳定 key
-    - Vue 2 实例通过 el 挂载单个根容器，data 字段会代理到实例并参与响应式更新
-    - 本页用多个小实例隔离演示，真实项目通常以组件拆分而不是堆多个根实例
+    - Mustache 插值渲染文本；HTML 属性用 v-bind（:）；事件用 v-on（@）；表单用 v-model
+    - v-if 按条件创建/销毁 DOM；v-show 始终渲染节点，只切换 display
+    - v-for 渲染列表，:key 提供稳定节点身份（优先业务 id，避免无序列表用索引）
+    - 每个 Vue 实例通过 el 挂载一个 DOM 容器；data 纳入响应式，改状态即驱动视图
+    - v-model 在 text input 上等价于 :value + @input 的语法糖，不等于校验或提交
+    - 本页用多个独立实例隔离演示；真实项目通常单根实例 + 组件树
   面试:
     - Vue 2 模板里的插值、指令和响应式数据是什么关系？
-    - v-bind、v-on、v-model 分别解决哪类绑定问题？
-    - v-if 和 v-for 在基础 demo 中各自承担什么职责？
-    - 为什么 v-for 列表项建议提供稳定 key？
+    - v-bind、v-on、v-model 分别解决哪类绑定问题？v-model 底层是什么？
+    - v-if 和 v-show 的根本区别？各自适合什么场景？
+    - v-if 和 v-for 各自承担什么职责？同元素混用要注意什么？
+    - 为什么 v-for 建议提供稳定 key？
     - 多个 Vue 根实例演示和真实组件化项目有什么区别？
 -->
 
@@ -28,115 +31,130 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vue 2 基础指令与响应式绑定合集</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        在浏览器中操作下方交互演示：切换 <code>app_3</code> 对比 v-if / v-show，在
+        <code>app_4</code> 反转列表观察 <code>:key</code>；复习要点与面试答法见本区块。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue 2 模板把声明式 DOM 和实例数据连接起来：<code>{{ msg }}</code> 渲染文本，<code>v-bind</code> 绑定 HTML 属性，<code>v-on</code> 绑定事件，<code>v-model</code> 在表单控件和状态之间建立双向绑定。</li>
-          <li><code>v-if</code> 根据表达式结果决定节点是否渲染，<code>v-for</code> 根据数组渲染列表。本页列表给每个 <code>li</code> 增加 <code>:key</code>，让 Vue 在更新列表时能稳定复用或移动节点。</li>
-          <li>Vue 2 实例通过 <code>el</code> 挂载到一个 DOM 容器，<code>data</code> 中的字段会被代理到实例上并转换为响应式数据。事件方法里修改 <code>this.msg</code> 后，依赖它的模板会自动更新。</li>
-          <li>本页为了教学把六个知识点拆成六个根实例，避免演示互相影响。真实项目里更常见的做法是一个根实例挂载应用，再用组件拆分功能区域。</li>
-          <li>常见坑包括：插值只能用于文本内容，属性要用 <code>v-bind</code>；列表不要省略稳定 <code>key</code>；<code>v-model</code> 只负责表单值同步，不等于表单校验或提交逻辑。</li>
+          <li>
+            Vue 2 模板把声明式 DOM 和实例数据连接起来：<code>{{ msg }}</code> 渲染<strong>文本</strong>（会转义）；
+            <code>v-bind</code> / <code>:</code> 绑定 HTML 属性；<code>v-on</code> /
+            <code>@</code> 绑定事件；<code>v-model</code> 在表单控件与状态之间做双向同步。
+          </li>
+          <li>
+            <code>v-if</code> 为真时才创建对应 DOM，为假时销毁（惰性：初值为假则不渲染）；
+            <code>v-show</code> 始终保留节点，只通过 <code>display</code> 切换显隐。频繁切换常用
+            <code>v-show</code>，权限或昂贵子树常用 <code>v-if</code>。
+          </li>
+          <li>
+            <code>v-for</code> 根据数组渲染列表。官方建议提供<strong>唯一</strong>的 string/number
+            <code>key</code>，便于列表更新时识别节点身份；本页用 <code>item.id</code>，与官方示例一致。
+          </li>
+          <li>
+            每个实例的 <code>el</code> 指向<strong>一个</strong>挂载容器（本页六个 <code>#app_*</code> 即六个独立实例）。
+            <code>data</code> 字段会代理到实例并转为响应式；在 <code>methods</code> 里改
+            <code>this.msg</code> 后，依赖它的模板会自动更新。
+          </li>
+          <li>
+            <code>v-model</code> 本质是语法糖：对 text/textarea 等价于 <code>:value</code> +
+            <code>@input</code>。它只负责值同步，不等于表单校验、提交或业务规则。
+          </li>
+          <li>
+            常见坑：Mustache 不能写在 HTML 属性里；列表勿省略稳定 <code>key</code>；同节点上慎用
+            <code>v-if</code> 与 <code>v-for</code>（<code>v-for</code> 优先级更高），通常先用 computed 过滤再渲染。
+          </li>
+          <li>
+            本页为教学把知识点拆成多个根实例，避免演示互相影响。真实项目更常见「一个根实例 + 组件树」。
+          </li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue 2 模板里的插值、指令和响应式数据是什么关系？</strong> 结论是模板声明“数据如何映射到 DOM”，指令声明特殊绑定行为，响应式系统负责在数据变化后更新视图。原因是 Vue 会代理 <code>data</code> 字段并追踪模板依赖。项目里应修改状态而不是手写 DOM 操作。</li>
-          <li><strong>v-bind、v-on、v-model 分别解决哪类绑定问题？</strong> 结论是 <code>v-bind</code> 绑定属性，<code>v-on</code> 监听事件，<code>v-model</code> 封装表单值和输入事件的双向同步。原因是文本、属性、事件和表单输入属于不同 DOM 通道。项目里普通属性用 <code>:</code>，事件用 <code>@</code>，表单控件再考虑 <code>v-model</code>。</li>
-          <li><strong>v-if 和 v-for 在基础 demo 中各自承担什么职责？</strong> 结论是 <code>v-if</code> 做条件渲染，<code>v-for</code> 做列表渲染。原因是前者根据真假创建或销毁节点，后者根据集合生成重复节点。项目里两者同用在复杂列表时要注意优先级和可读性，通常先过滤数据再渲染。</li>
-          <li><strong>为什么 v-for 列表项建议提供稳定 key？</strong> 结论是稳定 <code>key</code> 能帮助 Vue 识别每个节点的身份。原因是列表更新时框架需要判断复用、移动还是销毁节点，缺少 key 可能导致局部状态或表单输入错位。项目里优先使用业务唯一 id，不要用会变化的索引当 key。</li>
-          <li><strong>多个 Vue 根实例演示和真实组件化项目有什么区别？</strong> 结论是多个根实例适合隔离教学，真实项目通常一个根实例加组件树。原因是组件树更利于状态流、复用和调试。项目里只有在迁移老页面或局部增强静态页面时，才会在同页挂多个独立实例。</li>
+          <li>
+            <strong>Vue 2 模板里的插值、指令和响应式数据是什么关系？</strong>
+            结论是模板声明数据如何映射到 DOM，指令声明特殊绑定行为，响应式系统在数据变化后更新视图。
+            原因是 Vue 在初始化时把 <code>data</code> 转为 getter/setter 并追踪模板依赖。项目里应改状态，而不是手写 DOM。
+          </li>
+          <li>
+            <strong>v-bind、v-on、v-model 分别解决哪类绑定问题？v-model 底层是什么？</strong>
+            结论是 <code>v-bind</code> 绑属性，<code>v-on</code> 监听事件，<code>v-model</code> 封装表单双向同步。
+            对 text input，官方说明其等价于 <code>value</code> 属性 + <code>input</code> 事件。项目里属性用
+            <code>:</code>，事件用 <code>@</code>，表单控件再考虑 <code>v-model</code>。
+          </li>
+          <li>
+            <strong>v-if 和 v-show 的根本区别？</strong>
+            结论是 <code>v-if</code> 控制是否创建/销毁 DOM，<code>v-show</code> 控制已存在节点的显示隐藏。
+            原因是 <code>v-if</code> 为假时不渲染节点且切换会重建子树；<code>v-show</code> 只改 CSS
+            <code>display</code>。频繁切换用 <code>v-show</code>，不必渲染的块用 <code>v-if</code>。
+          </li>
+          <li>
+            <strong>v-if 和 v-for 各自承担什么职责？同元素混用要注意什么？</strong>
+            结论是 <code>v-if</code> 做条件渲染，<code>v-for</code> 做列表渲染。同节点时
+            <code>v-for</code> 优先级高于 <code>v-if</code>，官方不推荐混写。项目里通常先过滤数据再
+            <code>v-for</code>。
+          </li>
+          <li>
+            <strong>为什么 v-for 建议提供稳定 key？</strong>
+            结论是 <code>key</code> 让 Vue 在 diff 时识别节点身份，便于复用、移动而非盲目就地补丁。
+            缺少合适 key 时，含子组件状态或表单输入的列表可能错位。优先业务唯一 id；索引仅在静态、无状态列表中可接受。
+          </li>
+          <li>
+            <strong>多个 Vue 根实例演示和真实组件化项目有什么区别？</strong>
+            结论是多个根实例适合隔离教学，真实项目通常一个根实例加组件树。原因是组件树更利于状态流、复用和调试。
+            同页多实例多见于迁移老页面或局部增强静态页。
+          </li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://v2.vuejs.org/v2/guide/syntax.html">Vue 2 Guide: Template Syntax</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/instance.html">Vue 2 Guide: The Vue Instance</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/conditional.html">Vue 2 Guide: Conditional Rendering</a></li>
+          <li><a href="https://v2.vuejs.org/v2/guide/list.html">Vue 2 Guide: List Rendering</a></li>
           <li><a href="https://v2.vuejs.org/v2/guide/events.html">Vue 2 Guide: Event Handling</a></li>
           <li><a href="https://v2.vuejs.org/v2/guide/forms.html">Vue 2 Guide: Form Input Bindings</a></li>
-          <li><a href="https://v2.vuejs.org/v2/guide/list.html">Vue 2 Guide: List Rendering</a></li>
-          <li><a href="https://v2.vuejs.org/v2/guide/conditional.html">Vue 2 Guide: Conditional Rendering</a></li>
         </ul>
       </div>
     </section>
     <!-- NOTES_END -->
 
     <!-- PAGE_DOM_START -->
-    <div id="app_1">{{msg1}}</div>
+    <div id="app_1">{{ msg1 }}</div>
+
     <div id="app_2">
-      <span v-bind:title="msg2"> 鼠标悬停 </span>
+      <span v-bind:title="msg2">鼠标悬停查看 title（由 v-bind 绑定）</span>
     </div>
+
     <div id="app_3">
-      <p v-if="seen">你可以看到我</p>
+      <button type="button" v-on:click="toggleSeen">切换 seen（当前：{{ seen }}）</button>
+      <p v-if="seen">v-if：条件为假时，此节点会从 DOM 中移除</p>
+      <p v-show="seen">v-show：节点始终在 DOM 中，仅切换 display</p>
     </div>
+
     <div id="app_4">
+      <button type="button" v-on:click="reverseList">反转列表</button>
       <ol>
-        <li v-for="item in peoples" :key="item.name">{{item.name}}:{{item.age}}</li>
+        <li v-for="item in peoples" :key="item.id">{{ item.name }}: {{ item.age }}</li>
       </ol>
     </div>
+
     <div id="app_5">
-      <div>{{msg}}</div>
-      <button v-on:click="clickHandle">点我</button>
+      <div>{{ msg }}</div>
+      <button type="button" v-on:click="clickHandle">点我</button>
     </div>
+
     <div id="app_6">
-      <p>{{msg}}</p>
+      <p>{{ msg }}</p>
       <input v-model="msg" />
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      //v-model指令用于将表单的输入数据，和应用的状态数据实现双向绑定
-      var app_6 = new Vue({
-        el: "#app_6",
-        data: {
-          msg: "你好",
-        },
-      });
-
-      //this指代当前Vue应用的实例
-      //只需要关注逻辑层面：所有的DOM操作都有Vue(框架本身去处理)
-      var app_5 = new Vue({
-        el: "#app_5",
-        data: {
-          msg: "你好",
-        },
-        methods: {
-          clickHandle: function (e) {
-            this.msg = "干嘛！！！";
-          },
-        },
-      });
-
-      var app_4 = new Vue({
-        el: "#app_4",
-        data: {
-          peoples: [
-            { name: "张三", age: 20 },
-            { name: "李四", age: 25 },
-            { name: "王五", age: 27 },
-          ],
-        },
-      });
-
-      //渲染字符串模板
-      //控制dom结构的显示与隐藏
-      var app_3 = new Vue({
-        el: "#app_3",
-        data: {
-          seen: true,
-        },
-      });
-
-      /*绑定元素属性*/
-      /* v-xxx 是Vue提供的指令，指令会在渲染的DOM上应用特殊的响应式行为
-      * v-bind 的意思在这里：将这个元素节点的 title 特性与 Vue 实例的 msg2 属性保持一致
-      * */
-      var app_2 = new Vue({
-        el: "#app_2",
-        data: {
-          msg2: "新消息" + new Date().toLocaleDateString(),
-        },
-      });
-
-      //渲染字符串模板
+      // ---------------------------------------------------------------------------
+      // app_1：Mustache 文本插值（in-DOM 模板）
+      // 官方：双大括号将 data 中的值渲染为纯文本，数据变化时自动更新。
+      // ---------------------------------------------------------------------------
       var app_1 = new Vue({
         el: "#app_1",
         data: {
@@ -144,6 +162,81 @@
         },
       });
 
+      // ---------------------------------------------------------------------------
+      // app_2：v-bind 属性绑定
+      // 官方：Mustache 不能用于 HTML 属性；须用 v-bind:attr 或 :attr。
+      // ---------------------------------------------------------------------------
+      var app_2 = new Vue({
+        el: "#app_2",
+        data: {
+          // title 与 msg2 保持同步；悬停 span 可看到绑定结果
+          msg2: "新消息 " + new Date().toLocaleDateString(),
+        },
+      });
+
+      // ---------------------------------------------------------------------------
+      // app_3：v-if 与 v-show 对比
+      // 官方：v-if 为真才渲染/为假销毁；v-show 始终渲染，只切换 display。
+      // ---------------------------------------------------------------------------
+      var app_3 = new Vue({
+        el: "#app_3",
+        data: {
+          seen: true,
+        },
+        methods: {
+          toggleSeen: function () {
+            this.seen = !this.seen;
+          },
+        },
+      });
+
+      // ---------------------------------------------------------------------------
+      // app_4：v-for 列表渲染 + 稳定 key
+      // 官方：建议为每项提供唯一 string/number 的 key（如 id），便于 diff 时识别节点。
+      // reverse() 为 Vue 包装的数组变更方法，会触发视图更新。
+      // ---------------------------------------------------------------------------
+      var app_4 = new Vue({
+        el: "#app_4",
+        data: {
+          peoples: [
+            { id: 1, name: "张三", age: 20 },
+            { id: 2, name: "李四", age: 25 },
+            { id: 3, name: "王五", age: 27 },
+          ],
+        },
+        methods: {
+          reverseList: function () {
+            this.peoples.reverse();
+          },
+        },
+      });
+
+      // ---------------------------------------------------------------------------
+      // app_5：v-on 事件绑定 + 响应式更新
+      // 官方：methods 中 this 指向当前实例；改 data 后视图自动重渲染，无需手写 DOM。
+      // ---------------------------------------------------------------------------
+      var app_5 = new Vue({
+        el: "#app_5",
+        data: {
+          msg: "你好",
+        },
+        methods: {
+          clickHandle: function () {
+            this.msg = "干嘛！！！";
+          },
+        },
+      });
+
+      // ---------------------------------------------------------------------------
+      // app_6：v-model 双向绑定
+      // 官方：对 text input，v-model 等价于 :value="msg" @input 更新 msg 的语法糖。
+      // ---------------------------------------------------------------------------
+      var app_6 = new Vue({
+        el: "#app_6",
+        data: {
+          msg: "你好",
+        },
+      });
     </script>
     <!-- SCRIPT_END -->
 

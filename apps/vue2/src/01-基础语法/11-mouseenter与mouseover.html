@@ -43,7 +43,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>mouseenter / leave vs mouseover / out 差异</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        在 parent 与 son 之间移动鼠标，观察下方日志：<code>mouseenter/leave</code> 各触发一次，
+        <code>mouseover/out</code> 因冒泡可能多次触发；打开 Console 也可查看输出。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -58,6 +61,7 @@
           <li><strong>mouseenter 和 mouseover 的根本区别是什么？</strong> 结论是 <code>mouseenter</code> 不冒泡，<code>mouseover</code> 会冒泡。原因是鼠标进入子元素时，<code>mouseover</code> 可以从子元素冒泡到父元素，而 <code>mouseenter</code> 只关心是否进入当前元素整体。项目里整体悬停用 <code>mouseenter</code> 更直观。</li>
           <li><strong>为什么从父元素移到子元素时 mouseover / mouseout 可能重复触发？</strong> 结论是因为父子元素之间也存在事件目标切换。原因是进入子元素会触发子元素的 <code>mouseover</code>，离开父元素内部某个目标也可能触发 <code>mouseout</code> 并冒泡。边界判断要看 <code>relatedTarget</code> 是否仍在容器内。</li>
           <li><strong>做卡片整体 hover 应该选哪组事件？</strong> 结论是优先 <code>mouseenter</code> / <code>mouseleave</code> 或 CSS <code>:hover</code>。原因是它们不会因为子元素层级变化而频繁触发。项目里如果只是切换样式，用 CSS 更简单；如果要触发 JS 状态或埋点，再用事件。</li>
+          <li><strong>relatedTarget 能解决什么边界判断？</strong> 结论是用 <code>mouseover/out</code> 时可判断鼠标是否仍在容器内。原因是 <code>relatedTarget</code> 指向关联元素，可区分「进入子元素」与「真正离开容器」。项目里复杂 hover 菜单常用此属性避免误触发 leave 逻辑。</li>
           <li><strong>鼠标事件和 pointer 事件在现代项目里如何取舍？</strong> 结论是只关心鼠标时可用 mouse 事件，需要统一鼠标、触控笔等输入时优先了解 pointer 事件。原因是 pointer 事件覆盖更广的输入设备。边界是老项目或 Vue 2 静态 demo 里仍常见 mouse 事件，需要先理解其冒泡语义。</li>
         </ul>
         <h2>参考资料</h2>
@@ -91,6 +95,10 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // 原生 DOM 事件对比：mouseenter/leave（不冒泡）vs mouseover/out（冒泡）
+      // MDN：mouseenter 只在进入元素整体时触发；mouseover 会随子元素边界重复触发。
+      // ---------------------------------------------------------------------------
       function parentMoEnter() {
         log("mouseenter：进入 parent 整体");
       }

@@ -29,7 +29,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>v-model 原理</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        对比两个原生 input（v-model 与 :value+@input）；勾选 checkbox 看数组变化；
+        在修饰符输入框试空格/非数字；修改自定义组件 v-model 观察 username 联动。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -45,6 +48,7 @@
           <li><strong>checkbox 的 v-model 为什么不能简单理解成 value + input？</strong> 结论是 checkbox 有布尔值、数组收集和真实 <code>value</code> 三种语义。原因是多个 checkbox 绑定数组时，Vue 根据选中状态添加或移除 value，而不是把输入框文本写回状态。项目里多选标签、权限选择要特别注意绑定类型。</li>
           <li><strong>自定义组件 v-model 默认约定是什么？</strong> 结论是默认接收 <code>value</code> prop，触发 <code>input</code> 事件。原因是父组件的 <code>v-model="x"</code> 会编译成 <code>:value="x"</code> 和 <code>@input="x = $event"</code>。边界是 Vue 2 可以用组件 <code>model</code> 选项改成其他 prop/event。</li>
           <li><strong>.lazy、.number、.trim 分别改变什么行为？</strong> 结论是 <code>.lazy</code> 改为 change 后同步，<code>.number</code> 尝试转数字，<code>.trim</code> 去掉首尾空白。原因是它们是 <code>v-model</code> 的输入修饰符。项目里修饰符不能替代表单校验，尤其数字转换失败时仍可能保留原值。</li>
+          <li><strong>维护 Vue 2 项目时如何说明 v-model 与 Vue 3 选型边界？</strong> 结论是 Vue 2 组件 v-model 默认 <code>value</code> + <code>input</code>；Vue 3 改为 <code>modelValue</code> + <code>update:modelValue</code>。原因是 Vue 2 已 EOL，迁移时需改 prop/event 约定。边界是 Vue 3 支持多 v-model（<code>v-model:title</code>）。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -78,6 +82,10 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // name-input：自定义组件 v-model（默认 value + input）
+      // 官方：组件 v-model 等价于 :value + @input；可用 model 选项自定义 prop/event。
+      // ---------------------------------------------------------------------------
       Vue.component("name-input", {
         props: ["value"],
         template: `
@@ -91,6 +99,10 @@
         `
       });
 
+      // ---------------------------------------------------------------------------
+      // #app：原生 v-model / 修饰符 / 组件 v-model
+      // 官方：text input 的 v-model 等价于 :value + @input 语法糖。
+      // ---------------------------------------------------------------------------
       new Vue({
         el: "#app",
         data() {

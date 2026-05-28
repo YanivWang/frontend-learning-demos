@@ -29,7 +29,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>计算属性 vs 方法（缓存差异）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        打开 Console，点「切换 msg」后观察 <code>1111</code>（computed）只打印一次而
+        <code>2222</code>（methods）每次渲染都打印；多次读取 <code>computedMsg</code> 不会重复计算。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -45,6 +48,7 @@
           <li><strong>computed 依赖 <code>Date.now()</code> 为什么不会自动更新？</strong> 结论是它不会随时间自动重新计算。原因是 <code>Date.now()</code> 不是 Vue 2 响应式依赖，Vue 没有可追踪的数据变化来让 computed 失效。边界是如果同时读取了响应式字段，则该字段变化会触发重新求值，但这不等于时间本身被追踪。</li>
           <li><strong>computed、methods、watch 在项目里如何选型？</strong> 结论是派生状态用 computed，事件动作或传参逻辑用 methods，异步请求、节流防抖、同步外部系统这类副作用用 watch。原因是三者表达的意图不同：值、动作、变化后的副作用。项目里表单全名、过滤列表是 computed；按钮点击是 methods；输入变化后请求接口是 watch。</li>
           <li><strong>computed getter 里为什么不建议写副作用？</strong> 结论是 computed getter 应保持可预测和可缓存。原因是 Vue 可能因为依赖缓存而跳过 getter，也可能在渲染时读取多次；如果里面修改状态或发请求，会让执行次数和时机变得难以推断。边界是教学 demo 可以用 <code>console.log</code> 观察执行次数，真实业务不要把副作用放在 getter 里。</li>
+          <li><strong>维护 Vue 2 项目时如何说明 computed 与 Vue 3 选型边界？</strong> 结论是 Vue 2/3 的 computed 选项语义一致，Vue 3 还提供 <code>computed()</code> 组合式 API。原因是 Vue 2 已 EOL，新项目应优先 Vue 3；存量项目的 computed 写法可直接迁移。边界是 Vue 3 的 computed 基于 Proxy 响应式，但缓存模型相同。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -75,7 +79,10 @@
 
     <!-- SCRIPT_START -->
     <script>
-      //计算属性是基于他们的依赖进行数据缓存的，只有相关的依赖关系发生改变时，才会重新求值
+      // ---------------------------------------------------------------------------
+      // app1：computed 缓存 vs methods 每次调用
+      // 官方：computed 按响应式依赖缓存；methods 在模板调用时每次重新执行。
+      // ---------------------------------------------------------------------------
       var vm = new Vue({
         el: '#app1',
         data: {//声明一般属性

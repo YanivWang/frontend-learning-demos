@@ -41,8 +41,9 @@
         <ul>
           <li><strong>@vue/cli 和 @vue/cli-service 的区别是什么？</strong> 结论是前者偏全局脚手架，后者偏项目内构建服务。原因是 <code>@vue/cli</code> 负责创建和管理项目，而 <code>@vue/cli-service</code> 才真正参与本项目的开发服务器、构建和配置解析。项目里排查命令失败时，要先看失败发生在全局 <code>vue</code> 命令阶段还是项目内 service 阶段。</li>
           <li><strong>Vue CLI 插件为什么能扩展项目？</strong> 结论是插件通过 generator 改文件、通过 runtime plugin 改服务配置或命令。这样能把 Babel、Router、Vuex、ESLint 等能力拆成可组合插件。边界是插件越多，最终 webpack 配置越不直观，所以要用 <code>inspect</code> 看合并结果。</li>
+          <li><strong>vue-cli-service inspect 有什么排查价值？</strong> 结论是可导出 webpack 最终合并配置，定位 loader/plugin/alias 是否符合预期。原因是 CLI 把配置封装在 service 和插件中，源码里不一定能直接看到。项目里构建异常时先用 inspect 确认实际生效的配置。</li>
           <li><strong>现在新项目还应该用 Vue CLI 吗？</strong> 结论是通常不建议新项目首选 Vue CLI，官方推荐 <code>create-vue</code> 和 Vite。原因是 Vue CLI 已处于维护模式，现代 Vue 3 工程链路围绕 Vite 优化。例外是存量 Vue 2 / webpack 项目、企业内部模板和历史插件依赖暂时无法迁移时，可以继续维护。</li>
-          <li><strong>Vue CLI 构建问题怎么定位？</strong> 结论是先确认命令、Node 版本和最终 webpack 配置。原因是 CLI 把许多配置封装在 service 和插件中，源码里不一定能直接看到最终 loader/plugin。项目场景里常用 <code>vue-cli-service inspect</code>、<code>publicPath</code>、环境变量和插件版本来缩小问题范围。</li>
+          <li><strong>维护 Vue 2 老项目时 Vue CLI 和 Vite 怎么取舍？</strong> 结论是存量 Vue 2 + webpack 项目继续用 CLI 维护成本低；新功能或迁移阶段可评估 Vite。原因是 CLI 插件生态与 webpack 配置深度绑定，强行切 Vite 需改构建链。边界是仅维护 bugfix 不必强行迁移，大版本升级时再规划 Vite 迁移。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -55,9 +56,26 @@
     </section>
     <!-- NOTES_END -->
 
+    <!-- PAGE_DOM_START -->
+    <section class="demo-block" aria-label="Vue CLI 常用命令速查">
+      <h2>常用命令</h2>
+      <ul>
+        <li><code>vue create my-project</code> — 交互式创建项目</li>
+        <li><code>npm run serve</code> — 开发服务器（vue-cli-service serve）</li>
+        <li><code>npm run build</code> — 生产构建</li>
+        <li><code>vue-cli-service inspect &gt; webpack.config.js</code> — 导出最终 webpack 配置</li>
+      </ul>
+      <p class="hint">本页为笔记型 demo，无 Vue 运行时交互；可在终端对照上述命令理解 CLI 职责。</p>
+    </section>
+    <!-- PAGE_DOM_END -->
+
     <!-- SCRIPT_START -->
     <script>
-      //1. Vue CLI 就是通过 npm 安装的 @vue/cli 包
+      // ---------------------------------------------------------------------------
+      // Vue CLI 笔记：@vue/cli 全局脚手架 + @vue/cli-service 项目内构建
+      // 官方：CLI 基于插件架构；vue-cli-service 封装 webpack 与 dev-server。
+      // 维护模式：新 Vue 项目推荐 create-vue + Vite。
+      // ---------------------------------------------------------------------------
       //2 .Vue CLI 的功能
       //  (1) 通过 @vue/cli 搭建交互式的项目脚手架
       //  (2) 通过 @vue/cli + @vue/cli-service-global 快速开始零配置原型开发

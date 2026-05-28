@@ -1,6 +1,6 @@
 <!--
-  分类: vue2 / 05-路由与状态
-  主题: 编程式导航（push / replace / go / 命名路由）
+  分类: vue2 / 05-路由与状态
+  主题: 编程式导航（push / replace / go / 命名路由）
   要点:
     - $router.push 新增历史记录，replace 替换当前记录
     - back / forward / go 只是沿浏览器历史栈移动
@@ -14,7 +14,7 @@
     - 编程式导航和 router-link 各适合什么场景？
 -->
 
-<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -29,7 +29,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>编程式导航（push / replace / go / 命名路由）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        点击 <code>push</code> / <code>replace</code> / 命名路由 / query 等按钮，观察「当前路径」行与下方组件变化；用浏览器后退/前进或
+        <code>back()</code>、<code>go(-1)</code> 对比 push 与 replace 的历史栈行为。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -45,6 +48,7 @@
           <li><strong>什么时候用命名路由对象而不是 path 字符串？</strong> 结论是有动态参数、路径可能重构、跳转语义重要时用命名路由。原因是 name 比 path 更稳定，params 也能按路由记录自动填充。简单静态地址或外部拼好的路径用 path 字符串即可。</li>
           <li><strong>path + query 和 name + params 应该如何搭配？</strong> 结论是 params 通常配 name，query 可以配 path 或 name。原因是 params 需要动态路径片段承接，query 是 URL 查询串。边界是写了 path 再传 params 通常不会自动拼接，应避免这种混搭。</li>
           <li><strong>重复导航或导航守卫拦截时要怎么处理？</strong> 结论是要把导航当成可能失败的异步动作处理。原因是守卫可以取消或重定向导航，重复跳当前地址也可能产生失败结果。项目里常在按钮点击后捕获 Promise，或统一封装安全跳转函数。</li>
+          <li><strong>编程式导航和 router-link 各适合什么场景？</strong> 结论是声明式链接用 <code>router-link</code>，业务逻辑触发的跳转用 <code>$router.push/replace</code>。原因是 link 适合菜单/锚点，编程式适合表单提交后、权限判断后、异步完成后再导航。项目里两者常并存。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -66,13 +70,13 @@
         <router-link to="/about">About</router-link>
       </p>
       <div>
-        <button @click="pushPath('/user/2')">push('/user/2')</button>
-        <button @click="replacePath('/user/3')">replace('/user/3')</button>
-        <button @click="pushNamed">push({ name: 'user', params: { id: 'named' } })</button>
-        <button @click="pushWithQuery">push({ path, query: { from: 'code' } })</button>
-        <button @click="$router.back()">back()</button>
-        <button @click="$router.forward()">forward()</button>
-        <button @click="$router.go(-1)">go(-1)</button>
+        <button type="button" @click="pushPath('/user/2')">push('/user/2')</button>
+        <button type="button" @click="replacePath('/user/3')">replace('/user/3')</button>
+        <button type="button" @click="pushNamed">push({ name: 'user', params: { id: 'named' } })</button>
+        <button type="button" @click="pushWithQuery">push({ path, query: { from: 'code' } })</button>
+        <button type="button" @click="$router.back()">back()</button>
+        <button type="button" @click="$router.forward()">forward()</button>
+        <button type="button" @click="$router.go(-1)">go(-1)</button>
       </div>
       <p>当前路径: {{ $route.fullPath }}</p>
       <router-view></router-view>
@@ -81,6 +85,10 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // ---------------------------------------------------------------------------
+      // 编程式导航：push / replace / go / 命名路由 / query
+      // 官方：$router.push 新增历史记录；replace 替换当前记录；go/back/forward 沿栈移动。
+      // ---------------------------------------------------------------------------
       const Home = {
         template: `<div>Home Page</div>`
       };
@@ -122,10 +130,6 @@
           }
         }
       }).$mount('#app');
-
-      // 同一路由不同 params（如 /user/1 → /user/2）会复用组件实例，
-      // 生命周期钩子不会重新执行，需 watch $route 或 beforeRouteUpdate
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -147,5 +151,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
-</html>
+</body>
+</html>

@@ -2,10 +2,11 @@
   分类: vue2 / 07-源码简读
   主题: Vue2 源码阅读前置：Symbol 与源码标记
   要点:
-    - Symbol 生成唯一值，适合做不会与普通字符串冲突的内部标记
-    - Vue2 源码阅读要区分语言前置、运行时能力检测和框架响应式实现
-    - Vue2 已进入历史版本语境，新项目优先 Vue3，维护项目仍需读懂 2.x 行为
+    - Symbol() 每次生成唯一值，适合做不会与普通字符串冲突的内部标记
+    - Symbol 键默认不出现在 for...in / Object.keys，但仍可被 getOwnPropertySymbols 读取
+    - 阅读 Vue2 源码时区分 JavaScript 语言能力与 Observer / Dep / Watcher 等框架机制
     - 同目录 vue.js 是官方 2.x 源码副本，按第三方运行时文件处理不直接修改
+    - Vue2 已进入历史版本语境，新项目优先 Vue3，维护项目仍需读懂 2.x 行为
   面试:
     - Symbol 为什么适合作为源码内部标记？
     - 阅读 Vue2 源码时如何区分语言能力和框架机制？
@@ -18,7 +19,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vue2 源码阅读前置占位</title>
+    <title>Vue2 源码阅读前置：Symbol 与源码标记</title>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
   </head>
@@ -26,7 +27,11 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vue2 源码阅读前置：Symbol 与源码标记</h1>
-      <p class="hint">打开控制台查看 Symbol 的唯一性；本页用于进入 Vue2 源码前先补齐语言层前置知识。</p>
+      <p class="hint">
+        点「比较两个 Symbol」观察下方日志区与控制台：两次 <code>Symbol()</code> 互不相等；
+        点「查看枚举行为」对比 <code>Object.keys</code> 与
+        <code>Object.getOwnPropertySymbols</code> 的返回差异。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -41,7 +46,7 @@
           <li><strong>Symbol 为什么适合作为源码内部标记？</strong> 结论是它能生成唯一属性键，降低与用户字段或普通字符串常量冲突的概率。原因是每次调用 <code>Symbol()</code> 都返回新的唯一值，并且 Symbol 键不会被常规枚举 API 遍历到。边界是 Symbol 不是安全私有，调试工具和反射 API 仍能看到它。</li>
           <li><strong>阅读 Vue2 源码时如何区分语言能力和框架机制？</strong> 先结论：语言能力是源码的表达工具，框架机制才是 Vue 行为本身。比如 Symbol、闭包、原型链帮助组织代码，而 Vue2 的响应式核心仍是基于 <code>Object.defineProperty</code> 的依赖收集和派发更新。项目排障时不要把语言语法误判为 Vue 的响应式限制。</li>
           <li><strong>Symbol 属性为什么不等于真正私有字段？</strong> 结论是它只能降低命名冲突和常规枚举暴露，不提供访问控制。原因是 <code>Object.getOwnPropertySymbols()</code> 与 <code>Reflect.ownKeys()</code> 可以取到 Symbol 键。需要强私有语义时，现代 JavaScript 更常用类私有字段或模块闭包。</li>
-          <li><strong>维护 Vue2 项目时如何说明版本边界？</strong> 先说明 Vue2 已是历史版本，新增项目通常优先 Vue3。继续维护 Vue2 时，源码阅读重点放在响应式限制、渲染更新和兼容性行为上；如果要迁移，需要特别核对 Vue2 与 Vue3 在响应式实现、生命周期和全局 API 上的差异。</li>
+          <li><strong>维护 Vue2 项目时如何说明 Vue2 与 Vue3 的选型边界？</strong> 先说明 Vue2 已是历史版本，新增项目通常优先 Vue3。继续维护 Vue2 时，源码阅读重点放在响应式限制、渲染更新和兼容性行为上；如果要迁移，需要特别核对 Vue2 与 Vue3 在响应式实现、生命周期和全局 API 上的差异。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -53,11 +58,64 @@
     </section>
     <!-- NOTES_END -->
 
+    <!-- PAGE_DOM_START -->
+    <div id="demo">
+      <button type="button" id="btn-uniqueness">比较两个 Symbol</button>
+      <button type="button" id="btn-enumerate">查看枚举行为</button>
+      <pre id="output" aria-live="polite"></pre>
+    </div>
+    <!-- PAGE_DOM_END -->
+
     <!-- SCRIPT_START -->
     <script>
-      let s = Symbol();
-      console.log('Symbol() →', s.toString());
+      // ---------------------------------------------------------------------------
+      // 日志输出：同步写入页面 pre 与控制台，便于对照 DevTools
+      // ---------------------------------------------------------------------------
+      var outputEl = document.getElementById("output");
 
+      function log(line) {
+        outputEl.textContent += line + "\n";
+        console.log(line);
+      }
+
+      function clearLog() {
+        outputEl.textContent = "";
+      }
+
+      // ---------------------------------------------------------------------------
+      // Symbol 唯一性：每次 Symbol() 返回新值
+      // MDN：即使描述相同，两个 Symbol 也不相等（Symbol.for 才共享注册表）
+      // ---------------------------------------------------------------------------
+      document.getElementById("btn-uniqueness").addEventListener("click", function () {
+        clearLog();
+        var a = Symbol("vue-internal");
+        var b = Symbol("vue-internal");
+        log("a = Symbol('vue-internal') → " + a.toString());
+        log("b = Symbol('vue-internal') → " + b.toString());
+        log("a === b → " + (a === b));
+        log("a == b → " + (a == b));
+      });
+
+      // ---------------------------------------------------------------------------
+      // Symbol 键的枚举行为：Object.keys 不含 Symbol，getOwnPropertySymbols 可见
+      // MDN：Symbol 属性不出现在 for...in / Object.keys，但可被反射 API 读取
+      // ---------------------------------------------------------------------------
+      document.getElementById("btn-enumerate").addEventListener("click", function () {
+        clearLog();
+        var tag = Symbol("internal");
+        var obj = { name: "vue", version: 2 };
+        obj[tag] = "hidden-meta";
+        log("Object.keys(obj) → " + JSON.stringify(Object.keys(obj)));
+        log(
+          "Object.getOwnPropertySymbols(obj) → " +
+            Object.getOwnPropertySymbols(obj)
+              .map(function (s) {
+                return s.toString();
+              })
+              .join(", ")
+        );
+        log("obj[tag] 仍可读取 → " + obj[tag]);
+      });
     </script>
     <!-- SCRIPT_END -->
 
@@ -79,5 +137,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

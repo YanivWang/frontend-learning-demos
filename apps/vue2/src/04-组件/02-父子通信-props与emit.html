@@ -27,7 +27,10 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>父子组件通讯（props 下传 + $emit 上抛）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">
+        在 <code>#my-comp1-demo</code> 内点「放大/缩小/计数」观察字号与 count 变化；对比挂载点外无效的
+        <code>&lt;my-comp1&gt;</code>；打开 Console 查看 <code>$emit</code> 事件与 count 日志。
+      </p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
@@ -39,10 +42,10 @@
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue 2 父子通信怎么答？</strong> 结论：父传子用 props，子通知父用 <code>$emit</code>。原因是 Vue 2 组件提倡单向数据流，状态拥有者负责更新状态。边界是兄弟、跨层或全局状态不适合层层转发，应该考虑事件总线、Vuex 或更明确的组合关系。</li>
-          <li><strong>组件 data 为什么必须是函数？</strong> 结论：为了让每个组件实例拿到独立状态。原因是组件会被复用多次，如果 data 是同一个对象引用，状态会串在一起。项目里凡是可复用组件都要把内部状态写成返回对象的函数。</li>
-          <li><strong>$emit 的 payload 应该怎么设计？</strong> 结论：payload 应该表达“发生了什么”和必要数据，而不是暴露父组件内部实现。原因是父组件才是状态更新的决策者。边界是高频事件或复杂表单要注意命名、节流和校验。</li>
-          <li><strong>为什么挂载点外的组件标签失效？</strong> 结论：Vue 只接管 <code>el</code> 对应 DOM 树内部的模板。原因是编译和响应式绑定都从根实例挂载点开始。项目里不要把需要 Vue 管理的组件散落在根节点外。</li>
+          <li><strong>Vue 2 父子组件通信为什么强调单向数据流？</strong> 结论：父传子用 props，子通知父用 <code>$emit</code>，状态拥有者负责更新。原因是 Vue 2 组件提倡单向数据流，子组件不应直接改父级状态。边界是兄弟、跨层或全局状态不适合层层转发，应考虑 EventBus、provide/inject 或 Vuex。</li>
+          <li><strong>组件 data 为什么必须写成函数？</strong> 结论：让每个组件实例拿到独立状态。原因是组件会被复用多次，data 若为同一对象引用则状态会串在一起。项目里可复用组件都要把内部状态写成返回对象的函数。</li>
+          <li><strong>$emit 适合传什么，什么时候该改用状态管理或 provide/inject？</strong> 结论：payload 应表达「发生了什么」和必要数据，父组件决定如何更新状态。原因是 <code>$emit</code> 适合父子直接通信。边界是跨多层、兄弟或全局共享状态应改用 provide/inject、EventBus 或 Vuex，避免 prop 钻取和事件链过长。</li>
+          <li><strong>为什么根实例外的组件标签不会被 Vue 接管？</strong> 结论：Vue 只编译 <code>el</code> 对应 DOM 树内部的模板。原因是编译和响应式绑定都从根实例挂载点开始。项目里不要把需要 Vue 管理的组件散落在根节点外。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -57,14 +60,14 @@
 
     <!-- PAGE_DOM_START -->
     <!--在这里使用，被当成一般的自定义元素使用，指令都无效-->
-    <my-comp1 v-bind:article="article" v-bind:key="index">111</my-comp1>
+    <my-comp1 v-bind:article="article">111</my-comp1>
     <div id="my-comp1-demo">
       <div v-bind:style="{fontSize: fontSize +'px'}">
-        <template v-for="(article,index) in articleList">
+        <template v-for="article in articleList">
           <!--在组件上使用：v-bind:propName 将为组件的对应属性传递值 -->
           <!--组件占位符最终被：组件内部的template替代-->
           <!--Vue实例内部：使用v-on监听组件的内部事件-->
-          <my-comp1 v-bind:article="article" v-bind:key="index" v-on:extend="extend" v-on:small="small($event)"></my-comp1>
+          <my-comp1 v-bind:article="article" v-bind:key="article.id" v-on:extend="extend" v-on:small="small($event)"></my-comp1>
         </template>
       </div>
     </div>
@@ -72,11 +75,11 @@
 
     <!-- SCRIPT_START -->
     <script>
-      //自定义组件：最好采用 a-b的命名形式
-      //组件是可复用的Vue实例
-      //1.组件的注册方式一，全局注册
-      //2.一个组件就是一个Vue实例
-      Vue.component("my-comp1", {//组件的data属性，必须是一个函数：通过这种方式，每个组件实例可以维护一份被返回对象的独立的拷贝
+      // ---------------------------------------------------------------------------
+      // my-comp1：全局组件 + props 下传 + $emit 上抛
+      // 官方：组件 data 必须是函数；props 为父到子输入，子组件通过 $emit 通知父组件。
+      // ---------------------------------------------------------------------------
+      Vue.component("my-comp1", {
         data: function () {
           return {
             count: 0
@@ -97,26 +100,26 @@
             this.$emit("small",{"a": 1,"b": 2});
           }
         },
-        props: ['article'],//通过props属性为自定义组件传递数据，定义属性
+        props: ['article'],
         template: `<div><h3>{{article.title}}</h3><div>{{article.content}}</div><div>{{article.author}}</div>
-        <button v-on:click="$emit('extend')">放大</button>
-        <button v-on:click="small">缩小</button>
-        <button v-on:click="count += 1">计数：{{count}}</button></div>`
-        });//每个template只能有一个单独的root element
-        //$emit(eventName),vue提供$emit方法，并传入事件的名称，父组件可以捕获这事件，并做相应的处理
+        <button type="button" v-on:click="$emit('extend')">放大</button>
+        <button type="button" v-on:click="small">缩小</button>
+        <button type="button" v-on:click="count += 1">计数：{{count}}</button></div>`
+        });
 
-        //注意每创建一个组件：都重新定义了一个组件实例，每个组件实例会维护自己的data对象
-
-        //定义的Vue组件，只能在Vue的根实例的作用域中使用，当作特殊的自定义元素使用(Vue的组件的定义符合web Component组件定义的规范)
-        var vm = new Vue({
+      // ---------------------------------------------------------------------------
+      // #my-comp1-demo：根实例挂载 + 父组件监听子组件事件
+      // 官方：Vue 组件只在 el 对应 DOM 树内生效；挂载点外的标签退化为普通自定义元素。
+      // ---------------------------------------------------------------------------
+      var vm = new Vue({
           el: "#my-comp1-demo",
           data: {
             fontSize: 30,
             articleList: [
-              {"title": "标题一", "content": "我是标题一的内容部分", "author": "作者一"},
-              {"title": "标题二", "content": "我是标题二的内容部分", "author": "作者二"},
-              {"title": "标题三", "content": "我是标题三的内容部分", "author": "作者三"},
-              {"title": "标题四", "content": "我是标题四的内容部分", "author": "作者四"},
+              {"id": 1, "title": "标题一", "content": "我是标题一的内容部分", "author": "作者一"},
+              {"id": 2, "title": "标题二", "content": "我是标题二的内容部分", "author": "作者二"},
+              {"id": 3, "title": "标题三", "content": "我是标题三的内容部分", "author": "作者三"},
+              {"id": 4, "title": "标题四", "content": "我是标题四的内容部分", "author": "作者四"},
             ]
           },
           methods: {
