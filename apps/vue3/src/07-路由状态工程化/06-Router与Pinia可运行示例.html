@@ -91,7 +91,7 @@
     <!-- SCRIPT_START -->
     <script>
       // 从全局解构 Vue / Vue Router / Pinia API
-      const { createApp, ref } = Vue;
+      const { createApp, ref, onMounted } = Vue;
       const { createRouter, createWebHashHistory } = VueRouter;
       const { createPinia, defineStore } = Pinia;
 
@@ -109,13 +109,13 @@
         },
       });
 
-      // 守卫日志：挂在 window 供路由组件与守卫共用（demo 简化）
+      // 守卫日志：模块级 ref，供根组件与 beforeEach 共用
       const guardLogs = ref([]);
-      window.__routerGuardLogs = guardLogs;
 
       function logGuard(msg) {
         guardLogs.value.push(msg);
         if (guardLogs.value.length > 6) guardLogs.value.shift();
+        console.log("[router-guard]", msg);
       }
 
       // --- 路由页面组件 ---
@@ -192,10 +192,19 @@
       const app = createApp({
         setup() {
           const userStore = useUserStore();
+          onMounted(() => {
+            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+          });
           return { userStore, guardLogs };
         },
       });
-      app.use(pinia).use(router).mount("#app");
+      app.use(pinia);
+      app.use(router);
+
+      // mount 须在 app.use / app.component / app.config 等配置之后调用
+      // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
+      const rootInstance = app.mount("#app");
+      console.log("[mount] 根组件实例", rootInstance);
 
     </script>
     <!-- SCRIPT_END -->

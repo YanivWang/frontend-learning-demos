@@ -84,7 +84,7 @@
     <!-- SCRIPT_START -->
     <script>
       // 从全局 Vue 解构本页用到的 Composition API
-      const { createApp, ref } = Vue;
+      const { createApp, ref, onMounted } = Vue;
 
       // async setup：返回 Promise 时由父级 Suspense 等待
       const AsyncPanel = {
@@ -96,11 +96,7 @@
         },
         template: `<p>{{ text }}（加载完成时间：{{ new Date().toLocaleTimeString() }}）</p>`,
       };
-
-      // --- 挂载应用 ---
-
-
-      createApp({
+      const app = createApp({
         components: { AsyncPanel },
         setup() {
           // 改变 key 可强制重新挂载 AsyncPanel，便于重复观察 fallback
@@ -108,9 +104,19 @@
           function reload() {
             panelKey.value++;
           }
+          
+          // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
+          onMounted(() => {
+            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+          });
+
           return { panelKey, reload };
         },
-      }).mount("#app");
+      });
+      // mount 须在 app.use / app.component / app.config 等配置之后调用
+      // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
+      const rootInstance = app.mount("#app");
+      console.log("[mount] 根组件实例", rootInstance);
 
     </script>
     <!-- SCRIPT_END -->

@@ -37,7 +37,7 @@ Vue 3.5.x 时代的 demo（`libs/vue.global.js` 为 **3.5.34**，全局构建）
 
 | 文件 | 主题 |
 |---|---|
-| `01-基础语法/01-应用实例与模板语法.html` | createApp / mount / 模板语法 |
+| `01-基础语法/01-应用实例与模板语法.html` | createApp / mount / In-DOM 模板 / 模板语法 |
 | `01-基础语法/02-条件列表与key.html` | v-if / v-show / v-for / key |
 | `01-基础语法/03-事件与表单v-model.html` | 事件绑定 / 表单 v-model |
 | `01-基础语法/04-class与style绑定.html` | class / style 绑定 |

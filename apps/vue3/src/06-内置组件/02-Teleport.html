@@ -69,14 +69,14 @@
       <h1>Teleport</h1>
       <div class="box">
         <p class="hint-inline">打开弹窗后，在开发者工具 Elements 中可看到遮罩层挂在 <code>body</code> 下，而不是 <code>#app</code> 内。</p>
-        <button type="button" @click="open = true">打开弹窗</button>
+        <button type="button" @click="openModal">打开弹窗</button>
         <p>弹窗状态（仍在当前组件）：<code>{{ open ? "已打开" : "已关闭" }}</code></p>
         <teleport to="body">
-          <div v-if="open" class="modal" @click.self="open = false">
+          <div v-if="open" class="modal" @click.self="closeModal">
             <div class="dialog">
               <h2>弹窗内容</h2>
-              <p>这块 DOM 被渲染到了 body 下。</p>
-              <button type="button" @click="open = false">关闭</button>
+              <p>这块 DOM 被渲染到了 body 下；控制台可见 <code>[teleport]</code> 日志。</p>
+              <button type="button" @click="closeModal">关闭</button>
             </div>
           </div>
         </teleport>
@@ -87,19 +87,34 @@
     <!-- SCRIPT_START -->
     <script>
       // 从全局 Vue 解构本页用到的 Composition API
-      const { createApp, ref } = Vue;
-
-      // --- 挂载应用 ---
-
-
-      createApp({
+      const { createApp, ref, onMounted } = Vue;
+      const app = createApp({
         setup() {
           // --- 演示状态 ---
           // 控制 Teleport 内 v-if 是否渲染到 body
           const open = ref(false);
-          return { open };
+
+          function openModal() {
+            open.value = true;
+            console.log("[teleport] modal 已挂载到 body");
+          }
+
+          function closeModal() {
+            open.value = false;
+            console.log("[teleport] modal 已卸载");
+          }
+
+          onMounted(() => {
+            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+          });
+
+          return { open, openModal, closeModal };
         },
-      }).mount("#app");
+      });
+      // mount 须在 app.use / app.component / app.config 等配置之后调用
+      // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
+      const rootInstance = app.mount("#app");
+      console.log("[mount] 根组件实例", rootInstance);
 
     </script>
     <!-- SCRIPT_END -->

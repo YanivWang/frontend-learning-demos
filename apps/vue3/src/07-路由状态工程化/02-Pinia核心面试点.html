@@ -89,7 +89,7 @@
       // 从全局 Vue / Pinia 解构本页用到的 API
 
       // Pinia 通过 CDN IIFE 提供；与 Vue 一样挂到全局
-      const { createApp } = Vue;
+      const { createApp, onMounted } = Vue;
       const { createPinia, defineStore, storeToRefs } = Pinia;
 
       // --- Pinia store 定义 ---
@@ -119,8 +119,6 @@
         "  }",
         "})",
       ].join("\n");
-
-      // --- 挂载应用 ---
       const pinia = createPinia();
       const app = createApp({
         setup() {
@@ -133,10 +131,16 @@
 
           function login() {
             userStore.login("demo");
+            console.log("[pinia] login → token =", userStore.token);
           }
           function logout() {
             userStore.logout();
+            console.log("[pinia] logout → token 已清空");
           }
+
+          onMounted(() => {
+            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+          });
 
           return {
             snippet,
@@ -148,7 +152,12 @@
           };
         },
       });
-      app.use(pinia).mount("#app");
+      app.use(pinia);
+
+      // mount 须在 app.use / app.component / app.config 等配置之后调用
+      // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
+      const rootInstance = app.mount("#app");
+      console.log("[mount] 根组件实例", rootInstance);
 
     </script>
     <!-- SCRIPT_END -->

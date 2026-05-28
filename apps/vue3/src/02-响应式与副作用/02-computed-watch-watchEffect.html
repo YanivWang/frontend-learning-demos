@@ -90,9 +90,9 @@
     <!-- SCRIPT_START -->
     <script>
       // 从全局 Vue 解构本页用到的 Composition API
-      const { createApp, ref, computed, watch, watchEffect } = Vue;
+      const { createApp, ref, computed, watch, watchEffect, onMounted } = Vue;
 
-      createApp({
+      const app = createApp({
         setup() {
           // --- 响应式源数据 ---
           // 用户输入的关键词；故意带首尾空格，便于观察 trim 派生
@@ -156,6 +156,12 @@
           }
 
           // 暴露给模板的数据与方法
+          
+          // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
+          onMounted(() => {
+            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+          });
+
           return {
             keyword,
             normalizedKeyword,
@@ -168,7 +174,11 @@
             effectStopped,
           };
         },
-      }).mount("#app");
+      });
+      // mount 须在 app.use / app.component / app.config 等配置之后调用
+      // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
+      const rootInstance = app.mount("#app");
+      console.log("[mount] 根组件实例", rootInstance);
 
     </script>
     <!-- SCRIPT_END -->

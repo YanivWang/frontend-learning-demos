@@ -81,7 +81,7 @@
     <!-- SCRIPT_START -->
     <script>
       // 从全局 Vue 解构本页用到的 Composition API
-      const { createApp, ref, provide, inject } = Vue;
+      const { createApp, ref, provide, inject, onMounted } = Vue;
 
       // Symbol key 示例（大型库中避免字符串冲突）
       const ThemeKey = Symbol("theme");
@@ -119,14 +119,31 @@
         template: `<section><p>中间层（无 theme props）</p><deep-child /></section>`,
       };
 
+      const PlainCompare = {
+        template: `
+        <p class="hint-inline">
+          注入 ref theme：<strong>{{ theme }}</strong>；
+          注入普通值 plainLabel：<strong>{{ plainLabel }}</strong>
+          （父组件切换 theme 后 plainLabel 仍是创建时快照，不会跟着变）
+        </p>
+        `,
+        setup() {
+          const theme = inject(ThemeKey);
+          const plainLabel = inject("plainLabel");
+          return { theme, plainLabel };
+        },
+      };
+
       const ParentPanel = {
-        components: { MiddlePanel },
+        components: { MiddlePanel, PlainCompare },
         template: `
         <div :class="theme === 'dark' ? 'theme-dark' : 'theme-light'">
           <p>父组件提供主题：{{ theme }}
             <button type="button" @click="onToggle('父')">切换主题</button>
           </p>
           <middle-panel />
+          <h2>ref vs 普通值注入</h2>
+          <plain-compare />
           <pre>{{ logs.join("\\n") || "（切换主题观察日志）" }}</pre>
         </div>
         `,
@@ -148,8 +165,9 @@
             console.log("[provide/inject] 父切换", theme.value);
           }
 
-          // provide ref + 命令函数 + 日志回调
+          // provide ref + 命令函数 + 日志回调；plainLabel 为普通字符串快照
           provide(ThemeKey, theme);
+          provide("plainLabel", theme.value);
           provide("toggleTheme", toggleTheme);
           provide("pushLog", pushLog);
 
@@ -157,7 +175,19 @@
         },
       };
 
-      createApp({ components: { ParentPanel } }).mount("#app");
+      const app = createApp({
+        components: { ParentPanel },
+        setup() {
+          onMounted(() => {
+            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+          });
+          return {};
+        },
+      });
+      // mount 须在 app.use / app.component / app.config 等配置之后调用
+      // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
+      const rootInstance = app.mount("#app");
+      console.log("[mount] 根组件实例", rootInstance);
 
     </script>
     <!-- SCRIPT_END -->

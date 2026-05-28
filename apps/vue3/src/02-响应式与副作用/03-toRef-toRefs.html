@@ -78,8 +78,8 @@
         <p>countRef（toRef）：{{ countRef }}</p>
         <p>brokenCount（ref 快照）：{{ brokenCount }}</p>
         <p class="hint-inline">先改 state.count，再看 brokenCount 是否仍停在创建时的值；countRef 应始终与 state 一致。</p>
-        <button type="button" @click="countRef++">通过 countRef +1</button>
-        <button type="button" @click="state.count += 2">state.count += 2</button>
+        <button type="button" @click="bumpCountRef">通过 countRef +1</button>
+        <button type="button" @click="bumpStateCount">state.count += 2</button>
         <button type="button" @click="showBrokenCompare">对比 ref 快照（看控制台）</button>
       </div>
       <div class="box">
@@ -99,9 +99,9 @@
     <!-- SCRIPT_START -->
     <script>
       // 从全局 Vue 解构本页用到的 Composition API
-      const { createApp, reactive, ref, toRef, toRefs } = Vue;
+      const { createApp, reactive, ref, toRef, toRefs, onMounted } = Vue;
 
-      createApp({
+      const app = createApp({
         setup() {
           // --- 响应式源对象 ---
           const state = reactive({
@@ -131,6 +131,18 @@
             if (logs.value.length > 10) logs.value.shift();
           }
 
+          function bumpCountRef() {
+            countRef.value++;
+            console.log("[toRef] countRef++ → state.count =", state.count, "countRef =", countRef.value);
+            pushLog(`countRef++ → state.count=${state.count}`);
+          }
+
+          function bumpStateCount() {
+            state.count += 2;
+            console.log("[toRef] state.count += 2 →", state.count, "countRef =", countRef.value);
+            pushLog(`state.count += 2 → ${state.count}`);
+          }
+
           function showBrokenCompare() {
             console.log("[toRef] state.count =", state.count, "countRef =", countRef.value);
             console.log("[ref快照] brokenCount =", brokenCount.value, "（通常不等于 state.count）");
@@ -151,6 +163,12 @@
             pushLog(`tagRef -> ${tagRef.value}，state.tag = ${state.tag}`);
           }
 
+          
+          // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
+          onMounted(() => {
+            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+          });
+
           return {
             state,
             countRef,
@@ -160,12 +178,18 @@
             tagRef,
             refsKeys,
             logs,
+            bumpCountRef,
+            bumpStateCount,
             showBrokenCompare,
             addTag,
             setTagViaRef,
           };
         },
-      }).mount("#app");
+      });
+      // mount 须在 app.use / app.component / app.config 等配置之后调用
+      // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
+      const rootInstance = app.mount("#app");
+      console.log("[mount] 根组件实例", rootInstance);
 
     </script>
     <!-- SCRIPT_END -->

@@ -26,6 +26,7 @@
       th, td { border: 1px solid #ddd; padding: 10px; text-align: left; vertical-align: top; }
       th { background: #f6f8fa; }
       code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 900px; }
       .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
       button { padding: 6px 12px; margin-bottom: 12px; }
     </style>
@@ -67,7 +68,8 @@
     <!-- PAGE_DOM_START -->
     <div id="app">
       <h1>Vue2 与 Vue3 差异</h1>
-      <p class="hint-inline">点击表格行高亮对应主题；下方为 Vue2 / Vue3 对照表。</p>
+      <div class="box">
+      <p class="hint-inline">点击表格行高亮对应主题；控制台可见 <code>[topic]</code> 与 <code>[mounted]</code> 日志。</p>
       <button type="button" @click="highlight = ''">取消高亮</button>
       <table>
         <thead>
@@ -78,7 +80,7 @@
             v-for="row in rows"
             :key="row.topic"
             :style="highlight === row.topic ? 'background:#fff8e1' : ''"
-            @click="highlight = row.topic"
+            @click="selectTopic(row.topic)"
           >
             <td>{{ row.topic }}</td>
             <td>{{ row.vue2 }}</td>
@@ -87,15 +89,16 @@
         </tbody>
       </table>
       <p v-if="highlight">已选中：<strong>{{ highlight }}</strong></p>
+      </div>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
       // 从全局 Vue 解构本页用到的 Composition API
-      const { createApp, ref } = Vue;
+      const { createApp, ref, onMounted } = Vue;
 
-      createApp({
+      const app = createApp({
         setup() {
           // --- 演示状态 ---
           // --- 对比表数据 ---
@@ -108,9 +111,24 @@
             { topic: "内置能力", vue2: "keep-alive / transition", vue3: "新增 Teleport / Suspense 等" },
             { topic: "v-model", vue2: "组件默认 value/input", vue3: "modelValue/update:modelValue，支持多个 v-model" },
           ]);
-          return { rows, highlight };
+          
+          // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
+          function selectTopic(topic) {
+            highlight.value = topic;
+            console.log("[topic]", topic);
+          }
+
+          onMounted(() => {
+            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+          });
+
+          return { rows, highlight, selectTopic };
         },
-      }).mount("#app");
+      });
+      // mount 须在 app.use / app.component / app.config 等配置之后调用
+      // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
+      const rootInstance = app.mount("#app");
+      console.log("[mount] 根组件实例", rootInstance);
 
     </script>
     <!-- SCRIPT_END -->

@@ -91,7 +91,7 @@
     <!-- SCRIPT_START -->
     <script>
       // 从全局 Vue 解构本页用到的 Composition API
-      const { createApp, ref, watch, defineAsyncComponent } = Vue;
+      const { createApp, ref, watch, defineAsyncComponent, onMounted } = Vue;
 
       const ProfilePanel = {
         setup() {
@@ -148,11 +148,7 @@
         errorComponent: { template: `<p>加载失败：已展示 errorComponent。</p>` },
         delay: 0,
       });
-
-      // --- 挂载应用 ---
-
-
-      createApp({
+      const app = createApp({
         components: { ProfilePanel, SettingPanel, AsyncPanel, BrokenAsyncPanel },
         setup() {
           const current = ref("ProfilePanel");
@@ -171,9 +167,19 @@
             else asyncStatus.value = "同步组件，KeepAlive 缓存中";
           });
 
+          
+          // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
+          onMounted(() => {
+            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+          });
+
           return { current, asyncStatus, asyncSnippet, switchTo };
         },
-      }).mount("#app");
+      });
+      // mount 须在 app.use / app.component / app.config 等配置之后调用
+      // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
+      const rootInstance = app.mount("#app");
+      console.log("[mount] 根组件实例", rootInstance);
 
     </script>
     <!-- SCRIPT_END -->

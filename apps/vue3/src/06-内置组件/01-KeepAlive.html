@@ -69,12 +69,21 @@
     <div id="app">
       <h1>KeepAlive</h1>
       <div class="box">
-        <p class="hint-inline">当前 Tab：<strong>{{ current }}</strong>。在输入框输入文字后切换 Tab，再切回来应仍保留；下方日志记录 activated / deactivated。</p>
+        <h2>基础缓存</h2>
+        <p class="hint-inline">
+          当前 Tab：<strong>{{ current }}</strong>。在输入框输入文字后切换 Tab，再切回来应仍保留；控制台可见
+          <code>[keepalive]</code> 与 <code>[mounted]</code> 日志。
+        </p>
         <button type="button" @click="current = 'TabA'">Tab A</button>
         <button type="button" @click="current = 'TabB'">Tab B</button>
-        <keep-alive>
+        <keep-alive :include="cacheInclude">
           <component :is="current"></component>
         </keep-alive>
+        <h2>include 筛选</h2>
+        <label class="hint-inline">
+          <input type="checkbox" v-model="onlyCacheTabA" />
+          只缓存 TabA（<code>include="TabA"</code>；取消勾选后 TabB 切走即销毁）
+        </label>
         <pre>{{ logs.length ? logs.join("\n") : "（切换 Tab 后出现生命周期日志）" }}</pre>
       </div>
     </div>
@@ -83,36 +92,49 @@
     <!-- SCRIPT_START -->
     <script>
       // 从全局 Vue 解构本页用到的 Composition API
-      const { createApp, ref, onActivated, onDeactivated } = Vue;
+      const { createApp, ref, computed, onActivated, onDeactivated, onMounted } = Vue;
 
-      // 工厂函数：为每个 Tab 子组件注册 activated / deactivated 日志
+      // 共享日志 ref：工厂闭包传入，避免 window 全局
+      const logs = ref([]);
+
       function makeTab(name) {
         return {
           name,
           template: `<p>${name} 输入：<input v-model="text" placeholder="切走再回来应保留" /></p>`,
           setup() {
-          // --- 演示状态 ---
             const text = ref("");
-            const logs = window.__keepAliveLogs;
-            onActivated(() => logs.value.push(`${name} activated`));
-            onDeactivated(() => logs.value.push(`${name} deactivated`));
+            onActivated(() => {
+              logs.value.push(`${name} activated`);
+              console.log("[keepalive] activated", name);
+            });
+            onDeactivated(() => {
+              logs.value.push(`${name} deactivated`);
+              console.log("[keepalive] deactivated", name);
+            });
             return { text };
           },
         };
       }
 
-      // --- 挂载应用 ---
-
-
-      createApp({
+      const app = createApp({
         components: { TabA: makeTab("TabA"), TabB: makeTab("TabB") },
         setup() {
           const current = ref("TabA");
-          const logs = ref([]);
-          window.__keepAliveLogs = logs;
-          return { current, logs };
+          const onlyCacheTabA = ref(false);
+          // include 为 undefined 时缓存全部；为 "TabA" 时只缓存 TabA
+          const cacheInclude = computed(() => (onlyCacheTabA.value ? "TabA" : undefined));
+
+          onMounted(() => {
+            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+          });
+
+          return { current, logs, onlyCacheTabA, cacheInclude };
         },
-      }).mount("#app");
+      });
+      // mount 须在 app.use / app.component / app.config 等配置之后调用
+      // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
+      const rootInstance = app.mount("#app");
+      console.log("[mount] 根组件实例", rootInstance);
 
     </script>
     <!-- SCRIPT_END -->

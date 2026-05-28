@@ -91,7 +91,7 @@
     <!-- SCRIPT_START -->
     <script>
       // 从全局 Vue 解构本页用到的 Composition API
-      const { createApp, ref } = Vue;
+      const { createApp, ref, onMounted } = Vue;
 
       const BaseCard = {
         props: {
@@ -113,11 +113,7 @@
         </section>
         `,
       };
-
-      // --- 挂载应用 ---
-
-
-      createApp({
+      const app = createApp({
         components: { BaseCard },
         setup() {
           // --- 演示状态 ---
@@ -137,9 +133,19 @@
             console.log("[slots] 添加文章，total =", articles.value.length);
           }
 
+          
+          // 根组件挂载完成：mount() 已把模板编译并渲染到 #app
+          onMounted(() => {
+            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+          });
+
           return { articles, highlight, showFooter, addArticle };
         },
-      }).mount("#app");
+      });
+      // mount 须在 app.use / app.component / app.config 等配置之后调用
+      // 每个 app 实例 mount() 只能调用一次；返回值是根组件实例，不是 app 实例
+      const rootInstance = app.mount("#app");
+      console.log("[mount] 根组件实例", rootInstance);
 
     </script>
     <!-- SCRIPT_END -->
