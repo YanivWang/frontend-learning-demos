@@ -2,15 +2,17 @@
   分类: vue3 / 02-响应式与副作用
   主题: toRef / toRefs
   要点:
-    - toRef 把响应式对象的某个属性包装成与源属性联动的 ref
-    - toRefs 批量把响应式对象的可枚举属性转换为 ref
-    - toRefs 只会处理调用时已存在的属性，新增属性要单独 toRef
+    - toRef 把响应式对象的某个属性包装成与源属性双向联动的 ref
+    - toRefs 批量把调用时已存在的可枚举属性转换为 ref
+    - ref(state.foo) 只复制当前值，不会与源属性保持连接
+    - toRefs 不会自动包含后续新增属性，新字段需单独 toRef
     - 常用于 composable 返回值、props 解构和跨函数传递单个属性
   面试:
     - toRef 和 ref(state.foo) 有什么区别？
     - toRefs 适合解决什么解构问题？
     - toRefs 为什么不适合处理未来新增属性？
     - props 解构时为什么常提到 toRef / toRefs？
+    - 整体替换 reactive 嵌套对象后 toRef 绑定会怎样？
 -->
 
 <!doctype html>
@@ -23,8 +25,12 @@
     <style>
       body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
       button { margin-right: 8px; padding: 6px 12px; }
-      code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; max-height: 220px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; margin-bottom: 16px; }
+      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
+      .box button { margin-top: 4px; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -37,24 +43,27 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>toRef(state, "count")</code> 会创建一个与 <code>state.count</code> 双向联动的 ref；修改 <code>countRef</code> 会写回源对象，修改源对象也会更新 <code>countRef</code>。</li>
-          <li><code>toRefs(state)</code> 会把响应式对象当前可枚举属性批量转换成 ref，适合在返回对象或解构时保留每个属性的响应性。</li>
-          <li><code>ref(state.count)</code> 只是用当前值创建新的 ref，不会和 <code>state.count</code> 保持连接；这是它和 <code>toRef</code> 最容易混淆的地方。</li>
-          <li><code>toRefs</code> 只处理调用时已经存在的属性，后续新增属性不会自动出现在返回结果里；需要为可能不存在的单个属性建立连接时，用 <code>toRef(state, "maybeKey")</code>。</li>
-          <li>本页还演示了嵌套对象属性：<code>name</code> 来自当前 <code>state.user</code> 的 <code>name</code>。如果项目会整体替换 <code>state.user</code>，需要重新设计状态结构或改用计算属性，避免绑定到旧对象。</li>
+          <li><code>toRef(state, "count")</code> 创建的 <code>countRef</code> 与 <code>state.count</code> 双向联动；本页“通过 countRef +1”与“改 state.count”都会同步两处显示，控制台打印 <code>[toRef]</code>。</li>
+          <li><code>ref(state.count)</code> 只在创建时读取一次当前值，之后与源对象断开；本页 <code>brokenCount</code> 在源 count 变化后不会更新，点“对比 ref 快照”可验证。</li>
+          <li><code>toRefs(state)</code> 只为调用时已存在的可枚举属性创建 ref；本页 <code>label</code> 来自 toRefs，会随 <code>state.label</code> 更新。点“新增 state.tag”后，<code>refsSnapshot</code> 里不会出现 tag，说明 toRefs 不追踪后续新增键。</li>
+          <li>对可能稍后才有的单个属性，应使用 <code>toRef(state, "maybeKey")</code> 而不是指望 toRefs 自动补全；本页 <code>tagRef</code> 在首次访问前为 undefined，赋值后仍与源联动。</li>
+          <li>嵌套字段可用 <code>toRef(state.user, "name")</code>；若业务会整体替换 <code>state.user</code>，旧 toRef 仍指向被替换前的对象，需要重新 toRef 或改用 computed。解构基础见 <a href="./01-ref-reactive%E4%B8%8E%E8%A7%A3%E6%9E%84.html">01-ref-reactive与解构</a>。</li>
+          <li>composable 常见返回形态：<code>return { ...toRefs(state), action }</code>，让调用方解构后每个字段仍是 ref。props 在子组件中不应直接写回，派生用 <code>computed</code>，修改走 emit。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>toRef 和 ref(state.foo) 有什么区别？</strong> 结论是 <code>toRef</code> 保持与源属性联动，<code>ref(state.foo)</code> 只复制当前值。原因是 <code>toRef</code> 的 getter/setter 仍读写源对象属性。项目里要把响应式对象的单个字段传给函数或组件时，应优先考虑 <code>toRef</code>。</li>
-          <li><strong>toRefs 适合解决什么解构问题？</strong> 先结论：它适合让调用方解构响应式对象后仍保留响应性。原因是直接解构会绕过代理 getter，而 <code>toRefs</code> 返回的是一组 ref。composable 返回多个状态字段时，常用 <code>return { ...toRefs(state), action }</code>。</li>
-          <li><strong>toRefs 为什么不适合处理未来新增属性？</strong> 结论是 <code>toRefs</code> 只为调用时已有的可枚举属性创建 ref。原因是它不是持续监听对象结构变化的工具。项目中如果某个 key 可能稍后才出现，应提前初始化字段，或对该字段单独使用 <code>toRef</code>。</li>
-          <li><strong>props 解构时为什么常提到 toRef / toRefs？</strong> 结论是直接解构 props 可能丢失响应性，而 <code>toRef</code>/<code>toRefs</code> 可以保留与 props 字段的连接。原因是 props 本身是响应式只读对象。边界是 props 不应在子组件里直接写回，派生值用 <code>computed</code>，修改请求通过 emit 交给父组件。</li>
+          <li><strong>toRef 和 ref(state.foo) 有什么区别？</strong> 结论是 <code>toRef</code> 保持与源属性联动，<code>ref(state.foo)</code> 只复制当前值。原因是 <code>toRef</code> 的 getter/setter 仍读写源对象。本页 brokenCount 行就是对比入口。</li>
+          <li><strong>toRefs 适合解决什么解构问题？</strong> 先结论：让调用方解构响应式对象后仍保留响应性。原因是直接解构会绕过代理 getter。composable 返回多字段时常用 <code>...toRefs(state)</code>。</li>
+          <li><strong>toRefs 为什么不适合处理未来新增属性？</strong> 结论是只为调用时已有属性创建 ref。本页“新增 state.tag”按钮后，refsSnapshot 不会自动出现 tag；应对单字段用 <code>toRef</code>。</li>
+          <li><strong>props 解构时为什么常提到 toRef / toRefs？</strong> 结论是直接解构 props 可能丢失响应性。原因是 props 是响应式只读对象。边界是子组件不应直接写 props，应 emit 给父组件。</li>
+          <li><strong>整体替换嵌套对象后 toRef 绑定会怎样？</strong> 结论是仍绑定被替换前的子对象。原因是 toRef 记录的是创建时的属性引用。项目中应避免频繁整体替换 reactive 的嵌套对象，或替换后重新建立 toRef。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://vuejs.org/api/reactivity-utilities.html#toref" target="_blank" rel="noreferrer">Vue 3 官方 API：toRef()</a></li>
           <li><a href="https://vuejs.org/api/reactivity-utilities.html#torefs" target="_blank" rel="noreferrer">Vue 3 官方 API：toRefs()</a></li>
           <li><a href="https://vuejs.org/guide/reusability/composables.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Composables</a></li>
+          <li><a href="./01-ref-reactive%E4%B8%8E%E8%A7%A3%E6%9E%84.html">本系列：ref-reactive与解构</a></li>
         </ul>
       </div>
     </section>
@@ -64,30 +73,97 @@
     <div id="app">
       <h1>toRef / toRefs</h1>
       <div class="box">
+        <h2>toRef 联动 vs ref 快照</h2>
         <p>state.count：{{ state.count }}</p>
-        <p>countRef：{{ countRef }}</p>
-        <p>name：{{ name }}</p>
-        <button @click="countRef++">通过 countRef 修改</button>
-        <button @click="state.user.name = 'Grace'">通过原对象修改 name</button>
+        <p>countRef（toRef）：{{ countRef }}</p>
+        <p>brokenCount（ref 快照）：{{ brokenCount }}</p>
+        <p class="hint-inline">先改 state.count，再看 brokenCount 是否仍停在创建时的值；countRef 应始终与 state 一致。</p>
+        <button type="button" @click="countRef++">通过 countRef +1</button>
+        <button type="button" @click="state.count += 2">state.count += 2</button>
+        <button type="button" @click="showBrokenCompare">对比 ref 快照（看控制台）</button>
       </div>
+      <div class="box">
+        <h2>toRefs 与新增属性</h2>
+        <p>label（toRefs）：{{ label }}</p>
+        <p>name（toRef 嵌套）：{{ name }}</p>
+        <p>tagRef（toRef 动态键）：{{ tagRef ?? "（未设置）" }}</p>
+        <p>refsSnapshot 键：{{ refsKeys }}</p>
+        <button type="button" @click="state.user.name = state.user.name === 'Ada' ? 'Grace' : 'Ada'">改 user.name</button>
+        <button type="button" @click="addTag">新增 state.tag</button>
+        <button type="button" @click="setTagViaRef">经 tagRef 写入 tag</button>
+      </div>
+      <pre class="box">{{ logs.length ? logs.join("\n") : "（操作后显示日志）" }}</pre>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      const { createApp, reactive, toRef, toRefs } = Vue;
+      // 从全局 Vue 解构本页用到的 Composition API
+      const { createApp, reactive, ref, toRef, toRefs } = Vue;
 
       createApp({
         setup() {
+          // --- 响应式源对象 ---
           const state = reactive({
             count: 1,
+            label: "草稿",
             user: { name: "Ada" },
           });
 
+          // --- toRef：与源属性双向联动 ---
           const countRef = toRef(state, "count");
-          const { user } = toRefs(state);
+          const name = toRef(state.user, "name");
 
-          return { state, countRef, name: toRef(user.value, "name") };
+          // --- ref 快照：创建时复制当前值，之后断开 ---
+          const brokenCount = ref(state.count);
+
+          // --- toRefs：批量转换已有属性 ---
+          const { label } = toRefs(state);
+          const refsSnapshot = toRefs(state);
+
+          // --- toRef 单字段：适合可能后出现的键 ---
+          const tagRef = toRef(state, "tag");
+
+          const logs = ref([]);
+
+          function pushLog(line) {
+            logs.value.push(line);
+            if (logs.value.length > 10) logs.value.shift();
+          }
+
+          function showBrokenCompare() {
+            console.log("[toRef] state.count =", state.count, "countRef =", countRef.value);
+            console.log("[ref快照] brokenCount =", brokenCount.value, "（通常不等于 state.count）");
+            pushLog(`对比：state.count=${state.count}，brokenCount=${brokenCount.value}`);
+          }
+
+          const refsKeys = ref(Object.keys(refsSnapshot).join(", "));
+
+          function addTag() {
+            state.tag = "新标签";
+            refsKeys.value = Object.keys(refsSnapshot).join(", ");
+            pushLog(`已在 state 上新增 tag=${state.tag}；refsSnapshot 键：${refsKeys.value}`);
+            console.log("[toRefs] refsSnapshot keys =", Object.keys(refsSnapshot));
+          }
+
+          function setTagViaRef() {
+            tagRef.value = "经 tagRef 写入";
+            pushLog(`tagRef -> ${tagRef.value}，state.tag = ${state.tag}`);
+          }
+
+          return {
+            state,
+            countRef,
+            brokenCount,
+            label,
+            name,
+            tagRef,
+            refsKeys,
+            logs,
+            showBrokenCompare,
+            addTag,
+            setTagViaRef,
+          };
         },
       }).mount("#app");
 
@@ -112,5 +188,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

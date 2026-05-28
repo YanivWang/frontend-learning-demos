@@ -25,8 +25,9 @@
       button { margin-right: 8px; padding: 6px 12px; }
       code, pre { background: #f6f8fa; border-radius: 6px; }
       code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; }
+      pre { padding: 12px; overflow: auto; max-height: 220px; }
       .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -41,9 +42,9 @@
         <ul>
           <li>Vue 的状态变更不会每次都同步 patch DOM，而是交给调度器排队。连续多次修改同一个响应式状态时，组件更新会被去重并合并到同一轮刷新中。</li>
           <li>因此在同一个同步函数里，刚改完状态就读取模板对应 DOM，常会读到旧文本；等待 <code>await nextTick()</code> 后，才能读到本轮 Vue DOM 更新后的结果。</li>
-          <li><code>nextTick()</code> 可以接收回调，也可以返回 Promise，组合式 API 中更推荐 <code>await nextTick()</code>，让“改状态 -> 等 DOM -> 读尺寸/聚焦/滚动”的流程更清晰。</li>
+          <li><code>nextTick()</code> 可以接收回调，也可以返回 Promise，组合式 API 中更推荐 <code>await nextTick()</code>，让“改状态 → 等 DOM → 读尺寸/聚焦/滚动”的流程更清晰。</li>
           <li>不要把 <code>nextTick</code> 当成通用延时器。它只等待 Vue 刷新队列完成，不保证网络请求完成、图片解码完成，也不等价于浏览器下一帧绘制；动画测量可能还需要 <code>requestAnimationFrame</code>。</li>
-          <li>示例连续执行三次 <code>count.value++</code>，同步日志中的 DOM 仍是旧值，<code>nextTick</code> 后才显示合并后的新值，用来观察调度器批处理效果。</li>
+          <li>模板 <code>ref</code> 与 DOM 时序的入门演示见 <a href="../01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/05-%E6%A8%A1%E6%9D%BFref%E4%B8%8EnextTick.html">01-模板ref与nextTick</a>；本页侧重调度器批处理机制。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
@@ -54,9 +55,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/api/general.html#nexttick">Vue 官方 API：nextTick()</a></li>
-          <li><a href="https://vuejs.org/guide/essentials/reactivity-fundamentals.html#dom-update-timing">Vue 官方文档：DOM Update Timing</a></li>
-          <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame">MDN：requestAnimationFrame()</a></li>
+          <li><a href="https://vuejs.org/api/general.html#nexttick" target="_blank" rel="noreferrer">Vue 官方 API：nextTick()</a></li>
+          <li><a href="https://vuejs.org/guide/essentials/reactivity-fundamentals.html#dom-update-timing" target="_blank" rel="noreferrer">Vue 官方文档：DOM Update Timing</a></li>
+          <li><a href="../01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/05-%E6%A8%A1%E6%9D%BFref%E4%B8%8EnextTick.html">本系列：模板 ref 与 nextTick</a></li>
         </ul>
       </div>
     </section>
@@ -67,23 +68,32 @@
       <h1>调度器与 nextTick</h1>
       <div class="box">
         <p ref="countEl">count：{{ count }}</p>
-        <button @click="batchUpdate">连续改 3 次</button>
-        <pre>{{ logs.join("\n") }}</pre>
+        <p class="hint-inline">点「连续改 3 次」：同步阶段 DOM 文本仍是旧值，<code>nextTick</code> 后才显示 3。与 <a href="../01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/05-%E6%A8%A1%E6%9D%BFref%E4%B8%8EnextTick.html">01-模板ref与nextTick</a> 对照学习。</p>
+        <button type="button" @click="batchUpdate">连续改 3 次</button>
+        <button type="button" @click="logs = []">清空日志</button>
+        <pre>{{ logs.length ? logs.join("\n") : "（点击按钮后出现对比日志）" }}</pre>
       </div>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // 从全局 Vue 解构本页用到的 Composition API
       const { createApp, ref, nextTick } = Vue;
+
+      // --- 挂载应用 ---
+
 
       createApp({
         setup() {
+          // --- 演示状态 ---
           const count = ref(0);
           const countEl = ref(null);
           const logs = ref([]);
 
           async function batchUpdate() {
+            logs.value = [];
+            // 同一同步块内连续改 3 次，调度器会合并为一次 DOM 更新
             count.value++;
             count.value++;
             count.value++;

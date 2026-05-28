@@ -2,15 +2,17 @@
   分类: vue3 / 01-基础语法
   主题: 事件绑定 / 表单 v-model
   要点:
-    - @click 是 v-on:click 的缩写，事件处理函数运行在组件上下文
-    - v-model 在原生表单上根据控件类型展开为值绑定和更新事件
-    - .trim、.number、.lazy 会改变输入同步和类型转换时机
-    - 表单提交要处理空值、非法值和未同意协议等失败路径
+    - @click 是 v-on:click 缩写；可用 $event 访问原生事件对象
+    - v-model 在原生表单上是 value + 更新事件的语法糖
+    - .trim、.number、.lazy 改变同步时机与类型转换
+    - 表单需处理空值、非法值等失败路径；展示用户输入用插值而非 v-html
+    - 组件 v-model 约定见 04 章；本页仅原生表单
   面试:
     - v-model 在原生表单上本质是什么？
     - .trim、.number、.lazy 分别改变了什么行为？
     - 为什么表单不能只依赖前端 v-model 类型转换？
     - 用户输入展示时如何避免 XSS 风险？
+    - 事件修饰符 .stop 与 .prevent 各解决什么问题？
 -->
 
 <!doctype html>
@@ -21,11 +23,59 @@
     <title>Vue3 · 事件与表单 v-model</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      label { display: block; margin: 10px 0; }
-      input, select, button, textarea { padding: 6px 10px; }
-      code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
-      .panel { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; margin-bottom: 16px; }
+      body {
+        font-family: system-ui, -apple-system, "PingFang SC", sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+      }
+      label {
+        display: block;
+        margin: 10px 0;
+      }
+      input,
+      select,
+      button,
+      textarea {
+        padding: 6px 10px;
+      }
+      button {
+        margin-right: 8px;
+        margin-top: 4px;
+      }
+      code,
+      pre {
+        background: #f6f8fa;
+        border-radius: 6px;
+      }
+      code {
+        padding: 2px 5px;
+      }
+      pre {
+        padding: 12px;
+        overflow: auto;
+      }
+      .panel {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 760px;
+        margin-bottom: 16px;
+      }
+      .panel h2 {
+        margin: 0 0 8px;
+        font-size: 16px;
+      }
+      .panel .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
+      .event-box {
+        border: 1px dashed #ccc;
+        padding: 12px;
+        margin-top: 8px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -38,23 +88,27 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>@click</code> 是 <code>v-on:click</code> 的缩写，事件处理函数可以直接修改响应式状态；需要原生事件对象时可以传 <code>$event</code> 或在函数参数中接收。</li>
-          <li><code>v-model</code> 在原生表单上会按控件类型绑定值并监听更新事件：文本框通常是 <code>value</code> + <code>input</code>，复选框会处理布尔值或数组，选择框会同步选中项。</li>
-          <li><code>.trim</code> 会在同步时去掉首尾空白，<code>.number</code> 会尝试转成数字，<code>.lazy</code> 会从实时 <code>input</code> 改为 <code>change</code> 时同步；本页备注框需要失焦后才更新。</li>
-          <li>用户输入必须有失败路径：本页提交时检查空用户名、非法年龄和未同意协议；真实项目还要做服务端校验，因为前端状态和 DOM 都可以被绕过。</li>
-          <li>本页用插值和 <code>&lt;pre&gt;{{ form }}&lt;/pre&gt;</code> 展示输入，Vue 会按文本转义；如果改用 <code>v-html</code> 渲染用户输入，就会引入 XSS 风险。</li>
+          <li><code>@click</code> 是 <code>v-on:click</code> 缩写，处理函数运行在组件上下文。本页「提交」按钮直接调用 <code>submit</code>；「记录坐标」通过 <code>$event</code> 读取原生 <code>MouseEvent</code>，日志写入下方 <code>pre</code>。</li>
+          <li><code>v-model</code> 在原生表单上是语法糖：文本框绑定 <code>value</code> 并监听 <code>input</code>，复选框处理布尔值，选择框同步选中项。下方 <code>&lt;pre&gt;{{ form }}&lt;/pre&gt;</code> 实时反映绑定结果；组件侧 <code>v-model</code> 见 <a href="../04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/04-%E7%BB%84%E4%BB%B6v-model.html">04-组件v-model</a>。</li>
+          <li><code>v-model.trim</code> 同步时去掉首尾空白：在用户名输入框首尾加空格后失焦，<code>form.name</code> 不含空白。<code>v-model.number</code> 尝试转数字：清空年龄后 <code>typeof form.age</code> 显示为 <code>number</code> 或空值时的校验失败。</li>
+          <li><code>v-model.lazy</code> 改为 <code>change</code> 时同步（失焦或 Enter）。备注 textarea 输入过程中上方「当前 lazyNote」不变，失焦后才更新；与上方表单实时同步形成对比。</li>
+          <li>提交时必须处理失败路径：清空用户名、输入非法年龄或未勾选协议，点「提交」分别出现不同错误文案；成功时显示「已提交」。实践中服务端仍须校验，前端状态可被绕过。</li>
+          <li>用户输入用插值或 <code>v-text</code> 展示时 Vue 会转义 HTML；若把用户输入交给 <code>v-html</code> 则有 XSS 风险，见 <a href="./01-%E5%BA%94%E7%94%A8%E5%AE%9E%E4%BE%8B%E4%B8%8E%E6%A8%A1%E6%9D%BF%E8%AF%AD%E6%B3%95.html">01-应用实例与模板语法</a> 安全说明。</li>
+          <li>事件修饰符：<code>@click.stop</code> 阻止冒泡，<code>@click.prevent</code> 阻止默认行为。本页内外层各有一个点击计数，内层带 <code>.stop</code> 时外层计数不增加。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>v-model 在原生表单上本质是什么？</strong> 结论是语法糖，本质是把表单值绑定到状态，并在用户输入时更新状态。原因是不同控件的值来源和事件不同，Vue 会替你处理文本框、复选框、单选框和选择框的差异。边界是自定义组件的 <code>v-model</code> 依赖 props 和 emits 约定，和原生表单展开规则不同。</li>
-          <li><strong>.trim、.number、.lazy 分别改变了什么行为？</strong> 先结论：<code>.trim</code> 清理首尾空白，<code>.number</code> 尝试类型转换，<code>.lazy</code> 改变同步时机。原因是表单输入默认都是字符串且通常实时同步。项目里搜索框常保持实时输入，备注或低频字段可以用 <code>.lazy</code> 减少更新频率。</li>
-          <li><strong>为什么表单不能只依赖前端 v-model 类型转换？</strong> 结论是前端转换只改善交互，不是可信校验。原因是空输入、无法解析的数字、脚本篡改请求都可能绕过页面逻辑。项目中应同时做前端提示和服务端校验，并明确失败提示。</li>
-          <li><strong>用户输入展示时如何避免 XSS 风险？</strong> 结论是默认使用插值或 <code>v-text</code> 展示文本，不把用户输入传给 <code>v-html</code>。原因是 Vue 的文本插值会转义 HTML，而 <code>v-html</code> 会按 HTML 解析。只有经过可信白名单消毒的富文本才考虑使用 <code>v-html</code>。</li>
+          <li><strong>v-model 在原生表单上本质是什么？</strong> 结论是语法糖，把表单值绑定到状态并在用户输入时更新。原因是不同控件的值来源和事件不同。边界是自定义组件依赖 <code>modelValue</code> + <code>update:modelValue</code> 约定，见 04 章。</li>
+          <li><strong>.trim、.number、.lazy 分别改变了什么行为？</strong> 结论是 <code>.trim</code> 去首尾空白、<code>.number</code> 尝试转数字、<code>.lazy</code> 改为 change 时同步。本页备注框与上方实时表单即 lazy 对比入口。</li>
+          <li><strong>为什么表单不能只依赖前端 v-model 类型转换？</strong> 结论是前端转换只改善交互，不是可信校验。空输入、NaN、篡改请求都可能绕过。本页提交校验演示失败路径，生产须加服务端校验。</li>
+          <li><strong>用户输入展示时如何避免 XSS 风险？</strong> 结论是默认插值/<code>v-text</code>，不用 <code>v-html</code> 渲染用户输入。本页 <code>pre</code> 展示表单 JSON 为文本转义。</li>
+          <li><strong>事件修饰符 .stop 与 .prevent 各解决什么问题？</strong> 结论是 <code>.stop</code> 阻止冒泡，<code>.prevent</code> 阻止默认行为（如表单 submit、链接跳转）。本页内外层点击计数可验证 <code>.stop</code>。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://vuejs.org/guide/essentials/event-handling.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Event Handling</a></li>
           <li><a href="https://vuejs.org/guide/essentials/forms.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Form Input Bindings</a></li>
+          <li><a href="https://vuejs.org/guide/essentials/forms.html#modifiers" target="_blank" rel="noreferrer">Vue 3 官方文档：v-model Modifiers</a></li>
           <li><a href="https://vuejs.org/guide/best-practices/security.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Security</a></li>
         </ul>
       </div>
@@ -65,8 +119,9 @@
     <div id="app">
       <h1>事件绑定与表单 v-model</h1>
       <div class="panel">
-        <label>用户名：<input v-model.trim="form.name" /></label>
-        <label>年龄：<input v-model.number="form.age" type="number" /></label>
+        <h2>原生表单 v-model</h2>
+        <label>用户名（trim）：<input v-model.trim="form.name" /></label>
+        <label>年龄（number）：<input v-model.number="form.age" type="number" /></label>
         <label>
           岗位：
           <select v-model="form.role">
@@ -76,48 +131,102 @@
           </select>
         </label>
         <label><input type="checkbox" v-model="form.agree" /> 同意协议</label>
-        <button @click="submit">提交</button>
+        <button type="button" @click="submit">提交</button>
+        <p class="hint-inline">
+          <code>form.age</code> 类型：{{ ageTypeLabel }}；清空年龄后提交可见校验失败。
+        </p>
         <pre>{{ form }}</pre>
         <p>{{ result }}</p>
       </div>
+
       <div class="panel">
-        <h2>v-model.lazy（change 时同步，而非 input 实时同步）</h2>
+        <h2>v-model.lazy</h2>
         <label>
           备注（lazy）：
           <textarea v-model.lazy="lazyNote" rows="2" cols="40"></textarea>
         </label>
-        <p>当前 lazyNote：{{ lazyNote || "（尚未 blur 提交）" }}</p>
-        <p>输入过程中上方不会实时变化，失焦或按 Enter 后才更新。</p>
+        <p>当前 lazyNote：{{ lazyNote || "（尚未 blur）" }}</p>
+        <p class="hint-inline">输入过程中上方不会实时变化，失焦或按 Enter 后才更新。</p>
+      </div>
+
+      <div class="panel">
+        <h2>事件与修饰符</h2>
+        <button type="button" @click="logPointer($event)">记录坐标（$event）</button>
+        <div class="event-box" @click="outerClicks++">
+          外层点击 {{ outerClicks }} 次
+          <button type="button" @click.stop="innerClicks++">
+            内层 .stop 点击 {{ innerClicks }} 次
+          </button>
+        </div>
+        <pre>{{ eventLogs.length ? eventLogs.join("\n") : "（点击「记录坐标」后显示）" }}</pre>
       </div>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      const { createApp, reactive, ref } = Vue;
+      // 从全局 Vue 解构本页用到的 Composition API
+      const { createApp, reactive, ref, computed } = Vue;
 
       createApp({
         setup() {
+          // --- 表单状态 ---
           const form = reactive({ name: "Ada", age: 20, role: "前端", agree: true });
           const result = ref("");
           const lazyNote = ref("初始备注");
 
+          // 展示 v-model.number 的类型结果
+          const ageTypeLabel = computed(() =>
+            form.age === "" || form.age === null
+              ? "空（提交会失败）"
+              : typeof form.age,
+          );
+
+          // --- 提交校验：演示失败路径 ---
           function submit() {
             if (!form.name) {
               result.value = "请输入用户名";
+              console.log("[submit] 失败：用户名为空");
               return;
             }
             if (!Number.isFinite(form.age) || form.age <= 0) {
               result.value = "请输入有效年龄";
+              console.log("[submit] 失败：年龄无效", form.age);
               return;
             }
-            result.value = form.agree ? `${form.name} 已提交` : "请先同意协议";
+            if (!form.agree) {
+              result.value = "请先同意协议";
+              console.log("[submit] 失败：未同意协议");
+              return;
+            }
+            result.value = `${form.name} 已提交`;
+            console.log("[submit] 成功", { ...form });
           }
 
-          return { form, result, lazyNote, submit };
+          // --- 事件演示 ---
+          const eventLogs = ref([]);
+          const outerClicks = ref(0);
+          const innerClicks = ref(0);
+
+          function logPointer(event) {
+            eventLogs.value.push(
+              `pointer: (${event.clientX}, ${event.clientY}) @ ${new Date().toLocaleTimeString()}`,
+            );
+          }
+
+          return {
+            form,
+            result,
+            lazyNote,
+            ageTypeLabel,
+            submit,
+            eventLogs,
+            outerClicks,
+            innerClicks,
+            logPointer,
+          };
         },
       }).mount("#app");
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -139,5 +248,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

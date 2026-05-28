@@ -2,10 +2,10 @@
   分类: vue3 / 01-基础语法
   主题: class / style 绑定
   要点:
-    - :class 支持字符串、对象、数组，常用对象写法表达状态开关
-    - :style 支持对象和数组，属性名可用 camelCase 或 kebab-case
-    - 静态样式仍交给 CSS 类，动态绑定只承载与状态相关的差异
-    - 复杂样式规则应抽成计算属性或语义化 class，避免模板堆逻辑
+    - :class 支持字符串、对象、数组；对象写法表达状态开关
+    - :style 支持对象和数组；静态样式优先写 CSS 类
+    - 复杂规则应抽成 computed 或语义化 class
+    - 组件上的 class/style 默认透传合并到根元素
   面试:
     - :class 的对象写法和数组写法各适合什么场景？
     - :style 与 CSS class 应该如何分工？
@@ -21,15 +21,61 @@
     <title>Vue3 · class 与 style 绑定</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; padding: 6px 12px; }
-      code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
-      .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 720px; transition: 0.2s ease; margin-bottom: 16px; }
-      .panel h2 { margin-top: 0; font-size: 1.05rem; }
-      .active { border-color: #1a73e8; background: #eef5ff; }
-      .danger { color: #b3261e; }
-      .highlight { box-shadow: 0 0 0 2px #1a73e8 inset; }
-      .large-text { font-weight: 700; }
+      body {
+        font-family: system-ui, -apple-system, "PingFang SC", sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+      }
+      button {
+        margin-right: 8px;
+        margin-top: 4px;
+        padding: 6px 12px;
+      }
+      code {
+        background: #f6f8fa;
+        padding: 2px 5px;
+        border-radius: 6px;
+      }
+      .card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 720px;
+        transition: 0.2s ease;
+        margin-bottom: 16px;
+      }
+      .panel {
+        margin-bottom: 16px;
+      }
+      .panel h2 {
+        margin: 0 0 8px;
+        font-size: 16px;
+      }
+      .panel .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
+      .active {
+        border-color: #1a73e8;
+        background: #eef5ff;
+      }
+      .danger {
+        color: #b3261e;
+      }
+      .highlight {
+        box-shadow: 0 0 0 2px #1a73e8 inset;
+      }
+      .large-text {
+        font-weight: 700;
+      }
+      .status-ok {
+        color: #137333;
+      }
+      .status-warn {
+        color: #b3261e;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -42,18 +88,19 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>:class</code> 可以绑定字符串、对象或数组；对象写法适合“某个状态是否启用某个类”，数组写法适合组合多个来源的类名。</li>
-          <li><code>:style</code> 可以绑定对象或数组，样式属性既可写 <code>fontSize</code>，也可写 <code>'font-size'</code>；本页用对象表达字号，用数组合并基础样式和强调色。</li>
-          <li>静态视觉规则优先写在 CSS 类里，动态绑定只表达状态差异，例如选中、危险、强调、尺寸等；这样更容易复用、覆盖和排查样式来源。</li>
-          <li>复杂业务判断不要直接塞进模板里的 <code>:class</code> 或 <code>:style</code>，应抽成 <code>computed</code>、方法或语义化状态字段，避免模板变成规则引擎。</li>
-          <li>绑定到组件上的 <code>class</code> 和 <code>style</code> 会作为透传 attribute 合并到组件根元素；多根组件或显式控制透传时，需要额外确认落点。</li>
+          <li><code>:class</code> 对象写法按布尔状态开关类名。本页点「切换选中」时卡片出现蓝色边框与浅蓝底（<code>active</code>）；点「次数 +1」到 3 次及以上时文字变红（<code>danger</code>）。</li>
+          <li><code>:style</code> 对象写法绑定运行时数值。点「字号 +2」时卡片内文字随 <code>fontSize</code> 增大；静态视觉规则（圆角、过渡）仍写在 CSS <code>.card</code> 类里。</li>
+          <li>数组写法适合合并多个来源：<code>[baseClass, { highlight: useHighlight }]</code>。点「切换 highlight」观察内阴影；<code>baseClass</code> 固定为 <code>large-text</code> 加粗。</li>
+          <li><code>:style</code> 也可绑数组：<code>[baseStyle, emphasisStyle]</code>。点「切换强调色」在默认与红色间切换 <code>emphasisStyle.color</code>，与 CSS 类分工：可复用规则用 class，少量运行时值用 style。</li>
+          <li>复杂业务判断应沉到 <code>computed</code>。本页「状态标签」区块的 <code>statusClass</code> 由 <code>computed</code> 根据 <code>count</code> 返回 <code>status-ok</code> 或 <code>status-warn</code>，模板只写 <code>:class="statusClass"</code>。</li>
+          <li>绑定到组件上的 <code>class</code>/<code>style</code> 默认作为透传 attribute 合并到子组件根元素；多根组件与手动 <code>$attrs</code> 落点见 <a href="../04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/02-attrs%E4%B8%8E%E9%80%8F%E4%BC%A0.html">04-attrs与透传</a>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>:class 的对象写法和数组写法各适合什么场景？</strong> 结论是对象写法适合按布尔状态开关类名，数组写法适合组合基础类、条件类和外部传入类。原因是对象强调“是否启用”，数组强调“按顺序合并多个来源”。项目里常用数组包对象，例如 <code>[baseClass, { active: isActive }]</code>。</li>
-          <li><strong>:style 与 CSS class 应该如何分工？</strong> 先结论：可复用和可维护的视觉规则用 CSS class，真正依赖运行时变量的少量值用 <code>:style</code>。原因是内联样式优先级高、复用差，也不方便媒体查询和伪类。动态尺寸、坐标、主题变量适合内联绑定，状态样式更适合类名。</li>
-          <li><strong>动态样式为什么不适合承载复杂业务规则？</strong> 结论是模板可读性和可测试性会迅速下降。原因是复杂条件混在 HTML 属性里不易复用，也容易和 CSS 优先级互相影响。项目中应把规则沉到计算属性或状态模型里，让模板只表达结果。</li>
-          <li><strong>组件上绑定 class 和 style 时会如何合并？</strong> 结论是默认会作为透传 attribute 合并到子组件根元素。原因是 Vue 会保留父组件传入的普通 attribute，包括 <code>class</code> 和 <code>style</code>。边界是多根组件、禁用继承或手动绑定 <code>$attrs</code> 时，需要明确这些样式落在哪个元素上。</li>
+          <li><strong>:class 的对象写法和数组写法各适合什么场景？</strong> 结论是对象适合布尔开关，数组适合合并多来源。本页第一块用对象、第二块用数组包对象。实践中常用 <code>[base, { active: isActive }]</code>。</li>
+          <li><strong>:style 与 CSS class 应该如何分工？</strong> 结论是复用规则用 class，依赖变量的少量值用 <code>:style</code>。本页字号用 style、选中/危险态用 class。内联样式优先级高，不宜承载整套主题。</li>
+          <li><strong>动态样式为什么不适合承载复杂业务规则？</strong> 结论是模板可读性与可测试性下降。本页 <code>statusClass</code> computed 即正例：规则在 JS，模板只绑定结果。</li>
+          <li><strong>组件上绑定 class 和 style 时会如何合并？</strong> 结论是默认透传到子组件根元素并与自身 class/style 合并。多根或禁用 inherit 时需明确落点，见 04-attrs 页。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
@@ -73,13 +120,17 @@
           class="card"
           :class="{ active: selected, danger: count >= 3 }"
           :style="{ fontSize: fontSize + 'px' }"
-          >
+        >
           <p>点击次数：{{ count }}</p>
           <p>选中状态：{{ selected }}</p>
-          <button @click="selected = !selected">切换选中</button>
-          <button @click="count++">次数 +1</button>
-          <button @click="fontSize += 2">字号 +2</button>
+          <p :class="statusClass">computed 状态：{{ count >= 3 ? "警告" : "正常" }}</p>
+          <button type="button" @click="selected = !selected">切换选中</button>
+          <button type="button" @click="count++">次数 +1</button>
+          <button type="button" @click="fontSize += 2">字号 +2</button>
         </div>
+        <p class="hint-inline">
+          <code>count ≥ 3</code> 时同时触发 <code>danger</code> 与 computed 的 <code>status-warn</code>。
+        </p>
       </div>
       <div class="panel">
         <h2>数组写法</h2>
@@ -87,10 +138,10 @@
           class="card"
           :class="[baseClass, { highlight: useHighlight }]"
           :style="[baseStyle, emphasisStyle]"
-          >
+        >
           <p>baseClass：{{ baseClass }}，useHighlight：{{ useHighlight }}</p>
-          <button @click="useHighlight = !useHighlight">切换 highlight</button>
-          <button @click="emphasisStyle.color = emphasisStyle.color ? '' : '#b3261e'">切换强调色</button>
+          <button type="button" @click="useHighlight = !useHighlight">切换 highlight</button>
+          <button type="button" @click="toggleEmphasis">切换强调色</button>
         </div>
       </div>
     </div>
@@ -98,25 +149,44 @@
 
     <!-- SCRIPT_START -->
     <script>
-      const { createApp, ref, reactive } = Vue;
+      // 从全局 Vue 解构本页用到的 Composition API
+      const { createApp, ref, reactive, computed } = Vue;
 
       createApp({
         setup() {
+          // --- 对象写法演示 ---
           const selected = ref(false);
           const count = ref(0);
           const fontSize = ref(16);
+
+          // 复杂 class 规则沉到 computed，模板保持简洁
+          const statusClass = computed(() =>
+            count.value >= 3 ? "status-warn" : "status-ok",
+          );
+
+          // --- 数组写法演示 ---
           const baseClass = ref("large-text");
           const useHighlight = ref(false);
           const baseStyle = reactive({ padding: "4px" });
           const emphasisStyle = reactive({ color: "" });
 
+          function toggleEmphasis() {
+            emphasisStyle.color = emphasisStyle.color ? "" : "#b3261e";
+          }
+
           return {
-            selected, count, fontSize,
-            baseClass, useHighlight, baseStyle, emphasisStyle,
+            selected,
+            count,
+            fontSize,
+            statusClass,
+            baseClass,
+            useHighlight,
+            baseStyle,
+            emphasisStyle,
+            toggleEmphasis,
           };
         },
       }).mount("#app");
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -138,5 +208,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

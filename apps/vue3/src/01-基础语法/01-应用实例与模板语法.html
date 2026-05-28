@@ -2,12 +2,14 @@
   分类: vue3 / 01-基础语法
   主题: createApp / mount / 模板语法
   要点:
-    - Vue3 通过 createApp 创建应用实例，mount 后接管指定容器
-    - 模板表达式运行在组件上下文，只适合写轻量表达式和指令
-    - ref 在模板中会自动解包，在 setup JavaScript 中仍要读写 .value
-    - v-html 会把字符串当 HTML 插入，只能用于可信内容
+    - Vue3 通过 createApp 创建应用实例，mount 后接管指定容器；同一实例通常只 mount 一次
+    - 模板表达式只能是单条 JavaScript 表达式，禁止语句与 var/if/for
+    - ref 在模板中自动解包，setup 的 JavaScript 中仍需读写 .value
+    - v-text 与双花括号等效写入文本；v-html 插入 HTML，仅用于可信内容
+    - 模板里调方法每次渲染都会执行；可缓存派生值见 02 章 computed 页
   面试:
     - createApp 与 mount 分别解决什么问题？
+    - 同一应用实例能否多次 mount？多个 createApp 如何隔离？
     - 模板表达式和方法调用应该如何取舍？
     - 模板里的 ref 自动解包为什么不等于 JS 里不用 .value？
     - 为什么 v-html 不能渲染用户输入？
@@ -22,17 +24,14 @@
     <script src="../../libs/vue.global.js"></script>
     <style>
       body {
-        font-family:
-          system-ui,
-          -apple-system,
-          "PingFang SC",
-          sans-serif;
+        font-family: system-ui, -apple-system, "PingFang SC", sans-serif;
         line-height: 1.7;
         padding: 24px;
         color: #202124;
       }
       button {
         margin-right: 8px;
+        margin-top: 4px;
         padding: 6px 12px;
       }
       code,
@@ -51,10 +50,19 @@
         border: 1px solid #ddd;
         padding: 16px;
         border-radius: 8px;
-        max-width: 720px;
+        max-width: 760px;
       }
-      .tip {
-        color: #666;
+      .box h2 {
+        margin: 16px 0 8px;
+        font-size: 16px;
+      }
+      .box h2:first-of-type {
+        margin-top: 0;
+      }
+      .box .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
       }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
@@ -64,42 +72,32 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>createApp / mount / 模板语法</h1>
-      <p class="hint">
-        在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。
-      </p>
+      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>
-            Vue3 使用 <code>createApp()</code> 创建应用实例，应用级配置、插件和组件注册都挂在这个实例上；调用 <code>mount("#app")</code> 后才会渲染并接管目标容器。
-          </li>
-          <li>模板支持文本插值、JavaScript 表达式、指令和事件绑定，但表达式应保持轻量；复杂派生逻辑更适合放进 <code>computed</code> 或方法，避免模板难读且重复执行。</li>
-          <li><code>ref</code> 在模板渲染上下文会自动解包，所以可以写 <code>{{ title }}</code>；在 <code>setup()</code> 的 JavaScript 代码里仍要通过 <code>title.value</code> 读写。</li>
-          <li>
-            <code>v-text</code> 会写入文本内容，<code>v-html</code> 会把字符串作为 HTML 插入；本页只渲染固定可信字符串，真实项目绝不能把未消毒的用户输入交给 <code>v-html</code>。
-          </li>
-          <li>Vue3 CDN 全局构建把 API 暴露在 <code>Vue</code> 对象上，本页用 <code>const { createApp, reactive, ref } = Vue</code> 方便直接运行；工程化项目通常从 <code>vue</code> 包按需导入。</li>
+          <li>Vue3 用 <code>createApp()</code> 创建应用实例，插件、全局组件和应用级配置都挂在这个实例上；调用 <code>mount("#app")</code> 后才会渲染并接管容器。本页加载后标题与下方区块出现，控制台会打印 <code>[mounted] createApp 已接管 #app</code>。</li>
+          <li>模板里只能写<strong>单条 JavaScript 表达式</strong>，不能写 <code>if</code>、<code>for</code>、<code>var</code> 等语句。本页「年龄 + 1」「是否成年」用算术与三元表达式演示；分支列表与循环应交给 <code>v-if</code>、<code>v-for</code>（见下一页）。</li>
+          <li><code>ref</code> 在模板中自动解包，可写 <code>{{ title }}</code>；在 <code>setup()</code> 的 JavaScript 里仍要通过 <code>title.value</code> 读写。点「在 setup 中改 title」后，标题与「setup 记录」同步更新，控制台可见 <code>[setup] title.value = ...</code>。</li>
+          <li>本页的 <code>ref</code> 指响应式包装对象，与模板上的 DOM <code>ref</code> 属性不是同一概念；访问 DOM 或子组件见 <a href="./05-%E6%A8%A1%E6%9D%BFref%E4%B8%8EnextTick.html">05-模板ref与nextTick</a>、<a href="./06-useTemplateRef%E6%A8%A1%E6%9D%BFref.html">06-useTemplateRef模板ref（3.5+）</a>。响应式细节见 <a href="../02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/01-ref-reactive%E4%B8%8E%E8%A7%A3%E6%9E%84.html">02-ref-reactive与解构</a>。</li>
+          <li><code>v-text</code> 与 <code>{{ message }}</code> 一样写入纯文本；<code>v-html</code> 会把字符串按 HTML 解析插入。本页 <code>v-html</code> 区域「v-html 会按 HTML 渲染」显示为<strong>粗体</strong>；点「改 v-text 文案」只更新 <code>v-text</code> 段落。</li>
+          <li>模板里调用方法（如本页 <code>formatAge()</code>）会在<strong>每次渲染</strong>时重新执行。点「触发重渲染」且 age 不变时，「已执行 N 次」仍会增加，控制台会再打印 <code>[method] formatAge 执行</code>；可缓存的派生值对比见 <a href="../02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/02-computed-watch-watchEffect.html">02-computed-watch-watchEffect</a>。</li>
+          <li>Vue3 CDN 全局构建把 API 暴露在 <code>Vue</code> 对象上，本页用 <code>const { createApp, reactive, ref } = Vue</code> 直接运行；工程化项目实践中通常从 <code>vue</code> 包按需导入。<code>v-html</code> 只能用于可信内容，绝不能渲染未消毒的用户输入。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li>
-            <strong>createApp 与 mount 分别解决什么问题？</strong> 结论是 <code>createApp</code> 创建应用实例，<code>mount</code> 把应用渲染到具体 DOM 容器。原因是 Vue3 把应用级能力隔离在实例上，多个应用可以有各自的配置和插件。边界是同一个应用实例通常只挂载一次，挂载后应通过响应式状态驱动视图，而不是直接重建根实例。
-          </li>
-          <li>
-            <strong>模板表达式和方法调用应该如何取舍？</strong>
-            先结论：简单展示逻辑可以写在模板表达式里，复杂派生值用 <code>computed</code>，带副作用的操作放事件或 <code>watch</code>。原因是模板表达式会参与渲染求值，过重逻辑会降低可读性并可能重复执行。项目里常把格式化、过滤和权限判断抽到计算属性或函数中复用。
-          </li>
-          <li>
-            <strong>模板里的 ref 自动解包为什么不等于 JS 里不用 .value？</strong>
-            结论是自动解包只发生在模板渲染上下文等特定场景，<code>setup()</code> 代码仍要使用 <code>.value</code>。原因是 <code>ref</code> 本质是带 <code>value</code> 的响应式包装对象。边界是深层对象、数组元素和普通解构场景不要假设都会自动解包。
-          </li>
-          <li><strong>为什么 v-html 不能渲染用户输入？</strong> 结论是 <code>v-html</code> 会把字符串交给浏览器按 HTML 解析，未消毒内容可能造成 XSS。原因是它绕过了 Vue 默认的文本转义保护。项目中只有后端或前端明确消毒后的可信富文本才适合使用，并且要配合内容安全策略和白名单。</li>
+          <li><strong>createApp 与 mount 分别解决什么问题？</strong> 结论是 <code>createApp</code> 创建应用实例，<code>mount</code> 把应用渲染到具体 DOM 容器。原因是 Vue3 把应用级能力隔离在实例上，多个应用可以有各自的配置和插件。边界是同一个应用实例通常只挂载一次，挂载后应通过响应式状态驱动视图，而不是反复重建根实例。</li>
+          <li><strong>同一应用实例能否多次 mount？多个 createApp 如何隔离？</strong> 结论是同一实例再次 <code>mount</code> 会先卸载再挂载，实践中通常只 mount 一次；需要多区域独立应用时分别 <code>createApp(...).mount(...)</code>。原因是每个实例有独立的配置、插件和组件注册表。本页刷新后控制台只出现一条 <code>[mounted]</code> 即说明 mount 已完成渲染。</li>
+          <li><strong>模板表达式和方法调用应该如何取舍？</strong> 先结论：简单展示可写内联表达式，每次渲染都跑的格式化用方法，可缓存派生值用 <code>computed</code>。原因是表达式与方法都参与渲染求值，过重逻辑降低可读性；方法无缓存，<code>computed</code> 依赖不变时不重算。本页「触发重渲染」按钮可验证方法重复执行；完整缓存对比见 <a href="../02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/02-computed-watch-watchEffect.html">02-computed-watch-watchEffect</a>。</li>
+          <li><strong>模板里的 ref 自动解包为什么不等于 JS 里不用 .value？</strong> 结论是自动解包只发生在模板渲染上下文等特定场景，<code>setup()</code> 代码仍要使用 <code>.value</code>。原因是 <code>ref</code> 本质是带 <code>value</code> 的响应式包装对象。边界是深层对象、数组元素和普通解构场景不要假设都会自动解包；本页「在 setup 中改 title」按钮即验证 <code>.value</code> 写法。</li>
+          <li><strong>为什么 v-html 不能渲染用户输入？</strong> 结论是 <code>v-html</code> 会把字符串交给浏览器按 HTML 解析，未消毒内容可能造成 XSS。原因是它绕过了 Vue 默认的文本转义保护。项目中只有后端或前端明确消毒后的可信富文本才适合使用，并配合内容安全策略和白名单。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://vuejs.org/guide/essentials/application.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Creating a Vue Application</a></li>
           <li><a href="https://vuejs.org/guide/essentials/template-syntax.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Template Syntax</a></li>
           <li><a href="https://vuejs.org/guide/essentials/reactivity-fundamentals.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Reactivity Fundamentals</a></li>
+          <li><a href="https://vuejs.org/api/application.html#createapp" target="_blank" rel="noreferrer">Vue 3 官方 API：createApp()</a></li>
           <li><a href="https://vuejs.org/guide/best-practices/security.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Security</a></li>
         </ul>
       </div>
@@ -110,32 +108,105 @@
     <div id="app">
       <h1>{{ title }}</h1>
       <div class="box">
+        <p class="hint-inline">
+          应用已通过 <code>createApp().mount("#app")</code> 挂载；打开控制台可见
+          <code>[mounted]</code> 日志。
+        </p>
+
+        <h2>插值与表达式</h2>
         <p>姓名：{{ user.name }}</p>
         <p>年龄 + 1：{{ user.age + 1 }}</p>
         <p>是否成年：{{ user.age >= 18 ? "是" : "否" }}</p>
+        <button type="button" @click="user.age++">年龄 +1</button>
+
+        <h2>ref 解包：模板 vs setup</h2>
+        <p class="hint-inline">
+          模板写 <code>{{ title }}</code> 即可；setup 侧操作记录在下方。
+        </p>
+        <p>setup 记录：{{ setupLog }}</p>
+        <button type="button" @click="updateTitleInSetup">
+          在 setup 中改 title（需 .value）
+        </button>
+
+        <h2>v-text / v-html</h2>
         <p v-text="message"></p>
         <p v-html="htmlText"></p>
-        <button @click="user.age++">年龄 +1</button>
-        <button @click="message = '模板支持表达式和指令'">改文案</button>
+        <button type="button" @click="message = '模板支持表达式和指令'">
+          改 v-text 文案
+        </button>
+        <p class="hint-inline">
+          注意：<code>v-html</code> 会插入 HTML，真实项目里不要渲染不可信内容。
+        </p>
+
+        <h2>方法调用 vs 内联表达式</h2>
+        <p>方法格式化年龄：{{ formatAge() }}（已执行 {{ methodRunCount }} 次）</p>
+        <p class="hint-inline">
+          渲染序号 {{ renderTick }}；点「触发重渲染」且 age 不变时，方法仍会再执行。
+        </p>
+        <button type="button" @click="bumpRender">触发重渲染（age 不变）</button>
       </div>
-      <p class="tip">
-        注意：<code>v-html</code> 会插入 HTML，真实项目里不要渲染不可信内容。
-      </p>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      const { createApp, reactive, ref } = Vue;
+      // 从全局 Vue 解构本页用到的 Composition API
+      const { createApp, reactive, ref, onMounted } = Vue;
 
       createApp({
         setup() {
+          // --- 响应式状态 ---
           const title = ref("Vue3 应用实例与模板语法");
           const message = ref("模板中 ref 会自动解包");
+          // 固定可信字符串，演示 v-html 按 HTML 渲染；不可用于用户输入
           const htmlText = ref("<strong>v-html 会按 HTML 渲染</strong>");
           const user = reactive({ name: "Ada", age: 18 });
 
-          return { title, message, htmlText, user };
+          // --- 演示辅助状态 ---
+          // 记录 setup 侧对 ref 的最后一次操作，便于对照模板自动解包
+          const setupLog = ref("（尚未操作）");
+          // 绑定到模板，仅用于手动触发重渲染，不改变 user.age
+          const renderTick = ref(0);
+          // 统计 formatAge 被调用的次数，验证「方法每次渲染都执行」
+          const methodRunCount = ref(0);
+
+          // --- setup 中修改 ref：必须使用 .value ---
+          function updateTitleInSetup() {
+            title.value = "title 在 setup 中通过 .value 修改";
+            setupLog.value = `title.value 已更新为「${title.value}」`;
+            console.log("[setup] title.value =", title.value);
+          }
+
+          // --- 模板方法：每次渲染都会重新调用 ---
+          // 与 computed 的缓存行为对比见 02-computed-watch-watchEffect 页
+          function formatAge() {
+            methodRunCount.value++;
+            console.log("[method] formatAge 执行，第", methodRunCount.value, "次");
+            return `${user.age} 岁`;
+          }
+
+          // 手动触发一次组件重渲染；age 未变时 formatAge 仍会执行
+          function bumpRender() {
+            renderTick.value++;
+          }
+
+          // mount 完成后打印日志，证明 createApp().mount() 已接管 DOM
+          onMounted(() => {
+            console.log("[mounted] createApp 已接管 #app，DOM 已渲染");
+          });
+
+          return {
+            title,
+            message,
+            htmlText,
+            user,
+            setupLog,
+            renderTick,
+            methodRunCount,
+            updateTitleInSetup,
+            formatAge,
+            bumpRender,
+          };
         },
       }).mount("#app");
     </script>
@@ -145,16 +216,12 @@
     <footer class="demo-block demo-block--nav" aria-label="Demo 导航">
       <h2 class="demo-block__label">页面导航</h2>
       <nav class="demo-nav" aria-label="相关链接">
-        <a href="/" data-demo-catalog data-file-catalog="../../../index.html"
-          >目录</a
-        >
+        <a href="/" data-demo-catalog data-file-catalog="../../../index.html">目录</a>
         <a
           href="../../../vue2/src/07-%E6%BA%90%E7%A0%81%E7%AE%80%E8%AF%BB/01-%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E5%89%8D%E7%BD%AE-Symbol.html"
           >← 源码阅读前置-Symbol</a
         >
-        <a href="./02-%E6%9D%A1%E4%BB%B6%E5%88%97%E8%A1%A8%E4%B8%8Ekey.html"
-          >条件列表与key →</a
-        >
+        <a href="./02-%E6%9D%A1%E4%BB%B6%E5%88%97%E8%A1%A8%E4%B8%8Ekey.html">条件列表与key →</a>
       </nav>
       <script>
         (function () {

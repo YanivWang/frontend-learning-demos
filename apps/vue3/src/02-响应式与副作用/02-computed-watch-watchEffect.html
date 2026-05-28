@@ -3,12 +3,14 @@
   主题: computed / watch / watchEffect
   要点:
     - computed 适合声明式派生值，依赖不变时会缓存结果
-    - watch 明确监听一个或多个源，适合异步请求和命令式副作用
-    - watchEffect 自动收集同步执行期间读取的依赖，适合依赖简单的副作用
+    - watch 明确监听一个或多个源，适合异步请求和命令式副作用；默认 lazy，可用 immediate / deep / flush 控制
+    - watchEffect 挂载后立即执行，自动收集同步执行期间读取的依赖
+    - watch 与 watchEffect 都返回 stop 函数；异步清理完整示例见同章 06 页
     - 副作用回调要避免读写同一依赖导致循环或日志噪声
   面试:
     - computed 和 watch 的核心区别是什么？
-    - watch 与 watchEffect 如何选型？
+    - computed 和方法调用有什么本质区别？
+    - watch 与 watchEffect 如何选型？默认执行时机有何不同？
     - watchEffect 自动收集依赖有什么边界？
     - 异步副作用为什么需要清理或防竞态？
 -->
@@ -27,6 +29,8 @@
       code { padding: 2px 5px; }
       pre { padding: 12px; overflow: auto; max-height: 220px; }
       .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
+      .box button { margin-right: 8px; margin-top: 4px; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -39,24 +43,29 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>computed</code> 用来声明“由状态推导出的值”，它会缓存结果，只有依赖变化时才重新计算；本页 <code>normalizedKeyword</code> 由输入关键词裁剪并转小写得到。</li>
-          <li><code>watch</code> 用来明确监听某个源，回调能拿到新旧值，适合发请求、写日志、同步外部系统这类命令式副作用。</li>
-          <li><code>watchEffect</code> 会自动追踪同步执行期间读取到的响应式依赖，适合依赖少且关系直观的副作用；依赖复杂时显式 <code>watch</code> 更好读。</li>
+          <li><code>computed</code> 用来声明“由状态推导出的值”，它会缓存结果，只有依赖变化时才重新计算；本页 <code>normalizedKeyword</code> 由输入关键词裁剪并转小写得到。点“触发重渲染”时若 keyword 未变，重算次数不会增加，控制台也不会再打印 <code>[computed] 重算</code>。</li>
+          <li><code>computed</code> 与模板里直接调方法的区别在于：前者按依赖缓存，后者每次渲染都会重新执行。生产里的派生展示、过滤结果应优先 <code>computed</code>，只有确实需要“每次渲染都跑一遍”时才用方法。</li>
+          <li><code>watch</code> 用来明确监听某个源，回调能拿到新旧值，适合发请求、写日志、同步外部系统这类命令式副作用。本页故意不加 <code>{ immediate: true }</code>，因此首次进入页面时 watch 日志为空，改输入后才出现。</li>
+          <li><code>watch</code> 第三参数常见选项：<code>immediate</code> 挂载即执行；<code>deep: true</code> 深度监听对象；<code>flush: 'post'</code> 在 DOM 更新后触发（适合读 DOM 尺寸）。需要监听对象某个字段时，也常用 getter 形式 <code>watch(() =&gt; obj.x, cb)</code>。</li>
+          <li><code>watchEffect</code> 会在创建后立即执行一次，并自动追踪同步执行期间读取到的响应式依赖；依赖少且关系直观时更省代码，复杂时显式 <code>watch</code> 更好读。它返回 <code>stop</code> 函数，本页按钮可手动停止副作用。</li>
+          <li><code>watch</code> 与 <code>watchEffect</code> 的执行时机对比：本页加载后 <code>effectMessage</code> 立刻有值，而 <code>logs</code> 仍为空，这就是 lazy watch 与 eager watchEffect 的直观差异。</li>
           <li>副作用回调要避免读写同一个依赖集合，否则容易造成循环触发或噪声日志；本页让 <code>watchEffect</code> 只写独立的 <code>effectMessage</code>，不再追加它自己可能追踪的日志数组。</li>
-          <li>异步副作用要考虑失败、竞态和清理：关键词搜索、订阅事件、定时器都应在下一次副作用前取消或忽略过期结果，后续可结合 <code>onWatcherCleanup</code> 学习。</li>
+          <li>异步副作用要考虑失败、竞态和清理：关键词搜索、订阅事件、定时器都应在下一次副作用前取消或忽略过期结果。完整可运行示例见同章 <a href="./06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html">06-onWatcherCleanup与watch清理</a>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
           <li><strong>computed 和 watch 的核心区别是什么？</strong> 结论是 <code>computed</code> 产出可复用的派生值，<code>watch</code> 响应变化并执行副作用。原因是 <code>computed</code> 有缓存且应保持纯计算，<code>watch</code> 的回调用来处理异步、日志或外部同步。项目里展示价格、过滤列表用 <code>computed</code>，关键词请求和埋点用 <code>watch</code>。</li>
-          <li><strong>watch 与 watchEffect 如何选型？</strong> 先结论：依赖来源明确、需要新旧值或精确控制时用 <code>watch</code>；依赖简单、想自动收集时用 <code>watchEffect</code>。原因是 <code>watchEffect</code> 隐式依赖更省代码，但复杂后不易排查。团队协作中，接口请求通常更偏向显式 <code>watch</code>。</li>
+          <li><strong>computed 和方法调用有什么本质区别？</strong> 结论是 <code>computed</code> 按依赖缓存，方法每次渲染都会执行。原因是 <code>computed</code> 把“派生结果”当成可复用状态，方法只是普通函数调用。模板里多次读同一 <code>computed</code> 只算一次；多次调同一方法会重复计算。本页“触发重渲染”按钮就是验证缓存的入口。</li>
+          <li><strong>watch 与 watchEffect 如何选型？默认执行时机有何不同？</strong> 先结论：依赖明确、需要新旧值或精确控制时用 <code>watch</code>；依赖简单、想自动收集时用 <code>watchEffect</code>。执行时机上，<code>watch</code> 默认 lazy，<code>watchEffect</code> 创建后立即跑；需要首屏就跑 watch 时传 <code>{ immediate: true }</code>。原因是 <code>watchEffect</code> 隐式依赖更省代码，但复杂后不易排查；接口请求通常更偏向显式 <code>watch</code>。</li>
           <li><strong>watchEffect 自动收集依赖有什么边界？</strong> 结论是它只追踪同步执行期间读取到的响应式依赖。原因是异步 <code>await</code> 之后读取的值不一定被纳入首次依赖收集。边界是回调里不要顺手读取无关响应式对象，否则会引入意外触发。</li>
-          <li><strong>异步副作用为什么需要清理或防竞态？</strong> 结论是旧请求可能比新请求晚返回并覆盖新状态。原因是用户输入、路由变化和网络延迟都可能造成竞态。项目中要用取消控制器、清理回调或请求序号忽略过期结果，并处理失败提示。</li>
+          <li><strong>异步副作用为什么需要清理或防竞态？</strong> 结论是旧请求可能比新请求晚返回并覆盖新状态。原因是用户输入、路由变化和网络延迟都可能造成竞态。项目中要用取消控制器、清理回调或请求序号忽略过期结果，并处理失败提示；具体写法见 <a href="./06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html">06-onWatcherCleanup与watch清理</a>。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://vuejs.org/guide/essentials/computed.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Computed Properties</a></li>
           <li><a href="https://vuejs.org/guide/essentials/watchers.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Watchers</a></li>
           <li><a href="https://vuejs.org/api/reactivity-core.html#watcheffect" target="_blank" rel="noreferrer">Vue 3 官方 API：watchEffect()</a></li>
+          <li><a href="./06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html">本系列：onWatcherCleanup 与 watch 清理</a></li>
         </ul>
       </div>
     </section>
@@ -67,33 +76,97 @@
       <h1>computed / watch / watchEffect</h1>
       <div class="box">
         <label>关键词：<input v-model="keyword" /></label>
-        <p>computed 派生：{{ normalizedKeyword }}</p>
+        <p>computed 派生：{{ normalizedKeyword }}（重算 {{ computedRunCount }} 次）</p>
+        <p class="hint-inline">渲染序号 {{ renderTick }}；打开控制台可见 <code>[computed] 重算</code> 日志。点“触发重渲染”时 keyword 未变则重算次数不变。</p>
+        <button type="button" @click="bumpRender">触发重渲染（不改变 keyword）</button>
         <p>watchEffect 当前副作用：{{ effectMessage }}</p>
-        <pre>{{ logs.join("\n") }}</pre>
+        <button type="button" @click="stopEffect" :disabled="effectStopped">停止 watchEffect</button>
+        <p>watch 日志（默认 lazy，改输入后才出现）：</p>
+        <pre>{{ logs.length ? logs.join("\n") : "（尚未触发）" }}</pre>
       </div>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // 从全局 Vue 解构本页用到的 Composition API
       const { createApp, ref, computed, watch, watchEffect } = Vue;
 
       createApp({
         setup() {
+          // --- 响应式源数据 ---
+          // 用户输入的关键词；故意带首尾空格，便于观察 trim 派生
           const keyword = ref(" Vue3 ");
+          // watch 写入的日志列表（命令式副作用产物）
           const logs = ref([]);
+          // watchEffect 写入的展示文案（与 logs 分离，避免循环追踪）
           const effectMessage = ref("");
-          const normalizedKeyword = computed(() => keyword.value.trim().toLowerCase());
 
+          // --- 演示辅助状态 ---
+          // 记录 normalizedKeyword 实际变化次数，用于验证 computed 缓存
+          const computedRunCount = ref(0);
+          // 绑定到模板，仅用于手动触发重渲染，不改变 keyword
+          const renderTick = ref(0);
+          // 标记 watchEffect 是否已被 stop
+          const effectStopped = ref(false);
+
+          // --- computed：声明式派生值 ---
+          // 依赖 keyword，只有 keyword 变化时才重新执行 getter；结果会被缓存
+          const normalizedKeyword = computed(() => {
+            console.log("[computed] 重算，keyword =", keyword.value);
+            return keyword.value.trim().toLowerCase();
+          });
+
+          // 监听 computed 结果的变化次数（不是监听 keyword 本身）
+          // immediate: true 会在挂载时先计 1 次，表示首屏已完成首次派生
+          // 注意：这里的 immediate 不影响下方 watch(keyword) 的 lazy 行为
+          watch(
+            normalizedKeyword,
+            () => {
+              computedRunCount.value++;
+            },
+            { immediate: true },
+          );
+
+          // --- watch：显式监听源，默认 lazy ---
+          // 不加 immediate: true，因此首屏不执行；只有 keyword 变化后才 push 日志
+          // 回调第二个参数 oldValue 是 watch 相比 watchEffect 的常用优势
           watch(keyword, (newValue, oldValue) => {
             logs.value.push(`watch：${oldValue} -> ${newValue}`);
           });
 
-          watchEffect(() => {
+          // --- watchEffect：自动收集依赖，创建后立即执行 ---
+          // 同步读取 normalizedKeyword.value，因此依赖 keyword 的派生链
+          // 只写入 effectMessage，不读写 logs，避免把 logs 也纳入依赖引发噪声
+          // 返回值 stopEffect 可在组件卸载前手动停止副作用
+          const stopEffect = watchEffect(() => {
             effectMessage.value = `当前规范化关键词是 ${normalizedKeyword.value}`;
           });
 
-          return { keyword, normalizedKeyword, effectMessage, logs };
+          // 手动触发一次组件重渲染；若 keyword 未变，computed getter 不会再次执行
+          function bumpRender() {
+            renderTick.value++;
+          }
+
+          // 调用 watchEffect 返回的 stop，停止后续自动追踪与执行
+          function stopEffectHandler() {
+            stopEffect();
+            effectStopped.value = true;
+            effectMessage.value = "（watchEffect 已停止，改 keyword 不再更新此处）";
+          }
+
+          // 暴露给模板的数据与方法
+          return {
+            keyword,
+            normalizedKeyword,
+            computedRunCount,
+            effectMessage,
+            logs,
+            bumpRender,
+            renderTick,
+            stopEffect: stopEffectHandler,
+            effectStopped,
+          };
         },
       }).mount("#app");
 

@@ -23,8 +23,11 @@
     <script src="../../libs/vue.global.js"></script>
     <style>
       body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { padding: 6px 12px; }
       code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
       .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
+      .box button { margin-bottom: 8px; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -38,9 +41,9 @@
         <h2>知识点要点</h2>
         <ul>
           <li><code>Suspense</code> 是 Vue 内置组件，用来等待默认插槽中的异步依赖；等待期间渲染 <code>#fallback</code>，依赖完成后再显示默认内容。</li>
-          <li>本页 <code>AsyncPanel</code> 使用 <code>async setup()</code> 并等待 800ms，因此首次渲染会先显示“加载中...”，再显示异步内容。</li>
-          <li><code>async setup</code>、异步组件都可能成为 Suspense 依赖；多个依赖在同一个 Suspense 边界内时，fallback 会覆盖整个边界。</li>
-          <li>Vue 官方仍将 <code>Suspense</code> 标记为实验性特性，API 未来可能调整；业务项目应确认当前 Vue 版本、SSR 框架支持和团队约定。</li>
+          <li>本页 <code>AsyncPanel</code> 使用 <code>async setup()</code> 并等待 800ms，因此首次渲染会先显示“加载中...”，再显示异步内容；点“重新加载”可再次观察 fallback。</li>
+          <li><code>async setup</code>、异步组件都可能成为 Suspense 依赖；多个依赖在同一个 Suspense 边界内时，fallback 会覆盖整个边界。组件级异步见 <a href="../05-%E6%8F%92%E6%A7%BD%E4%B8%8E%E7%BB%84%E4%BB%B6%E5%BD%A2%E6%80%81/02-%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6%E4%B8%8E%E5%BC%82%E6%AD%A5%E7%BB%84%E4%BB%B6.html">05-动态组件与异步组件</a>。</li>
+          <li>Vue 官方仍将 <code>Suspense</code> 标记为<strong>实验性</strong>特性，API 未来可能调整；业务项目应确认当前 Vue 版本、SSR 框架支持和团队约定。</li>
           <li>Suspense 主要处理 pending，不负责吞掉错误；加载失败应通过组件自身错误状态、<code>defineAsyncComponent</code> 的 <code>errorComponent</code>，或 <code>onErrorCaptured</code> / <code>errorCaptured</code> 处理。</li>
         </ul>
         <h2>面试考点</h2>
@@ -64,12 +67,14 @@
     <div id="app">
       <h1>Suspense</h1>
       <div class="box">
+        <p class="hint-inline">点击“重新加载”会销毁并重建 AsyncPanel，再次经历约 800ms 的 fallback → 默认内容切换。</p>
+        <button type="button" @click="reload">重新加载 AsyncPanel</button>
         <suspense>
           <template #default>
-            <async-panel></async-panel>
+            <async-panel :key="panelKey"></async-panel>
           </template>
           <template #fallback>
-            <p>加载中...</p>
+            <p>加载中...（fallback 插槽）</p>
           </template>
         </suspense>
       </div>
@@ -78,18 +83,34 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // 从全局 Vue 解构本页用到的 Composition API
       const { createApp, ref } = Vue;
 
+      // async setup：返回 Promise 时由父级 Suspense 等待
       const AsyncPanel = {
         async setup() {
+          // --- 演示状态 ---
           const text = ref("异步内容已加载");
           await new Promise((resolve) => setTimeout(resolve, 800));
           return { text };
         },
-        template: `<p>{{ text }}</p>`,
+        template: `<p>{{ text }}（加载完成时间：{{ new Date().toLocaleTimeString() }}）</p>`,
       };
 
-      createApp({ components: { AsyncPanel } }).mount("#app");
+      // --- 挂载应用 ---
+
+
+      createApp({
+        components: { AsyncPanel },
+        setup() {
+          // 改变 key 可强制重新挂载 AsyncPanel，便于重复观察 fallback
+          const panelKey = ref(0);
+          function reload() {
+            panelKey.value++;
+          }
+          return { panelKey, reload };
+        },
+      }).mount("#app");
 
     </script>
     <!-- SCRIPT_END -->

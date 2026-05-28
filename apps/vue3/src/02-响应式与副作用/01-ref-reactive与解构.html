@@ -2,15 +2,17 @@
   分类: vue3 / 02-响应式与副作用
   主题: ref / reactive / 解构丢响应
   要点:
-    - ref 用 .value 包装任意值，模板中会自动解包
-    - reactive 返回对象代理，只能接收对象类型并保持同一代理引用
-    - 直接解构 reactive 会拿到普通值快照，toRefs 可保留属性响应性
-    - 组合式 API 返回状态时要按调用方解构方式选择 ref 或 toRefs
+    - ref 用 .value 包装任意值，模板顶层自动解包
+    - reactive 返回对象 Proxy，应保持同一代理引用，整体替换会断开已有连接
+    - 直接解构 reactive 得到普通值快照，不再经过代理 getter
+    - toRefs 把每个属性转成与源对象联动的 ref，解构后仍保留响应性
+    - 组合式函数返回状态时要按调用方解构方式选择 ref 或 toRefs
   面试:
     - ref 和 reactive 如何选型？
     - reactive 直接解构为什么会丢响应？
-    - 为什么不要整体替换 reactive 代理对象？
+    - 为什么不要整体替换 reactive 变量本身？
     - composable 返回对象时如何避免调用方解构丢响应？
+    - ref 包裹对象与 reactive 在“整体替换”上有什么差异？
 -->
 
 <!doctype html>
@@ -21,42 +23,14 @@
     <title>Vue3 · ref/reactive 与解构</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body {
-        font-family:
-          system-ui,
-          -apple-system,
-          "PingFang SC",
-          sans-serif;
-        line-height: 1.7;
-        padding: 24px;
-        color: #202124;
-      }
-      button {
-        margin-right: 8px;
-        padding: 6px 12px;
-      }
-      code,
-      pre {
-        background: #f6f8fa;
-        border-radius: 6px;
-      }
-      code {
-        padding: 2px 5px;
-      }
-      pre {
-        padding: 12px;
-        overflow: auto;
-      }
-      .grid {
-        display: grid;
-        gap: 12px;
-        max-width: 760px;
-      }
-      .box {
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 14px;
-      }
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      input, button { padding: 6px 10px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; max-height: 220px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; margin-bottom: 16px; }
+      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
+      .box button { margin-right: 8px; margin-top: 4px; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -69,24 +43,29 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>ref()</code> 用 <code>.value</code> 保存响应式值，适合基本类型，也可以包装对象；模板里会自动解包，所以本页显示 <code>{{ count }}</code> 而不是 <code>{{ count.value }}</code>。</li>
-          <li><code>reactive()</code> 返回对象的 Proxy，只能接收对象、数组、Map、Set 等对象类型；它的响应性依赖代理访问，通常应保持同一个代理引用。</li>
-          <li>直接从 <code>reactive</code> 对象解构属性会得到当前值快照，本页 <code>nameSnapshot</code> 不会随 <code>user.name</code> 更新，因为后续访问不再经过代理的 getter。</li>
-          <li><code>toRefs(user)</code> 会把每个属性转换成与源对象属性联动的 ref，本页 <code>name</code> 会跟着 <code>user.name</code> 变化，适合在返回对象或解构时保留响应性。</li>
-          <li>现代 Vue3 项目常用“独立基本状态用 <code>ref</code>、成组对象状态用 <code>reactive</code>、跨函数返回时用 <code>toRef</code>/<code>toRefs</code> 保持连接”的组合。</li>
+          <li><code>ref()</code> 用 <code>.value</code> 保存响应式值，适合基本类型，也可包装对象；模板顶层会自动解包，本页 <code>{{ count }}</code> 无需写 <code>.value</code>。点“count +1”时 count 与下方派生文案同步更新，控制台会打印 <code>[ref] count</code>。</li>
+          <li><code>reactive()</code> 返回对象 Proxy，只能接收对象类型；读写属性走代理 getter/setter，本页 <code>user.name</code> 会随按钮更新。应保持同一个代理引用，不要用新普通对象整体替换 <code>user</code> 变量本身。</li>
+          <li>直接解构 <code>const { name: nameSnapshot } = user</code> 会得到当前值的普通变量快照；之后改 <code>user.name</code> 时 <code>nameSnapshot</code> 不变，本页“错误解构”一行就是验证入口。</li>
+          <li><code>toRefs(user)</code> 把已有属性转成与源对象联动的 ref；本页 <code>name</code>（来自 toRefs）会跟着 <code>user.name</code> 变化。批量转换细节见同章 <a href="./03-toRef-toRefs.html">03-toRef-toRefs</a>。</li>
+          <li><code>ref({ ... })</code> 整体替换 <code>.value</code> 会触发更新，适合“整块数据换新”的场景；<code>reactive</code> 对象应改属性或属性引用，而不是给变量赋一个全新的非代理对象。三种 API 对比见 <a href="./07-ref-reactive-shallowRef%E5%AF%B9%E6%AF%94.html">07-ref-reactive-shallowRef对比</a>。</li>
+          <li>组合式函数若返回 <code>reactive</code> 对象，调用方常见会解构；应返回 <code>...toRefs(state)</code> 或多个独立 <code>ref</code>，避免调用方拿到非响应式快照。</li>
+          <li>本页“操作日志”记录每次按钮触发的状态；打开控制台可同时看到 <code>[ref]</code> / <code>[reactive]</code> 分组日志，便于对照模板显示与 JS 读写方式。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>ref 和 reactive 如何选型？</strong> 结论是基本类型和需要整体替换的值优先 <code>ref</code>，成组对象状态可用 <code>reactive</code>。原因是 <code>ref</code> 通过 <code>.value</code> 持有值，替换天然清晰；<code>reactive</code> 通过 Proxy 拦截对象属性读写。项目里表单对象常用 <code>reactive</code>，计数、开关、当前 id 常用 <code>ref</code>。</li>
-          <li><strong>reactive 直接解构为什么会丢响应？</strong> 先结论：解构会把属性当前值取出来，后续读写不再经过原代理。原因是 Vue 的依赖收集发生在代理 getter 上，而普通变量没有 getter。需要解构给模板或调用方时，用 <code>toRefs</code> 保留每个属性与源对象的连接。</li>
-          <li><strong>为什么不要整体替换 reactive 代理对象？</strong> 结论是替换变量会断开已有引用和依赖关系。原因是其他地方持有的是旧代理对象，重新赋值只改变当前局部变量指向。项目中要么修改代理对象的属性，要么一开始用 <code>ref({ ... })</code> 承载可整体替换的数据。</li>
-          <li><strong>composable 返回对象时如何避免调用方解构丢响应？</strong> 结论是返回多个 <code>ref</code>，或对 <code>reactive</code> 对象使用 <code>toRefs</code> 后返回。原因是调用方很常见会写对象解构。边界是如果希望调用方保持对象整体语义，也可以返回整个 <code>reactive</code> 对象并文档化不要直接解构。</li>
+          <li><strong>ref 和 reactive 如何选型？</strong> 结论是基本类型、需要整体替换的值优先 <code>ref</code>，成组对象状态可用 <code>reactive</code>。原因是 <code>ref</code> 通过 <code>.value</code> 替换清晰，<code>reactive</code> 通过 Proxy 拦截属性。项目里表单对象常用 <code>reactive</code>，计数、开关、当前 id 常用 <code>ref</code>。</li>
+          <li><strong>reactive 直接解构为什么会丢响应？</strong> 先结论：解构取出的是当前值，后续读写不再经过原代理。原因是依赖收集发生在代理 getter 上。需要解构时用 <code>toRefs</code>，见 <a href="./03-toRef-toRefs.html">03-toRef-toRefs</a>。</li>
+          <li><strong>为什么不要整体替换 reactive 变量本身？</strong> 结论是替换变量会断开已有引用。原因是其他地方持有的是旧代理，重新赋值只改变局部变量指向。应改代理属性，或一开始用 <code>ref({})</code> 承载可整体替换的数据。</li>
+          <li><strong>composable 返回对象时如何避免解构丢响应？</strong> 结论是返回多个 <code>ref</code>，或对 <code>reactive</code> 使用 <code>toRefs</code> 后返回。原因是调用方常会对象解构。边界是也可返回整个 <code>reactive</code> 并文档化不要解构。</li>
+          <li><strong>ref 包裹对象与 reactive 在整体替换上有什么差异？</strong> 结论是 <code>ref</code> 换 <code>.value</code> 会触发更新，<code>reactive</code> 变量本身不应被赋为新普通对象。原因是 <code>ref</code> 追踪的是容器 <code>.value</code> 的替换，<code>reactive</code> 追踪的是固定代理上的属性访问。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://vuejs.org/guide/essentials/reactivity-fundamentals.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Reactivity Fundamentals</a></li>
-          <li><a href="https://vuejs.org/api/reactivity-core.html#ref" target="_blank" rel="noreferrer">Vue 3 官方 API：ref() / reactive()</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-core.html#ref" target="_blank" rel="noreferrer">Vue 3 官方 API：ref()</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-core.html#reactive" target="_blank" rel="noreferrer">Vue 3 官方 API：reactive()</a></li>
           <li><a href="https://vuejs.org/api/reactivity-utilities.html#torefs" target="_blank" rel="noreferrer">Vue 3 官方 API：toRefs()</a></li>
+          <li><a href="./03-toRef-toRefs.html">本系列：toRef / toRefs</a></li>
         </ul>
       </div>
     </section>
@@ -95,35 +74,93 @@
     <!-- PAGE_DOM_START -->
     <div id="app">
       <h1>ref / reactive 与解构丢响应</h1>
-      <div class="grid">
-        <div class="box">
-          <p>ref count：{{ count }}</p>
-          <p>reactive user.name：{{ user.name }}</p>
-          <p>错误解构 nameSnapshot：{{ nameSnapshot }}</p>
-          <p>toRefs name：{{ name }}</p>
-          <button @click="change">修改状态</button>
-        </div>
+      <div class="box">
+        <h2>ref 与 reactive 源状态</h2>
+        <p>ref count：{{ count }}</p>
+        <p>reactive user.name：{{ user.name }}（age：{{ user.age }}）</p>
+        <p class="hint-inline">模板里 ref 自动解包；脚本里读写 count 必须用 <code>count.value</code>，改 user 用 <code>user.name = ...</code>。</p>
+        <button type="button" @click="bumpCount">count +1</button>
+        <button type="button" @click="renameUser">改 user.name（+控制台）</button>
+      </div>
+      <div class="box">
+        <h2>解构对比：快照 vs toRefs</h2>
+        <p>错误解构 nameSnapshot：{{ nameSnapshot }}</p>
+        <p>toRefs name：{{ name }}</p>
+        <p class="hint-inline">先点“改 user.name”，观察 nameSnapshot 是否仍停在旧值，而 name 会同步更新。</p>
+        <button type="button" @click="renameUser">改 user.name</button>
+        <button type="button" @click="resetDemo">重置演示</button>
+      </div>
+      <div class="box">
+        <h2>操作日志</h2>
+        <pre>{{ logs.length ? logs.join("\n") : "（点击上方按钮开始）" }}</pre>
       </div>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // 从全局 Vue 解构本页用到的 Composition API
       const { createApp, ref, reactive, toRefs } = Vue;
 
       createApp({
         setup() {
+          // --- ref：基本类型与模板自动解包 ---
           const count = ref(0);
+
+          // --- reactive：对象代理，保持同一引用 ---
           const user = reactive({ name: "Ada", age: 18 });
+
+          // --- 错误解构：拿到的是 setup 执行时的值快照 ---
           const { name: nameSnapshot } = user;
+
+          // --- toRefs：每个属性变成与源对象联动的 ref ---
           const { name } = toRefs(user);
 
-          function change() {
-            count.value++;
-            user.name = `Ada ${count.value}`;
+          // --- 演示辅助：操作日志 ---
+          const logs = ref([]);
+
+          function pushLog(line) {
+            logs.value.push(line);
+            if (logs.value.length > 12) logs.value.shift();
           }
 
-          return { count, user, nameSnapshot, name, change };
+          // 只改 ref，验证模板与 .value 同步
+          function bumpCount() {
+            count.value++;
+            console.log("[ref] count =", count.value);
+            pushLog(`ref：count -> ${count.value}`);
+          }
+
+          // 改 reactive 属性，对比 nameSnapshot 与 toRefs 的 name
+          function renameUser() {
+            user.name = user.name === "Ada" ? `Ada ${count.value}` : "Ada";
+            user.age++;
+            console.log("[reactive] user =", { name: user.name, age: user.age });
+            console.log("[解构] nameSnapshot =", nameSnapshot, "（应仍为初始快照）");
+            console.log("[toRefs] name.value =", name.value);
+            pushLog(
+              `reactive：user.name=${user.name}；快照 nameSnapshot=${nameSnapshot}；toRefs name=${name.value}`,
+            );
+          }
+
+          function resetDemo() {
+            count.value = 0;
+            user.name = "Ada";
+            user.age = 18;
+            logs.value = [];
+            pushLog("已重置 count 与 user");
+          }
+
+          return {
+            count,
+            user,
+            nameSnapshot,
+            name,
+            logs,
+            bumpCount,
+            renameUser,
+            resetDemo,
+          };
         },
       }).mount("#app");
 

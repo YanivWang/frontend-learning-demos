@@ -2,15 +2,17 @@
   分类: vue3 / 02-响应式与副作用
   主题: onWatcherCleanup（Vue 3.5+）
   要点:
-    - onWatcherCleanup 是 Vue 3.5+ API，本仓库 Vue 版本为 3.5.34，可直接运行
-    - 在 watch 同步回调内注册清理函数，下次触发或停止 watcher 前自动执行
-    - 适合取消旧请求、清理定时器、解绑订阅，避免异步结果覆盖新状态
-    - 3.5 前或跨版本代码可继续使用 watch 回调参数中的 onCleanup
+    - onWatcherCleanup 为 Vue 3.5+ API，本仓库 vendored Vue 为 3.5.34，可直接运行
+    - 须在 watch / watchEffect 同步执行阶段注册，下次触发或停止 watcher 前执行清理
+    - 适合取消旧定时器、AbortController、订阅，避免异步结果覆盖新状态
+    - 清理逻辑写在 await 之后无法关联当前 watcher，应先注册再发起异步
+    - Vue 3.5 前可用 watch 回调第三参数 onCleanup 或 watchEffect 的 onCleanup
   面试:
     - onWatcherCleanup 解决 watch 中哪类异步竞态？
-    - onWatcherCleanup 为什么必须在 watch 同步执行阶段调用？
+    - 为什么必须在 watch 同步执行阶段调用？
     - Vue 3.5 前如何写等价的 watcher 清理逻辑？
     - watch 清理函数和组件 onUnmounted 的职责有什么区别？
+    - 与 effectScope.stop 清理边界有何不同？
 -->
 
 <!doctype html>
@@ -27,6 +29,9 @@
       code { padding: 2px 5px; }
       pre { padding: 12px; overflow: auto; max-height: 280px; }
       .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 820px; }
+      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
+      .box button { margin-top: 4px; }
+      .badge { display: inline-block; background: #e8f0fe; color: #1967d2; padding: 2px 8px; border-radius: 4px; font-size: 13px; margin-left: 8px; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -35,28 +40,31 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>onWatcherCleanup（Vue 3.5+）</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。本页依赖 Vue 3.5+，低于 3.5 请用回调 <code>onCleanup</code> 参数。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>onWatcherCleanup()</code> 是 Vue 3.5+ 提供的 watcher 清理 API；当前 vendored Vue 为 3.5.34，因此示例可以直接从全局 <code>Vue</code> 解构并运行。</li>
-          <li>它必须在 <code>watch</code> 或 <code>watchEffect</code> 的同步执行阶段调用，用来注册“本轮 watcher 失效时”的清理函数；下一次触发 watcher 或 watcher 被停止前会执行清理。</li>
-          <li>示例中切换 id 会先清理上一个 id 的 <code>setInterval</code>，再开始新 id 的定时器。这类模式也常用于 <code>AbortController</code> 取消旧请求，避免慢响应覆盖新状态。</li>
-          <li>如果清理逻辑写在 <code>await</code> 之后，当前活跃 watcher 已经丢失，<code>onWatcherCleanup()</code> 不能再关联到本轮 watcher；异步请求应先创建控制器并同步注册清理，再发起请求。</li>
-          <li>Vue 3.5 之前可使用 <code>watch(source, (value, oldValue, onCleanup) =&gt; {})</code> 的第三个参数，<code>watchEffect</code> 也有 <code>onCleanup</code> 参数。跨版本库代码优先保留参数写法。</li>
+          <li><code>onWatcherCleanup()</code> 是 <strong>Vue 3.5+</strong> 提供的 watcher 清理 API；本仓库 <code>vue.global.js</code> 为 3.5.34，可从全局 <code>Vue</code> 解构并直接运行。3.4 及以下项目应使用 watch 回调第三参数 <code>onCleanup</code>。</li>
+          <li>必须在 <code>watch</code> 或 <code>watchEffect</code> 的<strong>同步执行阶段</strong>调用，注册“本轮 watcher 失效时”的清理函数；切换 <code>activeId</code> 时会先看到 <code>cleanup：停止 id=…</code>，再开始新 id 的定时器 tick。</li>
+          <li>本页每个 id 启动 <code>setInterval</code> 模拟异步副作用；快速切换 A/B/C 时，旧 id 的 tick 应被清理，日志里不应混入多个 id 的并发 tick（开启“无清理对照”可对比脏数据）。</li>
+          <li>若把 <code>onWatcherCleanup</code> 写在 <code>await</code> 之后，当前活跃 watcher 上下文已丢失，清理无法绑定到本轮；异步请求应先创建 <code>AbortController</code> 并同步注册清理，再 <code>fetch</code>。</li>
+          <li>Vue 3.5 之前写法：<code>watch(src, (v, o, onCleanup) =&gt; { onCleanup(() =&gt; ...) })</code>，语义与 <code>onWatcherCleanup</code> 一致。组件销毁级清理用 <code>onUnmounted</code>；整组 watcher 停止见 <a href="./05-effectScope%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8%E6%B8%85%E7%90%86.html">05-effectScope与副作用清理</a>。</li>
+          <li>异步竞态与 watch 选型背景见 <a href="./02-computed-watch-watchEffect.html">02-computed-watch-watchEffect</a>，本页专注“每轮 watcher 清理”而非 computed 缓存。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>onWatcherCleanup</code> 解决什么问题？</strong> 结论是它解决 watcher 每次重新运行前的旧副作用清理问题。原因是 watch 常用于请求、订阅和定时器，源变化后旧任务可能继续回调。项目里最典型场景是取消旧请求，避免旧响应覆盖最新筛选条件。</li>
-          <li><strong>为什么必须同步调用？</strong> 结论是必须在 watcher 回调同步阶段注册。原因是 Vue 依赖当前活跃 watcher 记录清理函数，<code>await</code> 之后已经不再处于同一个同步追踪上下文。异步场景应先注册 <code>AbortController</code> 的清理，再执行请求。</li>
-          <li><strong>Vue 3.5 前怎么写？</strong> 结论是使用 <code>watch</code> 回调的第三个 <code>onCleanup</code> 参数，或 <code>watchEffect</code> 的参数。原因是这些参数在旧版本已存在且语义一致。组件库要兼容 Vue 3.4 或更早版本时，不应直接依赖 <code>onWatcherCleanup</code>。</li>
-          <li><strong>它和 <code>onUnmounted</code> 的职责有什么区别？</strong> 结论是 watcher cleanup 管“本轮监听失效”，<code>onUnmounted</code> 管“组件实例销毁”。原因是同一组件内 watcher 可能运行很多轮。请求竞态、搜索联想、路由参数变化等场景应优先按 watcher 轮次清理。</li>
+          <li><strong>onWatcherCleanup 解决哪类竞态？</strong> 结论是 watcher 每次重新运行前旧副作用未取消，慢任务回调覆盖新状态。典型场景是搜索、路由参数变化、轮询定时器。本页切换 id 即验证。</li>
+          <li><strong>为什么必须同步调用？</strong> 结论是 Vue 依赖当前活跃 watcher 记录清理函数，<code>await</code> 后已脱离同步追踪。应先注册 <code>AbortController</code> 清理再请求。</li>
+          <li><strong>Vue 3.5 前怎么写？</strong> 结论是 watch 第三参数 <code>onCleanup</code> 或 watchEffect 参数。库要兼容 3.4 时不应直接依赖 <code>onWatcherCleanup</code>。</li>
+          <li><strong>与 onUnmounted 的区别？</strong> 结论是 watcher cleanup 管“本轮监听失效”，<code>onUnmounted</code> 管“组件实例销毁”。同一组件内 watcher 可能运行很多轮，应按轮次清理请求与定时器。</li>
+          <li><strong>与 effectScope.stop 的区别？</strong> 结论是 scope.stop 停整个作用域内所有 effect；onWatcherCleanup 管单次 watcher 运行之间的清理。两者可组合：scope 停止时也会触发 watcher cleanup。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/api/reactivity-core.html#onwatchercleanup" target="_blank" rel="noreferrer">Vue 3 API：onWatcherCleanup()</a></li>
-          <li><a href="https://vuejs.org/guide/essentials/watchers.html#side-effect-cleanup" target="_blank" rel="noreferrer">Vue 3 Guide：Watcher Side Effect Cleanup</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-core.html#onwatchercleanup" target="_blank" rel="noreferrer">Vue 3 官方 API：onWatcherCleanup()（3.5+）</a></li>
+          <li><a href="https://vuejs.org/guide/essentials/watchers.html#side-effect-cleanup" target="_blank" rel="noreferrer">Vue 3 官方文档：Watcher Side Effect Cleanup</a></li>
           <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/AbortController" target="_blank" rel="noreferrer">MDN：AbortController</a></li>
+          <li><a href="./05-effectScope%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8%E6%B8%85%E7%90%86.html">本系列：effectScope 与副作用清理</a></li>
         </ul>
       </div>
     </section>
@@ -64,40 +72,62 @@
 
     <!-- PAGE_DOM_START -->
     <div id="app">
-      <h1>onWatcherCleanup（Vue 3.5+）</h1>
+      <h1>onWatcherCleanup（Vue 3.5+）<span class="badge">需要 Vue ≥ 3.5</span></h1>
       <div class="box">
         <p>当前 id：{{ activeId }}</p>
-        <button @click="activeId = 'A'">切到 A</button>
-        <button @click="activeId = 'B'">切到 B</button>
-        <button @click="activeId = 'C'">切到 C</button>
-        <pre>{{ logs.join("\n") }}</pre>
+        <p>清理模式：{{ useCleanup ? "onWatcherCleanup（推荐）" : "无清理（对照，易脏 tick）" }}</p>
+        <p class="hint-inline">快速连点 A/B/C：开启清理时旧 id 的 tick 应停止；关闭清理时日志会混入多个 id 的 tick。</p>
+        <button type="button" @click="activeId = 'A'">切到 A</button>
+        <button type="button" @click="activeId = 'B'">切到 B</button>
+        <button type="button" @click="activeId = 'C'">切到 C</button>
+        <button type="button" @click="useCleanup = !useCleanup">切换清理模式</button>
+        <button type="button" @click="clearLogs">清空日志</button>
+        <pre>{{ logs.length ? logs.join("\n") : "（切换 id 后开始）" }}</pre>
       </div>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // 从全局 Vue 解构；onWatcherCleanup 仅 Vue 3.5+
       const { createApp, ref, watch, onWatcherCleanup } = Vue;
 
       createApp({
         setup() {
+          // --- 演示状态 ---
           const activeId = ref("A");
           const logs = ref([]);
+          const useCleanup = ref(true);
 
+          function pushLog(line) {
+            logs.value.push(line);
+            if (logs.value.length > 24) logs.value.shift();
+            console.log(line);
+          }
+
+          function clearLogs() {
+            logs.value = [];
+          }
+
+          // --- watch：每轮同步注册清理（或对照无清理）---
           watch(activeId, (id) => {
-            logs.value.push(`watch 开始：id=${id}`);
+            pushLog(`watch 开始：id=${id}`);
 
             const timer = setInterval(() => {
-              logs.value.push(`  定时 tick：id=${id}`);
-            }, 400);
+              pushLog(`  tick：id=${id}`);
+            }, 500);
 
-            onWatcherCleanup(() => {
-              clearInterval(timer);
-              logs.value.push(`  cleanup：停止 id=${id} 的 timer`);
-            });
+            if (useCleanup.value) {
+              onWatcherCleanup(() => {
+                clearInterval(timer);
+                pushLog(`  cleanup：停止 id=${id} 的 timer`);
+              });
+            } else {
+              pushLog(`  （无清理）id=${id} 的 timer 将继续运行`);
+            }
           });
 
-          return { activeId, logs };
+          return { activeId, logs, useCleanup, clearLogs };
         },
       }).mount("#app");
 
@@ -122,5 +152,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

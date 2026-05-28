@@ -20,12 +20,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vue3 · Pinia 面试点</title>
     <script src="../../libs/vue.global.js"></script>
+    <script src="../../libs/pinia.iife.js"></script>
     <style>
       body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
       code, pre { background: #f6f8fa; border-radius: 6px; }
       code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 860px; }
+      pre { padding: 12px; overflow: auto; max-height: 280px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 860px; margin-bottom: 16px; }
+      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
+      .callout { background: #fff8e1; border: 1px solid #f0d78c; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; font-size: 14px; }
+      button { padding: 6px 12px; margin-right: 8px; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -34,12 +38,12 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Pinia 核心面试点</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">本页上半为<strong>概念说明</strong>（代码片段）；下半用 CDN Pinia 做最小交互。Router + Pinia 完整流程见 <a href="./06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html">06-Router与Pinia可运行示例</a>。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Pinia 是 Vue 官方推荐的状态管理库，<code>defineStore</code> 可以写成 Options Store 或 Setup Store；本页代码片段演示 Options Store 的 <code>state</code>、<code>getters</code> 和 <code>actions</code>。</li>
-          <li><code>state</code> 应由函数返回，避免跨实例共享；<code>getters</code> 类似 store 级 computed，适合派生只读数据；<code>actions</code> 可以同步也可以异步，适合封装登录、请求和事务性状态变更。</li>
+          <li><strong>概念说明 vs 可运行示例：</strong> 上方 <code>pre</code> 展示 Options Store 典型写法；下方迷你 demo 演示 <code>login</code> / <code>logout</code> 与 <code>storeToRefs</code> 解构差异。与路由守卫联动见 <a href="./06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html">06-Router与Pinia可运行示例</a>。</li>
+          <li><code>state</code> 应由函数返回，避免跨实例共享；<code>getters</code> 类似 store 级 computed；<code>actions</code> 可以同步也可以异步，适合封装登录、请求和事务性状态变更。</li>
           <li>Pinia 没有 Vuex 中必须经过 mutations 的限制，组件可以直接写 <code>store.count++</code>，也可以用 <code>$patch</code> 批量更新；面试时要说明这是 API 设计差异，不是“没有规范”。</li>
           <li>从 store 解构 state 或 getters 时应使用 <code>storeToRefs(store)</code>，否则普通解构会拿到当前值而不是响应式引用；actions 是方法，可以直接解构。</li>
           <li>持久化通常通过插件或订阅写入 storage，但 token、用户画像、权限缓存要区分敏感性和时效性；SSR 场景还要为每个请求创建独立 Pinia，避免状态串用户。</li>
@@ -53,10 +57,10 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://pinia.vuejs.org/introduction.html" target="_blank" rel="noopener">Pinia 官方文档：Introduction</a></li>
-          <li><a href="https://pinia.vuejs.org/core-concepts/" target="_blank" rel="noopener">Pinia 官方文档：Core Concepts</a></li>
-          <li><a href="https://pinia.vuejs.org/core-concepts/actions.html" target="_blank" rel="noopener">Pinia 官方文档：Actions</a></li>
-          <li><a href="https://pinia.vuejs.org/core-concepts/#destructuring-from-a-store" target="_blank" rel="noopener">Pinia 官方文档：Destructuring from a Store</a></li>
+          <li><a href="https://pinia.vuejs.org/introduction.html" target="_blank" rel="noreferrer">Pinia 官方文档：Introduction</a></li>
+          <li><a href="https://pinia.vuejs.org/core-concepts/" target="_blank" rel="noreferrer">Pinia 官方文档：Core Concepts</a></li>
+          <li><a href="https://pinia.vuejs.org/core-concepts/#destructuring-from-a-store" target="_blank" rel="noreferrer">Pinia 官方文档：Destructuring from a Store</a></li>
+          <li><a href="./06-Router%E4%B8%8EPinia%E5%8F%AF%E8%BF%90%E8%A1%8C%E7%A4%BA%E4%BE%8B.html">本系列：Router 与 Pinia 可运行示例</a></li>
         </ul>
       </div>
     </section>
@@ -66,33 +70,85 @@
     <div id="app">
       <h1>Pinia 核心面试点</h1>
       <div class="box">
+        <p class="callout"><strong>概念说明：</strong> Options Store 典型结构（非完整工程）</p>
         <pre>{{ snippet }}</pre>
+      </div>
+      <div class="box">
+        <p class="hint-inline">迷你可运行 demo：用 <code>storeToRefs</code> 解构的 <code>token</code> 会随登录更新；错误解构的 <code>badToken</code> 不会更新。</p>
+        <p>isLogin（getter）：<strong>{{ isLogin ? "是" : "否" }}</strong></p>
+        <p>storeToRefs token：<code>{{ token || "（空）" }}</code></p>
+        <p>错误解构 badToken：<code>{{ badToken || "（空，且不会随 store 更新）" }}</code></p>
+        <button type="button" @click="login">模拟 login</button>
+        <button type="button" @click="logout">logout</button>
       </div>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      const { createApp, ref } = Vue;
+      // 从全局 Vue / Pinia 解构本页用到的 API
 
-      createApp({
-        setup() {
-          const snippet = ref([
-            "export const useUserStore = defineStore('user', {",
-            "  state: () => ({ token: '', profile: null }),",
-            "  getters: { isLogin: (state) => Boolean(state.token) },",
-            "  actions: {",
-            "    async login(payload) {",
-            "      const user = await api.login(payload)",
-            "      this.token = user.token",
-            "      this.profile = user.profile",
-            "    }",
-            "  }",
-            "})",
-          ].join("\n"));
-          return { snippet };
+      // Pinia 通过 CDN IIFE 提供；与 Vue 一样挂到全局
+      const { createApp } = Vue;
+      const { createPinia, defineStore, storeToRefs } = Pinia;
+
+      // --- Pinia store 定义 ---
+      const useUserStore = defineStore("pinia-demo-user", {
+        state: () => ({ token: "" }),
+        getters: { isLogin: (s) => Boolean(s.token) },
+        actions: {
+          login(name) {
+            this.token = "token-" + name;
+          },
+          logout() {
+            this.token = "";
+          },
         },
-      }).mount("#app");
+      });
+
+      const snippet = [
+        "export const useUserStore = defineStore('user', {",
+        "  state: () => ({ token: '', profile: null }),",
+        "  getters: { isLogin: (state) => Boolean(state.token) },",
+        "  actions: {",
+        "    async login(payload) {",
+        "      const user = await api.login(payload)",
+        "      this.token = user.token",
+        "      this.profile = user.profile",
+        "    }",
+        "  }",
+        "})",
+      ].join("\n");
+
+      // --- 挂载应用 ---
+      const pinia = createPinia();
+      const app = createApp({
+        setup() {
+          // --- 演示 storeToRefs vs 错误解构 ---
+          const userStore = useUserStore();
+          // 正确：storeToRefs 保持 state/getters 响应式
+          const { token, isLogin } = storeToRefs(userStore);
+          // 错误示范：普通解构会“冻结”当前 token 值
+          const { token: badToken } = userStore;
+
+          function login() {
+            userStore.login("demo");
+          }
+          function logout() {
+            userStore.logout();
+          }
+
+          return {
+            snippet,
+            token,
+            isLogin,
+            badToken,
+            login,
+            logout,
+          };
+        },
+      });
+      app.use(pinia).mount("#app");
 
     </script>
     <!-- SCRIPT_END -->

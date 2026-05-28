@@ -2,15 +2,17 @@
   分类: vue3 / 01-基础语法
   主题: v-if / v-show / v-for / key
   要点:
-    - v-if 按条件创建或销毁分支，适合切换不频繁或成本较高的内容
-    - v-show 只切换 display，适合频繁显示隐藏但初始仍会渲染
-    - v-for 更新列表时依赖稳定 key 复用 DOM 和组件状态
-    - 不要在同一元素上混用 v-if 与 v-for，先过滤数据再渲染
+    - v-if 按条件创建或销毁分支；v-show 只切换 display，节点始终保留
+    - v-for 需稳定唯一 key；会增删重排的列表不要用 index 作 key
+    - 不要在同一元素混用 v-if 与 v-for，先用 computed 过滤再渲染
+    - 列表行内 input 在重排时应跟随数据项；index key 易错位
+    - key 与 diff 机制深讲见 08 章虚拟 DOM 页
   面试:
     - v-if 和 v-show 如何按切换频率选型？
     - v-for 的 key 为什么不能随便用 index？
     - v-if 和 v-for 为什么不建议写在同一个元素上？
     - 列表反转或插入时稳定 key 解决了什么问题？
+    - v-if 重新显示时，分支内 DOM 状态为何会重置？
 -->
 
 <!doctype html>
@@ -21,12 +23,64 @@
     <title>Vue3 · 条件列表与 key</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; padding: 6px 12px; }
-      li { margin: 6px 0; }
-      code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
-      .panel { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
-      .tag { color: #666; font-size: 13px; }
+      body {
+        font-family: system-ui, -apple-system, "PingFang SC", sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+      }
+      button {
+        margin-right: 8px;
+        margin-top: 4px;
+        padding: 6px 12px;
+      }
+      li {
+        margin: 8px 0;
+      }
+      li input {
+        margin-left: 8px;
+        padding: 4px 8px;
+      }
+      code {
+        background: #f6f8fa;
+        padding: 2px 5px;
+        border-radius: 6px;
+      }
+      .panel {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 760px;
+      }
+      .panel h2 {
+        margin: 16px 0 8px;
+        font-size: 16px;
+      }
+      .panel h2:first-of-type {
+        margin-top: 0;
+      }
+      .panel .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
+      .tag {
+        color: #666;
+        font-size: 13px;
+        margin-left: 6px;
+      }
+      .tag--warn {
+        color: #c5221f;
+      }
+      .tag--ok {
+        color: #137333;
+      }
+      label.inline {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-right: 12px;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -39,24 +93,29 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>v-if</code> 是真正的条件渲染，条件为假时分支不会保留在 DOM 中，重新变真时会重新创建节点和子组件状态。</li>
-          <li><code>v-show</code> 会始终渲染元素，只通过 <code>display</code> 控制可见性；它初始渲染成本更高，但频繁切换时通常比反复创建销毁更稳定。</li>
-          <li><code>v-for</code> 渲染列表时应提供稳定、唯一、可预测的 <code>key</code>，让 Vue 在插入、删除、反转时正确移动已有节点，而不是错误复用表单值或组件内部状态。</li>
-          <li>不建议把 <code>v-if</code> 和 <code>v-for</code> 写在同一个元素上；Vue3 中 <code>v-if</code> 优先级更高，可能读不到 <code>v-for</code> 的局部变量。需要过滤时先用计算属性得到列表。</li>
-          <li>本页通过“新增一项”和“反转列表”演示稳定 <code>item.id</code> 的意义；如果改成数组下标作为 key，列表顺序变化时更容易出现状态和 DOM 复用错位。</li>
+          <li><code>v-if</code> 为真时才创建分支 DOM，为假时节点从文档中移除；本页点「切换显示」为 false 后再变 true，「v-if 挂载次数」会增加，说明分支被重新创建。打开 DevTools → Elements：<code>visible=false</code> 时带 <code>v-if</code> 的段落不在 DOM 树中。</li>
+          <li><code>v-show</code> 始终渲染元素，只切换 <code>display</code>；同一按钮隐藏后，<code>v-show</code> 段落仍在 Elements 里且带 <code>display: none</code>，切换成本通常低于反复创建销毁。高频显隐实践中常用 <code>v-show</code>，低频或未授权内容常用 <code>v-if</code>。</li>
+          <li><code>v-for</code> 应绑定稳定、唯一的 <code>key</code>（本页默认 <code>item.id</code>）。在每行 input 输入不同文字后点「反转列表」，内容会跟随任务名移动，因为 Vue 按 key 识别「同一条数据」。</li>
+          <li>点「切换为 index key」后再反转：input 内容容易留在<strong>原位置</strong>而非跟随数据项，这就是下标 key 在重排时的典型错位。diff 与 vnode 机制见 <a href="../08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/02-%E8%99%9A%E6%8B%9FDOM-diff-key.html">08-虚拟DOM-diff-key</a>。</li>
+          <li>点「新增一项」在列表头部插入带新 <code>id</code> 的行；稳定 key 下旧行 input 状态不会串到新数据。遍历下标 <code>index</code> 可用于展示序号，但不应作为会重排列表的 key。</li>
+          <li>不要把 <code>v-if</code> 与 <code>v-for</code> 写在同一元素上——Vue3 中 <code>v-if</code> 优先级更高，条件表达式可能访问不到循环变量。本页勾选「只显示新增任务」时，列表来自 <code>filteredList</code> 计算属性，而非在 <code>v-for</code> 标签上叠 <code>v-if</code>。</li>
+          <li>条件分支与循环语法承接上一页 <a href="./01-%E5%BA%94%E7%94%A8%E5%AE%9E%E4%BE%8B%E4%B8%8E%E6%A8%A1%E6%9D%BF%E8%AF%AD%E6%B3%95.html">01-应用实例与模板语法</a>；事件绑定与表单双向同步见下一页 <a href="./03-%E4%BA%8B%E4%BB%B6%E4%B8%8E%E8%A1%A8%E5%8D%95v-model.html">03-事件与表单v-model</a>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>v-if 和 v-show 如何按切换频率选型？</strong> 结论是低频切换、条件不满足时不需要渲染的内容用 <code>v-if</code>，高频显示隐藏用 <code>v-show</code>。原因是 <code>v-if</code> 有创建销毁成本，<code>v-show</code> 有初始渲染成本但切换只是 CSS。项目里权限区块、异步加载内容常用 <code>v-if</code>，下拉面板或标签页可考虑 <code>v-show</code>。</li>
-          <li><strong>v-for 的 key 为什么不能随便用 index？</strong> 先结论：会增删、排序、反转的列表不要用下标 key。原因是下标会跟着位置变化，Vue 可能把旧节点和组件状态复用到错误数据上。只有纯静态、不会重排的展示列表，使用 index 的风险才相对可控。</li>
-          <li><strong>v-if 和 v-for 为什么不建议写在同一个元素上？</strong> 结论是优先级和作用域容易造成误解，Vue3 中 <code>v-if</code> 优先于 <code>v-for</code>。原因是条件表达式可能访问不到循环变量，逻辑也难以维护。项目里应先用计算属性过滤列表，或把 <code>v-if</code> 放到包裹层上。</li>
-          <li><strong>列表反转或插入时稳定 key 解决了什么问题？</strong> 结论是稳定 key 帮 Vue 识别“同一条数据”而不是“同一个位置”。原因是 diff 时可以移动已有节点并保留正确状态。表单行、可编辑列表、动画列表都必须特别注意这一点。</li>
+          <li><strong>v-if 和 v-show 如何按切换频率选型？</strong> 结论是低频切换、条件不满足时不必渲染的内容用 <code>v-if</code>，高频显示隐藏用 <code>v-show</code>。原因是 <code>v-if</code> 有创建销毁成本，<code>v-show</code> 有初始渲染成本但切换只是 CSS。本页「切换显示」配合 Elements 面板可对比 DOM 是否存在。</li>
+          <li><strong>v-for 的 key 为什么不能随便用 index？</strong> 先结论：会增删、排序、反转的列表不要用下标 key。原因是下标随位置变化，Vue 可能把旧 DOM/组件状态复用到错误数据上。本页「切换为 index key」+ 行内 input +「反转列表」即可复现错位。</li>
+          <li><strong>v-if 和 v-for 为什么不建议写在同一个元素上？</strong> 结论是 Vue3 中 <code>v-if</code> 优先于 <code>v-for</code>，易造成作用域误解。原因是条件可能读不到循环变量。项目里应先用计算属性过滤，或把 <code>v-if</code> 放到包裹层；本页 <code>filteredList</code> 即正例。</li>
+          <li><strong>列表反转或插入时稳定 key 解决了什么问题？</strong> 结论是稳定 key 让 Vue 识别「同一条数据」而非「同一个位置」，从而移动节点并保留 input 等内容。原因是 patch 按 key 做同层比对。表单行、可编辑表格、动画列表都必须用业务 id。</li>
+          <li><strong>v-if 重新显示时，分支内 DOM 状态为何会重置？</strong> 结论是 <code>v-if=false</code> 时分支被销毁，再次为真会新建节点，内部非响应式 DOM 状态不会保留。原因是条件渲染不是 CSS 隐藏。本页「v-if 挂载次数」在反复切换后会递增；深层 diff 见 <a href="../08-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%80%A7%E8%83%BD%E9%9D%A2%E8%AF%95/02-%E8%99%9A%E6%8B%9FDOM-diff-key.html">08-虚拟DOM-diff-key</a>。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://vuejs.org/guide/essentials/conditional.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Conditional Rendering</a></li>
+          <li><a href="https://vuejs.org/guide/essentials/conditional.html#v-if-vs-v-show" target="_blank" rel="noreferrer">Vue 3 官方文档：v-if vs v-show</a></li>
           <li><a href="https://vuejs.org/guide/essentials/list.html" target="_blank" rel="noreferrer">Vue 3 官方文档：List Rendering</a></li>
-          <li><a href="https://vuejs.org/api/built-in-special-attributes.html#key" target="_blank" rel="noreferrer">Vue 3 官方文档：Special Attributes - key</a></li>
+          <li><a href="https://vuejs.org/guide/essentials/list.html#maintaining-state-with-key" target="_blank" rel="noreferrer">Vue 3 官方文档：Maintaining State with key</a></li>
+          <li><a href="https://vuejs.org/guide/essentials/list.html#v-for-with-v-if" target="_blank" rel="noreferrer">Vue 3 官方文档：v-for with v-if</a></li>
         </ul>
       </div>
     </section>
@@ -66,47 +125,127 @@
     <div id="app">
       <h1>v-if / v-show / v-for / key</h1>
       <div class="panel">
-        <button @click="visible = !visible">切换显示</button>
-        <button @click="addItem">新增一项</button>
-        <button @click="reverseList">反转列表</button>
-        <p v-if="visible">v-if：条件为 false 时，节点会被销毁。</p>
-        <p v-show="visible">v-show：节点一直存在，只切换 display。</p>
+        <h2>v-if vs v-show</h2>
+        <button type="button" @click="visible = !visible">切换显示（当前 {{ visible ? "可见" : "隐藏" }}）</button>
+        <p class="hint-inline">
+          打开 DevTools → Elements：<code>visible=false</code> 时 <code>v-if</code> 段落不在 DOM 中，
+          <code>v-show</code> 段落仍在且 <code>display: none</code>。
+        </p>
+        <p v-if="visible">
+          v-if：条件为 false 时节点会被销毁。（第 {{ ifBlockRenderCount }} 次挂载到 DOM）
+        </p>
+        <p v-show="visible">v-show：节点始终存在，只切换 display。</p>
+
+        <h2>v-for + key</h2>
+        <button type="button" @click="addItem">新增一项</button>
+        <button type="button" @click="reverseList">反转列表</button>
+        <button type="button" @click="useIndexKey = !useIndexKey">
+          切换 key：{{ useIndexKey ? "index（错误示范）" : "item.id（稳定）" }}
+        </button>
+        <p class="hint-inline">
+          先在每行 input 输入不同文字，再「反转列表」。稳定 key 时内容跟随任务名；index key 时内容易留在原位置。
+        </p>
         <ul>
-          <li v-for="item in list" :key="item.id">
-            {{ item.name }} <span class="tag">稳定 key: {{ item.id }}</span>
+          <li v-for="(item, index) in list" :key="useIndexKey ? index : item.id">
+            {{ item.name }}
+            <input v-model="item.note" placeholder="行内备注" />
+            <span class="tag" :class="useIndexKey ? 'tag--warn' : 'tag--ok'">
+              key = {{ useIndexKey ? index : item.id }}
+            </span>
           </li>
         </ul>
+
+        <h2>v-if + v-for：用 computed 过滤（正例）</h2>
+        <label class="inline">
+          <input type="checkbox" v-model="onlyNew" />
+          只显示「新增任务」
+        </label>
+        <p class="hint-inline">
+          显示 {{ filteredList.length }} / {{ list.length }} 项；过滤逻辑在
+          <code>filteredList</code>，避免在同一元素上写 <code>v-if</code> + <code>v-for</code>。
+        </p>
+        <ul v-if="filteredList.length">
+          <li v-for="item in filteredList" :key="item.id">
+            {{ item.name }}
+          </li>
+        </ul>
+        <p v-else class="hint-inline">（没有匹配项）</p>
       </div>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      const { createApp, ref } = Vue;
+      // 从全局 Vue 解构本页用到的 Composition API
+      const { createApp, ref, computed, watch } = Vue;
 
       createApp({
         setup() {
+          // --- 条件渲染 ---
           const visible = ref(true);
+          // 统计 v-if 分支被创建的次数，证明 false 时会销毁、true 时重新创建
+          const ifBlockRenderCount = ref(0);
+
+          watch(
+            visible,
+            (isVisible) => {
+              if (isVisible) {
+                ifBlockRenderCount.value++;
+                console.log("[v-if] 分支挂载，累计", ifBlockRenderCount.value, "次");
+              } else {
+                console.log("[v-if] 分支销毁，DOM 中不再保留该段落");
+              }
+            },
+            { immediate: true },
+          );
+
+          // --- 列表与 key 演示 ---
           const nextId = ref(4);
+          const useIndexKey = ref(false);
           const list = ref([
-            { id: 1, name: "理解条件渲染" },
-            { id: 2, name: "理解列表渲染" },
-            { id: 3, name: "理解 key 的意义" },
+            { id: 1, name: "理解条件渲染", note: "" },
+            { id: 2, name: "理解列表渲染", note: "" },
+            { id: 3, name: "理解 key 的意义", note: "" },
           ]);
 
           function addItem() {
-            list.value.unshift({ id: nextId.value, name: `新增任务 ${nextId.value}` });
+            list.value.unshift({
+              id: nextId.value,
+              name: `新增任务 ${nextId.value}`,
+              note: "",
+            });
             nextId.value++;
+            console.log("[list] 头部插入 id =", nextId.value - 1);
           }
 
           function reverseList() {
             list.value = [...list.value].reverse();
+            console.log(
+              "[list] 已反转；当前 key 模式 =",
+              useIndexKey.value ? "index" : "item.id",
+            );
           }
 
-          return { visible, list, addItem, reverseList };
+          // --- v-if + v-for 正例：先过滤再 v-for ---
+          const onlyNew = ref(false);
+          const filteredList = computed(() =>
+            onlyNew.value
+              ? list.value.filter((item) => item.name.includes("新增任务"))
+              : list.value,
+          );
+
+          return {
+            visible,
+            ifBlockRenderCount,
+            list,
+            useIndexKey,
+            addItem,
+            reverseList,
+            onlyNew,
+            filteredList,
+          };
         },
       }).mount("#app");
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -128,5 +267,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

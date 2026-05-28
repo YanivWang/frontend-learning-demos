@@ -2,15 +2,17 @@
   分类: vue3 / 02-响应式与副作用
   主题: effectScope / 副作用清理
   要点:
-    - watch / watchEffect 会返回停止函数，手动创建的监听需要在不用时停止
-    - effectScope 可以收集作用域内创建的 computed、watch、watchEffect 并一次性 stop
-    - 组合式函数、插件和组件外响应式逻辑适合用 effectScope 管理生命周期
-    - 定时器、DOM 监听、订阅和请求取消不属于响应式 effect，需要额外清理
+    - watch / watchEffect 返回 stop 函数，组件外或重复注册的监听需手动停止
+    - effectScope 收集作用域内的 computed、watch、watchEffect，scope.stop() 统一停止
+    - 适合 composable、插件和组件外响应式逻辑的生命周期管理
+    - effectScope 不清理定时器、DOM 监听、请求；需 onScopeDispose 或业务取消
+    - 重复开启 watcher 未停止会导致日志重复、内存泄漏和重复请求
   面试:
-    - watch 返回的停止函数和 effectScope.stop 有什么区别？
-    - effectScope 适合解决哪些组件外副作用泄漏问题？
+    - watch 返回的 stop 和 effectScope.stop 有什么区别？
+    - effectScope 适合解决哪些组件外副作用泄漏？
     - 组件卸载时哪些资源不会被 Vue 自动清理？
     - composable 里如何设计副作用的创建和释放边界？
+    - onScopeDispose 与组件 onUnmounted 如何配合？
 -->
 
 <!doctype html>
@@ -27,6 +29,8 @@
       code { padding: 2px 5px; }
       pre { padding: 12px; overflow: auto; max-height: 280px; }
       .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; margin-bottom: 16px; }
+      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
+      .box button { margin-top: 4px; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -39,24 +43,27 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>watch()</code> 和 <code>watchEffect()</code> 都会返回停止函数。组件 <code>setup()</code> 同步创建的 watcher 会随组件卸载停止；组件外或异步创建的 watcher 更需要手动停止。</li>
-          <li><code>effectScope()</code> 会创建一个响应式 effect 作用域，作用域内创建的 <code>computed</code>、<code>watch</code>、<code>watchEffect</code> 会被收集，调用 <code>scope.stop()</code> 后统一停止。</li>
-          <li>示例中独立 <code>watch</code> 需要保存停止函数，而 scope 内的 watcher 不必逐个保存；这正是 composable、插件和非组件状态模块使用 <code>effectScope</code> 的价值。</li>
-          <li><code>effectScope</code> 只管理 Vue 响应式 effect，不会自动清除 <code>setInterval</code>、DOM 事件、WebSocket、请求等外部资源；这些资源仍要配合 <code>onScopeDispose()</code>、组件卸载钩子或业务取消函数。</li>
-          <li>常见坑是重复开启 watcher 或 scope 却没有停止，导致日志重复、内存泄漏和重复请求。实际项目应把“启动”和“停止”做成成对 API，并防止重复注册。</li>
+          <li><code>watch()</code> 与 <code>watchEffect()</code> 都返回 <code>stop</code> 函数。本页“开启独立 watch”后改 count 会出现 <code>独立 watch</code> 日志；点“调用 watch 停止函数”后再改 count 不应再追加该前缀日志。</li>
+          <li><code>effectScope()</code> 在 <code>scope.run()</code> 内创建的 watcher 会被收集，<code>scope.stop()</code> 一次性停止整个作用域，无需逐个保存 stop。本页 scope 内同时有 watch 与 watchEffect，停止后两者都不再触发。</li>
+          <li>组件 <code>setup()</code> 同步创建的 watcher 会随组件卸载自动停止；组件外、插件内或“可开关模块”更适合显式 <code>effectScope</code> 或保存 stop 函数。</li>
+          <li><code>onScopeDispose()</code> 在 scope 停止或所属组件卸载时执行，适合清理 <code>setInterval</code> 等非响应式资源；本页 scope 内注册了定时器，停止 scope 后 tick 日志应消失。watcher 每轮清理见 <a href="./06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html">06-onWatcherCleanup与watch清理</a>（Vue 3.5+）。</li>
+          <li>重复点“开启”而不先停止会造成重复注册：本页在已开启时再次开启会 push 提示“已在运行”，避免演示日志爆炸。生产里应把启动/停止做成成对 API。</li>
+          <li>watch / watchEffect 选型与默认执行时机见 <a href="./02-computed-watch-watchEffect.html">02-computed-watch-watchEffect</a>；本页不重复讲解 lazy vs eager。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>watch</code> 停止函数和 <code>effectScope.stop()</code> 有什么区别？</strong> 结论是停止函数只停一个 watcher，<code>effectScope.stop()</code> 停整个作用域内收集到的响应式 effect。原因是 scope 在运行期间统一记录依赖 effect。项目里单个监听用停止函数即可，一组可开关的响应式逻辑更适合 scope。</li>
-          <li><strong><code>effectScope</code> 适合解决什么问题？</strong> 结论是它适合管理组件外、插件内或 composable 内部创建的一组响应式副作用。原因是这些逻辑不一定天然绑定组件生命周期。边界是它不是通用资源管理器，网络、事件监听和定时器仍要单独清理。</li>
-          <li><strong>组件卸载时哪些资源不会自动清理？</strong> 结论是 Vue 会处理同步绑定到组件实例的响应式 effect，但不会自动清理所有外部副作用。比如手动添加的 DOM 监听、定时器、订阅、WebSocket 和未取消请求都需要显式释放。否则页面切换后可能继续触发回调或占用内存。</li>
-          <li><strong>composable 里如何设计副作用释放？</strong> 结论是创建副作用时同步设计释放路径。组件内可用 <code>onUnmounted</code> 或 <code>onScopeDispose</code>，组件外可暴露 <code>stop</code> 方法或返回 scope。这样调用方能清楚知道状态何时结束。</li>
+          <li><strong>watch stop 和 effectScope.stop 有什么区别？</strong> 结论是 stop 只停一个 watcher，<code>scope.stop()</code> 停整个作用域内收集的响应式 effect。项目里单个监听用 stop，一组可开关逻辑用 scope。</li>
+          <li><strong>effectScope 适合解决什么问题？</strong> 结论是管理组件外、插件内或 composable 内部创建的一组响应式副作用。边界是不是通用资源管理器，定时器和请求仍要 <code>onScopeDispose</code> 或取消函数。</li>
+          <li><strong>组件卸载时哪些不会自动清理？</strong> 结论是 DOM 监听、定时器、WebSocket、未取消请求等外部副作用。Vue 会处理绑定到实例的同步 watcher，但不会替你 clearInterval。</li>
+          <li><strong>composable 如何设计释放？</strong> 结论是创建时同步设计释放路径：返回 <code>stop</code>、暴露 scope，或在 scope 内用 <code>onScopeDispose</code>。调用方应清楚何时结束。</li>
+          <li><strong>onScopeDispose 与 onUnmounted 如何配合？</strong> 结论是 scope 停止或组件卸载都会触发 scope dispose；组件级资源仍可用 <code>onUnmounted</code>。异步 watcher 每轮清理优先 <a href="./06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html">06 页</a>。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/api/reactivity-advanced.html#effectscope" target="_blank" rel="noreferrer">Vue 3 API：effectScope()</a></li>
-          <li><a href="https://vuejs.org/api/reactivity-advanced.html#onscopedispose" target="_blank" rel="noreferrer">Vue 3 API：onScopeDispose()</a></li>
-          <li><a href="https://vuejs.org/api/reactivity-core.html#watch" target="_blank" rel="noreferrer">Vue 3 API：watch()</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-advanced.html#effectscope" target="_blank" rel="noreferrer">Vue 3 官方 API：effectScope()</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-advanced.html#onscopedispose" target="_blank" rel="noreferrer">Vue 3 官方 API：onScopeDispose()</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-core.html#watch" target="_blank" rel="noreferrer">Vue 3 官方 API：watch()</a></li>
+          <li><a href="./06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html">本系列：onWatcherCleanup 与 watch 清理</a></li>
         </ul>
       </div>
     </section>
@@ -68,41 +75,58 @@
       <div class="box">
         <h2>watch 返回停止函数</h2>
         <p>count：{{ count }}</p>
-        <button @click="count++">count +1</button>
-        <button @click="startWatch">开启 watch</button>
-        <button @click="stopWatch">调用 watch 停止函数</button>
-        <p>watch 状态：{{ watchActive ? "运行中" : "已停止" }}</p>
+        <p>独立 watch：{{ watchActive ? "运行中" : "已停止" }}</p>
+        <p class="hint-inline">流程：开启 watch → count +1 看日志 → 停止 watch → 再 +1，应只剩 scope 相关日志（若 scope 已开）。</p>
+        <button type="button" @click="count++">count +1</button>
+        <button type="button" @click="startWatch">开启独立 watch</button>
+        <button type="button" @click="stopWatch">调用 watch 停止函数</button>
       </div>
       <div class="box">
         <h2>effectScope 统一停止</h2>
-        <button @click="startScope">开启 scope</button>
-        <button @click="stopScope">停止 scope</button>
-        <p>scope 状态：{{ scopeActive ? "运行中" : "已停止" }}</p>
+        <p>scope：{{ scopeActive ? "运行中" : "已停止" }}</p>
+        <p>scope 定时 tick：{{ scopeTick }}</p>
+        <p class="hint-inline">开启 scope 后会有 watchEffect 与每秒 tick；停止 scope 后改 count 不应再出现「scope 内」前缀，tick 也应停止。</p>
+        <button type="button" @click="startScope">开启 effectScope</button>
+        <button type="button" @click="stopScope">停止 effectScope</button>
       </div>
-      <pre>{{ logs.join("\n") }}</pre>
+      <pre class="box">{{ logs.length ? logs.join("\n") : "（按流程操作后显示）" }}</pre>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      const { createApp, ref, watch, effectScope } = Vue;
+      // 从全局 Vue 解构本页用到的 Composition API
+      const { createApp, ref, watch, watchEffect, effectScope, onScopeDispose } = Vue;
 
       createApp({
         setup() {
+          // --- 共享响应式源 ---
           const count = ref(0);
           const logs = ref([]);
           const watchActive = ref(false);
           const scopeActive = ref(false);
+          const scopeTick = ref(0);
+
           let stopWatchFn = null;
           let scope = null;
 
+          function pushLog(line) {
+            logs.value.push(line);
+            if (logs.value.length > 16) logs.value.shift();
+            console.log(line);
+          }
+
+          // --- 独立 watch：需手动保存 stop ---
           function startWatch() {
-            if (watchActive.value) return;
+            if (watchActive.value) {
+              pushLog("（独立 watch 已在运行，请先停止）");
+              return;
+            }
             stopWatchFn = watch(count, (value) => {
-              logs.value.push(`独立 watch：count = ${value}`);
+              pushLog(`独立 watch：count = ${value}`);
             });
             watchActive.value = true;
-            logs.value.push("已开启独立 watch");
+            pushLog("已开启独立 watch");
           }
 
           function stopWatch() {
@@ -110,19 +134,36 @@
             stopWatchFn();
             stopWatchFn = null;
             watchActive.value = false;
-            logs.value.push("已调用 watch 停止函数");
+            pushLog("已调用 watch 停止函数");
           }
 
+          // --- effectScope：统一收集并停止 ---
           function startScope() {
-            if (scope) return;
+            if (scope) {
+              pushLog("（effectScope 已在运行）");
+              return;
+            }
             scope = effectScope();
             scope.run(() => {
               watch(count, (value) => {
-                logs.value.push(`scope 内 watch：count = ${value}`);
+                pushLog(`scope 内 watch：count = ${value}`);
+              });
+              watchEffect(() => {
+                if (count.value % 5 === 0 && count.value > 0) {
+                  pushLog(`scope 内 watchEffect：count 为 5 的倍数 (${count.value})`);
+                }
+              });
+              const timer = setInterval(() => {
+                scopeTick.value++;
+                pushLog(`scope 定时 tick：${scopeTick.value}`);
+              }, 1200);
+              onScopeDispose(() => {
+                clearInterval(timer);
+                pushLog("onScopeDispose：已清理 scope 定时器");
               });
             });
             scopeActive.value = true;
-            logs.value.push("已开启 effectScope");
+            pushLog("已开启 effectScope（含 watch / watchEffect / 定时器）");
           }
 
           function stopScope() {
@@ -130,12 +171,19 @@
             scope.stop();
             scope = null;
             scopeActive.value = false;
-            logs.value.push("已停止 effectScope");
+            pushLog("已停止 effectScope");
           }
 
           return {
-            count, logs, watchActive, scopeActive,
-            startWatch, stopWatch, startScope, stopScope,
+            count,
+            logs,
+            watchActive,
+            scopeActive,
+            scopeTick,
+            startWatch,
+            stopWatch,
+            startScope,
+            stopScope,
           };
         },
       }).mount("#app");
@@ -161,5 +209,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

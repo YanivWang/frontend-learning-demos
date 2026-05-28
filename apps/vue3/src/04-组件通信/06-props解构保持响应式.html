@@ -6,6 +6,7 @@
     - 普通 setup(props) 直接解构基本类型仍是快照，会丢失后续 prop 更新
     - toRefs(props)、toRef(props, key) 或直接访问 props.xxx 是运行时保持响应式的写法
     - 默认值和函数传参要区分编译期解构能力与运行时 ref 语义
+    - watch props 应传 getter 或 toRef，不要传解构快照
   面试:
     - Vue 3.5+ 的响应式 props 解构到底改变了什么？
     - 为什么普通 setup(props) 直接解构仍会丢响应？
@@ -23,13 +24,17 @@
     <script src="../../libs/vue.global.js"></script>
     <style>
       body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; padding: 6px 12px; }
+      button { margin-right: 8px; margin-top: 4px; padding: 6px 12px; }
       code, pre { background: #f6f8fa; border-radius: 6px; }
       code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; }
+      pre { padding: 12px; overflow: auto; max-height: 220px; }
       .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 860px; }
+      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
       .grid { display: grid; gap: 10px; }
-      .panel { padding: 10px; background: #fafafa; border-radius: 6px; }
+      .panel { padding: 10px; background: #fafafa; border-radius: 6px; border-left: 3px solid #ddd; }
+      .panel--bad { border-left-color: #ea4335; }
+      .panel--good { border-left-color: #34a853; }
+      .tag { display: inline-block; background: #fef7e0; color: #e37400; padding: 2px 8px; border-radius: 4px; font-size: 13px; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -42,24 +47,27 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue 3.5+ 在同一个 <code>&lt;script setup&gt;</code> 代码块中，会把从 <code>defineProps</code> 解构出来的变量访问编译为 <code>props.xxx</code>，因此读取时仍能追踪 prop 更新。</li>
-          <li>普通 <code>setup(props)</code> 是运行时代码，<code>const { label } = props</code> 会把基本类型取成当前快照；本页点击按钮后可看到直接解构面板不再更新。</li>
-          <li><code>toRefs(props)</code> 会把每个 prop 包成 ref，适合普通 setup、组合式函数传参或 Vue 3.4 及以下项目；模板直接使用 <code>props.label</code> 也是稳定写法。</li>
-          <li>Vue 3.5 的编译期解构不是通用 JavaScript 能力，离开 SFC 编译上下文、传给普通函数或在老版本中都不能假定它保持响应式。</li>
-          <li>watch 或组合式函数需要追踪 prop 时，优先传 getter，例如 <code>() =&gt; props.label</code>，或传 <code>toRef(props, 'label')</code>；不要把解构快照当作响应式源。</li>
+          <li>Vue 3.5+ 在同一个 <code>&lt;script setup&gt;</code> 代码块中，会把从 <code>defineProps</code> 解构出来的变量访问<strong>编译</strong>为 <code>props.xxx</code>，因此读取时仍能追踪 prop 更新。本页标题旁 <span class="tag">Vue 3.5+</span> 标记编译宏能力。</li>
+          <li>普通 <code>setup(props)</code> 是运行时代码，<code>const { label } = props</code> 会把基本类型取成当前快照；点「父组件改 label」后，红色「直接解构」面板<strong>不更新</strong>，绿色 toRefs / props.label 面板同步更新。</li>
+          <li><code>toRefs(props)</code> 会把每个 prop 包成 ref，适合普通 setup、组合式函数传参或 Vue 3.4 及以下项目；模板直接使用 <code>props.label</code> 也是稳定写法。toRefs 细节见 <a href="../02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/03-toRef-toRefs.html">02-toRef-toRefs</a>。</li>
+          <li>Vue 3.5 的编译期解构不是通用 JavaScript 能力，离开 SFC 编译上下文、传给普通函数或在老版本中都不能假定它保持响应式。本页 pre 区展示 SFC 写法，下方三面板对比运行时行为。</li>
+          <li>watch 需要追踪 prop 时，优先传 getter（<code>() =&gt; props.label</code>）或 <code>toRef(props, 'label')</code>；本页 WatchPanel 的 watch 日志仅在 toRef 写法下随父改 label 追加。不要把解构快照当作响应式源。</li>
+          <li>props 只读契约不变，见 <a href="./01-props%E4%B8%8Eemit.html">01-props与emit</a>。defineModel（3.4+）是另一编译宏，见 <a href="./05-defineModel%E7%BB%84%E4%BB%B6v-model.html">05-defineModel</a>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue 3.5+ 的响应式 props 解构改变了什么？</strong> 结论是只改变 <code>&lt;script setup&gt;</code> 中 <code>defineProps</code> 解构变量的编译结果。编译器会把变量访问改写成 <code>props.xxx</code>，所以父组件更新 prop 后子组件读取仍是最新值。边界是这不是普通 JS 解构语义，也不是全局构建能直接演示的运行时能力。</li>
-          <li><strong>为什么普通 setup 直接解构仍会丢响应？</strong> 因为普通解构发生在运行时，只把当前 prop 值赋给局部常量。基本类型后续不会自动跟随父组件变化，对象虽然引用还在，但替换整个对象也会出现快照问题。普通 setup 中应保留 <code>props.xxx</code> 或使用 <code>toRefs</code>。</li>
-          <li><strong>toRefs(props) 和 defineProps 解构怎么选？</strong> Vue 3.5+ 的 SFC 内部本地读取可以用响应式解构，代码简洁。需要传入组合式函数、支持 Vue 3.4 及以下，或在普通 setup 里工作时用 <code>toRef</code> / <code>toRefs</code> 更明确。团队要按项目 Vue 版本统一约定。</li>
-          <li><strong>watch props 时最稳的写法是什么？</strong> 结论是传 getter 或 ref 源，例如 <code>watch(() =&gt; props.label, ...)</code>。原因是 watch 需要可追踪的响应式源，直接传解构后的普通值只会拿到一次快照。封装组合式函数时也应明确参数是 getter、ref 还是普通值。</li>
+          <li><strong>Vue 3.5+ 的响应式 props 解构改变了什么？</strong> 结论是只改变 <code>&lt;script setup&gt;</code> 中 <code>defineProps</code> 解构变量的编译结果。编译器会把变量访问改写成 <code>props.xxx</code>。边界是这不是普通 JS 解构语义，全局构建 demo 只能用 toRefs 对照。</li>
+          <li><strong>为什么普通 setup 直接解构仍会丢响应？</strong> 因为普通解构发生在运行时，只把当前 prop 值赋给局部常量。本页红色面板在父改 label 后冻结即证据。普通 setup 中应保留 <code>props.xxx</code> 或使用 <code>toRefs</code>。</li>
+          <li><strong>toRefs(props) 和 defineProps 解构怎么选？</strong> Vue 3.5+ 的 SFC 内部本地读取可以用响应式解构，代码简洁。需要传入组合式函数、支持 Vue 3.4 及以下，或在普通 setup 里工作时用 <code>toRef</code> / <code>toRefs</code> 更明确。</li>
+          <li><strong>watch props 时最稳的写法是什么？</strong> 结论是传 getter 或 ref 源，例如 <code>watch(() =&gt; props.label, ...)</code>。WatchPanel 的 toRef watch 日志随父更新而追加，直接解构值则不会。</li>
+          <li><strong>Vue 3.4 及以下如何避免陷阱？</strong> 结论是不使用 defineProps 响应式解构（尚未提供），统一 <code>toRefs(props)</code> 或 <code>props.xxx</code>。升级 3.5 后 SFC 可简化，但 composable 传参仍建议 toRef 保持版本无关。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/guide/components/props.html#reactive-props-destructure" target="_blank" rel="noreferrer">Vue 官方指南：响应式 Props 解构</a></li>
-          <li><a href="https://vuejs.org/api/sfc-script-setup.html#defineprops-defineemits" target="_blank" rel="noreferrer">Vue API：defineProps / defineEmits 编译宏</a></li>
-          <li><a href="https://vuejs.org/api/reactivity-utilities.html#torefs" target="_blank" rel="noreferrer">Vue API：toRefs</a></li>
+          <li><a href="https://vuejs.org/guide/components/props.html#reactive-props-destructure" target="_blank" rel="noreferrer">Vue 3 官方文档：Reactive Props Destructure（3.5+）</a></li>
+          <li><a href="https://vuejs.org/api/sfc-script-setup.html#defineprops-defineemits" target="_blank" rel="noreferrer">Vue 3 官方 API：defineProps / defineEmits</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-utilities.html#torefs" target="_blank" rel="noreferrer">Vue 3 官方 API：toRefs()</a></li>
+          <li><a href="./05-defineModel%E7%BB%84%E4%BB%B6v-model.html">本系列：defineModel（3.4+）</a></li>
         </ul>
       </div>
     </section>
@@ -67,13 +75,15 @@
 
     <!-- PAGE_DOM_START -->
     <div id="app">
-      <h1>props 解构保持响应式（Vue 3.5+）</h1>
+      <h1>props 解构保持响应式 <span class="tag">Vue 3.5+</span></h1>
       <div class="box grid">
         <p>父组件 label：{{ label }}</p>
-        <button @click="label = '父组件已更新 ' + Date.now()">父组件改 label</button>
+        <button type="button" @click="updateLabel">父组件改 label</button>
+        <p class="hint-inline">点按钮后：红色面板（直接解构）冻结，绿色面板（toRefs / props.label）与 watch 日志会更新。</p>
         <bad-destructure :label="label"></bad-destructure>
         <good-torefs :label="label"></good-torefs>
         <direct-props :label="label"></direct-props>
+        <watch-panel :label="label"></watch-panel>
         <pre>{{ sfcSnippet }}</pre>
       </div>
     </div>
@@ -81,8 +91,10 @@
 
     <!-- SCRIPT_START -->
     <script>
-      const { createApp, ref, toRefs } = Vue;
+      // 从全局 Vue 解构本页用到的 Composition API
+      const { createApp, ref, toRefs, toRef, watch } = Vue;
 
+      // ❌ 普通 setup 直接解构：基本类型变成快照
       const BadDestructure = {
         props: { label: String },
         setup(props) {
@@ -90,12 +102,13 @@
           return { label };
         },
         template: `
-        <div class="panel">
+        <div class="panel panel--bad">
           直接解构 props（会丢响应）：{{ label }}
         </div>
         `,
       };
 
+      // ✅ toRefs：每个 prop 变成 ref，保持响应连接
       const GoodToRefs = {
         props: { label: String },
         setup(props) {
@@ -103,36 +116,74 @@
           return { label };
         },
         template: `
-        <div class="panel">
+        <div class="panel panel--good">
           toRefs(props)（保持响应）：{{ label }}
         </div>
         `,
       };
 
+      // ✅ 模板直接读 props.xxx
       const DirectProps = {
         props: { label: String },
         setup(props) {
           return { props };
         },
         template: `
-        <div class="panel">
+        <div class="panel panel--good">
           模板直接用 props.label（保持响应）：{{ props.label }}
         </div>
         `,
       };
 
+      // watch 应使用 toRef / getter，不要用解构快照
+      const WatchPanel = {
+        props: { label: String },
+        setup(props) {
+          const watchLogs = ref([]);
+          const labelRef = toRef(props, "label");
+
+          watch(labelRef, (val) => {
+            watchLogs.value.push(`watch(toRef) label → ${val}`);
+            if (watchLogs.value.length > 4) watchLogs.value.shift();
+            console.log("[props destructure] watch toRef", val);
+          });
+
+          return { watchLogs };
+        },
+        template: `
+        <div class="panel panel--good">
+          watch(toRef(props,'label')) 日志：
+          <pre>{{ watchLogs.length ? watchLogs.join("\\n") : "（父改 label 后此处追加）" }}</pre>
+        </div>
+        `,
+      };
+
+      // --- 挂载应用 ---
+
+
       createApp({
-        components: { BadDestructure, GoodToRefs, DirectProps },
+        components: { BadDestructure, GoodToRefs, DirectProps, WatchPanel },
         setup() {
+          // --- 演示状态 ---
           const label = ref("初始 label");
+
+          function updateLabel() {
+            label.value = "父组件已更新 " + Date.now().toString().slice(-4);
+          }
+
           const sfcSnippet = [
-            "<!-- Vue 3.5+ script setup：解构后仍响应 -->",
-            "&lt;script setup&gt;",
+            "<!-- Vue 3.5+ script setup：解构后仍响应（编译期能力） -->",
+            "<script setup>",
             "const { label } = defineProps({ label: String })",
-            "&lt;/script&gt;",
+            "// 编译器把 label 访问改写为 props.label",
+            "<\\/script>",
             "<p>{{ label }}</p>",
+            "",
+            "<!-- 普通 setup / Vue 3.4-：请用 toRefs -->",
+            "const { label } = toRefs(props)",
           ].join("\n");
-          return { label, sfcSnippet };
+
+          return { label, updateLabel, sfcSnippet };
         },
       }).mount("#app");
 

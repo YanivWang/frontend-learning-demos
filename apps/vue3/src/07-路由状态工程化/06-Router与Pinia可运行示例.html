@@ -23,12 +23,15 @@
     <script src="../../libs/vue-router.global.js"></script>
     <script src="../../libs/pinia.iife.js"></script>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; color: #202124; }
+      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
       nav { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
       nav a { color: #0969da; text-decoration: none; }
       nav a.router-link-active { font-weight: 700; text-decoration: underline; }
       .box { border: 1px solid #ddd; border-radius: 10px; padding: 16px; max-width: 520px; }
+      .box .hint-inline { margin: 0 0 12px; color: #5f6368; font-size: 14px; }
       button { padding: 6px 12px; margin: 4px 4px 4px 0; cursor: pointer; }
+      input { padding: 6px 8px; }
+      pre { background: #f6f8fa; border-radius: 6px; padding: 10px; font-size: 13px; overflow: auto; max-height: 120px; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -37,11 +40,11 @@
     <!-- NOTES_START -->
     <section class="demo-block demo-block--notes" aria-label="复习与面试要点">
       <h1>Vue Router 4 + Pinia 可运行最小示例</h1>
-      <p class="hint">在浏览器中操作下方交互演示；复习要点与面试答法见上方区块。</p>
+      <p class="hint">本页为<strong>可运行示例</strong>（ch07 参考实现）；概念片段见 <a href="./01-Vue-Router-4%E6%A0%B8%E5%BF%83%E9%9D%A2%E8%AF%95%E7%82%B9.html">01-Vue-Router-4核心面试点</a> 与 <a href="./02-Pinia%E6%A0%B8%E5%BF%83%E9%9D%A2%E8%AF%95%E7%82%B9.html">02-Pinia核心面试点</a>。</p>
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>本页是真正可运行的 Router + Pinia 最小示例：<code>createPinia()</code> 和 <code>createRouter()</code> 都通过 <code>app.use()</code> 安装，组件里再通过 store 和 router 完成登录、跳转、退出。</li>
+          <li><strong>可运行示例 vs 概念说明：</strong> 同章 01/02/04 以代码片段和面试要点为主；<strong>本页</strong>加载 <code>vue-router</code> 与 <code>pinia</code>，可真实点击导航、登录、守卫拦截与 404 fallback。</li>
           <li>示例使用 <code>createWebHashHistory()</code>，因为 hash 路径不会交给服务器解析，适合本仓库可直接用 <code>file://</code> 打开的 HTML；真实线上 history 模式需要服务端 fallback。</li>
           <li><code>beforeEach</code> 守卫读取 <code>meta.requiresAuth</code> 与 Pinia 登录态，未登录访问 <code>/profile</code> 时返回 <code>"/login"</code>；返回值写法比混用 <code>next</code> 更不容易重复放行。</li>
           <li>示例补了空用户名提示、退出后跳转登录页、未知路由 fallback，演示路由类 demo 的失败路径；用户名通过 Vue 文本插值显示，不会被当作 HTML 执行。</li>
@@ -56,10 +59,10 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://router.vuejs.org/guide/essentials/history-mode.html" target="_blank" rel="noopener">Vue Router 官方指南：Different History modes</a></li>
-          <li><a href="https://router.vuejs.org/guide/advanced/navigation-guards.html" target="_blank" rel="noopener">Vue Router 官方指南：Navigation Guards</a></li>
-          <li><a href="https://pinia.vuejs.org/core-concepts/" target="_blank" rel="noopener">Pinia 官方文档：Core Concepts</a></li>
-          <li><a href="https://vuejs.org/guide/essentials/template-syntax.html#text-interpolation" target="_blank" rel="noopener">Vue 官方指南：Text Interpolation</a></li>
+          <li><a href="https://router.vuejs.org/guide/essentials/history-mode.html" target="_blank" rel="noreferrer">Vue Router 官方指南：Different History modes</a></li>
+          <li><a href="https://router.vuejs.org/guide/advanced/navigation-guards.html" target="_blank" rel="noreferrer">Vue Router 官方指南：Navigation Guards</a></li>
+          <li><a href="https://pinia.vuejs.org/core-concepts/" target="_blank" rel="noreferrer">Pinia 官方文档：Core Concepts</a></li>
+          <li><a href="./01-Vue-Router-4%E6%A0%B8%E5%BF%83%E9%9D%A2%E8%AF%95%E7%82%B9.html">本系列：Vue Router 4 核心面试点（概念）</a></li>
         </ul>
       </div>
     </section>
@@ -67,6 +70,8 @@
 
     <!-- PAGE_DOM_START -->
     <div id="app">
+      <h1>Router + Pinia 可运行示例</h1>
+      <p class="hint-inline">未登录时点击「个人中心」应被重定向到登录页；登录后 token 显示在页脚。概念说明见 01/02 页。</p>
       <nav>
         <router-link to="/">首页</router-link>
         <router-link to="/profile">个人中心（需登录）</router-link>
@@ -77,27 +82,45 @@
         <router-view></router-view>
       </div>
       <p style="font-size:0.875rem;color:#666;margin-top:1rem">
-        登录态：{{ userStore.isLogin ? userStore.token : '未登录' }}
+        登录态：{{ userStore.isLogin ? userStore.token : "未登录" }}
       </p>
+      <pre>{{ guardLogs.length ? guardLogs.join("\n") : "（导航后显示守卫日志）" }}</pre>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // 从全局解构 Vue / Vue Router / Pinia API
       const { createApp, ref } = Vue;
       const { createRouter, createWebHashHistory } = VueRouter;
       const { createPinia, defineStore } = Pinia;
 
+      // --- Pinia：用户登录态 ---
       const useUserStore = defineStore("user", {
         state: () => ({ token: "" }),
         getters: { isLogin: (s) => Boolean(s.token) },
         actions: {
-          login(name) { this.token = "token-" + name; },
-          logout() { this.token = ""; },
+          login(name) {
+            this.token = "token-" + name;
+          },
+          logout() {
+            this.token = "";
+          },
         },
       });
 
+      // 守卫日志：挂在 window 供路由组件与守卫共用（demo 简化）
+      const guardLogs = ref([]);
+      window.__routerGuardLogs = guardLogs;
+
+      function logGuard(msg) {
+        guardLogs.value.push(msg);
+        if (guardLogs.value.length > 6) guardLogs.value.shift();
+      }
+
+      // --- 路由页面组件 ---
       const Home = { template: "<h2>首页</h2><p>Hash 路由 + Pinia 全局状态演示。</p>" };
+
       const Login = {
         setup() {
           const userStore = useUserStore();
@@ -119,44 +142,60 @@
           };
         },
         template: `<h2>登录</h2>
-        <input v-model="name" placeholder="用户名" />
-        <button type="button" @click="submit">登录并跳转</button>
-        <p v-if="error" style="color:#b42318">{{ error }}</p>`,
-        };
-        const Profile = {
-          setup() {
-            const userStore = useUserStore();
-            return { userStore, logout: () => { userStore.logout(); router.push("/login"); } };
-          },
-          template: `<h2>个人中心</h2>
+          <input v-model="name" placeholder="用户名" />
+          <button type="button" @click="submit">登录并跳转</button>
+          <p v-if="error" style="color:#b42318">{{ error }}</p>`,
+      };
+
+      const Profile = {
+        setup() {
+          const userStore = useUserStore();
+          return {
+            userStore,
+            logout() {
+              userStore.logout();
+              router.push("/login");
+            },
+          };
+        },
+        template: `<h2>个人中心</h2>
           <p>欢迎，{{ userStore.token }}</p>
           <button type="button" @click="logout">退出</button>`,
-          };
-          const NotFound = { template: "<h2>404</h2><p>没有匹配的路由，已进入 fallback 页面。</p>" };
+      };
 
-          const router = createRouter({
-            history: createWebHashHistory(),
-            routes: [
-              { path: "/", component: Home },
-              { path: "/login", component: Login },
-              { path: "/profile", component: Profile, meta: { requiresAuth: true } },
-              { path: "/:pathMatch(.*)*", component: NotFound },
-            ],
-          });
+      const NotFound = {
+        template: "<h2>404</h2><p>没有匹配的路由，已进入 fallback 页面。</p>",
+      };
 
-          router.beforeEach((to) => {
-            const userStore = useUserStore();
-            if (to.meta.requiresAuth && !userStore.isLogin) return "/login";
-          });
+      // --- Router：hash history + meta 鉴权 ---
+      const router = createRouter({
+        history: createWebHashHistory(),
+        routes: [
+          { path: "/", component: Home },
+          { path: "/login", component: Login },
+          { path: "/profile", component: Profile, meta: { requiresAuth: true } },
+          { path: "/:pathMatch(.*)*", component: NotFound },
+        ],
+      });
 
-          const pinia = createPinia();
-          const app = createApp({
-            setup() {
-              const userStore = useUserStore();
-              return { userStore };
-            },
-          });
-          app.use(pinia).use(router).mount("#app");
+      router.beforeEach((to, from) => {
+        const userStore = useUserStore();
+        logGuard(`beforeEach: ${from.path || "(初始)"} → ${to.path}`);
+        if (to.meta.requiresAuth && !userStore.isLogin) {
+          logGuard("未登录，重定向 /login");
+          return "/login";
+        }
+      });
+
+      // --- 挂载：先 Pinia 再 Router ---
+      const pinia = createPinia();
+      const app = createApp({
+        setup() {
+          const userStore = useUserStore();
+          return { userStore, guardLogs };
+        },
+      });
+      app.use(pinia).use(router).mount("#app");
 
     </script>
     <!-- SCRIPT_END -->

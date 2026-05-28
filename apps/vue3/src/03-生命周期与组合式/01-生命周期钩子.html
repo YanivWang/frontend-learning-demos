@@ -6,11 +6,13 @@
     - onMounted 适合访问已挂载 DOM，onUpdated 适合读取更新后的 DOM
     - onUnmounted 用于释放事件监听、定时器、订阅等组件级副作用
     - 生命周期钩子必须在 setup 同步阶段注册，异步回调里注册会丢失组件上下文
+    - 完整钩子清单与 KeepAlive 见同章 04 页；副作用清理见 02 章 onWatcherCleanup
   面试:
     - Vue 3 中 beforeCreate / created 的逻辑应放在哪里？
     - onMounted、onUpdated、onUnmounted 各适合处理什么事情？
     - 为什么生命周期钩子要在 setup 同步阶段注册？
     - 组件卸载时哪些副作用需要在 onUnmounted 中清理？
+    - setup 同步代码与 onMounted 的分工边界是什么？
 -->
 
 <!doctype html>
@@ -22,11 +24,12 @@
     <script src="../../libs/vue.global.js"></script>
     <style>
       body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; padding: 6px 12px; }
+      button { margin-right: 8px; margin-top: 4px; padding: 6px 12px; }
       code, pre { background: #f6f8fa; border-radius: 6px; }
       code { padding: 2px 5px; }
       pre { padding: 12px; overflow: auto; max-height: 240px; }
       .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -39,23 +42,27 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>setup()</code> 会在组件创建阶段执行，早于挂载，Composition API 中 <code>beforeCreate</code> / <code>created</code> 的大多数初始化逻辑都应直接写在 <code>setup</code> 顶层。</li>
-          <li><code>onBeforeMount</code> / <code>onMounted</code> 对应挂载前后。需要访问真实 DOM、初始化依赖 DOM 的第三方库时，应放在 <code>onMounted</code> 之后。</li>
-          <li><code>onBeforeUpdate</code> / <code>onUpdated</code> 对应响应式更新引发的 DOM patch 前后。读更新后的 DOM 可放在 <code>onUpdated</code>，但不要在其中无条件修改状态，否则可能造成更新循环。</li>
-          <li><code>onBeforeUnmount</code> / <code>onUnmounted</code> 用于组件销毁前后清理资源，比如事件监听、定时器、订阅、外部实例和未完成任务。</li>
-          <li>生命周期注册函数必须在 <code>setup</code> 同步阶段调用，这样 Vue 才能把钩子绑定到当前组件实例；异步回调里临时注册通常不是可靠模式。</li>
+          <li><code>setup()</code> 会在组件创建阶段<strong>同步</strong>执行，早于挂载；Composition API 中 <code>beforeCreate</code> / <code>created</code> 的大多数初始化逻辑（创建 ref、注册 watch）都应直接写在 <code>setup</code> 顶层。本页刷新后日志首行不会出现 mounted，说明 setup 已完成但 DOM 尚未就绪。</li>
+          <li><code>onBeforeMount</code> / <code>onMounted</code> 对应挂载前后。需要访问真实 DOM、初始化依赖 DOM 的第三方库时，应放在 <code>onMounted</code> 之后；本页子组件 mounted 后日志区才出现 <code>onMounted</code> 行，控制台同步打印 <code>[lifecycle] onMounted</code>。</li>
+          <li><code>onBeforeUpdate</code> / <code>onUpdated</code> 对应响应式更新引发的 DOM patch 前后。点子组件「+1」后日志会出现 update 对；读更新后的 DOM 可放在 <code>onUpdated</code>，但<strong>不要</strong>在其中无条件修改会触发本组件更新的状态，否则可能造成更新循环。</li>
+          <li><code>onBeforeUnmount</code> / <code>onUnmounted</code> 用于组件销毁前后清理资源。点「挂载/卸载子组件」隐藏子组件后，日志末尾会出现 unmount 对；事件监听、定时器、订阅必须在 unmounted 中释放，异步副作用清理见 <a href="../02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html">02-onWatcherCleanup与watch清理</a>。</li>
+          <li>生命周期注册函数必须在 <code>setup</code> 同步阶段调用，这样 Vue 才能把钩子绑定到当前组件实例；在 <code>setTimeout</code> 或 <code>await</code> 之后临时注册通常不是可靠模式，会丢失组件上下文。</li>
+          <li>本页用 <code>provide("lifecycleLogs")</code> 让子组件写入同一份日志 ref，避免全局变量；composable 中注册钩子的写法见 <a href="./02-composable%E5%A4%8D%E7%94%A8.html">02-composable复用</a>。全量钩子与 KeepAlive 的 activated / deactivated 见 <a href="./04-%E5%85%A8%E9%87%8F%E9%92%A9%E5%AD%90%E4%B8%8EKeepAlive.html">04-全量钩子与KeepAlive</a>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue 3 中 <code>created</code> 逻辑放哪里？</strong> 结论是大多直接放在 <code>setup</code> 顶层。原因是 <code>setup</code> 已经覆盖创建阶段初始化能力，并且可以创建响应式状态和注册副作用。边界是依赖 DOM 的逻辑仍要等到 <code>onMounted</code>。</li>
-          <li><strong><code>onMounted</code>、<code>onUpdated</code>、<code>onUnmounted</code> 怎么分工？</strong> 结论是 mounted 做 DOM 就绪后的初始化，updated 做更新后 DOM 读取或同步，unmounted 做资源释放。原因是它们分别对应渲染生命周期的不同阶段。项目里第三方图表初始化和销毁常成对写在 mounted / unmounted。</li>
-          <li><strong>为什么钩子要同步注册？</strong> 结论是为了绑定当前组件实例。原因是 Vue 在 <code>setup</code> 同步执行期间维护当前实例上下文，钩子注册依赖这个上下文。异步之后再注册，可能没有可关联的实例。</li>
-          <li><strong>卸载时要清理什么？</strong> 结论是清理 Vue 无法自动接管的外部资源。包括 <code>addEventListener</code>、<code>setInterval</code>、WebSocket、第三方实例和手动订阅。否则隐藏或路由切换后回调仍可能执行。</li>
+          <li><strong>Vue 3 中 <code>created</code> 逻辑放哪里？</strong> 结论是大多直接放在 <code>setup</code> 顶层。原因是 <code>setup</code> 已经覆盖创建阶段初始化能力，并且可以创建响应式状态和注册副作用。边界是依赖 DOM 的逻辑仍要等到 <code>onMounted</code>；本页子组件 count 初始化为 0 写在 setup 里，DOM 相关日志在 mounted 才出现。</li>
+          <li><strong><code>onMounted</code>、<code>onUpdated</code>、<code>onUnmounted</code> 怎么分工？</strong> 结论是 mounted 做 DOM 就绪后的初始化，updated 做更新后 DOM 读取或同步，unmounted 做资源释放。原因是它们分别对应渲染生命周期的不同阶段。项目里第三方图表初始化和销毁常成对写在 mounted / unmounted；本页「+1」按钮验证 update 钩子。</li>
+          <li><strong>为什么钩子要同步注册？</strong> 结论是为了绑定当前组件实例。原因是 Vue 在 <code>setup</code> 同步执行期间维护当前实例上下文，钩子注册依赖这个上下文。异步之后再注册，可能没有可关联的实例，钩子不会按预期触发。</li>
+          <li><strong>卸载时要清理什么？</strong> 结论是清理 Vue 无法自动接管的外部资源。包括 <code>addEventListener</code>、<code>setInterval</code>、WebSocket、第三方实例和手动订阅。否则隐藏或路由切换后回调仍可能执行；watch / watchEffect 的 stop 与 onWatcherCleanup 见 <a href="../02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html">02-onWatcherCleanup</a>。</li>
+          <li><strong>setup 同步代码与 onMounted 的分工？</strong> 结论是 setup 做不依赖 DOM 的初始化（状态、watch、provide），onMounted 做 DOM 就绪后的工作（测量、第三方库 init、focus）。本页刷新后日志区为空直到子组件挂载完成，即 mounted 是「DOM 已存在」的分界线。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/api/composition-api-lifecycle.html" target="_blank" rel="noreferrer">Vue 3 API：Composition API Lifecycle Hooks</a></li>
-          <li><a href="https://vuejs.org/guide/essentials/lifecycle.html" target="_blank" rel="noreferrer">Vue 3 Guide：Lifecycle Hooks</a></li>
+          <li><a href="https://vuejs.org/api/composition-api-lifecycle.html" target="_blank" rel="noreferrer">Vue 3 官方 API：Composition API Lifecycle Hooks</a></li>
+          <li><a href="https://vuejs.org/guide/essentials/lifecycle.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Lifecycle Hooks</a></li>
+          <li><a href="./04-%E5%85%A8%E9%87%8F%E9%92%A9%E5%AD%90%E4%B8%8EKeepAlive.html">本系列：全量钩子与 KeepAlive</a></li>
+          <li><a href="./02-composable%E5%A4%8D%E7%94%A8.html">本系列：composable 复用</a></li>
         </ul>
       </div>
     </section>
@@ -65,31 +72,62 @@
     <div id="app">
       <h1>Composition API 生命周期</h1>
       <div class="box">
-        <button @click="show = !show">挂载/卸载子组件</button>
+        <button type="button" @click="show = !show">{{ show ? "卸载" : "挂载" }}子组件</button>
+        <button type="button" @click="logs = []" :disabled="!logs.length">清空日志</button>
+        <p class="hint-inline">子组件 {{ show ? "已挂载" : "已卸载" }}。打开控制台可见 <code>[lifecycle]</code> 前缀日志；点子组件「+1」观察 update 钩子。</p>
         <child-demo v-if="show"></child-demo>
-        <pre>{{ logs.join("\n") }}</pre>
+        <p v-else class="hint-inline">（子组件已 v-if 卸载，再次挂载会重新走 mount 流程）</p>
+        <pre>{{ logs.length ? logs.join("\n") : "（等待子组件挂载…）" }}</pre>
       </div>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // 从全局 Vue 解构本页用到的 Composition API
       const {
-        createApp, ref,
-        onBeforeMount, onMounted, onBeforeUpdate, onUpdated, onBeforeUnmount, onUnmounted
+        createApp, ref, provide, inject,
+        onBeforeMount, onMounted, onBeforeUpdate, onUpdated, onBeforeUnmount, onUnmounted,
       } = Vue;
 
       const ChildDemo = {
-        template: `<p>子组件 count：{{ count }} <button @click="count++">+1</button></p>`,
+        template: `<p>子组件 count：{{ count }} <button type="button" @click="count++">+1</button></p>`,
         setup() {
+          // 子组件本地状态；每次挂载都是新实例
           const count = ref(0);
-          const logs = window.__logs;
-          onBeforeMount(() => logs.value.push("子组件 onBeforeMount"));
-          onMounted(() => logs.value.push("子组件 onMounted"));
-          onBeforeUpdate(() => logs.value.push("子组件 onBeforeUpdate"));
-          onUpdated(() => logs.value.push("子组件 onUpdated"));
-          onBeforeUnmount(() => logs.value.push("子组件 onBeforeUnmount"));
-          onUnmounted(() => logs.value.push("子组件 onUnmounted"));
+          // 从父级 inject 共享日志 ref（演示跨组件写入，非生命周期必需）
+          const logs = inject("lifecycleLogs");
+
+          // --- 挂载阶段 ---
+          onBeforeMount(() => {
+            logs.value.push("子组件 onBeforeMount");
+            console.log("[lifecycle] onBeforeMount");
+          });
+          onMounted(() => {
+            logs.value.push("子组件 onMounted（DOM 已就绪）");
+            console.log("[lifecycle] onMounted");
+          });
+
+          // --- 更新阶段：点 +1 触发 ---
+          onBeforeUpdate(() => {
+            logs.value.push("子组件 onBeforeUpdate");
+            console.log("[lifecycle] onBeforeUpdate, count 即将变为", count.value + 1);
+          });
+          onUpdated(() => {
+            logs.value.push(`子组件 onUpdated（count = ${count.value}）`);
+            console.log("[lifecycle] onUpdated, count =", count.value);
+          });
+
+          // --- 卸载阶段：父组件 v-if=false 触发 ---
+          onBeforeUnmount(() => {
+            logs.value.push("子组件 onBeforeUnmount");
+            console.log("[lifecycle] onBeforeUnmount");
+          });
+          onUnmounted(() => {
+            logs.value.push("子组件 onUnmounted（资源应在此清理）");
+            console.log("[lifecycle] onUnmounted");
+          });
+
           return { count };
         },
       };
@@ -99,7 +137,10 @@
         setup() {
           const show = ref(true);
           const logs = ref([]);
-          window.__logs = logs;
+
+          // 提供给子组件写入生命周期日志
+          provide("lifecycleLogs", logs);
+
           return { show, logs };
         },
       }).mount("#app");

@@ -6,6 +6,7 @@
     - v-model:subtitle 这类参数可在同一组件上声明多个双向绑定
     - 子组件不能直接改 prop，必须 emit update 事件让父组件更新单一数据源
     - 输入值、修饰符和类型转换要由组件契约显式处理
+    - Vue 3.4+ defineModel 简化声明，见同章 05 页
   面试:
     - Vue 3 组件 v-model 编译后等价于什么？
     - 多个 v-model 如何避免字段名和事件名写错？
@@ -23,9 +24,12 @@
     <script src="../../libs/vue.global.js"></script>
     <style>
       body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      input { padding: 6px 10px; display: block; margin: 8px 0; }
-      code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
+      input { padding: 6px 10px; display: block; margin: 8px 0; width: 100%; max-width: 360px; box-sizing: border-box; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; max-height: 180px; }
       .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -38,24 +42,25 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue 3 组件上的默认 <code>v-model</code> 等价于传入 <code>modelValue</code>，并监听 <code>update:modelValue</code>；本页 <code>SmartForm</code> 用输入事件触发父组件更新。</li>
-          <li><code>v-model:subtitle</code> 会展开为 <code>subtitle</code> prop 和 <code>update:subtitle</code> 事件，因此同一组件可以暴露多个独立模型，适合表单组件拆分主值、副值或配置项。</li>
-          <li>子组件接收的 prop 是只读输入，不能直接修改；正确做法是声明 <code>emits</code> 并发出 <code>update:xxx</code>，让父组件作为单一数据源决定是否接受新值。</li>
-          <li>组件 v-model 只是父子同步协议，不会自动处理输入校验、空字符串、数字转换、去空格或 IME 输入边界；这些应通过组件 props、修饰符或内部校验明确约定。</li>
-          <li>用户输入通过模板插值显示时会被 Vue 转义为文本；如果把输入拼进 <code>v-html</code> 或第三方 DOM API，就需要额外处理 XSS 风险。</li>
+          <li>Vue 3 组件上的默认 <code>v-model</code> 等价于传入 <code>:modelValue="title"</code>，并监听 <code>@update:modelValue</code>；本页 <code>SmartForm</code> 用 <code>@input</code> 触发 <code>update:modelValue</code>，父组件 title 同步更新。</li>
+          <li><code>v-model:subtitle</code> 会展开为 <code>subtitle</code> prop 和 <code>update:subtitle</code> 事件，因此同一组件可以暴露多个独立模型。改两个输入框时，下方「父组件 title / subtitle」与 pre 区更新日志同步变化。</li>
+          <li>子组件接收的 prop 是只读输入，不能直接修改；正确做法是声明 <code>emits</code> 并发出 <code>update:xxx</code>，让父组件作为单一数据源决定是否接受新值。props / emit 基础见 <a href="./01-props%E4%B8%8Eemit.html">01-props与emit</a>。</li>
+          <li>组件 v-model 只是父子同步协议，不会自动处理输入校验、空字符串、数字转换、去空格或 IME 输入边界；这些应通过组件 props、修饰符或内部校验明确约定。点「父组件重置」可验证单向数据流：父改值后子输入框同步。</li>
+          <li>Vue 3.4+ 可用 <code>defineModel</code> 减少 prop + emit + computed 样板代码，见 <a href="./05-defineModel%E7%BB%84%E4%BB%B6v-model.html">05-defineModel（3.4+）</a>。用户输入通过模板插值显示时会被 Vue 转义为文本，<code>v-html</code> 需防 XSS。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue 3 组件 v-model 编译后等价于什么？</strong> 结论是默认等价于 <code>:modelValue="x"</code> 加 <code>@update:modelValue="x = $event"</code>。原因是 Vue 把双向绑定拆成单向数据输入和事件输出，仍保持父组件拥有状态。边界是组件必须按约定声明 prop 和 emit，否则绑定不会形成预期同步。</li>
-          <li><strong>多个 v-model 怎么实现？</strong> 结论是使用带参数写法，例如本页的 <code>v-model:subtitle</code>。它会匹配 <code>subtitle</code> prop 与 <code>update:subtitle</code> 事件，适合一个组件暴露多个可编辑字段。项目里要统一命名，避免 prop 名、事件名和文档不一致。</li>
-          <li><strong>为什么子组件不能直接修改 modelValue？</strong> 结论是 prop 属于父组件数据源，子组件直接写会破坏单向数据流并触发警告。通过 emit 更新能让父组件参与校验、拒绝或转换数据。复杂表单中还要定义空值、非法值、提交失败时的回滚策略。</li>
-          <li><strong>什么时候用 v-model，什么时候用普通 props / emit？</strong> 可编辑表单值、开关状态、选择器值优先用 v-model，因为语义是“父子同步一个模型”。一次性动作、保存、删除、加载失败等事件用普通 emit 更清晰。只读展示仍用 props，不要为了省事件把所有通信都包装成 v-model。</li>
+          <li><strong>Vue 3 组件 v-model 编译后等价于什么？</strong> 结论是默认等价于 <code>:modelValue="x"</code> 加 <code>@update:modelValue="x = $event"</code>。原因是 Vue 把双向绑定拆成单向数据输入和事件输出，仍保持父组件拥有状态。本页 pre 区展示等价展开写法。</li>
+          <li><strong>多个 v-model 怎么实现？</strong> 结论是使用带参数写法，例如本页的 <code>v-model:subtitle</code>。它会匹配 <code>subtitle</code> prop 与 <code>update:subtitle</code> 事件。项目里要统一命名，避免 prop 名、事件名和文档不一致。</li>
+          <li><strong>为什么子组件不能直接修改 modelValue？</strong> 结论是 prop 属于父组件数据源，子组件直接写会破坏单向数据流并触发警告。通过 emit 更新能让父组件参与校验、拒绝或转换数据。</li>
+          <li><strong>什么时候用 v-model，什么时候用普通 props / emit？</strong> 可编辑表单值、开关状态、选择器值优先用 v-model。一次性动作、保存、删除、加载失败等事件用普通 emit 更清晰。只读展示仍用 props。</li>
+          <li><strong>表单组件如何处理空值和类型边界？</strong> 结论是明确 prop 类型、空值语义（<code>null</code> vs <code>''</code>）和 emit 前的转换。v-model 不替你做校验；数字输入应在 setter 或父组件侧 <code>Number()</code> 并处理 NaN。修饰符需组件显式读取 <code>modelModifiers</code>。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/guide/components/v-model.html" target="_blank" rel="noreferrer">Vue 官方指南：组件 v-model</a></li>
-          <li><a href="https://vuejs.org/guide/components/events.html" target="_blank" rel="noreferrer">Vue 官方指南：组件事件</a></li>
-          <li><a href="https://vuejs.org/guide/best-practices/security.html#html-injection" target="_blank" rel="noreferrer">Vue 官方指南：安全与 HTML 注入</a></li>
+          <li><a href="https://vuejs.org/guide/components/v-model.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Component v-model</a></li>
+          <li><a href="https://vuejs.org/guide/components/events.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Component Events</a></li>
+          <li><a href="./05-defineModel%E7%BB%84%E4%BB%B6v-model.html">本系列：defineModel（Vue 3.4+）</a></li>
         </ul>
       </div>
     </section>
@@ -65,16 +70,20 @@
     <div id="app">
       <h1>组件 v-model</h1>
       <div class="box">
+        <p class="hint-inline">等价于 <code>:modelValue</code> + <code>@update:modelValue</code> 与 <code>:subtitle</code> + <code>@update:subtitle</code>。改输入观察父组件值与日志。</p>
         <smart-form v-model="title" v-model:subtitle="subtitle"></smart-form>
         <p>父组件 title：{{ title }}</p>
         <p>父组件 subtitle：{{ subtitle }}</p>
+        <button type="button" @click="reset">父组件重置为默认值</button>
+        <pre>{{ syncLogs.length ? syncLogs.join("\n") : "（编辑输入框观察 sync 日志）" }}</pre>
       </div>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      const { createApp, ref } = Vue;
+      // 从全局 Vue 解构本页用到的 Composition API
+      const { createApp, ref, watch } = Vue;
 
       const SmartForm = {
         props: {
@@ -85,29 +94,48 @@
         template: `
         <div>
           <label>
-            标题（默认 v-model）：
+            标题（默认 v-model → modelValue）：
             <input
-            :value="modelValue"
-            @input="$emit('update:modelValue', $event.target.value)"
+              :value="modelValue"
+              @input="$emit('update:modelValue', $event.target.value)"
             />
           </label>
           <label>
             副标题（v-model:subtitle）：
             <input
-            :value="subtitle"
-            @input="$emit('update:subtitle', $event.target.value)"
+              :value="subtitle"
+              @input="$emit('update:subtitle', $event.target.value)"
             />
           </label>
         </div>
         `,
       };
 
+      // --- 挂载应用 ---
+
+
       createApp({
         components: { SmartForm },
         setup() {
+          // --- 演示状态 ---
           const title = ref("Vue3 面试");
           const subtitle = ref("组合式 API");
-          return { title, subtitle };
+          const syncLogs = ref([]);
+
+          // 监听父级模型变化，记录同步日志
+          watch([title, subtitle], ([t, s]) => {
+            syncLogs.value.push(`父组件同步 → title="${t}", subtitle="${s}"`);
+            if (syncLogs.value.length > 6) syncLogs.value.shift();
+            console.log("[v-model] 父组件更新", t, s);
+          });
+
+          function reset() {
+            title.value = "Vue3 面试";
+            subtitle.value = "组合式 API";
+            syncLogs.value.push("父组件 reset() 重置两个字段");
+          }
+
+          return { title, subtitle, syncLogs, reset };
         },
       }).mount("#app");
 

@@ -6,11 +6,13 @@
     - 挂载、更新、卸载钩子对应 DOM 首次渲染、patch 前后和组件销毁阶段
     - KeepAlive 缓存组件不会立即卸载，会额外触发 onActivated / onDeactivated
     - 钩子拼写和注册时机必须准确，onUnmounted 不能写成 onUnMounted
+    - Vue 3.5+ useTemplateRef 简化模板 ref，本页仍用 ref(null) 演示挂载后访问
   面试:
     - Vue 3 全量生命周期钩子如何按阶段记忆？
     - KeepAlive 下为什么会触发 activated / deactivated 而不是每次 mounted / unmounted？
     - onUpdated 中更新状态有什么风险？
     - onUnmounted 和 onDeactivated 清理资源的边界是什么？
+    - 切换 KeepAlive 内组件 key 与切换 tab 名有何生命周期差异？
 -->
 
 <!doctype html>
@@ -22,9 +24,12 @@
     <script src="../../libs/vue.global.js"></script>
     <style>
       body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; padding: 6px 12px; }
-      pre { background: #f6f8fa; border-radius: 8px; padding: 12px; overflow: auto; max-height: 280px; }
+      button { margin-right: 8px; margin-top: 4px; padding: 6px 12px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; max-height: 280px; }
       .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
       .dom-target { padding: 8px; background: #eef5ff; border-radius: 6px; margin: 8px 0; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
@@ -38,24 +43,27 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>setup()</code> 承担创建阶段初始化，Composition API 生命周期统一以 <code>onXxx</code> 函数注册，并且要在 <code>setup</code> 同步阶段调用。</li>
-          <li>挂载阶段是 <code>onBeforeMount</code> / <code>onMounted</code>，更新阶段是 <code>onBeforeUpdate</code> / <code>onUpdated</code>，卸载阶段是 <code>onBeforeUnmount</code> / <code>onUnmounted</code>。</li>
-          <li>示例中根组件和缓存子组件都会把钩子写入日志，点击切换能看到 DOM 挂载、响应式更新和组件隐藏之间的差异。</li>
-          <li><code>&lt;KeepAlive&gt;</code> 缓存的组件被切走时不会立即销毁，而是触发 <code>onDeactivated</code>；再次显示时触发 <code>onActivated</code>。只有缓存被移除或容器卸载时才进入 unmount 阶段。</li>
-          <li>常见坑包括把 <code>onUnmounted</code> 写成 <code>onUnMounted</code>、忘记从 <code>Vue</code> 解构钩子、在 <code>onUpdated</code> 中无条件改状态造成循环更新，以及把暂停逻辑误放到卸载清理里。</li>
+          <li><code>setup()</code> 承担创建阶段初始化，Composition API 生命周期统一以 <code>onXxx</code> 函数注册，并且要在 <code>setup</code> 同步阶段调用。基础钩子演示见 <a href="./01-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E9%92%A9%E5%AD%90.html">01-生命周期钩子</a>。</li>
+          <li>挂载阶段是 <code>onBeforeMount</code> / <code>onMounted</code>，更新阶段是 <code>onBeforeUpdate</code> / <code>onUpdated</code>，卸载阶段是 <code>onBeforeUnmount</code> / <code>onUnmounted</code>。本页根组件 mounted 后日志会显示 <code>elRef 已挂载：true</code>，证明模板 ref 在 mounted 后才可用。</li>
+          <li>点缓存子组件「+1」会触发 <code>onBeforeUpdate</code> / <code>onUpdated</code>；点「切换缓存页」在 A/B 之间切换时，日志出现 <code>onDeactivated</code> / <code>onActivated</code> 而<strong>不会</strong>重复 mounted，说明实例被 KeepAlive 保留。</li>
+          <li><code>&lt;KeepAlive&gt;</code> 缓存的组件被切走时不会立即销毁，而是触发 <code>onDeactivated</code>；再次显示时触发 <code>onActivated</code>。点「显示/隐藏 KeepAlive 区域」把整个 keep-alive 卸载时，才会看到 unmount 钩子。动态组件 + KeepAlive 详见 <a href="../05-%E6%8F%92%E6%A7%BD%E4%B8%8E%E7%BB%84%E4%BB%B6%E5%BD%A2%E6%80%81/02-%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6%E4%B8%8E%E5%BC%82%E6%AD%A5%E7%BB%84%E4%BB%B6.html">05-动态组件与异步组件</a>。</li>
+          <li>本页用 <code>:key="currentTab"</code> 区分 A/B 两个缓存实例；切换 tab 时各自 count 会保留（切回 A 可见之前 +1 的结果）。若去掉 key，A/B 会复用同一实例，行为不同。</li>
+          <li>常见坑包括把 <code>onUnmounted</code> 写成 <code>onUnMounted</code>、忘记从 <code>Vue</code> 解构钩子、在 <code>onUpdated</code> 中无条件改状态造成循环更新。Vue 3.5+ 可用 <code>useTemplateRef</code> 替代手动 ref 配对，见 <a href="../01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/06-useTemplateRef%E6%A8%A1%E6%9D%BFref.html">01-useTemplateRef（3.5+）</a>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>Vue 3 生命周期如何按阶段记忆？</strong> 结论是创建逻辑在 <code>setup</code>，之后按挂载、更新、卸载三组 before / after 钩子记忆。原因是 Composition API 用函数注册替代 Options API 的同名选项。项目里依赖 DOM 的逻辑放 mounted，资源释放放 unmounted。</li>
-          <li><strong><code>KeepAlive</code> 为什么触发 activated / deactivated？</strong> 结论是缓存组件切换时实例被保留，不会每次销毁重建。原因是 <code>KeepAlive</code> 保存组件实例和状态，再次显示时激活缓存。项目里计时器、轮询、媒体播放等应在 deactivated 暂停，在 activated 恢复。</li>
+          <li><strong>Vue 3 生命周期如何按阶段记忆？</strong> 结论是创建逻辑在 <code>setup</code>，之后按挂载、更新、卸载三组 before / after 钩子记忆；KeepAlive 额外有 activated / deactivated。原因是 Composition API 用函数注册替代 Options API 的同名选项。本页按钮操作可对照日志验证各阶段。</li>
+          <li><strong><code>KeepAlive</code> 为什么触发 activated / deactivated？</strong> 结论是缓存组件切换时实例被保留，不会每次销毁重建。本页切换 A/B 只出现 activated/deactivated，不出现第二次 mounted。项目里计时器、轮询应在 deactivated 暂停，在 activated 恢复。</li>
           <li><strong><code>onUpdated</code> 里能改状态吗？</strong> 结论是不应无条件修改会触发本组件更新的状态。原因是 updated 已经在 DOM patch 之后，继续改同一依赖可能形成更新循环。需要响应 DOM 变化时，优先明确触发条件或使用 <code>watch</code> / <code>nextTick</code>。</li>
-          <li><strong><code>onUnmounted</code> 和 <code>onDeactivated</code> 怎么分工？</strong> 结论是 unmounted 做最终释放，deactivated 做缓存组件临时停用。原因是 KeepAlive 组件停用后还可能回来。项目里 WebSocket 可在 unmounted 关闭，页面不可见时的轮询可在 deactivated 暂停。</li>
+          <li><strong><code>onUnmounted</code> 和 <code>onDeactivated</code> 怎么分工？</strong> 结论是 unmounted 做最终释放，deactivated 做缓存组件临时停用。本页隐藏 KeepAlive 区域才出现 unmounted；仅切换 tab 只触发 deactivated。WebSocket 可在 unmounted 关闭，页面不可见时的轮询可在 deactivated 暂停。</li>
+          <li><strong>切换 KeepAlive 内组件 key 与切换 tab 名有何差异？</strong> 结论是不同的 key 会创建不同缓存槽位，各自保留状态；同一 key 复用实例。本页 A/B 用不同 key，因此 count 独立保留。若业务需要强制重建实例，应改 key 或不用 KeepAlive。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/api/composition-api-lifecycle.html" target="_blank" rel="noreferrer">Vue 3 API：Composition API Lifecycle Hooks</a></li>
-          <li><a href="https://vuejs.org/guide/built-ins/keep-alive.html" target="_blank" rel="noreferrer">Vue 3 Guide：KeepAlive</a></li>
-          <li><a href="https://vuejs.org/api/built-in-components.html#keepalive" target="_blank" rel="noreferrer">Vue 3 API：&lt;KeepAlive&gt;</a></li>
+          <li><a href="https://vuejs.org/api/composition-api-lifecycle.html" target="_blank" rel="noreferrer">Vue 3 官方 API：Composition API Lifecycle Hooks</a></li>
+          <li><a href="https://vuejs.org/guide/built-ins/keep-alive.html" target="_blank" rel="noreferrer">Vue 3 官方文档：KeepAlive</a></li>
+          <li><a href="https://vuejs.org/api/built-in-components.html#keepalive" target="_blank" rel="noreferrer">Vue 3 官方 API：&lt;KeepAlive&gt;</a></li>
+          <li><a href="./01-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E9%92%A9%E5%AD%90.html">本系列：生命周期钩子</a></li>
         </ul>
       </div>
     </section>
@@ -65,21 +73,24 @@
     <div id="app">
       <h1>Composition API 生命周期钩子</h1>
       <div class="box">
-        <button @click="showChild = !showChild">显示/隐藏 KeepAlive 区域</button>
-        <button @click="currentTab = currentTab === 'A' ? 'B' : 'A'" :disabled="!showChild">切换缓存页</button>
-        <p ref="elRef" class="dom-target">根组件 DOM 节点（onMounted 后可访问）</p>
+        <button type="button" @click="showChild = !showChild">{{ showChild ? "隐藏" : "显示" }} KeepAlive 区域</button>
+        <button type="button" @click="currentTab = currentTab === 'A' ? 'B' : 'A'" :disabled="!showChild">切换缓存页（A ↔ B）</button>
+        <button type="button" @click="logs = []" :disabled="!logs.length">清空日志</button>
+        <p ref="elRef" class="dom-target">根组件 DOM 节点（onMounted 后 elRef 才非 null）</p>
+        <p class="hint-inline">当前 tab：{{ showChild ? currentTab : "—" }}。切换 tab 观察 activated/deactivated；隐藏区域观察 unmounted。打开控制台可见 <code>[lifecycle]</code> 日志。</p>
         <keep-alive v-if="showChild">
           <cached-panel :key="currentTab" :tab="currentTab"></cached-panel>
         </keep-alive>
-        <pre>{{ logs.join("\n") }}</pre>
+        <pre>{{ logs.length ? logs.join("\n") : "（操作上方按钮观察生命周期）" }}</pre>
       </div>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // 从全局 Vue 解构本页用到的 Composition API
       const {
-        createApp, ref,
+        createApp, ref, provide, inject,
         onBeforeMount, onMounted,
         onBeforeUpdate, onUpdated,
         onBeforeUnmount, onUnmounted,
@@ -91,39 +102,61 @@
         template: `
         <div>
           <p>KeepAlive 缓存页 {{ tab }}，count：{{ count }}
-            <button @click="count++">+1</button>
+            <button type="button" @click="count++">+1</button>
           </p>
         </div>
         `,
         setup(props) {
           const count = ref(0);
-          const logs = window.__lifecycleLogs;
+          const logs = inject("lifecycleLogs");
 
-          onBeforeMount(() => logs.value.push(`[${props.tab}] onBeforeMount`));
-          onMounted(() => logs.value.push(`[${props.tab}] onMounted`));
-          onBeforeUpdate(() => logs.value.push(`[${props.tab}] onBeforeUpdate`));
-          onUpdated(() => logs.value.push(`[${props.tab}] onUpdated`));
-          onBeforeUnmount(() => logs.value.push(`[${props.tab}] onBeforeUnmount`));
-          onUnmounted(() => logs.value.push(`[${props.tab}] onUnmounted`));
-          onActivated(() => logs.value.push(`[${props.tab}] onActivated（从缓存恢复）`));
-          onDeactivated(() => logs.value.push(`[${props.tab}] onDeactivated（进入缓存）`));
+          function tag(hook) {
+            return `[${props.tab}] ${hook}`;
+          }
+
+          onBeforeMount(() => logs.value.push(tag("onBeforeMount")));
+          onMounted(() => {
+            logs.value.push(tag("onMounted"));
+            console.log("[lifecycle]", tag("onMounted"));
+          });
+          onBeforeUpdate(() => logs.value.push(tag("onBeforeUpdate")));
+          onUpdated(() => logs.value.push(tag(`onUpdated（count=${count.value}）`)));
+          onBeforeUnmount(() => logs.value.push(tag("onBeforeUnmount")));
+          onUnmounted(() => {
+            logs.value.push(tag("onUnmounted"));
+            console.log("[lifecycle]", tag("onUnmounted"));
+          });
+          onActivated(() => {
+            logs.value.push(tag("onActivated（从缓存恢复）"));
+            console.log("[lifecycle]", tag("onActivated"));
+          });
+          onDeactivated(() => {
+            logs.value.push(tag("onDeactivated（进入缓存）"));
+            console.log("[lifecycle]", tag("onDeactivated"));
+          });
 
           return { count };
         },
       };
 
-      const app = createApp({
+      // --- 挂载应用 ---
+
+
+      createApp({
         components: { CachedPanel },
         setup() {
+          // --- 演示状态 ---
           const logs = ref([]);
           const showChild = ref(true);
           const currentTab = ref("A");
           const elRef = ref(null);
-          window.__lifecycleLogs = logs;
+
+          provide("lifecycleLogs", logs);
 
           onBeforeMount(() => logs.value.push("根组件 onBeforeMount"));
           onMounted(() => {
             logs.value.push(`根组件 onMounted，elRef 已挂载：${!!elRef.value}`);
+            console.log("[lifecycle] 根 onMounted, elRef =", elRef.value);
           });
           onBeforeUpdate(() => logs.value.push("根组件 onBeforeUpdate"));
           onUpdated(() => logs.value.push("根组件 onUpdated"));
@@ -132,9 +165,7 @@
 
           return { logs, showChild, currentTab, elRef };
         },
-      });
-
-      app.mount("#app");
+      }).mount("#app");
 
     </script>
     <!-- SCRIPT_END -->

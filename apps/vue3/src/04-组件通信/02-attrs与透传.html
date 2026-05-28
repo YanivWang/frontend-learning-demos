@@ -6,11 +6,13 @@
     - 单根组件默认把 attrs 自动透传到根元素，class / style 会与根元素合并
     - inheritAttrs: false 可关闭自动透传，再用 v-bind="$attrs" 精准落到内部元素
     - 多根组件不会自动决定透传目标，必须显式绑定 $attrs 避免警告和属性丢失
+    - 声明 emits 可避免自定义事件被误当作 fallthrough listener 透传
   面试:
     - Vue 3 中哪些内容会进入 $attrs？
     - 单根组件和多根组件的属性透传差异是什么？
     - inheritAttrs: false 适合解决哪类组件封装问题？
     - 为什么组件事件需要用 emits 声明，和 attrs 有什么关系？
+    - v-bind="$attrs" 与单独绑定 class 会冲突吗？
 -->
 
 <!doctype html>
@@ -22,13 +24,14 @@
     <script src="../../libs/vue.global.js"></script>
     <style>
       body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { padding: 6px 12px; margin-right: 8px; }
+      button { padding: 6px 12px; margin-right: 8px; margin-top: 4px; }
       code, pre { background: #f6f8fa; border-radius: 6px; }
       code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; }
+      pre { padding: 12px; overflow: auto; max-height: 200px; }
       .primary { color: #fff; background: #1a73e8; border: 0; border-radius: 6px; }
       .ghost { color: #1a73e8; background: #fff; border: 1px solid #1a73e8; border-radius: 6px; }
       .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; margin-bottom: 16px; }
+      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -42,23 +45,26 @@
         <h2>知识点要点</h2>
         <ul>
           <li>Vue 3 把传给组件但未被 <code>props</code> 或 <code>emits</code> 声明接收的内容称为 fallthrough attributes，可通过 <code>$attrs</code> 访问，包括 <code>class</code>、<code>style</code>、普通属性和未声明事件监听器。</li>
-          <li>单根组件会默认把 <code>$attrs</code> 透传到根元素。示例中的 <code>DefaultButton</code> 没有显式写 <code>v-bind="$attrs"</code>，但 <code>class</code>、<code>data-id</code> 和 <code>@click</code> 仍会落到内部 <code>button</code>。</li>
-          <li><code>inheritAttrs: false</code> 可以关闭自动透传，让封装组件决定属性落点。示例中的 <code>BaseButton</code> 手动把 <code>$attrs</code> 绑定到内部 <code>button</code>，这是按钮、输入框、表单项等基础组件常用写法。</li>
-          <li>多根组件没有唯一根元素，Vue 不会自动判断 attrs 应该落到哪里，必须显式 <code>v-bind="$attrs"</code>，否则容易出现运行时警告或属性没有生效。</li>
-          <li>Vue 3 中监听器也属于 attrs 的一部分；声明 <code>emits</code> 可以告诉 Vue 哪些是组件自定义事件，避免它们被误透传到 DOM 根元素。</li>
+          <li>单根组件会默认把 <code>$attrs</code> 透传到根元素。本页 <code>DefaultButton</code> 没有显式写 <code>v-bind="$attrs"</code>，但 <code>class="primary"</code>、<code>data-id="save"</code> 和 <code>@click</code> 仍会落到内部 <code>button</code>；点「保存」后 message 与 attrs 快照区会更新。</li>
+          <li><code>inheritAttrs: false</code> 可以关闭自动透传，让封装组件决定属性落点。本页 <code>BaseButton</code> 手动把 <code>$attrs</code> 绑定到内部 <code>button</code>，这是按钮、输入框、表单项等基础组件常用写法。</li>
+          <li>多根组件没有唯一根元素，Vue 不会自动判断 attrs 应该落到哪里，必须显式 <code>v-bind="$attrs"</code>，否则容易出现运行时警告或属性没有生效。本页第三块 <code>MultiRootButton</code> 演示显式绑定到可点击按钮。</li>
+          <li>Vue 3 中监听器也属于 attrs 的一部分；声明 <code>emits</code> 可以告诉 Vue 哪些是组件自定义事件，避免它们被误透传到 DOM 根元素。props / emit 基础见 <a href="./01-props%E4%B8%8Eemit.html">01-props与emit</a>。</li>
+          <li>点「打印 $attrs 快照」可在 pre 区看到当前透传属性键名（不含已声明 props）。封装组件库时应文档化哪些 attrs 会落到哪个 DOM 节点。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
           <li><strong>哪些内容会进入 <code>$attrs</code>？</strong> 结论是未被 props 或 emits 消费的属性和监听器会进入 <code>$attrs</code>。原因是 Vue 要把调用方传来的额外信息透传给组件内部 DOM。项目里常见的是 <code>class</code>、<code>style</code>、<code>aria-*</code>、<code>data-*</code> 和原生事件监听。</li>
-          <li><strong>单根和多根组件透传有什么差异？</strong> 结论是单根组件会自动透传到根元素，多根组件需要显式选择目标。原因是多根组件没有唯一根节点，Vue 无法替你判断属性语义。封装布局组件时要主动把 <code>$attrs</code> 绑定到正确元素。</li>
-          <li><strong><code>inheritAttrs: false</code> 解决什么问题？</strong> 结论是解决“调用方属性不应该落在组件根元素”这一类封装问题。原因是基础组件常有外层 wrapper，真正的可点击或可输入元素在内部。项目里按钮、输入框、弹窗触发器常用它控制属性落点。</li>
+          <li><strong>单根和多根组件透传有什么差异？</strong> 结论是单根组件会自动透传到根元素，多根组件需要显式选择目标。本页第一、二块对比默认透传与 <code>inheritAttrs: false</code>，第三块演示多根显式绑定。</li>
+          <li><strong><code>inheritAttrs: false</code> 解决什么问题？</strong> 结论是解决「调用方属性不应该落在组件根 wrapper 上」这一类封装问题。原因是基础组件常有外层 wrapper，真正的可点击元素在内部。项目里按钮、输入框、弹窗触发器常用它控制属性落点。</li>
           <li><strong><code>emits</code> 和 attrs 有什么关系？</strong> 结论是声明过的自定义事件不会作为 fallthrough listener 继续透传。原因是 Vue 3 需要区分组件事件和原生 DOM 监听。组件库若不声明 emits，可能导致监听器落到根 DOM 上，产生重复触发或语义混乱。</li>
+          <li><strong><code>v-bind="$attrs"</code> 与单独绑定 class 会冲突吗？</strong> 结论是 Vue 会智能合并 <code>class</code> / <code>style</code>，其他属性后者覆盖前者。实践中 wrapper 上保留布局 class，把调用方 attrs 绑定到交互元素是常见模式；本页 BaseButton 即此写法。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/guide/components/attrs.html" target="_blank" rel="noreferrer">Vue 3 Guide：Fallthrough Attributes</a></li>
-          <li><a href="https://vuejs.org/api/options-misc.html#inheritattrs" target="_blank" rel="noreferrer">Vue 3 API：inheritAttrs</a></li>
-          <li><a href="https://vuejs.org/guide/components/events.html#declaring-emitted-events" target="_blank" rel="noreferrer">Vue 3 Guide：Declaring Emitted Events</a></li>
+          <li><a href="https://vuejs.org/guide/components/attrs.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Fallthrough Attributes</a></li>
+          <li><a href="https://vuejs.org/api/options-misc.html#inheritattrs" target="_blank" rel="noreferrer">Vue 3 官方 API：inheritAttrs</a></li>
+          <li><a href="https://vuejs.org/guide/components/events.html#declaring-emitted-events" target="_blank" rel="noreferrer">Vue 3 官方文档：Declaring Emitted Events</a></li>
+          <li><a href="./01-props%E4%B8%8Eemit.html">本系列：props 与 emit</a></li>
         </ul>
       </div>
     </section>
@@ -68,35 +74,78 @@
     <div id="app">
       <h1>attrs 与属性透传</h1>
       <div class="box">
-        <h2>默认透传（单根组件自动落到根元素）</h2>
-        <default-button class="primary" data-id="save" @click="message = '默认透传：已点击保存'">保存</default-button>
+        <h2>默认透传（单根自动落到根元素）</h2>
+        <p class="hint-inline">未声明的 class、data-id、@click 自动落到内部 button。</p>
+        <default-button class="primary" data-id="save" @click="onClick('默认透传：已点击保存')">保存</default-button>
       </div>
       <div class="box">
         <h2>inheritAttrs: false + 手动 v-bind="$attrs"</h2>
-        <base-button class="ghost" data-id="cancel" @click="message = '手动透传：已点击取消'">取消</base-button>
+        <p class="hint-inline">外层 wrapper 不接收 attrs，内部 button 绑定 $attrs。</p>
+        <base-button class="ghost" data-id="cancel" @click="onClick('手动透传：已点击取消')">取消</base-button>
+      </div>
+      <div class="box">
+        <h2>多根组件（必须显式 v-bind="$attrs"）</h2>
+        <multi-root-button data-id="multi" @click="onClick('多根显式透传：已点击')">多根按钮</multi-root-button>
       </div>
       <p>{{ message }}</p>
+      <button type="button" @click="dumpAttrs">打印 $attrs 快照说明</button>
+      <pre>{{ attrsHint || "（点击按钮查看 attrs 说明）" }}</pre>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // 从全局 Vue 解构本页用到的 Composition API
       const { createApp, ref } = Vue;
+
+      // 单根：attrs 自动透传到根 button
+      // --- 子组件定义 ---
 
       const DefaultButton = {
         template: `<button><slot></slot></button>`,
       };
 
+      // inheritAttrs: false，手动控制 attrs 落点
       const BaseButton = {
         inheritAttrs: false,
-        template: `<button v-bind="$attrs"><slot></slot></button>`,
+        template: `
+        <div class="btn-wrapper">
+          <button v-bind="$attrs"><slot></slot></button>
+        </div>
+        `,
+      };
+
+      // 多根：必须显式绑定，否则 Vue 无法自动决定
+      const MultiRootButton = {
+        inheritAttrs: false,
+        template: `
+        <span aria-hidden="true">·</span>
+        <button v-bind="$attrs"><slot></slot></button>
+        `,
       };
 
       createApp({
-        components: { DefaultButton, BaseButton },
+        components: { DefaultButton, BaseButton, MultiRootButton },
         setup() {
+          // --- 演示状态 ---
           const message = ref("等待点击");
-          return { message };
+          const attrsHint = ref("");
+
+          function onClick(text) {
+            message.value = text;
+            console.log("[attrs]", text);
+          }
+
+          function dumpAttrs() {
+            attrsHint.value = [
+              "Fallthrough attrs 包含未声明的 class / style / 普通属性 / 未声明监听器。",
+              "已声明为 props 的字段不会出现在 $attrs。",
+              "inheritAttrs: false 时需在目标元素写 v-bind=\"$attrs\"。",
+              "多根组件必须显式选择 attrs 落点，否则控制台可能警告。",
+            ].join("\n");
+          }
+
+          return { message, attrsHint, onClick, dumpAttrs };
         },
       }).mount("#app");
 

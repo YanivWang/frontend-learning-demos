@@ -6,6 +6,7 @@
     - 默认插槽处理单出口内容，具名插槽处理 header、footer 等多出口结构
     - 作用域插槽由子组件向插槽内容暴露数据，父组件决定如何渲染
     - 插槽内容在父组件作用域编译，不能直接访问子组件内部状态
+    - 组件库应稳定 slot props 命名并提供默认插槽内容
   面试:
     - 默认插槽、具名插槽和作用域插槽分别解决什么问题？
     - 为什么插槽内容访问的是父组件作用域？
@@ -23,10 +24,13 @@
     <script src="../../libs/vue.global.js"></script>
     <style>
       body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
+      button { margin-right: 8px; margin-top: 4px; padding: 6px 12px; }
       code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
       .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+      .card .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
       .head { font-weight: 700; margin-bottom: 8px; }
       .foot { color: #666; margin-top: 8px; }
+      .item-row { padding: 6px 0; border-bottom: 1px dashed #eee; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -39,23 +43,26 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>插槽是 Vue 的内容分发机制：子组件声明 <code>&lt;slot&gt;</code> 出口，父组件把模板片段传进去，从而让结构由子组件控制、具体内容由调用方决定。</li>
-          <li>默认插槽适合单个主要内容区域，具名插槽适合卡片的 <code>header</code>、<code>footer</code> 等多个出口；本页 <code>BaseCard</code> 同时演示了三种插槽形态。</li>
-          <li>作用域插槽通过 slot props 让子组件把 <code>item</code>、<code>total</code> 等内部数据交给父组件渲染，常用于表格列、自定义列表项、表单项渲染。</li>
-          <li>插槽内容在父组件作用域中编译，因此可以访问父组件变量，但不能直接访问子组件内部变量；需要子组件主动通过 slot props 暴露。</li>
-          <li>组件库设计插槽时要稳定命名和 slot props 结构，并提供默认内容，否则调用方漏写插槽时页面可能空白或语义不完整。</li>
+          <li>插槽是 Vue 的内容分发机制：子组件声明 <code>&lt;slot&gt;</code> 出口，父组件把模板片段传进去，从而让结构由子组件控制、具体内容由调用方决定。本页 <code>BaseCard</code> 同时演示三种插槽形态。</li>
+          <li><code>#header</code> 具名插槽渲染「文章列表」标题；默认插槽（可写 <code>#default</code> 或省略）接收列表项模板；<code>#footer</code> 具名插槽显示「共 N 篇」。点「添加文章」后 footer 的 total 自动更新。</li>
+          <li>作用域插槽通过 slot props 让子组件把 <code>item</code>、<code>total</code> 等内部数据交给父组件渲染。本页默认插槽使用 <code>#default="{ item }"</code>，父组件决定每行显示 <code>strong</code> 标题 + summary，子组件只负责循环和数据。</li>
+          <li>插槽内容在<strong>父组件作用域</strong>中编译，因此可以访问父组件变量（如 <code>highlight</code>），但不能直接访问子组件内部变量；需要子组件主动通过 slot props 暴露。勾选「高亮模式」后标题变红，证明父级状态可参与插槽渲染。</li>
+          <li>子组件可为插槽提供默认内容：本页 footer 若父组件未传 <code>#footer</code>，会显示「（默认 footer：暂无统计）」；header 同理。组件库设计插槽时要稳定命名和 slot props 结构。</li>
+          <li>动态组件与插槽组合见 <a href="./02-%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6%E4%B8%8E%E5%BC%82%E6%AD%A5%E7%BB%84%E4%BB%B6.html">02-动态组件与异步组件</a>；列表数据通信见 <a href="../04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/01-props%E4%B8%8Eemit.html">04-props与emit</a>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>默认插槽、具名插槽和作用域插槽分别解决什么问题？</strong> 默认插槽解决单出口内容组合，具名插槽解决多区域内容分发，作用域插槽解决“子组件提供数据、父组件决定渲染”的问题。原因是插槽把组件外观扩展点暴露给调用方。边界是数据修改仍应通过 props / emit 或上下文 API 管理，不要把插槽当状态管理。</li>
-          <li><strong>为什么插槽内容访问的是父组件作用域？</strong> 结论是插槽内容由父组件模板编译，所以变量解析发生在父组件上下文。子组件只决定插槽出口位置，不能让父组件直接读取子组件局部变量。需要暴露数据时必须通过 slot props，就像本页的 <code>item</code> 和 <code>total</code>。</li>
-          <li><strong>作用域插槽和传组件 props 有什么区别？</strong> 作用域插槽更适合组件库提供渲染扩展点，例如表格单元格、列表项、卡片区域。传组件 props 更适合固定子组件类型和清晰输入。项目里如果调用方需要完全控制一块模板，作用域插槽通常比塞很多配置项更清楚。</li>
-          <li><strong>插槽 API 的常见坑是什么？</strong> 结论是命名、默认内容和 slot props 契约要稳定。原因是插槽是调用方写模板，字段改名会直接破坏渲染。组件库升级时应避免随意改 slot props，必要时保留兼容或写清迁移说明。</li>
+          <li><strong>默认插槽、具名插槽和作用域插槽分别解决什么问题？</strong> 默认插槽解决单出口内容组合，具名插槽解决多区域内容分发，作用域插槽解决「子组件提供数据、父组件决定渲染」。本页一张卡片同时包含 header / default / footer 三种出口。</li>
+          <li><strong>为什么插槽内容访问的是父组件作用域？</strong> 结论是插槽内容由父组件模板编译，变量解析发生在父组件上下文。本页 <code>highlight</code>  checkbox 在父组件定义，插槽内 <code>:style</code> 可直接使用。子组件数据须通过 <code>:item="item"</code> 等 slot props 暴露。</li>
+          <li><strong>作用域插槽和传组件 props 有什么区别？</strong> 作用域插槽更适合组件库提供渲染扩展点，例如表格单元格、列表项。传 render props 或固定子组件类型适合结构固定的场景。项目里调用方需要完全控制一块模板时，作用域插槽通常比塞很多配置项更清楚。</li>
+          <li><strong>插槽 API 的常见坑是什么？</strong> 结论是命名、默认内容和 slot props 契约要稳定。slot props 改名会直接破坏调用方模板。缺省插槽内容可避免调用方漏写时页面空白；本页取消 footer 传参可观察默认 footer。</li>
+          <li><strong>插槽与 scoped CSS 会冲突吗？</strong> 插槽内容在父作用域编译，子组件 scoped 样式默认不影响插槽内容（除非 :deep）。组件库文档应说明样式责任边界，避免调用方假设子组件 scoped 会作用于插槽内元素。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/guide/components/slots.html" target="_blank" rel="noreferrer">Vue 官方指南：Slots</a></li>
-          <li><a href="https://vuejs.org/guide/components/slots.html#scoped-slots" target="_blank" rel="noreferrer">Vue 官方指南：Scoped Slots</a></li>
+          <li><a href="https://vuejs.org/guide/components/slots.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Slots</a></li>
+          <li><a href="https://vuejs.org/guide/components/slots.html#scoped-slots" target="_blank" rel="noreferrer">Vue 3 官方文档：Scoped Slots</a></li>
+          <li><a href="./02-%E5%8A%A8%E6%80%81%E7%BB%84%E4%BB%B6%E4%B8%8E%E5%BC%82%E6%AD%A5%E7%BB%84%E4%BB%B6.html">本系列：动态组件与异步组件</a></li>
         </ul>
       </div>
     </section>
@@ -64,43 +71,74 @@
     <!-- PAGE_DOM_START -->
     <div id="app">
       <h1>默认插槽 / 具名插槽 / 作用域插槽</h1>
-      <base-card>
-      <template #header>文章列表</template>
-      <template #default="{ item }">
-        <strong>{{ item.title }}</strong>：{{ item.summary }}
+      <p class="hint-inline">
+        <label><input type="checkbox" v-model="highlight" /> 高亮模式（父组件状态，插槽内可用）</label>
+        <button type="button" @click="showFooter = !showFooter">{{ showFooter ? "移除" : "恢复" }} #footer 插槽</button>
+        <button type="button" @click="addArticle">添加文章</button>
+      </p>
+      <base-card :articles="articles">
+        <template #header>文章列表</template>
+        <template #default="{ item }">
+          <div class="item-row">
+            <strong :style="highlight ? 'color:#d93025' : ''">{{ item.title }}</strong>：{{ item.summary }}
+          </div>
         </template>
-        <template #footer="{ total }">共 {{ total }} 篇</template>
+        <template v-if="showFooter" #footer="{ total }">共 {{ total }} 篇</template>
       </base-card>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // 从全局 Vue 解构本页用到的 Composition API
       const { createApp, ref } = Vue;
 
       const BaseCard = {
-        setup() {
-          const articles = ref([
-            { title: "响应式", summary: "Proxy + 依赖追踪" },
-            { title: "组件通信", summary: "props / emit / provide" },
-          ]);
-          return { articles };
+        props: {
+          articles: { type: Array, required: true },
         },
         template: `
         <section class="card">
-          <div class="head"><slot name="header"></slot></div>
-          <div v-for="item in articles" :key="item.title">
+          <div class="head">
+            <slot name="header">（默认 header：未命名卡片）</slot>
+          </div>
+          <div v-for="item in articles" :key="item.title" class="item-row">
+            <!-- 作用域插槽：向父组件暴露 item -->
             <slot :item="item"></slot>
           </div>
           <div class="foot">
-            <slot name="footer" :total="articles.length"></slot>
+            <!-- 作用域具名插槽：暴露 total -->
+            <slot name="footer" :total="articles.length">（默认 footer：暂无统计）</slot>
           </div>
         </section>
         `,
       };
 
+      // --- 挂载应用 ---
+
+
       createApp({
         components: { BaseCard },
+        setup() {
+          // --- 演示状态 ---
+          // 父组件拥有列表数据，通过 props 传入子组件
+          const articles = ref([
+            { title: "响应式", summary: "Proxy + 依赖追踪" },
+            { title: "组件通信", summary: "props / emit / provide" },
+          ]);
+          const highlight = ref(false);
+          const showFooter = ref(true);
+
+          function addArticle() {
+            articles.value.push({
+              title: "插槽 " + (articles.value.length + 1),
+              summary: "动态添加，footer total 自动更新",
+            });
+            console.log("[slots] 添加文章，total =", articles.value.length);
+          }
+
+          return { articles, highlight, showFooter, addArticle };
+        },
       }).mount("#app");
 
     </script>

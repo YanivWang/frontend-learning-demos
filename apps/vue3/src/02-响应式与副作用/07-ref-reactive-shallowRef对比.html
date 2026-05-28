@@ -3,14 +3,16 @@
   主题: ref / shallowRef / reactive 三种响应式 API 对比
   要点:
     - ref 用 .value 包装任意值，模板顶层自动解包，适合基本类型和可替换对象
-    - reactive 返回深层 Proxy 对象，适合稳定对象模型，但解构会丢失响应式连接
-    - shallowRef 只追踪 .value 整体替换，适合大对象、外部实例或手动刷新场景
-    - 选型核心是状态形态、是否需要整体替换、是否要避免深层代理成本
+    - ref 包裹对象时默认深层响应，改嵌套字段会触发视图
+    - reactive 返回深层 Proxy，解构会丢连接，需 toRefs
+    - shallowRef 只追踪 .value 整体替换，改内部字段通常不更新视图
+    - 选型看状态形态、是否整体替换、是否要避免深层代理成本
   面试:
     - ref 和 reactive 在 JS、模板、解构场景下有什么差异？
     - shallowRef 为什么改内部字段不更新，什么时候应该整体替换？
     - reactive 对象解构后如何保留响应式？
     - 业务状态选 ref、reactive 还是 shallowRef 的判断依据是什么？
+    - triggerRef 在什么场景下需要手动触发？
 -->
 
 <!doctype html>
@@ -23,8 +25,10 @@
     <style>
       body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
       button { margin: 4px 8px 4px 0; padding: 6px 12px; }
+      code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
       .panel { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 16px; max-width: 760px; }
-      h2 { margin-top: 0; font-size: 1.1rem; }
+      .panel h2 { margin-top: 0; font-size: 1.1rem; }
+      .panel .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -37,25 +41,28 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>ref()</code> 返回带 <code>.value</code> 的响应式包装。JavaScript 中读写必须使用 <code>.value</code>，模板里顶层 ref 会自动解包，所以示例中模板直接写 <code>{{ message }}</code>。</li>
-          <li><code>ref()</code> 包裹对象时，默认会把对象深层转为响应式；示例中的 <code>objRef.form.name</code> 改动会更新视图。</li>
-          <li><code>reactive()</code> 返回深层响应式 <code>Proxy</code>，访问字段不需要 <code>.value</code>。它适合形状稳定的对象，但直接解构属性会断开代理访问，跨函数传递字段时应使用 <code>toRef()</code> / <code>toRefs()</code>。</li>
-          <li><code>shallowRef()</code> 只追踪 <code>.value</code> 本身的替换，不递归代理内部对象。示例中改内部 <code>form.name</code> 不会稳定更新，整体替换 <code>.value</code> 才会触发视图。</li>
-          <li>现代 Vue 3 项目常用 <code>ref</code> 表达可替换状态，用 <code>reactive</code> 表达聚合对象，用 <code>shallowRef</code> 包裹大对象、外部实例或需要手动控制刷新的状态。</li>
+          <li><code>ref()</code> 在 JS 中读写必须用 <code>.value</code>，模板顶层自动解包，本页 <code>{{ message }}</code> 即示例。点“修改 message”会整体替换 <code>.value</code>，控制台打印 <code>[ref]</code>。</li>
+          <li><code>ref</code> 包裹对象时默认<strong>深层</strong>响应：改 <code>objRef.value.form.name</code> 会更新视图，本页“切换 objRef name”按钮即验证。</li>
+          <li><code>reactive()</code> 返回深层 Proxy，访问字段无需 <code>.value</code>；直接解构会丢响应性，见 <a href="./01-ref-reactive%E4%B8%8E%E8%A7%A3%E6%9E%84.html">01-ref-reactive与解构</a> 与 <a href="./03-toRef-toRefs.html">03-toRef-toRefs</a>。</li>
+          <li><code>shallowRef()</code> 只追踪 <code>.value</code> 引用替换：改嵌套 <code>form.name</code> 通常不更新模板，整体替换 <code>.value</code> 才会触发；与 <code>shallowReactive</code> 的“浅”对比见 <a href="./04-readonly-shallow-markRaw.html">04-readonly-shallow-markRaw</a>。</li>
+          <li>已知内部字段变更但仍用 <code>shallowRef</code> 时，可调用 <code>triggerRef(shallowObjRef)</code> 手动通知依赖更新；本页“triggerRef 刷新”按钮演示该逃生舱，生产仍应优先整体替换或改建模方式。</li>
+          <li>选型口诀：可替换整块数据用 <code>ref</code>，稳定对象模型用 <code>reactive</code>，大对象/外部实例/手动刷新用 <code>shallowRef</code>。深层 watch/computed 见 <a href="./02-computed-watch-watchEffect.html">02-computed-watch-watchEffect</a>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>ref</code> 和 <code>reactive</code> 最大差异是什么？</strong> 结论是 <code>ref</code> 是值容器，<code>reactive</code> 是对象代理。原因是 <code>ref</code> 通过 <code>.value</code> 追踪读写，<code>reactive</code> 通过 Proxy 拦截属性访问。项目里基本类型、需要整体替换的对象常用 <code>ref</code>，稳定对象模型常用 <code>reactive</code>。</li>
-          <li><strong><code>shallowRef</code> 为什么改内部字段不更新？</strong> 结论是它只追踪 <code>.value</code> 的引用变化。原因是内部对象不会递归转成响应式代理。项目里如果用它存大对象或第三方实例，应通过整体替换、<code>triggerRef</code> 或额外版本号驱动视图。</li>
-          <li><strong><code>reactive</code> 解构后如何保留响应式？</strong> 结论是不要直接解构普通属性，应该使用 <code>toRef</code> 或 <code>toRefs</code>。原因是直接解构得到的是当前值，不再经过原代理的 get/set。组合式函数返回 reactive 字段时尤其容易踩坑。</li>
-          <li><strong>业务状态如何选型？</strong> 结论是先看状态形态和更新方式。需要替换就用 <code>ref</code>，对象字段稳定且整体作为模型使用可用 <code>reactive</code>，不希望深层代理或对象很大时用 <code>shallowRef</code>。边界是 shallow API 会牺牲自动深层更新能力。</li>
+          <li><strong>ref 和 reactive 最大差异是什么？</strong> 结论是 <code>ref</code> 是值容器，<code>reactive</code> 是对象代理。项目里基本类型、需整体替换用 <code>ref</code>，稳定对象模型用 <code>reactive</code>。</li>
+          <li><strong>shallowRef 为什么改内部字段不更新？</strong> 结论是只追踪 <code>.value</code> 引用变化，内部对象不递归代理。应整体替换、<code>triggerRef</code> 或额外版本号。本页三个按钮分别演示三种结果。</li>
+          <li><strong>reactive 解构后如何保留响应式？</strong> 结论是使用 <code>toRef</code> / <code>toRefs</code>。直接解构得到的是快照，不再经过代理 get/set。</li>
+          <li><strong>业务状态如何选型？</strong> 结论先看状态形态和更新方式：替换用 ref，聚合对象用 reactive，避免深层代理用 shallowRef。边界是 shallow API 牺牲自动深层更新。</li>
+          <li><strong>triggerRef 何时需要？</strong> 结论是 shallowRef 内部已变更但需强制刷新视图时。原因是 shallow 不追踪深层。应优先设计为整体替换，triggerRef 作例外手段。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/api/reactivity-core.html#ref" target="_blank" rel="noreferrer">Vue 3 API：ref()</a></li>
-          <li><a href="https://vuejs.org/api/reactivity-core.html#reactive" target="_blank" rel="noreferrer">Vue 3 API：reactive()</a></li>
-          <li><a href="https://vuejs.org/api/reactivity-advanced.html#shallowref" target="_blank" rel="noreferrer">Vue 3 API：shallowRef()</a></li>
-          <li><a href="https://vuejs.org/guide/essentials/reactivity-fundamentals.html" target="_blank" rel="noreferrer">Vue 3 Guide：Reactivity Fundamentals</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-core.html#ref" target="_blank" rel="noreferrer">Vue 3 官方 API：ref()</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-core.html#reactive" target="_blank" rel="noreferrer">Vue 3 官方 API：reactive()</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-advanced.html#shallowref" target="_blank" rel="noreferrer">Vue 3 官方 API：shallowRef()</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-advanced.html#triggerref" target="_blank" rel="noreferrer">Vue 3 官方 API：triggerRef()</a></li>
+          <li><a href="https://vuejs.org/guide/essentials/reactivity-fundamentals.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Reactivity Fundamentals</a></li>
         </ul>
       </div>
     </section>
@@ -67,73 +74,102 @@
       <section class="panel">
         <h2>ref（模板自动解包，JS 需 .value）</h2>
         <p>message：{{ message }}</p>
-        <button @click="changeMsgFn">修改 message</button>
+        <button type="button" @click="changeMsgFn">修改 message</button>
       </section>
       <section class="panel">
         <h2>ref 嵌套对象（深层响应）</h2>
-        <p>objRef.form.name：{{ objRef.form.name }}</p>
-        <button @click="objRef.form.name = objRef.form.name ? '' : 'Alice'">切换 name</button>
+        <p>objRef.form.name：{{ objRef.form.name || "（空）" }}</p>
+        <p class="hint-inline">改嵌套 name 后视图应立即更新。</p>
+        <button type="button" @click="toggleObjRefName">切换 objRef name</button>
       </section>
       <section class="panel">
         <h2>shallowRef（只追踪 .value 整体替换）</h2>
-        <p>shallowObjRef.form.name：{{ shallowObjRef.form.name }}</p>
-        <button @click="mutateShallowNested">改嵌套字段（通常不更新视图）</button>
-        <button @click="replaceShallowObjRef">整体替换 .value（会更新视图）</button>
-        <p>{{ shallowNote }}</p>
+        <p>shallowObjRef.form.name：{{ shallowObjRef.form.name || "（空）" }}</p>
+        <p>视图更新次数：{{ shallowViewUpdates }}</p>
+        <p class="hint-inline">{{ shallowNote }}</p>
+        <button type="button" @click="mutateShallowNested">改嵌套字段</button>
+        <button type="button" @click="replaceShallowObjRef">整体替换 .value</button>
+        <button type="button" @click="triggerShallowRefresh">triggerRef 刷新</button>
       </section>
       <section class="panel">
         <h2>reactive（Proxy 对象，无 .value）</h2>
-        <p>reactiveObj.form.name：{{ reactiveObj.form.name }}</p>
-        <button @click="reactiveObj.form.name = reactiveObj.form.name ? '' : 'Bob'">切换 name</button>
+        <p>reactiveObj.form.name：{{ reactiveObj.form.name || "（空）" }}</p>
+        <button type="button" @click="toggleReactiveName">切换 reactive name</button>
       </section>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
-      const { createApp, ref, shallowRef, reactive } = Vue;
+      // 从全局 Vue 解构本页用到的 Composition API
+      const { createApp, ref, shallowRef, reactive, triggerRef } = Vue;
 
-      const app = createApp({
+      createApp({
         setup() {
-          const objRef = ref({
-            form: { name: "", age: 0, address: {} },
-            array: [1, 2, 3, 4],
-          });
-          console.log("objRef,", objRef);
-
+          // --- ref：基本类型与深层对象 ---
           const message = ref("Hello vue!");
-          console.log("message,", message);
+          const objRef = ref({
+            form: { name: "", age: 0 },
+            array: [1, 2, 3],
+          });
 
+          // --- shallowRef：只追踪 .value 替换 ---
           const shallowObjRef = shallowRef({
-            form: { name: "", age: 0, address: {} },
-            array: [1, 2, 3, 4],
+            form: { name: "", age: 0 },
+            array: [1, 2, 3],
           });
-          console.log("shallowObjRef,", shallowObjRef);
+          const shallowNote = ref("改嵌套字段通常不触发视图；整体替换 .value 或 triggerRef 才会。");
+          const shallowViewUpdates = ref(0);
 
+          // --- reactive：深层 Proxy ---
           const reactiveObj = reactive({
-            form: { name: "", age: 0, address: {} },
-            array: [1, 2, 3, 4],
+            form: { name: "", age: 0 },
+            array: [1, 2, 3],
           });
-          console.log("reactiveObj,", reactiveObj);
 
-          const shallowNote = ref("改嵌套字段不会触发 shallowRef 视图更新；整体替换 .value 才会。");
+          function bumpShallowView() {
+            shallowViewUpdates.value++;
+          }
 
-          const changeMsgFn = () => {
+          function changeMsgFn() {
             message.value = "I am change to HI vue!";
-            console.log("message,", message);
-          };
+            console.log("[ref] message =", message.value);
+          }
+
+          function toggleObjRefName() {
+            const n = objRef.value.form.name;
+            objRef.value.form.name = n ? "" : "Alice";
+            console.log("[ref深层] objRef.form.name =", objRef.value.form.name);
+          }
 
           function mutateShallowNested() {
-            shallowObjRef.value.form.name = shallowObjRef.value.form.name ? "" : "Charlie";
-            shallowNote.value = "已改嵌套字段，若视图未变，说明 shallowRef 未追踪内部变更。";
+            const n = shallowObjRef.value.form.name;
+            shallowObjRef.value.form.name = n ? "" : "Charlie";
+            shallowNote.value = "已改嵌套字段；若 name 未变，说明 shallowRef 未追踪内部。";
+            console.log("[shallowRef] 嵌套 name =", shallowObjRef.value.form.name);
           }
 
           function replaceShallowObjRef() {
             shallowObjRef.value = {
-              form: { name: "整体替换", age: 0, address: {} },
-              array: [1, 2, 3, 4],
+              form: { name: "整体替换", age: 0 },
+              array: [1, 2, 3],
             };
+            bumpShallowView();
             shallowNote.value = "已整体替换 .value，视图应同步更新。";
+            console.log("[shallowRef] 已替换 .value");
+          }
+
+          function triggerShallowRefresh() {
+            triggerRef(shallowObjRef);
+            bumpShallowView();
+            shallowNote.value = "已调用 triggerRef，若嵌套已改，视图应强制刷新。";
+            console.log("[shallowRef] triggerRef 已调用");
+          }
+
+          function toggleReactiveName() {
+            const n = reactiveObj.form.name;
+            reactiveObj.form.name = n ? "" : "Bob";
+            console.log("[reactive] form.name =", reactiveObj.form.name);
           }
 
           return {
@@ -142,14 +178,16 @@
             shallowObjRef,
             reactiveObj,
             shallowNote,
+            shallowViewUpdates,
             changeMsgFn,
+            toggleObjRefName,
             mutateShallowNested,
             replaceShallowObjRef,
+            triggerShallowRefresh,
+            toggleReactiveName,
           };
         },
-      });
-
-      app.mount("#app");
+      }).mount("#app");
 
     </script>
     <!-- SCRIPT_END -->
@@ -172,5 +210,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

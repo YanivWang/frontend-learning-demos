@@ -3,9 +3,9 @@
   主题: useTemplateRef（Vue 3.5+）
   要点:
     - useTemplateRef 是 Vue 3.5+ API，本仓库 vue.global.js 为 3.5.x
-    - useTemplateRef('key') 通过字符串 key 关联模板 ref，减少手动 ref(null) 配对
-    - 只能在 setup 同步阶段为当前组件创建，挂载后 .value 才指向 DOM 或组件实例
-    - Vue 3.4 及更早版本仍使用 ref(null) + 同名模板 ref 写法
+    - useTemplateRef('key') 关联模板 ref，减少 ref(null) 手动配对
+    - 只能在 setup 同步阶段调用；挂载后 .value 才指向 DOM
+    - Vue 3.4 及更早仍用 ref(null) + 同名模板 ref
   面试:
     - useTemplateRef 相比 ref(null) 解决了什么问题？
     - useTemplateRef 的版本边界是什么？
@@ -21,13 +21,52 @@
     <title>Vue3 · useTemplateRef</title>
     <script src="../../libs/vue.global.js"></script>
     <style>
-      body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; padding: 6px 12px; }
-      input { padding: 6px 10px; width: 240px; }
-      code, pre { background: #f6f8fa; border-radius: 6px; }
-      code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; max-height: 220px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+      body {
+        font-family: system-ui, -apple-system, "PingFang SC", sans-serif;
+        line-height: 1.7;
+        padding: 24px;
+        color: #202124;
+      }
+      button {
+        margin-right: 8px;
+        margin-top: 4px;
+        padding: 6px 12px;
+      }
+      input {
+        padding: 6px 10px;
+        width: 240px;
+      }
+      code,
+      pre {
+        background: #f6f8fa;
+        border-radius: 6px;
+      }
+      code {
+        padding: 2px 5px;
+      }
+      pre {
+        padding: 12px;
+        overflow: auto;
+        max-height: 220px;
+      }
+      .box {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 760px;
+      }
+      .box .hint-inline {
+        margin: 8px 0;
+        color: #5f6368;
+        font-size: 14px;
+      }
+      .box h2 {
+        margin: 16px 0 8px;
+        font-size: 16px;
+      }
+      .box h2:first-of-type {
+        margin-top: 0;
+      }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -40,23 +79,24 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>useTemplateRef()</code> 是 Vue 3.5+ 提供的模板 ref 辅助 API；本仓库当前 <code>vue.global.js</code> 是 3.5.x，所以示例可以直接运行。</li>
-          <li>它通过 <code>useTemplateRef("myInput")</code> 与模板中的 <code>ref="myInput"</code> 建立关联，减少 <code>const myInput = ref(null)</code> 与字符串 ref 手动配对时的命名分散。</li>
-          <li><code>useTemplateRef()</code> 必须在 <code>setup()</code> 同步执行期间调用，用来绑定当前组件实例；异步回调或普通工具函数里调用会缺少当前组件上下文。</li>
-          <li>返回值由模板渲染结果赋值，挂载前通常为 <code>null</code>；访问 DOM 要放在 <code>onMounted</code> 后或用户事件中，并做好条件渲染导致为空的边界处理。</li>
-          <li>如果项目仍在 Vue 3.4 或更早版本，继续使用 <code>ref(null)</code> + 模板 <code>ref</code> 的旧写法；不要为了一个窄 API 强行升级整个项目。</li>
+          <li><code>useTemplateRef()</code> 是 <strong>Vue 3.5+</strong> API；本仓库 <code>vue.global.js</code> 为 3.5.x，示例可直接运行。Vue 3.4 及更早须用 <code>ref(null)</code> + 模板 <code>ref</code> 字符串配对。</li>
+          <li>旧写法：<code>const legacyInput = ref(null)</code> 与 <code>ref="legacyInput"</code> 手动对齐。新写法：<code>useTemplateRef("myInput")</code> 与 <code>ref="myInput"</code> 同名绑定，减少命名分散。</li>
+          <li>挂载后下方日志首两行显示 <code>legacyInput=INPUT</code> 与 <code>myInput=INPUT</code>，证明两种方式都拿到 DOM。点「聚焦 legacyInput」或「聚焦 myInput」会聚焦对应输入框并追加日志。</li>
+          <li><code>useTemplateRef</code> 必须在 <code>setup</code> 同步阶段调用，以便登记到当前组件实例；异步回调中调用会缺少组件上下文。</li>
+          <li>模板 ref 挂载前为 <code>null</code>；<code>v-if</code> 未渲染时同样为空。DOM 访问时机与 <code>nextTick</code> 见 <a href="./05-%E6%A8%A1%E6%9D%BFref%E4%B8%8EnextTick.html">05-模板ref与nextTick</a>。</li>
+          <li>指向子组件时拿到组件公开实例；<code>&lt;script setup&gt;</code> 默认私有，需 <code>defineExpose</code> 暴露方法。DOM vs 响应式 <code>ref</code> 区分见 <a href="../02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/01-ref-reactive%E4%B8%8E%E8%A7%A3%E6%9E%84.html">02-ref-reactive与解构</a>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>useTemplateRef 相比 ref(null) 解决了什么问题？</strong> 结论是它把“模板 ref 名称”和“setup 中的 ref 对象”显式关联起来，减少手动初始化和命名错位。原因是旧写法需要同时维护 <code>ref(null)</code> 变量和模板字符串。边界是它仍然只是模板 ref，不改变 DOM 访问时机和空值风险。</li>
-          <li><strong>useTemplateRef 的版本边界是什么？</strong> 先结论：它是 Vue 3.5+ API，Vue 3.4 及更早版本不能直接使用。原因是该函数在 3.5 才进入官方 API。项目里要先确认运行时版本；如果库或业务仍锁在旧版本，应保留 <code>ref(null)</code> 写法。</li>
-          <li><strong>useTemplateRef 为什么要在 setup 同步阶段调用？</strong> 结论是它需要当前组件实例来登记模板 ref。原因是模板 ref 的归属和赋值都依赖正在创建的组件上下文。异步回调中调用时当前实例可能不存在，Vue 会警告且无法关联模板。</li>
-          <li><strong>模板 ref 指向 DOM 和子组件时分别要注意什么？</strong> 指向 DOM 时拿到的是原生元素，适合聚焦、测量和滚动；指向子组件时拿到组件公开实例。使用 <code>&lt;script setup&gt;</code> 的子组件默认私有，需要通过 <code>defineExpose</code> 暴露可调用能力。</li>
+          <li><strong>useTemplateRef 相比 ref(null) 解决了什么问题？</strong> 结论是把模板 ref 名称与 setup 中的 ref 显式关联，减少手动配对错位。边界：不改变 DOM 访问时机与空值风险。本页两种聚焦按钮行为一致。</li>
+          <li><strong>useTemplateRef 的版本边界是什么？</strong> 结论是 Vue 3.5+；3.4 及更早不能直接使用。项目须先确认运行时版本。</li>
+          <li><strong>useTemplateRef 为什么要在 setup 同步阶段调用？</strong> 结论是需要当前组件实例登记模板 ref。异步中调用会警告且无法关联。</li>
+          <li><strong>模板 ref 指向 DOM 和子组件时分别要注意什么？</strong> DOM 适合聚焦/测量；子组件须 <code>defineExpose</code> 暴露可调用能力。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
           <li><a href="https://vuejs.org/guide/essentials/template-refs.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Template Refs</a></li>
-          <li><a href="https://vuejs.org/api/composition-api-helpers.html#usetemplateref" target="_blank" rel="noreferrer">Vue 3 官方 API：useTemplateRef()</a></li>
+          <li><a href="https://vuejs.org/api/composition-api-helpers.html#usetemplateref" target="_blank" rel="noreferrer">Vue 3 官方 API：useTemplateRef()（3.5+）</a></li>
           <li><a href="https://vuejs.org/api/sfc-script-setup.html#defineexpose" target="_blank" rel="noreferrer">Vue 3 官方文档：defineExpose()</a></li>
         </ul>
       </div>
@@ -72,43 +112,47 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // 从全局 Vue 解构本页用到的 Composition API（useTemplateRef 需 3.5+）
       const { createApp, ref, useTemplateRef, onMounted } = Vue;
 
       const RefPanel = {
         template: `
         <div class="box">
-          <p>旧写法：ref(null) 与模板 ref 字符串手动对齐</p>
+          <h2>旧写法：ref(null) + 模板 ref 字符串</h2>
           <input ref="legacyInput" v-model="text" />
-          <button @click="focusLegacy">聚焦 legacyInput</button>
+          <button type="button" @click="focusLegacy">聚焦 legacyInput</button>
 
-          <p>新写法：useTemplateRef('myInput') 与 ref="myInput" 同名绑定</p>
+          <h2>新写法：useTemplateRef('myInput')（3.5+）</h2>
           <input ref="myInput" v-model="text" />
-          <button @click="focusTemplateRef">聚焦 myInput</button>
+          <button type="button" @click="focusTemplateRef">聚焦 myInput</button>
 
-          <pre>{{ logs.join("\\n") }}</pre>
+          <p class="hint-inline">两个输入框共享 v-model；聚焦按钮验证 ref 是否指向正确 DOM。</p>
+          <pre>{{ logs.join("\\n") || "（挂载或聚焦后显示）" }}</pre>
         </div>
-
         `,
         setup() {
           const text = ref("试试 focus");
           const logs = ref([]);
 
+          // --- 旧写法：手动 ref(null) 与模板 ref 同名 ---
           const legacyInput = ref(null);
+
+          // --- 新写法（3.5+）：字符串 key 与模板 ref 关联 ---
           const myInput = useTemplateRef("myInput");
 
           onMounted(() => {
-            logs.value.push(`onMounted：legacyInput=${legacyInput.value?.tagName}`);
-            logs.value.push(`onMounted：myInput=${myInput.value?.tagName}`);
+            logs.value.push(`onMounted：legacyInput=${legacyInput.value?.tagName ?? "null"}`);
+            logs.value.push(`onMounted：myInput=${myInput.value?.tagName ?? "null"}`);
           });
 
           function focusLegacy() {
             legacyInput.value?.focus();
-            logs.value.push(`legacyInput 当前值：${legacyInput.value?.value}`);
+            logs.value.push(`legacyInput 当前值：${legacyInput.value?.value ?? "null"}`);
           }
 
           function focusTemplateRef() {
             myInput.value?.focus();
-            logs.value.push(`myInput 当前值：${myInput.value?.value}`);
+            logs.value.push(`myInput 当前值：${myInput.value?.value ?? "null"}`);
           }
 
           return { text, logs, legacyInput, focusLegacy, focusTemplateRef };
@@ -116,7 +160,6 @@
       };
 
       createApp({ components: { RefPanel } }).mount("#app");
-
     </script>
     <!-- SCRIPT_END -->
 
@@ -138,5 +181,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

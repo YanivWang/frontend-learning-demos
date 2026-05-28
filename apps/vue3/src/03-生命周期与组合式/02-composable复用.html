@@ -6,11 +6,13 @@
     - composable 可以组合 ref、computed、watch 和生命周期钩子，调用方无需继承或混入
     - 每次调用默认创建独立状态，共享状态需要把响应式对象提升到函数外或使用 store
     - DOM 事件、订阅和异步任务必须在 composable 内成对注册与清理
+    - 返回 reactive 后被解构会丢响应，应返回 ref 或使用 toRefs
   面试:
     - composable 和 mixin 相比解决了哪些复用问题？
     - composable 默认独立状态还是共享状态，如何控制？
     - 在 composable 中添加 DOM 事件为什么必须清理？
     - composable 何时应升级为 Pinia store 或业务服务？
+    - composable 里注册 onUnmounted 与组件自己注册有何区别？
 -->
 
 <!doctype html>
@@ -22,11 +24,14 @@
     <script src="../../libs/vue.global.js"></script>
     <style>
       body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; padding: 6px 12px; }
+      button { margin-right: 8px; margin-top: 4px; padding: 6px 12px; }
       code, pre { background: #f6f8fa; border-radius: 6px; }
       code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; max-height: 160px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+      pre { padding: 12px; overflow: auto; max-height: 180px; }
+      .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; margin-bottom: 16px; }
+      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
+      .grid { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+      @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -39,24 +44,27 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>composable 是封装“有状态逻辑”的普通函数，通常以 <code>useXxx</code> 命名。它可以返回 <code>ref</code>、<code>computed</code>、方法和派生状态，让组件专注渲染。</li>
-          <li>示例中的 <code>useMousePosition()</code> 同时组合了 <code>ref</code>、<code>computed</code>、<code>watch</code>、<code>onMounted</code> 和 <code>onUnmounted</code>，展示了组合式函数能封装完整行为而不依赖 mixin。</li>
-          <li>每次调用 composable 默认都会重新创建函数内部状态，因此多个组件调用通常彼此独立。若要共享状态，需要把响应式对象提升到函数外，或使用 Pinia / provide-inject 等明确的共享机制。</li>
-          <li>涉及 DOM 事件、定时器、订阅和异步请求时，composable 必须同时设计清理路径。示例在挂载时监听 <code>mousemove</code>，卸载时移除监听，避免组件销毁后仍更新状态。</li>
-          <li>常见坑是返回 reactive 对象后被调用方解构导致响应丢失，或在 composable 中隐藏过多业务副作用。实践中通常返回 refs 或用 <code>toRefs</code> 保持可组合性。</li>
+          <li>composable 是封装「有状态逻辑」的普通函数，通常以 <code>useXxx</code> 命名。它可以返回 <code>ref</code>、<code>computed</code>、方法和派生状态，让组件专注渲染。本页 <code>useMousePosition()</code> 即官方 Mouse Tracker 思路的简化版。</li>
+          <li>示例同时组合了 <code>ref</code>、<code>computed</code>、<code>watch</code>、<code>onMounted</code> 和 <code>onUnmounted</code>，展示了组合式函数能封装完整行为而不依赖 mixin；生命周期注册仍须在调用 composable 的组件 setup 同步阶段执行，见 <a href="./01-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E9%92%A9%E5%AD%90.html">01-生命周期钩子</a>。</li>
+          <li>本页左右两个面板各调用一次 <code>useMousePosition()</code>，移动鼠标可见 x/y 独立更新，证明<strong>每次调用默认创建独立状态</strong>。若要共享，需把 ref 提升到模块作用域或使用 Pinia / provide-inject，见 <a href="../04-%E7%BB%84%E4%BB%B6%E9%80%9A%E4%BF%A1/03-provide-inject.html">04-provide-inject</a>。</li>
+          <li>涉及 DOM 事件时 composable 必须设计清理路径。本页在 <code>onMounted</code> 监听 <code>mousemove</code>，<code>onUnmounted</code> 移除；点「卸载左/右面板」后对应坐标冻结，控制台打印 <code>[composable] 已移除 mousemove 监听</code>。</li>
+          <li><code>isNearOrigin</code> 由 <code>computed</code> 派生（x &lt; 200 且 y &lt; 200），<code>watch</code> 在布尔值翻转时追加日志；鼠标移入/移出左上角区域时 pre 区会出现新行。副作用清理进阶见 <a href="../02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/06-onWatcherCleanup%E4%B8%8Ewatch%E6%B8%85%E7%90%86.html">02-onWatcherCleanup</a>。</li>
+          <li>常见坑是返回 <code>reactive</code> 对象后被调用方解构导致响应丢失，或在 composable 中隐藏过多业务副作用。实践中通常返回 refs 或用 <code>toRefs</code> 保持可组合性，见 <a href="../02-%E5%93%8D%E5%BA%94%E5%BC%8F%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8/01-ref-reactive%E4%B8%8E%E8%A7%A3%E6%9E%84.html">02-ref-reactive与解构</a>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>composable 和 mixin 相比优势是什么？</strong> 结论是 composable 的来源、依赖和返回值更明确。原因是它是普通函数调用，可以通过参数和返回值表达契约，不会像 mixin 那样隐式合并选项并产生命名冲突。项目里可测试性和类型推导也更好。</li>
-          <li><strong>composable 的状态默认共享吗？</strong> 结论是不共享，函数内部创建的状态每次调用都是新实例。原因是普通函数执行会重新创建局部变量。若要共享，应显式把状态放在模块作用域、store 或 provide 中，避免调用方误判生命周期。</li>
-          <li><strong>为什么 DOM 事件必须清理？</strong> 结论是因为浏览器事件监听不受 Vue 响应式系统自动管理。原因是监听器持有回调引用，组件卸载后仍可能触发。示例用 <code>onUnmounted</code> 移除 <code>mousemove</code>，真实项目中的滚动、resize、媒体查询监听也一样。</li>
-          <li><strong>什么时候升级为 store？</strong> 结论是当状态跨多组件共享、需要调试持久化或有明确业务领域时，优先使用 Pinia 等 store。原因是 composable 更适合局部可复用逻辑，过多全局状态藏在 composable 中会让数据流不清晰。</li>
+          <li><strong>composable 和 mixin 相比优势是什么？</strong> 结论是 composable 的来源、依赖和返回值更明确。原因是它是普通函数调用，可以通过参数和返回值表达契约，不会像 mixin 那样隐式合并选项并产生命名冲突。项目里可测试性和类型推导也更好；本页双面板独立状态即直观对比。</li>
+          <li><strong>composable 的状态默认共享吗？</strong> 结论是不共享，函数内部创建的状态每次调用都是新实例。本页左/右面板 x/y 可完全不同。若要共享，应显式把状态放在模块作用域、store 或 provide 中，避免调用方误判生命周期。</li>
+          <li><strong>为什么 DOM 事件必须清理？</strong> 结论是因为浏览器事件监听不受 Vue 响应式系统自动管理。监听器持有回调引用，组件卸载后仍可能触发并更新已销毁组件的状态。本页卸载面板后坐标不再变化即证明清理生效。</li>
+          <li><strong>什么时候升级为 store？</strong> 结论是当状态跨多组件共享、需要 DevTools、持久化或跨路由时，优先 Pinia。composable 更适合局部可复用逻辑；过多全局状态藏在 composable 中会让数据流不清晰。</li>
+          <li><strong>composable 里注册 onUnmounted 与组件自己注册有何区别？</strong> 结论是无本质区别，都会绑定到调用 composable 的当前组件实例。原因是生命周期钩子按「当前 setup 上下文」注册。composable 只是把注册逻辑封装成可复用函数，卸载时机仍跟随使用该 composable 的组件。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/guide/reusability/composables.html" target="_blank" rel="noreferrer">Vue 3 Guide：Composables</a></li>
-          <li><a href="https://vuejs.org/guide/reusability/composables.html#mouse-tracker-example" target="_blank" rel="noreferrer">Vue 3 Guide：Mouse Tracker Example</a></li>
-          <li><a href="https://vuejs.org/api/composition-api-lifecycle.html#onunmounted" target="_blank" rel="noreferrer">Vue 3 API：onUnmounted()</a></li>
+          <li><a href="https://vuejs.org/guide/reusability/composables.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Composables</a></li>
+          <li><a href="https://vuejs.org/guide/reusability/composables.html#mouse-tracker-example" target="_blank" rel="noreferrer">Vue 3 官方文档：Mouse Tracker Example</a></li>
+          <li><a href="https://vuejs.org/api/composition-api-lifecycle.html#onunmounted" target="_blank" rel="noreferrer">Vue 3 官方 API：onUnmounted()</a></li>
+          <li><a href="./01-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E9%92%A9%E5%AD%90.html">本系列：生命周期钩子</a></li>
         </ul>
       </div>
     </section>
@@ -65,19 +73,28 @@
     <!-- PAGE_DOM_START -->
     <div id="app">
       <h1>composable 组合式函数</h1>
-      <div class="box">
-        <p>鼠标位置：x={{ x }}，y={{ y }}</p>
-        <p>是否在左上角：{{ isNearOrigin ? "是" : "否" }}</p>
-        <pre>{{ watchLogs.join("\n") }}</pre>
+      <p class="hint-inline">移动鼠标观察坐标；移入屏幕左上角（x,y &lt; 200）触发 watch 日志。卸载某面板后其坐标不再更新。</p>
+      <div class="grid">
+        <mouse-panel v-if="showLeft" label="左面板（独立 composable）" @request-unmount="showLeft = false"></mouse-panel>
+        <mouse-panel v-if="showRight" label="右面板（独立 composable）" @request-unmount="showRight = false"></mouse-panel>
+      </div>
+      <div class="box" v-if="!showLeft || !showRight">
+        <button type="button" @click="showLeft = true" v-if="!showLeft">重新挂载左面板</button>
+        <button type="button" @click="showRight = true" v-if="!showRight">重新挂载右面板</button>
       </div>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // 从全局 Vue 解构本页用到的 Composition API
       const { createApp, ref, computed, watch, onMounted, onUnmounted } = Vue;
 
-      function useMousePosition() {
+      /**
+       * composable：封装鼠标追踪逻辑
+       * 每次调用创建独立的 x/y 状态与事件监听
+       */
+      function useMousePosition(panelLabel) {
         const x = ref(0);
         const y = ref(0);
         const isNearOrigin = computed(() => x.value < 200 && y.value < 200);
@@ -88,19 +105,55 @@
           y.value = event.clientY;
         }
 
+        // 派生布尔值变化时记录日志（演示 composable 内 watch）
         watch(isNearOrigin, (near) => {
-          watchLogs.value.push(`isNearOrigin 变为 ${near ? "true" : "false"}（x=${x.value}, y=${y.value}）`);
+          const line = `[${panelLabel}] isNearOrigin → ${near}（x=${x.value}, y=${y.value}）`;
+          watchLogs.value.push(line);
+          console.log("[composable]", line);
         });
 
-        onMounted(() => window.addEventListener("mousemove", update));
-        onUnmounted(() => window.removeEventListener("mousemove", update));
+        // 挂载时注册、卸载时清理 DOM 事件
+        onMounted(() => {
+          window.addEventListener("mousemove", update);
+          console.log(`[composable] ${panelLabel} 已注册 mousemove`);
+        });
+        onUnmounted(() => {
+          window.removeEventListener("mousemove", update);
+          console.log(`[composable] ${panelLabel} 已移除 mousemove 监听`);
+        });
 
         return { x, y, isNearOrigin, watchLogs };
       }
 
+      const MousePanel = {
+        props: { label: String },
+        emits: ["request-unmount"],
+        setup(props, { emit }) {
+          // 每个面板实例独立调用 composable
+          const { x, y, isNearOrigin, watchLogs } = useMousePosition(props.label);
+          return { x, y, isNearOrigin, watchLogs, emit };
+        },
+        template: `
+        <div class="box">
+          <strong>{{ label }}</strong>
+          <p>鼠标位置：x={{ x }}，y={{ y }}</p>
+          <p>是否在左上角：{{ isNearOrigin ? "是" : "否" }}</p>
+          <button type="button" @click="emit('request-unmount')">卸载本面板</button>
+          <pre>{{ watchLogs.length ? watchLogs.slice(-4).join("\\n") : "（移入左上角触发 watch 日志）" }}</pre>
+        </div>
+        `,
+      };
+
+      // --- 挂载应用 ---
+
+
       createApp({
+        components: { MousePanel },
         setup() {
-          return useMousePosition();
+          // --- 演示状态 ---
+          const showLeft = ref(true);
+          const showRight = ref(true);
+          return { showLeft, showRight };
         },
       }).mount("#app");
 

@@ -2,15 +2,17 @@
   分类: vue3 / 02-响应式与副作用
   主题: readonly / shallowReactive / markRaw
   要点:
-    - readonly 返回深只读代理，阻止通过暴露对象直接写入，但源响应式对象更新仍会同步
-    - shallowReactive 只代理根层属性，嵌套对象保持原样，适合边界清晰的大对象
-    - markRaw 会让对象跳过响应式转换，常用于第三方实例、类实例或不希望代理的对象
-    - shallow 与 raw API 混用会制造响应式边界，团队需要明确哪些字段不会自动触发视图
+    - readonly 返回深只读代理，经只读视图写入会被阻止，源对象更新仍会同步到只读视图
+    - readonly 不是深拷贝，也不是权限系统；持有源引用仍可修改
+    - shallowReactive 只代理根层属性，改嵌套字段通常不触发视图，替换根层字段会触发
+    - markRaw 让对象永远跳过响应式转换，内部变更不会自动驱动视图
+    - shallow 与 raw 用于明确响应式边界，滥用会增加“视图不更新”的排查成本
   面试:
-    - readonly 为什么不是深拷贝，也不能当权限系统使用？
+    - readonly 为什么不是深拷贝，也不能当权限系统？
     - shallowReactive 修改嵌套字段为什么通常不触发视图更新？
     - markRaw 适合包裹哪些第三方对象，风险是什么？
-    - readonly、shallowReactive、markRaw 分别解决什么响应式边界问题？
+    - readonly、shallowReactive、markRaw 分别解决什么边界问题？
+    - shallowRef 与 shallowReactive 的“浅”有什么共同点？
 -->
 
 <!doctype html>
@@ -25,8 +27,10 @@
       button { margin-right: 8px; padding: 6px 12px; }
       code, pre { background: #f6f8fa; border-radius: 6px; }
       code { padding: 2px 5px; }
-      pre { padding: 12px; overflow: auto; }
+      pre { padding: 12px; overflow: auto; max-height: 220px; }
       .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; margin-bottom: 16px; }
+      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
+      .box button { margin-top: 4px; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -39,24 +43,27 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>readonly()</code> 返回原对象的只读代理：通过只读代理写入会被阻止并在开发环境给出警告，但修改源 <code>reactive</code> 对象时，只读视图仍会同步更新。</li>
-          <li><code>readonly()</code> 是深只读代理，不是深拷贝，也不是安全权限边界；如果外部仍持有源对象引用，仍然可以从源对象修改数据。</li>
-          <li><code>shallowReactive()</code> 只让根层属性成为响应式，嵌套对象不会继续转换为响应式代理。示例中直接改 <code>shallow.nested.count</code> 不会稳定触发视图，替换 <code>shallow.nested</code> 才是推荐写法。</li>
-          <li><code>markRaw()</code> 标记对象永远跳过响应式转换，适合图表实例、编辑器实例、地图对象、复杂类实例等不应被代理的第三方对象。</li>
-          <li>shallow 与 raw API 都是在创建响应式边界：它们能减少代理成本和意外副作用，但也会让“为什么视图不更新”更难排查，应该只放在边界清晰的对象上。</li>
+          <li><code>readonly(deep)</code> 返回深只读代理：经只读视图写入会在开发环境警告且赋值无效，但改源 <code>deep.nested.count</code> 时只读视图会同步，本页“改源对象”按钮即验证。控制台会打印 <code>[readonly]</code> 对比前后值。</li>
+          <li><code>readonly</code> 不是深拷贝，外部仍持有 <code>deep</code> 引用即可绕过只读视图修改数据；不能当作后端权限或安全边界。</li>
+          <li><code>shallowReactive</code> 只追踪根层属性：直接 <code>shallow.nested.count++</code> 通常不更新模板，替换 <code>shallow.nested</code> 整对象会触发。本页显示“嵌套变更次数”与“根层替换次数”帮助区分。</li>
+          <li><code>markRaw</code> 标记的对象永不转为响应式代理；改 <code>rawWidget.name</code> 不会自动刷新视图，需手动 bump <code>rawViewVersion</code> 或额外状态驱动。适合图表、地图、编辑器实例等第三方对象。</li>
+          <li>三者都是在划定响应式边界：<code>readonly</code> 管“别从这里写”，<code>shallowReactive</code> 管“只追踪第一层”，<code>markRaw</code> 管“完全不要代理”。与 <code>shallowRef</code> 的对比见 <a href="./07-ref-reactive-shallowRef%E5%AF%B9%E6%AF%94.html">07-ref-reactive-shallowRef对比</a>。</li>
+          <li>本页底部 <code>note</code> 汇总最近一次操作结果；开发环境尝试写 readonly 时可在控制台看到 Vue 警告。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong><code>readonly</code> 为什么不是深拷贝？</strong> 结论是它返回只读代理，不复制数据。原因是代理仍指向同一份源对象，所以源对象更新会反映到只读视图。项目里常用它向外暴露不可直接写的状态，但不能替代权限控制或不可变数据持久化。</li>
-          <li><strong><code>shallowReactive</code> 的嵌套字段为什么不更新？</strong> 结论是它只追踪根层属性访问与赋值。原因是 Vue 不会把嵌套对象递归转成响应式代理。实际项目里如果用了 shallow API，更新嵌套数据时应整体替换根层字段，或者改回 <code>reactive</code>。</li>
-          <li><strong><code>markRaw</code> 适合什么对象？</strong> 结论是适合第三方实例、DOM 相关对象、复杂类实例或大对象缓存。原因是这些对象通常不需要被 Vue 代理，代理还可能破坏实例身份或带来成本。边界是被标记对象内部字段变更不会触发视图，需要额外状态或事件驱动刷新。</li>
-          <li><strong>三者如何选型？</strong> 结论是 <code>readonly</code> 管“外部不要写”，<code>shallowReactive</code> 管“只追踪第一层”，<code>markRaw</code> 管“完全不要代理”。面试回答要补充边界：它们都不是默认推荐状态建模方式，只有性能、第三方实例或封装边界明确时才使用。</li>
+          <li><strong>readonly 为什么不是深拷贝？</strong> 结论是返回只读代理，数据仍同源。源对象更新会反映到只读视图。项目里用于向外暴露不可直接写的状态，不能替代权限控制。</li>
+          <li><strong>shallowReactive 嵌套字段为什么不更新？</strong> 结论是只追踪根层访问与赋值。Vue 不会把嵌套对象递归代理。应整体替换根层字段或改回 <code>reactive</code>。本页两个计数器即验证入口。</li>
+          <li><strong>markRaw 适合什么对象？</strong> 结论是第三方实例、DOM 相关对象、复杂类实例。代理可能破坏实例身份或带来成本。边界是内部字段变更不会触发视图，需事件或版本号驱动刷新。</li>
+          <li><strong>三者如何选型？</strong> 结论是 readonly 防写、shallow 减深层追踪、markRaw 完全跳过代理。它们不是默认状态建模方式，只在边界明确时使用。</li>
+          <li><strong>shallowRef 与 shallowReactive 的“浅”有什么共同点？</strong> 结论都是只追踪一层：前者追踪 <code>.value</code> 替换，后者追踪根层属性。深层细节见 <a href="./07-ref-reactive-shallowRef%E5%AF%B9%E6%AF%94.html">07-ref-reactive-shallowRef对比</a>。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/api/reactivity-core.html#readonly" target="_blank" rel="noreferrer">Vue 3 API：readonly()</a></li>
-          <li><a href="https://vuejs.org/api/reactivity-advanced.html#shallowreactive" target="_blank" rel="noreferrer">Vue 3 API：shallowReactive()</a></li>
-          <li><a href="https://vuejs.org/api/reactivity-advanced.html#markraw" target="_blank" rel="noreferrer">Vue 3 API：markRaw()</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-core.html#readonly" target="_blank" rel="noreferrer">Vue 3 官方 API：readonly()</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-advanced.html#shallowreactive" target="_blank" rel="noreferrer">Vue 3 官方 API：shallowReactive()</a></li>
+          <li><a href="https://vuejs.org/api/reactivity-advanced.html#markraw" target="_blank" rel="noreferrer">Vue 3 官方 API：markRaw()</a></li>
+          <li><a href="https://vuejs.org/guide/extras/reactivity-in-depth.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Reactivity in Depth</a></li>
         </ul>
       </div>
     </section>
@@ -69,62 +76,109 @@
         <h2>readonly（只读视图）</h2>
         <p>源 deep.nested.count：{{ deep.nested.count }}</p>
         <p>readonlyDeep.nested.count：{{ readonlyDeep.nested.count }}</p>
-        <button @click="deep.nested.count++">改源对象（只读视图同步）</button>
-        <button @click="tryMutateReadonly">尝试改 readonly（应失败并在 note 说明）</button>
+        <p class="hint-inline">先“改源对象”看只读视图是否同步；再“尝试改 readonly”看 note 与控制台是否阻止写入。</p>
+        <button type="button" @click="mutateSource">改源对象（只读视图同步）</button>
+        <button type="button" @click="tryMutateReadonly">尝试改 readonly</button>
       </div>
       <div class="box">
         <h2>shallowReactive（只代理第一层）</h2>
-        <p>浅层 shallowReactive：{{ shallow.nested.count }}</p>
-        <button @click="shallow.nested.count++">改 shallow 嵌套字段</button>
-        <button @click="replaceShallow">替换 shallow 第一层</button>
+        <p>shallow.nested.count：{{ shallow.nested.count }}</p>
+        <p>嵌套直接修改次数：{{ nestedMutateCount }} · 根层替换次数：{{ rootReplaceCount }}</p>
+        <p class="hint-inline">点“改嵌套字段”时 count 数字可能变但模板常不变；点“替换 shallow.nested”后模板应更新且 rootReplaceCount +1。</p>
+        <button type="button" @click="mutateShallowNested">改 shallow 嵌套字段</button>
+        <button type="button" @click="replaceShallow">替换 shallow 第一层</button>
       </div>
       <div class="box">
         <h2>markRaw（标记为非响应式）</h2>
         <p>第三方实例 name：{{ rawWidget.name }}</p>
-        <p>rawWidget 变更次数（视图侧计数）：{{ rawViewVersion }}</p>
-        <button @click="mutateRawWidget">改 markRaw 对象字段</button>
-        <button @click="rawViewVersion++">手动 bump 视图计数</button>
+        <p>视图刷新序号：{{ rawViewVersion }}</p>
+        <p class="hint-inline">改 markRaw 字段后 name 可能已在内存中变化但模板不变；点“手动 bump 视图”才会重渲染显示最新 name。</p>
+        <button type="button" @click="mutateRawWidget">改 markRaw 对象字段</button>
+        <button type="button" @click="bumpRawView">手动 bump 视图</button>
       </div>
-      <pre>{{ note }}</pre>
+      <pre class="box">{{ note }}</pre>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // 从全局 Vue 解构本页用到的 Composition API
       const { createApp, reactive, shallowReactive, readonly, markRaw, ref } = Vue;
 
       createApp({
         setup() {
+          // --- readonly：源对象 + 只读视图 ---
           const deep = reactive({ nested: { count: 0 } });
-          const shallow = shallowReactive({ nested: { count: 0 } });
           const readonlyDeep = readonly(deep);
+
+          // --- shallowReactive：只追踪根层 ---
+          const shallow = shallowReactive({ nested: { count: 0 } });
+          const nestedMutateCount = ref(0);
+          const rootReplaceCount = ref(0);
+
+          // --- markRaw：永不代理 ---
           const rawWidget = markRaw({ name: "第三方图表实例" });
           const rawViewVersion = ref(0);
-          const note = ref("点击 shallow 嵌套字段时，通常不会触发视图更新；替换第一层对象才会触发。");
 
-          function replaceShallow() {
-            shallow.nested = { count: shallow.nested.count + 1 };
-            note.value = "已替换 shallow 第一层，视图应更新。";
+          const note = ref("按上方按钮验证三种边界；结果会显示在此处。");
+
+          function mutateSource() {
+            deep.nested.count++;
+            console.log("[readonly] 源=", deep.nested.count, "只读视图=", readonlyDeep.nested.count);
+            note.value = `已改源对象：deep 与 readonlyDeep 均为 ${deep.nested.count}`;
           }
 
           function tryMutateReadonly() {
             const before = readonlyDeep.nested.count;
             readonlyDeep.nested.count = before + 100;
-            if (readonlyDeep.nested.count === before) {
-              note.value = `readonly 阻止直接修改：赋值被忽略，count 仍为 ${before}`;
-            } else {
-              note.value = "readonly 修改意外成功，请检查环境。";
-            }
+            const after = readonlyDeep.nested.count;
+            console.log("[readonly] 尝试写入", before, "->", after);
+            note.value =
+              after === before
+                ? `readonly 阻止直接修改：仍为 ${before}（开发环境可能有警告）`
+                : "readonly 修改意外成功，请检查环境。";
+          }
+
+          function mutateShallowNested() {
+            shallow.nested.count++;
+            nestedMutateCount.value++;
+            console.log("[shallow] 嵌套 count =", shallow.nested.count, "（根层引用未换）");
+            note.value = `已改嵌套字段 count=${shallow.nested.count}；若模板未变，说明未追踪深层。`;
+          }
+
+          function replaceShallow() {
+            shallow.nested = { count: shallow.nested.count + 1 };
+            rootReplaceCount.value++;
+            console.log("[shallow] 已替换根层 nested");
+            note.value = `已替换 shallow.nested，视图应更新为 count=${shallow.nested.count}`;
           }
 
           function mutateRawWidget() {
             rawWidget.name = rawWidget.name === "第三方图表实例" ? "已修改但未追踪" : "第三方图表实例";
-            note.value = "已修改 markRaw 对象字段；若上方 name 未变，说明它未被响应式追踪。";
+            console.log("[markRaw] rawWidget.name =", rawWidget.name);
+            note.value = `已改 markRaw 字段为「${rawWidget.name}」；若上方未变，需 bump 视图序号。`;
+          }
+
+          function bumpRawView() {
+            rawViewVersion.value++;
+            note.value = `已 bump 视图序号 ${rawViewVersion.value}，此时应显示最新 name。`;
           }
 
           return {
-            deep, shallow, readonlyDeep, rawWidget, rawViewVersion, note,
-            replaceShallow, tryMutateReadonly, mutateRawWidget,
+            deep,
+            shallow,
+            readonlyDeep,
+            rawWidget,
+            rawViewVersion,
+            nestedMutateCount,
+            rootReplaceCount,
+            note,
+            mutateSource,
+            tryMutateReadonly,
+            mutateShallowNested,
+            replaceShallow,
+            mutateRawWidget,
+            bumpRawView,
           };
         },
       }).mount("#app");
@@ -150,5 +204,5 @@
       </script>
     </footer>
     <!-- NAV_END -->
-</body>
+  </body>
 </html>

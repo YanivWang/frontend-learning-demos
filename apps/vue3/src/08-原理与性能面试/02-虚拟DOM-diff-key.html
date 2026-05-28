@@ -26,6 +26,7 @@
       li { margin: 6px 0; }
       code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
       .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
       .compare-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
       .panel { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
     </style>
@@ -40,11 +41,11 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li>Vue 模板会被编译成渲染函数，渲染函数返回 vnode。状态变化后，运行时对比新旧 vnode，再用最小必要 DOM 操作把真实页面更新到新状态。</li>
+          <li>本页先在两侧 input 输入不同文字，再点「调换顺序」观察内容是否跟随数据项。Vue 模板会被编译成渲染函数，渲染函数返回 vnode。状态变化后，运行时对比新旧 vnode，再用最小必要 DOM 操作把真实页面更新到新状态。</li>
           <li><code>key</code> 不是给循环“消警告”的装饰，而是同层兄弟节点的身份标识。稳定唯一的 key 能让输入框焦点、组件状态和 DOM 复用跟随同一个数据项移动。</li>
           <li>常见坑是把数组下标、随机数或会变化的字段当 key。列表插入、删除、排序时，下标 key 会让 DOM 状态留在位置上而不是跟着数据项走；随机 key 则会让节点每轮都被销毁重建。</li>
           <li>现代 Vue3 不只是运行时全量 diff：编译器会做静态提升、缓存事件处理器，并用 patch flags 标记动态部分，实际更新时优先处理真正变化的节点。</li>
-          <li>示例左侧使用 <code>item.id</code>，输入框内容会跟随 A/B/C 数据项移动；右侧使用 <code>index</code>，重排后输入框内容可能留在原位置，用来观察错误复用。</li>
+          <li>列表 <code>key</code> 基础用法见 <a href="../01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/02-%E6%9D%A1%E4%BB%B6%E5%88%97%E8%A1%A8%E4%B8%8Ekey.html">01-条件列表与key</a>；性能相关指令见 <a href="./05-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96.html">05-性能优化</a>。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
@@ -55,9 +56,9 @@
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/guide/extras/rendering-mechanism.html">Vue 官方文档：Rendering Mechanism</a></li>
-          <li><a href="https://vuejs.org/guide/essentials/list.html#maintaining-state-with-key">Vue 官方文档：Maintaining State with key</a></li>
-          <li><a href="https://vuejs.org/api/built-in-special-attributes.html#key">Vue 官方 API：key</a></li>
+          <li><a href="https://vuejs.org/guide/extras/rendering-mechanism.html" target="_blank" rel="noreferrer">Vue 官方文档：Rendering Mechanism</a></li>
+          <li><a href="https://vuejs.org/guide/essentials/list.html#maintaining-state-with-key" target="_blank" rel="noreferrer">Vue 官方文档：Maintaining State with key</a></li>
+          <li><a href="../01-%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/02-%E6%9D%A1%E4%BB%B6%E5%88%97%E8%A1%A8%E4%B8%8Ekey.html">本系列：条件列表与 key</a></li>
         </ul>
       </div>
     </section>
@@ -67,8 +68,8 @@
     <div id="app">
       <h1>虚拟 DOM / diff / key</h1>
       <div class="box">
-        <button @click="shuffle">调换顺序</button>
-        <p>先在两侧 A/B/C 输入框里输入不同内容，再调换顺序观察 DOM 状态是否跟随数据项。</p>
+        <button type="button" @click="shuffle">调换顺序</button>
+        <p class="hint-inline">先在两侧 A/B/C 输入框里输入不同内容，再点「调换顺序」：左侧（稳定 id key）内容应跟随数据项，右侧（index key）更容易留在原位置。</p>
         <div class="compare-grid">
           <div class="panel">
             <h2>稳定 key：<code>:key="item.id"</code></h2>
@@ -93,16 +94,22 @@
 
     <!-- SCRIPT_START -->
     <script>
+      // 从全局 Vue 解构本页用到的 Composition API
       const { createApp, ref } = Vue;
+
+      // --- 挂载应用 ---
+
 
       createApp({
         setup() {
+          // --- 演示状态 ---
           const list = ref([
             { id: "a", name: "A" },
             { id: "b", name: "B" },
             { id: "c", name: "C" },
           ]);
 
+          // 重排数组顺序，观察 key 策略对 DOM 复用的影响
           function shuffle() {
             list.value = [list.value[2], list.value[0], list.value[1]];
           }

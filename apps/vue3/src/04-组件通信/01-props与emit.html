@@ -6,11 +6,13 @@
     - emit 表达子到父的事件契约，父组件负责更新自己的状态
     - 单向数据流让状态来源可追踪，子组件不要直接修改 props
     - emits 选项可声明事件名并校验 payload，避免事件散落成隐式约定
+    - 双向绑定语义可封装为 v-model，见同章 04、05 页
   面试:
     - Vue 父子组件为什么强调 props down、events up？
     - 子组件为什么不能直接修改 props，应该怎么改？
     - emits 选项在 Vue 3 中有什么价值？
     - props / emit 与 v-model、provide-inject、store 如何选型？
+    - 子组件基于 props 初始化本地状态时要注意什么？
 -->
 
 <!doctype html>
@@ -22,9 +24,12 @@
     <script src="../../libs/vue.global.js"></script>
     <style>
       body { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; line-height: 1.7; padding: 24px; color: #202124; }
-      button { margin-right: 8px; padding: 6px 12px; }
-      code { background: #f6f8fa; padding: 2px 5px; border-radius: 6px; }
+      button { margin-right: 8px; margin-top: 4px; padding: 6px 12px; }
+      code, pre { background: #f6f8fa; border-radius: 6px; }
+      code { padding: 2px 5px; }
+      pre { padding: 12px; overflow: auto; max-height: 160px; }
       .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; max-width: 760px; }
+      .box .hint-inline { margin: 8px 0; color: #5f6368; font-size: 14px; }
     </style>
     <link rel="stylesheet" href="../../../../packages/shared/demo-notes.css" />
     <link rel="stylesheet" href="../../../../packages/shared/demo-shell.css" />
@@ -37,24 +42,27 @@
       <div class="demo-notes">
         <h2>知识点要点</h2>
         <ul>
-          <li><code>props</code> 是父组件传给子组件的输入契约。Vue 3 中 props 在子组件内是只读的，子组件应该把它当作外部输入，而不是本地可随意修改的状态。</li>
-          <li><code>emit</code> 是子组件通知父组件的事件契约。示例中子组件点击按钮只触发 <code>increase</code> 事件，真正的 <code>count++</code> 发生在父组件。</li>
-          <li>这种 <strong>props down, events up</strong> 的单向数据流让状态来源可追踪：父组件拥有状态，子组件描述意图，父组件决定如何更新。</li>
-          <li>Vue 3 推荐声明 <code>emits</code>，这样组件的自定义事件会更清晰，也能避免未声明事件被当作透传监听器落到根元素上；复杂场景还可以校验 payload。</li>
-          <li>常见坑是子组件直接改 props、把本地临时状态和父级状态混在一起，或用层层 emit 穿透太深的组件树。跨层共享状态可考虑 provide-inject 或 Pinia。</li>
+          <li><code>props</code> 是父组件传给子组件的输入契约。Vue 3 中 props 在子组件内是只读的，子组件应该把它当作外部输入，而不是本地可随意修改的状态。本页父组件 <code>count</code> 经 <code>:count="count"</code> 传入子组件。</li>
+          <li><code>emit</code> 是子组件通知父组件的事件契约。点子组件「通知父组件 +1」只触发 <code>increase</code> 事件，真正的 <code>count++</code> 发生在父组件 <code>@increase</code> 处理器中；pre 区会追加事件日志。</li>
+          <li>这种 <strong>props down, events up</strong> 的单向数据流让状态来源可追踪：父组件拥有状态，子组件描述意图，父组件决定如何更新。点「父组件直接 +1」与通过子组件 emit 效果相同，但数据流路径不同。</li>
+          <li>Vue 3 推荐声明 <code>emits: ["increase"]</code>，这样组件的自定义事件会更清晰，也能避免未声明事件被当作透传监听器落到根元素上；透传细节见 <a href="./02-attrs%E4%B8%8E%E9%80%8F%E4%BC%A0.html">02-attrs与透传</a>。</li>
+          <li>常见坑是子组件直接改 props、把本地临时状态和父级状态混在一起，或用层层 emit 穿透太深的组件树。跨层共享状态可考虑 <a href="./03-provide-inject.html">03-provide-inject</a> 或 Pinia；双向绑定语义见 <a href="./04-%E7%BB%84%E4%BB%B6v-model.html">04-组件v-model</a>、<a href="./05-defineModel%E7%BB%84%E4%BB%B6v-model.html">05-defineModel（3.4+）</a>。</li>
+          <li>若子组件需要基于 props 初始化本地状态（如编辑表单草稿），应在 props 变化时用 <code>watch</code> 同步或明确「仅初始化一次」的语义，避免父级更新后子级仍显示旧值。</li>
         </ul>
         <h2>面试考点</h2>
         <ul>
-          <li><strong>为什么强调 props down、events up？</strong> 结论是为了保持单向数据流。原因是父组件拥有状态，子组件只接收输入并发出事件，状态变化来源更容易追踪。项目里表单项、按钮、列表项等可复用子组件都应遵守这个约定。</li>
-          <li><strong>子组件想改 props 怎么办？</strong> 结论是不要直接修改 props，而是 emit 事件让父组件更新，或在子组件内基于 props 初始化本地状态。原因是 props 是父级数据，直接改会破坏数据流并触发警告。双向绑定语义可封装为 <code>v-model</code>。</li>
+          <li><strong>为什么强调 props down、events up？</strong> 结论是为了保持单向数据流。原因是父组件拥有状态，子组件只接收输入并发出事件，状态变化来源更容易追踪。本页 pre 日志可区分「父直接改」与「子 emit 后父改」两条路径。</li>
+          <li><strong>子组件想改 props 怎么办？</strong> 结论是不要直接修改 props，而是 emit 事件让父组件更新，或在子组件内基于 props 初始化本地状态。双向绑定语义可封装为 <code>v-model</code>，见 <a href="./04-%E7%BB%84%E4%BB%B6v-model.html">04-组件v-model</a>。</li>
           <li><strong><code>emits</code> 选项有什么价值？</strong> 结论是它声明组件会发出的自定义事件。原因是 Vue 3 会据此区分组件事件和透传监听器，也便于校验 payload 和生成类型提示。组件库中应把公开事件写成明确契约。</li>
           <li><strong>props / emit 与其他通信方式怎么选？</strong> 结论是父子近距离通信用 props / emit，表单双向语义用 <code>v-model</code>，跨层依赖用 provide-inject，全局业务状态用 store。边界是不要为了避免一两层传递就过早引入全局状态。</li>
+          <li><strong>子组件基于 props 初始化本地状态要注意什么？</strong> 结论是明确 props 变化时是否同步本地副本。只初始化一次适合「打开弹窗时复制一份可编辑草稿」；props 持续驱动展示则应直接读 props 或用 computed。Vue 3.5+ props 解构见 <a href="./06-props%E8%A7%A3%E6%9E%84%E4%BF%9D%E6%8C%81%E5%93%8D%E5%BA%94%E5%BC%8F.html">06-props解构（3.5+）</a>。</li>
         </ul>
         <h2>参考资料</h2>
         <ul>
-          <li><a href="https://vuejs.org/guide/components/props.html" target="_blank" rel="noreferrer">Vue 3 Guide：Props</a></li>
-          <li><a href="https://vuejs.org/guide/components/events.html" target="_blank" rel="noreferrer">Vue 3 Guide：Component Events</a></li>
-          <li><a href="https://vuejs.org/api/options-state.html#emits" target="_blank" rel="noreferrer">Vue 3 API：emits</a></li>
+          <li><a href="https://vuejs.org/guide/components/props.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Props</a></li>
+          <li><a href="https://vuejs.org/guide/components/events.html" target="_blank" rel="noreferrer">Vue 3 官方文档：Component Events</a></li>
+          <li><a href="https://vuejs.org/api/options-state.html#emits" target="_blank" rel="noreferrer">Vue 3 官方 API：emits</a></li>
+          <li><a href="./04-%E7%BB%84%E4%BB%B6v-model.html">本系列：组件 v-model</a></li>
         </ul>
       </div>
     </section>
@@ -64,14 +72,19 @@
     <div id="app">
       <h1>props 与 emit</h1>
       <div class="box">
-        <p>父组件 count：{{ count }}</p>
-        <counter-child :count="count" @increase="count++"></counter-child>
+        <p>父组件 count：{{ count }}
+          <button type="button" @click="parentIncrement">父组件直接 +1</button>
+        </p>
+        <p class="hint-inline">子组件收到的是只读 props；只有父组件能改 count。观察下方事件日志区分两种 +1 路径。</p>
+        <counter-child :count="count" @increase="onChildIncrease"></counter-child>
+        <pre>{{ eventLogs.length ? eventLogs.join("\n") : "（点击按钮观察 props / emit 数据流）" }}</pre>
       </div>
     </div>
     <!-- PAGE_DOM_END -->
 
     <!-- SCRIPT_START -->
     <script>
+      // 从全局 Vue 解构本页用到的 Composition API
       const { createApp, ref } = Vue;
 
       const CounterChild = {
@@ -81,17 +94,36 @@
         emits: ["increase"],
         template: `
         <div>
-          <p>子组件收到 count：{{ count }}</p>
-          <button @click="$emit('increase')">通知父组件 +1</button>
+          <p>子组件收到 count：{{ count }}（只读，不可直接修改）</p>
+          <button type="button" @click="$emit('increase')">通知父组件 +1</button>
         </div>
         `,
       };
 
+      // --- 挂载应用 ---
+
+
       createApp({
         components: { CounterChild },
         setup() {
+          // --- 演示状态 ---
+          // 父组件拥有单一数据源
           const count = ref(0);
-          return { count };
+          const eventLogs = ref([]);
+
+          function parentIncrement() {
+            count.value++;
+            eventLogs.value.push(`父组件直接 count++ → ${count.value}`);
+            console.log("[props/emit] 父直接更新", count.value);
+          }
+
+          function onChildIncrease() {
+            count.value++;
+            eventLogs.value.push(`子 emit increase → 父 count++ → ${count.value}`);
+            console.log("[props/emit] 子 emit 后父更新", count.value);
+          }
+
+          return { count, eventLogs, parentIncrement, onChildIncrease };
         },
       }).mount("#app");
 
