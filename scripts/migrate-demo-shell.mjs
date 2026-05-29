@@ -22,6 +22,7 @@ import {
 
 const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
 const DEMO_NOTES_CSS = join(ROOT, 'packages/shared/demo-notes.css');
+const DEMO_NOTES_JS = join(ROOT, 'packages/shared/demo-notes.js');
 const DEMO_SHELL_CSS = join(ROOT, 'packages/shared/demo-shell.css');
 const DEMO_LOG = join(ROOT, 'packages/shared/demo-log.js');
 const SKIP_DIRS = new Set(['libs', 'lib', 'node_modules', '.git', 'scripts']);
@@ -90,6 +91,16 @@ function injectCssLinks(content, abs) {
       next = next.replace(/(<link[^>]*demo-notes\.css[^>]*\/?>)/i, `$1\n${link}`);
     } else if (/<\/head>/i.test(next)) {
       next = next.replace(/<\/head>/i, `${link}\n  </head>`);
+    }
+  }
+
+  if (/demo-notes\.css/i.test(next) && !/demo-notes\.js/i.test(next)) {
+    const jsHref = relFromFile(dirname(abs), DEMO_NOTES_JS);
+    const script = `    <script defer src="${jsHref}"></script>`;
+    if (/demo-shell\.css/i.test(next)) {
+      next = next.replace(/(<link[^>]*demo-shell\.css[^>]*\/?>)/i, `$1\n${script}`);
+    } else if (/demo-notes\.css/i.test(next)) {
+      next = next.replace(/(<link[^>]*demo-notes\.css[^>]*\/?>)/i, `$1\n${script}`);
     }
   }
 
