@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>script async vs defer 演示</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: sans-serif;
+        background: #f9f9f9;
+        padding: 1.5rem;
+        color: #1a1a1a;
+      }
+      .wrap {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 1rem 0;
+      }
+      .speed-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 1.5rem;
+        font-size: 13px;
+        color: #666;
+      }
+      .speed-row input {
+        flex: 1;
+        max-width: 160px;
+      }
+      .speed-row button {
+        padding: 5px 14px;
+        font-size: 13px;
+        cursor: pointer;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        background: #fff;
+      }
+      .case {
+        margin-bottom: 1.75rem;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .case-header {
+        padding: 10px 16px;
+        background: #f3f3f3;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 13px;
+        font-weight: 500;
+      }
+      .case-body {
+        padding: 12px 16px;
+        background: #fff;
+      }
+      .tl-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+      }
+      .tl-name {
+        font-size: 12px;
+        font-weight: 500;
+        color: #555;
+        width: 56px;
+        flex-shrink: 0;
+      }
+      .tl-bar {
+        flex: 1;
+        display: flex;
+        height: 20px;
+        border-radius: 4px;
+        overflow: hidden;
+        background: #f0f0f0;
+      }
+      .cell {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        flex-shrink: 0;
+        flex-basis: 0;
+      }
+      .cb {
+        background: #b5d4f4;
+        color: #0c447c;
+      }
+      .cb2 {
+        background: #378add;
+        color: #e6f1fb;
+      }
+      .cr {
+        background: #f5c4b3;
+        color: #712b13;
+      }
+      .cg {
+        background: #c0dd97;
+        color: #27500a;
+      }
+      .cy {
+        background: #d3d1c7;
+        color: #5f5e5a;
+      }
+      .cx {
+        background: #f0f0f0;
+      }
+      .log-box {
+        margin-top: 10px;
+        background: #f7f7f7;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-family: monospace;
+        font-size: 11.5px;
+        min-height: 56px;
+        max-height: 150px;
+        overflow-y: auto;
+      }
+      .le {
+        line-height: 1.7;
+      }
+      .lh {
+        color: #185fa5;
+      }
+      .ld {
+        color: #993c1d;
+      }
+      .le2 {
+        color: #3b6d11;
+      }
+      .lc {
+        color: #a32d2d;
+        font-weight: 500;
+      }
+      .lb {
+        color: #888780;
+      }
+      .badge {
+        display: inline-block;
+        font-size: 11px;
+        padding: 1px 6px;
+        border-radius: 4px;
+        margin-right: 4px;
+        font-family: sans-serif;
+        font-weight: 500;
+      }
+      .bh {
+        background: #e6f1fb;
+        color: #0c447c;
+      }
+      .bd {
+        background: #faece7;
+        color: #712b13;
+      }
+      .be {
+        background: #eaf3de;
+        color: #27500a;
+      }
+      .bb {
+        background: #f1efe8;
+        color: #5f5e5a;
+      }
+      .bc {
+        background: #fcebeb;
+        color: #791f1f;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="speed-row">
+        <span>脚本下载耗时</span>
+        <input
+          type="range"
+          min="1"
+          max="5"
+          step="1"
+          value="3"
+          id="spd"
+          oninput="document.getElementById('spd-out').textContent=this.value+'s'"
+        />
+        <span id="spd-out">3s</span>
+        <button onclick="runAll()" style="margin-left: 10px">运行全部</button>
+      </div>
+      <div id="root"></div>
+    </div>
+
+    <script>
+      var T = [];
+      function clr() {
+        T.forEach(clearTimeout);
+        T = [];
+      }
+      function at(ms, fn) {
+        T.push(setTimeout(fn, ms));
+      }
+      function lbl(id, txt) {
+        var e = document.getElementById(id);
+        if (e) e.textContent = txt;
+      }
+
+      function addLog(id, cls, badge, bcls, msg) {
+        var box = document.getElementById(id);
+        if (!box) return;
+        if (box.children.length === 1 && box.children[0].style && box.children[0].style.color)
+          box.innerHTML = '';
+        var d = document.createElement('div');
+        d.className = 'le ' + cls;
+        d.innerHTML = '<span class="badge ' + bcls + '">' + badge + '</span>' + msg;
+        box.appendChild(d);
+        box.scrollTop = box.scrollHeight;
+      }
+
+      function makeRow(name, cells, noBar) {
+        var row = document.createElement('div');
+        row.className = 'tl-row';
+        var nm = document.createElement('span');
+        nm.className = 'tl-name';
+        nm.textContent = name;
+        row.appendChild(nm);
+        if (noBar) {
+          var nb = document.createElement('div');
+          nb.style.cssText = 'font-size:11px;color:#aaa;line-height:20px;padding:0 4px';
+          nb.textContent = '无';
+          row.appendChild(nb);
+          return row;
+        }
+        var bar = document.createElement('div');
+        bar.className = 'tl-bar';
+        cells.forEach(function (c) {
+          var d = document.createElement('div');
+          d.className = 'cell ' + (c.cls || 'cx');
+          d.style.flexGrow = c.w;
+          if (c.id) d.id = c.id;
+          bar.appendChild(d);
+        });
+        row.appendChild(bar);
+        return row;
+      }
+
+      function makeLog(id) {
+        var d = document.createElement('div');
+        d.className = 'log-box';
+        d.id = id;
+        d.innerHTML = '<div style="color:#aaa">点击"运行全部"...</div>';
+        return d;
+      }
+
+      function build(DL) {
+        var root = document.getElementById('root');
+        root.innerHTML = '';
+        var P1 = 500,
+          EX = 500,
+          P2 = 800;
+        var HPAR = Math.round(DL * 0.72),
+          GAP = DL - HPAR,
+          REM = 700,
+          AFT = 700;
+
+        // ── NORMAL ── 4列: [P1, DL, EX, P2]
+        var nCase = document.createElement('div');
+        nCase.className = 'case';
+        nCase.innerHTML =
+          '<div class="case-header">普通 &lt;script&gt; — 阻塞解析，串行下载执行</div>';
+        var nBody = document.createElement('div');
+        nBody.className = 'case-body';
+        nBody.appendChild(
+          makeRow('HTML解析', [
+            { cls: 'cb', w: P1, id: 'n-h1' },
+            { cls: 'cx', w: DL },
+            { cls: 'cx', w: EX },
+            { cls: 'cb2', w: P2, id: 'n-h2' },
+          ]),
+        );
+        nBody.appendChild(
+          makeRow('脚本下载', [
+            { cls: 'cx', w: P1 },
+            { cls: 'cr', w: DL, id: 'n-dl' },
+            { cls: 'cx', w: EX },
+            { cls: 'cx', w: P2 },
+          ]),
+        );
+        nBody.appendChild(
+          makeRow('脚本执行', [
+            { cls: 'cx', w: P1 },
+            { cls: 'cx', w: DL },
+            { cls: 'cg', w: EX, id: 'n-ex' },
+            { cls: 'cx', w: P2 },
+          ]),
+        );
+        nBody.appendChild(
+          makeRow('解析暂停', [
+            { cls: 'cx', w: P1 },
+            { cls: 'cy', w: DL + EX, id: 'n-bl' },
+            { cls: 'cx', w: 0 },
+            { cls: 'cx', w: P2 },
+          ]),
+        );
+        nBody.appendChild(makeLog('n-log'));
+        nCase.appendChild(nBody);
+        root.appendChild(nCase);
+
+        // ── ASYNC ── 5列: [P1, HPAR, GAP, EX, REM]
+        var aCase = document.createElement('div');
+        aCase.className = 'case';
+        aCase.innerHTML =
+          '<div class="case-header">async — 遇到标签后并行下载，下载完立即执行（中断解析）</div>';
+        var aBody = document.createElement('div');
+        aBody.className = 'case-body';
+        aBody.appendChild(
+          makeRow('HTML解析', [
+            { cls: 'cb', w: P1, id: 'a-h0' },
+            { cls: 'cb', w: HPAR, id: 'a-h1' },
+            { cls: 'cb', w: GAP },
+            { cls: 'cx', w: EX },
+            { cls: 'cb2', w: REM, id: 'a-h2' },
+          ]),
+        );
+        aBody.appendChild(
+          makeRow('脚本下载', [
+            { cls: 'cx', w: P1 },
+            { cls: 'cr', w: HPAR, id: 'a-dl1' },
+            { cls: 'cr', w: GAP, id: 'a-dl2' },
+            { cls: 'cx', w: EX },
+            { cls: 'cx', w: REM },
+          ]),
+        );
+        aBody.appendChild(
+          makeRow('脚本执行', [
+            { cls: 'cx', w: P1 },
+            { cls: 'cx', w: HPAR },
+            { cls: 'cx', w: GAP },
+            { cls: 'cg', w: EX, id: 'a-ex' },
+            { cls: 'cx', w: REM },
+          ]),
+        );
+        aBody.appendChild(
+          makeRow('解析暂停', [
+            { cls: 'cx', w: P1 },
+            { cls: 'cx', w: HPAR },
+            { cls: 'cx', w: GAP },
+            { cls: 'cy', w: EX, id: 'a-bl' },
+            { cls: 'cx', w: REM },
+          ]),
+        );
+        aBody.appendChild(makeLog('a-log'));
+        aCase.appendChild(aBody);
+        root.appendChild(aCase);
+
+        // ── DEFER ── 5列: [P1, HPAR, GAP, AFT, EX]
+        var dCase = document.createElement('div');
+        dCase.className = 'case';
+        dCase.innerHTML =
+          '<div class="case-header">defer — 遇到标签后并行下载，DOM 完整后才执行，严格保序</div>';
+        var dBody = document.createElement('div');
+        dBody.className = 'case-body';
+        dBody.appendChild(
+          makeRow('HTML解析', [
+            { cls: 'cb', w: P1, id: 'd-h0' },
+            { cls: 'cb', w: HPAR, id: 'd-h1' },
+            { cls: 'cb', w: GAP },
+            { cls: 'cb', w: AFT, id: 'd-h2' },
+            { cls: 'cx', w: EX },
+          ]),
+        );
+        dBody.appendChild(
+          makeRow('脚本下载', [
+            { cls: 'cx', w: P1 },
+            { cls: 'cr', w: HPAR, id: 'd-dl1' },
+            { cls: 'cr', w: GAP, id: 'd-dl2' },
+            { cls: 'cx', w: AFT },
+            { cls: 'cx', w: EX },
+          ]),
+        );
+        dBody.appendChild(
+          makeRow('脚本执行', [
+            { cls: 'cx', w: P1 },
+            { cls: 'cx', w: HPAR },
+            { cls: 'cx', w: GAP },
+            { cls: 'cx', w: AFT },
+            { cls: 'cg', w: EX, id: 'd-ex' },
+          ]),
+        );
+        dBody.appendChild(makeRow('解析暂停', null, true));
+        dBody.appendChild(makeLog('d-log'));
+        dCase.appendChild(dBody);
+        root.appendChild(dCase);
+      }
+
+      function runAll() {
+        clr();
+        var DL = parseInt(document.getElementById('spd').value, 10) * 1000;
+        var P1 = 500,
+          EX = 500,
+          P2 = 800;
+        var HPAR = Math.round(DL * 0.72),
+          GAP = DL - HPAR,
+          REM = 700,
+          AFT = 700;
+        build(DL);
+
+        // ── NORMAL ──
+        addLog('n-log', 'lh', 'HTML解析', 'bh', '开始解析 &lt;head&gt;');
+        lbl('n-h1', '解析 head');
+        at(P1, function () {
+          lbl('n-dl', '下载');
+          lbl('n-bl', '暂停');
+          addLog('n-log', 'lh', 'HTML解析', 'bh', '遇到 &lt;script src="app.js"&gt;');
+          addLog('n-log', 'lb', '暂停', 'bb', '解析立即停止，开始下载（' + DL / 1000 + 's）');
+        });
+        at(P1 + DL, function () {
+          lbl('n-ex', '执行');
+          addLog('n-log', 'ld', '下载', 'bd', '下载完成，立即执行（&lt;body&gt; 尚未解析）');
+        });
+        at(P1 + DL + EX, function () {
+          lbl('n-h2', '恢复解析');
+          addLog('n-log', 'lh', 'HTML解析', 'bh', '执行完毕，恢复解析 &lt;body&gt;');
+        });
+        at(P1 + DL + EX + P2, function () {
+          addLog('n-log', 'lc', 'DCL', 'bc', 'DOMContentLoaded 触发');
+        });
+
+        // ── ASYNC ──
+        addLog('a-log', 'lh', 'HTML解析', 'bh', '开始解析 &lt;head&gt;');
+        lbl('a-h0', '解析 head');
+        at(P1, function () {
+          lbl('a-h1', '并行解析');
+          lbl('a-dl1', '(跟HTML解析并行)脚本下载');
+          addLog('a-log', 'lh', 'HTML解析', 'bh', '遇到 &lt;script async src="app.js"&gt;');
+          addLog('a-log', 'ld', '下载', 'bd', '开始并行下载（' + DL / 1000 + 's）— 解析继续');
+        });
+        [0.18, 0.36, 0.54, 0.72, 0.9].forEach(function (f, i) {
+          at(P1 + Math.round(DL * f), function () {
+            var pct = Math.round(((P1 + DL * f) / (P1 + DL + REM)) * 100);
+            addLog(
+              'a-log',
+              'lh',
+              'HTML解析',
+              'bh',
+              '解析进度 ' + pct + '%（下载进行中 ' + (i + 1) + '/5）',
+            );
+          });
+        });
+        at(P1 + DL, function () {
+          lbl('a-bl', '暂停');
+          lbl('a-ex', '执行');
+          var aPct = Math.round(((P1 + DL) / (P1 + DL + REM)) * 100);
+          addLog('a-log', 'ld', '下载', 'bd', '下载完成（HTML 约 ' + aPct + '%，尚未完成）');
+          addLog('a-log', 'lb', '暂停', 'bb', '立即执行脚本 — HTML 解析被中断！');
+        });
+        at(P1 + DL + EX, function () {
+          lbl('a-h2', '恢复解析');
+          addLog('a-log', 'le2', '执行', 'be', '执行完毕，恢复解析剩余 HTML');
+        });
+        at(P1 + DL + EX + REM, function () {
+          addLog('a-log', 'lh', 'HTML解析', 'bh', 'HTML 解析 100%');
+          addLog('a-log', 'lc', 'DCL', 'bc', 'DOMContentLoaded 触发');
+        });
+
+        // ── DEFER ──
+        addLog('d-log', 'lh', 'HTML解析', 'bh', '开始解析 &lt;head&gt;');
+        lbl('d-h0', '解析 head');
+        at(P1, function () {
+          lbl('d-h1', '并行解析');
+          lbl('d-dl1', '(跟HTML解析并行)脚本下载');
+          addLog('d-log', 'lh', 'HTML解析', 'bh', '遇到 &lt;script defer src="app.js"&gt;');
+          addLog('d-log', 'ld', '下载', 'bd', '开始并行下载（' + DL / 1000 + 's）— 解析继续');
+        });
+        [0.18, 0.36, 0.54, 0.72, 0.9].forEach(function (f, i) {
+          at(P1 + Math.round(DL * f), function () {
+            var pct = Math.round(((P1 + DL * f) / (P1 + DL + AFT)) * 100);
+            addLog(
+              'd-log',
+              'lh',
+              'HTML解析',
+              'bh',
+              '解析进度 ' + pct + '%（下载进行中 ' + (i + 1) + '/5）',
+            );
+          });
+        });
+        at(P1 + DL, function () {
+          var dPct = Math.round(((P1 + DL) / (P1 + DL + AFT)) * 100);
+          addLog('d-log', 'ld', '下载', 'bd', '下载完成（HTML 约 ' + dPct + '%，尚未完成）');
+          addLog('d-log', 'lh', 'HTML解析', 'bh', '脚本就绪，静候 HTML 解析完成，不打断');
+          lbl('d-h2', '继续解析');
+        });
+        [0.33, 0.66, 1.0].forEach(function (g) {
+          at(P1 + DL + Math.round(AFT * g), function () {
+            var pct = Math.round(((P1 + DL + AFT * g) / (P1 + DL + AFT)) * 100);
+            addLog('d-log', 'lh', 'HTML解析', 'bh', '解析进度 ' + pct + '%（脚本等待中）');
+          });
+        });
+        at(P1 + DL + AFT, function () {
+          lbl('d-ex', '执行');
+          addLog('d-log', 'le2', '执行', 'be', 'HTML 100% — 执行 defer app.js');
+        });
+        at(P1 + DL + AFT + EX, function () {
+          addLog('d-log', 'lc', 'DCL', 'bc', 'DOMContentLoaded 触发（defer 执行完后）');
+        });
+      }
+
+      build(3000);
+    </script>
+  </body>
+</html>
