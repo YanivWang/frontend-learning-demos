@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+  </head>
+  <body>
+    <script>
+      window.lodash = window._;
+
+      // ############### 浅拷贝 ###############
+      //一.Object.assign()
+      // assign
+      const obj = { name: '张三', age: 18 };
+      const obj1 = { address: '北京' };
+      const obj2 = { gender: '男' };
+      const obj3 = { address: '上海', gender: '女' };
+
+      // 将obj1, obj2, obj3 合并到 obj 中
+      // 第一个是目标对象<需要应用源对象属性的目标对象>，后面可以有多个源对象
+      // 把「源对象」的属性，分配 / 赋予 / 合并到「目标对象」上
+      const newObj = Object.assign({}, obj, obj1, obj2, obj3);
+      console.log(newObj); //{name: '张三', age: 18, address: '上海', gender: '女'}
+
+      //二.Object.create(obj)
+      const user = {
+        firstName: 'Tom',
+        lastName: 'Green',
+
+        get fullName() {
+          return `${this.firstName} ${this.lastName}`;
+        },
+      };
+
+      //1. 给新对象设置同样的原型
+      const proto = Object.getPrototypeOf(user);
+      //真正完成“复制自身属性”的是第二个参数：
+      //2. 把 user 自身属性定义到新对象上
+      const desc = Object.getOwnPropertyDescriptors(user);
+
+      const newObj1 = Object.create(
+        Object.getPrototypeOf(user),
+        Object.getOwnPropertyDescriptors(user),
+      );
+      console.log('newObj1>>>', newObj1); //{name: '张三', age: 18}
+
+      //三. Object.defineProperties => 把 user 自身属性定义到新对象上
+      const copy = {};
+      Object.defineProperties(copy, Object.getOwnPropertyDescriptors(user));
+      console.log('copy>>>', copy); //{name: '张三', age: 18}
+
+      //四.对象展开运算符
+      const newObj2 = { ...obj, ...obj1, ...obj2, ...obj3 };
+      console.log(newObj2); //{name: '张三', age: 18, address: '上海', gender: '女'}
+
+      // ############### 深拷贝 ###############
+      //五.JSON.parse(JSON.stringify(obj))
+      // 缺点: JSON 法不支持 Function / Date / Map / Set 等
+      // 不能处理 undefined symbol 等特殊类型
+      const newObj3 = JSON.parse(JSON.stringify(obj));
+      console.log(newObj3); //{name: '张三', age: 18}
+
+      //六.structuredClone(obj)
+      //遇到 Function Symbol DOM WeakMap / WeakSet 直接报错
+      const newObj4 = structuredClone(obj);
+      console.log(newObj4); //{name: '张三', age: 18}
+
+      //七.lodash.cloneDeep(obj)
+      //对函数 直接返回原引用（不复制）
+      //对于Symbol 返回原Symbol
+      //DOM 节点 返回空对象
+      const newObj5 = lodash.cloneDeep(obj);
+      console.log(newObj5); //{name: '张三', age: 18}
+    </script>
+  </body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      //展开运算符 和 Array.from 大多数情况下功能一直
+      //但是展开运算符不能处理: 类数组对象(NodeList, HTMLCollection, arguments)
+
+      //一.展开可迭代对象
+      //展开 字符串
+      const str = [...'abcd'];
+      console.log(str); //['a', 'b', 'c', 'd']
+
+      //展开 数组
+      const arr = [1, 2, 3, 4];
+      const arr2 = [...arr];
+      console.log(arr2); //[1, 2, 3, 4]
+
+      //展开 集合
+      const set = new Set([1, 2, 3, 4]);
+      const set2 = [...set];
+      console.log(set2); //[1, 2, 3, 4]
+
+      //展开 映射
+      const map = new Map([
+        ['name', '张三'],
+        ['age', 18],
+      ]);
+      const map2 = [...map];
+      console.log(map2); //[['name', '张三'], ['age', 18]]
+
+      //展开 类数组对象
+      const args = (function () {
+        return arguments;
+      })(10, 11, 12, 13);
+      const args2 = [...args];
+      console.log('args21111111', args2); //[10, 11, 12, 13]
+
+      //二.展开对象
+      //展开 对象, 对象不属于可迭代类型
+      const obj = { name: '张三', age: 18 };
+      const obj2 = { ...obj }; //展开对象，本质走的是 Object.keys() + 属性复制，本质是枚举自身可枚举属性
+
+      //展开 类数组对象, 但是没有实现 Symbol.iterator 迭代协议
+      const arrayLikeObject = { 0: 'a', 1: 'b', length: 2 }; // 没有 Symbol.iterator
+      let arr1Like1 = Array.from(arrayLikeObject); // ['a', 'b'] ✅
+      let arr2Like2 = [...arrayLikeObject]; // arrayLikeObject is not iterable
+    </script>
+  </body>
+</html>
