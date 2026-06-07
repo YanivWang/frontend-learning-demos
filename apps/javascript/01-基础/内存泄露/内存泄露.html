@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>内存泄漏演示-泄漏版本</title>
+  </head>
+  <body>
+    <button id="btn">点我（模拟用户操作）</button>
+    <p>
+      监听器数量:
+      <span id="count">0</span>
+    </p>
+
+    <script>
+      const target = document.getElementById('btn');
+      let listenerCount = 0;
+      let resizeHandler = null;
+
+      target.addEventListener('click', function addLeak() {
+        //函数内部，局部变量，函数执行完，变量就被销毁，无法被外部访问
+        const tempBigData111 = new Array(5000000).fill('x'.repeat(1));
+        console.log('tempBigData111', tempBigData111.length);
+
+        // 每次点击都分配一个大对象
+        const bigData222 = new Array(5000000).fill('x'.repeat(1));
+
+        // ❌ 关键：每次注册新监听器，旧的永不移除
+        // bigData222 被闭包持有，window 存活则 handler 存活，handler 存活则 bigData 存活
+        // window 会一直存在，知道页面被关闭
+        resizeHandler = function () {
+          void bigData222.length;
+        };
+        window.addEventListener('resize', resizeHandler);
+
+        //统计监听器数量
+        listenerCount++;
+        document.getElementById('count').textContent = listenerCount;
+      });
+    </script>
+  </body>
+</html>

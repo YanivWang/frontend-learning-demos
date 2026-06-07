@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>内存泄漏演示-正常版本</title>
+    <!-- <script src="printMemory.js"></script> -->
+  </head>
+  <body>
+    <button id="btn">点我（模拟用户操作）</button>
+    <p>
+      监听器数量:
+      <span id="count">0</span>
+    </p>
+
+    <script>
+      const target = document.getElementById('btn');
+      let listenerCount = 0;
+      let currentHandler = null;
+
+      function handleClick() {
+        const bigData = new Array(5000000).fill('x');
+
+        if (currentHandler) {
+          window.removeEventListener('resize', currentHandler);
+        }
+
+        currentHandler = function () {
+          void bigData.length;
+        };
+        window.addEventListener('resize', currentHandler);
+
+        listenerCount++;
+        document.getElementById('count').textContent = listenerCount;
+      }
+
+      target.addEventListener('click', handleClick);
+    </script>
+  </body>
+</html>

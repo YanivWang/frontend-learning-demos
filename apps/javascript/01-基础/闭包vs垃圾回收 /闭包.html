@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="printMemory.js"></script>
+  </head>
+  <body>
+    <!--
+      一. 如果目标是 90% 用户都能正常、流畅使用，建议不要按浏览器/V8 的理论上限设计，而要按更保守的“长期稳定运行预算”设计。
+
+      ##### PC Web 端 #####
+      优秀：几十 MB ~ 100MB
+      健康：100MB ~ 300MB    ✅
+      可接受上限：300MB ~ 500MB
+      偏重但还能接受：500MB ~ 800MB
+      危险：1GB+
+
+      ##### 移动端 Web #####
+      优秀：20MB ~ 80MB
+      健康：80MB ~ 150MB     ✅
+      可接受上限：150MB ~ 200MB
+      偏重：200MB ~ 300MB
+      危险：300MB+
+      高风险：500MB+
+
+
+      1 个数组元素槽位 ≈ 8 bytes
+      100,000       ≈ 0.8 MB
+      1,000,000     ≈ 8 MB
+      10,000,000    ≈ 80 MB
+      50,000,000    ≈ 400 MB
+      100,000,000   ≈ 800 MB
+      1,000,000,000 ≈ 8 GB
+    -->
+    <button id="btn">清空引用</button>
+
+    <script>
+      //判断是否“泄漏”的关键不是“有没有闭包”，而是：这块内存是否已经不需要了，却仍然因为某个引用链被保留
+      //对象需要变成不可达才可能被回收
+
+      console.log('script start....');
+      function outerFn() {
+        const array = new Array(5000001).fill('1');
+
+        // innerFn 加上 outerFn 的词法环境加起来是闭包
+        // innerFn 的 [[Scope]] 属性中是包含作用域链(词法环境链)
+        return function innerFn() {
+          console.log('array.length:', array.length);
+        };
+      }
+      //只要 innerFn 变量存在，array 就不会被回收，因为 innerFn 可被访问，所以 array 也就能被访问
+      let innerFn = outerFn();
+      innerFn();
+      console.log('script end....');
+
+      //打印内存
+      printMemory(1);
+
+      btn.addEventListener('click', () => {
+        //手动清空引用，为了后续GC能正常回收占用的内存，但是具体什么时候回收，由浏览器决定，并不会立刻回收
+        innerFn = null;
+        printMemory(2);
+      });
+    </script>
+  </body>
+</html>
