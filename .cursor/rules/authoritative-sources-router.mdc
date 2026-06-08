@@ -1,58 +1,75 @@
 ---
 description: >-
-  前端学习问答总路由：根据用户问题主题自动选用对应权威来源规则（JS/CSS/框架/TS/浏览器/DevTools/性能等）。
+  前端学习问答总路由（始终生效）：选规则 → 核对权威文档 → 附链接作答。
+  所有子规则共享的流程、原则、声明格式、禁止项都在本文件，子规则只补充各自的触发条件与来源站点。
 alwaysApply: true
 ---
 
-# 权威来源规则路由
+# 权威来源规则（总路由 + 共享规范）
 
-用户提问 **前端语言、框架、浏览器、工具、性能** 等学习类问题时，**先按主题匹配下表**，再读取对应 `.cursor/rules/*-authoritative-sources.mdc` 并按该规则作答（先查权威站、附链接、再对照仓库 demo）。
+本文件是**唯一规范源**：定义所有前端学习问答的通用流程与底线。各 `*-authoritative-sources.mdc` 子规则只补充「本主题的触发条件 + 权威站点 + 特有边界」，其余一律以本文件为准。
 
-**编辑代码时同样适用**：在 `apps/<主题>` 目录下读写代码时，对应子规则会按 `globs` 自动注入；即便未自动注入，也须按本路由选规则、核对官网并附链接后再改动或解释代码。
+## 一、选规则（路由表）
 
-## 强制执行
+用户问前端语言/框架/浏览器/工具/性能等学习类问题，或在 `apps/<主题>` 下读写代码时，先按主题选规则。子规则会按 `globs` 自动注入；未注入也须按本表选定并遵守。
 
-1. **必须先选规则**：只要问题属于下表任一主题，内部先选定对应规则；必要时再向用户简短说明，不要直接凭记忆回答。
-2. **必须读取规则文件**：匹配到的 `*-authoritative-sources.mdc` 是本次回答的执行标准；跨主题时读取多个规则。
-3. **必须实际核对官网（须真调用联网工具）**：回答核心结论、易错点、版本/兼容性或配置边界前，**必须实际发起一次联网检索/网页抓取**核对官方具体页面；**未真正调用联网工具时，禁止写「已核对」**，只能写「未实时核对（凭记忆）」，且不得编造链接或原话。不得只引用首页、仓库 demo 或模型记忆；联网确实不可用时按对应规则的「无法联网」条款降级。
-4. **必须附具体链接**：核心结论、易错点、版本/兼容性或配置边界附本次核对过的官方具体页面链接；无法联网时，按对应规则的「无法联网」条款降级回答。
-5. **用户指定来源优先**：用户明确指定某个官方站点或版本时，以用户指定为准；若指定来源与主题不匹配，先说明边界。
-6. **比例原则**：对极基础且稳定的事实（如基本语法、默认行为）可直接作答并附权威链接，不必每次实时检索；但凡涉及版本/兼容性/边界行为或配置项，必须按第 3 条实时核对。
-7. **必须先声明命中规则与已核对来源（含官网原话）**：凡命中下表任一主题，或在 `apps/` 代码场景下作答时，回答的**第一行**先输出 `命中规则：<规则文件名> ｜ 已核对：[页面标题](链接) —「<官网原话片段>」`；其中链接与原话必须摘自**本次实际联网抓取**的具体页面（非首页、非记忆）。跨多层时规则部分写成 `<主规则>（主）＋<补充规则>（补）`，原话附主规则本次核对页。**未真正调用联网工具核对时**写 `已核对：未实时核对（凭记忆）`，不得编造链接或原话；若判定为非前端学习问答、不套用本路由，则写 `命中规则：无（非前端学习问答）`。声明之后再开始正文。
-
-## 通用原则（所有子规则须遵守）
-
-8. **结论仅来自权威文档**：核心结论须能在**本次已核对**的、对应子规则所列权威站点具体页面中找到依据；不得用模型记忆、「常识」、博客、或未标注出处的二手材料充当依据。
-9. **查不到就说明不知道**：权威文档未写明、检索/抓取失败、或无法确认与原文一致时，明确回答「未在权威文档中查到 / 无法确认」，**不编造**结论、链接或引文；可提示应查阅的官方主题方向，但不得假装已完成核对。
-10. **不信非权威上传与辅助材料**：用户提供的**截图、图片、附件、自行整理的笔记、非官方文档**，以及本仓库 **demo、注释**，仅用于理解题意或对齐示例，**不得**视为已核实依据，也**不得**仅凭其内容下判断；若与权威文档冲突，以权威文档为准。
-11. **工具界面与类比不能替代规范**：调试器、IDE、构建产物、教学示意图等只反映**展示或类比**，不能替代对应主题的权威文档；涉及多层主题（如语言 + 工具）时，**各层分别**按子规则核对，禁止用一种工具的界面反推另一种规范。
-12. **类比须标注**：使用比喻时标明「类比」，且不得产出与已核对权威原文相矛盾的确定性结论。
-
-| 用户问题主题 | 选用规则文件 |
-|-------------|-------------|
+| 主题 | 规则文件 |
+|------|---------|
 | JavaScript 语法、API、闭包、原型、Promise、ES 特性 | `javascript-authoritative-sources.mdc` |
 | CSS 属性、选择器、布局、层叠、动画、响应式 | `css-authoritative-sources.mdc` |
 | TypeScript 类型系统、泛型、tsconfig、声明文件 | `typescript-authoritative-sources.mdc` |
 | HTML 语义、DOM、事件、Fetch、Storage、Canvas、History、URL、Web Components | `browser-web-apis-authoritative-sources.mdc` |
-| Vue 2：Options API、Vue.set、Vue Router 3、Vuex | `vue2-authoritative-sources.mdc` |
+| Vue 2：Options API、Vue.set、Router 3、Vuex | `vue2-authoritative-sources.mdc` |
 | Vue 3：Composition API、script setup、Pinia、Router 4 | `vue3-authoritative-sources.mdc` |
 | React 18：Hooks、class 组件、createRoot、Concurrent、批处理 | `react18-authoritative-sources.mdc` |
-| React 19：Actions、useActionState、useOptimistic、use()、RSC 边界 | `react19-authoritative-sources.mdc` |
-| 浏览器里 JS 怎么跑：事件循环、宏/微任务、主线程、Web API 调度 | `browser-js-runtime-authoritative-sources.mdc` |
-| Chrome DevTools、调试技巧、Performance/Network 面板、Chrome 扩展 | `chrome-devtools-authoritative-sources.mdc` |
-| 网页性能优化、Core Web Vitals（LCP/INP/CLS）、加载与渲染性能 | `web-performance-authoritative-sources.mdc` |
-| V8 引擎底层：JIT、GC、Ignition/TurboFan、字节码 | `v8-engine-authoritative-sources.mdc` |
+| React 19：Actions、useActionState、useOptimistic、use()、RSC | `react19-authoritative-sources.mdc` |
+| 事件循环、宏/微任务、主线程、Web API 调度 | `browser-js-runtime-authoritative-sources.mdc` |
+| Chrome DevTools、调试、Performance/Network 面板、扩展 | `chrome-devtools-authoritative-sources.mdc` |
+| 网页性能、Core Web Vitals（LCP/INP/CLS）、加载与渲染性能 | `web-performance-authoritative-sources.mdc` |
+| V8 引擎：JIT、GC、Ignition/TurboFan、字节码 | `v8-engine-authoritative-sources.mdc` |
 | 浏览器架构：多进程、Blink、渲染管线、Compositor | `browser-architecture-authoritative-sources.mdc` |
-| 前端工具链：Vite、Webpack、Rollup、Babel、ESLint、Prettier、npm/pnpm/yarn、Node 配置 | `frontend-tooling-authoritative-sources.mdc` |
+| 工具链：Vite、Webpack、Rollup、Babel、ESLint、Prettier、npm/pnpm/yarn、Node | `frontend-tooling-authoritative-sources.mdc` |
 
-## 边界说明
+**跨层选主规则**：按「用户主要想问哪一层」定主规则，其它层作补充并分别附链接。语义→JS/TS/CSS；浏览器 API/HTML→browser-web-apis；框架 API→对应框架规则；事件循环→browser-js-runtime；V8 编译→v8-engine；构建/包管理→frontend-tooling。版本对比题以用户指定版本为主规则。无法匹配或非前端学习问答则不套用本路由；用户明确指定来源时以用户为准。
 
-- **语言语义** → JS / TS / CSS 规则；**浏览器 API 与 HTML** → browser-web-apis；**框架 API** → 对应 vue2/vue3/react18/react19 规则。
-- **Vue 2 vs Vue 3**：版本明确则按版本；对比题以用户指定的版本为主规则，另一版本作补充。
-- **React 18 vs React 19**：通用 Hooks/渲染 → react18；Actions、`use()`、`useOptimistic` 等 19 新 API → react19。
-- **TS + 框架**：类型写法 → typescript 为主；框架 props/emits/组件 API → 框架规则补充。
-- **DevTools 操作** → chrome-devtools；**用 DevTools 做性能分析** → 同时参考 web-performance。
-- **事件循环** → browser-js-runtime；**V8 编译** → v8-engine。
-- **构建/包管理/格式化/静态检查** → frontend-tooling；框架脚手架中的框架 API 仍按框架规则。
-- 一题跨多层时：按「用户主要想问哪一层」选主规则，其它层作补充并分别附链接。
-- 无法匹配或非前端学习问答：不强行套用；用户明确要求某站点时以用户为准。
+## 二、作答流程（所有规则通用）
+
+1. **查权威**：联网检索或打开子规则指定站点的**具体页面**，核对核心结论（语义、默认值、边界、兼容性、示例是否与文档一致）。
+2. **对仓库 demo**：`apps/<主题>` 有同主题文件时用于对齐示例风格；**demo 不能替代第 1 步**，与官方冲突以官方为准并注明。
+3. **组织回答**：先定性（文档怎么说）再给最小可运行示例；核心结论、易错点、版本/兼容性、边界、配置项附**本次已核对**的具体链接。
+4. **无法联网**：开头注明「未实时核对 <站点>」，仅引用 demo 中已标注权威链接的内容，不补未核对的细节。
+
+## 三、比例原则（什么必须实时核对）
+
+- **必须实时联网核对**：版本/兼容性、边界与反直觉行为、配置项与默认值的精确取值、API 签名、是否已废弃/新增。
+- **可凭权威知识直接答**（仍附权威链接，无需每次检索）：稳定且无版本争议的基础事实。
+- **判定锚点**：`Array.map` 返回新数组、`display:block` 独占一行 = 基础，可直接答；`Array.prototype.group` 的浏览器支持、`:has()` 兼容性、某 tsconfig 选项默认值、某 API 哪个版本引入 = 必须查。拿不准时按"必须查"处理。
+
+## 四、声明格式（分级）
+
+回答**第一行**先声明,再写正文。按问题性质二选一：
+
+- **完整声明（涉及版本/兼容性/边界/配置，须真联网）**：
+  `命中规则：<文件名> ｜ 已核对：[页面标题](具体链接) —「<官网原话片段>」`
+  跨层写 `<主规则>（主）＋<补规则>（补）`，原话取主规则本次核对页。
+- **轻量声明（基础稳定问题，未实时检索）**：
+  `命中规则：<文件名> ｜ 基础稳定，未实时检索（依据：[页面标题](具体链接)）`
+- **无法联网且非基础**：`命中规则：<文件名> ｜ 已核对：未实时核对（凭记忆），以下结论待核`
+- **非前端学习问答**：`命中规则：无（非前端学习问答）`
+
+**红线**：没真正调用联网工具时，禁止写"已核对：[链接]—原话"形式，禁止编造链接或原话。
+
+## 五、通用原则
+
+1. **结论只来自权威文档**：核心结论须能在**本次已核对**的、子规则所列权威站点具体页面找到依据；不用记忆、"常识"、博客、二手材料当依据。
+2. **查不到就说不知道**：文档未写明、检索/抓取失败、无法确认与原文一致时，明确说"未在权威文档中查到/无法确认"，不编造结论、链接或引文；可指出应查的官方方向。
+3. **不信非权威材料**：用户截图/图片/附件/自整理笔记、本仓库 demo 与注释、工具/IDE/调试器界面、构建产物、教学示意图，只用于理解题意或对齐示例，**不作已核实依据**；与权威文档冲突以文档为准。
+4. **类比须标注**：用比喻时标明"类比"，不得产出与已核对原文矛盾的确定性结论。
+
+## 六、禁止（所有规则通用）
+
+- 未按子规则查权威就给出该主题的关键结论。
+- 只给"众所周知"式总结且无权威链接。
+- 把博客、问答社区、未注明版本的二手教程当首要依据。
+- 凭截图/附件/demo/工具 UI/模型推演充当已核对结论。
+- 没真正联网却声称"已核对"，或编造链接、原话、面板/选项/API 名称。
