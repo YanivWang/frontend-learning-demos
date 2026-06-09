@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
+    background: transparent;
+    color: #1a1a1a;
+    padding: 16px;
+    font-size: 13px;
+  }
+  .layout { display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start; }
+  .panel { flex: 1; min-width: 260px; }
+  .panel-title {
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 5px;
+    margin-bottom: 14px;
+  }
+  .dom-title { background: #dbeafe; color: #1d4ed8; }
+  .cssom-title { background: #fce7f3; color: #9d174d; }
+
+  /* tree */
+  ul { list-style: none; padding: 0; }
+  ul ul {
+    padding-left: 18px;
+    border-left: 2px solid #e5e7eb;
+    margin-left: 7px;
+    margin-top: 3px;
+    padding-bottom: 2px;
+  }
+  li { margin-top: 3px; }
+  .n {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    white-space: nowrap;
+    cursor: default;
+    position: relative;
+  }
+  .n:hover .tip { display: block; }
+  .tip {
+    display: none;
+    position: absolute;
+    left: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: #111;
+    color: #fff;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    z-index: 99;
+  }
+
+  /* DOM node styles */
+  .doc    { background: #1d4ed8; color: #fff; font-weight: 700; }
+  .el     { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  .el.important { background: #dbeafe; font-weight: 600; }
+  .text   { background: #f9fafb; color: #6b7280; border: 1px dashed #d1d5db; font-style: italic; }
+  .attr-n { background: #fefce8; color: #a16207; border: 1px solid #fde68a; font-size: 11px; }
+  .doctype { background: #f3f4f6; color: #9ca3af; border: 1px dashed #e5e7eb; font-size: 11px; }
+
+  /* CSSOM node styles */
+  .css-root  { background: #9d174d; color: #fff; font-weight: 700; }
+  .css-rule  { background: #fdf2f8; color: #9d174d; border: 1px solid #fbcfe8; }
+  .css-decl  { background: #f9fafb; color: #374151; border: 1px dashed #d1d5db; font-size: 12px; }
+  .css-prop  { color: #7c3aed; font-weight: 600; }
+  .css-val   { color: #059669; }
+
+  .sub { font-size: 11px; opacity: .6; margin-left: 2px; font-style: normal; }
+  .arrow { color: #9ca3af; }
+
+  .note {
+    margin-top: 20px;
+    padding: 10px 14px;
+    background: #f3f4f6;
+    border-radius: 7px;
+    font-size: 12px;
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
+  }
+  .note strong { color: #111; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- DOM -->
+  <div class="panel">
+    <div class="panel-title dom-title">DOM Tree</div>
+    <ul>
+      <li>
+        <span class="n doctype">&lt;!DOCTYPE html&gt;</span>
+        <ul>
+          <li>
+            <span class="n doc">document</span>
+            <ul>
+              <li>
+                <span class="n el important">&lt;html lang="en"&gt;</span>
+                <ul>
+                  <!-- head -->
+                  <li>
+                    <span class="n el">&lt;head&gt;</span>
+                    <ul>
+                      <li><span class="n el">&lt;meta charset="UTF-8"&gt;<span class="sub">自闭合</span></span></li>
+                      <li><span class="n el">&lt;meta name="viewport" …&gt;<span class="sub">自闭合</span></span></li>
+                      <li>
+                        <span class="n el">&lt;title&gt;</span>
+                        <ul>
+                          <li><span class="n text">"Document"<span class="sub">Text</span></span></li>
+                        </ul>
+                      </li>
+                      <li>
+                        <span class="n el important">&lt;style&gt;<span class="sub">→ 触发 CSSOM 构建</span></span>
+                        <ul>
+                          <li><span class="n text">"h1{color:blue} h3{color:red}"<span class="sub">Text（原始 CSS 字符串）</span></span></li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </li>
+                  <!-- body -->
+                  <li>
+                    <span class="n el important">&lt;body&gt;</span>
+                    <ul>
+                      <li>
+                        <span class="n el important">&lt;h1&gt;</span>
+                        <ul>
+                          <li><span class="n text">"DOM"<span class="sub">Text</span></span></li>
+                        </ul>
+                      </li>
+                      <li>
+                        <span class="n el important">&lt;h3&gt;</span>
+                        <ul>
+                          <li><span class="n text">"DOM讲解"<span class="sub">Text</span></span></li>
+                        </ul>
+                      </li>
+                      <li><span class="n el">&lt;script&gt;<span class="sub">内容为空</span></span></li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+  <!-- CSSOM -->
+  <div class="panel">
+    <div class="panel-title cssom-title">CSSOM Tree</div>
+    <ul>
+      <li>
+        <span class="n css-root">CSSStyleSheet<span class="sub">document.styleSheets[0]</span></span>
+        <ul>
+          <li>
+            <span class="n css-rule">CSSStyleRule<span class="sub">rules[0]</span></span>
+            <ul>
+              <li><span class="n css-decl">.selectorText <span class="arrow">→</span> <span class="css-val">"h1"</span></span></li>
+              <li>
+                <span class="n css-rule" style="background:#fdf4ff;color:#7e22ce;border-color:#e9d5ff;">.style <span class="sub">CSSStyleDeclaration</span></span>
+                <ul>
+                  <li><span class="n css-decl"><span class="css-prop">color</span> <span class="arrow">:</span> <span class="css-val">blue</span></span></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <span class="n css-rule">CSSStyleRule<span class="sub">rules[1]</span></span>
+            <ul>
+              <li><span class="n css-decl">.selectorText <span class="arrow">→</span> <span class="css-val">"h3"</span></span></li>
+              <li>
+                <span class="n css-rule" style="background:#fdf4ff;color:#7e22ce;border-color:#e9d5ff;">.style <span class="sub">CSSStyleDeclaration</span></span>
+                <ul>
+                  <li><span class="n css-decl"><span class="css-prop">color</span> <span class="arrow">:</span> <span class="css-val">red</span></span></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+
+    <div style="margin-top:20px; padding:12px; background:#f0fdf4; border-radius:7px; font-size:12px; border:1px solid #bbf7d0;">
+      <div style="font-weight:700;color:#15803d;margin-bottom:6px;">在控制台可以验证：</div>
+      <div style="color:#166534; line-height:1.8;">
+        <code>document.styleSheets[0].cssRules[0].selectorText</code><br>
+        <span style="color:#4ade80">→ "h1"</span><br><br>
+        <code>document.styleSheets[0].cssRules[0].style.color</code><br>
+        <span style="color:#4ade80">→ "blue"</span><br><br>
+        <code>document.styleSheets[0].cssRules[1].selectorText</code><br>
+        <span style="color:#4ade80">→ "h3"</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="note">
+  浏览器解析完两棵树后，将 <strong>h1</strong>（匹配 color:blue）和 <strong>h3</strong>（匹配 color:red）的样式附加到对应 DOM 节点，合成 <strong>Render Tree</strong>，再 Layout → Paint。
+</div>
+
+</body>
+</html>
