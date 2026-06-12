@@ -5,17 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
     <title>安全区</title>
-    <link rel="stylesheet" href="index.css" />
+
+    <!-- 全局变量 -->
+    <link rel="stylesheet" href="css/root.css" />
+
+    <!-- 品牌样式 -->
+    <link rel="stylesheet" href="css/brand.css" />
+
+    <!-- 通用基础样式 -->
+    <link rel="stylesheet" href="css/base.css" />
+
+    <!-- 应用样式 -->
+    <link rel="stylesheet" href="css/app.css" />
   </head>
   <body>
     <div id="app">
       <header>header</header>
-      <main>main</main>
+      <main>
+        <h1>main</h1>
+        <button onclick="switchBrand('green')">切换主题 green</button>
+        <button onclick="switchBrand('red')">切换主题 red</button>
+      </main>
       <footer>
         <div class="footer-content">footer</div>
-        <div class="footer-placeholder">站位</div>
+        <div class="footer-placeholder">占位</div>
       </footer>
     </div>
+
+    <script>
+      // 切换主题的方式: 通过js修改html的data-brand属性
+      // 然后在brand.css 中通过html属性选择器覆盖主题色(覆盖全局变量)
+      function switchBrand(brand) {
+        document.documentElement.style.removeProperty('--color-primary');
+        document.documentElement.setAttribute('data-brand', brand);
+      }
+    </script>
+
+    <!-- <script>
+      const button = document.querySelector('button');
+      button.addEventListener('click', () => {
+        // 方案一: 通过设置html的style属性来设置css变量，覆盖:root中声明的全局css变量
+        // 直接用 JS 写行内变量，优先级高于 :root stylesheet
+        // 主题定义散落在 JS 里, 不如 brand.css 集中管理
+        // document.documentElement.style.setProperty('--color-primary', '#3cc469');
+
+        // 方案二: 通过设置html的data-brand属性来切换品牌主题(通过html的属性选择器，实现对:root中声明的全局css变量的覆盖)
+        // 若此前用 style.setProperty 写过同名变量，须先移除行内覆盖，否则行内样式优先级更高，brand.css 不会生效
+        document.documentElement.style.removeProperty('--color-primary');
+        document.documentElement.setAttribute('data-brand', 'green');
+      });
+    </script> -->
 
     <script>
       //style: 读取 html 元素的行内样式
@@ -44,8 +83,8 @@
       const fontFamily2 = computedStyle.getPropertyValue('font-family');
       console.log('fontFamily2 \n', fontFamily2); //"Courier New", Courier, monospace
 
-      //通过js动态修改和设置 css 变量(修改css属性)
-      //页面会自动刷新
+      // 通过 js 动态修改 css 变量（写入行内 style，优先级高于 stylesheet）
+      // 演示：1s 后 header 会变灰；若之后点「切换主题」，需 removeProperty 才能让 data-brand 规则生效
       setTimeout(() => {
         document.documentElement.style.setProperty('--color-primary', '#dddddd');
         console.log(
