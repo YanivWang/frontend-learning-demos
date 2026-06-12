@@ -4,16 +4,22 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
-    <!-- 首屏防闪烁：在 CSS 加载前根据 localStorage / 系统偏好挂上 dark class -->
+    <!-- 首屏防闪烁：CSS 加载前恢复明暗主题与品牌偏好，避免先默认色再切换 -->
     <script>
       (function () {
-        var key = 'theme';
-        var stored = localStorage.getItem(key) || 'system';
+        var themeKey = 'theme';
+        var brandKey = 'brand';
+        var storedTheme = localStorage.getItem(themeKey) || 'system';
         var isDark =
-          stored === 'dark' ||
-          (stored === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+          storedTheme === 'dark' ||
+          (storedTheme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
         if (isDark) document.documentElement.classList.add('dark');
         document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+
+        var storedBrand = localStorage.getItem(brandKey);
+        if (storedBrand === 'green' || storedBrand === 'red') {
+          document.documentElement.setAttribute('data-brand', storedBrand);
+        }
       })();
     </script>
 
@@ -53,9 +59,11 @@
 
     <script>
       var THEME_KEY = 'theme';
+      var BRAND_KEY = 'brand';
 
       // 品牌切换: 通过 data-brand 覆盖 primitive 变量（见 brand.css）
       function switchBrand(brand) {
+        localStorage.setItem(BRAND_KEY, brand);
         document.documentElement.style.removeProperty('--color-primary');
         document.documentElement.setAttribute('data-brand', brand);
       }
