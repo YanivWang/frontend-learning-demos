@@ -4,6 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
+    <!-- 首屏防闪烁：在 CSS 加载前根据 localStorage / 系统偏好挂上 dark class -->
+    <script>
+      (function () {
+        var key = 'theme';
+        var stored = localStorage.getItem(key) || 'system';
+        var isDark =
+          stored === 'dark' ||
+          (stored === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) document.documentElement.classList.add('dark');
+        document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+      })();
+    </script>
+
     <title>安全区</title>
 
     <!-- 全局变量 -->
@@ -11,6 +24,9 @@
 
     <!-- 品牌样式 -->
     <link rel="stylesheet" href="css/brand.css" />
+
+    <!-- 明暗主题：亮色默认，html.dark 覆盖语义变量 -->
+    <link rel="stylesheet" href="css/theme.css" />
 
     <!-- 通用基础样式 -->
     <link rel="stylesheet" href="css/base.css" />
@@ -23,8 +39,11 @@
       <header>header</header>
       <main>
         <h1>main</h1>
-        <button onclick="switchBrand('green')">切换主题 green</button>
-        <button onclick="switchBrand('red')">切换主题 red</button>
+        <button onclick="switchBrand('green')">切换品牌 green</button>
+        <button onclick="switchBrand('red')">切换品牌 red</button>
+        <button onclick="switchTheme('light')">亮色</button>
+        <button onclick="switchTheme('dark')">暗色</button>
+        <button onclick="switchTheme('system')">跟随系统</button>
       </main>
       <footer>
         <div class="footer-content">footer</div>
@@ -33,12 +52,29 @@
     </div>
 
     <script>
-      // 切换主题的方式: 通过js修改html的data-brand属性
-      // 然后在brand.css 中通过html属性选择器覆盖主题色(覆盖全局变量)
+      var THEME_KEY = 'theme';
+
+      // 品牌切换: 通过 data-brand 覆盖 primitive 变量（见 brand.css）
       function switchBrand(brand) {
         document.documentElement.style.removeProperty('--color-primary');
         document.documentElement.setAttribute('data-brand', brand);
       }
+
+      // 明暗切换: 亮色无 class，暗色挂 html.dark（见 theme.css）
+      function switchTheme(mode) {
+        localStorage.setItem(THEME_KEY, mode);
+        var isDark =
+          mode === 'dark' ||
+          (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', isDark);
+        document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+      }
+
+      matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () {
+        if (localStorage.getItem(THEME_KEY) === 'system') {
+          switchTheme('system');
+        }
+      });
     </script>
 
     <!-- <script>
